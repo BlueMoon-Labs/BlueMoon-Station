@@ -206,6 +206,8 @@
 	var/datum/register_cashier/seller = till()
 	seller.order_at -= REGISTER_SELECT_GRACE
 	var/budget_before = service.account.account_balance
+	if(SSeconomy.cash_account.account_balance < 100)
+		SSeconomy.cash_account.credit(100 - SSeconomy.cash_account.account_balance, ECON_ADMIN, memo = "Купюры клиента уже в обороте")
 	var/cash_before = SSeconomy.cash_account.account_balance
 	var/minted_before = SSeconomy.ledger.minted
 	var/burned_before = SSeconomy.ledger.burned

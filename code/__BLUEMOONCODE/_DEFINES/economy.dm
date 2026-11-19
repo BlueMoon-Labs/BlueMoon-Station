@@ -11,8 +11,8 @@
 
 #define ECONOMY_CONFIG_PATH "config/economy.json"
 #define ECON_SNAPSHOT_MAX 48
-/// От этой суммы одного движения SSeconomy.move отказывает: вся эмиссия смены около миллиона, больше бывает только от бага
-#define ECON_MOVE_AMOUNT_MAX 100000000
+/// От этой суммы одного движения SSeconomy.move отказывает: вся эмиссия смены около миллиона, а выше 1e7 числа BYOND теряют точность до кредита
+#define ECON_MOVE_AMOUNT_MAX 10000000
 /// Значащих цифр в суммах для текста: без этого числа от миллиона печатаются как 1e+006
 #define ECON_TEXT_DIGITS 12
 
@@ -166,6 +166,7 @@
 #define AUDIT_FLAG_INSIDER "insider"
 #define AUDIT_FLAG_ANON_CASHOUT "anon_cashout"
 #define AUDIT_FLAG_CRYPTOMINER "cryptominer"
+#define AUDIT_FLAG_CASH_DEPOSIT "cash_deposit"
 /// Сколько дел аудита хранит раунд; сверх этого вытесняются старые закрытые
 #define AUDIT_FLAGS_MAX 200
 /// Повторы в открытом деле пишутся в econ.log итогом не чаще этого, а не строкой на каждую операцию
@@ -344,6 +345,8 @@
 #define ECON_DIVIDEND "dividend"
 #define ECON_CASH_OUT "cash_out"
 #define ECON_CASH_IN "cash_in"
+/// Эмиссия наличных, которых нет в обороте (найденные, стартовые в кошельках): внесение не уводит Наличные в обороте в минус
+#define ECON_FOUND_CASH "found_cash"
 #define ECON_BLACKMARKET "blackmarket"
 #define ECON_SKIM "skim"
 #define ECON_ADMIN "admin"

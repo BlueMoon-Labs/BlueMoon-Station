@@ -66,6 +66,7 @@
 		"trace_minutes" = settings.audit_trace_minutes,
 		"trace_depth" = settings.audit_trace_depth,
 		"fee_percent" = settings.audit_case_fee_percent,
+		"cash_deposit_threshold" = settings.audit_cash_deposit_threshold,
 		"owed_cap" = settings.owed_wages_cap_paychecks,
 		"reason_max" = AUDIT_REASON_MAX,
 		"search_max" = AUDIT_SEARCH_MAX,

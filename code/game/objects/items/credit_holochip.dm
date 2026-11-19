@@ -84,19 +84,7 @@
 		qdel(H)
 	if(istype(I, /obj/item/card/id))
 		var/obj/item/card/id/ID = I
-		if(!ID.registered_account)
-			to_chat(user, "<span class='warning'>[ID] doesn't have a linked account to deposit into!</span>")
-			return STOP_ATTACK_PROC_CHAIN
-		var/atom/old_loc = loc // The following code can qdel src, which nulls its loc.
-		if(!old_loc)
-			ID.attackby(src, user)
-			return STOP_ATTACK_PROC_CHAIN
-		for(var/obj/item/holochip/money in old_loc.contents)
-			ID.attackby(money, user)
-		for(var/obj/item/stack/spacecash/money in old_loc.contents)
-			ID.attackby(money, user)
-		for(var/obj/item/coin/money in old_loc.contents)
-			ID.attackby(money, user)
+		ID.insert_money_pile(src, user)
 		return STOP_ATTACK_PROC_CHAIN
 
 /obj/item/holochip/AltClick(mob/user)

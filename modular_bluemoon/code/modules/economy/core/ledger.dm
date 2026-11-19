@@ -23,6 +23,11 @@
 	/// id аванпоста -> reason -> его эмиссия, для строки итога смены
 	var/list/outpost_minted_by_id = list()
 	var/summary_logged = FALSE
+	/// Дела аудита за смену: закрытые с возвратом считаются по closed_refunded, сколько вернули пострадавшим - в audit_refunded
+	var/audit_opened = 0
+	var/audit_closed_refunded = 0
+	var/audit_refunded = 0
+	var/audit_closed_dismissed = 0
 
 /datum/bank_account
 	/// Подъёмные смены: от них панель считает рост личных денег
@@ -164,6 +169,13 @@
 		parts += "[outpost.department_id] [num2text(flow["in"], 12)]/[num2text(flow["spent"], 12)]/[num2text(flow["burned"], 12)]/[num2text(outpost.account_balance, 12)][length(reasons) ? " ([econ_reason_totals_text(reasons)])" : ""]"
 	if(length(parts))
 		. += "Итог смены по аванпостам (пришло/потрачено/сожжено/остаток): [jointext(parts, ", ")]"
+	var/open_count = 0
+	var/open_amount = 0
+	for(var/datum/econ_audit_flag/flag as anything in SSeconomy.audit_flags)
+		if(!flag.closed)
+			open_count++
+			open_amount += flag.amount
+	. += "Аудит за смену: открыто дел [audit_opened], закрыто возвратом [audit_closed_refunded] (возвращено [num2text(audit_refunded, ECON_TEXT_DIGITS)] кр.), закрыто без возврата [audit_closed_dismissed], осталось открытыми [open_count] на [num2text(open_amount, ECON_TEXT_DIGITS)] кр."
 
 /// Пишет итог смены в econ.log один раз за раунд. Возвращает TRUE, если записал.
 /proc/econ_log_round_summary()
@@ -198,13 +210,16 @@
 	if(length(snapshots) > ECON_SNAPSHOT_MAX)
 		snapshots.Cut(1, 2)
 
-/datum/controller/subsystem/economy/proc/move(datum/bank_account/source, datum/bank_account/target, amount, reason, mob/actor, memo)
+/datum/controller/subsystem/economy/proc/move(datum/bank_account/source, datum/bank_account/target, amount, reason, mob/actor, memo, log_tag)
 	if(isnull(amount))
 		return FALSE
-	if(!isnum(amount) || !(amount < ECON_MOVE_AMOUNT_MAX))
+	if(!isnum(amount) || amount != amount || abs(amount) == INFINITY)
 		stack_trace("SSeconomy.move: недопустимая сумма [amount] ([reason])")
 		return FALSE
 	if(amount <= 0)
+		return FALSE
+	if(amount >= ECON_MOVE_AMOUNT_MAX)
+		log_econ("Отклонено: [num2text(amount, ECON_TEXT_DIGITS)] кр.: [econ_move_side(source, "эмиссия")] -> [econ_move_side(target, "сток")] ([reason]), сумма не ниже потолка [num2text(ECON_MOVE_AMOUNT_MAX, ECON_TEXT_DIGITS)] кр.[actor ? " by [key_name(actor)]" : ""]")
 		return FALSE
 	amount = round(amount)
 	if(!amount || source == target || (!source && !target))
@@ -215,23 +230,28 @@
 	if(source)
 		if(source.state == ACCOUNT_FROZEN && !(reason in GLOB.econ_reasons_ignore_freeze))
 			return FALSE
+		if(source == cash_account && source.account_balance < amount)
+			move(null, source, amount - source.account_balance, ECON_FOUND_CASH, actor)
 		if(source.account_balance < amount && !source.allow_debt)
 			return FALSE
 		source.account_balance -= amount
 	if(target)
 		target.account_balance += amount
-	record_move(source, target, amount, reason, actor, memo)
+	record_move(source, target, amount, reason, actor, memo, log_tag)
 	return TRUE
+
+/proc/econ_move_side(datum/bank_account/account, none_text)
+	return account ? account.account_holder : none_text
 
 /// Сумма, которую SSeconomy.move примет: число больше нуля и меньше ECON_MOVE_AMOUNT_MAX.
 /proc/econ_amount_valid(amount)
 	return isnum(amount) && amount > 0 && amount < ECON_MOVE_AMOUNT_MAX
 
-/// Почему банк не зачислил наличные money.
-/proc/econ_cash_refusal_text(obj/item/money, amount)
+/// Почему банк не зачислил наличные; money_name - имя предмета, а не сам предмет, иначе выйдет "the space cash".
+/proc/econ_cash_refusal_text(money_name, amount)
 	if(econ_amount_valid(amount))
-		return "Банк не принял [money]."
-	return "Банк не принял [money]: таких сумм наличными не бывает, это подделка или сбой. Деньги остались у вас."
+		return "Банк не принял [money_name]."
+	return "Банк не принял [money_name]: таких сумм наличными не бывает, это подделка или сбой. Деньги остались у вас."
 
 /// Учёт уже совершённого движения: журнал, истории счетов, сигнал и лог. log_tag - пометка только для лога.
 /datum/controller/subsystem/economy/proc/record_move(datum/bank_account/source, datum/bank_account/target, amount, reason, mob/actor, memo, log_tag)
@@ -241,7 +261,7 @@
 	target?.add_log_to_history(amount, label, source ? source.account_holder : "Nanotrasen", reason, source?.account_id)
 	audit_move(source, target, amount, reason, actor)
 	SEND_SIGNAL(src, COMSIG_ECONOMY_MOVED, source, target, amount, reason, actor)
-	log_econ("[amount] кр.: [source ? source.account_holder : "эмиссия"] -> [target ? target.account_holder : "сток"] ([reason][log_tag ? ", [log_tag]" : ""])[actor ? " by [key_name(actor)]" : ""]")
+	log_econ("[num2text(amount, ECON_TEXT_DIGITS)] кр.: [econ_move_side(source, "эмиссия")] -> [econ_move_side(target, "сток")] ([reason][log_tag ? ", [log_tag]" : ""])[actor ? " by [key_name(actor)]" : ""]")
 
 /datum/controller/subsystem/economy/proc/find_account(number)
 	return accounts_by_number["[number]"]

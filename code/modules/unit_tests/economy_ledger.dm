@@ -72,6 +72,24 @@
 	TEST_ASSERT(SSeconomy.move(SSeconomy.cash_account, alpha, 1000000, ECON_CASH_IN), "Миллион проходит")
 	SSeconomy.move(alpha, SSeconomy.cash_account, 1000000, ECON_CASH_OUT)
 
+/// Конечная сумма от потолка - ввод игрока, а не баг: отказ без рантайма, строкой в econ.log с суммой, счетами, причиной и кто; суммы от миллиона пишутся цифрами.
+/datum/unit_test/economy_ledger_amount_cap_quiet/Run()
+	var/datum/bank_account/alpha = allocate(/datum/bank_account, "econ_test_cap_alpha")
+	var/datum/bank_account/beta = allocate(/datum/bank_account, "econ_test_cap_beta")
+	var/mob/living/carbon/human/actor = allocate(/mob/living/carbon/human)
+	alpha.credit(100, ECON_ADMIN)
+	var/log_start = econ_test_log_length()
+	TEST_ASSERT(!SSeconomy.move(alpha, beta, ECON_MOVE_AMOUNT_MAX, ECON_TRANSFER, actor), "Сумма на потолке отвергнута")
+	TEST_ASSERT(!alpha.credit(1e9, ECON_ADMIN), "Миллиард отвергнут")
+	TEST_ASSERT(alpha.credit(1500000, ECON_ADMIN), "Полтора миллиона проходят")
+	var/text = jointext(econ_test_log_since(log_start), "\n")
+	TEST_ASSERT(findtext(text, "Отклонено: 10000000 кр.: econ_test_cap_alpha -> econ_test_cap_beta (transfer)"), "Отказ назван в econ.log: [text]")
+	TEST_ASSERT(findtext(text, key_name(actor)), "Отказ называет, кто двигал: [text]")
+	TEST_ASSERT(findtext(text, "Отклонено: 1000000000 кр.: эмиссия -> econ_test_cap_alpha (admin)"), "Отказ эмиссии в econ.log: [text]")
+	TEST_ASSERT(findtext(text, "1500000 кр.: эмиссия -> econ_test_cap_alpha (admin)"), "Сумма от миллиона цифрами, а не 1.5e+006: [text]")
+	TEST_ASSERT_EQUAL(alpha.account_balance, 1500100, "Отказы баланс не тронули")
+	TEST_ASSERT_EQUAL(beta.account_balance, 0, "Получателю ничего не пришло")
+
 /// Исполнитель желаний кладёт в тележку 500 тыс. наличными, а не пачки на бесконечность.
 /datum/unit_test/economy_wishgranter_cart/Run()
 	var/obj/structure/closet/crate/trashcart/moneywish/cart = allocate(/obj/structure/closet/crate/trashcart/moneywish)
@@ -83,24 +101,101 @@
 /datum/unit_test/economy_absurd_cash_deposit
 	allowed_runtime_patterns = list("SSeconomy.move: недопустимая сумма")
 
-/// Карта, мешок с деньгами и хранилище снабжения не принимают пачку на бесконечность и не съедают её.
+/// Карта, мешок с деньгами и хранилище снабжения не принимают пачку на бесконечность и не съедают её; отказ называет деньги их именем.
 /datum/unit_test/economy_absurd_cash_deposit/Run()
 	var/mob/living/carbon/human/person = econ_test_card_holder(src, "econ_test_depositor", 100)
 	var/obj/item/card/id/card = person.get_idcard(TRUE)
 	var/datum/bank_account/account = card.registered_account
 	var/obj/item/stack/spacecash/c1000/bills = allocate(/obj/item/stack/spacecash/c1000)
 	bills.amount = bills.max_amount
-	card.insert_money(bills, person)
+	GLOB.unit_test_chat_capture = list()
+	card.attackby(bills, person)
+	var/list/chat = GLOB.unit_test_chat_capture
+	GLOB.unit_test_chat_capture = null
 	TEST_ASSERT(!QDELETED(bills), "Карта не съела пачку")
 	TEST_ASSERT_EQUAL(account.account_balance, 100, "На карту ничего не зачислено")
-	TEST_ASSERT(!card.mass_insert_money(list(bills), person), "Мешок не зачислен")
+	var/refusal = econ_test_chat_to(chat, person)
+	TEST_ASSERT(findtext(refusal, "Банк не принял [bills.name]") && !findtext(refusal, "the "), "Отказ называет пачку по имени: [refusal]")
+	var/obj/item/storage/bag/money/bag = allocate(/obj/item/storage/bag/money)
+	bills.forceMove(bag)
+	card.attackby(bag, person)
 	TEST_ASSERT(!QDELETED(bills), "Мешок не съел пачку")
+	TEST_ASSERT_EQUAL(account.account_balance, 100, "Из мешка ничего не зачислено")
 	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	var/cargo_before = cargo.account_balance
 	var/obj/machinery/computer/bank_machine/vault = allocate(/obj/machinery/computer/bank_machine)
+	GLOB.unit_test_chat_capture = list()
 	vault.attackby(bills, person)
+	chat = GLOB.unit_test_chat_capture
+	GLOB.unit_test_chat_capture = null
 	TEST_ASSERT(!QDELETED(bills), "Хранилище не съело пачку")
 	TEST_ASSERT_EQUAL(cargo.account_balance, cargo_before, "Бюджет снабжения не тронут")
+	refusal = econ_test_chat_to(chat, person)
+	TEST_ASSERT(findtext(refusal, "Банк не принял [bills.name]") && !findtext(refusal, "the "), "Отказ хранилища называет пачку по имени: [refusal]")
+
+/// Все сообщения в чат target из перехваченного GLOB.unit_test_chat_capture одной строкой.
+/proc/econ_test_chat_to(list/chat, target)
+	var/list/lines = list()
+	for(var/list/line as anything in chat)
+		if(line[1] == target)
+			lines += "[line[2]]"
+	return jointext(lines, " | ")
+
+/proc/econ_test_chat_count(list/chat, target)
+	. = 0
+	for(var/list/line as anything in chat)
+		if(line[1] == target)
+			.++
+
+/// Хранилище снабжения пишет в истории бюджета, кто внёс наличные, - по ID-карте, а не настоящим именем.
+/datum/unit_test/economy_vault_deposit_memo/Run()
+	var/mob/living/carbon/human/person = allocate(/mob/living/carbon/human)
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	card.registered_name = "Econ Vault Depositor"
+	person.equip_to_slot(card, ITEM_SLOT_ID)
+	var/obj/item/holochip/chip = allocate(/obj/item/holochip, null, 250)
+	person.put_in_active_hand(chip)
+	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	var/cargo_before = cargo.account_balance
+	var/obj/machinery/computer/bank_machine/vault = allocate(/obj/machinery/computer/bank_machine)
+	vault.attackby(chip, person)
+	var/delta = cargo.account_balance - cargo_before
+	var/datum/transaction/entry = cargo.transaction_history[length(cargo.transaction_history)]
+	if(delta)
+		cargo.debit(delta, ECON_ADMIN)
+	TEST_ASSERT_EQUAL(delta, 250, "Голочип зачислен в бюджет снабжения")
+	TEST_ASSERT(findtext(entry.purpose, "Econ Vault Depositor"), "История бюджета называет вкладчика по карте: [entry.purpose]")
+	TEST_ASSERT(!findtext(entry.purpose, person.real_name), "История бюджета не раскрывает настоящее имя: [entry.purpose]")
+
+/// Клик ID-картой по куче денег на полу вносит всё, что лежит на тайле, одной операцией: одна строка econ.log с числом предметов и одно сообщение.
+/datum/unit_test/economy_cash_pile_deposit/Run()
+	var/mob/living/carbon/human/person = econ_test_card_holder(src, "econ_test_pile", 0)
+	var/obj/item/card/id/card = person.get_idcard(TRUE)
+	var/datum/bank_account/account = card.registered_account
+	var/turf/floor = run_loc_floor_bottom_left
+	var/obj/item/holochip/chip = allocate(/obj/item/holochip, floor, 300)
+	var/obj/item/holochip/second_chip = allocate(/obj/item/holochip, floor, 200)
+	var/obj/item/stack/spacecash/c100/bills = allocate(/obj/item/stack/spacecash/c100, floor, 2)
+	var/log_start = econ_test_log_length()
+	GLOB.unit_test_chat_capture = list()
+	chip.attackby(card, person)
+	var/list/chat = GLOB.unit_test_chat_capture
+	GLOB.unit_test_chat_capture = null
+	TEST_ASSERT_EQUAL(account.account_balance, 700, "Внесена вся куча")
+	TEST_ASSERT(QDELETED(chip) && QDELETED(second_chip) && QDELETED(bills), "Куча исчезла")
+	var/list/deposits = list()
+	for(var/line in econ_test_log_since(log_start))
+		if(findtext(line, "-> econ_test_pile (cash_in"))
+			deposits += line
+	TEST_ASSERT_EQUAL(length(deposits), 1, "Одна строка econ.log на кучу: [jointext(deposits, " | ")]")
+	TEST_ASSERT(length(deposits) && findtext(deposits[1], "700 кр.") && findtext(deposits[1], "3 предм."), "Строка называет сумму и число предметов: [jointext(deposits, " | ")]")
+	TEST_ASSERT_EQUAL(econ_test_chat_count(chat, person), 1, "Одно сообщение на кучу: [econ_test_chat_to(chat, person)]")
+	TEST_ASSERT(findtext(econ_test_chat_to(chat, person), "700"), "Сообщение называет сумму: [econ_test_chat_to(chat, person)]")
+	var/obj/item/stack/spacecash/c20/more_bills = allocate(/obj/item/stack/spacecash/c20, floor, 5)
+	var/obj/item/holochip/more_chip = allocate(/obj/item/holochip, floor, 50)
+	more_bills.attackby(card, person)
+	TEST_ASSERT_EQUAL(account.account_balance, 850, "Клик по пачке тоже вносит всю кучу")
+	TEST_ASSERT(QDELETED(more_bills) && QDELETED(more_chip), "Вторая куча исчезла")
 
 /// Номер счёта уникален, по нему находится счёт, после qdel - не находится.
 /datum/unit_test/economy_account_registry/Run()
@@ -113,18 +208,37 @@
 	qdel(beta)
 	TEST_ASSERT_NULL(SSeconomy.find_account(number), "После qdel номер свободен")
 
-/// Снятие и внесение наличных идут через системный счёт и не создают денег.
+/datum/unit_test/economy_cash_account
+	var/saved_cash
+
+/datum/unit_test/economy_cash_account/Destroy()
+	if(!isnull(saved_cash))
+		econ_test_set_balance(SSeconomy.cash_account, saved_cash)
+	return ..()
+
+/// Снятие и внесение наличных идут через системный счёт; наличные сверх снятых (лут, кошельки) эмитируются как найденные, и оборот не уходит в минус.
 /datum/unit_test/economy_cash_account/Run()
-	var/datum/bank_account/alpha = new("econ_test_alpha")
+	var/datum/bank_account/cash = SSeconomy.cash_account
+	saved_cash = cash.account_balance
+	econ_test_set_balance(cash, 0)
+	var/datum/bank_account/alpha = allocate(/datum/bank_account, "econ_test_alpha")
 	alpha.credit(100, ECON_ADMIN)
-	var/cash_before = SSeconomy.cash_account.account_balance
-	TEST_ASSERT(SSeconomy.move(alpha, SSeconomy.cash_account, 40, ECON_CASH_OUT), "Снятие")
-	TEST_ASSERT(SSeconomy.move(SSeconomy.cash_account, alpha, 60, ECON_CASH_IN), "Внесение больше снятого допустимо")
-	var/cash_delta = SSeconomy.cash_account.account_balance - cash_before
-	var/alpha_balance = alpha.account_balance
-	qdel(alpha)
-	TEST_ASSERT_EQUAL(cash_delta, -20, "Системный счёт уходит в минус на разницу")
-	TEST_ASSERT_EQUAL(alpha_balance, 120, "Баланс владельца")
+	var/found_before = SSeconomy.ledger.minted_by_reason[ECON_FOUND_CASH] || 0
+	var/minted_before = SSeconomy.ledger.minted
+	var/money_before = SSeconomy.total_money()
+	var/list/totals_before = SSeconomy.state_totals()
+	TEST_ASSERT(SSeconomy.move(alpha, cash, 40, ECON_CASH_OUT), "Снятие")
+	TEST_ASSERT(SSeconomy.move(cash, alpha, 60, ECON_CASH_IN), "Внесение больше снятого допустимо")
+	TEST_ASSERT_EQUAL(cash.account_balance, 0, "Наличные в обороте не уходят в минус")
+	TEST_ASSERT_EQUAL(alpha.account_balance, 120, "Баланс владельца")
+	TEST_ASSERT_EQUAL((SSeconomy.ledger.minted_by_reason[ECON_FOUND_CASH] || 0) - found_before, 20, "Недостача эмитирована как найденные наличные")
+	TEST_ASSERT_EQUAL(SSeconomy.ledger.minted - minted_before, 20, "Эмиссия смены видит найденные наличные")
+	TEST_ASSERT_EQUAL(SSeconomy.total_money() - money_before, 20, "Деньги станции выросли на найденное, а не остались прежними")
+	var/list/totals = SSeconomy.state_totals()
+	TEST_ASSERT_EQUAL(totals["money"] - totals_before["money"], 20, "Подсчёт бедности видит найденное")
+	TEST_ASSERT(SSeconomy.move(cash, null, 30, ECON_BLACKMARKET), "Наличные сверх оборота уходят в сток")
+	TEST_ASSERT_EQUAL(cash.account_balance, 0, "Сток наличными тоже не уводит оборот в минус")
+	TEST_ASSERT_EQUAL((SSeconomy.ledger.minted_by_reason[ECON_FOUND_CASH] || 0) - found_before, 50, "Сток найденных наличных эмитирован перед сжиганием")
 
 /datum/unit_test/economy_vv_balance_edit
 	var/list/moves = list()

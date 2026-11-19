@@ -5,6 +5,8 @@
 	var/saved_tax_rate
 	var/saved_trace_depth
 	var/list/saved_crypto_paid
+	var/saved_cash_deposit_threshold
+	var/datum/economy_ledger/saved_ledger
 
 /datum/unit_test/economy_audit/New()
 	. = ..()
@@ -19,8 +21,13 @@
 	saved_tax_rate = SSeconomy.tax_rate
 	SSeconomy.tax_rate = 0
 	saved_trace_depth = SSeconomy.settings.audit_trace_depth
+	saved_cash_deposit_threshold = SSeconomy.settings.audit_cash_deposit_threshold
 
 /datum/unit_test/economy_audit/Destroy()
+	if(saved_ledger)
+		var/datum/economy_ledger/test_ledger = SSeconomy.ledger
+		SSeconomy.ledger = saved_ledger
+		qdel(test_ledger)
 	QDEL_LIST(SSeconomy.audit_flags)
 	SSeconomy.audit_flags = saved_flags
 	for(var/id in saved_balances)
@@ -29,6 +36,7 @@
 	SSeconomy.tax_rate = saved_tax_rate
 	SSeconomy.settings.audit_trace_depth = saved_trace_depth
 	SSeconomy.crypto_paid = saved_crypto_paid
+	SSeconomy.settings.audit_cash_deposit_threshold = saved_cash_deposit_threshold
 	return ..()
 
 /datum/unit_test/economy_audit/proc/make_account(holder, balance = 0)
@@ -63,6 +71,11 @@
 	for(var/datum/econ_audit_flag/flag as anything in SSeconomy.flags_for(account))
 		if(flag.kind == kind)
 			. += flag
+
+/// Свой журнал смены на время теста: итог смены пишется с него, живой журнал не помечается записанным. Эмиссию и сток (пополнение и закрытие счетов) делать вне него, иначе разойдётся сверка журнала.
+/datum/unit_test/economy_audit/proc/use_test_ledger()
+	saved_ledger = SSeconomy.ledger
+	SSeconomy.ledger = new /datum/economy_ledger
 
 /datum/unit_test/economy_audit/proc/case_fee(amount)
 	return round(amount * SSeconomy.settings.audit_case_fee_percent / 100)
@@ -138,9 +151,88 @@
 	SSeconomy.move(second_victim, thief, 100, ECON_SKIM)
 	SSeconomy.move(second_victim, thief, 50, ECON_SKIM)
 	var/datum/econ_audit_flag/open_flag = flags_of_kind(second_victim, AUDIT_FLAG_UNKNOWN_DEVICE)[1]
-	SSeconomy.flush_audit_logs()
+	use_test_ledger()
+	TEST_ASSERT(econ_log_round_summary(), "Итог смены записан")
 	lines = econ_test_audit_lines(econ_test_log_since(log_start), open_flag)
 	TEST_ASSERT_EQUAL(length(lines), 2, "Конец смены дописывает итог открытых дел: [jointext(lines, " | ")]")
+
+/// Как note_anon_cashout: место дописывается в текст дела уже после add_audit_flag.
+/datum/unit_test/economy_audit/proc/note_cashout(datum/bank_account/account, place)
+	var/datum/econ_audit_flag/flag = SSeconomy.add_audit_flag(account, AUDIT_FLAG_ANON_CASHOUT, "Снятие наличных с анонимного счёта: [place]", 100, null)
+	if(!findtext(flag.text, place))
+		flag.text += ", [place]"
+	return flag
+
+/// Детали, которые вызыватель дописывает в дело после add_audit_flag (место снятия, тикер, зона майнера), попадают в итог повторов, даже если итог записан раньше них.
+/datum/unit_test/economy_audit/repeat_log_details/Run()
+	var/log_start = econ_test_log_length()
+	var/datum/bank_account/stash = make_account("Econ Audit Detail Stash", 5000)
+	var/datum/econ_audit_flag/flag = note_cashout(stash, "Бар")
+	note_cashout(stash, "Мостик")
+	flag.next_log_time = world.time
+	note_cashout(stash, "Мостик")
+	var/list/lines = econ_test_audit_lines(econ_test_log_since(log_start), flag)
+	TEST_ASSERT_EQUAL(length(lines), 2, "Открытие и итог повторов: [jointext(lines, " | ")]")
+	TEST_ASSERT(findtext(lines[2], "ещё операций: 2 на 200 кр.") && findtext(lines[2], "Мостик"), "Итог называет новое место: [lines[2]]")
+	flag.next_log_time = world.time
+	note_cashout(stash, "Кухня")
+	SSeconomy.close_audit_flag(flag)
+	lines = econ_test_audit_lines(econ_test_log_since(log_start), flag)
+	TEST_ASSERT(length(lines) >= 4, "Итог на интервале и при закрытии: [jointext(lines, " | ")]")
+	TEST_ASSERT(findtext(lines[length(lines)], "Кухня"), "Место, дописанное после итога, попало в строку закрытия: [jointext(lines, " | ")]")
+	for(var/i in 3 to length(lines))
+		TEST_ASSERT(!findtext(lines[i], "Мостик"), "Место не повторяется в следующих итогах: [lines[i]]")
+
+/// Итог смены пишет строку аудита: сколько дел открыто, закрыто возвратом и без, сколько осталось открытыми и на какую сумму.
+/datum/unit_test/economy_audit/round_summary_line/Run()
+	var/mob/living/carbon/human/hos = make_person("Econ Audit Summary HoS", list(ACCESS_HOS))
+	var/datum/bank_account/victim = make_account("Econ Audit Summary Victim", 2000000)
+	var/datum/bank_account/thief = make_account("Econ Audit Summary Thief")
+	var/datum/bank_account/friend = make_account("Econ Audit Summary Friend")
+	var/datum/bank_account/mule = make_account("Econ Audit Summary Mule")
+	use_test_ledger()
+	var/log_start = econ_test_log_length()
+	SSeconomy.move(victim, thief, 1000, ECON_SKIM)
+	SSeconomy.move(victim, friend, 400, ECON_SKIM)
+	SSeconomy.move(victim, mule, 1500000, ECON_SKIM)
+	var/datum/econ_audit_flag/refunded_flag = SSeconomy.open_audit_flag(AUDIT_FLAG_UNKNOWN_DEVICE, victim, thief)
+	var/datum/econ_audit_flag/dismissed_flag = SSeconomy.open_audit_flag(AUDIT_FLAG_UNKNOWN_DEVICE, victim, friend)
+	TEST_ASSERT(refunded_flag && dismissed_flag, "Дела по списаниям открыты")
+	TEST_ASSERT(SSeconomy.freeze_account(thief, hos, "кража"), "Заморожен")
+	TEST_ASSERT(SSeconomy.refund(thief, victim, 1000, hos, refunded_flag.uid), "Возврат")
+	TEST_ASSERT(SSeconomy.close_case(dismissed_flag.uid, hos, "долг"), "Закрыто без возврата")
+	TEST_ASSERT(econ_log_round_summary(), "Итог смены записан")
+	var/list/lines = econ_test_log_since(log_start)
+	var/text = jointext(lines, "\n")
+	TEST_ASSERT(findtext(text, "Аудит за смену: открыто дел 3, закрыто возвратом 1 (возвращено [1000 - case_fee(1000)] кр.), закрыто без возврата 1, осталось открытыми 1 на 1500000 кр."), "Строка аудита в итоге смены: [text]")
+	TEST_ASSERT(findtext(text, "1500000 кр. со счёта Econ Audit Summary Victim"), "Сумма дела от миллиона цифрами: [text]")
+
+/// Крупное внесение наличных на личный счёт открывает нейтральное дело на счёт вкладчика; вернуть по нему некому, закрывается без возврата и не самим вкладчиком.
+/datum/unit_test/economy_audit/cash_deposit/Run()
+	SSeconomy.settings.audit_cash_deposit_threshold = 1000
+	var/mob/living/carbon/human/depositor = make_person("Econ Audit Depositor", list(ACCESS_HOS))
+	var/obj/item/card/id/card = depositor.get_idcard(TRUE)
+	var/datum/bank_account/account = card.registered_account
+	card.attackby(allocate(/obj/item/holochip, run_loc_floor_bottom_left, 999), depositor)
+	TEST_ASSERT_EQUAL(length(flags_of_kind(account, AUDIT_FLAG_CASH_DEPOSIT)), 0, "Ниже порога дела нет")
+	card.attackby(allocate(/obj/item/holochip, run_loc_floor_bottom_left, 1000), depositor)
+	var/list/flags = flags_of_kind(account, AUDIT_FLAG_CASH_DEPOSIT)
+	TEST_ASSERT_EQUAL(length(flags), 1, "Внесение на пороге открыло дело")
+	TEST_ASSERT_EQUAL(account.account_balance, 1999, "Наличные зачислены")
+	var/datum/econ_audit_flag/flag = flags[1]
+	TEST_ASSERT_EQUAL(flag.account_number, account.account_id, "Дело на счёт вкладчика")
+	TEST_ASSERT_NULL(flag.counterparty_number, "Получателя у дела нет")
+	TEST_ASSERT_EQUAL(flag.amount, 1000, "Сумма дела - внесённое")
+	TEST_ASSERT_EQUAL(flag.text, "Крупное внесение наличных", "Текст нейтральный")
+	var/mob/living/carbon/human/hos = make_person("Econ Audit Deposit HoS", list(ACCESS_HOS))
+	var/problem = SSeconomy.refund_problem(null, account, 100, hos, flag.uid)
+	TEST_ASSERT(findtext(problem, "наличными"), "Возврат по делу о наличных запрещён с понятной причиной: [problem]")
+	TEST_ASSERT(!SSeconomy.close_case(flag.uid, depositor, "моё"), "Вкладчик своё дело не закрывает")
+	TEST_ASSERT(SSeconomy.close_case(flag.uid, hos, "выигрыш в карты"), "Аудитор закрывает без возврата")
+	TEST_ASSERT(flag.closed, "Дело закрыто")
+	SSeconomy.settings.audit_cash_deposit_threshold = 0
+	card.attackby(allocate(/obj/item/holochip, run_loc_floor_bottom_left, 5000), depositor)
+	TEST_ASSERT_EQUAL(length(flags_of_kind(account, AUDIT_FLAG_CASH_DEPOSIT)), 1, "Порог 0 дел не открывает")
 
 /// Дробление: серия личных переводов одному получателю за окно; другим получателям не считается.
 /datum/unit_test/economy_audit/structuring/Run()

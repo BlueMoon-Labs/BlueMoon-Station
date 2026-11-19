@@ -31,6 +31,7 @@ type AuditRules = {
   trace_minutes: number;
   trace_depth: number;
   fee_percent: number;
+  cash_deposit_threshold: number;
   owed_cap: number;
   reason_max: number;
   search_max: number;
@@ -43,7 +44,8 @@ type CaseKind =
   | 'unknown_device'
   | 'insider'
   | 'anon_cashout'
-  | 'cryptominer';
+  | 'cryptominer'
+  | 'cash_deposit';
 
 export type PooledRecipient = {
   number: number;
@@ -139,6 +141,7 @@ const CASE_KIND: Record<CaseKind, string> = {
   insider: 'Инсайд на бирже',
   anon_cashout: 'Наличные с анонимного счёта',
   cryptominer: 'Криптомайнер на личный счёт',
+  cash_deposit: 'Крупное внесение наличных',
 };
 
 const ACCOUNT_KIND: Record<AccountKind, string> = {
@@ -337,7 +340,7 @@ const CaseDetails = (props: CaseDetailsProps) => {
         </LabeledList.Item>
         <LabeledList.Item label="Открыто">{entry.time}</LabeledList.Item>
         <LabeledList.Item
-          label="Откуда"
+          label={entry.kind === 'cash_deposit' ? 'Чей счёт' : 'Откуда'}
           buttons={
             <Button icon="search" onClick={() => showAccount(entry.source)}>
               Счёт
@@ -385,7 +388,9 @@ const CaseDetails = (props: CaseDetailsProps) => {
             />
           ) : entry.pooled ? null : (
             <Box color="label" mt={1}>
-              У дела нет счёта-получателя, вернуть деньги нельзя: деньги ушли наличными. Дело закрывается с причиной.
+              {entry.kind === 'cash_deposit'
+                ? 'Деньги пришли наличными, возвращать их некому. Дело закрывается с причиной.'
+                : 'У дела нет счёта-получателя, вернуть деньги нельзя: деньги ушли наличными. Дело закрывается с причиной.'}
             </Box>
           )}
           <CloseCaseForm key={`close-${entry.uid}`} entry={entry} rules={rules} />
@@ -764,6 +769,12 @@ const RulesTab = (props: { rules: AuditRules }) => {
           Криптомайнер платит на личный счёт, а не в бюджет снабжения, с местом майнера. Вернуть деньги можно в бюджет
           снабжения.
         </LabeledList.Item>
+        {rules.cash_deposit_threshold > 0 && (
+          <LabeledList.Item label={CASE_KIND.cash_deposit}>
+            Внесение на личный счёт <Credits amount={rules.cash_deposit_threshold} /> и больше наличными за раз. Само по
+            себе не нарушение: так видно, откуда у человека крупная сумма. Вернуть некому, дело закрывается с причиной.
+          </LabeledList.Item>
+        )}
       </LabeledList>
       <Box color="label" mt={1}>
         Повторы по той же паре счетов добавляются в открытое дело, если с последнего движения по нему прошло меньше{' '}

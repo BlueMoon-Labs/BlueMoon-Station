@@ -112,6 +112,7 @@
 	var/list/rules = data["rules"]
 	TEST_ASSERT_EQUAL(rules["siphon_threshold"], SSeconomy.settings.audit_bonus_threshold, "Порог оттока из настроек")
 	TEST_ASSERT_EQUAL(rules["fee_percent"], SSeconomy.settings.audit_case_fee_percent, "Сбор СБ из настроек")
+	TEST_ASSERT_EQUAL(rules["cash_deposit_threshold"], SSeconomy.settings.audit_cash_deposit_threshold, "Порог крупного внесения наличных из настроек")
 
 /// Поиск по части имени и по номеру, след до получателя, заморозка с причиной и разморозка - через действия окна.
 /datum/unit_test/economy_ui_audit/search_trace_freeze/Run()

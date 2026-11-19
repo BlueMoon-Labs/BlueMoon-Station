@@ -28,6 +28,8 @@
 	var/unlogged_count = 0
 	var/unlogged_amount = 0
 	var/next_log_time = 0
+	/// text на момент последней строки дела в econ.log: дописанное вызывателями после неё идёт в следующий итог
+	var/logged_text
 
 /// Ключи для flag.actors: ckey и REF разума.
 /proc/econ_audit_identities(mob/actor)
@@ -155,6 +157,10 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 		return
 	note_anon_cashout(source, amount, reason, actor)
 	if(!personal_target)
+		return
+	if(reason == ECON_CASH_IN)
+		if(settings.audit_cash_deposit_threshold && amount >= settings.audit_cash_deposit_threshold)
+			add_audit_flag(target, AUDIT_FLAG_CASH_DEPOSIT, "Крупное внесение наличных", amount, null, actor)
 		return
 	if(reason == ECON_SKIM && source.add_to_accounts)
 		add_audit_flag(source, AUDIT_FLAG_UNKNOWN_DEVICE, "Списание с неопознанного устройства", amount, target, actor)
@@ -284,8 +290,10 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 	flag.amount += amount
 	flag.last_seen = world.time
 	if(opened)
+		ledger.audit_opened++
 		flag.next_log_time = world.time + AUDIT_LOG_REPEAT_INTERVAL
-		log_econ("Аудит, дело [flag.uid]: [text], [amount] кр. со счёта [account.account_holder] №[account.account_id][counterparty ? " на [counterparty.account_holder] №[counterparty.account_id]" : ""]")
+		flag.logged_text = flag.text
+		log_econ("Аудит, дело [flag.uid]: [text], [num2text(amount, ECON_TEXT_DIGITS)] кр. со счёта [account.account_holder] №[account.account_id][counterparty ? " на [counterparty.account_holder] №[counterparty.account_id]" : ""]")
 		return flag
 	flag.unlogged_count++
 	flag.unlogged_amount += amount
@@ -293,14 +301,32 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 		log_audit_repeats(flag)
 	return flag
 
-/// Итог операций дела с прошлой строки в econ.log.
+/// Итог операций дела с прошлой строки в econ.log, с тем, что вызыватели дописали в текст дела после неё.
 /datum/controller/subsystem/economy/proc/log_audit_repeats(datum/econ_audit_flag/flag)
 	flag.next_log_time = world.time + AUDIT_LOG_REPEAT_INTERVAL
-	if(!flag.unlogged_count)
+	var/added = econ_audit_text_growth(flag.logged_text, flag.text)
+	if(!flag.unlogged_count && !added)
 		return
-	log_econ("Аудит, дело [flag.uid]: ещё операций: [flag.unlogged_count] на [flag.unlogged_amount] кр., всего по делу [flag.amount] кр.")
+	var/list/parts = list()
+	if(flag.unlogged_count)
+		parts += "ещё операций: [flag.unlogged_count] на [num2text(flag.unlogged_amount, ECON_TEXT_DIGITS)] кр., всего по делу [num2text(flag.amount, ECON_TEXT_DIGITS)] кр."
+	if(added)
+		parts += "добавлено к делу: [added]"
+	log_econ("Аудит, дело [flag.uid]: [jointext(parts, "; ")]")
 	flag.unlogged_count = 0
 	flag.unlogged_amount = 0
+	flag.logged_text = flag.text
+
+/// Что дописано в текст дела после old_text, без ведущего разделителя; весь new_text, если начало переписано.
+/proc/econ_audit_text_growth(old_text, new_text)
+	if(old_text == new_text)
+		return ""
+	if(!old_text || findtext(new_text, old_text) != 1)
+		return new_text
+	var/added = copytext(new_text, length(old_text) + 1)
+	if(copytext(added, 1, 3) in list(", ", "; "))
+		added = copytext(added, 3)
+	return added
 
 /datum/controller/subsystem/economy/proc/flush_audit_logs()
 	for(var/datum/econ_audit_flag/flag as anything in audit_flags)
@@ -309,6 +335,11 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 /datum/controller/subsystem/economy/proc/close_audit_flag(datum/econ_audit_flag/flag)
 	log_audit_repeats(flag)
 	flag.closed = TRUE
+	if(flag.refunded)
+		ledger.audit_closed_refunded++
+		ledger.audit_refunded += flag.refunded
+	else
+		ledger.audit_closed_dismissed++
 	var/datum/bank_account/source = find_account(flag.account_number)
 	var/key = flag.pooled ? AUDIT_WATCH_UNOWNED : "[flag.counterparty_number]"
 	if(source?.audit_watch)
@@ -463,6 +494,8 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 		return "Дело не найдено."
 	if(flag.closed)
 		return "Дело уже закрыто, повторный возврат запрещён."
+	if(flag.kind == AUDIT_FLAG_CASH_DEPOSIT)
+		return "Деньги по этому делу пришли наличными, возвращать их некому. Дело закрывается без возврата, с причиной."
 	if(!from_account || !to_account || QDELETED(from_account) || QDELETED(to_account) || !flag.involves(from_account.account_id) || from_account.account_id == flag.account_number || to_account.account_id != flag.account_number)
 		return "Вернуть можно только со счёта получателя по делу на счёт, с которого ушли деньги."
 	var/limit = flag.refundable_from(from_account.account_id)
@@ -507,7 +540,7 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 	to_account.bank_card_talk("Возврат по делу аудита №[flag.uid]: +[returned] кр.", TRUE)
 	var/outcome = flag.closed ? "Дело №[flag.uid] закрыто." : "Дело №[flag.uid] открыто, [flag.remaining_text(from_account.account_id)]"
 	to_chat(user, span_notice("Возвращено [returned] кр., сбор отдела безопасности [fee] кр. ([settings.audit_case_fee_percent]% с получателя). [outcome] NT за дела не доплачивает."))
-	log_econ("[key_name(user)] вернул [returned] кр. по делу [flag.uid] со счёта [from_account.account_holder] №[from_account.account_id] на [to_account.account_holder] №[to_account.account_id], сбор СБ [fee] кр.")
+	log_econ("[key_name(user)] вернул [num2text(returned, ECON_TEXT_DIGITS)] кр. по делу [flag.uid] со счёта [from_account.account_holder] №[from_account.account_id] на [to_account.account_holder] №[to_account.account_id], сбор СБ [num2text(fee, ECON_TEXT_DIGITS)] кр.")
 	return list("returned" = returned, "fee" = fee)
 
 /// Почему нельзя закрыть дело без возврата; null - можно.

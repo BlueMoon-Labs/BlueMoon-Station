@@ -305,35 +305,35 @@
 	else if(istype(W, /obj/item/storage/bag/money))
 		var/obj/item/storage/bag/money/money_bag = W
 		var/list/money_contained = money_bag.contents
-		var/money_added = mass_insert_money(money_contained, user)
+		var/money_added = mass_insert_money(money_contained, user, "содержимое мешка")
 		if (money_added)
-			to_chat(user, span_notice("Вы приставляете содержимое к карте! Оно исчезает в облаке блюспейса, добавляя [money_added] \
-			[ru_plural(money_added, "кредит", "кредита", "кредитов")] на связанный счёт."))
+			to_chat(user, span_notice("Вы приставляете содержимое к карте! Оно исчезает в облаке блюспейса, добавляя [num2text(money_added, ECON_TEXT_DIGITS)] [ru_plural(money_added, "кредит", "кредита", "кредитов")] на связанный счёт."))
 	else
 		return ..()
 
 /obj/item/card/id/proc/insert_money(obj/item/I, mob/user)
 	if(!bank_support || !registered_account) // BLUEMOON EDIT
-		to_chat(user, span_warning("К [src] нет привязанного аккаунта для зачисления [I]!"))
+		to_chat(user, span_warning("К [src] нет привязанного аккаунта для зачисления [I.name]!"))
 		return
 	var/cash_money = I.get_item_credit_value()
 	if(!cash_money)
-		to_chat(user, span_warning("[I] не кажется стоящим что-либо!"))
+		to_chat(user, span_warning("[I.name] не кажется стоящим что-либо!"))
 		return
 	if(!SSeconomy.move(SSeconomy.cash_account, registered_account, cash_money, ECON_CASH_IN, user, "Внесение: [I.name]"))
-		var/refusal = econ_cash_refusal_text(I, cash_money)
+		var/refusal = econ_cash_refusal_text(I.name, cash_money)
 		to_chat(user, span_warning(refusal))
 		return
+	var/money_text = "[num2text(cash_money, ECON_TEXT_DIGITS)] [ru_plural(cash_money, "кредит", "кредита", "кредитов")]"
 	if(istype(I, /obj/item/stack/spacecash) || istype(I, /obj/item/coin))
-		to_chat(user, span_notice("Вы приставляете [I] в [src]. Они исчезают в облаке блюспейса, добавляя [cash_money] \
-		[ru_plural(cash_money, "кредит", "кредита", "кредитов")] на связанный счёт."))
+		to_chat(user, span_notice("Вы приставляете [I.name] к [src]. Они исчезают в облаке блюспейса, добавляя [money_text] на связанный счёт."))
 	else
-		to_chat(user, span_notice("Вы вставляете [I] в [src], добавляя [cash_money] [ru_plural(cash_money, "кредит", "кредита", "кредитов")] на связанный счёт."))
+		to_chat(user, span_notice("Вы вставляете [I.name] в [src], добавляя [money_text] на связанный счёт."))
 	var/account_current_balance = registered_account.account_balance
-	to_chat(user, span_notice("Привязанный аккаунт докладывает о балансе в [account_current_balance] [ru_plural(account_current_balance, "кредит", "кредита", "кредитов")]."))
+	to_chat(user, span_notice("Привязанный аккаунт докладывает о балансе в [num2text(account_current_balance, ECON_TEXT_DIGITS)] [ru_plural(account_current_balance, "кредит", "кредита", "кредитов")]."))
 	qdel(I)
 
-/obj/item/card/id/proc/mass_insert_money(list/money, mob/user)
+/// Зачисляет все деньги из money одной операцией: одна строка econ.log с числом предметов. what - как назвать их в отказе.
+/obj/item/card/id/proc/mass_insert_money(list/money, mob/user, what = "эти деньги")
 	if(!bank_support || !registered_account)
 		to_chat(user, span_warning("У [src] нет привязанного аккаунта для зачисления!"))
 		return FALSE
@@ -342,21 +342,43 @@
 		return FALSE
 
 	var/total = 0
+	var/count = 0
 
 	for (var/obj/item/physical_money in money)
 		total += physical_money.get_item_credit_value()
+		count++
 		CHECK_TICK
 
 	if(!total)
 		return FALSE
-	if(!SSeconomy.move(SSeconomy.cash_account, registered_account, total, ECON_CASH_IN, user, "Внесение наличных"))
-		var/refusal = econ_cash_refusal_text("содержимое мешка", total)
+	if(!SSeconomy.move(SSeconomy.cash_account, registered_account, total, ECON_CASH_IN, user, "Внесение наличных", "[count] предм."))
+		var/refusal = econ_cash_refusal_text(what, total)
 		to_chat(user, span_warning(refusal))
 		return FALSE
 
 	QDEL_LIST(money)
 
 	return total
+
+/// Клик картой по деньгам на полу: всё, что лежит на том же тайле, вносится одной операцией и одним сообщением.
+/obj/item/card/id/proc/insert_money_pile(obj/item/clicked, mob/user)
+	if(!registered_account)
+		to_chat(user, span_warning("К [src] не привязан счёт для зачисления!"))
+		return
+	var/atom/location = clicked.loc
+	if(!isturf(location))
+		attackby(clicked, user)
+		return
+	var/list/pile = list()
+	for(var/obj/item/money in location)
+		if((istype(money, /obj/item/holochip) || istype(money, /obj/item/stack/spacecash) || istype(money, /obj/item/coin)) && money.get_item_credit_value())
+			pile += money
+	if(length(pile) < 2)
+		attackby(clicked, user)
+		return
+	var/added = mass_insert_money(pile, user, "эту кучу денег")
+	if(added)
+		to_chat(user, span_notice("Вы проводите [src] над кучей денег: [length(pile)] предм. исчезают в облаке блюспейса, на счёт зачислено [num2text(added, ECON_TEXT_DIGITS)] [ru_plural(added, "кредит", "кредита", "кредитов")]. Баланс: [num2text(registered_account.account_balance, ECON_TEXT_DIGITS)] кр."))
 
 /obj/item/card/id/proc/alt_click_can_use_id(mob/living/user)
 	if(!isliving(user))

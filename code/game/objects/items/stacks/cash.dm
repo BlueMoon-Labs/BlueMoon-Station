@@ -37,18 +37,8 @@
 	. = ..()
 	if(istype(W, /obj/item/card/id))
 		var/obj/item/card/id/ID = W
-		if(!ID.registered_account)
-			to_chat(user, "<span class='warning'>[ID] doesn't have a linked account to deposit into!</span>")
-			return
-		var/atom/location = src.loc
-		if(!location)
-			return
-		for(var/obj/item/holochip/money in location.contents)
-			ID.attackby(money, user)
-		for(var/obj/item/stack/spacecash/money in location.contents)
-			ID.attackby(money, user)
-		for(var/obj/item/coin/money in location.contents)
-			ID.attackby(money, user)
+		if(loc)
+			ID.insert_money_pile(src, user)
 
 /obj/item/stack/spacecash/c1
 	icon_state = "spacecash"
