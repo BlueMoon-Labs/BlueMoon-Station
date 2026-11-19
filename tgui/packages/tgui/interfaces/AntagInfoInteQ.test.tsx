@@ -8,7 +8,7 @@ import { AntagInfoInteQ } from './AntagInfoInteQ';
 const hoard = {
   count: 1,
   name: 'hoard',
-  explanation: 'Украдите 12000 кр. с чужих личных счетов и держите к концу смены не меньше 12000 кр. у себя. Сейчас: украдено 0 из 12000 кр., у себя 0 кр..',
+  explanation: 'Украдите 12000 кр. с чужих личных счетов и держите к концу смены не меньше 12000 кр. у себя. Сейчас: украдено 0 из 12000 кр., у себя 0 кр.',
   hint: 'Кража - перевод или снятие наличных, которое вы сами сделали с чужого счёта.',
   ref: '[0x21000abc]',
   swappable: 1,
@@ -56,7 +56,7 @@ test('«Заменить» спрашивает подтверждение и ш
   expect(screen.getAllByText('Заменить')).toHaveLength(1);
   fireEvent.click(screen.getByText('Заменить'));
   expect(sent(topic, 'swap_economy_objective')).toEqual([]);
-  fireEvent.click(screen.getByText('Заменить на обычное?'));
+  fireEvent.click(screen.getByText('Новое случайное, назад нельзя. Точно?'));
   expect(sent(topic, 'swap_economy_objective')).toEqual([{ ref: hoard.ref }]);
 });
 
@@ -65,4 +65,14 @@ test('без доступной замены кнопки нет, без эко�
   expect(screen.queryByText('Заменить')).toBeNull();
   expect(screen.queryByText(/Экономические задания/)).toBeNull();
   expect(screen.getByText(/Как выполнить/)).toBeTruthy();
+});
+
+test('после вызова шаттла кнопка видна, но не работает и объясняет почему', () => {
+  const reason = 'Эвакуационный шаттл уже вызван: заменить задание нельзя.';
+  const topic = setup({ objectives: [{ ...hoard, swappable: 0, swap_locked: reason }, escape] });
+  const button = screen.getByText('Заменить').closest('.Button');
+  expect(button?.className).toMatch(/Button--disabled/);
+  fireEvent.click(screen.getByText('Заменить'));
+  expect(screen.queryByText('Новое случайное, назад нельзя. Точно?')).toBeNull();
+  expect(sent(topic, 'swap_economy_objective')).toEqual([]);
 });

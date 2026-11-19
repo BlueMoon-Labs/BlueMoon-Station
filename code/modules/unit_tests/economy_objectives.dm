@@ -382,6 +382,7 @@
 	var/mob/living/carbon/human/head_body = head.current
 	head_body.account_id = head_account.account_id
 	world_state.set_crew(list(traitor.mind, head))
+	traitor.mind.assigned_role = "Cargo Technician"
 	var/list/light_types = list(/datum/objective/economy/hoard, /datum/objective/economy/stock_profit)
 	SSeconomy.settings.traitor_econ_objective_chance = 100
 	GLOB.round_type = ROUNDTYPE_DYNAMIC_LIGHT
@@ -460,6 +461,9 @@
 	antag.add_objective(hoard)
 	antag.add_objective(escape)
 	TEST_ASSERT(findtext(antag.economy_objectives_note(), "«Заменить»"), "Агент не узнаёт о замене: [antag.economy_objectives_note()]")
+	TEST_ASSERT(!findtext(antag.economy_objectives_note(), "растрат"), "В Лайте агенту обещают растрату: [antag.economy_objectives_note()]")
+	var/obj/item/anon_account_card/tool = hoard.give_tool()
+	TEST_ASSERT(istype(tool), "К краже не выдана анонимная карта")
 	var/list/entries = antag.get_objectives()
 	TEST_ASSERT(entries[1]["swappable"] && length(entries[1]["hint"]), "Окно не даёт экономическому заданию замену и подсказку")
 	TEST_ASSERT(!entries[2]["swappable"], "Окно предлагает заменить побег")
@@ -485,9 +489,19 @@
 	econ_ui_press(traitor, antag, "AntagInfoInteQ", "swap_economy_objective", list("ref" = hoard_ref))
 	TEST_ASSERT(antag.objectives[1] == hoard && !antag.economy_swap_used, "Мёртвый агент заменил задание")
 	traitor.revive(TRUE, TRUE)
+	var/obj/docking_port/mobile/emergency/shuttle = SSshuttle.emergency
+	TEST_ASSERT_NOTNULL(shuttle, "Нет эвакуационного шаттла")
+	var/saved_mode = shuttle.mode
+	shuttle.mode = SHUTTLE_CALL
+	econ_ui_press(traitor, antag, "AntagInfoInteQ", "swap_economy_objective", list("ref" = hoard_ref))
+	var/list/locked = antag.get_objectives()
+	shuttle.mode = saved_mode
+	TEST_ASSERT(antag.objectives[1] == hoard && !antag.economy_swap_used, "Задание заменено после вызова шаттла")
+	TEST_ASSERT(!locked[1]["swappable"] && locked[1]["swap_locked"] == ECON_OBJECTIVE_SWAP_EVAC_REFUSAL, "Окно не объясняет, почему замены нет: [locked[1]["swap_locked"]]")
 
 	econ_ui_press(traitor, antag, "AntagInfoInteQ", "swap_economy_objective", list("ref" = hoard_ref))
 	TEST_ASSERT(QDELETED(hoard), "Экономическое задание не снято")
+	TEST_ASSERT(QDELETED(tool), "Неиспользованная карта осталась после замены задания")
 	TEST_ASSERT(length(antag.objectives) == 2 && antag.objectives[2] == escape, "Замена сдвинула задания: [length(antag.objectives)]")
 	var/datum/objective/replacement = antag.objectives[1]
 	TEST_ASSERT(istype(replacement) && !istype(replacement, /datum/objective/economy), "Заменено на [replacement?.type]")
@@ -502,6 +516,174 @@
 	TEST_ASSERT(antag.objectives[3] == second, "Вторая замена прошла")
 	TEST_ASSERT(!human_class.try_forge_economy_objective(antag), "После замены выдано новое экономическое задание")
 	QDEL_LIST(antag.objectives)
+
+/// Вольная цель без проверки в итогах смены печатается без вердикта и не делает агента проигравшим.
+/datum/unit_test/economy_objectives/roundend_flavor/Run()
+	var/mob/living/carbon/human/traitor = econ_objective_traitor("econtestflavor")
+	econ_test_traitor(traitor)
+	var/datum/antagonist/traitor/antag = traitor.mind.has_antag_datum(/datum/antagonist/traitor)
+	var/datum/objective/flavor/traitor/flavor = new
+	allocated += flavor
+	flavor.owner = traitor.mind
+	flavor.explanation_text = "Тестовая вольная цель."
+	var/datum/objective/economy/hoard/done = econ_objective_new(/datum/objective/economy/hoard, traitor.mind)
+	done.target_amount = 0
+	antag.objectives += flavor
+	antag.objectives += done
+	var/report = antag.roundend_report()
+	TEST_ASSERT(findtext(report, "Тестовая вольная цель."), "Вольной цели нет в итогах: [report]")
+	TEST_ASSERT(!findtext(report, "Fail."), "Вольная цель записана в провал: [report]")
+	TEST_ASSERT(findtext(report, "was successful"), "Агент с выполненной целью и вольной проиграл: [report]")
+	var/printed = printobjectives(list(flavor, done))
+	TEST_ASSERT(!findtext(printed, "Провал"), "Общий итог пишет вольной цели провал: [printed]")
+	antag.objectives.Cut()
+
+/// Админ выбирает экономические цели в панели; цель без подходящей жертвы не выдаётся, повторная правка не даёт второй инструмент.
+/datum/unit_test/economy_objectives/admin_pick/Run()
+	var/datum/antag_opt_in_test_world/world_state = allocate(/datum/antag_opt_in_test_world)
+	var/mob/living/carbon/human/traitor = econ_objective_traitor("econtestadminpick")
+	var/mob/living/carbon/human/admin = allocate(/mob/living/carbon/human)
+	world_state.set_crew(list(traitor.mind))
+	populate_objective_choices()
+	var/list/offered = list()
+	for(var/choice in GLOB.objective_choices)
+		offered += GLOB.objective_choices[choice]
+	for(var/objective_type in subtypesof(/datum/objective/economy))
+		TEST_ASSERT(objective_type in offered, "Админ не может выдать [objective_type]")
+
+	var/datum/objective/economy/drain_head/drain = econ_objective_new(/datum/objective/economy/drain_head, traitor.mind)
+	drain.admin_edit(admin)
+	TEST_ASSERT(QDELETED(drain), "Выкачка без главы выдана")
+	var/datum/objective/economy/hoard/hoard = econ_objective_new(/datum/objective/economy/hoard, traitor.mind)
+	hoard.admin_edit(admin)
+	TEST_ASSERT(!QDELETED(hoard) && hoard.target_amount > 0, "Кража из панели не настроена")
+	hoard.admin_edit(admin)
+	var/cards = 0
+	for(var/obj/item/anon_account_card/card in traitor.GetAllContents())
+		cards++
+	TEST_ASSERT_EQUAL(cards, 1, "Правка цели админом выдала инструмент заново")
+	qdel(hoard)
+
+/// Инструмент к заданию: один на задание, пропадает с заданием, пока им не пользовались и никому не отдали.
+/datum/unit_test/economy_objectives/tools/Run()
+	var/mob/living/carbon/human/traitor = econ_objective_traitor("econtesttools")
+	var/mob/living/carbon/human/stranger = allocate(/mob/living/carbon/human)
+	var/datum/objective/economy/hoard/hoard = econ_objective_new(/datum/objective/economy/hoard, traitor.mind)
+	var/obj/item/anon_account_card/card = hoard.give_tool()
+	TEST_ASSERT(istype(card) && get(card, /mob) == traitor, "Анонимная карта не у агента")
+	TEST_ASSERT_NULL(hoard.give_tool(), "Второй инструмент к тому же заданию")
+	TEST_ASSERT(findtext(hoard.full_hint(), card.name), "Подсказка молчит о выданной карте: [hoard.full_hint()]")
+	var/datum/bank_account/card_account = card.account
+	qdel(hoard)
+	TEST_ASSERT(QDELETED(card) && QDELETED(card_account), "Неиспользованная карта осталась без задания")
+
+	var/datum/objective/economy/stock_profit/stocks = econ_objective_new(/datum/objective/economy/stock_profit, traitor.mind)
+	var/obj/item/anon_account_card/used = stocks.give_tool()
+	TEST_ASSERT(istype(used), "К бирже не выдана анонимная карта")
+	allocated += used
+	allocated += used.account
+	econ_test_set_balance(used.account, 100)
+	qdel(stocks)
+	TEST_ASSERT(!QDELETED(used), "Карта с деньгами удалена вместе с заданием")
+
+	var/datum/objective/economy/drain_head/drain = econ_objective_new(/datum/objective/economy/drain_head, traitor.mind)
+	var/obj/item/card_skimmer/skimmer = drain.give_tool()
+	TEST_ASSERT(istype(skimmer), "К выкачке не выдан скиммер")
+	allocated += skimmer
+	stranger.put_in_hands(skimmer)
+	qdel(drain)
+	TEST_ASSERT(!QDELETED(skimmer), "Отданный скиммер удалён вместе с заданием")
+
+/// О набранной краже агент узнаёт один раз и только живым у экрана; возврат аудитом сообщение не повторяет.
+/datum/unit_test/economy_objectives/threshold_note/Run()
+	var/mob/living/carbon/human/traitor = econ_objective_traitor("econtestthreshold")
+	var/datum/bank_account/own = econ_account_of(traitor)
+	var/datum/bank_account/victim = allocate(/datum/bank_account, "Econ Test Threshold Victim")
+	econ_test_set_balance(victim, 5000)
+	var/datum/objective/economy/hoard/hoard = econ_objective_new(/datum/objective/economy/hoard, traitor.mind)
+	TEST_ASSERT(hoard.forge(), "Кража не выдана")
+	econ_objective_assign(traitor, hoard)
+	hoard.target_amount = 300
+	var/datum/client_interface/mock = new
+
+	traitor.death()
+	traitor.mock_client = mock
+	TEST_ASSERT(SSeconomy.move(victim, own, 300, ECON_TRANSFER, traitor, "Перевод"), "Перевод")
+	var/noted_dead = hoard.threshold_noted
+	traitor.mock_client = null
+	traitor.revive(TRUE, TRUE)
+	TEST_ASSERT(SSeconomy.move(victim, own, 10, ECON_TRANSFER, traitor, "Перевод"), "Перевод")
+	var/noted_away = hoard.threshold_noted
+	traitor.mock_client = mock
+	TEST_ASSERT(SSeconomy.move(victim, own, 10, ECON_TRANSFER, traitor, "Перевод"), "Перевод")
+	var/noted = hoard.threshold_noted
+	hoard.lose_progress(hoard.stolen)
+	TEST_ASSERT(SSeconomy.move(victim, own, 300, ECON_TRANSFER, traitor, "Перевод"), "Перевод")
+	var/noted_again = hoard.note_threshold()
+	traitor.mock_client = null
+	TEST_ASSERT(!noted_dead, "Сообщение о набранной краже ушло трупу")
+	TEST_ASSERT(!noted_away, "Сообщение о набранной краже ушло игроку не у экрана")
+	TEST_ASSERT(noted, "Живой агент у экрана не узнал о набранной краже")
+	TEST_ASSERT(!noted_again, "После возврата сообщение о краже пришло снова")
+
+/// Оплата на кассе - продажа: ни кражей, ни выкачкой счёта главы она не засчитывается.
+/datum/unit_test/economy_objectives/register_not_theft/Run()
+	var/mob/living/carbon/human/traitor = econ_objective_traitor("econtestcashier")
+	var/datum/bank_account/own = econ_account_of(traitor)
+	var/datum/bank_account/victim = allocate(/datum/bank_account, "Econ Test Register Customer")
+	econ_test_set_balance(victim, 5000)
+	var/datum/objective/economy/hoard/hoard = econ_objective_new(/datum/objective/economy/hoard, traitor.mind)
+	TEST_ASSERT(hoard.forge(), "Кража не выдана")
+	TEST_ASSERT(SSeconomy.move(victim, own, 500, ECON_REGISTER, traitor, "Касса"), "Оплата на кассе")
+	TEST_ASSERT_EQUAL(hoard.stolen, 0, "Оплата на кассе засчитана кражей")
+	TEST_ASSERT(SSeconomy.move(victim, own, 100, ECON_TRANSFER, traitor, "Перевод"), "Перевод")
+	TEST_ASSERT_EQUAL(hoard.stolen, 100, "Перевод с чужого счёта не засчитан кражей")
+	qdel(hoard)
+
+	var/datum/objective/economy/drain_head/drain = econ_objective_new(/datum/objective/economy/drain_head, traitor.mind)
+	drain.target = traitor.mind
+	drain.target_account_id = victim.account_id
+	TEST_ASSERT(SSeconomy.move(victim, own, 500, ECON_REGISTER, traitor, "Касса"), "Оплата на кассе")
+	TEST_ASSERT_EQUAL(drain.drained, 0, "Оплата на кассе засчитана выкачкой")
+	TEST_ASSERT(SSeconomy.move(victim, own, 100, ECON_TRANSFER, traitor, "Перевод"), "Перевод")
+	TEST_ASSERT_EQUAL(drain.drained, 100, "Перевод со счёта главы не засчитан выкачкой")
+
+/// Снабжению, сервису и командованию экономическое задание выпадает вдвое чаще настройки, остальным - вдвое реже.
+/datum/unit_test/economy_objectives/chance_by_job/Run()
+	var/mob/living/carbon/human/traitor = econ_objective_traitor("econtestchance")
+	SSeconomy.settings.traitor_econ_objective_chance = 20
+	var/list/expected = list("Cargo Technician" = 40, "Captain" = 40, "Bartender" = 40, "Scientist" = 10, "Assistant" = 10)
+	for(var/role in expected)
+		traitor.mind.assigned_role = role
+		TEST_ASSERT_EQUAL(econ_objective_chance(traitor.mind), expected[role], "Шанс для [role]")
+	SSeconomy.settings.traitor_econ_objective_chance = 60
+	traitor.mind.assigned_role = "Quartermaster"
+	TEST_ASSERT_EQUAL(econ_objective_chance(traitor.mind), 100, "Шанс выше 100")
+
+/// Саботаж без доступной цели предатель не получает: пустая цель роняла итоги смены.
+/datum/unit_test/economy_objectives/sabotage_needs_target
+	var/list/saved_sabotages
+
+/datum/unit_test/economy_objectives/sabotage_needs_target/Destroy()
+	if(saved_sabotages)
+		GLOB.possible_sabotages = saved_sabotages
+	return ..()
+
+/datum/unit_test/economy_objectives/sabotage_needs_target/Run()
+	GLOB.round_type = ROUNDTYPE_DYNAMIC_HARD
+	SSeconomy.settings.traitor_econ_objective_chance = 0
+	var/mob/living/carbon/human/traitor = econ_objective_traitor("econtestsaboteur")
+	var/datum/antagonist/traitor/holder = new
+	allocated += holder
+	holder.owner = traitor.mind
+	var/datum/traitor_class/human/human_class = GLOB.traitor_classes[/datum/traitor_class/human]
+	saved_sabotages = GLOB.possible_sabotages
+	GLOB.possible_sabotages = list("нет саботажа")
+	for(var/attempt in 1 to 80)
+		human_class.forge_single_objective(holder)
+		for(var/datum/objective/sabotage/sabotage in holder.objectives)
+			TEST_ASSERT_NOTNULL(sabotage.targetinfo, "Выдан саботаж без цели")
+		QDEL_LIST(holder.objectives)
 
 /// Текст экономического задания - короткое «что сделать» с числом, правила и оговорки - в подсказке «Как выполнить».
 /datum/unit_test/economy_objectives/texts/Run()
@@ -728,7 +910,7 @@
 	SSshuttle.supply.sell()
 	TEST_ASSERT(QDELETED(foreign), "Чужая контрабанда не продана")
 	TEST_ASSERT(!objective.check_completion(), "Чужая продажа засчитана")
-	TEST_ASSERT(findtext(objective.explanation_text, "продано на 0 кр."), "Чужая продажа в прогрессе: [objective.explanation_text]")
+	TEST_ASSERT(findtext(objective.explanation_text, "продано 0 из [objective.target_amount] кр."), "Чужая продажа в прогрессе: [objective.explanation_text]")
 	var/obj/item/card/id/syndicate/smuggled = new(shuttle_crate())
 	smuggled.fingerprintslast = key
 	var/expected = econ_export_report_value(export_item_and_contents(smuggled, SSshuttle.supply.export_categories, delete_unsold = FALSE, dry_run = TRUE))
@@ -737,4 +919,4 @@
 	SSshuttle.supply.sell()
 	TEST_ASSERT(QDELETED(smuggled), "Карта не продана")
 	TEST_ASSERT(objective.check_completion(), "Своя контрабанда не засчитана")
-	TEST_ASSERT(findtext(objective.explanation_text, "продано на [expected] кр."), "Итог без прогресса: [objective.explanation_text]")
+	TEST_ASSERT(findtext(objective.explanation_text, "продано [expected] из [expected] кр."), "Итог без прогресса: [objective.explanation_text]")

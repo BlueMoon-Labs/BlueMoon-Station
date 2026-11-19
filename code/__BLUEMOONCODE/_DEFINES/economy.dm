@@ -201,6 +201,10 @@
 #define ECON_OBJECTIVE_DRAIN_LEFT 100
 /// Замена экономического задания: сколько раз пробовать выдать обычное
 #define ECON_OBJECTIVE_SWAP_ATTEMPTS 20
+#define ECON_OBJECTIVE_SWAP_EVAC_REFUSAL "Эвакуационный шаттл уже вызван: заменить задание нельзя."
+/// Множитель шанса экономического задания: снабжение, сервис и командование - и все остальные
+#define ECON_OBJECTIVE_CHANCE_MONEY_JOB 2
+#define ECON_OBJECTIVE_CHANCE_OTHER_JOB 0.5
 /// Репутация подрядчика: штраф за отказ от взятого контракта и за сорванный срок
 #define ECON_CONTRACT_REP_DROP 2
 #define ECON_CONTRACT_REP_EXPIRED 1

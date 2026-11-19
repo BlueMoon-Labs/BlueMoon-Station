@@ -204,9 +204,12 @@
 		if(!istype(economic))
 			continue
 		var/list/entry = entries[index]
-		entry["hint"] = economic.how_to_text()
+		entry["hint"] = economic.full_hint()
 		entry["ref"] = REF(economic)
-		entry["swappable"] = !economy_swap_refusal(economic, owner?.current)
+		var/refusal = economy_swap_refusal(economic, owner?.current)
+		entry["swappable"] = !refusal
+		if(refusal == ECON_OBJECTIVE_SWAP_EVAC_REFUSAL)
+			entry["swap_locked"] = refusal
 
 /datum/antagonist/traitor/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
@@ -314,6 +317,10 @@
 	if(objectives.len) //If the traitor had no objectives, don't need to process this.
 		var/count = 1
 		for(var/datum/objective/objective in objectives)
+			if(!objective.completable)
+				objectives_text += "<br><B>Objective #[count]</B>: [objective.explanation_text]"
+				count++
+				continue
 			var/completion = objective.check_completion()
 			if(completion >= 1)
 				objectives_text += "<br><B>Objective #[count]</B>: [objective.explanation_text] [span_greentext("Success!")]"

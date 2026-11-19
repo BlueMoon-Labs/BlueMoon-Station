@@ -207,6 +207,8 @@
 			var/datum/objective/new_obj = new selected_type
 			new_obj.owner = target_mind
 			new_obj.admin_edit(usr)
+			if(QDELETED(new_obj))
+				return
 			target_antag.objectives += new_obj
 			message_admins("[key_name_admin(usr)] added a new objective for [target_mind.current]: [new_obj.explanation_text]")
 			log_admin("[key_name(usr)] added a new objective for [target_mind.current]: [new_obj.explanation_text]")

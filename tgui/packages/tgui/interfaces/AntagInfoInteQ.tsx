@@ -27,6 +27,7 @@ export type Objective = {
   hint?: string;
   ref?: string;
   swappable?: BooleanLike;
+  swap_locked?: string | null;
 }
 
 type Info = {
@@ -65,9 +66,17 @@ export const ObjectivePrintout = (props) => {
                 ml={1}
                 icon="exchange-alt"
                 content="Заменить"
-                confirmContent="Заменить на обычное?"
-                tooltip="Один раз за смену экономическое задание можно бесплатно заменить на обычное."
+                confirmContent="Новое случайное, назад нельзя. Точно?"
+                tooltip="Один раз за смену экономическое задание можно заменить на обычное, пока не вызван эвакуационный шаттл. Новое задание выпадет случайно, вернуть прежнее нельзя."
                 onClick={() => act('swap_economy_objective', { ref: objective.ref })} />
+            )}
+            {!objective.swappable && !!objective.swap_locked && (
+              <Button
+                ml={1}
+                icon="exchange-alt"
+                content="Заменить"
+                disabled
+                tooltip={objective.swap_locked} />
             )}
             {!!objective.hint && (
               <Box color="label" fontSize="11px" ml={2}>

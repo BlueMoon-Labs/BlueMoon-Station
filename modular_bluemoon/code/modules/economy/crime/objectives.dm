@@ -4,6 +4,12 @@
 	var/list/taken_from = list()
 	/// Номера счетов, куда пришли засчитанные деньги: возврат с них аудитом отнимает засчитанное
 	var/list/recipient_ids = list()
+	/// Что кладётся в рюкзак к заданию; неиспользованное уходит вместе с заданием
+	var/tool_type
+	var/datum/weakref/tool_ref
+	var/tool_name
+	/// Владелец уже узнал, что набрал нужное: второй раз не сообщаем
+	var/threshold_noted = FALSE
 
 /datum/objective/economy/New(text)
 	. = ..()
@@ -11,11 +17,86 @@
 
 /datum/objective/economy/Destroy(force, ...)
 	UnregisterSignal(SSeconomy, COMSIG_ECONOMY_AUDIT_REFUNDED)
+	drop_unused_tool()
 	return ..()
 
 /datum/objective/economy/proc/forge()
 	update_explanation_text()
 	return TRUE
+
+/datum/objective/economy/admin_edit(mob/admin)
+	if(forge())
+		give_tool()
+		return
+	to_chat(admin, span_warning("Задание «[name]» сейчас выдать нельзя: нет подходящей цели. Задание не выдано."))
+	qdel(src)
+
+/// Кладёт владельцу инструмент к заданию, один на задание.
+/datum/objective/economy/proc/give_tool()
+	if(!tool_type || tool_ref)
+		return null
+	var/list/given = give_special_equipment(list(tool_type))
+	var/obj/item/tool = length(given) ? given[1] : null
+	if(!tool)
+		return null
+	tool_ref = WEAKREF(tool)
+	tool_name = tool.name
+	log_game("[key_name(owner)] получил [tool.name] к экономическому заданию предателя ([name]).")
+	return tool
+
+/datum/objective/economy/proc/tool_unused(obj/item/tool)
+	var/obj/item/anon_account_card/card = tool
+	if(istype(card))
+		return !card.account || (card.account.account_balance <= 0 && !length(card.account.shares) && !card.account.realized_stock_profit)
+	var/obj/item/card_skimmer/skimmer = tool
+	if(istype(skimmer))
+		return !length(skimmer.stolen)
+	return TRUE
+
+/// Инструмент, которым не пользовались и который никому не отдали, уходит вместе с заданием: замена не даёт лишний предмет.
+/datum/objective/economy/proc/drop_unused_tool()
+	var/obj/item/tool = tool_ref?.resolve()
+	tool_ref = null
+	if(QDELETED(tool))
+		return FALSE
+	var/mob/holder = get(tool, /mob)
+	if(holder && !(holder.mind in get_owners()))
+		return FALSE
+	if(!tool_unused(tool))
+		return FALSE
+	var/obj/item/anon_account_card/card = tool
+	var/datum/bank_account/empty_account = istype(card) ? card.account : null
+	qdel(tool)
+	qdel(empty_account)
+	return TRUE
+
+/// Подсказка в окне агента и строка о выданном инструменте.
+/datum/objective/economy/proc/full_hint()
+	. = how_to_text()
+	if(tool_name)
+		. += " К заданию вам выдали: [tool_name]."
+
+/// Нужное набрано; дальше достаточно удержать до конца смены.
+/datum/objective/economy/proc/threshold_reached()
+	return is_done()
+
+/datum/objective/economy/proc/threshold_text()
+	return "Экономическое задание выполнено."
+
+/// Один раз сообщает живому владельцу у экрана, что нужное набрано; возврат аудитом сообщение не повторяет.
+/datum/objective/economy/proc/note_threshold()
+	if(threshold_noted || !threshold_reached())
+		return FALSE
+	for(var/datum/mind/mind as anything in get_owners())
+		var/mob/living/body = mind.current
+		if(!isliving(body) || body.stat == DEAD || !GET_CLIENT(body))
+			continue
+		threshold_noted = TRUE
+		to_chat(body, span_notice(threshold_text()))
+		for(var/datum/antagonist/antag as anything in mind.antag_datums)
+			if(src in antag.objectives)
+				antag.update_static_data_for_all_viewers()
+	return threshold_noted
 
 /datum/objective/economy/proc/goal_text()
 	return ""
@@ -168,13 +249,17 @@
 		return
 	if(payee == SSeconomy.cash_account || (payee in owner_accounts()))
 		moved += count_taken(budget, payee, amount)
+		note_threshold()
 
 /datum/objective/economy/embezzle/goal_text()
 	var/datum/economy_department/department = SSeconomy.get_department(target_department)
 	return "Выведите [target_amount] кр. из бюджета отдела «[department?.name]» себе: на свой счёт, анонимную карту или наличными."
 
 /datum/objective/economy/embezzle/how_to_text()
-	return "Деньги отдела снимаются с карты бюджета или уходят премией себе в приложении «Бюджет отдела» на КПК главы. Считается то, что вы провели сами, на свой счёт, анонимную карту при себе или наличными. Если финансовый аудит вернёт деньги отделу или вы сами внесёте их обратно, они вычтутся. Без вреда экипажу."
+	return "Проще всего - Alt-клик по карте бюджета этого отдела: агенту она выдаёт наличные. Или премия себе в приложении «Бюджет отдела» на любом КПК: нужна ID-карта с доступом главы этого отдела, а премию можно выписать только его сотруднику. Считается то, что вы провели сами: на свой счёт, анонимную карту при себе или наличными. Возвращённое аудитом или внесённое вами обратно вычитается. Без вреда экипажу."
+
+/datum/objective/economy/embezzle/threshold_text()
+	return "Растрата набрана: выведено [moved] кр. из бюджета, задание выполнено."
 
 /datum/objective/economy/embezzle/progress_text()
 	return "выведено [moved] из [target_amount] кр."
@@ -185,6 +270,7 @@
 /datum/objective/economy/drain_head
 	name = "drain head"
 	required_opt_in_level = ANTAG_OPT_IN_TEMPORARY
+	tool_type = /obj/item/card_skimmer
 	var/target_account_id
 	var/drained = 0
 
@@ -216,6 +302,7 @@
 	var/datum/bank_account/account = target ? econ_account_of(target.current) : null
 	target_account_id = account?.account_id
 	drained = 0
+	threshold_noted = FALSE
 	if(target)
 		RegisterSignal(SSeconomy, COMSIG_ECONOMY_MOVED, PROC_REF(on_move), override = TRUE)
 	else
@@ -237,14 +324,23 @@
 		if(is_owner(actor))
 			lose_progress(count_returned(payee, amount))
 		return
+	if(reason == ECON_REGISTER)
+		return
 	if(payer && payer.account_id == target_account_id && is_owner(actor))
 		drained += count_taken(payer, payee, amount)
+		note_threshold()
+
+/datum/objective/economy/drain_head/threshold_reached()
+	return drained >= target_amount
+
+/datum/objective/economy/drain_head/threshold_text()
+	return "Выкачано достаточно: [drained] кр. Теперь к концу смены на счёте [target?.name] должно остаться не больше [ECON_OBJECTIVE_DRAIN_LEFT] кр., а зарплата его пополняет."
 
 /datum/objective/economy/drain_head/goal_text()
 	return "Выкачайте [target_amount] кр. с личного счёта [target?.name] ([target?.assigned_role]) и оставьте на нём к концу смены не больше [ECON_OBJECTIVE_DRAIN_LEFT] кр."
 
 /datum/objective/economy/drain_head/how_to_text()
-	return "Подойдут скиммер из аплинка, украденная ID-карта или снятие наличных с неё. Зарплата пополняет счёт каждые [DisplayTimeText(SSeconomy.wait * SSeconomy.settings.payroll_interval_ticks)], так что последнюю перекачку делайте ближе к концу смены. Траты самого владельца и то, что вы вернёте на счёт, не засчитываются."
+	return "Подойдут скиммер, украденная ID-карта или снятие наличных с неё. Зарплата пополняет счёт каждые [DisplayTimeText(SSeconomy.wait * SSeconomy.settings.payroll_interval_ticks)], так что последнюю перекачку делайте ближе к концу смены. Траты самого владельца, оплата на кассе и то, что вы вернёте на счёт, не засчитываются."
 
 /datum/objective/economy/drain_head/progress_text()
 	var/datum/bank_account/account = SSeconomy.find_account(target_account_id)
@@ -256,6 +352,7 @@
 
 /datum/objective/economy/hoard
 	name = "hoard"
+	tool_type = /obj/item/anon_account_card
 	var/stolen = 0
 	/// В Лайте и Эксте кражей считаются только чужие личные счета
 	var/allow_budgets = TRUE
@@ -280,7 +377,7 @@
 /// Кража - перевод, который владелец цели сам провёл с чужого счёта или бюджета себе или в наличные; возврат аудитом и положенное обратно её отнимают.
 /datum/objective/economy/hoard/proc/on_move(datum/source, datum/bank_account/payer, datum/bank_account/payee, amount, reason, mob/actor)
 	SIGNAL_HANDLER
-	if(!payer || reason == ECON_REFUND || !is_owner(actor) || note_put_back(payer, payee, amount, reason, actor))
+	if(!payer || reason == ECON_REFUND || reason == ECON_REGISTER || !is_owner(actor) || note_put_back(payer, payee, amount, reason, actor))
 		return
 	var/list/mine = owner_accounts()
 	if(payee != SSeconomy.cash_account && !(payee in mine))
@@ -294,6 +391,13 @@
 		if(other.claimed_account() == payer)
 			return
 	stolen += count_taken(payer, payee, amount)
+	note_threshold()
+
+/datum/objective/economy/hoard/threshold_reached()
+	return stolen >= target_amount
+
+/datum/objective/economy/hoard/threshold_text()
+	return "Украдено достаточно: держите не меньше [target_amount] кр. у себя до конца смены - на своём счёте, анонимных картах или наличными."
 
 /datum/objective/economy/hoard/proc/holdings()
 	. = owner_cash()
@@ -304,7 +408,7 @@
 	return "Украдите [target_amount] кр. с чужих личных счетов[allow_budgets ? " или бюджетов отделов" : ""] и держите к концу смены не меньше [target_amount] кр. у себя."
 
 /datum/objective/economy/hoard/how_to_text()
-	return "Кража - перевод или снятие наличных, которое вы сами сделали с чужого счёта: скиммером из аплинка или украденной картой. «У себя» - это ваш счёт, анонимные карты и наличные при вас. Зарплата, подарки и деньги с анонимных и служебных счетов не считаются; возвращённое аудитом и то, что вы сами вернёте, вычитается."
+	return "Кража - перевод или снятие наличных, которое вы сами сделали с чужого счёта: скиммером или украденной картой. Оплата на кассе - это продажа, а не кража. «У себя» - это ваш счёт, анонимные карты и наличные при вас. Зарплата, подарки и деньги с анонимных и служебных счетов не считаются; возвращённое аудитом и то, что вы сами вернёте, вычитается."
 
 /datum/objective/economy/hoard/progress_text()
 	return "украдено [stolen] из [target_amount] кр., у себя [holdings()] кр."
@@ -314,6 +418,7 @@
 
 /datum/objective/economy/stock_profit
 	name = "stock profit"
+	tool_type = /obj/item/anon_account_card
 	/// "номер счёта" -> прибыль на бирже, с которой счёт попал в учёт; счёт остаётся в учёте насовсем
 	var/list/profit_baseline = list()
 	/// "номер счёта" -> результат счёта на последней сделке: на случай, если счёт исчезнет
@@ -342,6 +447,10 @@
 			return
 		profit_baseline[key] = account.traded_stock_profit() - realized
 	profit_last[key] = account.traded_stock_profit() - profit_baseline[key]
+	note_threshold()
+
+/datum/objective/economy/stock_profit/threshold_text()
+	return "Прибыль на бирже набрана: [profit()] кр. Не уходите в убыток до конца смены."
 
 /datum/objective/economy/stock_profit/proc/profit()
 	. = 0
@@ -416,6 +525,10 @@
 	if(company)
 		var/clean_price = company.price_without_work()
 		lowest_price = min(isnull(lowest_price) ? clean_price : lowest_price, clean_price)
+		note_threshold()
+
+/datum/objective/economy/crash_stock/threshold_text()
+	return "Акции [company_ticker] обрушены: задание выполнено."
 
 /datum/objective/economy/crash_stock/proc/on_tick(datum/source)
 	SIGNAL_HANDLER
@@ -490,7 +603,7 @@
 	return "Торговцев открывает консоль снабжения, взломанная емагом. Контрабанда - предметы из аплинка, последними на товаре должны остаться ваши отпечатки. Таможня NT может досмотреть ящик и изъять груз."
 
 /datum/objective/economy/smuggle/progress_text()
-	return "продано на [sold()] кр."
+	return "продано [sold()] из [target_amount] кр."
 
 /datum/objective/economy/smuggle/is_done()
 	return sold() >= target_amount
@@ -499,7 +612,7 @@
 /proc/econ_harmful_objectives_allowed()
 	return GLOB.round_type != ROUNDTYPE_DYNAMIC_LIGHT && GLOB.round_type != ROUNDTYPE_EXTENDED
 
-/// Контрабанда сюда не входит: продавать пришлось бы своё снаряжение из аплинка, её выдают только админы.
+/// Контрабанды тут нет: продавать пришлось бы своё снаряжение из аплинка. Её выдаёт админ в панели целей.
 /proc/econ_objective_types()
 	. = list(/datum/objective/economy/hoard, /datum/objective/economy/stock_profit)
 	if(econ_harmful_objectives_allowed())
@@ -528,22 +641,33 @@
 		qdel(objective)
 	return null
 
+/// Шанс экономического задания: снабжению, сервису и командованию деньги ближе, остальным - дальше.
+/proc/econ_objective_chance(datum/mind/owner)
+	var/chance = SSeconomy.settings.traitor_econ_objective_chance
+	var/role = owner?.assigned_role
+	var/datum/job/job = role ? SSjob.GetJob(role) : null
+	if((role in GLOB.command_positions) || (role in GLOB.supply_positions) || job?.paycheck_department == ACCOUNT_SRV)
+		return min(chance * ECON_OBJECTIVE_CHANCE_MONEY_JOB, 100)
+	return chance * ECON_OBJECTIVE_CHANCE_OTHER_JOB
+
 /datum/traitor_class/human/proc/try_forge_economy_objective(datum/antagonist/traitor/T)
-	if(T.economy_swap_used || !prob(SSeconomy.settings.traitor_econ_objective_chance))
+	if(T.economy_swap_used || !prob(econ_objective_chance(T.owner)))
 		return FALSE
 	var/datum/objective/economy/objective = econ_random_objective(T.owner)
 	if(!objective)
 		return FALSE
 	T.add_objective(objective)
+	objective.give_tool()
 	return TRUE
 
 /// Что агент узнаёт об экономических заданиях; null - таких заданий нет.
 /datum/antagonist/traitor/proc/economy_objectives_note()
 	if(!(locate(/datum/objective/economy) in objectives))
 		return null
-	. = "Экономические задания - про деньги станции: кража со счетов, растрата бюджета, биржа. Под каждым в окне агента написано, как его выполнить."
+	var/kinds = econ_harmful_objectives_allowed() ? "кража со счетов, растрата бюджета, биржа" : "кража со счетов и биржа"
+	. = "Экономические задания - про деньги станции: [kinds]. Под каждым в окне агента написано, как его выполнить."
 	if(!economy_swap_used)
-		. += " Если такое задание не по душе, одно можно один раз бесплатно заменить на обычное кнопкой «Заменить»."
+		. += " Если такое задание не по душе, одно можно один раз заменить на обычное кнопкой «Заменить», пока не вызван эвакуационный шаттл. Новое задание выпадет случайно, вернуть прежнее нельзя."
 
 /// Почему это экономическое задание сейчас нельзя заменить; null - можно.
 /datum/antagonist/traitor/proc/economy_swap_refusal(datum/objective/economy/objective, mob/user)
@@ -555,6 +679,8 @@
 		return "Общее задание не заменить."
 	if(SSticker.current_state >= GAME_STATE_FINISHED)
 		return "Смена уже закончилась."
+	if(SSmarket.evac_underway())
+		return ECON_OBJECTIVE_SWAP_EVAC_REFUSAL
 	var/mob/living/body = owner?.current
 	if(!user || user != body || !isliving(body) || body.stat == DEAD)
 		return "Заменить задание может только живой агент."
@@ -567,6 +693,7 @@
 	var/refusal = economy_swap_refusal(old, user)
 	if(refusal)
 		to_chat(user, span_warning(refusal))
+		update_static_data(user)
 		return FALSE
 	economy_swap_used = TRUE
 	var/datum/traitor_class/human/class = traitor_kind
@@ -581,6 +708,7 @@
 	if(!replacement)
 		economy_swap_used = FALSE
 		to_chat(user, span_warning("Обычного задания для замены сейчас нет, попробуйте позже."))
+		update_static_data(user)
 		return FALSE
 	objectives -= replacement
 	objectives.Insert(objectives.Find(old), replacement)
