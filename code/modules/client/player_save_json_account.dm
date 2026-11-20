@@ -25,10 +25,27 @@
 	var/migration_worst_ms = 0
 	var/migration_started_at = 0
 
-/// Меню не загружает все анкеты заново после каждой смены вкладки или настройки корня.
 /datum/player_save_json/account/proc/character_names(limit)
+	return character_index_column(limit, 1)
+
+/datum/player_save_json/account/proc/character_slot_names(limit)
+	return character_index_column(limit, 2)
+
+/datum/player_save_json/account/proc/character_index_column(limit, column)
+	var/list/index = character_index(limit)
+	if(!index)
+		return null
+	var/list/result = list()
+	for(var/key in index)
+		var/list/entry = index[key]
+		result[key] = entry[column]
+	return result
+
+/// Меню не загружает все анкеты заново после каждой смены вкладки или настройки корня.
+/// Результат: ключ слота -> list(имя персонажа, название слота).
+/datum/player_save_json/account/proc/character_index(limit)
 	if(legacy_only())
-		return legacy_character_fields(limit, "real_name")
+		return legacy_character_fields(limit, PLAYER_SAVE_SLOT_INDEX_FIELDS)
 	var/datum/player_save_document/root = snapshot()
 	if(!root)
 		return null
@@ -37,21 +54,24 @@
 		var/key = "character[slot]"
 		if(!(key in root.tree))
 			continue
-		var/name
+		var/list/entry
+		var/indexed = isnull(directories) ? null : root.read(key)
 		if(isnull(directories))
 			var/list/node = root.tree[key]
 			var/list/children = node["children"]
-			var/list/name_node = children["real_name"]
-			name = name_node ? player_save_decode_value(name_node["value"]) : null
-		else if(istext(root.read(key)))
-			name = root.read(key)
+			entry = list()
+			for(var/field in PLAYER_SAVE_SLOT_INDEX_FIELDS)
+				var/list/field_node = children[field]
+				entry += list(field_node ? player_save_decode_value(field_node["value"]) : null)
+		else if(player_save_slot_index_valid(indexed))
+			entry = list(indexed[1], indexed[2] || null)
 		else if(directories[key])
 			var/revision = directories[key]
 			if(cached_name_generations[key] == revision && !recovered)
-				name = cached_names[key]
+				entry = cached_names[key]
 			else
 				var/datum/player_save_json/child = branch(key)
-				name = child.read_field("real_name", revision)
+				entry = child.read_fields(PLAYER_SAVE_SLOT_INDEX_FIELDS, revision)
 				if(child.error)
 					// Используем тот же согласованный откат, что и при загрузке персонажа.
 					var/savefile/recovery = open()
@@ -63,37 +83,30 @@
 						if(!(recovery_key in recovery.dir))
 							continue
 						recovery.cd = "/[recovery_key]"
-						recovery["real_name"] >> name
-						result[recovery_key] = name
+						var/list/recovered_entry = list()
+						for(var/field in PLAYER_SAVE_SLOT_INDEX_FIELDS)
+							var/value
+							recovery[field] >> value
+							recovered_entry += list(value)
+						result[recovery_key] = recovered_entry
 						recovery.cd = "/"
 					cached_names = list()
 					cached_name_generations = list()
 					return result
-				cached_names[key] = name
+				cached_names[key] = entry
 				cached_name_generations[key] = revision
-			// Старые разделённые сейвы получают индекс имён при первом открытии меню.
-			if(istext(name))
-				root.write(key, name)
-		result[key] = name
+			// Индекс без названий слотов (старые разделённые сейвы и прежние сборки) дописывается при первом открытии меню.
+			if(istext(entry[1]))
+				root.write(key, player_save_slot_index(entry[1], entry[2]))
+		else if(istext(indexed))
+			entry = list(indexed, null)
+		if(entry)
+			result[key] = entry
 	// Все найденные имена публикуются вместе, без перезаписи самих разделов.
 	if(root.dirty && !root.commit())
 		return null
 	return result
 
-/// Одно поле анкеты без сборки savefile: из корня до разделения или из опубликованного поколения раздела.
-/datum/player_save_json/account/proc/character_field(key, field)
-	var/datum/player_save_document/root = snapshot()
-	if(!root || !(key in root.tree))
-		return null
-	if(isnull(directories))
-		var/list/node = root.tree[key]
-		var/list/children = node["children"]
-		var/list/field_node = children[field]
-		return field_node ? player_save_decode_value(field_node["value"]) : null
-	if(!directories[key])
-		return null
-	var/datum/player_save_json/child = branch(key)
-	return child.read_field(field, directories[key])
 
 /datum/player_save_json/account/load_tree(required_generation, validate = TRUE)
 	cached_root = null
@@ -272,6 +285,7 @@
 	return fexists(legacy_path) && !fexists(json_path) && !fexists("[json_path].recovery")
 
 /// Одно поле каждой анкеты старого .sav из одной копии файла, без разбора анкет целиком.
+/// Список полей вместо одного даёт по анкете список значений в том же порядке.
 /datum/player_save_json/account/proc/legacy_character_fields(limit, field)
 	error = null
 	var/list/result = list()
@@ -286,6 +300,15 @@
 			if(!(key in legacy.dir))
 				continue
 			legacy.cd = "/[key]"
+			if(islist(field))
+				var/list/values = list()
+				for(var/name in field)
+					var/value
+					if(name in legacy.dir)
+						legacy[name] >> value
+					values += list(value)
+				result[key] = values
+				continue
 			var/value
 			if(field in legacy.dir)
 				legacy[field] >> value
@@ -297,15 +320,6 @@
 		result = null
 	legacy = null
 	close_legacy_copy(prefix)
-	return result
-
-/// Поле анкеты по всем слотам: из старого .sav одной копией, из JSON - через опубликованные разделы.
-/datum/player_save_json/account/proc/character_fields(limit, field)
-	if(legacy_only())
-		return legacy_character_fields(limit, field)
-	var/list/result = list()
-	for(var/slot in 1 to limit)
-		result["character[slot]"] = character_field("character[slot]", field)
 	return result
 
 /datum/player_save_json/account/commit(savefile/source, scope)
@@ -334,10 +348,9 @@
 			// Имя публикуется с тем же поколением, что и содержимое анкеты.
 			if(copytext(key, 1, 10) == "character")
 				source.cd = "/[key]"
-				var/name
-				source["real_name"] >> name
+				var/list/entry = player_save_slot_index_from(source)
 				source.cd = "/"
-				source[key] << name
+				source[key] << entry
 		source.cd = original_directory
 		directories = next_directories
 		// До этой записи читатели видят старый согласованный набор поколений.
@@ -459,9 +472,7 @@
 			if(copytext(key, 1, 10) != "character")
 				continue
 			source.cd = "/[key]"
-			var/name
-			source["real_name"] >> name
-			next_root[key] << name
+			next_root[key] << player_save_slot_index_from(source)
 		source.cd = "/"
 		directories = migration_directories
 		if(!commit_tree(player_save_encode_tree(next_root)))

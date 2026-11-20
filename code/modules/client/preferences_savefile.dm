@@ -2473,35 +2473,35 @@ GLOBAL_VAR(player_save_migration_timer)
 
 /// Имена персонажей по слотам (null - слот пуст) из индекса корня, без открытия анкет.
 /datum/preferences/proc/get_slot_names()
-	if(length(slot_names_cache) == max_save_slots)
-		return slot_names_cache
-	var/list/character_names = player_character_names()
-	if(!islist(character_names))
+	if(length(slot_names_cache) != max_save_slots && !load_slot_index())
 		return null
-	var/list/names = new /list(max_save_slots)
-	for(var/slot in 1 to max_save_slots)
-		names[slot] = character_names["character[slot]"]
-	slot_names_cache = names
-	return names
+	return slot_names_cache
 
-/// Названия слотов в индексе корня нет: читаются из анкет один раз, дальше кэш правится при записи и удалении.
+/// Названия слотов из того же индекса корня; дальше кэш правится при записи и удалении.
 /datum/preferences/proc/get_slot_custom_names()
-	if(length(slot_custom_names_cache) == max_save_slots)
-		return slot_custom_names_cache
-	var/list/names = get_slot_names()
-	if(!names)
+	if(length(slot_custom_names_cache) != max_save_slots && !load_slot_index())
 		return null
+	return slot_custom_names_cache
+
+/datum/preferences/proc/load_slot_index()
 	var/datum/player_save_json/account/storage = get_player_save_storage()
-	// Старый .sav читается одной копией на все слоты.
-	var/list/fields = storage.legacy_only() ? storage.character_fields(max_save_slots, "character_slot_name") : null
+	if(!storage || player_save_blocked)
+		return FALSE
+	var/list/index = storage.character_index(max_save_slots)
+	if(!islist(index))
+		player_save_error(storage.error)
+		return FALSE
+	var/list/names = new /list(max_save_slots)
 	var/list/custom_slot_names = new /list(max_save_slots)
 	for(var/slot in 1 to max_save_slots)
+		var/list/entry = index["character[slot]"]
+		names[slot] = entry?[1]
 		if(!names[slot])
 			continue
-		var/custom_name = fields ? fields["character[slot]"] : storage.character_field("character[slot]", "character_slot_name")
-		custom_slot_names[slot] = copytext_char(trimtext(strip_control_chars(sanitize_text(custom_name))), 1, MAX_NAME_LEN + 1)
+		custom_slot_names[slot] = copytext_char(trimtext(strip_control_chars(sanitize_text(entry[2]))), 1, MAX_NAME_LEN + 1)
+	slot_names_cache = names
 	slot_custom_names_cache = custom_slot_names
-	return custom_slot_names
+	return TRUE
 
 // Создаём независимого персонажа через обычный формат сохранения, чтобы не наследовать данные прежнего слота.
 /datum/preferences/proc/create_character(slot)
@@ -2528,6 +2528,7 @@ GLOBAL_VAR(player_save_migration_timer)
 	var/key = "character[slot]"
 	if(!(key in root.tree))
 		return FALSE
+	var/deleted_name
 	if(islist(root.directories))
 		var/datum/player_save_json/account/storage = get_player_save_storage()
 		// Проверка удаляемого раздела сохраняет согласованный откат при повреждении.
@@ -2535,7 +2536,8 @@ GLOBAL_VAR(player_save_migration_timer)
 		if(!transaction)
 			player_save_error(storage.error)
 			return FALSE
-		if(!transaction.character.read("real_name"))
+		deleted_name = transaction.character.read("real_name")
+		if(!deleted_name)
 			return FALSE
 		root = transaction.root
 		root.remove(key)
@@ -2556,6 +2558,8 @@ GLOBAL_VAR(player_save_migration_timer)
 		S.dir.Remove(key)
 		if(!commit_player_save(S))
 			return FALSE
+		deleted_name = check_name
+	log_game("Сохранения: [player_save_ckey()] удалил слот [slot] «[deleted_name]».")
 	if(char_queue)
 		deltimer(char_queue)
 	char_queue = null

@@ -1,5 +1,7 @@
 /// Максимальная глубина вложенности JSON-сейва игрока.
 #define PLAYER_SAVE_JSON_DEPTH 64
+/// Поля анкеты, которые корень сейва хранит по каждому слоту для меню.
+#define PLAYER_SAVE_SLOT_INDEX_FIELDS list("real_name", "character_slot_name")
 /// Очередь переноса старых сейвов в JSON работает раз в этот промежуток...
 #define PLAYER_SAVE_MIGRATION_INTERVAL (2 DECISECONDS)
 /// ...и тратит за раз не больше стольких мс (раздел анкеты переносится целиком, даже если дороже).

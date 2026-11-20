@@ -3493,16 +3493,28 @@
 
 	var/mob/living/the_owner = get_mob_by_ckey(offer_datum.owner_ckey)
 	var/receiving_slot = prefs.default_slot
-	if(tgui_alert(user, "Импортировать переданного персонажа в слот [receiving_slot]? Закрытые данные и коллекции останутся прежними.", "Получение персонажа", list("Импортировать", "Отмена")) != "Импортировать")
+	var/list/slot_names = prefs.get_slot_names()
+	var/current_name = slot_names?[receiving_slot]
+	var/question = current_name \
+		? "Получить персонажа в слот [receiving_slot] вместо «[current_name]»? Чтобы ничего не заменять, сначала выберите пустой слот. Закрытые данные и коллекции останутся прежними." \
+		: "Импортировать переданного персонажа в слот [receiving_slot]? Закрытые данные и коллекции останутся прежними."
+	if(tgui_alert(user, question, "Получение персонажа", list("Импортировать", "Отмена")) != "Импортировать")
 		return
 	if(QDELETED(offer_datum) || user.client?.prefs != prefs || prefs.default_slot != receiving_slot)
 		tgui_alert_async(user, "Предложение больше недоступно или выбранный слот изменился. Начните получение заново.")
 		return
+	var/backup_path
+	if(current_name)
+		backup_path = prefs.backup_character_before_import(receiving_slot)
+		if(!backup_path)
+			tgui_alert_async(user, "Не удалось сохранить копию «[current_name]». Выберите пустой слот и попробуйте снова.")
+			return
 	if(!prefs.import_character_json(offer_datum.character_json))
 		tgui_alert_async(user, "Не удалось импортировать персонажа. Сообщите об ошибке разработчикам.")
 		to_chat(the_owner, span_boldwarning("Передача персонажа не завершилась из-за ошибки импорта. Сообщите об этом разработчикам."))
 		return
 	to_chat(the_owner, span_notice("[user.key] получил переданного персонажа."))
+	prefs.log_character_replacement("получение от [offer_datum.owner_ckey]", receiving_slot, prefs.real_name, current_name, backup_path)
 	character_revision++
 	preview_dirty = TRUE
 	tgui_alert_async(user, "Персонаж получен и сохранён в слот [receiving_slot].")
@@ -4529,6 +4541,9 @@
 	var/max_index = is_naked_list ? MAX_HEADSHOTS_NAKED : MAX_HEADSHOTS
 	if(isnull(index) || index < 1 || index > max_index)
 		return
+	// Случайный персонаж приходит с пустыми списками без мест под картинки.
+	if(length(links) < max_index)
+		links.len = max_index
 
 	if(isnull(raw_link) || !length("[raw_link]"))
 		links[index] = null

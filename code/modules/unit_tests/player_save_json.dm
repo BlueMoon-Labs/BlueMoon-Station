@@ -1485,6 +1485,48 @@ GLOBAL_VAR_INIT(unit_test_legacy_probe_loaded, FALSE)
 	names = account.character_names(5)
 	TEST_ASSERT_EQUAL(names["character5"], "After eviction", "вытеснение оставило устаревшее имя")
 
+/proc/player_save_test_branch_reads(datum/player_save_json/account/account)
+	. = 0
+	for(var/key in account.branches)
+		var/datum/player_save_json/read_counted/child = account.branches[key]
+		. += child.reads
+
+/// Первое открытие меню на большом аккаунте читало каждую анкету ради названия слота (430 мс на проде).
+/datum/unit_test/player_save_json/slot_names_from_root_index/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	for(var/slot in 1 to 3)
+		source.cd = "/character[slot]"
+		source["real_name"] << "Character [slot]"
+		source["character_slot_name"] << (slot == 2 ? null : "Slot [slot]")
+	TEST_ASSERT(account.commit(source), "не созданы слоты")
+	var/datum/player_save_json/account/read_counted/reopened = new(test_path)
+	var/list/slot_names = reopened.character_slot_names(3)
+	TEST_ASSERT_EQUAL(slot_names["character1"], "Slot 1", "нет названия первого слота")
+	TEST_ASSERT_NULL(slot_names["character2"], "у слота без названия появилось название")
+	TEST_ASSERT_EQUAL(reopened.character_names(3)["character3"], "Character 3", "индекс потерял имя персонажа")
+	TEST_ASSERT_EQUAL(player_save_test_branch_reads(reopened), 0, "названия слотов прочитаны из анкет")
+
+	var/datum/player_save_character_transaction/transaction = account.character_transaction("character2")
+	transaction.character.write("character_slot_name", "Renamed")
+	TEST_ASSERT(transaction.commit(new /savefile), "не сохранено название слота")
+	reopened = new(test_path)
+	TEST_ASSERT_EQUAL(reopened.character_slot_names(3)["character2"], "Renamed", "запись слота не обновила индекс")
+	TEST_ASSERT_EQUAL(player_save_test_branch_reads(reopened), 0, "после записи слота название прочитано из анкеты")
+
+	// Корень прежней сборки хранит только имя: анкеты читаются один раз, дальше индекс в корне.
+	var/datum/player_save_document/root = account.snapshot()
+	for(var/slot in 1 to 3)
+		root.write("character[slot]", "Character [slot]")
+	TEST_ASSERT(root.commit(), "не записан корень прежнего вида")
+	reopened = new(test_path)
+	TEST_ASSERT_EQUAL(reopened.character_slot_names(3)["character1"], "Slot 1", "прежний корень потерял название слота")
+	TEST_ASSERT(player_save_test_branch_reads(reopened) > 0, "прежний корень не прочитал анкеты")
+	reopened = new(test_path)
+	TEST_ASSERT_EQUAL(reopened.character_slot_names(3)["character2"], "Renamed", "индекс прежнего корня не дописан")
+	TEST_ASSERT_EQUAL(player_save_test_branch_reads(reopened), 0, "индекс прежнего корня не сохранён")
+
 /datum/unit_test/player_save_json/unchanged_patch_keeps_snapshot/Run()
 	var/savefile/source = prepare()
 	source["number"] << 1.23456789
@@ -2216,6 +2258,44 @@ GLOBAL_VAR_INIT(unit_test_legacy_probe_loaded, FALSE)
 	var/list/names = prefs.player_character_names()
 	TEST_ASSERT_EQUAL(names?["character3"], "Анкета 3", "перенос взаимодействий потерял другой слот")
 
+/// Импорт старой копии затёр игроку персонажа без следа (раунд 10796): перед заменой пишется копия.
+/datum/unit_test/player_save_json/import_backup_keeps_replaced_character
+	var/backup_directory
+
+/datum/unit_test/player_save_json/import_backup_keeps_replaced_character/Run()
+	prepare()
+	prepare_transfer_species()
+	backup_directory = "[copytext(test_path, 1, findlasttext(test_path, "/") + 1)]import_backups/"
+	fdel(backup_directory)
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Old Character"
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	var/backup_path = prefs.backup_character_before_import(1)
+	TEST_ASSERT(backup_path && fexists(backup_path), "копия заменяемого персонажа не записана")
+	var/list/fields = player_transfer_parse(file2text(backup_path))
+	TEST_ASSERT_EQUAL(fields["real_name"], "Old Character", "копия не открывается импортом")
+	for(var/i in 1 to PLAYER_TRANSFER_BACKUPS_KEPT + 2)
+		prefs.backup_character_before_import(1)
+	TEST_ASSERT_EQUAL(length(flist(backup_directory)), PLAYER_TRANSFER_BACKUPS_KEPT, "старые копии не удаляются")
+
+/datum/unit_test/player_save_json/import_backup_keeps_replaced_character/Destroy()
+	if(backup_directory)
+		fdel(backup_directory)
+	return ..()
+
+/// Кнопка случайного персонажа оставляла пустой список хедшотов, и правка картинки падала (раунд 10798).
+/datum/unit_test/player_save_json/random_character_headshots/Run()
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	var/datum/character_setup/setup = new(prefs)
+	prefs.random_character()
+	setup.set_headshot("regular", 2, "")
+	setup.set_headshot("naked", MAX_HEADSHOTS_NAKED, "")
+	TEST_ASSERT_EQUAL(length(prefs.features["headshot_links"]), MAX_HEADSHOTS, "список хедшотов не добит до мест под картинки")
+	TEST_ASSERT_EQUAL(length(prefs.features["headshot_naked_links"]), MAX_HEADSHOTS_NAKED, "список откровенных хедшотов не добит")
+	qdel(setup)
+
 #ifdef PLAYER_SAVE_BENCHMARK
 /// Одинаковая фикстура для сравнения реализаций; время выводится без порога PASS/FAIL.
 /datum/unit_test/player_save_json/benchmark/Run()
@@ -2396,6 +2476,38 @@ GLOBAL_VAR_INIT(unit_test_legacy_probe_loaded, FALSE)
 	prefs.path = null
 	legacy = null
 	log_world("PLAYER_SAVE_BENCHMARK [json_encode(timings)]")
+
+/// Первое открытие меню: названия 40 слотов из индекса корня против прежнего чтения каждой анкеты.
+/datum/unit_test/player_save_json/slot_index_benchmark/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	for(var/slot in 1 to 40)
+		source.cd = "/character[slot]"
+		source["real_name"] << "Character [slot]"
+		source["character_slot_name"] << "Slot [slot]"
+		for(var/index in 1 to 239)
+			source["field_[index]"] << list("Описание персонажа [index]", index / 7, "цвет" = "#aabbcc")
+	source.cd = "/"
+	TEST_ASSERT(account.commit(source), "не создана фикстура замера")
+	var/list/timings = list("root_index" = 0, "per_slot_read" = 0)
+	var/repeats = 10
+	for(var/iteration in 1 to repeats)
+		for(var/use_index in (iteration % 2 ? list(TRUE, FALSE) : list(FALSE, TRUE)))
+			account = new(test_path)
+			var/started = TICK_USAGE_REAL
+			if(use_index)
+				TEST_ASSERT_EQUAL(account.character_slot_names(40)["character40"], "Slot 40", "индекс не прочитан")
+				timings["root_index"] += TICK_USAGE_TO_MS(started) / repeats
+				continue
+			// Прежний путь: корень и одно поле из каждой опубликованной анкеты.
+			var/datum/player_save_document/root = account.snapshot()
+			for(var/slot in 1 to 40)
+				var/key = "character[slot]"
+				var/datum/player_save_json/child = account.branch(key)
+				child.read_fields(list("character_slot_name"), root.directories[key])
+			timings["per_slot_read"] += TICK_USAGE_TO_MS(started) / repeats
+	log_world("PLAYER_SAVE_BENCHMARK slot_index [json_encode(timings)]")
 
 /datum/unit_test/player_save_json/benchmark
 	var/datum/preferences/benchmark_prefs

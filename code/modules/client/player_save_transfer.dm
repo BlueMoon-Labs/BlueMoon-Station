@@ -2,6 +2,8 @@
 #define PLAYER_TRANSFER_MAX_BYTES (2 * 1024 * 1024)
 #define PLAYER_TRANSFER_MAX_NODES 20000
 #define PLAYER_TRANSFER_MAX_DEPTH 6
+/// Сколько копий заменённых импортом персонажей хранится на аккаунт.
+#define PLAYER_TRANSFER_BACKUPS_KEPT 10
 
 /// Только явно проверенные поля. Новое поле дискового сейва НЕ становится переносимым автоматически.
 /proc/player_transfer_fields()
@@ -571,17 +573,79 @@
 		. = confirm_character_import(user, text, slot)
 	player_transfer_busy = FALSE
 
+/// Импорт заменяет персонажа слота целиком, поэтому по умолчанию предлагается свободный слот.
 /datum/preferences/proc/confirm_character_import(mob/user, text, slot)
-	var/confirmed = tgui_alert(user, "Заменить переносимые настройки слота [slot]? Валюта, коллекции и закрытые данные останутся прежними.", "Импорт персонажа", list("Импортировать", "Отмена"))
-	if(confirmed != "Импортировать" || user.client?.prefs != src || default_slot != slot)
+	var/incoming_name
+	try
+		var/list/fields = player_transfer_parse(text)
+		incoming_name = fields["real_name"]
+	catch
+		// Ошибку разбора покажет сам импорт.
+		incoming_name = null
+	var/list/slot_names = get_slot_names()
+	var/current_name = slot_names?[slot]
+	var/free_slot
+	if(current_name)
+		for(var/candidate in 1 to max_save_slots)
+			if(!slot_names[candidate])
+				free_slot = candidate
+				break
+	var/incoming_label = istext(incoming_name) ? "«[incoming_name]»" : "персонажа из файла"
+	var/to_free = "В свободный слот [free_slot]"
+	var/to_replace = current_name ? "Заменить «[current_name]»" : "Импортировать"
+	var/list/choices = free_slot ? list(to_free, to_replace, "Отмена") : list(to_replace, "Отмена")
+	var/question = "Импорт [incoming_label]."
+	if(current_name)
+		question += " Сейчас в слоте [slot] «[current_name]»: замена перезапишет его, копия останется у администрации."
+	question += " Валюта, коллекции и закрытые данные не меняются."
+	var/confirmed = tgui_alert(user, question, "Импорт персонажа", choices)
+	if(!confirmed || confirmed == "Отмена" || user.client?.prefs != src || default_slot != slot)
 		return FALSE
+	var/replaced_name
+	var/backup_path
+	if(confirmed == to_free)
+		// Несохранённые правки текущего персонажа записываются, как при переключении слота с автосохранением.
+		if(!save_character(bypass_cooldown = TRUE, silent = TRUE) || !create_character(free_slot))
+			to_chat(user, span_warning("Импорт не выполнен: не удалось подготовить слот [free_slot]."))
+			return FALSE
+		save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+		slot = free_slot
+	else if(current_name)
+		replaced_name = current_name
+		backup_path = backup_character_before_import(slot)
+		if(!backup_path)
+			to_chat(user, span_warning("Импорт не выполнен: не удалось сохранить копию «[html_encode(current_name)]». Импортируйте в свободный слот."))
+			return FALSE
 	if(!import_character_json(text))
 		to_chat(user, span_warning("Импорт не выполнен: [html_encode(player_transfer_error)]"))
 		return FALSE
+	log_character_replacement("импорт файла", slot, incoming_name, replaced_name, backup_path)
 	to_chat(user, span_notice("Персонаж импортирован и сохранён в слот [slot]."))
 	if(length(player_transfer_notices))
 		to_chat(user, span_warning("При импорте [html_encode(jointext(player_transfer_notices, "; "))]."))
 	return TRUE
+
+/// Копия персонажа слота перед заменой импортом. Файл того же формата, что экспорт: администрация может отдать его игроку для импорта.
+/datum/preferences/proc/backup_character_before_import(slot)
+	var/text = export_character_json(TRUE)
+	if(!text || !path)
+		return null
+	var/directory = "[copytext(path, 1, findlasttext(path, "/") + 1)]import_backups/"
+	// Время первым: по имени файлы идут от старых к новым.
+	var/backup_path = "[directory][time2text(world.realtime, "YYYYMMDD-hhmmss")]-slot[slot]-[rand(1000, 9999)].json"
+	if(!text2file(text, backup_path))
+		return null
+	var/list/existing = sort_list(flist(directory))
+	while(length(existing) > PLAYER_TRANSFER_BACKUPS_KEPT)
+		fdel("[directory][existing[1]]")
+		existing.Cut(1, 2)
+	return backup_path
+
+/datum/preferences/proc/log_character_replacement(source, slot, incoming_name, replaced_name, backup_path)
+	var/message = "Перенос персонажа: [player_save_ckey()] - [source] «[incoming_name]» в слот [slot]"
+	if(replaced_name)
+		message += " вместо «[replaced_name]», копия [backup_path]"
+	log_game(message)
 
 /**
  * Старая копия - доверенный когда-то savefile, но приходит от клиента. Чтение объекта из savefile создаёт его,

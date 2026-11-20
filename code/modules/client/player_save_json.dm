@@ -275,6 +275,22 @@
 				node_json -= key
 		tree = merged
 
+/// Запись слота в корне: имя персонажа и название слота с тем же поколением, что и анкета.
+/// Строка вместо списка - корень сборки без названий слотов, название тогда берётся из анкеты.
+/proc/player_save_slot_index(name, slot_name)
+	return list(name, slot_name || "")
+
+/proc/player_save_slot_index_valid(list/entry)
+	return islist(entry) && length(entry) == 2 && istext(entry[1]) && istext(entry[2])
+
+/// Индекс текущего каталога savefile со слотом.
+/proc/player_save_slot_index_from(savefile/source)
+	var/name
+	var/slot_name
+	source["real_name"] >> name
+	source["character_slot_name"] >> slot_name
+	return player_save_slot_index(name, slot_name)
+
 /// Корень публикуется после раздела, как и в старой транзакции через savefile.
 /datum/player_save_character_transaction
 	var/datum/player_save_document/root
@@ -296,7 +312,7 @@
 		if(!character.commit())
 			account.error = character.storage.error
 			return FALSE
-		root.write(key, character.read("real_name"))
+		root.write(key, player_save_slot_index(character.read("real_name"), character.read("character_slot_name")))
 		if(root.directories[key] != character.generation)
 			root.directories = root.directories.Copy()
 			root.directories[key] = character.generation
@@ -646,6 +662,11 @@
 
 /// Для меню достаточно проверить файл и одно поле, не декодируя всю анкету.
 /datum/player_save_json/proc/read_field(key, required_generation)
+	var/list/values = read_fields(list(key), required_generation)
+	return values ? values[1] : null
+
+/// Несколько полей одним чтением файла; null - ошибка в error.
+/datum/player_save_json/proc/read_fields(list/keys, required_generation)
 	var/list/tree = loaded_tree
 	if(error || !tree || open_revision != player_save_revision(json_path) || (required_generation && required_generation != generation))
 		tree = load_tree(required_generation, FALSE)
@@ -653,16 +674,20 @@
 		loaded_tree = null
 	if(!tree)
 		return null
+	var/list/result = list()
 	try
-		if(!(key in tree))
-			return null
-		var/list/node = tree[key]
-		if(!islist(node) || !("value" in node) || !islist(node["children"]))
-			throw EXCEPTION("Неполный узел JSON сохранения")
-		return player_save_decode_value(node["value"])
+		for(var/key in keys)
+			if(!(key in tree))
+				result += list(null)
+				continue
+			var/list/node = tree[key]
+			if(!islist(node) || !("value" in node) || !islist(node["children"]))
+				throw EXCEPTION("Неполный узел JSON сохранения")
+			result += list(player_save_decode_value(node["value"]))
 	catch(var/exception/failure)
 		error = "Не удалось прочитать поле сохранения: [failure.name]"
 		return null
+	return result
 
 /datum/player_save_json/proc/open(scope, required_generation, savefile/target, use_cache = FALSE)
 	// Декодирование ниже само проверяет дерево; не разбираем значения дважды.
