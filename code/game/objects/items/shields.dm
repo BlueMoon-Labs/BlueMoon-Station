@@ -4,6 +4,8 @@
 	item_flags = ITEM_CAN_BLOCK
 	block_parry_data = /datum/block_parry_data/shield
 	armor_type = /datum/armor/base_and_adamantineshield
+	item_flags = SLOWS_WHILE_IN_HAND
+	slowdown = 0.1
 	/// Shield flags
 	var/shield_flags = SHIELD_FLAGS_DEFAULT
 	/// Last shieldbash world.time
@@ -544,6 +546,7 @@
 	shield_flags = SHIELD_FLAGS_DEFAULT | SHIELD_KINETIC_STRONG | SHIELD_DISABLER_DISRUPTED
 	var/recharge_timerid
 	var/recharge_delay = 15 SECONDS
+	slowdown = 0
 
 /// Entirely overriden take_damage. This shouldn't exist outside of an implant (other than maybe christmas).
 /obj/item/shield/riot/implant/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, attack_dir, armour_penetration = 0)
@@ -593,6 +596,7 @@
 	var/on_throw_speed = 2
 	var/active = 0
 	var/clumsy_check = TRUE
+	slowdown = 0
 
 /obj/item/shield/energy/Initialize(mapload)
 	. = ..()

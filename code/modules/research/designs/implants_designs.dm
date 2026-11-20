@@ -335,7 +335,7 @@
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/cyberimp_berserker_corp/hack
-	name = "Sandevistan Implant"
+	name = "Berserker Implant"
 	id = "ci-berserker-hack"
 	build_path = /obj/item/organ/cyberimp/brain/berserker
 	hacked_only = TRUE

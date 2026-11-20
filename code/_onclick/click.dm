@@ -485,9 +485,11 @@
 	return
 
 /mob/living/LaserEyes(atom/A, params)
-	if(!CheckActionCooldown(CLICK_CD_RANGE))
+	// Лазерные глаза имеют фиксированную скорострельность: модификаторы скорости атаки
+	// (берсеркер, стимуляторы, action_cooldown_adjust и т.п.) на них не действуют.
+	if(!CheckActionCooldown(CLICK_CD_RANGE, ignore_mod = TRUE))
 		return
-	DelayNextAction()
+	DelayNextAction(ignore_mod = TRUE)
 
 	var/obj/item/projectile/beam/laser/mutation/LE = new /obj/item/projectile/beam/laser/mutation(loc)
 	playsound(usr.loc, 'sound/weapons/taser2.ogg', 75, 1)

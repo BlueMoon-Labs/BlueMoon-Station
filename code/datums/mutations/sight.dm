@@ -76,6 +76,8 @@
 
 
 //Laser Eyes lets you shoot lasers from your eyes!
+// Скорострельность фиксированная: /mob/living/LaserEyes() проверяет КД с ignore_mod = TRUE,
+// поэтому ускорение атаки (например, берсеркер) на ген не влияет.
 /datum/mutation/human/laser_eyes
 	name = "Laser Eyes"
 	desc = "Reflects concentrated light back from the eyes."
