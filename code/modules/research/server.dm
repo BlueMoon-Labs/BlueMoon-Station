@@ -1,12 +1,14 @@
 /// Общий множитель выработки сервера.
 ///
-/// Убывающую отдачу от количества серверов считает SSresearch.calculate_server_coefficient()
-/// - sqrt(100/N) на всю ферму. Здесь раньше висела ВТОРАЯ такая кривая, персональная: сервера
+/// Убывающую отдачу от количества серверов в сети считает SSresearch.calculate_server_coefficient()
+/// - sqrt(100/N) отдельно для каждой сети. Здесь раньше висела ВТОРАЯ такая кривая, персональная: сервера
 /// с четвёртого получали ещё и личный штраф по позиции в списке. Две кривые перемножались, и
 /// суммарный доход фермы переставал расти - пятый сервер давал станции МЕНЬШЕ очков, чем четыре
 /// (≈40*ig против 46*ig). Отсюда и жалобы "чинится доп. серверами... а нет, не чинится".
 /// Оставлен только прежний бонус, чтобы выработка одиночного сервера не изменилась.
 #define RESEARCH_SERVER_OUTPUT_MULTIPLIER 1.2
+/// Запас до верхней границы температуры, при которой сервер отключается.
+#define RESEARCH_SERVER_TEMP_SHUTDOWN_MARGIN 50
 
 /obj/machinery/rnd/server
 	name = "\improper R&D Server"
@@ -57,7 +59,7 @@
 /obj/machinery/rnd/server/process()
 	if(!(machine_stat & NOPOWER) && working)
 		produce_heat() //аргументов не принимает: раньше сюда уходил ключ ассоциативного списка
-	if(get_env_temp() >= (temp_tolerance_high + 50) || get_env_temp() <= temp_tolerance_low)
+	if(get_env_temp() >= (temp_tolerance_high + RESEARCH_SERVER_TEMP_SHUTDOWN_MARGIN) || get_env_temp() <= temp_tolerance_low)
 		if(working)
 			working = FALSE
 			play_alarm()
@@ -282,54 +284,81 @@
 		ui = new(user, src, "RDServerControl", name)
 		ui.open()
 
+/// Единый предикат доступности сервера: статус карточки и счётчик онлайн-серверов
+/// должны использовать одно и то же условие, иначе обесточенный сервер с working = TRUE
+/// попадёт в сводку как работающий.
+/obj/machinery/computer/rdservercontrol/proc/is_server_online(obj/machinery/rnd/server/server)
+	return server.working && !(server.machine_stat & (NOPOWER|BROKEN|EMPED))
+
 /obj/machinery/computer/rdservercontrol/ui_data(mob/user)
 	var/list/data = list()
 	var/list/server_data = list()
 	var/list/networks = list()
+	var/list/working_servers_by_network = list()
+	var/list/income_by_network = list()
 	var/online_servers = 0
 	var/total_income = 0
 	var/index = 0
 
-	for(var/obj/machinery/rnd/server/S in GLOB.machines)
-		if(QDELETED(S))
+	// Считаем работающие серверы по сетям и доход по тем же правилам, что SSresearch.fire().
+	for(var/obj/machinery/rnd/server/server in GLOB.machines)
+		if(QDELETED(server) || !server.working || !server.stored_research)
+			continue
+		var/datum/techweb/web = server.stored_research
+		working_servers_by_network[web] = (working_servers_by_network[web] || 0) + 1
+		if(!SSresearch.multiserver_calculation)
+			continue
+		var/list/mining_result = server.mine()
+		income_by_network[web] = (income_by_network[web] || 0) + (mining_result[TECHWEB_POINT_TYPE_GENERIC] || 0)
+
+	if(SSresearch.multiserver_calculation)
+		for(var/datum/techweb/web as anything in income_by_network)
+			income_by_network[web] *= SSresearch.calculate_server_coefficient(working_servers_by_network[web])
+	else
+		for(var/datum/techweb/web as anything in working_servers_by_network)
+			income_by_network[web] = SSresearch.single_server_income[TECHWEB_POINT_TYPE_GENERIC] || 0
+
+	for(var/obj/machinery/rnd/server/server in GLOB.machines)
+		if(QDELETED(server))
 			continue
 		index++
-		var/turf/T = get_turf(S)
-		var/datum/techweb/web = S.stored_research
+		var/turf/server_turf = get_turf(server)
+		var/datum/techweb/web = server.stored_research
 		var/connected = !!web
+		var/is_online = is_server_online(server)
 		var/income = 0
-		if(S.working && connected)
-			var/list/mining_result = S.mine()
-			income = round(mining_result[TECHWEB_POINT_TYPE_GENERIC] || 0, 0.1)
-		if(S.working)
+		if(connected && is_online)
+			// fire() начисляет доход на всю сеть, поэтому на карточку приходится доля сервера.
+			income = round((income_by_network[web] || 0) / (working_servers_by_network[web] || 1), 0.1)
+		if(is_online)
 			online_servers++
 		if(connected)
 			networks[web] = TRUE
 		total_income += income
 
 		var/status = "online"
-		if(S.machine_stat & BROKEN)
+		if(server.machine_stat & BROKEN)
 			status = "broken"
-		else if(S.machine_stat & NOPOWER)
+		else if(server.machine_stat & NOPOWER)
 			status = "no_power"
-		else if(S.machine_stat & EMPED)
+		else if(server.machine_stat & EMPED)
 			status = "emp"
-		else if(!S.working)
-			status = "overheated"
-		else if(S.obj_flags & EMAGGED)
+		else if(!server.working)
+			status = "bad_temp"
+		else if(server.obj_flags & EMAGGED)
 			status = "emagged"
 
-		var/env_temp = S.get_env_temp()
+		var/env_temp = server.get_env_temp()
 		server_data += list(list(
-			"id" = uppertext(S.server_id),
+			"id" = uppertext(server.server_id),
 			"path" = "C:\\RND\\SERVER_[index]",
 			"network" = connected ? (web.organization || "НЕИЗВЕСТНО") : "НЕ ПОДКЛЮЧЕН",
 			"connected" = connected,
-			"location" = T ? "([T.x], [T.y], [T.z])" : "НЕИЗВЕСТНО",
+			"location" = server_turf ? "([server_turf.x], [server_turf.y], [server_turf.z])" : "НЕИЗВЕСТНО",
 			"income" = income,
 			"temperature" = round(env_temp - T0C),
-			"temp_high" = round(S.temp_tolerance_high - T0C),
-			"temp_critical" = round(S.temp_tolerance_high + 50 - T0C),
+			"temp_high" = round(server.temp_tolerance_high - T0C),
+			"temp_critical" = round(server.temp_tolerance_high + RESEARCH_SERVER_TEMP_SHUTDOWN_MARGIN - T0C),
 			"status" = status,
 		))
 
@@ -365,3 +394,4 @@
 	return TRUE
 
 #undef RESEARCH_SERVER_OUTPUT_MULTIPLIER
+#undef RESEARCH_SERVER_TEMP_SHUTDOWN_MARGIN

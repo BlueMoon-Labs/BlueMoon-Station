@@ -33,8 +33,8 @@ const STATUSES = {
     icon: 'bolt',
     tone: 'warning',
   },
-  overheated: {
-    label: 'ПЕРЕГРЕВ',
+  bad_temp: {
+    label: 'НЕДОПУСТИМАЯ ТЕМПЕРАТУРА',
     icon: 'temperature-high',
     tone: 'offline',
   },
@@ -192,7 +192,7 @@ export const RDServerControl = () => {
               <Stack.Item>
                 <Box className="RDServerControl__badge RDServerControl__badge--online">
                   <Icon name="wifi" mr={0.5} />
-                  UPLINK CONNECTED
+                  СОЕДИНЕНИЕ УСТАНОВЛЕНО
                 </Box>
               </Stack.Item>
             </Stack>
@@ -203,7 +203,7 @@ export const RDServerControl = () => {
               {' // '}
               Драйверы... <span className="RDServerControl__ok">OK</span>
               {' // '}
-              Интерфейс... <span className="RDServerControl__ok">READY</span>
+              Интерфейс... <span className="RDServerControl__ok">ГОТОВ</span>
             </Box>
           </Box>
 
