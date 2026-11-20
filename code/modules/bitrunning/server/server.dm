@@ -680,6 +680,10 @@
 
 	avatar.equipOutfit(to_wear, visualsOnly = TRUE)
 
+	var/obj/item/clothing/under/avatar_uniform = avatar.w_uniform
+	if(istype(avatar_uniform))
+		avatar_uniform.sensor_mode = SENSOR_OFF
+
 	if(!generated_domain.forced_outfit)
 		for(var/obj/thing in avatar.held_items)
 			qdel(thing)

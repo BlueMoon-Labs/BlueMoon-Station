@@ -320,6 +320,9 @@
 
 	REMOVE_TRAIT(old_body, TRAIT_MIND_TEMPORARILY_GONE, REF(src))
 
+	if(!QDELETED(avatar))
+		qdel(avatar)
+
 // Снаряжение берётся у верхнего человека, несущего предмет.
 /datum/component/loads_avatar_gear
 	var/datum/callback/load_callback
