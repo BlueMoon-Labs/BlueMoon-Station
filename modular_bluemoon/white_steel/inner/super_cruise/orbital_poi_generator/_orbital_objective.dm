@@ -20,9 +20,6 @@
 	//WHITE-STEEL FIX: с какого момента (world.time) на руине не видно живых игроков.
 	//Шаттл уедет сам, только если это длится дольше MISSION_SHUTTLE_EMPTY_GRACE.
 	var/mission_shuttle_empty_since = 0
-	//WHITE-STEEL PORT: ckey'и авангардцев, зафиксированные на борту шаттла в момент старта миссии.
-	//null - снимок не сделан (ограничение по очкам не применяется), list() - на шаттле никого не было.
-	var/list/expedition_crew_ckeys
 
 /datum/orbital_objective/New()
 	. = ..()
@@ -37,9 +34,6 @@
 	if(linked_beacon)
 		linked_beacon.linked_objective = null
 		linked_beacon = null
-	//WHITE-STEEL PORT: миссия закончилась и экспедиция улетела с руины - тела погибших
-	//авангардцев отправляем домой на приёмный маяк, иначе их съест аннигилятор уровня.
-	fulton_dead_expeditors_home(TRUE)
 	return ..()
 
 /datum/orbital_objective/proc/on_assign(obj/machinery/computer/objective/objective_computer)
@@ -58,26 +52,6 @@
 //null, пока цель не создана (руина ещё не сгенерирована).
 /datum/orbital_objective/proc/get_target()
 	return null
-
-/datum/orbital_objective/proc/unregister_mission_body(mob/target)
-	if(!ismob(target))
-		return
-	var/target_name = target.real_name
-	if(istext(target_name))
-		LAZYREMOVE(GLOB.mob_spawners[target_name], target)
-		if(!LAZYLEN(GLOB.mob_spawners[target_name]))
-			GLOB.mob_spawners -= target_name
-/datum/orbital_objective/proc/cleanup_undelivered_body(mob/target, force_delete = FALSE)
-	if(!ismob(target))
-		return
-	unregister_mission_body(target)
-	if(QDELETED(target))
-		return
-	if(!force_delete && (is_station_level(target.z) || is_centcom_level(target.z)))
-		return
-	if(target.client)
-		target.ghostize()
-	qdel(target)
 
 /datum/orbital_objective/proc/generate_payout()
 	payout = rand(min_payout, max_payout)
@@ -133,9 +107,8 @@
 		return
 	mission_shuttle_dispatched = TRUE
 	log_game("[name]: вся команда на руине (z=[objective_z_level]) мертва, шаттл авангарда возвращается на базу.")
-	//Тела погибших — на приёмный маяк авангарда (а если маяка на карте нет, то на мостик шаттла),
-	//чтобы уехали домой и не были зачищены аннигилятором уровня.
-	fulton_dead_expeditors_home()
+	//Тела погибших — на мостик шаттла, чтобы уехали домой и не были зачищены аннигилятором уровня.
+	fulton_dead_expeditors_to_bridge()
 	SSzclear.temp_keep_z(exploration.z)
 	var/obj/docking_port/stationary/home_port = SSshuttle.getDock("exploration_home")
 	if(home_port)
@@ -143,117 +116,22 @@
 	if(SSshuttle.moveShuttle("exploration", "exploration_home", 1) == 0)
 		broadcast_auto_return()
 
-//WHITE-STEEL PORT: фултон тел погибших на приёмный маяк авангарда (/obj/structure/fulton_beacon),
-//который игрок ставит на карте. Если маяка на карте нет - старое поведение: тела едут на мостик
-//экспедиционного шаттла. Тело перемещаем СРАЗУ (до moveShuttle), чтобы оно гарантированно уехало
-//домой вместе с шаттлом; фултон-эффект — отдельная визуалка на месте гибели.
-//require_departure - доставлять тела только если экспедиция уже улетела с руины (шаттл ещё
-//стоит на её Z-уровне - тела пока оставляем на месте).
-/datum/orbital_objective/proc/fulton_dead_expeditors_home(require_departure = FALSE)
-	if(!objective_z_level)
-		return
-	if(require_departure)
-		var/obj/docking_port/mobile/exploration = SSshuttle.getShuttle("exploration")
-		if(exploration && exploration.z == objective_z_level)
-			return
-	var/obj/structure/fulton_beacon/beacon = get_expedition_body_beacon()
-	var/turf/bridge = null
-	if(!beacon)
-		bridge = get_exploration_bridge_turf()
-	var/turf/shuttle_fallback = null
-	var/obj/docking_port/mobile/exploration_shuttle = SSshuttle.getShuttle("exploration")
-	if(exploration_shuttle)
-		for(var/area/A in exploration_shuttle.shuttle_areas)
-			for(var/turf/open/floor/F in A)
-				if(!F.density)
-					shuttle_fallback = F
-					break
-			if(shuttle_fallback)
-				break
-	if(!beacon && !bridge && !shuttle_fallback)
+//WHITE-STEEL PORT: фултон тел погибших на мостик экспедиционного шаттла. Тело перемещаем СРАЗУ
+//(до moveShuttle), чтобы оно гарантированно уехало домой вместе с шаттлом; фултон-эффект —
+//отдельная визуалка на месте гибели.
+/datum/orbital_objective/proc/fulton_dead_expeditors_to_bridge()
+	var/turf/bridge = get_exploration_bridge_turf()
+	if(!bridge)
 		return
 	var/atom/movable/npc_target = get_target()
-	for(var/mob/living/L as anything in GLOB.mob_living_list)
-		if(QDELETED(L) || L == npc_target || !L.mind)
+	for(var/mob/living/carbon/human/H as() in GLOB.human_list)
+		if(QDELETED(H) || H == npc_target || H.z != objective_z_level)
 			continue
-		var/turf/start = get_turf(L)
-		if(start?.z != objective_z_level)
+		if(H.stat != DEAD || !H.mind)
 			continue
-		//Только авангард: трупы живцов руины и цель миссии на маяк не летят.
-		if(!is_expedition_crew(L))
-			continue
-		//Сознание в отрубленной голове, мозге или MMI: сам он с руины не уйдёт, везём носитель.
-		var/atom/movable/remains = L
-		if(isbrain(L))
-			remains = get_brain_carrier(L)
-		else if(L.stat != DEAD)
-			continue
-		//Останки уходят на маяк (на свободный пол рядом с ним) или, если маяка нет, на мостик шаттла.
-		if(!send_remains_home(remains, beacon ? beacon.get_delivery_turf() : (bridge || shuttle_fallback)))
-			continue
-		if(isbrain(L))
-			send_remains_home(find_brainless_body(L), beacon ? beacon.get_delivery_turf() : (bridge || shuttle_fallback))
-
-/datum/orbital_objective/proc/send_remains_home(atom/movable/remains, turf/destination)
-	if(QDELETED(remains) || !destination)
-		return FALSE
-	var/turf/start = get_turf(remains)
-	if(ismob(remains.loc) && isitem(remains))
-		var/mob/holder = remains.loc
-		if(!holder.is_holding(remains) || !holder.temporarilyRemoveItemFromInventory(remains, TRUE))
-			return FALSE
-	remains.forceMove(destination)
-	fulton_launch_effect(start)
-	return TRUE
-
-/// Предмет, в котором лежит сознание: отрубленная голова, мозг или MMI. null, если его не вынуть (MMI в киборге или мехе).
-/datum/orbital_objective/proc/get_brain_carrier(mob/living/brain/brainmob)
-	var/obj/item/carrier = brainmob.loc
-	while(istype(carrier?.loc, /obj/item/bodypart) || istype(carrier?.loc, /obj/item/mmi))
-		carrier = carrier.loc
-	if(!isitem(carrier) || istype(carrier.loc, /obj/vehicle))
-		return null
-	if(ismob(carrier.loc))
-		var/mob/holder = carrier.loc
-		if(!holder.is_holding(carrier))
-			return null
-	return carrier
-
-/// Тело, из которого достали этот мозг (вместе с головой или без), если оно лежит на руине.
-/datum/orbital_objective/proc/find_brainless_body(mob/living/brain/brainmob)
-	var/enzymes = brainmob.stored_dna?.unique_enzymes
-	if(!enzymes)
-		return null
-	for(var/mob/living/carbon/human/H as anything in GLOB.human_list)
-		if(QDELETED(H) || H.mind || H.getorganslot(ORGAN_SLOT_BRAIN))
-			continue
-		var/turf/T = get_turf(H)
-		if(T?.z != objective_z_level || H.dna?.unique_enzymes != enzymes)
-			continue
-		return H
-	return null
-
-//WHITE-STEEL PORT: авангардовец ли это? (по профессии). Цель миссии и прочие живцы руины - нет.
-/datum/orbital_objective/proc/is_expedition_crew(mob/living/L)
-	if(L == get_target())
-		return FALSE
-	if(!L.mind || !L.mind.assigned_role)
-		return FALSE
-	return istype(SSjob.GetJob(L.mind.assigned_role), /datum/job/expeditor)
-
-//WHITE-STEEL PORT: приёмный маяк для тел экспедиции. Приоритет у маяков на станции (их ставит
-//игрок на карте сам), если таких нет - берём любой маяк. null - маяков на карте нет вообще.
-//Цель миссии (npc_target) сюда не попадает: её труп разбирает сам тип задания.
-/datum/orbital_objective/proc/get_expedition_body_beacon()
-	var/obj/structure/fulton_beacon/fallback
-	for(var/obj/structure/fulton_beacon/beacon in GLOB.expedition_body_beacons)
-		if(QDELETED(beacon))
-			continue
-		if(is_station_level(beacon.z))
-			return beacon
-		if(!fallback && beacon.z != objective_z_level)
-			fallback = beacon
-	return fallback
+		var/turf/start = get_turf(H)
+		H.forceMove(bridge)
+		INVOKE_ASYNC(src, PROC_REF(fulton_launch_effect), start)
 
 //WHITE-STEEL PORT: тайл мостика экспедиционного шаттла (по консоли полёта).
 /datum/orbital_objective/proc/get_exploration_bridge_turf()
@@ -265,8 +143,7 @@
 
 //WHITE-STEEL PORT: визуальный запуск фултона (шарик вверх) на месте гибели — упрощённая
 //копия анимации /obj/item/extraction_pack без маяка и предмета.
-//Глобальный proc (а не метод датума): эффект зовём и из Destroy() задания, где датум уже умирает.
-/proc/fulton_launch_effect(turf/launch_turf)
+/datum/orbital_objective/proc/fulton_launch_effect(turf/launch_turf)
 	set waitfor = FALSE
 	if(QDELETED(launch_turf))
 		return
@@ -341,20 +218,6 @@
 	if(!QDELETED(src) && !QDELETED(target) && !target.key && !target.client)
 		addtimer(CALLBACK(src, PROC_REF(run_ghost_role_poll), target, question, ignore_category, role_text, takeover_message), 30 SECONDS)
 
-/datum/orbital_objective/proc/snapshot_expedition_crew()
-	var/obj/docking_port/mobile/exploration = SSshuttle.getShuttle("exploration")
-	if(!exploration)
-		expedition_crew_ckeys = list()
-		return
-	expedition_crew_ckeys = list()
-	for(var/mob/living/carbon/human/H as() in GLOB.human_list)
-		if(QDELETED(H) || H.stat == DEAD || !H.mind || !H.ckey)
-			continue
-		var/area/A = get_area(H)
-		if(!A || !(A in exploration.shuttle_areas))
-			continue
-		expedition_crew_ckeys += H.ckey
-
 /datum/orbital_objective/proc/complete_objective()
 	if(completed)
 		//Delete
@@ -403,8 +266,6 @@
 			if(findtext(role_txt, "vanguard") || findtext(role_txt, "expeditor"))
 				is_vanguard = TRUE
 		if(!is_vanguard)
-			continue
-		if(!isnull(expedition_crew_ckeys) && (!H.ckey || !(H.ckey in expedition_crew_ckeys)))
 			continue
 		if(!id_card)
 			id_card = H.get_idcard(TRUE)

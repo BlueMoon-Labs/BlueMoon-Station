@@ -44,11 +44,6 @@
 /obj/structure/fluff/drake_statue,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/powered)
-"cb" = (
-/obj/effect/mob_spawn/human/corpse/pirate,
-/obj/effect/decal/cleanable/blood/splatter,
-/turf/open/floor/plating/asteroid/airless,
-/area/ruin/powered)
 "ce" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -231,10 +226,6 @@
 /obj/structure/rack/shelf,
 /turf/open/floor/pod/dark,
 /area/survivalpod/nonpowered)
-"ht" = (
-/obj/item/tank/internals/emergency_oxygen/empty,
-/turf/open/floor/plating/asteroid/airless,
-/area/ruin/powered)
 "hA" = (
 /obj/structure/barricade/wooden,
 /turf/open/floor/plating/asteroid/airless,
@@ -289,10 +280,6 @@
 "kE" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/ruin/powered)
-"la" = (
-/obj/item/reagent_containers/food/snacks/meat/slab/goliath,
-/turf/open/indestructible/necropolis,
-/area/ruin/powered)
 "lB" = (
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
@@ -301,10 +288,6 @@
 	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium/red,
-/area/ruin/powered)
-"lN" = (
-/obj/structure/elite_tumor,
-/turf/open/indestructible/necropolis,
 /area/ruin/powered)
 "lX" = (
 /turf/closed/mineral/random,
@@ -359,12 +342,6 @@
 "pf" = (
 /turf/closed/wall/mineral/titanium,
 /area/ruin/powered)
-"pl" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 10
-	},
-/turf/open/floor/plating/asteroid/airless,
-/area/ruin/powered)
 "pm" = (
 /obj/structure/salvage/metal_frame,
 /obj/effect/decal/cleanable/glass,
@@ -417,9 +394,6 @@
 	icon_state = "1-4"
 	},
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
-/area/ruin/powered)
-"qG" = (
-/turf/open/indestructible/necropolis,
 /area/ruin/powered)
 "qO" = (
 /obj/machinery/door/airlock/public/glass{
@@ -584,10 +558,6 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/powered)
-"xm" = (
-/obj/effect/decal/cleanable/blood/tracks,
-/turf/open/floor/plating/asteroid/airless,
-/area/ruin/powered)
 "xx" = (
 /obj/item/gps/computer,
 /turf/open/floor/pod/dark,
@@ -607,26 +577,10 @@
 /obj/effect/decal/cleanable/blood/gibs/core,
 /turf/open/floor/wood/damturf/broken1,
 /area/ruin/powered)
-"yh" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 8
-	},
-/turf/open/floor/plating/asteroid/airless,
-/area/ruin/powered)
 "ys" = (
 /obj/structure/chair/comfy/shuttle,
 /obj/machinery/light/directional/north,
 /turf/open/floor/mineral/plastitanium/red,
-/area/ruin/powered)
-"yx" = (
-/obj/effect/mob_spawn/human/corpse/russian,
-/turf/open/indestructible/necropolis,
-/area/ruin/powered)
-"yD" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 10
-	},
-/turf/open/indestructible/necropolis,
 /area/ruin/powered)
 "yP" = (
 /obj/structure/table/wood,
@@ -640,19 +594,9 @@
 /obj/structure/salvage/remains,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered)
-"zs" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 5
-	},
-/turf/open/floor/plating/asteroid/airless,
-/area/ruin/powered)
 "Ab" = (
 /obj/effect/mob_spawn/human/corpse/syndicatesoldier,
 /obj/effect/decal/cleanable/blood/splatter,
-/turf/open/floor/plating/asteroid/airless,
-/area/ruin/powered)
-"Ai" = (
-/obj/item/flashlight/flare/culttorch,
 /turf/open/floor/plating/asteroid/airless,
 /area/ruin/powered)
 "Ak" = (
@@ -734,9 +678,6 @@
 	},
 /turf/open/floor/pod/dark,
 /area/survivalpod/nonpowered)
-"DR" = (
-/turf/closed/mineral/random/low_chance,
-/area/template_noop)
 "Es" = (
 /obj/structure/table/wood,
 /obj/item/xenoarch/clean/hammer/cm2,
@@ -1008,16 +949,12 @@
 /area/ruin/powered)
 "NG" = (
 /obj/structure/elite_tumor,
-/turf/open/floor/plating/asteroid,
+/turf/closed/mineral/random/low_chance,
 /area/ruin/powered)
 "Oh" = (
 /obj/item/claymore/cerberus,
 /obj/effect/mob_spawn/human/corpse/miner,
 /turf/open/floor/plating/asteroid,
-/area/ruin/powered)
-"Oi" = (
-/obj/effect/mob_spawn/human/corpse/pirate,
-/turf/open/indestructible/necropolis,
 /area/ruin/powered)
 "Ot" = (
 /obj/item/stack/ore/uranium,
@@ -1067,12 +1004,6 @@
 /obj/effect/decal/cleanable/glass/plastitanium,
 /obj/item/stack/cable_coil/cut/random,
 /turf/open/floor/plating/asteroid/airless,
-/area/ruin/powered)
-"PW" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 8
-	},
-/turf/open/indestructible/necropolis,
 /area/ruin/powered)
 "Qk" = (
 /obj/item/trash/raisins,
@@ -1130,30 +1061,15 @@
 	},
 /turf/open/floor/pod/dark,
 /area/survivalpod/nonpowered)
-"Sz" = (
-/obj/effect/mob_spawn/human/corpse/charredskeleton,
-/turf/open/indestructible/necropolis,
-/area/ruin/powered)
 "SL" = (
 /obj/machinery/door/airlock/survival_pod,
 /obj/machinery/poweredfans,
 /turf/open/floor/pod/dark,
 /area/survivalpod/nonpowered)
-"Ti" = (
-/obj/item/pickaxe,
-/obj/effect/decal/cleanable/blood/splatter,
-/turf/open/floor/plating/asteroid/airless,
-/area/ruin/powered)
 "TB" = (
 /mob/living/simple_animal/hostile/carp,
 /turf/template_noop,
 /area/template_noop)
-"TS" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 1
-	},
-/turf/open/indestructible/necropolis,
-/area/ruin/powered)
 "TZ" = (
 /obj/machinery/button/door{
 	id = 5434;
@@ -1251,8 +1167,8 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/powered)
 "Xu" = (
-/obj/effect/decal/cleanable/blood/splatter,
-/turf/open/indestructible/necropolis,
+/mob/living/simple_animal/hostile/shark/kawaii,
+/turf/open/floor/plating/asteroid/airless,
 /area/ruin/powered)
 "Xy" = (
 /obj/item/clothing/suit/hazardvest{
@@ -1375,6 +1291,8 @@ nm
 nm
 nm
 nm
+nm
+nm
 TB
 nm
 nm
@@ -1403,13 +1321,10 @@ nm
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (2,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -1458,13 +1373,10 @@ nm
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (3,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -1513,13 +1425,10 @@ nm
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (4,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -1568,13 +1477,10 @@ nm
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (5,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -1623,13 +1529,10 @@ nm
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (6,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -1678,13 +1581,10 @@ nm
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (7,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -1733,13 +1633,10 @@ nm
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (8,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -1788,13 +1685,10 @@ fc
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (9,1,1) = {"
+nm
+nm
 nm
 nm
 fc
@@ -1843,13 +1737,10 @@ FI
 fc
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (10,1,1) = {"
+nm
+nm
 nm
 nm
 FI
@@ -1898,13 +1789,10 @@ FI
 fc
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (11,1,1) = {"
+nm
+nm
 nm
 fc
 FI
@@ -1953,13 +1841,10 @@ FI
 FI
 fc
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (12,1,1) = {"
+nm
+nm
 nm
 fc
 FI
@@ -2008,13 +1893,10 @@ FI
 FI
 fc
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (13,1,1) = {"
+nm
+nm
 nm
 fc
 FI
@@ -2063,13 +1945,10 @@ FI
 FI
 fc
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (14,1,1) = {"
+nm
+nm
 nm
 nm
 FI
@@ -2118,13 +1997,10 @@ FI
 FI
 fc
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (15,1,1) = {"
+nm
+nm
 nm
 nm
 fc
@@ -2173,13 +2049,10 @@ FI
 FI
 fc
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (16,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2228,13 +2101,10 @@ lX
 FI
 fc
 TB
-nm
-nm
-nm
-nm
-nm
 "}
 (17,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2283,13 +2153,10 @@ lX
 FI
 fc
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (18,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2338,13 +2205,10 @@ lX
 FI
 fc
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (19,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2393,13 +2257,10 @@ lX
 FI
 Gt
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (20,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2448,13 +2309,10 @@ lX
 FI
 fc
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (21,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2503,13 +2361,10 @@ lX
 FI
 fc
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (22,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2558,13 +2413,10 @@ FI
 FI
 fc
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (23,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2603,7 +2455,7 @@ FM
 nu
 nu
 bX
-NG
+fQ
 lX
 lX
 lX
@@ -2613,13 +2465,10 @@ FI
 fc
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (24,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2668,13 +2517,10 @@ FI
 fc
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (25,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2723,13 +2569,10 @@ fc
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (26,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2776,15 +2619,12 @@ FI
 FI
 nm
 nm
-TB
-nm
-nm
-nm
-nm
 nm
 nm
 "}
 (27,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2832,14 +2672,11 @@ fc
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
-nm
+TB
 "}
 (28,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2888,13 +2725,10 @@ TB
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (29,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2943,13 +2777,10 @@ nm
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (30,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -2998,13 +2829,10 @@ nm
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (31,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -3053,13 +2881,10 @@ nm
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (32,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -3108,13 +2933,10 @@ nm
 nm
 nm
 nm
-nm
-nm
-nm
-nm
-nm
 "}
 (33,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -3160,16 +2982,13 @@ FI
 nm
 nm
 nm
-FI
-nm
-nm
-nm
-nm
 nm
 nm
 nm
 "}
 (34,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -3214,11 +3033,6 @@ lX
 FI
 nm
 nm
-FI
-FI
-FI
-nm
-nm
 nm
 nm
 nm
@@ -3229,6 +3043,8 @@ nm
 nm
 nm
 nm
+nm
+nm
 fc
 fc
 nm
@@ -3266,15 +3082,10 @@ lX
 lX
 FI
 FI
-FI
-FI
-FI
-FI
-FI
-FI
-FI
+fc
+TB
 nm
-nm
+TB
 nm
 nm
 nm
@@ -3284,6 +3095,8 @@ nm
 nm
 nm
 nm
+nm
+nm
 FI
 FI
 fc
@@ -3321,14 +3134,9 @@ MY
 lX
 FI
 FI
-FI
-FI
-FI
-FI
-FI
-FI
-rs
-FI
+fc
+nm
+nm
 nm
 nm
 nm
@@ -3338,6 +3146,8 @@ nm
 nm
 nm
 nm
+nm
+nm
 FI
 FI
 FI
@@ -3374,17 +3184,12 @@ lX
 MY
 rs
 lX
-FI
+fc
 FI
 fc
-Ti
-Ai
-FI
-FI
-FI
-FI
-FI
-FI
+fc
+nm
+nm
 nm
 nm
 nm
@@ -3393,6 +3198,8 @@ nm
 nm
 nm
 nm
+nm
+nm
 FI
 FI
 FI
@@ -3429,17 +3236,12 @@ lX
 lX
 lX
 lX
+fc
 FI
-FI
-FI
-cb
-xm
-pl
-lN
-FI
-FI
-FI
-FI
+fc
+nm
+nm
+nm
 nm
 nm
 nm
@@ -3448,6 +3250,8 @@ nm
 nm
 nm
 nm
+nm
+nm
 fc
 FI
 FI
@@ -3486,16 +3290,11 @@ lX
 lX
 fc
 FI
-FI
-ht
 fc
-yh
-qG
-la
-FI
-FI
-FI
-FI
+nm
+nm
+nm
+nm
 nm
 nm
 "}
@@ -3504,18 +3303,20 @@ nm
 nm
 nm
 nm
-fc
-FI
-FI
-fc
-nm
-nm
-nm
-nm
-nm
 nm
 nm
 fc
+FI
+FI
+fc
+nm
+nm
+nm
+nm
+nm
+nm
+nm
+fc
 fc
 FI
 FI
@@ -3541,16 +3342,11 @@ lX
 lX
 FI
 FI
-FI
-FI
 fc
-zs
-TS
-TS
-yD
-Xu
-FI
-rs
+fc
+nm
+nm
+nm
 nm
 nm
 "}
@@ -3571,6 +3367,8 @@ nm
 nm
 nm
 nm
+nm
+nm
 fc
 fc
 FI
@@ -3581,35 +3379,32 @@ FI
 FI
 FI
 FI
+NG
+NG
+FI
+NG
+NG
+NG
+NG
 FI
 FI
+NG
+NG
+NG
+NG
 FI
 FI
-FI
-FI
-FI
-FI
-FI
-FI
-FI
-FI
-FI
-FI
-FI
-FI
-FI
-FI
-qG
-Xu
-qG
-PW
-qG
-Sz
-FI
-FI
+fc
+fc
+nm
+TB
+nm
+nm
 nm
 "}
 (42,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -3638,30 +3433,25 @@ fc
 fc
 FI
 FI
+NG
 FI
 FI
 FI
 FI
+NG
+NG
 FI
 FI
 FI
 FI
-FI
-FI
-FI
-FI
-FI
-rs
-FI
-FI
-FI
-Sz
-lN
+NG
+NG
+fc
 Xu
-qG
-lN
-Xu
-FI
+nm
+nm
+nm
+nm
 nm
 "}
 (43,1,1) = {"
@@ -3690,6 +3480,8 @@ nm
 nm
 nm
 nm
+nm
+nm
 fc
 fc
 fc
@@ -3704,19 +3496,14 @@ fc
 fc
 fc
 fc
-FI
-FI
-rs
-FI
-FI
-FI
-la
-Xu
-qG
-qG
-qG
-qG
-FI
+fc
+fc
+fc
+fc
+nm
+nm
+nm
+nm
 nm
 "}
 (44,1,1) = {"
@@ -3748,33 +3535,32 @@ nm
 nm
 nm
 nm
+nm
+nm
 fc
 fc
 fc
 fc
-FI
+NG
 nm
 nm
 nm
 nm
 nm
 fc
-FI
-FI
-rs
-rs
-FI
-FI
-lN
-qG
-qG
-lN
-qG
-lN
-FI
+fc
+fc
+fc
+fc
+nm
+nm
+nm
+nm
 nm
 "}
 (45,1,1) = {"
+nm
+nm
 nm
 nm
 nm
@@ -3815,18 +3601,13 @@ nm
 nm
 TB
 nm
-FI
-FI
-FI
-FI
-Xu
-Oi
-qG
-qG
-qG
-qG
-yx
-FI
+fc
+fc
+fc
+nm
+nm
+nm
+nm
 nm
 "}
 (46,1,1) = {"
@@ -3871,17 +3652,14 @@ nm
 nm
 nm
 nm
-FI
-FI
-FI
-lN
-Xu
-qG
-lN
-qG
-lN
-Xu
-FI
+nm
+nm
+fc
+nm
+nm
+nm
+nm
+nm
 nm
 "}
 (47,1,1) = {"
@@ -3927,17 +3705,14 @@ nm
 nm
 nm
 nm
-FI
-rs
-FI
-FI
-rs
-FI
-FI
-FI
-lN
-rs
-FI
+nm
+nm
+nm
+nm
+nm
+nm
+nm
+nm
 "}
 (48,1,1) = {"
 nm
@@ -3982,17 +3757,14 @@ nm
 nm
 nm
 nm
-FI
-FI
-FI
-DR
-DR
-DR
 nm
-FI
-FI
-FI
-FI
+nm
+nm
+nm
+nm
+nm
+nm
+nm
 "}
 (49,1,1) = {"
 nm
@@ -4036,9 +3808,6 @@ TB
 nm
 nm
 nm
-FI
-FI
-FI
 nm
 nm
 nm
@@ -4046,7 +3815,7 @@ nm
 nm
 nm
 nm
-FI
+nm
 nm
 "}
 (50,1,1) = {"
@@ -4080,174 +3849,6 @@ nm
 nm
 nm
 TB
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-"}
-(51,1,1) = {"
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-"}
-(52,1,1) = {"
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-"}
-(53,1,1) = {"
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
-nm
 nm
 nm
 nm

@@ -79,9 +79,6 @@
 	inaccuracy_modifier = 0.7
 	force = 10
 	throwforce = 10
-	burst_size = 2
-	fire_delay = 2
-	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT)
 	cell_type = /obj/item/stock_parts/cell/lascarbine
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 

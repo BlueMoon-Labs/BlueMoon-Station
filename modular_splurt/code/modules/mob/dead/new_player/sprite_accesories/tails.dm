@@ -435,18 +435,6 @@
 	icon_state = "succubus"
 	color_src = MUTCOLORS
 
-/datum/sprite_accessory/tails/mam_tails/succubus
-	name = "Succubus tail"
-	icon = 'modular_splurt/icons/mob/mam_tails.dmi'
-	icon_state = "succubus"
-	matrixed_sections = MUTCOLORS
-
-/datum/sprite_accessory/tails_animated/mam_tails_animated/demon_spade
-	name = "Succubus tail"
-	icon = 'modular_splurt/icons/mob/mam_tails.dmi'
-	icon_state = "succubus"
-	matrixed_sections = MUTCOLORS
-
 /datum/sprite_accessory/tails/mam_tails/kangaroo/alt
 	name = "kangaroo (alt)"
 	icon = 'modular_splurt/icons/mob/64_mam_tails.dmi'
@@ -462,20 +450,6 @@
 	dimension_x = 64
 	center = TRUE
 	color_src = MUTCOLORS
-
-/datum/sprite_accessory/tails/mam_tails/takahiro_kitsune
-	name = "Takahiro Kitsune Tails"
-	icon_state = "7sune"
-	color_src = MATRIXED
-	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
-	matrixed_sections = MATRIX_RED_GREEN
-
-/datum/sprite_accessory/tails_animated/mam_tails_animated/takahiro_kitsune
-	name = "Takahiro Kitsune Tails"
-	icon_state = "7sune"
-	color_src = MATRIXED
-	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
-	matrixed_sections = MATRIX_RED_GREEN
 
 /datum/sprite_accessory/tails/human/nightstalker
 	name = "Nightstalker"
@@ -538,6 +512,3 @@
 	matrixed_sections = MATRIX_RED_BLUE
 	icon = 'modular_splurt/icons/mob/mam_tails.dmi'
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
-
-
-

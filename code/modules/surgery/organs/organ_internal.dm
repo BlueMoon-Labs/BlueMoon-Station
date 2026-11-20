@@ -484,7 +484,7 @@
 /obj/item/organ/examine(mob/user)
 	. = ..()
 	if(!isnull(active_security_level) || !isnull(initial(active_security_level)))
-		. += span_warning("Минимальный уровень тревоги для активации в секторе станции: <b>[isnull(active_security_level) ? SECURITY_LEVEL_COLOR_TEXT(SEC_LEVEL_GREEN,"G&R@EE%N") : SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>. Ограничение действует только на станционных и добывающих уровнях и в отеле Гильберта; в остальных секторах космоса оно не работает.")
+		. += span_warning("Минимальный уровень тревоги для активации в секторе станции: <b>[isnull(active_security_level) ? SECURITY_LEVEL_COLOR_TEXT(SEC_LEVEL_GREEN,"G&R@EE%N") : SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>. Вне сектора станции ограничение не действует.")
 
 /obj/item/organ/proc/action_trigger(datum/action/source, obj/item/organ/target, mob/user)
 	SIGNAL_HANDLER

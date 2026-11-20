@@ -9,8 +9,7 @@
 	maxHealth = 7
 	health = 7
 	chew_probability = 0
-	gold_core_spawnable = NO_SPAWN //грифозная хуйня что срёт плзамой. Из за неё один раз упал сервак. Пусть лучше это будет щитспавном
-
+	gold_core_spawnable = HOSTILE_SPAWN
 
 
 /mob/living/simple_animal/mouse/boommouse/Initialize()
@@ -105,7 +104,7 @@
 	. = ..()
 	faction = list("hostile", "rat")
 
-/mob/living/simple_animal/hostile/mouse/mentor
+/mob/living/simple_animal/mouse/mentor
 	name = "mentor mouse"
 	desc = "A helpful pink mouse! If it's interested in you, you should pick it up."
 	icon = 'modular_splurt/icons/mob/animal.dmi'
@@ -122,8 +121,6 @@
 	see_in_dark = 100
 	maxHealth = 50
 	health = 50
-	melee_damage_lower = 30
-	melee_damage_upper = 30
 	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/slab = 1)
 	response_help_continuous = "pets"
 	response_help_simple = "pet"
@@ -139,7 +136,7 @@
 	vocal_bark_id = "squeak"
 	vocal_pitch = 1.4
 
-/mob/living/simple_animal/hostile/mouse/mentor/Initialize()
+/mob/living/simple_animal/mouse/mentor/Initialize()
 	. = ..()
 	//Force icons because mouse/initialize randomizes them
 	icon = 'modular_splurt/icons/mob/animal.dmi'
@@ -147,7 +144,7 @@
 	icon_living = "mouse_mentor"
 	icon_dead = "mouse_mentor_dead"
 
-/mob/living/simple_animal/hostile/mouse/admin
+/mob/living/simple_animal/mouse/admin
 	name = "Admin mouse"
 	desc = "A strange red mouse. If it's interested in you, you should pick it up."
 	icon = 'modular_splurt/icons/mob/animal.dmi'
@@ -162,8 +159,8 @@
 	turns_per_move = 5
 	blood_volume = 250
 	see_in_dark = 100
-	maxHealth = 199
-	health = 199
+	maxHealth = 99
+	health = 99
 	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/slab = 1)
 	response_help_continuous = "pets"
 	response_help_simple = "pet"
@@ -171,8 +168,6 @@
 	response_disarm_simple = "gently push aside"
 	response_harm_continuous = "splats"
 	response_harm_simple = "splat"
-	melee_damage_lower = 65
-	melee_damage_upper = 65
 	density = FALSE
 	pass_flags = PASSTABLE | PASSGRILLE | PASSMOB
 	mob_size = MOB_SIZE_TINY
@@ -181,7 +176,7 @@
 	vocal_bark_id = "squeak"
 	vocal_pitch = 1.4
 
-/mob/living/simple_animal/hostile/mouse/admin/Initialize()
+/mob/living/simple_animal/mouse/admin/Initialize()
 	. = ..()
 	//Force icons because mouse/initialize randomizes them
 	icon = 'modular_splurt/icons/mob/animal.dmi'

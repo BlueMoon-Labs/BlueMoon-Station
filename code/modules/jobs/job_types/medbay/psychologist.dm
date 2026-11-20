@@ -44,8 +44,10 @@
 	uniform = /obj/item/clothing/under/rank/civilian/lawyer/really_black
 	shoes = /obj/item/clothing/shoes/laceup
 	l_hand = /obj/item/clipboard
-	r_hand = /obj/item/storage/briefcase/medical/psychologist
+	r_hand = /obj/item/storage/briefcase/medical
 	l_pocket = /obj/item/laser_pointer
+
+	backpack_contents = list(/obj/item/storage/pill_bottle/mannitol, /obj/item/storage/pill_bottle/psicodine, /obj/item/storage/pill_bottle/paxpsych, /obj/item/storage/pill_bottle/happinesspsych, /obj/item/storage/pill_bottle/lsdpsych)
 
 	backpack = /obj/item/storage/backpack/medic
 	satchel = /obj/item/storage/backpack/satchel/med

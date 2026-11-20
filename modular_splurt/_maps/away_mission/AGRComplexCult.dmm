@@ -1591,9 +1591,6 @@
 /obj/item/ammo_casing/c9mm,
 /turf/open/floor/plasteel,
 /area/awaymission/complex/security)
-"boN" = (
-/turf/closed/indestructible/wall,
-/area/awaymission/complex/gatehouse)
 "bpj" = (
 /obj/structure/chair{
 	dir = 8
@@ -2097,7 +2094,6 @@
 	id = "mountaingarage1";
 	name = "gatehouse shutters"
 	},
-/obj/effect/agr_rune_blocker,
 /turf/open/floor/plating/snowed/complex,
 /area/awaymission/complex/gatehouse)
 "bUJ" = (
@@ -5192,7 +5188,6 @@
 /area/awaymission/complex/minerhouse)
 "exC" = (
 /obj/machinery/door/airlock/security/glass,
-/obj/effect/agr_rune_blocker,
 /turf/open/floor/plating,
 /area/awaymission/complex/gatehouse)
 "exV" = (
@@ -8430,7 +8425,7 @@
 /obj/item/trash/pistachios,
 /obj/item/reagent_containers/glass/beaker/waterbottle/empty,
 /mob/living/simple_animal/hostile/nanotrasen/survivor,
-/obj/item/gun/ballistic/automatic/wt550/standart,
+/obj/item/gun/ballistic/automatic/fal,
 /turf/open/floor/plating,
 /area/awaymission/complex/security)
 "hjy" = (
@@ -12364,7 +12359,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/trash/chips,
 /obj/item/trash/sosjerky,
-/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/fal,
 /turf/open/floor/plating,
 /area/awaymission/complex/security)
 "kve" = (
@@ -23102,7 +23097,7 @@
 /turf/open/floor/wood,
 /area/awaymission/complex/thewall)
 "tNq" = (
-/obj/item/gun/ballistic/automatic/wt550/standart,
+/obj/item/gun/ballistic/automatic/fal,
 /turf/open/floor/plating/asteroid/snow/complex,
 /area/awaymission/complex/exterior)
 "tNs" = (
@@ -24102,7 +24097,7 @@
 /obj/machinery/atmospherics/pipe/simple{
 	dir = 4
 	},
-/turf/closed/indestructible/wall,
+/turf/closed/wall,
 /area/awaymission/complex/gatehouse)
 "uFo" = (
 /obj/structure/closet/secure_closet/freezer/kitchen,
@@ -24127,10 +24122,10 @@
 /turf/open/floor/plasteel,
 /area/awaymission/complex/facilityresearch)
 "uGd" = (
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/c308,
+/obj/item/ammo_box/magazine/fal/rubber,
+/obj/item/ammo_box/magazine/fal/rubber,
+/obj/item/ammo_box/magazine/fal/rubber,
 /turf/open/floor/plating/asteroid/snow/complex,
 /area/awaymission/complex/exterior)
 "uGf" = (
@@ -26306,7 +26301,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/complex/prison)
 "wwM" = (
-/turf/closed/indestructible/wall,
+/turf/closed/wall/rust,
 /area/awaymission/complex/exterior)
 "wxg" = (
 /obj/structure/cable{
@@ -34307,7 +34302,7 @@ sFr
 sFr
 sFr
 sFr
-uGd
+gIA
 tNq
 nwq
 vfx
@@ -34563,7 +34558,7 @@ rkE
 rkE
 rkE
 gIA
-gIA
+uGd
 gIA
 gIA
 iVO
@@ -47688,14 +47683,14 @@ sOv
 gIA
 jCp
 rhv
-boN
-boN
-boN
-boN
+fky
+fky
+wsx
+wsx
 exC
 uFm
-boN
-boN
+wsx
+wsx
 miw
 jna
 jna
@@ -47945,7 +47940,7 @@ sOv
 gIA
 iDa
 gIA
-boN
+fky
 tTr
 ngZ
 iCw
@@ -48193,16 +48188,16 @@ sFr
 sFr
 wwM
 wwM
-boN
+jna
 bUx
 bUx
 bUx
 bUx
 bUx
 bUx
-boN
-boN
-boN
+wsx
+wsx
+wsx
 djC
 onU
 qBK

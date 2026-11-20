@@ -16314,7 +16314,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/machinery/equipment_vendor/vanguard,
+/obj/machinery/bountyvend/plus,
 /turf/open/floor/plasteel/dark/smooth/edge{
 	dir = 4
 	},

@@ -1538,7 +1538,7 @@
 /area/awaymission/spacebattle/cruiser)
 "fr" = (
 /obj/effect/mob_spawn/human/nanotrasensoldier,
-/obj/item/gun/ballistic/automatic/wt550/standart,
+/obj/item/gun/ballistic/automatic/fal,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "fs" = (
@@ -2324,7 +2324,6 @@
 /obj/item/clothing/under/trek/command/orv/captain,
 /obj/item/pen/fountain/captain,
 /obj/item/tank/jetpack/oxygen/captain,
-/obj/item/storage/garment_case/captain,
 /turf/open/floor/wood,
 /area/awaymission/spacebattle/cruiser)
 "hL" = (
@@ -3068,7 +3067,7 @@
 /area/awaymission/spacebattle/cruiser)
 "kl" = (
 /obj/effect/mob_spawn/human/nanotrasensoldier,
-/obj/item/gun/ballistic/automatic/wt550/standart,
+/obj/item/gun/ballistic/automatic/fal,
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
@@ -6181,7 +6180,7 @@
 /obj/item/storage/belt/military,
 /obj/item/storage/barricade,
 /obj/item/ammo_box/magazine/fal,
-/obj/item/gun/ballistic/automatic/wt550/standart,
+/obj/item/gun/ballistic/automatic/fal,
 /turf/open/floor/engine,
 /area/awaymission/spacebattle/cruiser)
 "Gd" = (
@@ -6515,11 +6514,7 @@
 /area/awaymission/spacebattle/cruiser)
 "IC" = (
 /obj/machinery/vending/boozeomat,
-/obj/effect/turf_decal/tile/bar,
-/obj/effect/turf_decal/tile/bar{
-	dir = 1
-	},
-/turf/open/floor/plasteel,
+/turf/open/space/basic,
 /area/awaymission/spacebattle/cruiser)
 "IJ" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,

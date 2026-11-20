@@ -3,10 +3,7 @@
 	var/mob/camera/aiEye/remote/eyeobj
 	var/mob/living/current_user = null
 	var/list/actions = list()
-	//WHITE-STEEL FIX: кастомный off-экшен - базовый /datum/action/innate/camera_off
-	//жёстко кастит origin к /obj/machinery/computer/camera_advanced, а наша консоль
-	///- /shuttle_flight к нему не относится, поэтому кнопка "отключиться" падала бы в рантайм.
-	var/datum/action/innate/camera_off/supercruise/off_action = new
+	var/datum/action/innate/camera_off/off_action = new
 	var/datum/action/innate/supercruise_docker_rotate/rotate_action = new
 	var/datum/action/innate/supercruise_docker_place/place_action = new
 	var/shuttlePortId = ""
@@ -21,16 +18,6 @@
 
 /obj/machinery/computer/shuttle_flight/Initialize(mapload, obj/item/circuitboard/C)
 	. = ..()
-	//WHITE-STEEL FIX: раньше Initialize/Destroy были объявлены ДВАЖДЫ - здесь и в
-	//shuttle_console.dm. DreamMaker оставляет только последнее объявление (а файл
-	//shuttle_console.dm подключается ВЫШЕ в tgstation.dme), поэтому валидные док-порты
-	//и shuttlePortId не инициализировались. Теперь объявление одно, здесь.
-	valid_docks = params2list(possible_destinations)
-	if(shuttleId)
-		shuttlePortId = "[shuttleId]_custom"
-	else
-		var/static/i = 0
-		shuttlePortId = "unlinked_shuttle_console_[i++]"
 	GLOB.navigation_computers += src
 	whitelist_turfs = typecacheof(whitelist_turfs)
 
@@ -43,12 +30,7 @@
 		remove_eye_control(current_user)
 	if(eyeobj)
 		QDEL_NULL(eyeobj)
-	QDEL_LIST(actions)
-	current_user = null
-	SSorbits.open_orbital_maps -= SStgui.get_all_open_uis(src)
-	if(shuttleObject)
-		shuttleObject.controlling_computer = null
-		set_shuttle_object(null)
+	actions = list()
 	. = ..()
 	GLOB.navigation_computers -= src
 
@@ -85,21 +67,6 @@
 	if(my_port == source)
 		my_port = null
 
-// У шаттла и станции две консоли с одним shuttlePortId. После защиты портов от
-// z-clear старый порт больше не исчезает вместе с руиной, поэтому перед стыковкой
-// убираем дубликаты: иначе getDock() возвращает самый старый порт на прошлой руине.
-/obj/machinery/computer/shuttle_flight/proc/clear_stale_custom_ports()
-	for(var/obj/docking_port/stationary/stale_port in SSshuttle.stationary.Copy())
-		if(stale_port == my_port || stale_port.shuttle_id != shuttlePortId)
-			continue
-		stale_port.delete_after = TRUE
-		stale_port.shuttle_id = null
-		stale_port.name = "Старый [stale_port.name]"
-		// Занятый порт удалится при отлёте пристыкованного шаттла. Свободный можно
-		// удалить сразу; его Destroy() сам очистит previous/destination у шаттлов.
-		if(!stale_port.get_docked())
-			qdel(stale_port, TRUE)
-
 /obj/machinery/computer/shuttle_flight/proc/CreateEye()
 	shuttle_port = SSshuttle.getShuttle(shuttleId)
 	if(QDELETED(shuttle_port))
@@ -133,15 +100,7 @@
 	current_user = user
 	eyeobj.eye_user = user
 	eyeobj.name = "Camera Eye ([user.name])"
-	//WHITE-STEEL FIX: set_machine() сам зовёт unset_machine(), если машина уже была этой
-	//консолью, а тот - on_unset_machine() -> remove_eye_control(). Так как current_user
-	//выставлен чуть выше, remove_eye_control() снимал ТОЛЬКО ЧТО выданные экшены и
-	//обнулял оператора: игрок оставался в камере без единой кнопки (в том числе
-	//"отключиться") и не мог выйти, а место стыковки не ставилось, т.к.
-	//placeLandingSpot() выходит по `!current_user`. Взаимодействие с консолью
-	//(INTERACT_MACHINE_SET_MACHINE) уже сделало machine == src - не дёргаем повторно.
-	if(user.machine != src)
-		user.set_machine(src)
+	user.set_machine(src)
 	user.remote_control = eyeobj
 	user.reset_perspective(eyeobj)
 	eyeobj.setLoc(eyeobj.loc)
@@ -160,12 +119,6 @@
 		user.client.view_size.setTo(view_range)
 
 /obj/machinery/computer/shuttle_flight/remove_eye_control(mob/user)
-	//WHITE-STEEL FIX: обнуляем оператора ДО unset_machine().
-	//Иначе user.unset_machine() зовёт on_unset_machine(), тот видит M == current_user
-	//и снова вызывает remove_eye_control() - бесконечная рекурсия ("Maximum recursion
-	//level reached"), из-за которой консоль зависает, стыковка не завершается,
-	//а сама консоль перестаёт удаляться (qdel loop).
-	current_user = null
 	if(user && !QDELETED(user))
 		for(var/V in actions)
 			var/datum/action/A = V
@@ -188,6 +141,7 @@
 		if(user.remote_control == eyeobj)
 			user.remote_control = null
 		user.unset_machine()
+	current_user = null
 	playsound(src, 'sound/machines/terminal_off.ogg', 25, FALSE)
 	if(user && !QDELETED(user) && user.client && eyeobj)
 		var/mob/camera/aiEye/remote/supercruise_docker/the_eye = eyeobj
@@ -252,10 +206,10 @@
 		my_port.dwidth = shuttle_port.dwidth
 		my_port.hidden = shuttle_port.hidden
 		my_port.register(TRUE)
+		// Точку на руине удаляет очистка z-уровня, консоль её не держит
 		RegisterSignal(my_port, COMSIG_PARENT_QDELETING, PROC_REF(forget_port))
 	my_port.setDir(the_eye.dir)
 	my_port.forceMove(locate(eyeobj.x, eyeobj.y, eyeobj.z))
-	clear_stale_custom_ports()
 
 	if(current_user.client)
 		current_user.client.images -= the_eye.placed_images
@@ -428,23 +382,6 @@
 	var/mob/camera/aiEye/remote/remote_eye = C.remote_control
 	var/obj/machinery/computer/shuttle_flight/origin = remote_eye.origin
 	origin.placeLandingSpot(target)
-
-//WHITE-STEEL FIX: рабочая кнопка "отключиться от камер" для консоли /shuttle_flight.
-//Наследник базового camera_off, но без каста origin к /camera_advanced (наша консоль -
-///obj/machinery/computer/shuttle_flight, а не камера-адвансед), иначе Activate() падал.
-/datum/action/innate/camera_off/supercruise
-	name = "Отключиться от камер"
-
-/datum/action/innate/camera_off/supercruise/Activate()
-	if(QDELETED(target) || !isliving(target))
-		return
-	var/mob/living/C = target
-	var/mob/camera/aiEye/remote/supercruise_docker/eye = C.remote_control
-	if(!istype(eye))
-		return
-	var/obj/machinery/computer/shuttle_flight/console = eye.origin
-	if(istype(console))
-		console.remove_eye_control(C)
 
 //WHITE-STEEL PORT: уникальный путь - нельзя переиспользовать /datum/action/innate/camera_jump/shuttle_docker,
 //иначе мы затирали рабочее действие базовой консоли навигации (navigation_computer.dm).

@@ -114,7 +114,6 @@
 	var/force_hit = FALSE
 
 	// Ballistic processor
-	/// Снаряд настроен имплантом владельца при выстреле.
 	var/ballistic_processor = FALSE
 	var/ballistic_processor_ricochet_chance = 70
 	var/ballistic_processor_max_ricochets = 2
@@ -372,18 +371,14 @@
 		return 50 //if the projectile doesn't do damage, play its hitsound at 50% volume
 
 /obj/item/projectile/proc/on_ricochet(atom/A)
-	// Лазеры и прочие небаллистические снаряды сохраняют собственные настройки наведения.
-	var/use_processor_homing = ballistic_processor && flag == BULLET
-	var/auto_aim_angle = use_processor_homing ? ballistic_processor_homing_angle : ricochet_auto_aim_angle
-	var/auto_aim_range = use_processor_homing ? ballistic_processor_homing_range : ricochet_auto_aim_range
-	if(!auto_aim_angle || !auto_aim_range)
+	if(!ricochet_auto_aim_angle || !ricochet_auto_aim_range)
 		return
 
 	var/mob/living/unlucky_sob
-	var/best_angle = auto_aim_angle
+	var/best_angle = ricochet_auto_aim_angle
 	if(firer && HAS_TRAIT(firer, TRAIT_NICE_SHOT))
 		best_angle += NICE_SHOT_RICOCHET_BONUS
-	for(var/mob/living/L in range(auto_aim_range, src.loc))
+	for(var/mob/living/L in range(ricochet_auto_aim_range, src.loc))
 		if(L.stat == DEAD || !isInSight(src, L))
 			continue
 		var/our_angle = abs(closer_angle_difference(Angle, get_projectile_angle(src.loc, L.loc)))
@@ -436,6 +431,19 @@
 				ricochet_chance *= ricochet_decay_chance
 				damage *= ricochet_decay_damage
 				range = decayedRange
+				// auto-home to nearest target within 15 degrees approx - just retarget angle
+				var/best_dist = INFINITY
+				var/best_mob = null
+				for(var/mob/living/L in range(ballistic_processor_homing_range, src))
+					if(L.stat == DEAD || L == firer)
+						continue
+					var/dist = get_dist(src, L)
+					if(dist < best_dist)
+						best_dist = dist
+						best_mob = L
+				if(best_mob)
+					var/new_angle = Get_Angle(src, best_mob)
+					setAngle(new_angle)
 				if(hitscan)
 					store_hitscan_collision(trajectory.copy_to())
 				return TRUE

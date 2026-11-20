@@ -23160,14 +23160,18 @@
 /turf/open/floor/plasteel,
 /area/science/research)
 "dcE" = (
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/matter_bin{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/micro_laser,
 /obj/machinery/airalarm{
 	dir = 4;
 	pixel_x = -23
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
-	},
-/obj/machinery/computer/shuttle_flight/exploration{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
@@ -35304,7 +35308,8 @@
 	dir = 1
 	},
 /obj/machinery/door/airlock/external{
-	name = "Igla dock"
+	name = "External Airlock";
+	req_access_txt = "13"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
 /obj/machinery/door/firedoor,
@@ -35988,7 +35993,8 @@
 	dir = 1
 	},
 /obj/machinery/door/airlock/external{
-	name = "Igla dock"
+	name = "External Airlock";
+	req_access_txt = "13"
 	},
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -66368,12 +66374,6 @@
 	},
 /turf/open/floor/plasteel/grimy,
 /area/service/chapel/office)
-"kMA" = (
-/obj/docking_port/stationary/exploration{
-	dir = 2
-	},
-/turf/open/space,
-/area/space)
 "kMO" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/toilet/secret/low_loot{
@@ -73074,7 +73074,7 @@
 "mfM" = (
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/effect/turf_decal/bot/yellow,
-/obj/machinery/equipment_vendor/vanguard,
+/obj/machinery/bountyvend/plus,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "mfR" = (
@@ -107849,7 +107849,6 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/structure/fulton_beacon,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "tyO" = (
@@ -164851,10 +164850,10 @@ pIV
 rnF
 wDZ
 mjH
+aad
+ajr
 aaa
-aaa
-aaa
-aaa
+ajr
 aaa
 aaa
 aaa
@@ -165109,9 +165108,9 @@ jQJ
 ikw
 mjH
 aaa
-nph
+aad
 aaa
-aaa
+ajr
 aaa
 aaa
 aaa
@@ -165366,9 +165365,9 @@ nio
 oxf
 mjH
 aaa
+aad
 aaa
-aaa
-aaa
+aad
 aaa
 aaa
 aaa
@@ -165622,10 +165621,10 @@ sTX
 dHV
 oxf
 mjH
-nph
+aad
+ajr
 aaa
-aaa
-aaa
+ajr
 aaa
 aaa
 aaa
@@ -165879,10 +165878,10 @@ irs
 llf
 gKv
 oTr
-aaa
-aaa
-aaa
-aaa
+aad
+ajr
+aad
+ajr
 aaa
 aaa
 aaa
@@ -166136,10 +166135,10 @@ oTr
 oTr
 oTr
 oTr
-nph
+aad
+aad
 aaa
-aaa
-aaa
+ajr
 aaa
 aaa
 aaa
@@ -166393,12 +166392,12 @@ eeG
 eft
 egg
 egD
-kMA
-nph
+abj
+abj
 aaa
+aad
 aaa
-aaa
-aaa
+ajr
 aaa
 aaa
 aaa
@@ -166650,12 +166649,12 @@ edY
 edY
 edY
 egE
-nph
-nph
+aad
+aad
 aaa
-aaa
-aaa
-aaa
+ajr
+aad
+ajr
 aaa
 aaa
 aaa
@@ -166907,12 +166906,12 @@ eeH
 pNr
 egh
 egE
-nph
+aad
+ajr
+aad
+ajr
 aaa
-aaa
-aaa
-aaa
-aaa
+ajr
 aaa
 aaa
 aaa
@@ -167164,10 +167163,10 @@ kew
 oXR
 egi
 eeb
+aad
+aad
 aaa
-aaa
-aaa
-aaa
+ajr
 aaa
 aaa
 aaa
@@ -167422,9 +167421,9 @@ efw
 egj
 egF
 aaa
-nph
+aad
 aaa
-aaa
+aad
 aaa
 aaa
 aaa
@@ -167678,10 +167677,10 @@ jBu
 pgH
 egk
 egG
+aad
+aad
 aaa
-aaa
-aaa
-aaa
+ajr
 aaa
 aaa
 aaa
@@ -167935,10 +167934,10 @@ gjk
 fmS
 egl
 egE
-aaa
-aaa
-aaa
-aaa
+aad
+ajr
+aad
+ajr
 aaa
 aaa
 aaa

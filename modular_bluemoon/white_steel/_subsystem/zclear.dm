@@ -50,6 +50,8 @@ SUBSYSTEM_DEF(zclear)
 	//List of atoms to ignore
 	var/list/ignored_atoms = null
 
+	//List of nullspaced mobs to replace in ruins
+	var/list/mob/nullspaced_mobs = list()
 
 	//List of z-levels being docked with
 	var/list/docking_levels = list()
@@ -158,6 +160,12 @@ SUBSYSTEM_DEF(zclear)
 
 /datum/controller/subsystem/zclear/proc/unkeep_z(z_level)
 	docking_levels -= z_level
+
+//WHITE-STEEL FIX: чистим nullspaced_mobs от удалённых/пустых тел. Идём с конца: Cut сдвигает хвост.
+/datum/controller/subsystem/zclear/proc/prune_nullspaced_mobs()
+	for(var/index in length(nullspaced_mobs) to 1 step -1)
+		if(QDELETED(nullspaced_mobs[index]))
+			nullspaced_mobs.Cut(index, index + 1)
 
 /*
  * Returns TRUE if the z-level is currently in use and must not be wiped.
@@ -316,11 +324,6 @@ SUBSYSTEM_DEF(zclear)
 	if(!z_level)
 		return
 
-	//Экспедиция улетела, не закрыв задание: останки авангарда отправляем домой до зачистки.
-	var/datum/orbital_objective/objective = SSorbits.current_objective
-	if(objective?.objective_z_level == z_level)
-		objective.fulton_dead_expeditors_home(TRUE)
-
 	SSair.pause_z(z_level)
 
 	var/list/turfs = block(locate(1, 1, z_level), locate(world.maxx, world.maxy, z_level))
@@ -416,9 +419,18 @@ SUBSYSTEM_DEF(zclear)
 				cleardata.completion_callback.Invoke(cleardata.zvalue)
 			if(cleardata.tracking)
 				LAZYADD(free_levels, SSmapping.z_list[cleardata.zvalue])
-				//WHITE-STEEL PORT: анонс про «пропавших членов экипажа, которых можно найти»
-				//удалён вместе с буфером nullspaced_mobs - переносить тела в следующую руину
-				//больше нечем, анонсировать некого.
+				var/nullspaced_mob_names = ""
+				var/valid = FALSE
+				//WHITE-STEEL FIX: nullspaced_mobs может содержать удалённые/пустые записи
+				//(мир их не чистит), из-за чего раньше падало "Cannot read null.key".
+				for(var/mob/M as() in nullspaced_mobs)
+					if(QDELETED(M))
+						continue
+					if(M.key || M.get_ghost(FALSE))
+						nullspaced_mob_names += " - [M.name]\n"
+						valid = TRUE
+				if(valid)
+					priority_announce("Сенсоры сообщают о том, что несколько членов экипажа пропало. Скорее всего их раскидало по космосу, их всё ещё можно попробовать найти.\n[nullspaced_mob_names]")
 	cleardata.process_num ++
 
 /*
@@ -461,14 +473,13 @@ SUBSYSTEM_DEF(zclear)
 				var/mob/living/M = thing
 				if(M.mind || M.key)
 					if(M.stat == DEAD)
-						//WHITE-STEEL PORT: труп больше не «спасается» в буфер nullspaced-мобов.
-						//Раньше мёртвый моб с mind'ом переживал вайп уровня, а генератор руин
-						//переносил его в СЛЕДУЮЩУЮ руину - тела кочевали от миссии к миссии
-						//бесконечно, держали z-уровни от возврата в пул свободных уровней и
-						//висели до ручной чистки администрацией. Теперь труп удаляется вместе
-						//с уровнем.
+						//Store them for later
 						M.ghostize(TRUE)
-						delete_atom(thing)
+						M.forceMove(null)
+						//WHITE-STEEL FIX: не копим удалённые записи — список держит мобов
+						//жёстко и без чистки растёт до hard-del утечки.
+						prune_nullspaced_mobs()
+						nullspaced_mobs += M
 					else
 						//If the mob has a key (but is DC) then teleport them to a safe z-level where they can potentially be retrieved.
 						//Since the wiping takes 90 seconds they could potentially still be on the z-level as it is wiping if they reconnect in time
