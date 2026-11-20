@@ -700,7 +700,7 @@
 	if("bark_id" in fields)
 		var/datum/bark/bark = GLOB.bark_list[staged.bark_id]
 		var/list/allowed = initial(bark.ckeys_allowed)
-		if(initial(bark.ignore) || (length(allowed) && !(recipient in allowed)))
+		if(initial(bark.ignore) || (length(allowed) && !is_key_in_whitelist(recipient, allowed)))
 			throw EXCEPTION("Этот голос недоступен вашему аккаунту")
 	for(var/feature in GLOB.mutant_reference_list)
 		var/list/accessories = GLOB.mutant_reference_list[feature]
@@ -710,7 +710,7 @@
 			if(!istext(selection))
 				continue
 			var/datum/sprite_accessory/accessory = accessories[selection]
-			if(istype(accessory) && length(accessory.ckeys_allowed) && !(recipient in accessory.ckeys_allowed))
+			if(istype(accessory) && length(accessory.ckeys_allowed) && !accessory.is_allowed_for(recipient))
 				throw EXCEPTION("Один из элементов внешности недоступен вашему аккаунту")
 	if("language" in fields)
 		if(CONFIG_GET(number/max_languages) >= 0 && length(staged.language) > CONFIG_GET(number/max_languages))

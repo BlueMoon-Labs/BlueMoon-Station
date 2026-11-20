@@ -2284,6 +2284,29 @@ GLOBAL_VAR_INIT(unit_test_legacy_probe_loaded, FALSE)
 		fdel(backup_directory)
 	return ..()
 
+/// Случайный облик выдавал личные аксессуары из белых списков ckey, и перенос такого персонажа отклонялся (флак public_transfer_private_fields).
+/datum/unit_test/player_save_json/random_features_skip_private_accessories/Run()
+	var/datum/sprite_accessory/private_accessory = new
+	private_accessory.ckeys_allowed = list("someoneelse")
+	var/list/accessories = list("Public" = new /datum/sprite_accessory, "Private" = private_accessory)
+	for(var/i in 1 to 30)
+		TEST_ASSERT_EQUAL(pick_public_accessory(accessories), "Public", "выбран личный аксессуар")
+	accessories["Other"] = new /datum/sprite_accessory
+	var/list/seen = list()
+	for(var/i in 1 to 60)
+		seen[pick_public_accessory(accessories)] = TRUE
+	TEST_ASSERT(seen["Other"], "кэш не увидел добавленный аксессуар")
+	TEST_ASSERT(!seen["Private"], "после обновления кэша выбран личный аксессуар")
+	for(var/i in 1 to 100)
+		var/list/features = random_features()
+		for(var/feature in GLOB.mutant_reference_list)
+			var/list/references = GLOB.mutant_reference_list[feature]
+			var/selected = features[feature]
+			if(!istext(selected))
+				continue
+			var/datum/sprite_accessory/accessory = references[selected]
+			TEST_ASSERT(!(istype(accessory) && length(accessory.ckeys_allowed)), "случайный облик выдал личный аксессуар [feature]: [selected]")
+
 /// Кнопка случайного персонажа оставляла пустой список хедшотов, и правка картинки падала (раунд 10798).
 /datum/unit_test/player_save_json/random_character_headshots/Run()
 	var/datum/preferences/prefs = new
