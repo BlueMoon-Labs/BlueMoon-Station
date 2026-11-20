@@ -814,7 +814,7 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	data["connected"] = TRUE
 	data["is_admin"] = !isnull(user?.client) && check_rights_for(user.client, R_ADMIN)
 	data["generated_domain"] = server.generated_domain?.key
-	data["occupants"] = length(server.avatar_connection_refs)
+	data["occupants"] = length(server.get_active_avatar_connections())
 	data["points"] = server.points
 	data["randomized"] = server.domain_randomized
 	data["ready"] = server.is_ready && server.is_operational

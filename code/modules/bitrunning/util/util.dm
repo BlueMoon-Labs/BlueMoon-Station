@@ -172,10 +172,6 @@
 		istype(thing, /obj/item/key)
 
 /mob/living/simple_animal/hostile/megafauna/proc/make_virtual_megafauna()
-	var/new_max = clamp(round(maxHealth * 0.25), 250, 650)
-	maxHealth = new_max
-	health = new_max
-
 	true_spawn = FALSE
 
 	loot = list(/obj/structure/closet/crate/secure/bitrunning/encrypted)

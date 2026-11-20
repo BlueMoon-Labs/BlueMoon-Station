@@ -703,11 +703,6 @@
 	map_name = "hierophant"
 	reward_points = BITRUNNER_REWARD_HIGH
 
-/datum/lazy_template/virtual_domain/hierophant/setup_domain(list/created_atoms)
-	for(var/mob/living/simple_animal/hostile/megafauna/hierophant/zealot in created_atoms)
-		zealot.maxHealth = 1500
-		zealot.health = 1500
-
 /datum/lazy_template/virtual_domain/island_brawl
 	name = "Island Brawl"
 	announce_to_ghosts = TRUE

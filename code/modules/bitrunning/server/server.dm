@@ -130,7 +130,7 @@
 	if(!is_ready)
 		balloon_alert(user, "он раскалён!")
 		return ITEM_INTERACT_FAILURE
-	if(length(avatar_connection_refs))
+	if(length(get_active_avatar_connections()))
 		balloon_alert(user, "все клиенты должны отключиться!")
 		return ITEM_INTERACT_FAILURE
 	if(default_deconstruction_crowbar(crowbar))
@@ -199,10 +199,7 @@
 /obj/machinery/quantum_server/proc/get_multiplayer_bonus()
 	var/total = 0
 	var/multiplayer = FALSE
-	for(var/datum/weakref/connection_ref as anything in avatar_connection_refs)
-		var/datum/component/avatar_connection/connection = connection_ref.resolve()
-		if(isnull(connection))
-			continue
+	for(var/datum/component/avatar_connection/connection as anything in get_active_avatar_connections())
 		if(multiplayer)
 			total += multiplayer_bonus
 		multiplayer = TRUE
@@ -213,9 +210,8 @@
 		return 0
 
 	var/total = 0
-	for(var/datum/weakref/connection_ref as anything in avatar_connection_refs)
-		var/datum/component/avatar_connection/connection = connection_ref.resolve()
-		if(connection?.nohit)
+	for(var/datum/component/avatar_connection/connection as anything in get_active_avatar_connections())
+		if(connection.nohit)
 			total += nohit_bonus
 	return total
 
@@ -370,11 +366,25 @@
 
 #define POLLING_COOLDOWN_TIME 2 MINUTES
 
+/// Возвращает только живые подключения и попутно чистит мёртвые ссылки.
+/obj/machinery/quantum_server/proc/get_active_avatar_connections()
+	var/list/datum/component/avatar_connection/active = list()
+
+	for(var/datum/weakref/connection_ref as anything in avatar_connection_refs.Copy())
+		var/datum/component/avatar_connection/connection = connection_ref.resolve()
+		if(isnull(connection) || QDELETED(connection) || connection.disconnecting)
+			avatar_connection_refs -= connection_ref
+			continue
+		active += connection
+
+	return active
+
 /obj/machinery/quantum_server/proc/begin_shutdown(mob/user)
 	if(isnull(generated_domain))
 		return
 
-	if(!length(avatar_connection_refs))
+	var/list/datum/component/avatar_connection/connections = get_active_avatar_connections()
+	if(!length(connections))
 		balloon_alert_to_viewers("отключение домена...")
 		playsound(src, 'sound/machines/terminal_off.ogg', 40, vary = TRUE)
 		reset()
@@ -407,7 +417,7 @@
 		balloon_alert_to_viewers("сначала остановите текущий домен!")
 		return FALSE
 
-	if(length(avatar_connection_refs))
+	if(length(get_active_avatar_connections()))
 		balloon_alert_to_viewers("все клиенты должны отключиться!")
 		return FALSE
 
@@ -682,7 +692,10 @@
 
 	var/obj/item/clothing/under/avatar_uniform = avatar.w_uniform
 	if(istype(avatar_uniform))
+		avatar_uniform.sensor_flags = NONE
+		avatar_uniform.has_sensor = NO_SENSORS
 		avatar_uniform.sensor_mode = SENSOR_OFF
+		avatar_uniform.sensor_mode_intended = SENSOR_OFF
 
 	if(!generated_domain.forced_outfit)
 		for(var/obj/thing in avatar.held_items)
@@ -701,7 +714,9 @@
 	var/obj/item/card/id/outfit_id = avatar.wear_id
 	if(outfit_id)
 		outfit_id.registered_account = new /datum/bank_account(avatar.real_name)
+		outfit_id.registered_name = avatar.real_name
 		outfit_id.assignment = "Bit Avatar"
+		outfit_id.special_assignment = "bitavatar"
 		outfit_id.update_label()
 
 	return avatar
@@ -1030,12 +1045,7 @@
 /obj/machinery/quantum_server/proc/get_avatar_data()
 	var/list/hosted_avatars = list()
 
-	for(var/datum/weakref/avatar_ref in avatar_connection_refs)
-		var/datum/component/avatar_connection/connection = avatar_ref.resolve()
-		if(isnull(connection))
-			avatar_connection_refs.Remove(connection)
-			continue
-
+	for(var/datum/component/avatar_connection/connection as anything in get_active_avatar_connections())
 		var/mob/living/creature = connection.parent
 		var/mob/living/pilot = connection.old_body_ref?.resolve()
 
@@ -1134,7 +1144,7 @@
 	antag_datum.fix_agent_id()
 
 /obj/machinery/quantum_server/proc/sever_connections()
-	if(isnull(generated_domain) || !length(avatar_connection_refs))
+	if(isnull(generated_domain) || !length(get_active_avatar_connections()))
 		return
 
 	SEND_SIGNAL(src, COMSIG_BITRUNNER_QSRV_SEVER)

@@ -67,6 +67,11 @@
 	avatar.set_blurriness(4)
 	avatar.set_blindness(1)
 
+/datum/component/avatar_connection/Destroy(force)
+	var/obj/machinery/quantum_server/server = server_ref?.resolve()
+	server?.avatar_connection_refs.Remove(WEAKREF(src))
+	return ..()
+
 /datum/component/avatar_connection/PostTransfer(datum/new_parent)
 	var/obj/machinery/netpod/pod = netpod_ref?.resolve()
 	if(isnull(pod))
@@ -261,7 +266,14 @@
 /datum/component/avatar_connection/proc/on_shutting_down(datum/source, mob/living/hackerman)
 	SIGNAL_HANDLER
 
+	if(disconnecting || QDELETED(src) || QDELETED(parent))
+		return
+
 	var/mob/living/avatar = parent
+	var/area/avatar_area = get_area(avatar)
+	if(isnull(avatar_area) || !(avatar_area.area_flags & VIRTUAL_AREA))
+		return
+
 	avatar.playsound_local(avatar, 'sound/machines/terminal_alert.ogg', 50, vary = TRUE)
 	var/atom/movable/screen/alert/bitrunning/alert = avatar.throw_alert(
 		ALERT_BITRUNNER_SHUTDOWN,
