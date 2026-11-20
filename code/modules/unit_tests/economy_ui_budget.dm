@@ -120,6 +120,28 @@
 	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Решённая заявка не меняется")
 	TEST_ASSERT_EQUAL(repeat, "Заявка не найдена или уже решена.", "Повтор объяснён")
 
+/// Глава дважды подряд нажал "заявку": первая оплачена сразу, вторая не заказывает второй пак и объясняет почему (10799: два Security MOD за 1.4 с).
+/datum/unit_test/economy_ui_budget/instant_request_repeat/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/mob/living/carbon/human/chief = make_staff(ACCOUNT_MED, list(ACCESS_CMO))
+	var/datum/computer_file/program/department_budget/app = give_pda(chief, /obj/item/modular_computer/pda/heads/cmo)
+	var/datum/supply_pack/pack = pack_above_auto_limit(medical)
+	TEST_ASSERT_NOTNULL(pack, "В каталоге медицины есть пак дороже автоодобрения")
+	var/price = round(econ_pack_price(pack))
+	econ_test_set_balance(medical.account, price * 3)
+	press(chief, app, "request", list("pack" = "[pack.type]", "reason" = ""))
+	TEST_ASSERT_EQUAL(length(medical.requests), 1, "Заявка главы подана")
+	var/datum/econ_request/request = medical.requests[1]
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Заявка главы оплачена сразу")
+	var/answer = press(chief, app, "request", list("pack" = "[pack.type]", "reason" = ""))
+	TEST_ASSERT_EQUAL(answer, econ_repeat_refusal(request), "Повтор объяснён")
+	TEST_ASSERT_EQUAL(length(medical.requests), 1, "Повторное нажатие не подало вторую заявку")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "В снабжении один заказ")
+	TEST_ASSERT_EQUAL(medical.account.account_balance, price * 2, "Бюджет заплатил один раз")
+	request.created -= ECON_REQUEST_REPEAT_GUARD
+	press(chief, app, "request", list("pack" = "[pack.type]", "reason" = ""))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 2, "Позже второй такой же пак заказывается")
+
 /// Заказать и подать заявку можно только на пак из каталога своего отдела; строка пути из клиента проверяется по каталогу.
 /datum/unit_test/economy_ui_budget/catalog_guard/Run()
 	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)

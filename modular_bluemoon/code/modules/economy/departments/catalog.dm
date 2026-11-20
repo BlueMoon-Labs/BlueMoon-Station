@@ -106,6 +106,8 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	var/reason
 	var/status = ECON_REQUEST_PENDING
 	var/created
+	/// Одобрена и оплачена сразу при подаче
+	var/instant = FALSE
 
 /datum/econ_request/New(department_id, datum/supply_pack/pack, requester, requester_account_id, reason)
 	uid = ++GLOB.econ_request_uid
@@ -193,6 +195,9 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 
 /// Подаёт до amount заявок отделу с окна снабжения и возвращает ответ подавшему. О ждущих решения отдел оповещает сам: через radio от speaker, если они есть.
 /datum/economy_department/proc/submit_window_requests(datum/supply_pack/pack, mob/living/user, reason, amount, obj/item/radio/radio, atom/movable/speaker)
+	var/datum/econ_request/repeat = instant_repeat(pack, user)
+	if(repeat)
+		return econ_repeat_refusal(repeat)
 	var/list/approved = list()
 	var/list/pending = list()
 	for(var/i in 1 to amount)
@@ -462,9 +467,22 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	else if(!approve_staple(request) && account_id && auto_approvable(pack) && instant_approval() && world.time >= auto_approve_after["[account_id]"])
 		if(approve(request, null, TRUE))
 			auto_approve_after["[account_id]"] = world.time + SSeconomy.settings.auto_approve_cooldown_minutes MINUTES
+	request.instant = request.status == ECON_REQUEST_APPROVED
 	if(announce && request.status == ECON_REQUEST_PENDING)
 		announce_pending(list(request), user)
 	return request
+
+/// Заявка на тот же пак, которую этот сотрудник только что подал и она сразу оплачена: повторное нажатие кнопки второй пак не заказывает.
+/datum/economy_department/proc/instant_repeat(datum/supply_pack/pack, mob/living/user)
+	var/datum/bank_account/account = econ_account_of(user)
+	if(!account)
+		return null
+	for(var/datum/econ_request/request as anything in requests)
+		if(request.instant && request.pack == pack && request.requester_account_id == account.account_id && world.time - request.created < ECON_REQUEST_REPEAT_GUARD)
+			return request
+
+/proc/econ_repeat_refusal(datum/econ_request/request)
+	return "Заявка №[request.uid] на \"[request.pack.name]\" только что оплачена, повторное нажатие второй пак не заказывает. Нужен ещё один - подайте заявку снова чуть позже."
 
 /// Одобряет расходники, которым теперь хватает денег, и недорогие заявки, которые ждут ответа дольше auto_approve_wait_minutes (у СБ - только без начальства на смене). Без денег сверх зарплаты сотрудникам заявка ждёт следующего тика.
 /datum/economy_department/proc/approve_stale_requests()

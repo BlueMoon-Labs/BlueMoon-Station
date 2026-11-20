@@ -388,6 +388,10 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			if(!pack)
 				messages[user_ref] = "Этого нет в каталоге отдела."
 				return TRUE
+			var/datum/econ_request/repeat = department.instant_repeat(pack, user)
+			if(repeat)
+				messages[user_ref] = econ_repeat_refusal(repeat)
+				return TRUE
 			var/datum/econ_request/request = department.submit_request(pack, user, econ_ui_reason(params["reason"]))
 			if(!request)
 				messages[user_ref] = "Заявку не приняли: подают сотрудники отдела, у одного сотрудника ждут решения не больше [SSeconomy.settings.request_pending_per_requester] заявок."
