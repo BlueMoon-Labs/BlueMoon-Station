@@ -417,14 +417,6 @@
 		var/mob/living/carbon/human/carrier = parent
 		handle_vehicle_offsets(move_dir_for_riding_sprite(carrier.dir))
 
-GLOBAL_VAR_INIT(test_degree_taur_north_south, 180)
-GLOBAL_VAR_INIT(test_degree_taur_east, 245)
-GLOBAL_VAR_INIT(test_degree_taur_west, 115)
-
-GLOBAL_VAR_INIT(test_degree_north_south, 180)
-GLOBAL_VAR_INIT(test_degree_east, 160)
-GLOBAL_VAR_INIT(test_degree_west, 200)
-
 /datum/component/riding/human/proc/set_rider_dir()
 	var/mob/living/carbon/human/H = parent
 	if(H.has_buckled_mobs())
@@ -463,9 +455,9 @@ GLOBAL_VAR_INIT(test_degree_west, 200)
 					if(H.dir == EAST || H.dir == WEST)
 						rider_dir = H.dir
 					if(buckle_type == RIDING_BELLY_TAUR)
-						degree = front_or_back ? GLOB.test_degree_taur_north_south : (H.dir == EAST ? GLOB.test_degree_taur_east : GLOB.test_degree_taur_west)
+						degree = front_or_back ? 180 : (H.dir == EAST ? 245 : 115)
 					else
-						degree = front_or_back ? GLOB.test_degree_north_south : (H.dir == EAST ? GLOB.test_degree_east : GLOB.test_degree_west)
+						degree = front_or_back ? 180 : (H.dir == EAST ? 160 : 200)
 				else if(buckle_type == RIDING_BELLY_TAUR)
 					degree = front_or_back ? 360 : (H.dir == EAST ? 70 : 290)
 				else
@@ -519,31 +511,14 @@ GLOBAL_VAR_INIT(test_degree_west, 200)
 	else
 		AM.layer = initial(AM.layer)
 
-GLOBAL_LIST_INIT(test_belly_riding_reversed, list(TEXT_NORTH = list(-1, 4), TEXT_SOUTH = list(-1, 4), TEXT_EAST = list(5, 5), TEXT_WEST = list(-6, 5)))
-GLOBAL_LIST_INIT(test_belly_riding_taur_reversed, list(TEXT_NORTH = list(-1, 2), TEXT_SOUTH = list(-1, 2), TEXT_EAST = list(2, -11), TEXT_WEST = list(-2, -11)))
-
-GLOBAL_VAR_INIT(test_belly_riding_taur_Xchange_vehicle, -7)
-GLOBAL_VAR_INIT(test_belly_riding_taur_Ychange_vehicle, -11)
-GLOBAL_VAR_INIT(test_belly_riding_taur_Ychange_vehicle_front, -6)
-
-GLOBAL_VAR_INIT(test_belly_riding_taur_Xchange_rider, 9)
-GLOBAL_VAR_INIT(test_belly_riding_taur_Ychange_rider, 0)
-GLOBAL_VAR_INIT(test_belly_riding_taur_Ychange_rider_front, 8)
-
-GLOBAL_VAR_INIT(test_belly_riding_Xchange_vehicle, 4.5)
-GLOBAL_VAR_INIT(test_belly_riding_Ychange_vehicle, -4)
-
-GLOBAL_VAR_INIT(test_belly_riding_Xchange_rider, 1)
-GLOBAL_VAR_INIT(test_belly_riding_Ychange_rider, 8.5)
-
 /datum/component/riding/human/get_offsets(pass_index)
 	var/static/list/offsets_by_type = list(
 		RIDING_FACE_TO_FACE			= list(TEXT_NORTH = list(0, 4), TEXT_SOUTH = list(0, 4), TEXT_EAST = list(8, 4), TEXT_WEST = list(-8, 4)),
 		RIDING_PRINCESS				= list(TEXT_NORTH = list(6, 0), TEXT_SOUTH = list(-6, 0), TEXT_EAST = list(6, 0), TEXT_WEST = list(-6, 0)),
 		RIDING_BELLY 				= list(TEXT_NORTH = list(0, 2), TEXT_SOUTH = list(0, 2), TEXT_EAST = list(10, 0), TEXT_WEST = list(-10, 0)),
 		RIDING_BELLY_TAUR 			= list(TEXT_NORTH = list(0, -7), TEXT_SOUTH = list(0, -7), TEXT_EAST = list(-3, -12), TEXT_WEST = list(3, -12)),
-		RIDING_BELLY_REVERSED 		= list(TEXT_NORTH = list(0, 2), TEXT_SOUTH = list(0, 2), TEXT_EAST = list(10, 0), TEXT_WEST = list(-10, 0)),
-		RIDING_BELLY_TAUR_REVERSED 	= list(TEXT_NORTH = list(0, -7), TEXT_SOUTH = list(0, -7), TEXT_EAST = list(-3, -12), TEXT_WEST = list(3, -12)),
+		RIDING_BELLY_REVERSED		= list(TEXT_NORTH = list(-1, 4), TEXT_SOUTH = list(-1, 4), TEXT_EAST = list(5, 5), TEXT_WEST = list(-6, 5)),
+		RIDING_BELLY_TAUR_REVERSED	= list(TEXT_NORTH = list(-1, 2), TEXT_SOUTH = list(-1, 2), TEXT_EAST = list(2, -11), TEXT_WEST = list(-2, -11)),
 		"lying" 					= list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(0, 6), TEXT_WEST = list(0, 6)),
 		"else" 						= list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(-6, 6), TEXT_WEST = list(6, 6)),
 	)
@@ -552,12 +527,6 @@ GLOBAL_VAR_INIT(test_belly_riding_Ychange_rider, 8.5)
 	if(RIDING_IS_BELLY(key_name) && belly_harness?.reversed_pose)
 		key_name = (key_name == RIDING_BELLY_TAUR ? RIDING_BELLY_TAUR_REVERSED : RIDING_BELLY_REVERSED)
 	var/list/result = offsets_by_type[key_name]
-	switch(key_name)
-		if(RIDING_BELLY_REVERSED)
-			result = GLOB.test_belly_riding_reversed
-		if(RIDING_BELLY_TAUR_REVERSED)
-			result = GLOB.test_belly_riding_taur_reversed
-
 	var/mob/living/carbon/human/H = parent
 	if(!result)
 		key_name = H.buckle_lying ? "lying" : "else"
@@ -608,12 +577,12 @@ GLOBAL_VAR_INIT(test_belly_riding_Ychange_rider, 8.5)
 	var/front_y
 	// Поправки на размер отсчитываются от точки крепления и положения рта на спрайте при 100%.
 	if(pose == RIDING_BELLY_TAUR_REVERSED)
-		side_x = carrier_size_delta * GLOB.test_belly_riding_taur_Xchange_vehicle + passenger_size_delta * GLOB.test_belly_riding_taur_Xchange_rider
-		side_y = carrier_size_delta * GLOB.test_belly_riding_taur_Ychange_vehicle + passenger_size_delta * GLOB.test_belly_riding_taur_Ychange_rider
-		front_y = carrier_size_delta * GLOB.test_belly_riding_taur_Ychange_vehicle_front + passenger_size_delta * GLOB.test_belly_riding_taur_Ychange_rider_front
+		side_x = -7 * carrier_size_delta + 9 * passenger_size_delta
+		side_y = -11 * carrier_size_delta
+		front_y = -6 * carrier_size_delta + 8 * passenger_size_delta
 	else
-		side_x = carrier_size_delta * GLOB.test_belly_riding_Xchange_vehicle + passenger_size_delta * GLOB.test_belly_riding_Xchange_rider
-		side_y = carrier_size_delta * GLOB.test_belly_riding_Ychange_vehicle + passenger_size_delta * GLOB.test_belly_riding_Ychange_rider
+		side_x = 4.5 * carrier_size_delta + passenger_size_delta
+		side_y = -4 * carrier_size_delta + 8.5 * passenger_size_delta
 		front_y = side_y
 
 	for(var/direction in offsets)
