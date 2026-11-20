@@ -315,14 +315,18 @@
 		H.clear_alert(RIDING_ALERT_CATEGORY)
 		if(belly_harness)
 			REMOVE_TRAIT(belly_harness, TRAIT_NODROP, RIDING_TRAIT)
+			belly_harness = null
 		var/datum/action/cooldown/true_belly_riding/belly_riding_action = locate() in H.actions
 		if(belly_riding_action)
-			belly_riding_action.Remove(H)
+			qdel(belly_riding_action)
 
 	if(!buckle_type == RIDING_FIREMAN)
 		M.Daze(25)
 	if(buckle_type == RIDING_PRINCESS || buckle_type == RIDING_BELLY)
 		M.update_pixel_shifting(TRUE)
+	if(RIDING_IS_BELLY(buckle_type))
+		UnregisterSignal(H, COMSIG_MOB_RESIZED)
+		UnregisterSignal(M, COMSIG_MOB_RESIZED)
 	REMOVE_TRAIT(M, TRAIT_MOBILITY_NOUSE, src)
 	REMOVE_TRAIT(M, TRAIT_BEING_CARRIED, src)
 	return ..()
@@ -339,10 +343,12 @@
 
 	if(istype(belly_harness) && RIDING_IS_BELLY(buckle_type))
 		RegisterSignal(parent, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(belly_harness_unequipped))
+		RegisterSignal(H, COMSIG_MOB_RESIZED, PROC_REF(update_belly_offsets_on_resize))
+		RegisterSignal(M, COMSIG_MOB_RESIZED, PROC_REF(update_belly_offsets_on_resize))
 		ADD_TRAIT(belly_harness, TRAIT_NODROP, RIDING_TRAIT)
 		H.throw_alert(RIDING_ALERT_CATEGORY, /atom/movable/screen/alert/belly_riding)
 		if((H?.client?.prefs.toggles & VERB_CONSENT) && H?.client?.prefs.erppref == "Yes" || H.has_penis() || H.has_strapon())
-			var/datum/action/cooldown/true_belly_riding/belly_riding_action = new
+			var/datum/action/cooldown/true_belly_riding/belly_riding_action = new(src)
 			belly_riding_action.Grant(H)
 
 /datum/component/riding/human/handle_vehicle_offsets(dir)
@@ -354,24 +360,29 @@
 
 /datum/component/riding/human/vehicle_moved(datum/source, oldLoc, dir)
 	. = ..()
-	INVOKE_ASYNC(src, PROC_REF(do_true_belly_riding))
+	if(true_belly_riding)
+		INVOKE_ASYNC(src, PROC_REF(do_true_belly_riding))
 
 /datum/component/riding/human/proc/do_true_belly_riding()
+	if(!true_belly_riding)
+		return FALSE
 	var/mob/living/carbon/human/H = parent
-	// true belly riding
-	if(!true_belly_riding || !true_belly_riding_interaction || !length(H.buckled_mobs))
+	if(!true_belly_riding_interaction || !length(H?.buckled_mobs))
 		off_true_belly_riding()
-		return
+		return FALSE
 
 	if(true_belly_riding_cooldown > world.time)
-		return
+		return FALSE
 
 	true_belly_riding_cooldown = world.time + 0.5 SECONDS
 	if(!true_belly_riding_interaction.do_action(H, H.buckled_mobs[1], FALSE))
 		off_true_belly_riding()
-		return
+		return FALSE
+	return TRUE
 
 /datum/component/riding/human/proc/off_true_belly_riding()
+	if(!true_belly_riding)
+		return
 	true_belly_riding = FALSE
 	true_belly_riding_interaction = null
 	true_belly_riding_cooldown = 0
@@ -390,6 +401,7 @@
 	if(!QDELETED(belly_harness))
 		REMOVE_TRAIT(belly_harness, TRAIT_NODROP, RIDING_TRAIT)
 	belly_harness = null
+	off_true_belly_riding()
 
 	INVOKE_ASYNC(src, PROC_REF(force_dismount_all))
 
@@ -397,6 +409,21 @@
 	SIGNAL_HANDLER
 
 	vehicle_moved() // Да, сюда НЕ нужно передавать параметры
+
+/datum/component/riding/human/proc/update_belly_offsets_on_resize(datum/source)
+	SIGNAL_HANDLER
+
+	if(belly_harness)
+		var/mob/living/carbon/human/carrier = parent
+		handle_vehicle_offsets(move_dir_for_riding_sprite(carrier.dir))
+
+GLOBAL_VAR_INIT(test_degree_taur_north_south, 180)
+GLOBAL_VAR_INIT(test_degree_taur_east, 245)
+GLOBAL_VAR_INIT(test_degree_taur_west, 115)
+
+GLOBAL_VAR_INIT(test_degree_north_south, 180)
+GLOBAL_VAR_INIT(test_degree_east, 160)
+GLOBAL_VAR_INIT(test_degree_west, 200)
 
 /datum/component/riding/human/proc/set_rider_dir()
 	var/mob/living/carbon/human/H = parent
@@ -428,16 +455,21 @@
 							if(L.tilt_right() == FALSE)
 								break
 						L.pixel_x -= 4
-			else if(buckle_type == RIDING_BELLY)
+			else if(RIDING_IS_BELLY(buckle_type))
 				rider_dir = turn(H.dir, 180)
-				var/degree = (H.dir in list(NORTH, SOUTH)) ? 0 : (H.dir == EAST) ? 20 : 340
-				H.buckle_lying = degree
-				L.lying = degree
-				L.update_transform(FALSE)
-				L.lying_prev = L.lying
-			else if(buckle_type == RIDING_BELLY_TAUR)
-				var/degree = (H.dir in list(NORTH, SOUTH)) ? 360 : (H.dir == EAST) ? 70 : 290
-				rider_dir = turn(H.dir, 180)
+				var/degree
+				var/front_or_back = H.dir == NORTH || H.dir == SOUTH
+				if(belly_harness?.reversed_pose)
+					if(H.dir == EAST || H.dir == WEST)
+						rider_dir = H.dir
+					if(buckle_type == RIDING_BELLY_TAUR)
+						degree = front_or_back ? GLOB.test_degree_taur_north_south : (H.dir == EAST ? GLOB.test_degree_taur_east : GLOB.test_degree_taur_west)
+					else
+						degree = front_or_back ? GLOB.test_degree_north_south : (H.dir == EAST ? GLOB.test_degree_east : GLOB.test_degree_west)
+				else if(buckle_type == RIDING_BELLY_TAUR)
+					degree = front_or_back ? 360 : (H.dir == EAST ? 70 : 290)
+				else
+					degree = front_or_back ? 0 : (H.dir == EAST ? 20 : 340)
 				H.buckle_lying = degree
 				L.lying = degree
 				L.update_transform(FALSE)
@@ -487,17 +519,44 @@
 	else
 		AM.layer = initial(AM.layer)
 
+GLOBAL_LIST_INIT(test_belly_riding_reversed, list(TEXT_NORTH = list(-1, 4), TEXT_SOUTH = list(-1, 4), TEXT_EAST = list(5, 5), TEXT_WEST = list(-6, 5)))
+GLOBAL_LIST_INIT(test_belly_riding_taur_reversed, list(TEXT_NORTH = list(-1, 2), TEXT_SOUTH = list(-1, 2), TEXT_EAST = list(2, -11), TEXT_WEST = list(-2, -11)))
+
+GLOBAL_VAR_INIT(test_belly_riding_taur_Xchange_vehicle, -7)
+GLOBAL_VAR_INIT(test_belly_riding_taur_Ychange_vehicle, -11)
+GLOBAL_VAR_INIT(test_belly_riding_taur_Ychange_vehicle_front, -6)
+
+GLOBAL_VAR_INIT(test_belly_riding_taur_Xchange_rider, 9)
+GLOBAL_VAR_INIT(test_belly_riding_taur_Ychange_rider, 0)
+GLOBAL_VAR_INIT(test_belly_riding_taur_Ychange_rider_front, 8)
+
+GLOBAL_VAR_INIT(test_belly_riding_Xchange_vehicle, 4.5)
+GLOBAL_VAR_INIT(test_belly_riding_Ychange_vehicle, -4)
+
+GLOBAL_VAR_INIT(test_belly_riding_Xchange_rider, 1)
+GLOBAL_VAR_INIT(test_belly_riding_Ychange_rider, 8.5)
+
 /datum/component/riding/human/get_offsets(pass_index)
 	var/static/list/offsets_by_type = list(
-		RIDING_FACE_TO_FACE	= list(TEXT_NORTH = list(0, 4), TEXT_SOUTH = list(0, 4), TEXT_EAST = list(8, 4), TEXT_WEST = list(-8, 4)),
-		RIDING_PRINCESS		= list(TEXT_NORTH = list(6, 0), TEXT_SOUTH = list(-6, 0), TEXT_EAST = list(6, 0), TEXT_WEST = list(-6, 0)),
-		RIDING_BELLY 		= list(TEXT_NORTH = list(0, 2), TEXT_SOUTH = list(0, 2), TEXT_EAST = list(10, 0), TEXT_WEST = list(-10, 0)),
-		RIDING_BELLY_TAUR 	= list(TEXT_NORTH = list(0, -7), TEXT_SOUTH = list(0, -7), TEXT_EAST = list(-3, -12), TEXT_WEST = list(3, -12)),
-		"lying" 			= list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(0, 6), TEXT_WEST = list(0, 6)),
-		"else" 				= list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(-6, 6), TEXT_WEST = list(6, 6)),
+		RIDING_FACE_TO_FACE			= list(TEXT_NORTH = list(0, 4), TEXT_SOUTH = list(0, 4), TEXT_EAST = list(8, 4), TEXT_WEST = list(-8, 4)),
+		RIDING_PRINCESS				= list(TEXT_NORTH = list(6, 0), TEXT_SOUTH = list(-6, 0), TEXT_EAST = list(6, 0), TEXT_WEST = list(-6, 0)),
+		RIDING_BELLY 				= list(TEXT_NORTH = list(0, 2), TEXT_SOUTH = list(0, 2), TEXT_EAST = list(10, 0), TEXT_WEST = list(-10, 0)),
+		RIDING_BELLY_TAUR 			= list(TEXT_NORTH = list(0, -7), TEXT_SOUTH = list(0, -7), TEXT_EAST = list(-3, -12), TEXT_WEST = list(3, -12)),
+		RIDING_BELLY_REVERSED 		= list(TEXT_NORTH = list(0, 2), TEXT_SOUTH = list(0, 2), TEXT_EAST = list(10, 0), TEXT_WEST = list(-10, 0)),
+		RIDING_BELLY_TAUR_REVERSED 	= list(TEXT_NORTH = list(0, -7), TEXT_SOUTH = list(0, -7), TEXT_EAST = list(-3, -12), TEXT_WEST = list(3, -12)),
+		"lying" 					= list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(0, 6), TEXT_WEST = list(0, 6)),
+		"else" 						= list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(-6, 6), TEXT_WEST = list(6, 6)),
 	)
 	var/key_name = buckle_type
+	
+	if(RIDING_IS_BELLY(key_name) && belly_harness?.reversed_pose)
+		key_name = (key_name == RIDING_BELLY_TAUR ? RIDING_BELLY_TAUR_REVERSED : RIDING_BELLY_REVERSED)
 	var/list/result = offsets_by_type[key_name]
+	switch(key_name)
+		if(RIDING_BELLY_REVERSED)
+			result = GLOB.test_belly_riding_reversed
+		if(RIDING_BELLY_TAUR_REVERSED)
+			result = GLOB.test_belly_riding_taur_reversed
 
 	var/mob/living/carbon/human/H = parent
 	if(!result)
@@ -505,44 +564,63 @@
 		result = offsets_by_type[key_name]
 	. = deepCopyList(result)
 
-	var/x_change = 2
-	var/y_change = 16
-	switch(key_name)
-		if(RIDING_BELLY)
-			y_change = 8
-		if(RIDING_BELLY_TAUR)
-			x_change = 7
-			y_change = 2
+	if(RIDING_IS_BELLY(buckle_type))
+		adjust_belly_offsets(., H, H.buckled_mobs[pass_index], key_name)
+		return
 
 	var/vehicle_size = get_size(H) || 1
-	if(vehicle_size != 1 && (x_change || y_change))
+	if(vehicle_size != 1)
 		vehicle_size -= 1
 		for(var/d in .)
 			if(.[d][1] > 0)
-				.[d][1] += vehicle_size * x_change
+				.[d][1] += vehicle_size * 2
 			else if(.[d][1] < 0)
-				.[d][1] -= vehicle_size * x_change
-			.[d][2] += vehicle_size * y_change
+				.[d][1] -= vehicle_size * 2
+			.[d][2] += vehicle_size * 16
 
+/datum/component/riding/human/proc/adjust_belly_offsets(list/offsets, mob/living/carbon/human/carrier, mob/living/passenger, pose)
+	var/carrier_size_delta = (get_size(carrier) || 1) - 1
+	var/passenger_size_delta = (get_size(passenger) || 1) - 1
+	// При повороте меняется и перенос матрицы, добавленный при изменении размера.
+	var/matrix/carrier_transform = carrier.transform
+	var/matrix/passenger_transform = passenger.transform
+	var/shift_x = carrier_transform.c - passenger_transform.c
+	var/shift_y = carrier_transform.f - passenger_transform.f
+	if(!carrier_size_delta && !passenger_size_delta && !shift_x && !shift_y)
+		return
 
-	var/rider_size = get_size(H.buckled_mobs[pass_index]) || 1
-	x_change = 0
-	y_change = 0
-	switch(key_name)
-		if(RIDING_BELLY)
-			y_change = -8
-		if(RIDING_BELLY_TAUR)
-			x_change = 7
-			y_change = -2
+	if(RIDING_IS_BELLY(pose))
+		var/size_difference = carrier_size_delta - passenger_size_delta
+		// Точка крепления на торсе при 100%: (0, -3) для севера и юга.
+		// Для востока точка (-4, -3) повёрнута на 20° у обычной посадки и на 70° у тавра. Для запада X зеркален.
+		var/east_x = (pose == RIDING_BELLY_TAUR ? -4.19 : -4.78) * size_difference
+		var/side_y = (pose == RIDING_BELLY_TAUR ? 2.73 : -1.45) * size_difference
+		var/front_y = -3 * size_difference
+		for(var/direction in offsets)
+			var/list/offset = offsets[direction]
+			var/side = direction == TEXT_EAST ? 1 : (direction == TEXT_WEST ? -1 : 0)
+			offset[1] += shift_x + offset[1] * carrier_size_delta + side * east_x
+			offset[2] += shift_y + offset[2] * carrier_size_delta + (side ? side_y : front_y)
+		return
 
-	if(rider_size != 1 && (x_change || y_change))
-		rider_size -= 1
-		for(var/d in .)
-			if(.[d][1] > 0)
-				.[d][1] += rider_size * x_change
-			else if(.[d][1] < 0)
-				.[d][1] -= rider_size * x_change
-			.[d][2] += rider_size * y_change
+	var/side_x
+	var/side_y
+	var/front_y
+	// Поправки на размер отсчитываются от точки крепления и положения рта на спрайте при 100%.
+	if(pose == RIDING_BELLY_TAUR_REVERSED)
+		side_x = carrier_size_delta * GLOB.test_belly_riding_taur_Xchange_vehicle + passenger_size_delta * GLOB.test_belly_riding_taur_Xchange_rider
+		side_y = carrier_size_delta * GLOB.test_belly_riding_taur_Ychange_vehicle + passenger_size_delta * GLOB.test_belly_riding_taur_Ychange_rider
+		front_y = carrier_size_delta * GLOB.test_belly_riding_taur_Ychange_vehicle_front + passenger_size_delta * GLOB.test_belly_riding_taur_Ychange_rider_front
+	else
+		side_x = carrier_size_delta * GLOB.test_belly_riding_Xchange_vehicle + passenger_size_delta * GLOB.test_belly_riding_Xchange_rider
+		side_y = carrier_size_delta * GLOB.test_belly_riding_Ychange_vehicle + passenger_size_delta * GLOB.test_belly_riding_Ychange_rider
+		front_y = side_y
+
+	for(var/direction in offsets)
+		var/list/offset = offsets[direction]
+		var/side = direction == TEXT_EAST ? 1 : (direction == TEXT_WEST ? -1 : 0)
+		offset[1] += shift_x + (side ? side * side_x : offset[1] * carrier_size_delta)
+		offset[2] += shift_y + (side ? side_y : front_y)
 
 /datum/component/riding/human/additional_offset_checks()
 	var/mob/living/carbon/human/H = parent
@@ -710,7 +788,7 @@
 
 /datum/action/cooldown/true_belly_riding
 	name = "True Belly Riding"
-	desc = "Позвозяет насадить переносимого на свой член или дилдо."
+	desc = "Начинает или прекращает взаимодействие с пассажиром в выбранной позе."
 	icon_icon = 'modular_splurt/icons/mob/actions/lewd_actions/lewd_icons.dmi'
 	button_icon_state = "arousal_small"
 
@@ -728,45 +806,51 @@
 		riding_comp.off_true_belly_riding()
 		Remove(action_owner)
 		return
+	if(riding_comp.true_belly_riding)
+		riding_comp.off_true_belly_riding()
+		return
 	if(!action_owner.has_penis() && !action_owner.has_strapon())
-		riding_comp.off_true_belly_riding()
 		return
-	var/mob/living/target = action_owner.buckled_mobs[1]
-	var/t_has_vagina = target.has_vagina()
-	var/t_has_anus = target.has_anus()
-	if(!t_has_anus && !t_has_vagina)
-		riding_comp.off_true_belly_riding()
-		to_chat(action_owner, span_warning("К сожалению, у [target] отсутствуют подходящие места."))
+	var/mob/living/passenger = action_owner.buckled_mobs[1]
+	var/datum/preferences/passenger_prefs = passenger.client?.prefs
+	if(!(passenger_prefs?.toggles & VERB_CONSENT) || passenger_prefs.erppref == "No")
+		to_chat(action_owner, span_warning("[passenger] не желает такой поездки."))
 		return
-	// Если выключено, даем выбор интеракции
-	if(!riding_comp.true_belly_riding)
-		if(!(target?.client?.prefs.toggles & VERB_CONSENT) || !target?.client?.prefs.erppref)
-			to_chat(src, span_warning("[target] не желает такой поездки."))
-			return
-		var/list/interactions_list = list()
-		if(t_has_vagina)
-			interactions_list[CUM_TARGET_VAGINA] = "/datum/interaction/lewd/belly_riding/vagina"
-		if(t_has_anus)
-			interactions_list[CUM_TARGET_ANUS] = "/datum/interaction/lewd/belly_riding/anal"
-		if(!interactions_list.len)
-			to_chat(action_owner, span_warning("К сожалению, у [target] отсутствуют подходящие места."))
-			return
-		var/choise = interactions_list.len == 1 ? interactions_list[1] : tgui_input_list(action_owner, "Чем вы хотите насадить переносимого?", name, interactions_list)
-		if(!choise)
-			return
-		riding_comp.true_belly_riding_interaction = SSinteractions.interactions[interactions_list[choise]]
-		if(!riding_comp.true_belly_riding_interaction)
-			return
-		else
-			var/penis_desc = action_owner.has_strapon() ? "дилдо" : "член"
-			to_chat(action_owner, span_userlove("Вы насаживаете [target] на свой [penis_desc]!"))
-			to_chat(target, span_userlove("[action_owner] насаживает вас на свой [penis_desc]!"))
 
-	riding_comp.true_belly_riding = !riding_comp.true_belly_riding
-	if(!riding_comp.true_belly_riding)
-		riding_comp.off_true_belly_riding()
+	var/reversed_pose = !!riding_comp.belly_harness?.reversed_pose
+	var/interaction_type
+	if(reversed_pose)
+		interaction_type = /datum/interaction/lewd/belly_riding/oral
 	else
-		riding_comp.do_true_belly_riding()
+		var/list/interaction_choices = list()
+		if(passenger.has_vagina())
+			interaction_choices["Вагина"] = /datum/interaction/lewd/belly_riding/vagina
+		if(passenger.has_anus())
+			interaction_choices["Анус"] = /datum/interaction/lewd/belly_riding/anal
+		if(!length(interaction_choices))
+			to_chat(action_owner, span_warning("У [passenger] нет подходящего места для этой позы."))
+			return
+		var/choice = length(interaction_choices) == 1 ? interaction_choices[1] : tgui_input_list(action_owner, "Выберите взаимодействие для этой позы.", name, interaction_choices)
+		if(!choice)
+			return
+		interaction_type = interaction_choices[choice]
+
+	if(!interaction_type || owner != action_owner || QDELETED(riding_comp) || QDELETED(passenger) || passenger.buckled != action_owner)
+		return
+	if(riding_comp.true_belly_riding || reversed_pose != (!!riding_comp.belly_harness?.reversed_pose) || !IsAvailable())
+		return
+	var/datum/interaction/interaction = SSinteractions.interactions["[interaction_type]"]
+	if(!interaction)
+		return
+
+	riding_comp.true_belly_riding_interaction = interaction
+	riding_comp.true_belly_riding = TRUE
+	if(!riding_comp.do_true_belly_riding())
+		return
+	if(!reversed_pose)
+		var/penis_desc = action_owner.has_strapon() ? "дилдо" : "член"
+		to_chat(action_owner, span_userlove("Вы насаживаете [passenger] на свой [penis_desc]!"))
+		to_chat(passenger, span_userlove("[action_owner] насаживает вас на свой [penis_desc]!"))
 
 	UpdateButtons()
 

@@ -692,7 +692,7 @@
 	key = "twitch"
 	key_third_person = "twitches"
 	message = "сильно дёргается."
-	stat_allowed = SOFT_CRIT // BLUEMOON EDIT - некоторые эмоуты можно использовать в софткрите
+	stat_allowed = UNCONSCIOUS // BLUEMOON EDIT - некоторые эмоуты можно использовать в софткрите
 
 /datum/emote/sound/human/twitch_s
 	name = "Дёргаться"
