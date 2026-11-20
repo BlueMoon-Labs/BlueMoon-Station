@@ -45,6 +45,13 @@
 	else
 		DiscardCurrentAction()
 
+/**
+ * True when this click will be a Laser Eyes shot: the generic click cooldown gate
+ * must then skip attack speed modifiers. Overridden for mutation carriers.
+ */
+/mob/proc/laser_eyes_click(atom/A)
+	return FALSE
+
 /*
 	Standard mob ClickOn()
 	Handles exceptions: Buildmode, middle click, modified clicks, mech actions
@@ -93,7 +100,9 @@
 	if(A != src)
 		face_atom(A)
 
-	if(!CheckActionCooldown(immediate = TRUE))
+	// Для выстрела лазерных глаз общий гейт не должен задавать модифицированный
+	// интервал — скорострельность определяется только проверкой CLICK_CD_RANGE в LaserEyes().
+	if(!CheckActionCooldown(immediate = TRUE, ignore_mod = laser_eyes_click(A)))
 		return
 
 	if(!modifiers["catcher"] && A.IsObscured())

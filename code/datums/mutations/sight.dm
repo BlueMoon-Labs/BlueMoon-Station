@@ -103,6 +103,19 @@
 			return
 		owner.LaserEyes(target, mouseparams)
 
+/// Только реальный выстрел лазерных глаз снимает модификаторы скорости с общего гейта клика.
+/mob/living/carbon/human/laser_eyes_click(atom/A)
+	if(a_intent != INTENT_HARM || throw_mode || restrained() || get_active_held_item() || !dna || HAS_TRAIT(src, TRAIT_PACIFISM))
+		return FALSE
+	var/carries_laser_eyes = FALSE
+	for(var/datum/mutation/human/laser_eyes/LE in dna.mutations)
+		carries_laser_eyes = TRUE
+		break
+	// Должен быть тот же путь, что ведёт в RangedAttack(), иначе гейт меняется для других действий.
+	if(!carries_laser_eyes || in_direct_access(A) || !loc || !loc.AllowClick() || CanReach(A, null))
+		return FALSE
+	return TRUE
+
 /// Flash Protection — immune to handheld flashes and flashbangs (not welding arcs).
 /datum/mutation/human/flash_protection
 	name = "Flash Protection"

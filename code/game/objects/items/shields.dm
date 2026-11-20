@@ -4,7 +4,7 @@
 	item_flags = ITEM_CAN_BLOCK
 	block_parry_data = /datum/block_parry_data/shield
 	armor_type = /datum/armor/base_and_adamantineshield
-	item_flags = SLOWS_WHILE_IN_HAND
+	item_flags = SLOWS_WHILE_IN_HAND | ITEM_CAN_BLOCK
 	slowdown = 0.1
 	/// Shield flags
 	var/shield_flags = SHIELD_FLAGS_DEFAULT
