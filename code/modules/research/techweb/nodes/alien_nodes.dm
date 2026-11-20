@@ -3,7 +3,7 @@
 /datum/techweb_node/alientech //AYYYYYYYYLMAOO tech
 	id = "alientech"
 	display_name = "Alien Technology"
-	description = "Things used by the greys."
+	description = "Вещи, которыми пользуются серые."
 	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("biotech","engineering")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
@@ -24,7 +24,7 @@
 /datum/techweb_node/alien_bio
 	id = "alien_bio"
 	display_name = "Alien Biological Technology"
-	description = "Advanced biological tools."
+	description = "Продвинутые биологические инструменты."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("alientech", "advance_surgerytools")
 	design_ids = list("alien_scalpel", "alien_hemostat", "alien_retractor", "alien_saw", "alien_drill", "alien_cautery", "surgery_revival", "ayyplantgenes")
@@ -33,7 +33,7 @@
 /datum/techweb_node/alien_engi
 	id = "alien_engi"
 	display_name = "Advanced Engineering Tools" // BLUEMOON CHANGE
-	description = "Reverse engineered alien tools." // BLUEMOON CHANGE
+	description = "Инструменты, скопированные с инопланетных образцов." // BLUEMOON CHANGE
 	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("alientech", "exp_tools")
 	design_ids = list("alien_wrench", "alien_wirecutters", "alien_screwdriver", "alien_crowbar", "alien_welder", "alien_multitool", "alien_rcd")
@@ -42,7 +42,7 @@
 /datum/techweb_node/alien_combi_tools
 	id = "alien_combi_tools"
 	display_name = "Alien Combi Surgery Tools"
-	description = "Allows the creation of powerful alien combi-tools. Surgeons would sell their souls for them."
+	description = "Позволяет создавать мощные инопланетные комбинированные инструменты. Хирурги продали бы за них душу."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("alien_bio")
 	design_ids = list("drapes_adv", "alien_combi_scalpel", "alien_combi_retractor", "alien_combi_drill")

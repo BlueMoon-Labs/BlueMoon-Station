@@ -284,6 +284,10 @@
 	var/afterimage_interval = 1
 	/// Шанс в процентах уклониться от любого проджектайла, пока имплант активен.
 	var/projectile_dodge_chance = 45
+	/// Звук включения и работы импланта (длится почти весь эффект). Обычная и корпоративная версии.
+	var/start_sound = 'sound/effects/sandevistan/sandevistan_start_and_go_1.ogg'
+	/// Звук окончания действия импланта.
+	var/end_sound = 'sound/effects/sandevistan/sandevistan_ends.ogg'
 
 /datum/action/item_action/organ_action/use/sandevistan
 	name = "Activate Sandevistan"
@@ -318,7 +322,7 @@
 	active = TRUE
 	next_use = world.time + cooldown
 	to_chat(owner, span_notice("Your vision sharpens as time seems to slow around you."))
-	owner.playsound_local(owner, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
+	owner.playsound_local(owner, start_sound, 50, FALSE)
 	// Все активации дают сниженную скорость (как раньше первая); различается только длительность.
 	active_movespeed_mod = movespeed_mod_weak
 	owner.add_movespeed_modifier(movespeed_mod_weak)
@@ -415,7 +419,7 @@
 		return
 	active = FALSE
 	to_chat(owner, span_warning("The world snaps back into focus as your Sandevistan powers down."))
-	owner.playsound_local(owner, 'sound/machines/terminal_prompt_deny.ogg', 30, FALSE)
+	owner.playsound_local(owner, end_sound, 50, FALSE)
 	owner.remove_movespeed_modifier(active_movespeed_mod || movespeed_mod)
 	active_movespeed_mod = null
 	REMOVE_TRAIT(owner, TRAIT_NO_STAMINA_DAMAGE, REF(src))
@@ -495,6 +499,8 @@
 	outline_color = "#C2185B"
 	trail_color = "#C2185B"
 	afterimage_interval = 0.2
+	// Агентская версия использует свой звук включения/работы.
+	start_sound = 'sound/effects/sandevistan/sandevistan_start_and_go_2.ogg'
 	/// Максимальное количество активаций до перегруза
 	var/max_safe_activations = 4
 

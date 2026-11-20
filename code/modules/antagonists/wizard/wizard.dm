@@ -36,7 +36,7 @@
 	if(H.client)
 		var/load_character = alert(H.client, "Желаете загрузить текущего своего выбранного персонажа?", "Играть своим персонажем!", "Да", "Нет")
 		if(load_character == "Да")
-			H.load_client_appearance(H.client)
+			H.load_client_appearance(H.client, quirks = FALSE)
 	. = ..()
 	if(allow_rename)
 		rename_wizard()

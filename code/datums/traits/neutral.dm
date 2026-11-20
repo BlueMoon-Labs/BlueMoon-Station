@@ -216,32 +216,40 @@
 	gain_text = span_notice("Вы чувствуете давление в груди.")
 	lose_text = span_notice("Вы чувствуете, что ваша грудь стала легче.")
 	medical_record_text = "Грудь пациента демонстрируют высокую продуктивность."
-	var/increasedcum
+	var/obj/item/organ/genital/breasts/modified_organ
 
 /datum/quirk/milk_plus/add()
-	var/mob/living/carbon/M = quirk_holder
-	if(M.getorganslot(ORGAN_SLOT_BREASTS))
-		var/obj/item/organ/genital/breasts/T = M.getorganslot(ORGAN_SLOT_BREASTS)
-		T.fluid_mult += 0.5 //Base is 1
-		T.fluid_max_volume *= 1.75 //Fixes this.
+	RegisterSignal(quirk_holder, COMSIG_MOB_ORGAN_ADD, PROC_REF(sync_organ_bonus))
+	RegisterSignal(quirk_holder, COMSIG_MOB_ORGAN_REMOVE, PROC_REF(sync_organ_bonus))
+	sync_organ_bonus()
 
 /datum/quirk/milk_plus/remove()
+	UnregisterSignal(quirk_holder, list(COMSIG_MOB_ORGAN_ADD, COMSIG_MOB_ORGAN_REMOVE))
+	if(!QDELETED(modified_organ))
+		modified_organ.update_fluid_reserve()
+		modified_organ.fluid_mult -= GENITAL_FLUID_QUIRK_RATE_BONUS
+		modified_organ.fluid_max_volume /= GENITAL_FLUID_QUIRK_CAPACITY_MULTIPLIER
+		modified_organ.stored_fluid = min(modified_organ.stored_fluid, modified_organ.fluid_max_volume)
+	modified_organ = null
+
+/datum/quirk/milk_plus/proc/sync_organ_bonus(datum/source)
+	SIGNAL_HANDLER
 	var/mob/living/carbon/M = quirk_holder
 	if(!M)
 		return
-	if(quirk_holder.getorganslot(ORGAN_SLOT_BREASTS))
-		var/obj/item/organ/genital/breasts/T = M.getorganslot(ORGAN_SLOT_BREASTS)
-		T.fluid_mult -= 0.5 //Base is 1
-		T.fluid_max_volume *= 0.25 //Base is 50
-
-/datum/quirk/milk_plus/on_process()
-	var/mob/living/carbon/M = quirk_holder //If you get balls later, then this will still proc
-	if(M.getorganslot(ORGAN_SLOT_BREASTS))
-		var/obj/item/organ/genital/breasts/T = M.getorganslot(ORGAN_SLOT_BREASTS)
-		if(!increasedcum)
-			T.fluid_mult = 1.5 //Base is 0.133
-			T.fluid_max_volume *= 1.75
-			increasedcum = TRUE
+	var/obj/item/organ/genital/breasts/current = M.getorganslot(ORGAN_SLOT_BREASTS)
+	if(current == modified_organ)
+		return
+	if(!QDELETED(modified_organ))
+		modified_organ.update_fluid_reserve()
+		modified_organ.fluid_mult -= GENITAL_FLUID_QUIRK_RATE_BONUS
+		modified_organ.fluid_max_volume /= GENITAL_FLUID_QUIRK_CAPACITY_MULTIPLIER
+		modified_organ.stored_fluid = min(modified_organ.stored_fluid, modified_organ.fluid_max_volume)
+	modified_organ = current
+	if(!QDELETED(current))
+		current.update_fluid_reserve()
+		current.fluid_mult += GENITAL_FLUID_QUIRK_RATE_BONUS
+		current.fluid_max_volume *= GENITAL_FLUID_QUIRK_CAPACITY_MULTIPLIER
 
 /datum/quirk/kartavii
 	name = "Картавый"

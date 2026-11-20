@@ -1063,7 +1063,7 @@
 		"lockdownavail" = cell && cell.percent() >= 35 && abilitiesavail,
 		"powerChannels" = list(
 			list(
-				"title" = "Equipment",
+				"title" = "Оборудование",
 				"powerLoad" = DisplayPower(lastused_equip),
 				"status" = equipment,
 				"topicParams" = list(
@@ -1073,7 +1073,7 @@
 				)
 			),
 			list(
-				"title" = "Lighting",
+				"title" = "Освещение",
 				"powerLoad" = DisplayPower(lastused_light),
 				"status" = lighting,
 				"topicParams" = list(
@@ -1083,7 +1083,7 @@
 				)
 			),
 			list(
-				"title" = "Environment",
+				"title" = "Окружение",
 				"powerLoad" = DisplayPower(lastused_environ),
 				"status" = environ,
 				"topicParams" = list(

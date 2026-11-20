@@ -3,6 +3,8 @@
 
 	var/obj/item/organ/container
 	var/size
+	var/obj/item/organ/genital/applied_organ
+	var/applied_size = 0
 
 /datum/component/organ_inflation/Initialize(added_size)
 	if(added_size < 0)
@@ -56,52 +58,49 @@
 
 /datum/component/organ_inflation/proc/on_entering(datum/source, atom/destination, atom/oldLoc)
 	SIGNAL_HANDLER
+	if(container)
+		deflate_organ()
+		unregister_container()
+		container = null
 	if(istype(destination, /obj/item/organ))
 		container = destination
 		register_container()
 		inflate_organ(size)
-	else if(container)
-		deflate_organ()
-		unregister_container()
-		container = null
 
 /datum/component/organ_inflation/proc/on_inserted(datum/source)
 	SIGNAL_HANDLER
-	inflate_organ(size)
+	inflate_organ(max(0, size - applied_size))
 
 /datum/component/organ_inflation/proc/on_removed(datum/source)
 	SIGNAL_HANDLER
 	deflate_organ()
 
 /datum/component/organ_inflation/proc/inflate_organ(new_size)
-	if(!container.owner?.client?.prefs?.pregnancy_inflation)
+	if(!container?.owner?.client?.prefs?.pregnancy_inflation)
 		return
-
+	var/obj/item/organ/genital/affected
 	switch(container.slot)
 		if(ORGAN_SLOT_PENIS)
-			var/obj/item/organ/genital/penis/peenus = container.owner.getorganslot(ORGAN_SLOT_PENIS)
-			peenus?.modify_size(new_size)
+			affected = container.owner.getorganslot(ORGAN_SLOT_PENIS)
 		if(ORGAN_SLOT_BREASTS)
-			var/obj/item/organ/genital/breasts/breasts = container.owner.getorganslot(ORGAN_SLOT_BREASTS)
-			breasts?.modify_size(new_size)
+			affected = container.owner.getorganslot(ORGAN_SLOT_BREASTS)
 		else
-			var/obj/item/organ/genital/belly/belly = container.owner.getorganslot(ORGAN_SLOT_BELLY)
-			if(!belly && ishuman(container.owner))
-				var/mob/living/carbon/human/human_owner = container.owner
-				belly = human_owner.give_genital(/obj/item/organ/genital/belly)
-			belly?.modify_size(new_size)
+			affected = container.owner.getorganslot(ORGAN_SLOT_BELLY)
+			if(!affected && ishuman(container.owner))
+				var/mob/living/carbon/human/H = container.owner
+				affected = H.give_genital(/obj/item/organ/genital/belly)
+	if(!affected || QDELETED(affected))
+		return
+	if(applied_organ && applied_organ != affected)
+		deflate_organ()
+		new_size = size
+	var/old_size = affected.size
+	affected.modify_size(new_size)
+	applied_organ = affected
+	applied_size += affected.size - old_size
 
 /datum/component/organ_inflation/proc/deflate_organ()
-	if(!container.owner)
-		return
-
-	switch(container.slot)
-		if(ORGAN_SLOT_PENIS)
-			var/obj/item/organ/genital/penis/peenus = container.owner.getorganslot(ORGAN_SLOT_PENIS)
-			peenus?.modify_size(-size)
-		if(ORGAN_SLOT_BREASTS)
-			var/obj/item/organ/genital/breasts/breasts = container.owner.getorganslot(ORGAN_SLOT_BREASTS)
-			breasts?.modify_size(-size)
-		else
-			var/obj/item/organ/genital/belly/belly = container.owner.getorganslot(ORGAN_SLOT_BELLY)
-			belly?.modify_size(-size)
+	if(!QDELETED(applied_organ) && applied_size)
+		applied_organ.modify_size(-applied_size)
+	applied_size = 0
+	applied_organ = null

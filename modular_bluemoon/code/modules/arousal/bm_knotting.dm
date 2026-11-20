@@ -1,3 +1,4 @@
+// BLUEMOON KNOT CYBORG + MOVEMENT V2 (Stasdvrz extension)
 // ============================================================
 // BlueMoon - Knotting core (REFACTORED) //By Stasdvrz
 // ============================================================
@@ -17,7 +18,7 @@
 #define KNOT_RESIST_COOLDOWN 50 // 5 seconds
 #define KNOT_DISTANCE_CHECK_INTERVAL 5 SECONDS
 #define KNOT_AROUSAL_TICK_INTERVAL 5 SECONDS
-#define KNOT_MOVEMENT_CHECK_COOLDOWN 10 // 1 second
+#define KNOT_STEP_BREAK_CHANCE 3 // % per outward step, independent of strain cooldown
 #define KNOT_STRAIN_COOLDOWN 5 SECONDS
 
 // Separate from /datum/movespeed_modifier/leash; no interference with leashes.
@@ -53,13 +54,13 @@
 	var/list/knotted_genitals = null
 	var/list/knot_zones = null
 	var/last_knot_strain = 0
-	var/last_knot_check = 0
-	var/last_tug_time = 0
 
 	var/tmp/knot_is_hidden = FALSE
 	var/tmp/knot_arousal_timer
 	var/tmp/knot_release_timer
 	var/tmp/knot_distance_timer
+	/// Prevent movement signal recursion while moving the linked participant.
+	var/tmp/knot_following = FALSE
 /obj/item/organ/genital/penis/Initialize(mapload)
 	. = ..()
 	update_knotting_from_shape()
@@ -72,7 +73,7 @@
 	// Surgical Remove() already calls cleanup. Destruction is a technical cleanup,
 	// not a forceful pull (which would hurt deleted / absent participants).
 	if(knot_locked)
-		cleanup_knot_state(owner, knot_partner)
+		cleanup_knot_state(get_knot_user(), knot_partner)
 	return ..()
 
 /obj/item/organ/genital/penis/proc/update_knotting_from_shape()
@@ -126,27 +127,40 @@
 	schedule_knot_processes(user, partner, target_zone, duration)
 	return TRUE
 
+// Shared knot source: a real carbon organ, or an opt-in synthetic control module.
+/obj/item/organ/genital/penis/proc/get_knot_user()
+	if(istype(src, /obj/item/organ/genital/penis/silicon_knot))
+		var/obj/item/organ/genital/penis/silicon_knot/module = src
+		return module.silicon_owner
+	return owner
+
 /obj/item/organ/genital/penis/proc/validate_knotting_conditions(mob/living/user, mob/living/partner, target_zone)
-	if(!knot_size || QDELETED(user) || QDELETED(partner) || !ishuman(user) || !ishuman(partner) || user == partner)
+	if(!knot_size || QDELETED(user) || QDELETED(partner) || user == partner)
 		return FALSE
-	var/mob/living/carbon/human/HU = user
-	if(owner != user || HU.getorganslot(ORGAN_SLOT_PENIS) != src)
+	if(!(ishuman(user) || iscyborg(user)) || !(ishuman(partner) || iscyborg(partner)))
 		return FALSE
-	if(get_turf(user) == null || get_turf(partner) == null || user.z != partner.z || get_dist(user, partner) > 1)
+	if(get_knot_user() != user)
+		return FALSE
+	if(ishuman(user))
+		var/mob/living/carbon/human/HU = user
+		if(HU.getorganslot(ORGAN_SLOT_PENIS) != src)
+			return FALSE
+	else
+		var/mob/living/silicon/robot/R = user
+		if(R.synthetic_knot_module != src || !R.synthetic_knot_style)
+			return FALSE
+	if(!get_turf(user) || !get_turf(partner) || user.z != partner.z || get_dist(user, partner) > 1)
 		return FALSE
 	if(!(target_zone in list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS, CUM_TARGET_MOUTH, CUM_TARGET_THROAT)))
 		return FALSE
 	if(calculate_zone_modifier(partner, target_zone) <= -100)
 		return FALSE
-	// A character may belong to one connection, with up to two occupied zones.
 	if(user.active_knot && user.active_knot != src)
 		return FALSE
 	if(partner.active_knot && partner.active_knot != src)
 		return FALSE
 	if(knot_locked && knot_partner != partner)
 		return FALSE
-	// Preferences are checked in try_apply_knot(). The explicit admin override
-	// is intentionally only available there, not via the public interaction datums.
 	return TRUE
 
 /obj/item/organ/genital/penis/proc/calculate_knot_chance(mob/living/user, mob/living/partner, target_zone)
@@ -183,10 +197,23 @@
 	return round(KNOT_AROUSAL_BONUS_MAX * ((arousal_ratio - 0.8) / 0.2))
 
 /obj/item/organ/genital/penis/proc/calculate_zone_modifier(mob/living/partner, target_zone)
+	if(iscyborg(partner))
+		var/mob/living/silicon/robot/R = partner
+		if(!(target_zone in R.synthetic_knot_slots))
+			return -100
+		// A synthetic receiving slot exists only if that cyborg enabled it.
+		switch(target_zone)
+			if(CUM_TARGET_VAGINA)
+				return KNOT_VAGINAL_BONUS
+			if(CUM_TARGET_ANUS)
+				return -KNOT_ANAL_PENALTY
+			if(CUM_TARGET_MOUTH, CUM_TARGET_THROAT)
+				return -KNOT_ORAL_PENALTY
+		return -100
 	switch(target_zone)
 		if(CUM_TARGET_VAGINA)
 			if(!partner.has_vagina())
-				return -100 // Impossible
+				return -100
 			return KNOT_VAGINAL_BONUS
 		if(CUM_TARGET_ANUS)
 			if(!partner.has_anus())
@@ -237,7 +264,7 @@
 // ============================================================
 /obj/item/organ/genital/penis/proc/activate_knot(mob/living/user, mob/living/partner, target_zone, duration, is_hidden = FALSE)
 	if(knot_locked)
-		cleanup_knot_state(owner, knot_partner)
+		cleanup_knot_state(get_knot_user(), knot_partner)
 	knot_is_hidden = is_hidden
 	knot_locked = TRUE
 	knot_partner = partner
@@ -246,7 +273,6 @@
 	knotted_genitals = list()
 	knotted_genital = null
 	knot_until = world.time + duration
-	last_knot_check = 0
 	last_knot_strain = 0
 	user.active_knot = src
 	partner.active_knot = src
@@ -254,6 +280,9 @@
 /obj/item/organ/genital/penis/proc/register_knot_zone(mob/living/partner, target_zone)
 	if(!(target_zone in knot_zones))
 		knot_zones += target_zone
+	// Cyborg receiving slots are configuration, not actual carbon organs.
+	if(!ishuman(partner))
+		return
 	var/obj/item/organ/genital/receiver
 	switch(target_zone)
 		if(CUM_TARGET_VAGINA)
@@ -282,7 +311,7 @@
 
 /obj/item/organ/genital/penis/proc/on_knot_participant_deleted()
 	SIGNAL_HANDLER
-	cleanup_knot_state(owner, knot_partner)
+	cleanup_knot_state(get_knot_user(), knot_partner)
 
 // ============================================================
 // KNOT EFFECTS
@@ -334,17 +363,18 @@
 	return pick(messages)
 
 /obj/item/organ/genital/penis/proc/apply_mood_effects(mob/living/user, mob/living/partner, positive = TRUE)
-	if(!ishuman(user) || !ishuman(partner))
-		return
-
 	if(positive)
-		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "knotting_satisfied", /datum/mood_event/knotting_satisfied)
-		SEND_SIGNAL(partner, COMSIG_ADD_MOOD_EVENT, "knotting_linked", /datum/mood_event/knotting_linked)
+		if(ishuman(user))
+			SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "knotting_satisfied", /datum/mood_event/knotting_satisfied)
+		if(ishuman(partner))
+			SEND_SIGNAL(partner, COMSIG_ADD_MOOD_EVENT, "knotting_linked", /datum/mood_event/knotting_linked)
 	else
-		SEND_SIGNAL(user, COMSIG_CLEAR_MOOD_EVENT, "knotting_satisfied")
-		SEND_SIGNAL(user, COMSIG_CLEAR_MOOD_EVENT, "knotting_linked")
-		SEND_SIGNAL(partner, COMSIG_CLEAR_MOOD_EVENT, "knotting_satisfied")
-		SEND_SIGNAL(partner, COMSIG_CLEAR_MOOD_EVENT, "knotting_linked")
+		if(ishuman(user))
+			SEND_SIGNAL(user, COMSIG_CLEAR_MOOD_EVENT, "knotting_satisfied")
+			SEND_SIGNAL(user, COMSIG_CLEAR_MOOD_EVENT, "knotting_linked")
+		if(ishuman(partner))
+			SEND_SIGNAL(partner, COMSIG_CLEAR_MOOD_EVENT, "knotting_satisfied")
+			SEND_SIGNAL(partner, COMSIG_CLEAR_MOOD_EVENT, "knotting_linked")
 
 /obj/item/organ/genital/penis/proc/apply_aphrodisiac_effects(mob/living/user, mob/living/partner)
 	for(var/mob/living/M in list(user, partner))
@@ -356,6 +386,8 @@
 		apply_lust_increase(M)
 
 /obj/item/organ/genital/penis/proc/should_apply_aphrodisiac(mob/living/M)
+	if(!ishuman(M))
+		return FALSE
 	if(!M?.client?.prefs?.arousable)
 		return FALSE
 	if(M.client?.prefs?.cit_toggles & NO_APHRO)
@@ -438,7 +470,7 @@
 		return
 
 	for(var/mob/living/M in list(user, partner))
-		if(!M?.client?.prefs?.arousable)
+		if(!ishuman(M) || !M?.client?.prefs?.arousable)
 			continue
 
 		var/add_amount = rand(10, 20)
@@ -465,7 +497,7 @@
 	if(!knot_locked)
 		return
 	// Never trust stale callback arguments: use the currently stored participants.
-	var/mob/living/Luser = owner
+	var/mob/living/Luser = get_knot_user()
 	var/mob/living/Lpartner = knot_partner
 	var/hidden = knot_is_hidden
 	var/zone_text = get_zone_text(knot_state)
@@ -498,6 +530,7 @@
 	knot_zones = null
 	knot_locked = FALSE
 	knot_is_hidden = FALSE
+	knot_following = FALSE
 	knot_state = 0
 	knot_partner = null
 	knot_until = 0
@@ -571,8 +604,8 @@
 	if(QDELETED(src) || !knot_locked || QDELETED(knot_partner))
 		return
 
-	if(!who && istype(owner, /mob/living))
-		who = owner
+	if(!who)
+		who = get_knot_user()
 
 	if(istype(who, /mob/living))
 		check_knot_distance_safe(who)
@@ -583,7 +616,7 @@
 /obj/item/organ/genital/penis/proc/check_knot_distance_safe(mob/living/user)
 	if(!knot_locked)
 		return
-	if(QDELETED(user) || QDELETED(knot_partner) || owner != user)
+	if(QDELETED(user) || QDELETED(knot_partner) || get_knot_user() != user)
 		cleanup_knot_state(user, knot_partner)
 		return
 	if(!get_turf(user) || !get_turf(knot_partner) || user.z != knot_partner.z)
@@ -622,8 +655,6 @@
 		release_knot(user, partner, knot_state, TRUE)
 		return
 
-	if(prob(70))
-		apply_tug_to_partner(partner, user)
 
 /obj/item/organ/genital/penis/proc/handle_knot_break(mob/living/user, mob/living/partner, zone_text)
 	to_chat(user, span_danger("Узел не выдерживает и рвётся!"))
@@ -644,42 +675,58 @@
 
 	release_knot(user, partner, knot_state, TRUE)
 
-/obj/item/organ/genital/penis/proc/apply_tug_to_partner(mob/living/partner, mob/living/user)
-	if(world.time - last_tug_time < 10)
-		return
-
-	last_tug_time = world.time
-
-	// Простое подтягивание партнёра на 1 тайл ближе
-	// Если у вас есть система поводков, интегрируйте её здесь
-	step_towards(partner, user)
-
 // ============================================================
-// MOVEMENT HANDLER
+// SYNCHRONOUS KNOT MOVEMENT
 // ============================================================
-/obj/item/organ/genital/penis/proc/on_knot_move()
+// Called once per successful step for EITHER participant. A synthetic
+// following step triggers a second signal; knot_following suppresses it.
+/obj/item/organ/genital/penis/proc/on_knot_move(datum/source, atom/old_loc, movement_dir, forced)
 	SIGNAL_HANDLER
-
-	if(QDELETED(src) || !knot_locked || QDELETED(knot_partner))
-		cleanup_movement_signals()
+	if(knot_following)
 		return
-
-	if(!istype(owner, /mob/living))
+	var/mob/living/knot_user = get_knot_user()
+	if(!knot_locked || QDELETED(knot_user) || QDELETED(knot_partner))
+		cleanup_knot_state(knot_user, knot_partner)
 		return
-
-	var/mob/living/user = owner
-
-	if(world.time < last_knot_check + KNOT_MOVEMENT_CHECK_COOLDOWN)
+	if(source != knot_user && source != knot_partner)
 		return
-
-	last_knot_check = world.time
-
-	check_knot_distance_safe(user)
+	var/mob/living/mover = source
+	var/mob/living/follower = (mover == knot_user) ? knot_partner : knot_user
+	var/turf/previous = get_turf(old_loc)
+	var/turf/current = get_turf(mover)
+	var/turf/follower_tile = get_turf(follower)
+	if(!previous || !current || !follower_tile || current.z != follower_tile.z)
+		cleanup_knot_state(knot_user, knot_partner)
+		return
+	// Forced moves and teleports must not drag somebody through obstacles.
+	if(forced || previous.z != current.z)
+		check_knot_distance_safe(knot_user)
+		return
+	// Manhattan distance notices sideways separation that get_dist() hides.
+	var/old_separation = abs(previous.x - follower_tile.x) + abs(previous.y - follower_tile.y)
+	var/new_separation = abs(current.x - follower_tile.x) + abs(current.y - follower_tile.y)
+	var/old_tile_distance = max(abs(previous.x - follower_tile.x), abs(previous.y - follower_tile.y))
+	var/new_tile_distance = max(abs(current.x - follower_tile.x), abs(current.y - follower_tile.y))
+	if(new_separation > old_separation || new_tile_distance > old_tile_distance)
+		// A new roll for EVERY outward step. No 1-second cooldown.
+		if(prob(KNOT_STEP_BREAK_CHANCE))
+			handle_knot_break(knot_user, knot_partner, get_zone_text(knot_state))
+			return
+		// Move the partner onto our previous tile, not onto our current tile.
+		// step_towards respects solid turfs and movement restrictions.
+		if(!follower.anchored && !follower.buckled && CHECK_ALL_MOBILITY(follower, MOBILITY_STAND | MOBILITY_MOVE))
+			knot_following = TRUE
+			step_towards(follower, previous)
+			knot_following = FALSE
+	// Failed follow, obstruction, or an independent move may leave strain.
+	if(knot_locked)
+		check_knot_distance_safe(knot_user)
 
 /obj/item/organ/genital/penis/proc/cleanup_movement_signals()
-	if(istype(owner, /mob/living))
-		UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
-	if(istype(knot_partner, /mob/living))
+	var/mob/living/knot_user = get_knot_user()
+	if(!QDELETED(knot_user))
+		UnregisterSignal(knot_user, COMSIG_MOVABLE_MOVED)
+	if(!QDELETED(knot_partner) && knot_partner != knot_user)
 		UnregisterSignal(knot_partner, COMSIG_MOVABLE_MOVED)
 
 // ============================================================
@@ -690,11 +737,12 @@
 		to_chat(user, span_notice("Узел уже спал."))
 		return
 
-	if(!owner || QDELETED(owner) || !knot_partner || QDELETED(knot_partner))
+	var/mob/living/current_owner = get_knot_user()
+	if(QDELETED(current_owner) || QDELETED(knot_partner))
 		to_chat(user, span_warning("Цель отсутствует."))
 		return
 
-	var/mob/living/pen_owner = owner
+	var/mob/living/pen_owner = current_owner
 	var/mob/living/pen_partner = knot_partner
 
 	if(DOING_INTERACTION_WITH_TARGET(user, pen_owner) || DOING_INTERACTION_WITH_TARGET(user, pen_partner))
@@ -781,33 +829,44 @@
 	active_knot.start_resist_attempt(src)
 
 /proc/try_apply_knot(mob/living/user, mob/living/partner, target_zone, force_override = FALSE, force_knot = FALSE, is_hidden = FALSE)
-	if(!ishuman(user) || !ishuman(partner) || QDELETED(user) || QDELETED(partner))
+	if(QDELETED(user) || QDELETED(partner) || user == partner)
+		return FALSE
+	if(!(ishuman(user) || iscyborg(user)) || !(ishuman(partner) || iscyborg(partner)))
 		return FALSE
 	if(!force_override)
 		if(!user.client?.prefs?.sexknotting || !partner.client?.prefs?.sexknotting)
 			return FALSE
 	if(!(target_zone in list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS, CUM_TARGET_MOUTH, CUM_TARGET_THROAT)))
 		return FALSE
-
-	// The first argument is always the penetrating actor for built-in calls,
-	// including reversed roles in mount.dm. Never guess from last_genital:
-	// that field is mutable and overwritten by unrelated custom ERP verbs.
-	var/mob/living/carbon/human/HU = user
-	var/obj/item/organ/genital/penis/P = HU.getorganslot(ORGAN_SLOT_PENIS)
-	if(!P || QDELETED(P) || P.owner != user || !P.knot_size)
+	var/obj/item/organ/genital/penis/P
+	if(ishuman(user))
+		var/mob/living/carbon/human/HU = user
+		P = HU.getorganslot(ORGAN_SLOT_PENIS)
+		if(!P || P.owner != user)
+			return FALSE
+		var/threshold = HU.get_climax_threshold()
+		if(threshold <= 0)
+			return FALSE
+		if(HU.get_lust() / threshold * 100 < 65 && !force_knot)
+			return FALSE
+	else
+		var/mob/living/silicon/robot/R = user
+		P = R.get_synthetic_knot()
+	if(!P || QDELETED(P) || P.get_knot_user() != user || !P.knot_size)
 		return FALSE
-	var/threshold = HU.get_climax_threshold()
-	if(threshold <= 0)
-		return FALSE
-	var/effective_lust = (HU.get_lust() / threshold) * 100
-	if(effective_lust < 65 && !force_knot)
-		return FALSE
-
 	var/was_active = P.knot_locked
-	if(P.do_knotting(user, partner, target_zone, force_knot, is_hidden))
-		// One stat increment per new connection, not per occupied orifice.
-		if(!was_active)
-			GLOB.knottings++
-		return TRUE
-	return FALSE
+	if(!P.do_knotting(user, partner, target_zone, force_knot, is_hidden))
+		return FALSE
+	if(!was_active)
+		GLOB.knottings++
+	return TRUE
+
+// Borg verb parallels the existing human Resist Knot verb.
+/mob/living/silicon/robot/verb/knot_resist_silicon()
+	set name = "Resist Knot"
+	set category = "Robot Commands"
+	if(!active_knot || QDELETED(active_knot) || !active_knot.knot_locked)
+		to_chat(src, span_notice("Вы не связаны узлом."))
+		return
+	active_knot.start_resist_attempt(src)
 

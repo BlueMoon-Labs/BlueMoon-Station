@@ -194,11 +194,20 @@
 	if(self.check_mutation(TK) || HAS_TRAIT(self, TRAIT_TK_POTENTIAL))
 		required_from_user |= INTERACTION_REQUIRE_TK
 	if(user_has_penis)
-		var/shape_desc = get_penis_shape_desc(self)
-		if(self?.client?.prefs.sexknotting && target?.client?.prefs.sexknotting && findtext(shape_desc, "узл"))
-			required_from_user |= INTERACTION_REQUIRE_KNOT
-		if(findtext(shape_desc, "двойн"))
-			required_from_user |= INTERACTION_REQUIRE_DOUBLE_PENIS
+		if(iscyborg(self))
+			var/mob/living/silicon/robot/R = self
+			if(R.synthetic_profile_selected)
+				if(R.synthetic_knot_style >= SYNTHETIC_KNOT_SINGLE && self.client?.prefs?.sexknotting && target?.client?.prefs?.sexknotting)
+					required_from_user |= INTERACTION_REQUIRE_KNOT
+				if(R.synthetic_knot_style >= SYNTHETIC_KNOT_DOUBLE)
+					required_from_user |= INTERACTION_REQUIRE_DOUBLE_PENIS
+		else
+			var/shape_desc = get_penis_shape_desc(self)
+			if(self?.client?.prefs.sexknotting && target?.client?.prefs.sexknotting && findtext(shape_desc, "узл"))
+				required_from_user |= INTERACTION_REQUIRE_KNOT
+			if(findtext(shape_desc, "двойн"))
+				required_from_user |= INTERACTION_REQUIRE_DOUBLE_PENIS
+
 	var/user_has_breasts = self.has_breasts()
 	if(user_has_breasts)
 		required_from_user |= INTERACTION_REQUIRE_BREASTS
@@ -357,11 +366,20 @@
 		if(target.has_tail())
 			required_from_target |= INTERACTION_REQUIRE_TAIL
 		if(target_has_penis)
-			var/shape_desc = get_penis_shape_desc(target)
-			if(self?.client?.prefs.sexknotting && target?.client?.prefs.sexknotting && findtext(shape_desc, "узл"))
-				required_from_target |= INTERACTION_REQUIRE_KNOT
-			if(findtext(shape_desc, "двойн"))
-				required_from_target |= INTERACTION_REQUIRE_DOUBLE_PENIS
+			if(iscyborg(target))
+				var/mob/living/silicon/robot/R = target
+				if(R.synthetic_profile_selected)
+					if(R.synthetic_knot_style >= SYNTHETIC_KNOT_SINGLE && self.client?.prefs?.sexknotting && target.client?.prefs?.sexknotting)
+						required_from_target |= INTERACTION_REQUIRE_KNOT
+					if(R.synthetic_knot_style >= SYNTHETIC_KNOT_DOUBLE)
+						required_from_target |= INTERACTION_REQUIRE_DOUBLE_PENIS
+			else
+				var/shape_desc = get_penis_shape_desc(target)
+				if(self?.client?.prefs.sexknotting && target?.client?.prefs.sexknotting && findtext(shape_desc, "узл"))
+					required_from_target |= INTERACTION_REQUIRE_KNOT
+				if(findtext(shape_desc, "двойн"))
+					required_from_target |= INTERACTION_REQUIRE_DOUBLE_PENIS
+
 		var/target_has_belly = target.has_belly()
 		if(target_has_belly)
 			required_from_target |= INTERACTION_REQUIRE_BELLY

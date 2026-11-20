@@ -239,14 +239,26 @@
 		aroused_state = FALSE
 
 /obj/item/organ/genital/proc/generate_fluid(datum/reagents/R)
+	if(!R)
+		return FALSE
+	// Testicles own the finite reserve, even when the emitting organ is a penis.
+	var/obj/item/organ/genital/testicles/producer
+	if(istype(src, /obj/item/organ/genital/testicles))
+		producer = src
+	else if(istype(linked_organ, /obj/item/organ/genital/testicles))
+		producer = linked_organ
+	if(producer)
+		R.clear_reagents()
+		R.maximum_volume = max(0, producer.fluid_max_volume)
+		return producer.transfer_ejaculate(R) > 0
 	var/amount = get_fluid()
 	R.clear_reagents()
 	if(fluid_id)
 		R.maximum_volume = fluid_max_volume
-		R.add_reagent(fluid_id,amount, owner.get_blood_data())
+		R.add_reagent(fluid_id,amount, owner?.get_blood_data())
 	else if(linked_organ?.fluid_id)
 		R.maximum_volume = linked_organ.fluid_max_volume
-		R.add_reagent(linked_organ.fluid_id,amount, owner.get_blood_data())
+		R.add_reagent(linked_organ.fluid_id,amount, owner?.get_blood_data())
 	return TRUE
 
 /obj/item/organ/genital/proc/update_link()

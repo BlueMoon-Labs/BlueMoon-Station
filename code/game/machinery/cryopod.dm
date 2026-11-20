@@ -1,4 +1,4 @@
-#define AHELP_FIRST_MESSAGE "Please adminhelp before leaving the round, even if there are no administrators online!"
+#define AHELP_FIRST_MESSAGE "Пожалуйста, напишите в админхелп перед выходом из раунда, даже если администраторы сейчас не в сети!"
 
 /*
  * Cryogenic refrigeration unit. Basically a despawner.
@@ -332,34 +332,34 @@ GLOBAL_LIST_EMPTY(ghost_records)
 			to_chat(user, span_danger("You can't put [target] into [src]. [target.p_theyre(capitalized = TRUE)] conscious."))
 		return
 	else if(target.client) // mob has client
-		if(tgalert(target, "Would you like to [tele ? "be teleported out" : "enter cryosleep"]?", "Enter Cryopod?", "Yes", "No") != "Yes")
+		if(tgui_alert(target, "Хотите [tele ? "телепортироваться отсюда" : "погрузиться в криосон"]?", "Войти в криокапсулу?", list("Да", "Нет")) != "Да")
 			return
 
 	if(target == user && world.time - target.client.cryo_warned > 5 MINUTES)
 		var/list/caught_string
 		var/addendum = ""
 		if(target.mind.assigned_role in GLOB.command_positions)
-			LAZYADD(caught_string, "Head of Staff")
-			addendum = " Be sure to put your locker items back into your locker!"
+			LAZYADD(caught_string, "глава отдела")
+			addendum = " Не забудьте вернуть вещи из шкафчика обратно в шкафчик!"
 		//SPLURT CHANGES (Addendums changed, only tells antags to ahelp and not heads)
 		if(iscultist(target) || is_servant_of_ratvar(target))
-			LAZYADD(caught_string, "Cultist")
+			LAZYADD(caught_string, "культист")
 			addendum = AHELP_FIRST_MESSAGE
 		if(is_devil(target))
-			LAZYADD(caught_string, "Devil")
+			LAZYADD(caught_string, "дьявол")
 			addendum = AHELP_FIRST_MESSAGE
 		if(target.mind.has_antag_datum(/datum/antagonist/gang))
-			LAZYADD(caught_string, "Gangster")
+			LAZYADD(caught_string, "гангстер")
 			addendum = AHELP_FIRST_MESSAGE
 		if(target.mind.has_antag_datum(/datum/antagonist/rev/head))
-			LAZYADD(caught_string, "Head Revolutionary")
+			LAZYADD(caught_string, "глава революции")
 			addendum = AHELP_FIRST_MESSAGE
 		if(target.mind.has_antag_datum(/datum/antagonist/rev))
-			LAZYADD(caught_string, "Revolutionary")
+			LAZYADD(caught_string, "революционер")
 			addendum = AHELP_FIRST_MESSAGE
 
 		if(caught_string)
-			tgui_alert(target, "You're a [english_list(caught_string)]. [addendum]")
+			tgui_alert(target, "Вы — [jointext(caught_string, ", ")]. [addendum]")
 			target.client.cryo_warned = world.time
 
 	if(!istype(target) || !can_interact(user) || !target.Adjacent(user) || !ismob(target) || isanimal(target) || !istype(user.loc, /turf) || target.buckled)

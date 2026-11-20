@@ -367,6 +367,7 @@ export const GeneralTab = () => {
               tooltip="Оставлять за собой слизистый след."
               value={appearance.puddleSlime}
               action="set_puddle_slime"
+              params={{ value: !appearance.puddleSlime }}
             />
           )}
         </SettingsSection>
