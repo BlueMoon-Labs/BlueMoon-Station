@@ -125,3 +125,51 @@
 	wound_bonus = 15
 	stamina = 0
 	sharpness = SHARP_EDGED
+
+/datum/ammo/bullet/rifle/lok_smart
+	name = "guide rounds"
+	damage = 30
+	penetration = 25
+	shell_speed = 2
+	max_range = 30
+	damage_falloff = 0.1
+	bullet_color = COLOR_PULSE_BLUE
+	matter_cost = 0
+
+/atom/movable/projectile/lok
+	name = "guide rounds"
+	icon_state = "bullet"
+
+	var/mob/living/locked_target
+	var/homing_turn_rate = 25
+
+/atom/movable/projectile/lok/process()
+	if(locked_target)
+		if(QDELETED(locked_target) || locked_target.stat == DEAD)
+			locked_target = null
+		else
+			var/turf/target_turf = get_turf(locked_target)
+			if(target_turf && target_turf.z == z)
+				var/dx = ABS_COOR(target_turf.x) - apx
+				var/dy = ABS_COOR(target_turf.y) - apy
+				if(dx || dy)
+					var/current_angle = dir_angle
+					var/desired_angle = Get_Pixel_Angle(dx, dy)
+					var/angle_diff = desired_angle - current_angle
+					while(angle_diff > 180)
+						angle_diff -= 360
+					while(angle_diff < -180)
+						angle_diff += 360
+					var/turn_amount = clamp(angle_diff, -homing_turn_rate, homing_turn_rate)
+					var/new_angle = current_angle + turn_amount
+					while(new_angle < 0)
+						new_angle += 360
+					while(new_angle >= 360)
+						new_angle -= 360
+					dir_angle = new_angle
+					x_offset = round(sin(new_angle), 0.01)
+					y_offset = round(cos(new_angle), 0.01)
+					setDir(angle2dir(new_angle))
+					var/matrix/rotate = matrix()
+					rotate.Turn(new_angle)
+					transform = rotate

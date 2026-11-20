@@ -1125,3 +1125,339 @@
 	var/mob/living/target = hit_atom
 	target.Knockdown(0.5 SECONDS)
 	target.apply_damage(max(w_class * MOD_TOSS_GUN_WEIGHT_DAMAGE - throwforce, MOD_TOSS_GUN_MIN_DAMAGE), BRUTE, thrower.zone_selected, wound_bonus = CANT_WOUND)
+
+// Lok
+
+/obj/item/weapon/gun/rifle/lok
+	name = "\improper Lok-0.5 Smart Rifle"
+	desc = "A high-end PDW fitted with a semi-intelligent AI core and several sophisticated tracking systems. Hold right-click to lock targets, release to fire guided rounds."
+	icon = 'icons/obj/guns/rifle64.dmi'
+	icon_state = "lok"
+	worn_icon_list = list(
+		slot_l_hand_str = 'icons/mob/inhands/gun64/rifle_lefthand_1.dmi',
+		slot_r_hand_str = 'icons/mob/inhands/gun64/rifle_righthand_1.dmi',
+	)
+	fire_sound = 'sound/weapons/guns/fire/tgmc/kinetic/gun_lok.ogg'
+	dry_fire_sound = 'sound/weapons/guns/fire/lok_empty.ogg'
+	unload_sound = 'sound/weapons/guns/interact/lok_unload.ogg'
+	reload_sound = 'sound/weapons/guns/interact/lok_reload.ogg'
+	cocked_sound = 'sound/weapons/guns/interact/lok_cocked.ogg'
+	caliber = CALIBER_GUIDE_ROUNDS
+	max_shells = 36
+	default_ammo_type = /obj/item/ammo_magazine/rifle/lok
+	allowed_ammo_types = list(/obj/item/ammo_magazine/rifle/lok)
+	gun_features_flags = GUN_CAN_POINTBLANK|GUN_AMMO_COUNTER|GUN_SMOKE_PARTICLES|GUN_WIELDED_FIRING_ONLY
+	fire_delay = 0.5 SECONDS
+	burst_delay = 0.15 SECONDS
+	accuracy_mult = 1.2
+
+	var/is_locking = FALSE
+	var/list/locked_targets = list()
+	var/total_current_locks = 0
+	var/max_locks = 24
+
+	var/list/image/lock_visual_images = list()
+	var/client/lock_visual_client
+	var/image/lock_area_image
+	var/turf/lock_area_anchor
+
+	var/turf/last_lock_turf
+	var/atom/pending_lock_target
+
+	var/lock_burst_generation = 0
+	var/is_firing_locked_burst = FALSE
+	var/is_right_click_locking = FALSE
+
+
+/obj/item/weapon/gun/rifle/lok/get_ammo_object()
+	var/datum/ammo/new_ammo = get_ammo()
+	if(!new_ammo)
+		pending_lock_target = null
+		return
+
+	var/atom/movable/projectile/lok/projectile = new /atom/movable/projectile/lok(null)
+	projectile.generate_bullet(new_ammo)
+	projectile.locked_target = pending_lock_target
+	pending_lock_target = null
+	return projectile
+
+/obj/item/weapon/gun/rifle/lok/set_target(atom/object)
+	active_attachable?.set_target(object)
+	if(object == target || (gun_user && object == gun_user))
+		return
+	if(target)
+		UnregisterSignal(target, COMSIG_QDELETING)
+	target = object
+	if(target)
+		RegisterSignal(target, COMSIG_QDELETING, PROC_REF(clean_target), override = TRUE)
+
+/obj/item/weapon/gun/rifle/lok/start_fire(datum/source, atom/object, turf/location, control, params, bypass_checks = FALSE)
+	var/list/modifiers = params2list(params)
+	if(!modifiers["right"])
+		is_right_click_locking = FALSE
+		return ..()
+	is_right_click_locking = TRUE
+
+	if(is_firing_locked_burst)
+		return TRUE
+
+	if(gun_on_cooldown(gun_user) || !rounds)
+		return ..()
+
+	if(!(item_flags & WIELDED))
+		return ..()
+
+	set_target(object)
+	last_lock_turf = get_turf(object)
+	if(!last_lock_turf)
+		last_lock_turf = location
+
+	if(!is_locking)
+		begin_locking()
+
+	return TRUE
+
+/obj/item/weapon/gun/rifle/lok/proc/begin_locking()
+	if(QDELETED(src) || !gun_user || !rounds || !(item_flags & WIELDED))
+		return
+
+	is_locking = TRUE
+	total_current_locks = 0
+	locked_targets.Cut()
+	clear_lock_visuals()
+	playsound(src, 'sound/weapons/guns/interact/lok_lock_on.ogg', 25, TRUE)
+	INVOKE_ASYNC(src, PROC_REF(process_locking_loop))
+
+/obj/item/weapon/gun/rifle/lok/proc/can_lock_target(mob/living/L)
+	if(!L || QDELETED(L) || L == gun_user || L.stat == DEAD || !isxeno(L))
+		return FALSE
+	if(!gun_user || L.z != gun_user.z)
+		return FALSE
+	if(get_dist(gun_user, L) > 10)
+		return FALSE
+	if(gun_user.faction && L.faction == gun_user.faction)
+		return FALSE
+	return TRUE
+
+/obj/item/weapon/gun/rifle/lok/proc/is_valid_locked_target(mob/living/L)
+	if(!L || QDELETED(L) || L.stat == DEAD || !isxeno(L) || !gun_user || L.z != gun_user.z)
+		return FALSE
+	if(gun_user.faction && L.faction == gun_user.faction)
+		return FALSE
+	return TRUE
+
+/obj/item/weapon/gun/rifle/lok/proc/update_lock_area_visual(turf/T)
+	if(!gun_user?.client || !T)
+		return
+	lock_visual_client = gun_user.client
+
+	if(!lock_area_image || QDELETED(lock_area_image) || !lock_area_anchor || lock_area_anchor.z != T.z)
+		if(lock_area_image)
+			gun_user.client.images -= lock_area_image
+			qdel(lock_area_image)
+			lock_area_image = null
+
+		lock_area_anchor = T
+		lock_area_image = image('icons/obj/lok.dmi', lock_area_anchor, "reticle")
+		lock_area_image.appearance_flags = RESET_COLOR | RESET_TRANSFORM | KEEP_APART
+		lock_area_image.layer = ABOVE_MOB_LAYER - 0.1
+		lock_area_image.plane = GAME_PLANE
+		lock_area_image.alpha = 220
+		lock_area_image.pixel_x = -48
+		lock_area_image.pixel_y = -48
+		gun_user.client.images += lock_area_image
+
+	var/target_pixel_x = -48 + ((T.x - lock_area_anchor.x) * world.icon_size)
+	var/target_pixel_y = -48 + ((T.y - lock_area_anchor.y) * world.icon_size)
+	animate(lock_area_image, pixel_x = target_pixel_x, pixel_y = target_pixel_y, time = 0.2 SECONDS, easing = SINE_EASING)
+
+/obj/item/weapon/gun/rifle/lok/proc/get_lock_capacity()
+	return min(max_locks, rounds)
+
+/obj/item/weapon/gun/rifle/lok/proc/refresh_all_lock_visuals()
+	for(var/mob/living/L as anything in locked_targets)
+		update_target_visuals(L)
+
+/obj/item/weapon/gun/rifle/lok/proc/process_locking_loop()
+	while(is_locking && !QDELETED(src))
+		if(!gun_user || loc != gun_user || !(item_flags & WIELDED))
+			cancel_locking_state()
+			return
+
+		for(var/mob/living/L as anything in locked_targets)
+			if(!is_valid_locked_target(L))
+				total_current_locks -= locked_targets[L]
+				clear_single_target_visuals(L)
+				locked_targets -= L
+			else
+				update_target_visuals(L)
+
+		if(target && !QDELETED(target))
+			last_lock_turf = get_turf(target)
+
+		var/turf/target_turf = last_lock_turf
+		update_lock_area_visual(target_turf)
+
+		if(!target_turf || total_current_locks >= get_lock_capacity())
+			sleep(0.2 SECONDS)
+			continue
+
+		var/found_new_lock = FALSE
+
+		var/list/area_targets = view(1, target_turf)
+		for(var/mob/living/L in area_targets)
+			if(total_current_locks >= get_lock_capacity())
+				break
+			if(!can_lock_target(L))
+				continue
+
+			var/current_locks = locked_targets[L]
+			if(isnull(current_locks))
+				current_locks = 0
+
+			locked_targets[L] = current_locks + 1
+			total_current_locks++
+			found_new_lock = TRUE
+			update_target_visuals(L)
+			if(total_current_locks >= get_lock_capacity())
+				refresh_all_lock_visuals()
+
+		if(found_new_lock && is_locking)
+			playsound(src, 'sound/weapons/guns/interact/lok_on.ogg', 25, TRUE)
+
+		sleep(0.2 SECONDS)
+
+/obj/item/weapon/gun/rifle/lok/proc/update_target_visuals(mob/living/L)
+	if(!gun_user?.client || !L || QDELETED(L))
+		return
+	lock_visual_client = gun_user.client
+
+	var/locks_count = locked_targets[L]
+	if(isnull(locks_count) || !locks_count)
+		return
+
+	var/marker_color = total_current_locks >= get_lock_capacity() ? "#00FF00" : "#FF4444"
+
+	if(lock_visual_images[L])
+		gun_user.client.images -= lock_visual_images[L]
+		qdel(lock_visual_images[L])
+
+	var/image/lock_img = image(loc = L)
+	lock_img.appearance_flags = RESET_COLOR | RESET_TRANSFORM | KEEP_APART
+	lock_img.layer = ABOVE_MOB_LAYER
+	lock_img.plane = L.plane
+	lock_img.pixel_y = 20
+	lock_img.maptext = MAPTEXT("<span style='color: [marker_color]; font-size: 11pt; font-weight: bold; text-align: center; -dm-text-outline: 1.5px black;'>[locks_count]</span>")
+	lock_img.maptext_width = 32
+	lock_img.maptext_height = 20
+	lock_img.maptext_x = -8
+	lock_img.maptext_y = 0
+
+	gun_user.client.images += lock_img
+	lock_visual_images[L] = lock_img
+
+/obj/item/weapon/gun/rifle/lok/proc/clear_single_target_visuals(mob/living/L)
+	if(!L)
+		return
+
+	if(lock_visual_images[L])
+		var/client/visual_client = lock_visual_client || gun_user?.client
+		if(visual_client)
+			visual_client.images -= lock_visual_images[L]
+		qdel(lock_visual_images[L])
+		lock_visual_images -= L
+
+/obj/item/weapon/gun/rifle/lok/proc/clear_lock_visuals()
+	var/client/visual_client = lock_visual_client || gun_user?.client
+	for(var/mob/living/L as anything in lock_visual_images)
+		if(visual_client)
+			visual_client.images -= lock_visual_images[L]
+		qdel(lock_visual_images[L])
+	lock_visual_images.Cut()
+
+	if(lock_area_image)
+		if(visual_client)
+			visual_client.images -= lock_area_image
+		qdel(lock_area_image)
+		lock_area_image = null
+	lock_area_anchor = null
+	lock_visual_client = null
+
+/obj/item/weapon/gun/rifle/lok/stop_fire()
+	if(!is_right_click_locking)
+		return ..()
+
+	is_right_click_locking = FALSE
+
+	if(is_locking)
+		is_locking = FALSE
+		clear_lock_visuals()
+		playsound(src, 'sound/weapons/guns/interact/lok_lock_off.ogg', 25, TRUE)
+
+		if(total_current_locks > 0)
+			var/list/burst_targets = locked_targets.Copy()
+			lock_burst_generation++
+			is_firing_locked_burst = TRUE
+			INVOKE_ASYNC(src, PROC_REF(execute_locked_burst), burst_targets, lock_burst_generation)
+		else
+			locked_targets.Cut()
+			total_current_locks = 0
+
+	return ..()
+
+/obj/item/weapon/gun/rifle/lok/proc/cancel_locking_state()
+	lock_burst_generation++
+	is_locking = FALSE
+	is_firing_locked_burst = FALSE
+	is_right_click_locking = FALSE
+	pending_lock_target = null
+	locked_targets.Cut()
+	total_current_locks = 0
+	clear_lock_visuals()
+
+/obj/item/weapon/gun/rifle/lok/proc/can_continue_locked_burst(burst_generation)
+	if(QDELETED(src) || burst_generation != lock_burst_generation)
+		return FALSE
+	if(!gun_user || loc != gun_user || !(item_flags & WIELDED))
+		return FALSE
+	return TRUE
+
+/obj/item/weapon/gun/rifle/lok/proc/execute_locked_burst(list/targets_to_fire, burst_generation)
+	var/should_finish = TRUE
+	for(var/mob/living/L as anything in targets_to_fire)
+		var/shots = targets_to_fire[L]
+		for(var/i in 1 to shots)
+			if(!can_continue_locked_burst(burst_generation) || !rounds)
+				should_finish = FALSE
+				break
+			if(QDELETED(L) || L.stat == DEAD)
+				break
+
+			target = L
+			pending_lock_target = L
+			Fire()
+			pending_lock_target = null
+
+			if(!can_continue_locked_burst(burst_generation))
+				should_finish = FALSE
+				break
+
+			if(i < shots)
+				sleep(burst_delay)
+
+		if(!should_finish || !rounds)
+			break
+
+	if(burst_generation == lock_burst_generation)
+		locked_targets.Cut()
+		total_current_locks = 0
+		is_firing_locked_burst = FALSE
+		pending_lock_target = null
+
+/obj/item/weapon/gun/rifle/lok/dropped(mob/user)
+	cancel_locking_state()
+	return ..()
+
+/obj/item/weapon/gun/rifle/lok/clean_gun_user()
+	cancel_locking_state()
+	return ..()

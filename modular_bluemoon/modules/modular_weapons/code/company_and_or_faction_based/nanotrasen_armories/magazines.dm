@@ -51,3 +51,12 @@
 /obj/item/ammo_box/magazine/jager/large/empty
 	icon_state = "jager_mag_large-empty"
 	start_empty = TRUE */ // станция пока не готова к расширенным магазинам на ягера
+
+/obj/item/ammo_magazine/rifle/lok
+	name = "\improper Lok-0.5 Smart Rifle magazine"
+	desc = "Magazine from the smart rifle Lok-0.5"
+		icon = '/icons/obj/guns/ammo.dmi'
+	icon_state = "lok"
+	icon_state_mini = "mag_lok"
+	default_ammo = /datum/ammo/bullet/rifle/lok_smart
+	max_ammo = 30
