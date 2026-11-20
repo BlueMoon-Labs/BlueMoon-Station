@@ -63,30 +63,71 @@
 	if(!head)
 		return
 
-	var/list/head_overlays = head.get_limb_icon(dropped = TRUE)
-	var/mutable_appearance/i_am_an_appearance_trust_me
+	if(dir == NORTH)
+		return
+
+	head.update_limb(FALSE, trapped)
+	var/obj/item/organ/brain/stored_brain = head.brain
+	var/obj/item/organ/eyes/stored_eyes = head.eyes
+	head.brain = trapped.getorganslot(ORGAN_SLOT_BRAIN)
+	head.eyes = trapped.getorganslot(ORGAN_SLOT_EYES)
+	var/list/head_overlays = head.get_limb_icon(dropped = TRUE, ignore_brain = TRUE)
+	head.brain = stored_brain
+	head.eyes = stored_eyes
+	if(!islist(head_overlays))
+		head_overlays = list()
+
+	if(islist(trapped.overlays_standing))
+		for(var/layer_key in trapped.overlays_standing)
+			var/list_layer = trapped.overlays_standing[layer_key]
+			if(islist(list_layer))
+				for(var/overlay in list_layer)
+					if(istype(overlay, /mutable_appearance) && is_head_mutant_overlay(overlay))
+						head_overlays += copy_head_overlay(overlay)
+			else if(istype(list_layer, /mutable_appearance) && is_head_mutant_overlay(list_layer))
+				head_overlays += copy_head_overlay(list_layer)
+
+	for(var/image/head_piece in head_overlays)
+		head_piece.dir = 0
 	switch(dir)
 		if(SOUTH)
-			for(var/datum/layer in head_overlays)
-				i_am_an_appearance_trust_me = layer
-				i_am_an_appearance_trust_me.pixel_y -= 8
-				i_am_an_appearance_trust_me.pixel_x += 1
-		if(NORTH)
-			for(var/datum/layer in head_overlays)
-				i_am_an_appearance_trust_me = layer
-				i_am_an_appearance_trust_me.pixel_y -= 2
-				i_am_an_appearance_trust_me.pixel_x += 1
+			for(var/image/head_piece in head_overlays)
+				head_piece.pixel_y -= 8
+				head_piece.pixel_x += 1
 		if(WEST)
-			for(var/datum/layer in head_overlays)
-				i_am_an_appearance_trust_me = layer
-				i_am_an_appearance_trust_me.pixel_y -= 9
-				i_am_an_appearance_trust_me.pixel_x += 1
+			for(var/image/head_piece in head_overlays)
+				head_piece.pixel_y -= 9
+				head_piece.pixel_x += 1
 		if(EAST)
-			for(var/datum/layer in head_overlays)
-				i_am_an_appearance_trust_me = layer
-				i_am_an_appearance_trust_me.pixel_y -= 9
-				i_am_an_appearance_trust_me.pixel_x -= 1
+			for(var/image/head_piece in head_overlays)
+				head_piece.pixel_y -= 9
+				head_piece.pixel_x -= 1
 	. += head_overlays
+
+/obj/structure/toilet/skibidi/proc/is_head_mutant_overlay(mutable_appearance/overlay)
+	if(!overlay.icon_state)
+		return FALSE
+	var/static/list/head_part_prefixes = list(
+		"m_ears_", "f_ears_",
+		"m_mam_ears_", "f_mam_ears_",
+		"m_snout_", "f_snout_",
+		"m_mam_snouts_", "f_mam_snouts_",
+		"m_horns_", "f_horns_",
+		"m_frills_", "f_frills_",
+		"m_ipc_antenna_", "f_ipc_antenna_",
+		"m_xeno_head_", "f_xeno_head_",
+	)
+	for(var/prefix in head_part_prefixes)
+		if(findtext(overlay.icon_state, prefix))
+			return TRUE
+	return findtext(overlay.icon_state, "_HORNS") > 0
+
+/obj/structure/toilet/skibidi/proc/copy_head_overlay(mutable_appearance/source)
+	var/mutable_appearance/copy = mutable_appearance(source.icon, source.icon_state, source.layer, source.plane, source.alpha, source.appearance_flags, source.color, source.blend_mode, source.pixel_x, source.pixel_y)
+	copy.dir = 0
+	copy.transform = source.transform
+	copy.category = source.category
+	return copy
 
 /obj/structure/toilet/skibidi/setDir(newdir)
 	var/old_dir = dir
@@ -101,6 +142,8 @@
 	var/turf/target_turf = get_step(src, direction)
 	if(isturf(loc) && target_turf && !target_turf.density)
 		can_move = world.time + move_delay
+		setDir(direction)
+		trapped?.setDir(direction)
 		forceMove(target_turf)
 
 /obj/structure/toilet/skibidi/obj_break(damage_flag)
@@ -124,6 +167,8 @@
 	RemoveElement(/datum/element/connect_loc, loc_connections)
 	RegisterSignal(trapped, COMSIG_MOB_SAY, PROC_REF(handle_speech))
 	RegisterSignal(trapped, COMSIG_MOVABLE_MOVED, PROC_REF(on_trapped_moved))
+	if(trapped.dir)
+		setDir(trapped.dir)
 	name = "[trapped] toilet"
 	update_appearance(UPDATE_ICON)
 

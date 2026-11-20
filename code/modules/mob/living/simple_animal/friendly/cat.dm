@@ -47,7 +47,7 @@
 /mob/living/simple_animal/pet/cat/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/pet_bonus, "purrs!", EMOTE_AUDIBLE)
-	AddElement(/datum/element/mob_holder, held_icon)
+	AddElement(/datum/element/mob_holder, held_icon, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)
 
 /mob/living/simple_animal/pet/cat/update_mobility()
 	. = ..()
@@ -84,6 +84,7 @@
 	unique_pet = TRUE
 
 /mob/living/simple_animal/pet/cat/kitten
+	held_icon = "kitten"
 	name = "kitten"
 	desc = "D'aaawwww."
 	icon_state = "kitten"

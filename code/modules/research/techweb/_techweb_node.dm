@@ -21,7 +21,7 @@
 /datum/techweb_node/error_node
 	id = "ERROR"
 	display_name = "ERROR"
-	description = "This usually means something in the database has corrupted. If it doesn't go away automatically, inform Central Command for their techs to fix it ASAP(tm)"
+	description = "Обычно это значит, что что-то в базе данных повредилось. Если само не пройдёт, сообщите Центральному командованию, чтобы их техники исправили это как можно скорее(tm)"
 
 /datum/techweb_node/proc/Initialize()
 	//Make lists associative for lookup
@@ -102,7 +102,7 @@
 	id = "base"
 	starting_node = TRUE
 	display_name = "Basic Research Technology"
-	description = "NT default research technologies."
+	description = "Стандартные исследовательские технологии NT."
 	// Default research tech, prevents bricking
 	design_ids = list("cable_coil_30", "basic_matter_bin", "basic_cell", "basic_scanning", "basic_capacitor", "basic_micro_laser", "micro_mani", "desttagger", "handlabel", "packagewrap",
 	"destructive_analyzer", "circuit_imprinter", "circuit_imprinter_science", "circuit_imprinter_robotic", "experimentor", "rdconsole", "bepis", "design_disk", "tech_disk", "rdserver", "rdservercontrol", "mechfab", "paystand", "cell_charger",

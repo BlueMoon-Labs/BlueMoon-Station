@@ -36,6 +36,8 @@ const base: BudgetData = {
   auto_approve_limit: 1000,
   auto_approve_cooldown: 10,
   auto_approve_wait: 10,
+  staple_cap: 6000,
+  handoff_minutes: 20,
   pending_per_requester: 3,
   handling_fee: 12,
   work_share: 10,
@@ -143,7 +145,10 @@ describe('NtosDepartmentBudget', () => {
       department: { id: 'MED', name: 'Медицина', balance: 12000, owed: 0, staff_on_shift: 3, grant: 400, threshold: 9000, return_due: 300 },
     });
     expect(text(over.container)).toContain('Бюджет выше порога: через несколько минут NT заберёт 300 кр. Потратьте');
-    expect(text(over.container)).toContain('Потратьте излишек на закупки или назначьте цель накопления');
+    expect(text(over.container)).toContain('Потратьте излишек на закупки, одобрите ждущие заявки или назначьте цель накопления');
+    over.unmount();
+    const soon = setup({ department: { ...base.department!, balance: 12000, return_due: 300, return_in: 4 } });
+    expect(text(soon.container)).toContain('Бюджет выше порога: через 4 мин. NT заберёт 300 кр.');
   });
 
   test('после снятой цели видно перерыв, копить нельзя', () => {
@@ -366,6 +371,110 @@ describe('NtosDepartmentBudget', () => {
     commit(container.querySelector('input') as Element, '100');
     fireEvent.click(getByText('Купить'));
     expect(sent(topic, 'research_grant')).toEqual([{ points: 100 }]);
+  });
+
+  test('заявка: сколько ждёт, кто решит и что дальше; глава копит на дорогую', () => {
+    const requests = [
+      { ...base.requests![0], price: 9000, pack_type: '/datum/supply_pack/medical/surgery', waited: 12, outlook: 'Решает ИИ; через 8 мин. без решения перейдёт и начальнику снабжения.', can_decide: 1 },
+    ];
+    const { container, getByText, topic } = setup({ requests, deciders: 'ИИ' });
+    fireEvent.click(getByText('Заявки'));
+    const content = text(container);
+    expect(content).toContain('Решает сейчас');
+    expect(content).toContain('Ждёт 12 мин. Решает ИИ; через 8 мин. без решения перейдёт и начальнику снабжения.');
+    expect(content).toContain('Решают глава отдела, ГП и капитан');
+    fireEvent.click(getByText('Копить'));
+    expect(sent(topic, 'set_goal')).toEqual([{ pack: '/datum/supply_pack/medical/surgery' }]);
+  });
+
+  test('без решающих на смене окно так и говорит, а цель при нехватке не предлагает сотруднику', () => {
+    const requests = [{ ...base.requests![0], price: 9000, pack_type: '/datum/supply_pack/medical/surgery', can_decide: 0 }];
+    const { container, getByText, queryByText } = setup({ requests, deciders: null, can_manage: 0, staff: [] });
+    fireEvent.click(getByText('Заявки'));
+    expect(text(container)).toContain('никого нет на смене');
+    expect(queryByText('Одобрить')).toBeNull();
+    expect(queryByText('Копить')).toBeNull();
+  });
+
+  test('ИИ: выбирает отдел, решает заявки, но не заказывает и не подаёт', () => {
+    const requests = [{ ...base.requests![0], can_decide: 1 }];
+    const { container, getByText, queryByText, topic } = setup({
+      requests,
+      is_ai: 1,
+      ai_decides: 1,
+      can_switch: 1,
+      can_manage: 0,
+      is_staff: 0,
+      staff: [],
+      staple_left: null,
+    });
+    expect(text(container)).toContain('ИИ открывает бюджет любого отдела и решает заявки сотрудников, кроме заявок СБ.');
+    expect(queryByText('Премия')).toBeNull();
+    fireEvent.click(getByText('Заявки'));
+    fireEvent.click(getByText('Одобрить'));
+    fireEvent.click(getByText('Отклонить'));
+    expect(sent(topic, 'approve')).toEqual([{ uid: 5 }]);
+    expect(sent(topic, 'deny')).toEqual([{ uid: 5 }]);
+    expect(queryByText('Копить')).toBeNull();
+    fireEvent.click(getByText('Каталог'));
+    expect(queryByText('Заказать')).toBeNull();
+    expect(queryByText('Заявка')).toBeNull();
+    expect(text(container)).toContain('ИИ решает их во вкладке "Заявки"');
+  });
+
+  test('сотрудник заказывает расходник сам, пока хватает часового лимита', () => {
+    const catalog = [
+      { type: '/datum/supply_pack/materials/glass50', name: '50 Glass Sheets', desc: 'Стекло', staple: 1 },
+      { type: '/datum/supply_pack/medical/surgery', name: 'Surgical Kit', desc: 'Набор хирурга' },
+    ];
+    const prices = {
+      '/datum/supply_pack/materials/glass50': { price: 2700, available: 1 },
+      '/datum/supply_pack/medical/surgery': { price: 2500, available: 1 },
+    };
+    const ui = setup({ catalog, prices, can_manage: 0, staff: [], staple_left: 3300 });
+    fireEvent.click(ui.getByText('Каталог'));
+    expect(text(ui.container)).toContain('расходник');
+    expect(text(ui.container)).toContain('до 6 000 кр. за час, осталось 3 300 кр.');
+    expect(text(ui.container)).toContain('Заявку без решения 20 мин. может решить и начальник снабжения');
+    fireEvent.click(ui.getByText('Заказать'));
+    expect(sent(ui.topic, 'request')).toEqual([{ pack: '/datum/supply_pack/materials/glass50', reason: '' }]);
+    expect(ui.getAllByText('Заявка')).toHaveLength(1);
+    ui.unmount();
+    const spent = setup({ catalog, prices, can_manage: 0, staff: [], staple_left: 1000 });
+    fireEvent.click(spent.getByText('Каталог'));
+    expect(spent.queryByText('Заказать')).toBeNull();
+    expect(spent.getAllByText('Заявка')).toHaveLength(2);
+  });
+
+  test('начальник снабжения видит переданные заявки других отделов и решает их за их бюджет', () => {
+    const handoff = [
+      {
+        uid: 4,
+        pack: 'Industrial RCD',
+        price: 8800,
+        requester: 'Инженер',
+        reason: '',
+        status: 'pending' as const,
+        waited: 25,
+        outlook: 'Решает начальник снабжения.',
+        can_decide: 1,
+        department: 'Инженерия',
+        department_id: 'ENG',
+        balance: 20000,
+        handed_off: 1,
+      },
+    ];
+    const cargoDepartment = { id: 'CAR', name: 'Снабжение', balance: 40000, owed: 0, staff_on_shift: 3, grant: 400, threshold: 30000, return_due: 0 };
+    const { container, getByText, topic, unmount } = setup({ department: cargoDepartment, requests: [], handoff_requests: handoff });
+    fireEvent.click(getByText('Заявки'));
+    expect(text(container)).toContain('Заявки отделов, переданные снабжению');
+    expect(text(container)).toContain('Инженерия, в бюджете 20 000 кр.');
+    fireEvent.click(getByText('Одобрить'));
+    expect(sent(topic, 'approve')).toEqual([{ uid: 4, department: 'ENG' }]);
+    unmount();
+    const medical = setup();
+    fireEvent.click(medical.getByText('Заявки'));
+    expect(medical.container.textContent).not.toContain('переданные снабжению');
   });
 
   test('капитан выбирает отдел, без отдела - подсказка', () => {

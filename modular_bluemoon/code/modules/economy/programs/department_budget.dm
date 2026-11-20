@@ -36,7 +36,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 	filedesc = "Бюджет отдела"
 	category = PROGRAM_CATEGORY_CREW
 	program_icon_state = "deptbudget"
-	extended_desc = "Бюджет своего отдела: заявки на закупку из каталога, контракты и оплаченная работа. Глава отдела одобряет заявки, выписывает премии и надбавки, просит деньги из казны."
+	extended_desc = "Бюджет своего отдела: заявки на закупку из каталога, расходники без одобрения, контракты и оплаченная работа. Глава отдела одобряет заявки, выписывает премии и надбавки, просит деньги из казны; ИИ решает заявки сотрудников, кроме СБ."
 	requires_ntnet = FALSE
 	usage_flags = PROGRAM_ALL
 	size = 4
@@ -76,9 +76,10 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		return
 	return budget_act(usr, action, params)
 
+/// ГП, капитан и ИИ открывают бюджет любого отдела.
 /datum/computer_file/program/department_budget/proc/can_switch(mob/living/user)
 	var/datum/economy_department/command = SSeconomy.get_department(ACCOUNT_CMD)
-	return !!command?.can_manage(user)
+	return !!command?.can_manage(user) || econ_ai_decider(user)
 
 /// Казна командования - в окне казны; здесь только бюджеты отделов.
 /datum/computer_file/program/department_budget/proc/current_department(mob/living/user)
@@ -110,7 +111,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		var/list/packs = department.catalog()
 		catalog_cache[department.id] = packs
 		for(var/datum/supply_pack/pack as anything in packs)
-			catalog += list(list("type" = "[pack.type]", "name" = pack.name, "desc" = pack.desc || pack.name))
+			catalog += list(list("type" = "[pack.type]", "name" = pack.name, "desc" = pack.desc || pack.name, "staple" = econ_pack_staple(pack)))
 		var/list/works = GLOB.econ_department_work[department.id]
 		for(var/work_type in works)
 			work_prices += list(list("name" = econ_work_name(work_type), "price" = settings.work_prices[work_type], "unit" = works[work_type]))
@@ -145,6 +146,8 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"auto_approve_limit" = settings.auto_approve_limit,
 		"auto_approve_cooldown" = settings.auto_approve_cooldown_minutes,
 		"auto_approve_wait" = settings.auto_approve_wait_minutes,
+		"staple_cap" = settings.staple_self_order_cap_hour,
+		"handoff_minutes" = settings.request_handoff_minutes,
 		"pending_per_requester" = settings.request_pending_per_requester,
 		"handling_fee" = settings.cargo_handling_fee,
 		"work_share" = settings.work_personal_share,
@@ -172,6 +175,9 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 	var/can_manage = department.can_manage(user)
 	data["can_manage"] = can_manage
 	data["is_staff"] = own?.department_id == department.id
+	data["is_ai"] = econ_ai_decider(user)
+	data["ai_decides"] = department.ai_decides()
+	data["staple_left"] = own?.department_id == department.id ? department.staple_left(own.account_id) : null
 	var/list/staff_stats = econ_staff_stats()
 	var/on_shift = department.staff_on_shift(staff_stats)
 	var/list/packs = catalog_cache[department.id]
@@ -189,6 +195,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"threshold" = department.budget_threshold(staff_stats),
 		"threshold_floor" = department.budget_floor(),
 		"return_due" = department.budget_return_due(staff_stats),
+		"return_in" = max(CEILING((SSeconomy.next_fire - world.time) / (1 MINUTES), 1), 1),
 		"shielded" = department.shielded(),
 		"goal_cooldown" = department.saving_goal_cooldown_minutes(),
 		"express_ready_in" = CEILING(department.express_ready_in() / (1 SECONDS), 1),
@@ -211,8 +218,10 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		data["goal_erts"] = null
 	var/list/requests = list()
 	for(var/datum/econ_request/request as anything in department.requests)
-		requests += list(request.ui_entry())
+		requests += list(econ_budget_request_entry(department, request, user))
 	data["requests"] = requests
+	data["deciders"] = department.deciders_text()
+	data["handoff_requests"] = istype(department, /datum/economy_department/cargo) && can_manage ? econ_handoff_requests_ui(user) : null
 	var/list/treasury_requests = list()
 	for(var/datum/econ_request/treasury/request as anything in SSeconomy.treasury_requests)
 		if(request.department_id == department.id)
@@ -316,6 +325,28 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			continue
 		. += list(list("type" = "[pack_type]", "name" = pack.name, "group" = pack.group, "price" = price, "available" = row ? !!row["in_stock"] : !econ_pack_unavailable(pack)))
 
+/// Заявка отдела для окна: что с ней дальше и может ли зритель её решить.
+/proc/econ_budget_request_entry(datum/economy_department/department, datum/econ_request/request, mob/living/user)
+	var/list/entry = request.ui_entry()
+	entry["outlook"] = department.request_outlook(request)
+	entry["can_decide"] = request.status == ECON_REQUEST_PENDING && department.can_decide(request, user)
+	entry["department"] = department.name
+	entry["department_id"] = department.id
+	return entry
+
+/// Заявки других отделов, переданные снабжению и ждущие решения: начальнику снабжения в его бюджете.
+/proc/econ_handoff_requests_ui(mob/living/user)
+	. = list()
+	for(var/id in SSeconomy.departments)
+		var/datum/economy_department/department = SSeconomy.departments[id]
+		if(id == ACCOUNT_CAR)
+			continue
+		for(var/datum/econ_request/request as anything in department.requests)
+			if(request.status == ECON_REQUEST_PENDING && request.handed_off)
+				var/list/entry = econ_budget_request_entry(department, request, user)
+				entry["balance"] = department.account.account_balance
+				. += list(entry)
+
 /datum/computer_file/program/department_budget/proc/find_request(datum/economy_department/department, uid)
 	uid = econ_ui_number(uid)
 	if(isnull(uid))
@@ -363,15 +394,18 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			else
 				messages[user_ref] = "Заявка №[request.uid] подана и [department.pending_text(pack, user, 1)]."
 		if("approve", "deny")
-			var/datum/econ_request/request = find_request(department, params["uid"])
+			var/datum/economy_department/owner = department
+			if(istext(params["department"]) && params["department"] != department.id)
+				owner = SSeconomy.get_department(params["department"])
+			var/datum/econ_request/request = owner && find_request(owner, params["uid"])
 			if(!request || request.status != ECON_REQUEST_PENDING)
 				messages[user_ref] = "Заявка не найдена или уже решена."
-			else if(!can_manage)
-				messages[user_ref] = manage_refusal
+			else if(!owner.can_decide(request, user))
+				messages[user_ref] = owner == department ? "Это может только глава отдела, ГП, капитан[owner.ai_decides() ? ", ИИ" : ""] или, если заявку передали снабжению, его начальник." : "Эту заявку снабжению не передавали."
 			else if(action == "deny")
-				messages[user_ref] = department.deny(request, user) ? "Заявка №[request.uid] отклонена." : "Заявка не отклонена."
+				messages[user_ref] = owner.deny(request, user) ? "Заявка №[request.uid] отклонена." : "Заявка не отклонена."
 			else
-				messages[user_ref] = department.approve(request, user) ? "Заявка №[request.uid] одобрена, заказ ушёл в снабжение." : order_refusal(department, request.pack)
+				messages[user_ref] = owner.approve(request, user) ? "Заявка №[request.uid] одобрена, заказ ушёл в снабжение[owner == department ? "" : " за бюджет отдела \"[owner.name]\""]." : order_refusal(owner, request.pack)
 		if("set_goal", "clear_goal")
 			var/datum/supply_pack/pack = goal_pack(department, params["pack"])
 			var/datum/economy_department/cargo/cargo = department

@@ -1,250 +1,211 @@
-// ============================================================
-// BlueMoon - Knotting Debug Commands (FIXED) //By Stasdvrz
-// ============================================================
+// BlueMoon: admin knotting diagnostics (v5)
+// Active knot state in current BlueMoon is stored on /obj/item/organ/genital/penis.
+// This file intentionally does not activate raw knot state or create its own timers.
 
-// ============================================================
-// DEBUG HELPER PROCS
-// ============================================================
+/client
+	/// Temporary per-admin testing option; never saved to player preferences.
+	var/tmp/knot_debug_ignore_prefs = FALSE
+	/// Temporary per-admin testing option; guarantees the roll, not anatomy validation.
+	var/tmp/knot_debug_force_chance = FALSE
 
-/client/proc/debug_show_knot_state(mob/living/carbon/human/H, obj/item/organ/genital/penis/P)
-	to_chat(mob, span_notice("📊 Проверка состояния узла:"))
-	to_chat(mob, "- shape: [P?.shape]")
-	to_chat(mob, "- knot_size: [P?.knot_size]")
-	to_chat(mob, "- knot_locked: [P?.knot_locked]")
-	to_chat(mob, "- knot_strength: [P?.knot_strength]")
-	to_chat(mob, "- knot_until: [P?.knot_until ? "[P.knot_until - world.time] тиков" : "нет таймера"]")
-	to_chat(mob, "- knot_partner: [P?.knot_partner ? "[P.knot_partner]" : "нет партнёра"]")
-
-	if(HAS_TRAIT(H, TRAIT_ESTROUS_ACTIVE))
-		to_chat(mob, span_love("💗 Активен эстральный цикл"))
-	else
-		to_chat(mob, span_notice("🧊 Эстральный цикл не активен"))
-
-	if(hascall(H, "get_lust") && hascall(H, "get_climax_threshold"))
-		var/climax = H.get_climax_threshold()
-		if(climax > 0)
-			to_chat(mob, "- lust: [round((H.get_lust() / climax) * 100, 1)]%")
-
-/client/proc/debug_force_lock_knot(mob/living/carbon/human/H, obj/item/organ/genital/penis/P)
-	if(!P)
-		to_chat(mob, span_warning("❌ Нет пениса для активации узла."))
+/client/proc/knot_debug_report_mood(mob/living/carbon/human/H)
+	if(!H || QDELETED(H))
 		return
-
-	var/list/L = list("рот" = CUM_TARGET_MOUTH, "анус" = CUM_TARGET_ANUS, "влагалище" = CUM_TARGET_VAGINA)
-	var/choice = input(mob, "Куда клинить узлом?", "Knot test") as null|anything in L
-	if(!choice)
+	var/datum/component/mood/M = H.GetComponent(/datum/component/mood)
+	if(!M)
+		to_chat(src, "[H]: компонент настроения отсутствует.")
 		return
-	var/zone = L[choice]
+	var/list/events = M.mood_events
+	var/satisfied = !!(events && ("knotting_satisfied" in events))
+	var/linked = !!(events && ("knotting_linked" in events))
+	var/painful = !!(events && ("knotting_painful" in events))
+	to_chat(src, "[H]: mood satisfied [satisfied], linked [linked], painful [painful].")
 
-	var/list/moblist = list()
-	for(var/mob/living/carbon/human/M in view(7, mob))
-		if(M != H)
-			moblist += M
-
-	var/mob/living/carbon/human/target = null
-
-	if(length(moblist))
-		target = input(mob, "Выбери цель для узла:", "Knot test") as null|anything in moblist
-
-	if(!target)
-		to_chat(mob, span_warning("⚙️ Цель не выбрана — создаётся тестовый партнёр для проверки сообщений."))
-		target = H
-
-	P.activate_knot(H, target, zone, 60 SECONDS)
-	P.setup_knot_signals(H, target)
-
-	to_chat(mob, span_love("✅ Узел искусственно активирован (цель: [target], зона: [choice]) на 60 секунд."))
-	to_chat(mob, span_notice("📎 Поводок активирован — движение будет отслеживаться."))
-
-	to_chat(mob, span_love("<font color='#ff7ff5'><b>[DEBUG]</b> Запуск афродизиачного эффекта узла...</font>"))
-	P.knot_arousal_tick(H, target)
-
-	if(target == H)
-		to_chat(mob, span_love("<font color='#ff7ff5'><b>[DEBUG]</b> Симуляция: партнёрские сообщения будут отображаться здесь же.</font>"))
-		to_chat(mob, span_lewd("<b>(Партнёр)</b> Ты ощущаешь, как узел блокирует выход и пульсирует внутри..."))
-	else
-		to_chat(target, span_love("<font color='#ff7ff5'><b>Узел блокирует выход — вы соединены с [H]!</b></font>"))
-
-	P.schedule_knot_processes(H, target, zone, 60 SECONDS)
-
-/client/proc/debug_release_soft(mob/living/carbon/human/H, obj/item/organ/genital/penis/P)
-	if(!P)
-		to_chat(mob, span_warning("❌ Нет пениса."))
+/client/proc/knot_debug_show_state(mob/living/carbon/human/H)
+	if(!H || QDELETED(H))
+		to_chat(src, span_warning("Нужен живой объект человека для проверки."))
 		return
-
-	var/zone = P.knot_state ? P.knot_state : CUM_TARGET_VAGINA
-	var/partner = P.knot_partner ? P.knot_partner : H
-	P.release_knot(H, partner, zone, FALSE)
-	to_chat(mob, span_notice("💧 Мягкий спад выполнен."))
-
-/client/proc/debug_release_force(mob/living/carbon/human/H, obj/item/organ/genital/penis/P)
-	if(!P)
-		to_chat(mob, span_warning("❌ Нет пениса."))
+	var/obj/item/organ/genital/penis/P = H.active_knot
+	if(!P || QDELETED(P))
+		P = H.getorganslot(ORGAN_SLOT_PENIS)
+	to_chat(src, span_notice("=== Knot debug: [H] ==="))
+	to_chat(src, "Оператор: bypass prefs = [knot_debug_ignore_prefs], force chance = [knot_debug_force_chance]")
+	to_chat(src, "Преф sexknotting: [!!H.client?.prefs?.sexknotting], arousable: [!!H.client?.prefs?.arousable].")
+	to_chat(src, "Эструс: [HAS_TRAIT(H, TRAIT_ESTROUS_ACTIVE)].")
+	var/threshold = H.get_climax_threshold()
+	to_chat(src, "Возбуждение: [H.get_lust()] / [threshold], процент: [threshold > 0 ? round(100 * H.get_lust() / threshold, 0.1) : 0] (для обычного узлирования требуется >= 65%).")
+	if(!P || QDELETED(P))
+		to_chat(src, span_warning("Нет узловатого органа и нет активной связи."))
+		knot_debug_report_mood(H)
 		return
-
-	var/zone = P.knot_state ? P.knot_state : CUM_TARGET_VAGINA
-	var/partner = P.knot_partner ? P.knot_partner : H
-	P.release_knot(H, partner, zone, TRUE)
-	to_chat(mob, span_danger("💥 Силовой разрыв выполнен."))
-
-/client/proc/debug_check_distance(mob/living/carbon/human/H, obj/item/organ/genital/penis/P)
-	if(!P)
-		to_chat(mob, span_warning("❌ Нет пениса."))
-		return
-
-	P.check_knot_distance_safe(H)
-	to_chat(mob, span_notice("📡 Проверка дистанции выполнена."))
-
-/client/proc/debug_resist_self(mob/living/carbon/human/H, obj/item/organ/genital/penis/P)
-	if(!P)
-		to_chat(mob, span_warning("❌ Нет пениса."))
-		return
-
-	P.start_resist_attempt(H)
-	to_chat(mob, span_notice("🧩 Resist попытка запущена от своего лица."))
-
-/client/proc/debug_resist_partner(mob/living/carbon/human/H, obj/item/organ/genital/penis/P)
-	if(!P)
-		to_chat(mob, span_warning("❌ Нет пениса."))
-		return
-
+	to_chat(src, "Орган: [P] (владелец [P.owner], shape [P.shape], knot_size [P.knot_size], strength [P.knot_strength]).")
+	var/zones_text = islist(P.knot_zones) ? jointext(P.knot_zones, ", ") : "нет"
+	to_chat(src, "Состояние: locked [P.knot_locked], zones [zones_text], primary [P.knot_state].")
+	to_chat(src, "Партнёр: [P.knot_partner], active_knot owner [P.owner?.active_knot == P], partner [P.knot_partner?.active_knot == P].")
+	to_chat(src, "Осталось секунд: [P.knot_until ? round(max(P.knot_until - world.time, 0) / (1 SECONDS), 0.1) : 0], hidden [P.knot_is_hidden].")
+	to_chat(src, "Таймеры: arousal [!!P.knot_arousal_timer], release [!!P.knot_release_timer], distance [!!P.knot_distance_timer].")
+	if(islist(P.knotted_genitals))
+		for(var/obj/item/organ/genital/G in P.knotted_genitals)
+			to_chat(src, "Занятый орган: [G] / owner [G?.owner] / is_knotted [G?.is_knotted].")
+	else if(P.knotted_genital)
+		to_chat(src, "Занятый орган (старое поле): [P.knotted_genital], is_knotted [P.knotted_genital.is_knotted].")
 	if(P.knot_partner && ishuman(P.knot_partner))
 		var/mob/living/carbon/human/partner = P.knot_partner
-		P.start_resist_attempt(partner)
-		to_chat(mob, span_notice("🧩 Resist попытка запущена от лица партнёра."))
+		to_chat(src, "Партнёр: sexknotting [partner.client?.prefs?.sexknotting], arousable [partner.client?.prefs?.arousable], эструс [HAS_TRAIT(partner, TRAIT_ESTROUS_ACTIVE)].")
+		knot_debug_report_mood(partner)
+	knot_debug_report_mood(H)
+
+/client/proc/knot_debug_select_human(mob/living/carbon/human/exclude = null)
+	var/list/candidates = list()
+	for(var/mob/living/carbon/human/H in range(1, mob))
+		if(!QDELETED(H) && H != exclude)
+			candidates += H
+	if(!length(candidates))
+		to_chat(src, span_warning("Нужен другой человек в соседнем тайле (не далее 1)."))
+		return null
+	return input(mob, "Выбери персонажа:", "Knot Debug") as null|anything in candidates
+
+/client/proc/knot_debug_select_zone()
+	var/list/zones = list(
+		"Влагалище" = CUM_TARGET_VAGINA,
+		"Анус" = CUM_TARGET_ANUS,
+		"Рот" = CUM_TARGET_MOUTH,
+		"Глотка" = CUM_TARGET_THROAT
+	)
+	var/choice = input(mob, "Выбери зону:", "Knot Debug") as null|anything in zones
+	return zones[choice]
+
+/client/proc/knot_debug_preview(mob/living/carbon/human/pen_owner, mob/living/carbon/human/recipient, zone)
+	if(QDELETED(pen_owner) || QDELETED(recipient) || !zone)
+		return FALSE
+	var/obj/item/organ/genital/penis/P = pen_owner.getorganslot(ORGAN_SLOT_PENIS)
+	to_chat(src, span_notice("=== Предварительная проверка: [pen_owner] -> [recipient] / [zone] ==="))
+	if(!P || QDELETED(P))
+		to_chat(src, span_warning("У инициатора отсутствует нужный орган."))
+		return FALSE
+	to_chat(src, "Орган [P], форма [P.shape], knot_size [P.knot_size], уже связан [P.knot_locked].")
+	to_chat(src, "Дистанция [get_dist(pen_owner, recipient)], Z-уровни [pen_owner.z] / [recipient.z].")
+	to_chat(src, "Префы: [!!pen_owner.client?.prefs?.sexknotting] / [!!recipient.client?.prefs?.sexknotting].")
+	to_chat(src, "Бонус эструса: [P.calculate_estrus_bonus(recipient)], шанс с учётом параметров: [P.calculate_knot_chance(pen_owner, recipient, zone)]%.")
+	to_chat(src, "Совместимость зоны: [P.calculate_zone_modifier(recipient, zone) > -100].")
+	var/threshold = pen_owner.get_climax_threshold()
+	to_chat(src, "Возбуждение: [threshold > 0 ? round(pen_owner.get_lust() / threshold * 100, 0.1) : 0]% (обычный порог 65%).")
+	if(P.knot_locked && P.knot_partner == recipient && P.knot_size >= 2)
+		var/zone_summary = islist(P.knot_zones) ? jointext(P.knot_zones, ", ") : "нет"
+		to_chat(src, "Двойной узел: текущие зоны [zone_summary].")
+	return TRUE
+
+/client/proc/knot_debug_test(mob/living/carbon/human/H, as_recipient = FALSE, force = FALSE, preview_only = FALSE)
+	var/mob/living/carbon/human/other = knot_debug_select_human(H)
+	if(!other)
+		return
+	var/mob/living/carbon/human/pen_owner = as_recipient ? other : H
+	var/mob/living/carbon/human/recipient = as_recipient ? H : other
+	var/zone = knot_debug_select_zone()
+	if(!zone || !knot_debug_preview(pen_owner, recipient, zone) || preview_only)
+		return
+	var/obj/item/organ/genital/penis/P = pen_owner.getorganslot(ORGAN_SLOT_PENIS)
+	var/before_locked = P.knot_locked
+	var/before_zones = islist(P.knot_zones) ? length(P.knot_zones) : 0
+	var/succeeded = try_apply_knot(pen_owner, recipient, zone, force_override = force, force_knot = force)
+	if(succeeded)
+		to_chat(src, span_notice("УСПЕХ: проверка выполнена реальным try_apply_knot(), эффекты и таймеры созданы стандартным путём."))
 	else
-		to_chat(mob, span_warning("❌ Нет партнёра для resist."))
+		to_chat(src, span_warning("Узлирование не произошло. См. диагностику условий выше; при обычном тесте также возможен неуспешный бросок вероятности."))
+	if(P.knot_locked != before_locked || (islist(P.knot_zones) && length(P.knot_zones) != before_zones))
+		knot_debug_show_state(pen_owner)
 
-/client/proc/debug_simulate_move(mob/living/carbon/human/H, obj/item/organ/genital/penis/P)
-	if(!P)
-		to_chat(mob, span_warning("❌ Нет пениса."))
+/client/proc/knot_debug_release(mob/living/carbon/human/H, forceful = FALSE)
+	var/obj/item/organ/genital/penis/P = H.active_knot
+	if(!P || QDELETED(P))
+		P = H.getorganslot(ORGAN_SLOT_PENIS)
+	if(!P || !P.knot_locked)
+		to_chat(src, span_warning("У персонажа нет активной связи."))
 		return
-
-	to_chat(mob, span_notice("🚶 Симулируем движение..."))
-	if(P.knot_locked && P.knot_partner)
-		P.check_knot_distance_safe(H)
-		to_chat(mob, span_notice("📏 Проверка натяжения выполнена."))
-	else
-		to_chat(mob, span_warning("❌ Узел не активен или нет партнёра."))
-
-/client/proc/debug_simulate_resist(mob/living/carbon/human/H, obj/item/organ/genital/penis/P)
-	if(!P)
-		to_chat(mob, span_warning("❌ Нет пениса."))
+	if(QDELETED(P.owner) || QDELETED(P.knot_partner))
+		P.cleanup_knot_state(P.owner, P.knot_partner)
+		to_chat(src, span_warning("Удалённый участник: выполнена техническая очистка без эффектов."))
 		return
+	P.release_knot(P.owner, P.knot_partner, P.knot_state, forceful)
+	to_chat(src, span_notice("Связь завершена через release_knot()."))
 
-	if(!P.knot_locked)
-		to_chat(mob, span_warning("❌ Нет активного узла для resist."))
+/client/proc/knot_debug_resist(mob/living/carbon/human/H, from_partner = FALSE)
+	var/obj/item/organ/genital/penis/P = H.active_knot
+	if(!P || QDELETED(P) || !P.knot_locked)
+		to_chat(src, span_warning("Нет активного узла."))
 		return
-
-	to_chat(mob, span_notice("🧩 Симулируем нажатие resist..."))
-	P.start_resist_attempt(H)
-
-/client/proc/debug_auto_resist(mob/living/carbon/human/H, obj/item/organ/genital/penis/P)
-	if(!P)
-		to_chat(mob, span_warning("❌ Нет пениса."))
+	var/mob/living/actor = from_partner ? P.knot_partner : H
+	if(actor != P.owner && actor != P.knot_partner)
+		to_chat(src, span_warning("Персонаж не является участником этого узла."))
 		return
+	P.start_resist_attempt(actor)
 
-	if(!P.knot_locked)
-		to_chat(mob, span_warning("❌ Нет активного узла для resist."))
+/client/proc/knot_debug_check_distance(mob/living/carbon/human/H)
+	var/obj/item/organ/genital/penis/P = H.active_knot
+	if(!P || QDELETED(P) || !P.knot_locked)
+		to_chat(src, span_warning("Нет активного узла."))
 		return
-
-	to_chat(mob, span_notice("⏳ Resist через 5 секунд..."))
-	addtimer(CALLBACK(P, TYPE_PROC_REF(/obj/item/organ/genital/penis, start_resist_attempt), H), 5 SECONDS)
-
-/client/proc/debug_female_test(mob/living/carbon/human/H, obj/item/organ/genital/penis/P)
-	var/list/moblist = list()
-	for(var/mob/living/carbon/human/M in view(7, mob))
-		if(M != H)
-			var/obj/item/organ/genital/penis/Ptest = M.getorganslot(ORGAN_SLOT_PENIS)
-			if(Ptest && !Ptest.knot_locked)
-				moblist += M
-
-	if(!length(moblist))
-		to_chat(mob, span_warning("❌ Рядом нет подходящих партнёров (обладателей члена без активного узла)."))
-		return
-
-	var/mob/living/carbon/human/target = input(mob, "Выбери партнёра (обладателя члена):", "Knot test") as null|anything in moblist
-	if(!target)
-		return
-
-	var/list/L = list("рот" = CUM_TARGET_MOUTH, "анус" = CUM_TARGET_ANUS, "влагалище" = CUM_TARGET_VAGINA)
-	var/choice = input(mob, "Куда насаживаешься?", "Knot test") as null|anything in L
-	if(!choice)
-		return
-
-	var/zone = L[choice]
-
-	to_chat(mob, span_notice("🔬 Тест: симуляция узлирования от женской стороны..."))
-	try_apply_knot(H, target, zone, force_override = TRUE, force_knot = TRUE)
-	to_chat(mob, span_love("💞 Ты насаживаешься на [target]. Проверка узла выполнена."))
-
-// ============================================================
-// MAIN DEBUG COMMAND
-// ============================================================
+	to_chat(src, span_notice("Проверка настоящего расстояния. Если дистанция превышена, игровая механика может причинить урон."))
+	P.check_knot_distance_safe(P.owner)
 
 /client/proc/force_knot()
 	set name = "Force Knot"
-	set category = "Debug"
-
+	set category = "Debug.7) Testing"
+	set desc = "Диагностика узлирования и временные переключатели ERP-тестов."
+	if(!check_rights(R_DEBUG))
+		return
+	var/list/actions = list(
+		"Переключить bypass префов узлирования" = "prefs",
+		"Переключить гарантированный бросок узлирования" = "roll",
+		"Сбросить оба тестовых режима" = "reset"
+	)
 	var/mob/living/carbon/human/H = mob
-	if(!istype(H))
-		to_chat(mob, span_warning("❌ Этот тест доступен только для людей."))
-		return
-
-	var/obj/item/organ/genital/penis/P = H.getorganslot(ORGAN_SLOT_PENIS)
-	var/list/modes = list()
-
-	if(P)
-		modes = list(
-			"📊 Проверить состояние узла" = "state",
-			"🔒 Активировать узел (принудительно)" = "lock",
-			"💧 Принудительный мягкий спад" = "release_soft",
-			"💥 Принудительный силовой разрыв" = "release_force",
-			"📡 Проверка дистанции" = "distance",
-			"🧩 Resist от себя" = "resist_self",
-			"🧩 Resist от партнёра" = "resist_partner",
-			"🚶 Симулировать движение" = "simulate_move",
-			"🧠 Симулировать resist (ручной)" = "simulate_resist",
-			"⏳ Авто-resist через 5 секунд" = "auto_resist",
-			"🧍 Проверить насаживание (женская сторона)" = "female_test"
+	if(istype(H))
+		actions += list(
+			"Посмотреть состояние и mood" = "state",
+			"Проверить шанс на ближайшем партнёре (без создания узла)" = "preview",
+			"Обычная попытка (с шансом и префами)" = "normal",
+			"Принудительная попытка через всю механику" = "forced",
+			"Проверка со стороны принимающего партнёра" = "receiver",
+			"Аккуратное освобождение" = "release",
+			"Силовой разрыв" = "break",
+			"Resist от персонажа" = "resist_self",
+			"Resist от партнёра" = "resist_partner",
+			"Проверить дистанцию (может нанести урон)" = "distance"
 		)
-	else
-		modes = list("🧍 Проверить насаживание (женская сторона)" = "female_test")
-
-	var/mode = input(mob, "Выбери действие:", "Knot Debug") as null|anything in modes
-	if(!mode)
+	var/choice = input(mob, "Режимы действуют только на действия администратора, включены до отключения/перезахода.", "Knot Debug") as null|anything in actions
+	if(!choice)
 		return
-
-	switch(modes[mode])
+	if(!check_rights(R_DEBUG))
+		return
+	switch(actions[choice])
+		if("prefs")
+			knot_debug_ignore_prefs = !knot_debug_ignore_prefs
+			to_chat(src, span_notice("Debug bypass sexknotting: [knot_debug_ignore_prefs]."))
+		if("roll")
+			knot_debug_force_chance = !knot_debug_force_chance
+			to_chat(src, span_notice("Debug guarantee knot chance: [knot_debug_force_chance]."))
+		if("reset")
+			knot_debug_ignore_prefs = FALSE
+			knot_debug_force_chance = FALSE
+			to_chat(src, span_notice("Все временные режимы отключены."))
 		if("state")
-			debug_show_knot_state(H, P)
-
-		if("lock")
-			debug_force_lock_knot(H, P)
-
-		if("release_soft")
-			debug_release_soft(H, P)
-
-		if("release_force")
-			debug_release_force(H, P)
-
-		if("distance")
-			debug_check_distance(H, P)
-
+			knot_debug_show_state(H)
+		if("preview")
+			knot_debug_test(H, preview_only = TRUE)
+		if("normal")
+			knot_debug_test(H)
+		if("forced")
+			knot_debug_test(H, force = TRUE)
+		if("receiver")
+			knot_debug_test(H, as_recipient = TRUE, force = TRUE)
+		if("release")
+			knot_debug_release(H)
+		if("break")
+			knot_debug_release(H, forceful = TRUE)
 		if("resist_self")
-			debug_resist_self(H, P)
-
+			knot_debug_resist(H)
 		if("resist_partner")
-			debug_resist_partner(H, P)
-
-		if("simulate_move")
-			debug_simulate_move(H, P)
-
-		if("simulate_resist")
-			debug_simulate_resist(H, P)
-
-		if("auto_resist")
-			debug_auto_resist(H, P)
-
-		if("female_test")
-			debug_female_test(H, P)
+			knot_debug_resist(H, from_partner = TRUE)
+		if("distance")
+			knot_debug_check_distance(H)

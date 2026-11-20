@@ -315,6 +315,13 @@
 					penis.shape = features["cock_shape"]
 					penis.length = features["cock_length"]
 					penis.diameter_ratio = features["cock_diameter_ratio"]
+					penis.dynamic_size = !!features["cock_dynamic_size"]
+					if(penis.dynamic_size)
+						penis.flaccid_length = features["cock_flaccid_length"]
+						penis.flaccid_width = features["cock_flaccid_width"]
+						penis.erect_length = features["cock_erect_length"]
+						penis.erect_width = features["cock_erect_width"]
+						penis.length = penis.flaccid_length
 					penis.color = sanitize_hexcolor(features["cock_color"], 6, TRUE)
 					penis.update()
 			if(/obj/item/organ/genital/testicles)

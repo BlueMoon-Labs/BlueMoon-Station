@@ -5,7 +5,7 @@ import { Box, Button, Input, NoticeBox } from '../../components';
 import { ContractEntry, ContractRank, CrewRequestRules, formatCredits, OfferEntry } from './Economy';
 
 /** Доска отдела, которую зритель как глава может сбросить. */
-type BoardReset = {
+export type BoardReset = {
   id: string;
   name: string;
   left: number;
@@ -29,7 +29,7 @@ type ContractBoardData = {
   partner_offers?: OfferEntry[];
 };
 
-const formatTimeLeft = (seconds: number) => {
+export const formatTimeLeft = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
   const rest = String(seconds % 60).padStart(2, '0');
   return `${minutes}:${rest}`;
@@ -46,9 +46,9 @@ const progressShare = (progress?: string | null) => {
   return total > 0 ? Math.min(done / total, 1) : null;
 };
 
-const isMine = (contract: ContractEntry, myAccount?: number | null) => !!contract.taken_by && contract.taker_id === myAccount;
+export const isMine = (contract: ContractEntry, myAccount?: number | null) => !!contract.taken_by && contract.taker_id === myAccount;
 
-const isMyPost = (contract: ContractEntry, myAccount?: number | null) =>
+export const isMyPost = (contract: ContractEntry, myAccount?: number | null) =>
   contract.kind === 'crew' && !!myAccount && contract.poster_id === myAccount;
 
 /** Сколько чужих объявлений экипажа ещё никто не взял. */
@@ -200,7 +200,7 @@ const RewardNote = (props: { contract: ContractEntry; myAccount?: number | null 
   return null;
 };
 
-const ContractRow = (props: { contract: ContractEntry; myAccount?: number | null; readOnly?: boolean }) => {
+export const ContractRow = (props: { contract: ContractEntry; myAccount?: number | null; readOnly?: boolean }) => {
   const { contract, myAccount, readOnly } = props;
   const share = progressShare(contract.progress);
   const mine = isMine(contract, myAccount) || isMyPost(contract, myAccount);
@@ -262,7 +262,7 @@ const ContractRow = (props: { contract: ContractEntry; myAccount?: number | null
 };
 
 /** Спецзаказ партнёра снабжения: сдаётся на паде подработки, оплата - отделу сдавшего. */
-const PartnerOfferRow = (props: { offer: OfferEntry }) => {
+export const PartnerOfferRow = (props: { offer: OfferEntry }) => {
   const { data } = useBackend<ContractBoardData>();
   const { offer } = props;
   const margin = offer.unit_reward - offer.unit_price;
@@ -348,7 +348,7 @@ const resetTooltip = (board: BoardReset) => {
 };
 
 /** Сброс доски отдела главой: неначатые контракты сменятся новыми, кроме своего и недавно взятых. */
-const BoardResets = (props: { resets: BoardReset[] }) => {
+export const BoardResets = (props: { resets: BoardReset[] }) => {
   const { act } = useBackend<ContractBoardData>();
   const { resets } = props;
   return (
@@ -369,7 +369,7 @@ const BoardResets = (props: { resets: BoardReset[] }) => {
 };
 
 /** Форма объявления экипажа: награда сразу уходит в депозит. */
-const CrewRequestForm = (props: { rules: CrewRequestRules; onDone: () => void }) => {
+export const CrewRequestForm = (props: { rules: CrewRequestRules; onDone: () => void }) => {
   const { act } = useBackend<ContractBoardData>();
   const { rules, onDone } = props;
   const [title, setTitle] = useState('');

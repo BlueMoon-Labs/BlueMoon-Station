@@ -25,7 +25,6 @@
 		"Sex Therapist",
 		"Sexual Advisor",
 		"The Rapist",
-		"Therapist",
 		"Trust Service Specialist"
 		)
 

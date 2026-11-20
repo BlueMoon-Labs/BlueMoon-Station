@@ -270,6 +270,7 @@
 	name = "Old Energy Shield"
 	desc = "Устаревшая на несколько поколений модель энергетического щита; компенсируется своей надёжностью и универсальностью. Использует механические ограничители силового поля и эргономика немного страдает, но всё ещё является желанным элементом экипировки."
 	icon = 'modular_bluemoon/Ren/Icons/Obj/misc.dmi'
+	icon_state = "shield"
 	lefthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_l.dmi'
 	righthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_r.dmi'
 	w_class = WEIGHT_CLASS_TINY

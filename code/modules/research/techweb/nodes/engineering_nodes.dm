@@ -3,7 +3,7 @@
 /datum/techweb_node/engineering
 	id = "engineering"
 	display_name = "Industrial Engineering"
-	description = "A refresher course on modern engineering technology."
+	description = "Повторный курс современных инженерных технологий."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("base")
 	design_ids = list("solarcontrol", "recharger", "powermonitor", "rped", "pacman", "adv_capacitor", "adv_scanning", "emitter", "high_cell", "adv_matter_bin",
@@ -16,7 +16,7 @@
 /datum/techweb_node/adv_engi
 	id = "adv_engi"
 	display_name = "Advanced Engineering"
-	description = "Pushing the boundaries of physics, one chainsaw-fist at a time."
+	description = "Расширяем границы физики — по одному удару бензопилой."
 	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("engineering", "emp_basic")
 	design_ids = list("engine_goggles", "magboots", "forcefield_projector", "weldingmask" , "rcd_loaded", "rpd",
@@ -26,7 +26,7 @@
 /datum/techweb_node/anomaly
 	id = "anomaly_research"
 	display_name = "Anomaly Research"
-	description = "Unlock the potential of the mysterious anomalies that appear on station."
+	description = "Раскройте потенциал таинственных аномалий, появляющихся на станции."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_engi", "practical_bluespace")
 	design_ids = list("reactive_armour", "anomaly_neutralizer", "explosive_compressor")
@@ -35,7 +35,7 @@
 /datum/techweb_node/high_efficiency
 	id = "high_efficiency"
 	display_name = "High Efficiency Parts"
-	description = "Finely-tooled manufacturing techniques allowing for picometer-perfect precision levels."
+	description = "Тонко отработанные методы производства, обеспечивающие точность до пикометра."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("engineering", "datatheory")
 	design_ids = list("pico_mani", "super_matter_bin")
@@ -44,7 +44,7 @@
 /datum/techweb_node/adv_power
 	id = "adv_power"
 	display_name = "Advanced Power Manipulation"
-	description = "How to get more zap."
+	description = "Как получить больше разрядов."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("engineering")
 	design_ids = list("smes", "super_cell", "hyper_cell", "super_capacitor", "superpacman", "mrspacman", "power_turbine", "power_turbine_console", "power_compressor", "circulator", "teg")
@@ -54,14 +54,14 @@
 /datum/techweb_node/basic_meteor_defense
 	id = "basic_meteor_defense"
 	display_name = "Meteor Defense Research"
-	description = "Unlock the potential of the mysterious of why CC decided to not build these around the station themselves."
+	description = "Раскройте тайну, почему ЦК решил не строить это вокруг станции самостоятельно."
 	prereq_ids = list("adv_engi", "high_efficiency")
 	design_ids = list("meteor_defence", "meteor_console")
 
 /datum/techweb_node/adv_meteor_defense
 	id = "adv_meteor_defense"
 	display_name = "Meteor Defense Research"
-	description = "New and improved coding and lock on tech for meteor defence!"
+	description = "Новые и улучшенные системы кодирования и захвата целей для защиты от метеоритов!"
 	prereq_ids = list("basic_meteor_defense", "adv_datatheory", "emp_adv")
 	design_ids = list("meteor_disk")
 */

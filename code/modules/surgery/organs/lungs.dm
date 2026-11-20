@@ -668,6 +668,8 @@
 	. = ..()
 	if(. & EMP_PROTECT_SELF)
 		return
+	// У базовой модели риск малого взрыва растёт с силой ЭМИ: 50% при severity 100.
+	try_basic_cybernetic_detonation(severity * 0.5)
 	if(!COOLDOWN_FINISHED(src, severe_cooldown)) //So we cant just spam emp to kill people.
 		owner.losebreath += 20
 		COOLDOWN_START(src, severe_cooldown, 30 SECONDS)

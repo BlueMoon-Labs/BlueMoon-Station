@@ -6,6 +6,10 @@
 /mob/living/simple_animal/hostile/swarmer
 	ai_profile_type = null
 
+///Фабричными боевыми дронами управляют только игроки.
+/mob/living/simple_animal/hostile/malf_drone/factory
+	ai_profile_type = null
+
 ///Элдрич-демоны еретиков - гост-роли с AIStatus = AI_OFF; сегменты armsy
 ///двигаются сценарными сигналами, а не NPC-AI.
 /mob/living/simple_animal/hostile/eldritch

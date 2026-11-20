@@ -26,7 +26,7 @@
 /mob/living/simple_animal/pet/dog/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/pet_bonus, "yaps happily!", EMOTE_AUDIBLE)
-	AddElement(/datum/element/mob_holder, held_icon)
+	AddElement(/datum/element/mob_holder, held_icon, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)
 	AddElement(/datum/element/strippable, GLOB.strippable_corgi_items)
 
 //Corgis and pugs are now under one dog subtype
@@ -87,6 +87,7 @@
 	held_icon = "pug"
 
 /mob/living/simple_animal/pet/dog/bullterrier
+	held_icon = "bullterrier"
 	name = "\improper bull terrier"
 	real_name = "bull terrier"
 	desc = "It's a bull terrier."
@@ -99,6 +100,7 @@
 	collar_type = "bullterrier"
 
 /mob/living/simple_animal/pet/dog/corgi/exoticcorgi
+	held_icon = "corgigrey"
 	name = "Exotic Corgi"
 	desc = "As cute as it is colorful!"
 	icon = 'icons/mob/pets.dmi'
@@ -445,7 +447,7 @@ GLOBAL_LIST_INIT(strippable_corgi_items, create_strippable_list(list(
 		desc = "At a ripe old age of [record_age], Ian's not as spry as he used to be, but he'll always be the HoP's beloved corgi." //RIP
 		turns_per_move = 20
 		RemoveElement(/datum/element/mob_holder, held_icon)
-		AddElement(/datum/element/mob_holder, "old_corgi")
+		AddElement(/datum/element/mob_holder, "old_corgi", inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)
 
 /mob/living/simple_animal/pet/dog/corgi/Ian/BiologicalLife(delta_time, times_fired)
 	if(!(. = ..()))
@@ -654,6 +656,7 @@ GLOBAL_LIST_INIT(strippable_corgi_items, create_strippable_list(list(
 
 
 /mob/living/simple_animal/pet/dog/corgi/puppy
+	held_icon = "puppy"
 	name = "\improper corgi puppy"
 	real_name = "corgi"
 	desc = "It's a corgi puppy!"

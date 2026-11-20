@@ -13,23 +13,23 @@ export const MechBayPowerConsole = (props) => {
       height={200}>
       <Window.Content>
         <Section
-          title="Mech status"
+          title="Состояние меха"
           textAlign="center"
           buttons={(
             <Button
               icon="sync"
-              content="Sync"
+              content="Синхронизировать"
               onClick={() => act('reconnect')} />
           )}>
           <LabeledList>
-            <LabeledList.Item label="Integrity">
+            <LabeledList.Item label="Целостность">
               {!recharge_port && (
                 <NoticeBox>
-                  No power port detected. Please re-sync.
+                  Порт питания не обнаружен. Повторите синхронизацию.
                 </NoticeBox>
               ) || !mech && (
                 <NoticeBox>
-                  No mech detected.
+                  Мех не обнаружен.
                 </NoticeBox>
               ) || (
                 <ProgressBar
@@ -41,18 +41,18 @@ export const MechBayPowerConsole = (props) => {
                   }} />
               )}
             </LabeledList.Item>
-            <LabeledList.Item label="Power">
+            <LabeledList.Item label="Питание">
               {!recharge_port && (
                 <NoticeBox>
-                  No power port detected. Please re-sync.
+                  Порт питания не обнаружен. Повторите синхронизацию.
                 </NoticeBox>
               ) || !mech && (
                 <NoticeBox>
-                  No mech detected.
+                  Мех не обнаружен.
                 </NoticeBox>
               ) || !cell && (
                 <NoticeBox>
-                  No cell is installed.
+                  Аккумулятор не установлен.
                 </NoticeBox>
               ) || (
                 <ProgressBar
