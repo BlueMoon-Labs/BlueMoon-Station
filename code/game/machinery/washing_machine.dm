@@ -265,6 +265,7 @@ GLOBAL_LIST_INIT(dye_registry, list(
 	gib()
 
 /obj/item/machine_wash(obj/machinery/washing_machine/WM)
+	vore_clean()
 	if(WM.color_source)
 		dye_item(WM.color_source.dye_color)
 

@@ -2262,6 +2262,7 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 	S["vore_flags"] >> vore_flags
 	S["vore_taste"] >> vore_taste
 	S["vore_smell"] >> vore_smell
+	S["eating_privacy_global"] >> eating_privacy_global
 
 	S["feature_breasts_stuffing"] >> features["breasts_stuffing"]
 	S["feature_cock_stuffing"] >> features["cock_stuffing"]
@@ -2295,11 +2296,42 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 	if(S["features_butt_min_size"])
 		S["features_butt_min_size"] >> features["butt_min_size"]
 
+	belly_prefs = list()
 	var/char_vr_path = "[vr_path]/character_[default_slot]_v2.json"
 	if(fexists(char_vr_path))
 		var/list/json_from_file = json_decode(file2text(char_vr_path))
 		if(json_from_file)
 			belly_prefs = json_from_file["belly_prefs"]
+	if(!length(belly_prefs))
+		var/legacy_json_path = "[vr_path]/character[default_slot].json"
+		if(fexists(legacy_json_path))
+			var/list/legacy_json = json_decode(file2text(legacy_json_path))
+			if(islist(legacy_json) && islist(legacy_json["belly_prefs"]) && length(legacy_json["belly_prefs"]))
+				belly_prefs = legacy_json["belly_prefs"]
+				log_game("Vore prefs for [parent?.ckey] slot [default_slot] restored from legacy JSON.")
+	if(!length(belly_prefs))
+		var/backup_path = "[char_vr_path].bak"
+		if(fexists(backup_path))
+			var/list/backup_file = json_decode(file2text(backup_path))
+			if(islist(backup_file) && islist(backup_file["belly_prefs"]) && length(backup_file["belly_prefs"]))
+				belly_prefs = backup_file["belly_prefs"]
+				log_game("Vore prefs for [parent?.ckey] slot [default_slot] restored from backup.")
+	if(!length(belly_prefs))
+		var/list/legacy_bellies = S["belly_prefs"]
+		if(islist(legacy_bellies) && length(legacy_bellies))
+			belly_prefs = legacy_bellies
+			log_game("Vore prefs for [parent?.ckey] slot [default_slot] restored from legacy savefile key.")
+	if(!length(belly_prefs))
+		var/legacy_path = "[path].updatebac"
+		if(fexists(legacy_path))
+			var/savefile/legacy_save = new /savefile(legacy_path)
+			if(legacy_save)
+				legacy_save.cd = "/character[default_slot]"
+				var/list/legacy_backup_bellies = legacy_save["belly_prefs"]
+				if(islist(legacy_backup_bellies) && length(legacy_backup_bellies))
+					belly_prefs = legacy_backup_bellies
+					log_game("Vore prefs for [parent?.ckey] slot [default_slot] restored from update backup savefile.")
+				legacy_save = null
 
 	S["alt_titles_preferences"] 		>> alt_titles_preferences
 	// Загружаем комплект заново, чтобы отсутствующая запись не наследовалась от другого персонажа.
@@ -2693,6 +2725,7 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 	vore_flags = sanitize_integer(vore_flags, 0, MAX_VORE_FLAG, 0)
 	vore_taste = copytext(vore_taste, 1, MAX_TASTE_LEN)
 	vore_smell = copytext(vore_smell, 1, MAX_TASTE_LEN)
+	eating_privacy_global = eating_privacy_global ? TRUE : FALSE
 	belly_prefs = SANITIZE_LIST(belly_prefs)
 
 	//SPLURT EDIT BEGIN - gregnancy
@@ -3115,11 +3148,27 @@ GLOBAL_VAR_INIT(player_savefile_evictions, 0)
 	WRITE_FILE(S["vore_flags"]			, vore_flags)
 	WRITE_FILE(S["vore_taste"]			, vore_taste)
 	WRITE_FILE(S["vore_smell"]			, vore_smell)
+	WRITE_FILE(S["eating_privacy_global"], eating_privacy_global)
 	var/char_vr_path = "[vr_path]/character_[default_slot]_v2.json"
-	var/belly_prefs_json = safe_json_encode(list("belly_prefs" = belly_prefs))
+	var/vore_backup_path = "[char_vr_path].bak"
+	var/list/existing_bellies
 	if(fexists(char_vr_path))
-		fdel(char_vr_path)
-	text2file(belly_prefs_json,char_vr_path)
+		var/list/old_belly_data = json_decode(file2text(char_vr_path))
+		if(islist(old_belly_data) && islist(old_belly_data["belly_prefs"]))
+			existing_bellies = old_belly_data["belly_prefs"]
+			if(length(existing_bellies))
+				if(fexists(vore_backup_path))
+					fdel(vore_backup_path)
+				fcopy(char_vr_path, vore_backup_path)
+	// Пустой список — почти всегда сбой загрузки, а не осознанная очистка:
+	// не даём ему затереть сохранённые нутры.
+	if(!length(belly_prefs) && length(existing_bellies))
+		log_game("Vore prefs save skipped for [parent?.ckey] slot [default_slot]: empty list would overwrite [length(existing_bellies)] bellies.")
+	else
+		var/belly_prefs_json = safe_json_encode(list("belly_prefs" = belly_prefs))
+		if(fexists(char_vr_path))
+			fdel(char_vr_path)
+		text2file(belly_prefs_json,char_vr_path)
 
 	WRITE_FILE(S["persistent_scars"]			, persistent_scars)
 	WRITE_FILE(S["scars1"]						, scars_list["1"])

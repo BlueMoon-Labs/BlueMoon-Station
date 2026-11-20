@@ -441,6 +441,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/belly_prefs = list()
 	var/vore_taste = ""
 	var/vore_smell = ""
+	var/eating_privacy_global = FALSE
 	var/toggleeatingnoise = TRUE
 	var/toggledigestionnoise = TRUE
 	var/hound_sleeper = TRUE
@@ -1415,6 +1416,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	character.socks_color = socks_color
 	character.taste_desc = vore_taste
 	character.smell_desc = vore_smell
+	character.eating_privacy_global = eating_privacy_global
 
 	var/datum/species/chosen_species
 	if(!roundstart_checks || (pref_species.id in GLOB.roundstart_races))

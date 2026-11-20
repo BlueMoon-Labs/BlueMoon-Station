@@ -21,9 +21,52 @@
 #define ABSORBABLE		(1<<9)
 /// Can get simplemob vored?
 #define MOBVORE			(1<<10)
+/// не хочет получать хил от нутра
+#define NO_HEALBELLY	(1<<11)
+/// не хочет получать урон от температуры нутра
+#define NO_TEMPERATURE	(1<<12)
+/// не хочет, чтобы его автоматически перемещали между нутрами
+#define NO_AUTOTRANSFER	(1<<13)
+
+/// не оставлять останки после переваривания
+#define NO_REMAINS		(1<<14)
+/// не позволять есть себя, пока игрок ссд
+#define NO_AFK_PREY		(1<<15)
+/// не позволять кормить себя, пока игрок ссд
+#define NO_AFK_PRED		(1<<16)
 
 /// Change this whenever you add a vore flag, must be largest vore flag*2-1
-#define MAX_VORE_FLAG	(1<<11)-1
+#define MAX_VORE_FLAG	(1<<17)-1
+
+/// Типы нутра
+GLOBAL_LIST_INIT(vore_type_options, list(
+	"Oral Vore",
+	"Anal Vore",
+	"Cock Vore",
+	"Sheath Vore",
+	"Unbirth",
+	"Breast Vore",
+	"Tail Vore",
+	"Absorption",
+	"Soul Vore",
+	"Hard Vore",
+	"Other",
+))
+
+/// Дополнения режима нутра с реальными эффектами
+GLOBAL_LIST_INIT(vore_addon_options, list(
+	"TURBO MODE",
+	"Leave Remains",
+	"Absorbed Prey Can Devour",
+))
+
+/// Доступные жидкости для нутра
+GLOBAL_LIST_INIT(vore_liquid_reagents, list(
+	"Вода" = /datum/reagent/water,
+	"Молоко" = /datum/reagent/consumable/milk,
+	"Сливки" = /datum/reagent/consumable/cream,
+	"Мёд" = /datum/reagent/consumable/honey,
+))
 
 #define isbelly(A) istype(A, /obj/belly)
 

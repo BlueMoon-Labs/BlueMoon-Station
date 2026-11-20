@@ -13,6 +13,10 @@
 	var/smell_desc
 	/// Next time vore sounds get played for the prey, do not change manually as it is intended to be set automatically
 	var/next_preyloop
+	/// Глобальная приватность поглощения,.. если включена, режим "Default" у нутра ведёт себя тихо
+	var/eating_privacy_global = FALSE
+	/// Имя до переименования поглощённой добычей (для восстановления)
+	var/vore_absorbed_old_name
 
 //
 // Hook for generic creation of stuff on new creatures
@@ -122,9 +126,31 @@
 		testing("[user] attempted to feed [prey] to [pred], via [lowertext(belly.name)] but it went wrong.")
 		return
 
-	if (!(prey.vore_flags & DEVOURABLE))
-		to_chat(user, "This can't be eaten!")
+	if(!(prey.vore_flags & DEVOURABLE))
+		to_chat(user, "Это нельзя съесть!")
 		return FALSE
+
+	// Согласие ссд, не трогать отключившихся игроков без разрешения
+	if(prey.ckey && !prey.client && !prey.stat && (prey.vore_flags & NO_AFK_PREY))
+		to_chat(user, span_warning("Добыча не разрешает есть себя, пока она AFK."))
+		return FALSE
+	if(pred.ckey && !pred.client && (pred.vore_flags & NO_AFK_PRED))
+		to_chat(user, span_warning("Хищник не разрешает кормить себя, пока он AFK."))
+		return FALSE
+
+	if(!belly.feedable && user != belly.owner)
+		to_chat(user, span_warning("Этот нутр не принимает кормление со стороны."))
+		to_chat(belly.owner, span_warning("Кто-то пытался покормить вас, но ваш [belly.get_display_name_lower()] к этому не готов."))
+		return FALSE
+
+	// Ограничение вместимости действует только для простых мобов
+	if(isanimal(pred) && belly.vore_capacity > 0)
+		var/inside_count = 0
+		for(var/mob/living/M in belly.contents)
+			inside_count++
+		if(inside_count >= belly.vore_capacity)
+			to_chat(user, span_warning("Этот нутр уже полон."))
+			return FALSE
 
 	// BLUEMOON ADD START - сверхтяжёлых персонажей нельзя перемещать с помощью Vore, если жрёт не такой же сверхтяж
 	if(prey.mob_weight > MOB_WEIGHT_HEAVY && pred.mob_weight < MOB_WEIGHT_HEAVY_SUPER)
@@ -147,8 +173,10 @@
 	if(!prey.Adjacent(user)) // let's not even bother attempting it yet if they aren't next to us.
 		return FALSE
 
+	var/message_range = belly.get_privacy_range()
+
 	// Announce that we start the attempt!
-	user.visible_message(attempt_msg)
+	user.visible_message(attempt_msg, vision_distance = message_range)
 
 	// Now give the prey time to escape... return if they did
 	var/swallow_time
@@ -165,7 +193,7 @@
 		return FALSE
 
 	// If we got this far, nom successful! Announce it!
-	user.visible_message(success_msg)
+	user.visible_message(success_msg, vision_distance = message_range)
 
 	// Actually shove prey into the belly.
 	belly.nom_mob(prey, user)
@@ -232,8 +260,8 @@
 	//You're in a belly!
 	if(isbelly(loc))
 		var/obj/belly/B = loc
-		var/confirm = alert(src, "You're in a mob. If you're otherwise unable to escape from a pred AFK for a long time, use this.", "Confirmation", "Okay", "Cancel")
-		if(!confirm == "Okay" || loc != B)
+		var/confirm = alert(src, "Ты внутри хищника. Используй это, если не можешь выбраться сам, а хищник AFK или отключился.", "Подтверждение", "Да", "Отмена")
+		if(confirm != "Да" || loc != B)
 			return
 		//Actual escaping
 		B.release_specific_contents(src,TRUE) //we might as well take advantage of that specific belly's handling. Else we stay blinded forever.
@@ -252,22 +280,23 @@
 	else if(istype(loc, /obj/item/dogborg/sleeper))
 		var/obj/item/dogborg/sleeper/belly = loc //The belly!
 
-		var/confirm = alert(src, "You're in a dogborg sleeper. This is for escaping from preference-breaking or if your predator disconnects/AFKs. You can also resist out naturally too.", "Confirmation", "Okay", "Cancel")
-		if(!confirm == "Okay" || loc != belly)
+		var/confirm = alert(src, "Ты в слипере борга. Это для выхода из нарушающих предпочтения ситуаций или если хищник отключился. Можно также выбраться сопротивлением.", "Подтверждение", "Да", "Отмена")
+		if(confirm != "Да" || loc != belly)
 			return
 		//Actual escaping
 		belly.go_out(src) //Just force-ejects from the borg as if they'd clicked the eject button.
 		message_admins("[src] used OOC escape from a dogborg sleeper.")
 		log_consent("[src] used OOC escape from a dogborg sleeper.")
 	else
-		to_chat(src,"<span class='alert'>You aren't inside anyone, though, is the thing.</span>")
+		to_chat(src,"<span class='alert'>Ты ни в ком не находишься.</span>")
 
 /mob/living/proc/copy_to_prefs_vr()
 	if(!client || !client.prefs)
-		to_chat(src,"<span class='warning'>You attempted to save your vore prefs but somehow you're in this character without a client.prefs variable. Tell a dev.</span>")
+		to_chat(src,"<span class='warning'>Ты пытаешься сохранить настройки воре, но у персонажа нет client.prefs. Сообщи разработчику.</span>")
 		return FALSE
 
 	client.prefs.vore_flags = vore_flags // there's garbage data in here, but it doesn't matter
+	client.prefs.eating_privacy_global = eating_privacy_global
 
 	var/list/serialized = list()
 	for(var/belly in vore_organs)
@@ -285,15 +314,18 @@
 //
 /mob/living/proc/copy_from_prefs_vr()
 	if(!client || !client.prefs)
-		to_chat(src,"<span class='warning'>You attempted to apply your vore prefs but somehow you're in this character without a client.prefs variable. Tell a dev.</span>")
+		to_chat(src,"<span class='warning'>Ты пытаешься применить настройки воре, но у персонажа нет client.prefs. Сообщи разработчику.</span>")
 		return FALSE
 	vore_flags |= VOREPREF_INIT
-	COPY_SPECIFIC_BITFIELDS(vore_flags, client.prefs.vore_flags, DIGESTABLE | DEVOURABLE | FEEDING | LICKABLE | SMELLABLE | ABSORBABLE | MOBVORE)
+	COPY_SPECIFIC_BITFIELDS(vore_flags, client.prefs.vore_flags, DIGESTABLE | DEVOURABLE | FEEDING | LICKABLE | SMELLABLE | ABSORBABLE | MOBVORE | NO_HEALBELLY | NO_TEMPERATURE | NO_AUTOTRANSFER | NO_REMAINS | NO_AFK_PREY | NO_AFK_PRED)
+	eating_privacy_global = client.prefs.eating_privacy_global
 
 	release_vore_contents(silent = TRUE)
 	QDEL_LIST(vore_organs)
 	for(var/entry in client.prefs.belly_prefs)
 		list_to_object(entry,src)
+	if(LAZYLEN(vore_organs))
+		vore_selected = vore_organs[1]
 
 	return TRUE
 

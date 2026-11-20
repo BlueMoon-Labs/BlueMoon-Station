@@ -1,5 +1,14 @@
 // Process the predator's effects upon the contents of its belly (i.e digestion/transformation etc)
 /obj/belly/proc/process_belly(var/times_fired,var/wait) //Passed by controller
+	// Производство жидкости не зависит от наличия добычи
+	if(show_liquids && owner && liquids && world.time >= next_liquid)
+		next_liquid = world.time + 6 SECONDS
+		if(owner.nutrition >= 50 && liquids.total_volume + liquid_rate <= liquids.maximum_volume)
+			var/reagent_path = text2path(liquid_reagent)
+			if(reagent_path)
+				liquids.add_reagent(reagent_path, liquid_rate)
+				owner.adjust_nutrition(-liquid_rate)
+
 	if((times_fired < next_process) || !length(contents))
 		recent_sound = FALSE
 		return SSBELLIES_IGNORED
@@ -17,12 +26,12 @@
 			qdel(src)
 			return SSBELLIES_PROCESSED
 
-	next_process = times_fired + (6 SECONDS/wait) //Set up our next process time.
+	next_process = times_fired + (6 SECONDS/wait/(("TURBO MODE" in mode_addons) ? 6 : 1)) //Set up our next process time.
 	var/play_sound //Potential sound to play at the end to avoid code duplication.
 	var/to_update = FALSE //Did anything update worthy happen?
 
 /////////////////////////// Auto-Emotes ///////////////////////////
-	if(contents.len && next_emote <= times_fired)
+	if(emote_active && contents.len && next_emote <= times_fired)
 		next_emote = times_fired + round(emote_time/wait,1)
 		var/list/EL = emote_lists[digest_mode]
 		if(LAZYLEN(EL))
@@ -88,24 +97,17 @@
 
 				//Person just died in guts!
 				if(M.stat == DEAD)
-					var/digest_alert_owner = pick(digest_messages_owner)
-					var/digest_alert_prey = pick(digest_messages_prey)
-
-					//Replace placeholder vars
-					digest_alert_owner = replacetext(digest_alert_owner,"%pred",owner)
-					digest_alert_owner = replacetext(digest_alert_owner,"%prey",M)
-					digest_alert_owner = replacetext(digest_alert_owner,"%belly",lowertext(name))
-
-					digest_alert_prey = replacetext(digest_alert_prey,"%pred",owner)
-					digest_alert_prey = replacetext(digest_alert_prey,"%prey",M)
-					digest_alert_prey = replacetext(digest_alert_prey,"%belly",lowertext(name))
+					var/list/owner_pool = ((M.vore_flags & ABSORBED) && LAZYLEN(absorbed_messages["dmo"])) ? absorbed_messages["dmo"] : digest_messages_owner
+					var/list/prey_pool = ((M.vore_flags & ABSORBED) && LAZYLEN(absorbed_messages["dmp"])) ? absorbed_messages["dmp"] : digest_messages_prey
+					var/digest_alert_owner = apply_message_vars(pick(owner_pool), M)
+					var/digest_alert_prey = apply_message_vars(pick(prey_pool), M)
 
 					//Send messages
 					to_chat(owner, "<span class='warning'>[digest_alert_owner]</span>")
 					to_chat(M, "<span class='warning'>[digest_alert_prey]</span>")
-					M.visible_message("<span class='notice'>You watch as [owner]'s form loses its additions.</span>")
+					M.visible_message("<span class='notice'>Все видят, как [owner] теряет очертания - живот заметно опадает.</span>")
 
-					owner.adjust_nutrition(400) // so eating dead mobs gives you *something*.
+					owner.adjust_nutrition(400 * (nutrition_percent / 100)) // so eating dead mobs gives you *something*.
 					play_sound = pick(pred_death)
 					if(M && M.client && M.client.prefs.cit_toggles & DIGESTION_NOISES)
 						SEND_SOUND(M,prey_death)
@@ -122,15 +124,22 @@
 					var/damage_mod = 1
 					if(M.maxHealth < 100) //big guy перевариваются дольше
 						damage_mod = M.maxHealth * 0.01 //1 процент от максимума хп при хп меньше 100
+					M.adjustBruteLoss(digest_brute * damage_mod)
 					M.adjustFireLoss(digest_burn * damage_mod)
+					if(digest_oxy)
+						M.adjustOxyLoss(digest_oxy * damage_mod)
+					if(digest_tox)
+						M.adjustToxLoss(digest_tox * damage_mod)
+					if(digest_clone)
+						M.adjustCloneLoss(digest_clone * damage_mod)
+					if(temperature_damage && !(M.vore_flags & NO_TEMPERATURE) && (M.vore_flags & DIGESTABLE))
+						var/temp_c = belly_temperature - T0C
+						if(temp_c > 40)
+							M.adjustFireLoss((temp_c - 40) * 0.1 * damage_mod)
+						else if(temp_c < 10)
+							M.adjustBruteLoss((10 - temp_c) * 0.1 * damage_mod)
 					//BLUEMOON EDIT ENDS
-					owner.adjust_nutrition(1)
-
-			//Contaminate or gurgle items
-			var/obj/item/T = pick(touchable_items)
-			if(istype(T))
-				if(istype(T,/obj/item/reagent_containers/food) || istype(T,/obj/item/organ))
-					digest_item(T)
+					owner.adjust_nutrition(1 * (nutrition_percent / 100))
 
 		if(DM_HEAL)
 			for (var/mob/living/M in contents)
@@ -138,7 +147,7 @@
 					if(M && M.client && M.client.prefs.cit_toggles & DIGESTION_NOISES)
 						SEND_SOUND(M,prey_digest)
 					play_sound = pick(pred_digest)
-				if(M.stat != DEAD)
+				if(M.stat != DEAD && !(M.vore_flags & NO_HEALBELLY))
 					if(owner.nutrition >= NUTRITION_LEVEL_STARVING && (M.health < M.maxHealth))
 						M.adjustBruteLoss(-3)
 						M.adjustFireLoss(-3)
@@ -168,9 +177,12 @@
 				if(M.nutrition >= 100) //Drain them until there's no nutrients left. Slowly "absorb" them.
 					var/oldnutrition = (M.nutrition * 0.05)
 					M.set_nutrition(M.nutrition * 0.95)
-					owner.adjust_nutrition(oldnutrition)
+					owner.adjust_nutrition(oldnutrition * (nutrition_percent / 100))
 				else if(M.nutrition < 100) //When they're finally drained.
-					absorb_living(M)
+					if(drain_mode == "Release")
+						release_specific_contents(M)
+					else
+						absorb_living(M)
 					to_update = TRUE
 
 		if(DM_UNABSORB)
@@ -178,8 +190,9 @@
 			for (var/mob/living/M in contents)
 				if(M.vore_flags & ABSORBED && owner.nutrition >= 100)
 					M.vore_flags &= ~(ABSORBED)
-					to_chat(M,"<span class='notice'>You suddenly feel solid again </span>")
-					to_chat(owner,"<span class='notice'>You feel like a part of you is missing.</span>")
+					restore_absorbed_name(M)
+					to_chat(M,"<span class='notice'>Ты вдруг снова чувствуешь себя плотным.</span>")
+					to_chat(owner,"<span class='notice'>Тебе кажется, что части тебя больше нет.</span>")
 					owner.adjust_nutrition(-100)
 					to_update = TRUE
 
@@ -208,22 +221,15 @@
 
 			//Person just died in guts!
 				if(M.stat == DEAD)
-					var/digest_alert_owner = pick(digest_messages_owner)
-					var/digest_alert_prey = pick(digest_messages_prey)
-
-					//Replace placeholder vars
-					digest_alert_owner = replacetext(digest_alert_owner,"%pred",owner)
-					digest_alert_owner = replacetext(digest_alert_owner,"%prey",M)
-					digest_alert_owner = replacetext(digest_alert_owner,"%belly",lowertext(name))
-
-					digest_alert_prey = replacetext(digest_alert_prey,"%pred",owner)
-					digest_alert_prey = replacetext(digest_alert_prey,"%prey",M)
-					digest_alert_prey = replacetext(digest_alert_prey,"%belly",lowertext(name))
+					var/list/owner_pool = ((M.vore_flags & ABSORBED) && LAZYLEN(absorbed_messages["dmo"])) ? absorbed_messages["dmo"] : digest_messages_owner
+					var/list/prey_pool = ((M.vore_flags & ABSORBED) && LAZYLEN(absorbed_messages["dmp"])) ? absorbed_messages["dmp"] : digest_messages_prey
+					var/digest_alert_owner = apply_message_vars(pick(owner_pool), M)
+					var/digest_alert_prey = apply_message_vars(pick(prey_pool), M)
 
 					//Send messages
 					to_chat(owner, "<span class='warning'>[digest_alert_owner]</span>")
 					to_chat(M, "<span class='warning'>[digest_alert_prey]</span>")
-					M.visible_message("<span class='notice'>You watch as [owner]'s guts loudly rumble as it finishes off a meal.</span>")
+					M.visible_message("<span class='notice'>Все слышат, как живот [owner] громко урчит, заканчивая трапезу.</span>")
 					play_sound = pick(pred_death)
 					if(M && M.client && M.client.prefs.cit_toggles & DIGESTION_NOISES)
 						SEND_SOUND(M,prey_death)
@@ -241,11 +247,13 @@
 					M.adjustToxLoss(2, toxins_type = TOX_OMNI) // something something plasma based acids // BLUEMOON CHANGES - TOX_OMNI для урона системам синтетика
 					if(!HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD START - у роботов не должно быть клон-урона
 						M.adjustCloneLoss(1) // eventually this'll kill you if you're healing everything else, you nerds.
-				//Contaminate or gurgle items
-			var/obj/item/T = pick(touchable_items)
-			if(istype(T))
-				if(istype(T,/obj/item/reagent_containers/food) || istype(T,/obj/item/organ))
-					digest_item(T)
+
+	// Предметы item_mode == Digest всегда, Follow - как режим нутра, Hold - никогда
+	var/items_digest = (item_mode == DM_DIGEST) || (item_mode == "Follow" && digest_mode == DM_DIGEST)
+	if(items_digest && length(touchable_items))
+		var/obj/item/T = pick(touchable_items)
+		if(istype(T) && (istype(T,/obj/item/reagent_containers/food) || istype(T,/obj/item/organ)))
+			digest_item(T)
 
 	/////////////////////////// Make any noise ///////////////////////////
 	if(play_sound)
