@@ -366,26 +366,34 @@
 /datum/component/riding/human/proc/do_true_belly_riding()
 	if(!true_belly_riding)
 		return FALSE
-	var/mob/living/carbon/human/H = parent
-	if(!true_belly_riding_interaction || !length(H?.buckled_mobs))
+	var/mob/living/carbon/human/carrier = parent
+	if(!true_belly_riding_interaction || !length(carrier?.buckled_mobs))
 		off_true_belly_riding()
 		return FALSE
 
-	if(true_belly_riding_cooldown > world.time)
+	var/mob/living/passenger = carrier.buckled_mobs[1]
+	if(!passenger_allows_true_belly_riding(passenger))
+		off_true_belly_riding()
 		return FALSE
 
-	true_belly_riding_cooldown = world.time + 0.5 SECONDS
-	if(!true_belly_riding_interaction.do_action(H, H.buckled_mobs[1], FALSE))
+	if(true_belly_riding_cooldown > world.time || INTERACTING_WITH(carrier, passenger))
+		return FALSE
+
+	COOLDOWN_START(src, true_belly_riding_cooldown, 0.5 SECONDS)
+	if(!true_belly_riding_interaction.do_action(carrier, passenger, FALSE))
 		off_true_belly_riding()
 		return FALSE
 	return TRUE
+
+/datum/component/riding/human/proc/passenger_allows_true_belly_riding(mob/living/passenger)
+	var/datum/preferences/passenger_prefs = passenger?.client?.prefs
+	return (passenger_prefs?.toggles & VERB_CONSENT) && passenger_prefs.erppref != "No"
 
 /datum/component/riding/human/proc/off_true_belly_riding()
 	if(!true_belly_riding)
 		return
 	true_belly_riding = FALSE
 	true_belly_riding_interaction = null
-	true_belly_riding_cooldown = 0
 	var/mob/living/carbon/human/H = parent
 	if(isnull(H))
 		return
@@ -778,11 +786,14 @@
 	if(riding_comp.true_belly_riding)
 		riding_comp.off_true_belly_riding()
 		return
+	if(riding_comp.true_belly_riding_cooldown > world.time)
+		return
 	if(!action_owner.has_penis() && !action_owner.has_strapon())
 		return
 	var/mob/living/passenger = action_owner.buckled_mobs[1]
-	var/datum/preferences/passenger_prefs = passenger.client?.prefs
-	if(!(passenger_prefs?.toggles & VERB_CONSENT) || passenger_prefs.erppref == "No")
+	if(INTERACTING_WITH(action_owner, passenger))
+		return
+	if(!riding_comp.passenger_allows_true_belly_riding(passenger))
 		to_chat(action_owner, span_warning("[passenger] не желает такой поездки."))
 		return
 
@@ -807,6 +818,8 @@
 	if(!interaction_type || owner != action_owner || QDELETED(riding_comp) || QDELETED(passenger) || passenger.buckled != action_owner)
 		return
 	if(riding_comp.true_belly_riding || reversed_pose != (!!riding_comp.belly_harness?.reversed_pose) || !IsAvailable())
+		return
+	if(riding_comp.true_belly_riding_cooldown > world.time || INTERACTING_WITH(action_owner, passenger))
 		return
 	var/datum/interaction/interaction = SSinteractions.interactions["[interaction_type]"]
 	if(!interaction)

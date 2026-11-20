@@ -146,15 +146,25 @@
 
 /datum/interaction/lewd/belly_riding/oral/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	. = ..()
-	if(user.a_intent == INTENT_HARM)
-		partner.adjustOxyLoss(1)
-		var/chance = max(6, (partner.stat - 1 ) * 35) // 5, SOFT_CRIT = 35, UNCONSCIOUS = 70
-		if(prob(chance))
-			partner.emote("gasp")
+	if(user.a_intent != INTENT_HARM)
+		return
 
-		chance = partner.stat > SOFT_CRIT ? 60 : partner.stat == SOFT_CRIT ? 20 : 0
-		if(prob(chance))
-			partner.emote("twitch")
+	partner.adjustOxyLoss(1)
+	var/gasp_chance = 0
+	var/twitch_chance = 0
+	switch(partner.stat)
+		if(CONSCIOUS)
+			gasp_chance = 5
+		if(SOFT_CRIT)
+			gasp_chance = 35
+			twitch_chance = 20
+		if(UNCONSCIOUS)
+			gasp_chance = 70
+			twitch_chance = 60
+	if(prob(gasp_chance))
+		partner.emote("gasp")
+	if(prob(twitch_chance))
+		partner.emote("twitch")
 
 /datum/interaction/lewd/belly_riding/oral/pick_message(mob/living/user, mob/living/partner, is_fucking = TRUE)
 	var/shape_desc = user.has_strapon() ? "дилдо" : get_penis_shape_desc(user)
