@@ -22,6 +22,8 @@
 	var/client/owner
 	/// Снимок данных, который получает frontend.
 	var/list/report_data
+	/// Неизменяемый снимок текущего раунда. Не перезаписывается при просмотре старых отчётов.
+	var/list/current_round_data
 
 /datum/roundend_report/New(client/C, list/data = null)
 	owner = C
@@ -30,6 +32,9 @@
 /datum/roundend_report/Destroy(force = FALSE)
 	if(owner?.roundend_report_ui == src)
 		owner.roundend_report_ui = null
+	owner = null
+	report_data = null
+	current_round_data = null
 	return ..()
 
 /datum/roundend_report/ui_interact(mob/user, datum/tgui/ui)
@@ -122,7 +127,8 @@
 			"name" = first_death["name"],
 			"role" = first_death["role"],
 			"area" = first_death["area"],
-			"damage" = first_death["damage"],
+			// В blackbox это HTML вида <font color='...'>10</font>/..., а в tgui поле текстовое.
+			"damage" = strip_html_tags("[first_death["damage"]]"),
 			"last_words" = first_death["last_words"] ? "[first_death["last_words"]]" : "отсутствовали",
 		)
 	else

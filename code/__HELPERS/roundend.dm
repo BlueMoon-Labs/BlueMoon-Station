@@ -486,9 +486,19 @@
 		data = load_roundend_tgui_data(C.roundend_report_tgui_file())
 	else if(report_type == SERVER_LAST_ROUND) //Look at the last round that this server has seen
 		data = load_roundend_tgui_data(server_roundend_tgui_file())
-	else //report_type is null, so make a new report based on the current round and show that to the player
-		data = build_roundend_tgui_data(C, GLOB.roundend_popcount)
-		save_roundend_tgui_data(C.roundend_report_tgui_file(), data)
+	else //report_type is null, so show the snapshot captured at the end of the current round
+		// Не пересобираем отчёт при повторном открытии: длительность считается от
+		// world.time, а статус выживания — от текущего состояния моба, поэтому
+		// свежая сборка покажет уже другие данные.
+		data = C.roundend_report_ui?.current_round_data
+		if(!data)
+			data = load_roundend_tgui_data(C.roundend_report_tgui_file())
+		// Файл мог остаться от прошлого раунда — тогда собираем новый снимок.
+		if(data && (!islist(data) || !islist(data["round_info"]) || "[data["round_info"]["id"]]" != "[GLOB.round_id]"))
+			data = null
+		if(!data)
+			data = build_roundend_tgui_data(C, GLOB.roundend_popcount)
+			save_roundend_tgui_data(C.roundend_report_tgui_file(), data)
 		remove_verb(C, /client/proc/show_previous_roundend_report)
 
 	if(!data)
@@ -499,6 +509,8 @@
 	if(!istype(C.roundend_report_ui))
 		C.roundend_report_ui = new(C)
 	C.roundend_report_ui.report_data = data
+	if(isnull(report_type))
+		C.roundend_report_ui.current_round_data = data
 	C.roundend_report_ui.ui_interact(C.mob)
 
 /// Резервный путь для отчётов, сохранённых в HTML до появления tgui-версии.
@@ -563,6 +575,13 @@
 	log_roundend_report()
 	save_roundend_tgui_data(server_roundend_tgui_file(), build_roundend_tgui_data(null, popcount))
 	for(var/client/C in GLOB.clients)
+		// Фиксируем снимок один раз в момент завершения раунда.
+		if(!istype(C.roundend_report_ui))
+			C.roundend_report_ui = new(C)
+		var/list/data = build_roundend_tgui_data(C, popcount)
+		C.roundend_report_ui.report_data = data
+		C.roundend_report_ui.current_round_data = data
+		save_roundend_tgui_data(C.roundend_report_tgui_file(), data)
 		show_roundend_report(C)
 		give_show_report_button(C)
 		CHECK_TICK
