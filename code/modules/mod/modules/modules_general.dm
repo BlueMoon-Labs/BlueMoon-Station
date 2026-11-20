@@ -73,16 +73,20 @@
 	name = "MOD Blood-red storage module"
 	desc = "Набор встроенных отделений для хранения и специализированных карманов, установленных по всей \
 		поверхности костюма, полезных для хранения различных мелочей и штучек. Имеет модный кроваво-красный окрас."
-	icon_state = "storage_syndi"
-	complexity = 3
+	icon_state = "storage_case"
 	silent = TRUE
 
 /obj/item/mod/module/storage/extended/syndicate
 	name = "MOD Blood-red Extended storage module"
 	desc = "Компактный расширенный модуль хранилища с лого Синдиката и модной кроваво-красной расцвекой."
-	icon_state = "storage_case"
-	complexity = 3
+	icon_state = "storage_syndi"
 	silent = TRUE
+
+/obj/item/mod/module/storage/extended/syndicate/super
+	name = "MOD Blood-red Super Extended storage module"
+	desc = "Большой модуль хранилища с лого Синдиката и модной кроваво-красной расцвекой."
+	icon_state = "storage_syndi_super"
+	max_volume = STORAGE_VOLUME_DUFFLEBAG
 
 /obj/item/mod/module/storage/extended/syndicate/infiltrator
 	complexity = 0

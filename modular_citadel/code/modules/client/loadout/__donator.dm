@@ -37,6 +37,12 @@
 	path = /obj/item/storage/backpack/duffelbag/syndie
 	cost = 6
 
+/datum/gear/donator/t2/mod_duffel_storage
+	name = "MOD Blood-red Super Extended storage module"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/mod/module/storage/extended/syndicate/super
+	cost = 6
+
 /datum/gear/donator/t2/foam_lmg
 	name = "Foam LMG"
 	slot = ITEM_SLOT_BACKPACK
