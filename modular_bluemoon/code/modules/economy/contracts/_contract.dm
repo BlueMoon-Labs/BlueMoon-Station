@@ -266,7 +266,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	var/to_people = pay_reward(total, performer)
 	taker?.contract_done(rep_value())
 	note_repeats()
-	log_econ("Контракт #[uid] \"[title]\" отдела [department_id] выполнен[performer ? " ([key_name(performer)])" : ""]: [total] кр., исполнителю [to_people][people_only ? ", бюджету ничего: работа уже оплачена" : ""]")
+	log_econ("Контракт #[uid] \"[title]\" отдела [department_id] выполнен[performer ? " ([key_name(performer)])" : ""]: [total] кр., [taker ? "исполнителю" : "людям"] [to_people][people_only ? ", бюджету ничего: работа уже оплачена" : ""]")
 	relay?.stage_done(src, total)
 	qdel(src)
 

@@ -20,6 +20,8 @@
 	var/stock_order_serial = 0
 	/// Первая зарплата смены уже подсказала, где выключаются сообщения о доходах
 	var/income_toggle_hinted = FALSE
+	/// Вторая зарплата смены уже подсказала, на что тратить деньги
+	var/spending_hinted = FALSE
 	/// Долг NT (квирк «В долгах»): гасится долей каждой зарплаты на руки
 	var/nt_debt = 0
 	/// Общий служебный счёт команды (инспекция Sol): скиммер его не копирует, кража с него не засчитывается
@@ -102,6 +104,9 @@
 	if(!income_toggle_hinted)
 		income_toggle_hinted = TRUE
 		hint = " Выключить сообщения о доходах: настройки чата, «Уведомления о доходах»."
+	else if(!spending_hinted)
+		spending_hinted = TRUE
+		hint = " Потратить: Кошелёк на КПК - магазин, оплата и запрос оплаты у человека рядом; в номере отеля Гильберта - еда с кухни и бара."
 	bank_card_talk("Зарплата: [max(paid, floor)] кр.[tax > 0 ? ", налог [tax] кр. в казну станции и NT" : ""], на руки [net - debt_paid] кр.[debt_paid ? " В счёт долга NT [debt_paid] кр., осталось [nt_debt] кр." : ""][owed_wages ? " Отдел должен вам [owed_wages] кр." : ""][hint]", quiet = TRUE)
 	return max(paid, floor)
 

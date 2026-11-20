@@ -435,3 +435,26 @@
 	var/mob/living/carbon/human/second = allocate(/mob/living/carbon/human)
 	owner_mind.transfer_to(second)
 	TEST_ASSERT_EQUAL(account.owner_body(), second, "Тело владельца не нашлось по разуму после переселения")
+
+/// Первая зарплата смены подсказывает, где выключить сообщения о доходах, вторая - на что тратить деньги, дальше без подсказок.
+/datum/unit_test/economy_payday_hints/Run()
+	var/saved_tax_rate = SSeconomy.tax_rate
+	SSeconomy.tax_rate = 0
+	var/mob/living/carbon/human/worker = allocate(/mob/living/carbon/human)
+	var/datum/bank_account/econ_test_ear/account = new("econ_test_payday_hints")
+	allocated += account
+	account.department_id = ACCOUNT_SRV
+	account.pay_grade = PAY_GRADE_EASY
+	account.bind_owner(worker)
+	worker.account_id = account.account_id
+	var/datum/economy_department/service = SSeconomy.get_department(ACCOUNT_SRV)
+	var/saved_service = service.account.account_balance
+	econ_test_set_balance(service.account, 100000)
+	for(var/i in 1 to 3)
+		account.payday()
+	econ_test_set_balance(service.account, saved_service)
+	SSeconomy.tax_rate = saved_tax_rate
+	TEST_ASSERT_EQUAL(length(account.heard), 3, "Три зарплаты - три сообщения: [jointext(account.heard, "; ")]")
+	TEST_ASSERT(findtext(account.heard[1], "Уведомления о доходах"), "Первая зарплата не подсказала про сообщения о доходах: [account.heard[1]]")
+	TEST_ASSERT(findtext(account.heard[2], "Кошелёк на КПК"), "Вторая зарплата не подсказала, на что тратить: [account.heard[2]]")
+	TEST_ASSERT(!findtext(account.heard[3], "Кошелёк на КПК") && !findtext(account.heard[3], "Уведомления о доходах"), "Подсказки повторяются: [account.heard[3]]")
