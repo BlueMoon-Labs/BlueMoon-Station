@@ -358,7 +358,8 @@
 	minimum_distance = 1
 	retreat_distance = 1
 	ranged = FALSE
-	loot = list(/obj/effect/mob_spawn/alien/corpse/humanoid/queen/king)
+	//WHITE-STEEL: гиб вместо трупа.
+	loot = list(/obj/effect/gibspawner/xeno)
 
 /mob/living/simple_animal/hostile/alien/queen/king/SpreadPlants()
 	return FALSE //Кинг не королева, чтобы создавать яйца

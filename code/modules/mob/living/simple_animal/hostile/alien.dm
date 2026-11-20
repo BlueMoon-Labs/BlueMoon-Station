@@ -78,7 +78,8 @@
 	melee_damage_lower = 20
 	melee_damage_upper = 20
 	del_on_death = TRUE
-	loot = list(/obj/effect/mob_spawn/alien/corpse/humanoid/sentinel)
+	//WHITE-STEEL: гиб вместо трупа.
+	loot = list(/obj/effect/gibspawner/xeno)
 
 /mob/living/simple_animal/hostile/alien/queen
 	name = "alien queen"

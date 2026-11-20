@@ -416,6 +416,11 @@
 	if(check_banned_contents())
 		say("ВНИМАНИЕ! На борту обнаружен ксенопаразит! Активирован протокол сдерживания! В случае заражения экипажа вколите пострадавшему антипаразитный препарат из чрезвычайного хранилища!")
 		return
+	//WHITE-STEEL FIX: заражённого яйцами пауков ужаса авангардца не везём на станцию,
+	//даже если он ещё на руине, а не на борту.
+	if(shuttleId == "exploration" && SSorbits.current_objective && SSorbits.current_objective.expedition_has_terror_eggs())
+		say("Запуск запрещён: в экспедиции обнаружены яйца пауков ужаса. Сначала вылечите заражённых.")
+		return
 	if(SSorbits.interdicted_shuttles.Find(shuttleId))
 		if(world.time < SSorbits.interdicted_shuttles[shuttleId])
 			var/time_left = (SSorbits.interdicted_shuttles[shuttleId] - world.time) * 0.1

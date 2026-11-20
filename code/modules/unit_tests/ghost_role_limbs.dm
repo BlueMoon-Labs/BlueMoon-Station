@@ -244,6 +244,25 @@
 
 	qdel(P)
 
+/// Когти из редактора персонажа: два одноруких импланта, по одному на каждую руку.
+/datum/unit_test/claws_pref_implants_both_arms
+
+/datum/unit_test/claws_pref_implants_both_arms/Run()
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/human
+	P.implant_mods = list("razor_claws" = TRUE)
+
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	P.apply_prefs_body_mods(H)
+
+	var/obj/item/organ/cyberimp/arm/razor_claws/right_implant = H.getorganslot(ORGAN_SLOT_RIGHT_ARM_AUG)
+	var/obj/item/organ/cyberimp/arm/razor_claws/left_implant = H.getorganslot(ORGAN_SLOT_LEFT_ARM_AUG)
+	TEST_ASSERT(istype(right_implant), "Right arm should receive the claws implant")
+	TEST_ASSERT(istype(left_implant, /obj/item/organ/cyberimp/arm/razor_claws/left), "Left arm should receive the matching claws implant")
+	TEST_ASSERT(!right_implant?.is_dual_arm_implant(), "Claws implant must not force both arm slots by itself")
+
+	qdel(P)
+
 /datum/unit_test/body_mod_implant_costs
 
 /datum/unit_test/body_mod_implant_costs/Run()
