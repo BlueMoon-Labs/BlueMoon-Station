@@ -1698,9 +1698,6 @@
 	spread = no_bipod_spread
 	START_PROCESSING(SSobj, src)
 
-/// Моб, на котором сейчас висят сигнал-подписки сошек. Нужен, чтобы снять
-/// их в Destroy/dropped: без этого удаление ствола в руках или смерть
-/// носителя оставляли мёртвые PROC_REF'ы в comp_lookup моба.
 var/mob/living/bipod_signal_user
 
 /obj/item/gun/ballistic/automatic/m249/Destroy()
@@ -1734,9 +1731,6 @@ var/mob/living/bipod_signal_user
 
 /obj/item/gun/ballistic/automatic/m249/proc/on_signal_user_qdel(datum/source, forced)
 	SIGNAL_HANDLER
-	// Носитель умирает: comp_lookup умрёт вместе с ним, но записи в
-	// signal_procs самого ствола надо снять, иначе ключ на мёртвый моб
-	// останется в списке до уничтожения оружия.
 	if(istype(source, /mob/living))
 		UnregisterSignal(source, COMSIG_MOVABLE_MOVED)
 		UnregisterSignal(source, COMSIG_LIVING_RESTING)

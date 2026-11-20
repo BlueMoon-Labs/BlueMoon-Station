@@ -406,9 +406,6 @@
 /obj/effect/portal/mesa_rift/nihilanth_rift
 	name = "nihilanth rift"
 	desc = "Разлом, разорванный силой Нихиланта."
-	// Канал червоточины: НЕ подхватывает GLOB.bluespace_teleport_noise -
-	// блюспейс-шторм не разбрасывает прибытие по соседним тайлам, игроки
-	// гарантированно встают ровно на тайл лендмарка испытания.
 	teleport_channel = TELEPORT_CHANNEL_WORMHOLE
 
 // Сам босс не должен проваливаться в собственный разлом испытания: портал
@@ -428,9 +425,6 @@
 // не нужен проход по world (сотни тысяч атомов) ради горстки пилонов.
 GLOBAL_VAR_INIT(nihilanth_pylons, list())
 GLOBAL_VAR_INIT(nihilanth_sites, list())
-/// Ассоциативные реестры лендмарков испытаний: site_id по инстансу и
-/// список пройденных (site_used) - читаются из nihilanth.dm без
-/// типизированной ссылки на подтип лендмарка.
 GLOBAL_VAR_INIT(nihilanth_site_ids, list())
 GLOBAL_VAR_INIT(nihilanth_site_used, list())
 
@@ -452,7 +446,7 @@ GLOBAL_VAR_INIT(nihilanth_site_used, list())
 	/// Триальный разлом босса: копия ссылки на случай, если босс будет
 	/// удалён без death() - end_trial() тогда не вызовется, а портал
 	/// обязан быть снят, иначе он продолжит телепортировать на старую точку.
-	var/obj/effect/portal/mesa_rift/nihilanth_rift/trial_portal
+	var/obj/effect/portal/trial_portal
 	/// Каденс повторного скана радиуса для aegis-щита (см. parent process).
 	var/next_aegis_scan = 0
 	/// Пилон уже отработал в испытании - повторно не выбирается.
@@ -464,8 +458,6 @@ GLOBAL_VAR_INIT(nihilanth_site_used, list())
 	/// при уничтожении пилона он деактивируется (site_used = TRUE).
 	var/obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site/linked_site
 
-// Прокси-установка привязки: в nihilanth.dm тип лендмарка не резолвится,
-// поэтому сюда приходит anybody-ссылка, а типизация проверяется здесь.
 /obj/structure/xen_pylon/nihilanth/proc/set_linked_site(site)
 	linked_site = istype(site, /obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site) ? site : null
 
@@ -573,8 +565,6 @@ GLOBAL_VAR_INIT(nihilanth_site_used, list())
 	trial_home = null
 	// Пилон уничтожен - связанный лендмарк деактивируется: точка прибытия
 	// больше не выбирается, следующий разлом ведёт к другим сайтам.
-	// nihilanth.dm читает site_used из GLOB.nihilanth_site_used - тип
-	// лендмарка там как переменная не резолвится.
 	if(istype(site) && !QDELETED(site))
 		site.site_used = TRUE
 		GLOB.nihilanth_site_used[site] = TRUE
@@ -585,7 +575,7 @@ GLOBAL_VAR_INIT(nihilanth_site_used, list())
 		else if(istype(self_turf) && isopenturf(self_turf) && istype(home_turf))
 			// Босс уже удалён - end_trial() не вызвать, но игроки всё равно
 			// должны получить обратный разлом, иначе застрянут на точке испытания.
-			var/obj/effect/portal/mesa_rift/nihilanth_rift/R = new(self_turf)
+			var/obj/effect/portal/R = new /obj/effect/portal/mesa_rift/nihilanth_rift(self_turf)
 			if(istype(R))
 				R.hard_target = home_turf
 				R.hardlinked = FALSE

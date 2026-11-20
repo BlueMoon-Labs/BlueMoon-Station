@@ -66,7 +66,7 @@
 	/// Активный триальный разлом у босса. Портал permanent и без явного
 	/// удаления наслаивался: обратный разлом вёл на турф, где всё ещё стоял
 	/// старый, и игрока перекидывало по цепочке чужих hard_target'ов.
-	var/obj/effect/portal/mesa_rift/nihilanth_rift/trial_portal
+	var/obj/effect/portal/trial_portal
 	var/list/trial_thresholds = list(0.75, 0.50, 0.30)
 	var/list/trial_done = list(FALSE, FALSE, FALSE)
 
@@ -153,21 +153,19 @@
 		return FALSE
 	// Сначала ищем площадку - без неё испытание не начинаем,
 	// иначе босс застрял бы в неуязвимости навсегда.
-	var/site_and_pylon = pick_trial_site()
+	var/list/site_and_pylon = pick_trial_site()
 	if(!islist(site_and_pylon) || length(site_and_pylon) < 2)
 		visible_message("<span class='warning'>Пространство вокруг [src] искажается, но разлом не стабилизируется...</span>")
 		return FALSE
-	var/site_raw = site_and_pylon[1]
-	var/pylon_raw = site_and_pylon[2]
-	var/site_landmark_raw = length(site_and_pylon) >= 3 ? site_and_pylon[3] : null
-	if(!istype(site_raw, /turf) || !istype(pylon_raw, /obj/structure/xen_pylon/nihilanth))
+	if(!istype(site_and_pylon[1], /turf) || !istype(site_and_pylon[2], /obj/structure/xen_pylon/nihilanth))
 		visible_message("<span class='warning'>Пространство вокруг [src] искажается, но разлом не стабилизируется...</span>")
 		return FALSE
-	var/turf/site = site_raw
-	var/obj/structure/xen_pylon/nihilanth/pylon = pylon_raw
+	var/site_landmark_raw = length(site_and_pylon) >= 3 ? site_and_pylon[3] : null
+	var/turf/site = site_and_pylon[1]
+	var/obj/structure/xen_pylon/nihilanth/pylon = site_and_pylon[2]
 	// Портал ставим ДО включения неуязвимости: если он не встанет, босс
 	// остался бы в trial_active без единого пути к пилону - softlock.
-	var/obj/effect/portal/mesa_rift/nihilanth_rift/P = new(home)
+	var/obj/effect/portal/P = new /obj/effect/portal/mesa_rift/nihilanth_rift(home)
 	if(!istype(P))
 		visible_message("<span class='warning'>Пространство вокруг [src] искажается, но разлом не стабилизируется...</span>")
 		return FALSE
@@ -183,9 +181,6 @@
 	trial_pylon.trial_active = TRUE
 	trial_pylon.nihilanth_boss = src
 	trial_pylon.trial_home = home
-	// Привязка лендмарка к пилону: при уничтожении пилона лендмарк
-	// деактивируется (site_used) и больше не выбирается как точка прибытия.
-	// Тип лендмарка здесь не резолвится - проверка внутри set_linked_site.
 	trial_pylon.set_linked_site(site_landmark_raw)
 
 	trial_active = TRUE
@@ -214,8 +209,6 @@
 		if(P && !QDELETED(P) && !P.used)
 			free_pylons += P
 	// Активные лендмарки: не деактивированные и стоящие на валидном турфе.
-	// Подтип nihilanth_pylon_site не резолвится как тип переменной в этом
-	// файле - site_used/site_id читаются из глобальных реестров.
 	var/list/site_landmarks = list()
 	for(var/obj/effect/landmark/awaymission/blackmesa/L in GLOB.nihilanth_sites)
 		if(GLOB.nihilanth_site_used[L] || !get_turf(L))
@@ -266,8 +259,10 @@
 		log_world("NIHILANTH: pick_trial_site: NO options. pylons=[length(GLOB.nihilanth_pylons)] free=[free_pylons.len] sites=[site_landmarks.len] landmarks_total=[length(GLOB.landmarks_list)]")
 		return null
 	var/list/picked = pick(options)
-	var/turf/s = islist(picked) && picked.len >= 1 ? picked[1] : null
-	var/atom/pylon_t = islist(picked) && picked.len >= 2 ? picked[2] : null
+	var/raw_s = picked[1]
+	var/raw_p = picked[2]
+	var/turf/s = istype(raw_s, /turf) ? raw_s : null
+	var/atom/pylon_t = istype(raw_p, /atom) ? raw_p : null
 	var/turf/pt = istype(pylon_t) ? get_turf(pylon_t) : null
 	var/site_str = s ? "([s.x],[s.y],[s.z])" : "null"
 	var/pylon_str = pt ? "([pt.x],[pt.y],[pt.z])" : "null"
@@ -328,7 +323,7 @@
 	if(!istype(home) || !isopenturf(home))
 		home = free_turf_near(home, 4)
 	if(istype(return_turf) && isopenturf(return_turf) && istype(home) && isopenturf(home))
-		var/obj/effect/portal/mesa_rift/nihilanth_rift/R = new(return_turf)
+		var/obj/effect/portal/R = new /obj/effect/portal/mesa_rift/nihilanth_rift(return_turf)
 		if(istype(R))
 			R.hard_target = home
 			R.hardlinked = FALSE
@@ -463,7 +458,7 @@
 		if(istype(hm) && !isopenturf(hm))
 			hm = free_turf_near(hm, 4)
 		if(istype(rt) && isopenturf(rt) && istype(hm) && isopenturf(hm))
-			var/obj/effect/portal/mesa_rift/nihilanth_rift/R = new(rt)
+			var/obj/effect/portal/R = new /obj/effect/portal/mesa_rift/nihilanth_rift(rt)
 			if(istype(R))
 				R.hard_target = hm
 				R.hardlinked = FALSE
@@ -519,7 +514,7 @@
 		log_world("[src] spawn_death_portal: no free turf near [near_turf] for [landmark_type]")
 		return
 	used_turfs += T
-	var/obj/effect/portal/mesa_rift/nihilanth_rift/P = new(T)
+	var/obj/effect/portal/P = new /obj/effect/portal/mesa_rift/nihilanth_rift(T)
 	if(!istype(P))
 		log_world("[src] spawn_death_portal: portal to [landmark_type] failed to place on [T]")
 		return

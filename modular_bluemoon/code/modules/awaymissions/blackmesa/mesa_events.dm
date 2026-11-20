@@ -3,6 +3,8 @@
 // =============================================================================
 /datum/ai_director/zombie_mission
 
+/obj/effect/landmark/awaymission
+
 /obj/effect/landmark/awaymission/blackmesa
 	name = "Black Mesa Landmark"
 	icon = 'icons/effects/landmarks_static.dmi'
@@ -53,9 +55,8 @@
 	name = "HECU leader spawn landmark"
 	spawner_type = /obj/effect/mob_spawn/human/black_mesa/hecu/leader
 
-// Лендмарки для карты: место особого пилона (испытание Нихиланта), выход из
-// комплекса и точка в другой части комплекса - оба односторонние, без пути
-// обратно. Объявлены здесь, вместе с остальными blackmesa-лендмарками.
+// Лендмарки для карты: место особого пилона (испытание), выход из комплекса
+// и точка в другой части комплекса - оба односторонние, без пути обратно.
 /obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site
 	name = "Nihilanth Pylon Site Landmark"
 	invisibility = INVISIBILITY_ABSTRACT
