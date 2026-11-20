@@ -407,6 +407,14 @@
 	////////////////
 
 	//The next part of the code assumes there's ALWAYS an /area AND a /turf on a given tile
+	//find first /turf object in members; a tile without one is skipped whole -
+	// otherwise the /area below would be instanced onto a turf that never gets built
+	var/first_turf_index = 1
+	while(first_turf_index <= members.len && !ispath(members[first_turf_index], /turf))
+		first_turf_index++
+	if(first_turf_index > members.len)
+		return
+
 	//first instance the /area and remove it from the members list
 	index = members.len
 	if(annihilate_tiles && crds)
@@ -427,12 +435,6 @@
 			world.preloader_load(instance)
 
 	//then instance the /turf and, if multiple tiles are presents, simulates the DMM underlays piling effect
-
-	var/first_turf_index = 1
-	while(first_turf_index <= members.len && !ispath(members[first_turf_index], /turf)) //find first /turf object in members
-		first_turf_index++
-	if(first_turf_index > members.len)
-		return
 
 	//turn off base new Initialization until the whole thing is loaded
 	SSatoms.map_loader_begin()
