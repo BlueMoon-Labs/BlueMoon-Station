@@ -1,0 +1,4 @@
+author: FelixRuin
+delete-after: true
+changes:
+  - bugfix: фикс от тошноты от spin и flip не при самоличном их использовании
