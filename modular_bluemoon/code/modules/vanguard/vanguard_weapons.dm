@@ -120,7 +120,7 @@
 	throwforce = 5
 	throw_speed = 1
 	throw_range = 1
-	block_chance = 30
+	block_chance = 20
 	w_class = WEIGHT_CLASS_BULKY
 	attack_verb_continuous = list("shoves", "bashes")
 	attack_verb_simple = list("shove", "bash")
