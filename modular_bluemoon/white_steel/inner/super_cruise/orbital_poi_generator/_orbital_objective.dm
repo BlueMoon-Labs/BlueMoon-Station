@@ -23,6 +23,9 @@
 	//WHITE-STEEL PORT: ckey'и авангардцев, зафиксированные на борту шаттла в момент старта миссии.
 	//null - снимок не сделан (ограничение по очкам не применяется), list() - на шаттле никого не было.
 	var/list/expedition_crew_ckeys
+	//WHITE-STEEL FIX: ДНК авангардцев на старте миссии. По нему узнаём тела без mind и ckey
+	//(после ghost'а) - тот же ключ, что использует find_brainless_body() при фултоне останков.
+	var/list/expedition_crew_enzymes
 	//WHITE-STEEL FIX: чтобы не спамить лог, пока заражение блокирует авто-возврат.
 	var/mission_shuttle_infection_blocked = FALSE
 
@@ -171,9 +174,9 @@
 		var/on_shuttle = exploration && (get_area(C) in exploration.shuttle_areas)
 		if(!on_ruin && !on_shuttle)
 			continue
-		//После ghost'а у трупа может не быть mind - страхуемся снимком ckey на старте миссии.
-		var/is_crew = is_expedition_crew(C) || (expedition_crew_ckeys && C.ckey && (C.ckey in expedition_crew_ckeys))
-		if(on_ruin && !is_crew && !on_shuttle)
+		//После ghost'а у трупа может не быть ни mind, ни ckey - страхуемся снимком ckey
+		//и ДНК на старте миссии (ДНК - тот же ключ, что в find_brainless_body()).
+		if(on_ruin && !is_expedition_body(C) && !on_shuttle)
 			continue
 		if(C.getorgan(/obj/item/organ/body_egg/terror_eggs))
 			return TRUE
@@ -296,6 +299,15 @@
 		return FALSE
 	return istype(SSjob.GetJob(L.mind.assigned_role), /datum/job/expeditor)
 
+//WHITE-STEEL FIX: труп авангардца, у которого после ghost'а нет ни mind, ни ckey.
+//Сначала старая проверка (профессия / ckey из снимка), затем ДНК из снимка - тем же
+//unique_enzymes, по которому find_brainless_body() находит безмозглое тело для фултона.
+/datum/orbital_objective/proc/is_expedition_body(mob/living/carbon/C)
+	if(is_expedition_crew(C) || (expedition_crew_ckeys && C.ckey && (C.ckey in expedition_crew_ckeys)))
+		return TRUE
+	var/enzymes = C.dna?.unique_enzymes
+	return !isnull(enzymes) && expedition_crew_enzymes && (enzymes in expedition_crew_enzymes)
+
 //WHITE-STEEL PORT: приёмный маяк для тел экспедиции. Приоритет у маяков на станции (их ставит
 //игрок на карте сам), если таких нет - берём любой маяк. null - маяков на карте нет вообще.
 //Цель миссии (npc_target) сюда не попадает: её труп разбирает сам тип задания.
@@ -400,8 +412,10 @@
 	var/obj/docking_port/mobile/exploration = SSshuttle.getShuttle("exploration")
 	if(!exploration)
 		expedition_crew_ckeys = list()
+		expedition_crew_enzymes = list()
 		return
 	expedition_crew_ckeys = list()
+	expedition_crew_enzymes = list()
 	for(var/mob/living/carbon/human/H as() in GLOB.human_list)
 		if(QDELETED(H) || H.stat == DEAD || !H.mind || !H.ckey)
 			continue
@@ -409,6 +423,8 @@
 		if(!A || !(A in exploration.shuttle_areas))
 			continue
 		expedition_crew_ckeys += H.ckey
+		if(H.dna?.unique_enzymes)
+			expedition_crew_enzymes += H.dna.unique_enzymes
 
 /datum/orbital_objective/proc/complete_objective()
 	if(completed)

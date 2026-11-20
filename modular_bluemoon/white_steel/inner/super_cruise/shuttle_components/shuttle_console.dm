@@ -417,8 +417,12 @@
 		say("ВНИМАНИЕ! На борту обнаружен ксенопаразит! Активирован протокол сдерживания! В случае заражения экипажа вколите пострадавшему антипаразитный препарат из чрезвычайного хранилища!")
 		return
 	//WHITE-STEEL FIX: заражённого яйцами пауков ужаса авангардца не везём на станцию,
-	//даже если он ещё на руине, а не на борту.
-	if(shuttleId == "exploration" && SSorbits.current_objective && SSorbits.current_objective.expedition_has_terror_eggs())
+	//даже если он ещё на руине, а не на борту. Проверка руины нужна только когда шаттл
+	//СТОИТ на ней (вылет = возврат на базу): у базы чистый шаттл должен улететь на спасение.
+	//Заражение на борту ловит check_banned_contents() выше - banned_types включает
+	///obj/item/organ/body_egg, в том числе яйца пауков ужаса.
+	var/obj/docking_port/mobile/exploration_port = SSshuttle.getShuttle("exploration")
+	if(shuttleId == "exploration" && exploration_port && SSorbits.current_objective && exploration_port.z == SSorbits.current_objective.objective_z_level && SSorbits.current_objective.expedition_has_terror_eggs())
 		say("Запуск запрещён: в экспедиции обнаружены яйца пауков ужаса. Сначала вылечите заражённых.")
 		return
 	if(SSorbits.interdicted_shuttles.Find(shuttleId))
