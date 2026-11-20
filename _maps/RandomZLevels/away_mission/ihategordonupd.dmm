@@ -39719,6 +39719,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
 "mfk" = (
+/turf/open/floor/fakespace/lit,
 /area/awaymission/ihategordon/rocks)
 "mfo" = (
 /obj/structure/flora/biolumi/flower,

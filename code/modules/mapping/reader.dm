@@ -429,8 +429,10 @@
 	//then instance the /turf and, if multiple tiles are presents, simulates the DMM underlays piling effect
 
 	var/first_turf_index = 1
-	while(!ispath(members[first_turf_index], /turf)) //find first /turf object in members
+	while(first_turf_index <= members.len && !ispath(members[first_turf_index], /turf)) //find first /turf object in members
 		first_turf_index++
+	if(first_turf_index > members.len)
+		return
 
 	//turn off base new Initialization until the whole thing is loaded
 	SSatoms.map_loader_begin()
