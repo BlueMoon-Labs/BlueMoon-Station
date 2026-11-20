@@ -170,7 +170,7 @@
 	var/anonymous = FALSE
 	if(ishuman(src))
 		var/mob/living/carbon/human/human = src
-		anonymous = human.examine_shown_name(user) == "Неизвестный" || human.is_gender_obscured()
+		anonymous = human.is_gender_obscured(user)
 	var/list/visible_scars
 	for(var/i in all_scars)
 		var/datum/scar/S = i
