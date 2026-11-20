@@ -8,6 +8,7 @@
 
 	var/obj/item/organ/container
 	var/mob/living/carrier
+	var/datum/pregnancy_coordinator/coordinator
 
 	var/datum/dna/father_dna
 	var/datum/dna/mother_dna
@@ -23,6 +24,8 @@
 	var/max_stage = PREGNANCY_STAGES
 	COOLDOWN_DECLARE(stage_time)
 	COOLDOWN_DECLARE(hatch_request_cooldown)
+	/// Prevent multiple hatch() calls during the ghost poll/name dialog.
+	var/hatch_in_progress = FALSE
 
 	var/added_size = 0
 	/// this boolean is for identifying whether this preg is in the egg state or not
@@ -90,9 +93,6 @@
 
 	pregnancy_breast_growth = carrier?.client?.prefs?.pregnancy_breast_growth
 
-	if(carrier)
-		generic_pragency_start()
-		ADD_TRAIT(carrier, TRAIT_PREGNANT, PREGNANCY_TRAIT)
 
 /datum/component/pregnancy/RegisterWithParent()
 	if(carrier)
@@ -113,23 +113,23 @@
 	UnregisterSignal(parent, COMSIG_PARENT_EXAMINE)
 
 /datum/component/pregnancy/proc/register_carrier()
-	RegisterSignal(carrier, COMSIG_MOB_DEATH, PROC_REF(fetus_mortus))
-	RegisterSignal(carrier, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(handle_life))
-	RegisterSignal(carrier, COMSIG_HEALTH_SCAN, PROC_REF(on_scan))
-	RegisterSignal(carrier, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(handle_damage))
-	if(oviposition)
-		RegisterSignal(carrier, COMSIG_MOB_CLIMAX, PROC_REF(on_climax))
+	if(!carrier || QDELETED(carrier))
+		return
+	if(coordinator && coordinator.carrier == carrier)
+		return
+	var/datum/pregnancy_coordinator/M = carrier.pregnancy_coordinator
+	if(!M || QDELETED(M))
+		M = new(carrier)
+	coordinator = M
+	M.add_pregnancy(src)
 
 /datum/component/pregnancy/proc/unregister_carrier()
-	UnregisterSignal(carrier, COMSIG_MOB_DEATH)
-	UnregisterSignal(carrier, COMSIG_LIVING_BIOLOGICAL_LIFE)
-	UnregisterSignal(carrier, COMSIG_HEALTH_SCAN)
-	UnregisterSignal(carrier, COMSIG_MOB_APPLY_DAMAGE)
-	UnregisterSignal(carrier, COMSIG_MOB_CLIMAX)
+	if(coordinator && !QDELETED(coordinator))
+		coordinator.remove_pregnancy(src)
+	coordinator = null
 
 /datum/component/pregnancy/Destroy()
-	if(carrier)
-		generic_pragency_end()
+	unregister_carrier()
 	return ..()
 
 /datum/component/pregnancy/proc/name_egg(datum/source, name)
@@ -165,17 +165,20 @@
 
 	if(istype(destination, /obj/item/organ))
 		var/obj/item/organ/preg_container = destination
-		//severed wombs don't count, boyos
 		if(!preg_container.owner)
+			if(carrier)
+				unregister_carrier()
+			carrier = null
+			container = null
 			return
+		if(carrier != preg_container.owner)
+			unregister_carrier()
 		carrier = preg_container.owner
 		container = preg_container
 		pregnancy_inflation = carrier.client?.prefs?.pregnancy_inflation
 		pregnancy_breast_growth = carrier.client?.prefs?.pregnancy_breast_growth
 		register_carrier()
-		generic_pragency_start()
 	else if(carrier)
-		generic_pragency_end()
 		unregister_carrier()
 		carrier = null
 		container = null
@@ -195,12 +198,8 @@
 
 	if((stage >= 2) && !revealed)
 		revealed = TRUE
-		active_carrier.apply_status_effect(/datum/status_effect/pregnancy)
-		active_carrier.apply_status_effect(/datum/status_effect/lactation)
+		// Shared statuses are applied once by pregnancy_coordinator.
 
-	if(!HAS_TRAIT(active_carrier, TRAIT_COMMON_PREGNANCY)) //For normal pregnancy - Gardelin0
-		if(stage > 3 && ishuman(active_carrier) && oviposition)
-			SEND_SIGNAL(active_carrier, COMSIG_ADD_MOOD_EVENT, "pregnancy", /datum/mood_event/pregnant_negative)
 
 	if(COOLDOWN_FINISHED(src, stage_time))
 		stage += 1
@@ -211,8 +210,6 @@
 
 /datum/component/pregnancy/proc/inflate_organs(mob/living/carbon/human/gregnant)
 	//var/obj/item/organ/genital/belly/belly = gregnant.getorganslot(ORGAN_SLOT_BELLY)
-	var/obj/item/organ/genital/breasts/boob = gregnant.getorganslot(ORGAN_SLOT_BREASTS)
-
 	if(added_size < 4)
 		added_size += 1
 	else
@@ -220,8 +217,7 @@
 	parent.AddComponent(/datum/component/organ_inflation, 1)
 	//if(pregnancy_inflation)
 	//	belly?.modify_size(1)
-	if(pregnancy_breast_growth)
-		boob?.modify_size(1)
+	// Shared breast growth is applied by coordinator using the MAX egg stage.
 
 /datum/component/pregnancy/proc/handle_incubation()
 	if(carrier && (stage < max_stage) && prob(2))
@@ -240,15 +236,18 @@
 	INVOKE_ASYNC(src, PROC_REF(hatch), source, I, user, params)
 
 /datum/component/pregnancy/proc/hatch(datum/source, obj/item/I, mob/user, params)
-	if(!COOLDOWN_FINISHED(src, hatch_request_cooldown))
+	if(hatch_in_progress || !COOLDOWN_FINISHED(src, hatch_request_cooldown))
 		return
-
+	hatch_in_progress = TRUE
 	COOLDOWN_START(src, hatch_request_cooldown, 30 SECONDS)
 
 	var/poll_message = "Do you want to play as [mother_name]'s offspring?[egg_name ? " Your name will be [egg_name]" : ""]"
 	var/list/mob/candidates = pollGhostCandidates(poll_message, ROLE_RESPAWN, null, FALSE, 30 SECONDS, POLL_IGNORE_EGG, priority_check = FALSE)
 
+	if(QDELETED(src) || QDELETED(parent))
+		return
 	if(!LAZYLEN(candidates))
+		hatch_in_progress = FALSE
 		to_chat(user, span_info("\The [parent] doesn't seems to hatch, try again later?"))
 		return
 

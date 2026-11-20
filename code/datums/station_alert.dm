@@ -13,7 +13,7 @@
 /datum/station_alert/ui_host(mob/user)
 	return holder
 
-/datum/station_alert/New(holder, list/alarm_types, list/listener_z_level, list/listener_areas, title = "Station Alerts", camera_view = FALSE)
+/datum/station_alert/New(holder, list/alarm_types, list/listener_z_level, list/listener_areas, title = "Тревоги станции", camera_view = FALSE)
 	src.holder = holder
 	src.alarm_types = alarm_types
 	src.title = title

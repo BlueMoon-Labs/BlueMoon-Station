@@ -123,11 +123,6 @@
 	reward = 10000
 	required_count = 5
 	wanted_types = list(/obj/item/stack/ore/bluespace_crystal/artificial)
-	exclude_types = list(
-		/obj/item/stack/ore/bluespace_crystal,
-		/obj/item/stack/sheet/bluespace_crystal,
-		/obj/item/stack/ore/bluespace_crystal/refined
-		)
 
 /datum/bounty/item/science/noneactive_reactivearmor
 	name = "Reactive Armor Shells"

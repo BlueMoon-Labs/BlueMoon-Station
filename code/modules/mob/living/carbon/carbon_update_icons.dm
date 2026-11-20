@@ -220,7 +220,7 @@
 		inv.update_icon()
 
 	if(wear_neck)
-		if(!(head && (head.flags_inv & HIDENECK)))
+		if(!(head && (head.flags_inv & HIDENECK)) || istype(wear_neck, /obj/item/clothing/head/mob_holder))
 			var/chosen_icon = dna.species.species_worn_icon(dna.species.icon_neck, wear_neck.icon_state) || wear_neck.mob_overlay_icon || 'icons/mob/clothing/neck.dmi'
 			overlays_standing[NECK_LAYER] = wear_neck.build_worn_icon(default_layer = NECK_LAYER, default_icon_file = chosen_icon, override_state = wear_neck.icon_state, use_mob_overlay_icon = FALSE)
 		update_hud_neck(wear_neck)

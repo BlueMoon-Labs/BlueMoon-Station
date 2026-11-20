@@ -22,7 +22,6 @@
 		COOLDOWN_START(src, cough_timer, 1 MINUTES)
 		to_chat(H, span_warning("Ваше дыхание на мгновение сбилось."))
 		H.emote(pick("cough", "gasp"))
-		H.Dizzy(5)
 
 /datum/quirk/masked_mook/on_spawn()
 	. = ..()

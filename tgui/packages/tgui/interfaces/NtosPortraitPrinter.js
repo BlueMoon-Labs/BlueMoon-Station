@@ -5,26 +5,43 @@ import { NtosWindow } from '../layouts';
 
 export const NtosPortraitPrinter = (props) => {
   const { act, data } = useBackend();
-  const [tabIndex, setTabIndex] = useSharedState('tabIndex', 0);
-  const [listIndex, setListIndex] = useSharedState('listIndex', 0);
-  const [query, setQuery] = useSharedState('query', '');
+  const [storedTabIndex, setTabIndex] = useSharedState(
+    'ntosPortraitPrinterTab',
+    null
+  );
+  const [listIndex, setListIndex] = useSharedState(
+    'ntosPortraitPrinterList',
+    0
+  );
+  const [query, setQuery] = useSharedState('ntosPortraitPrinterQuery', '');
   const {
-    library,
-    library_secure,
-    library_private,
-    library_large,
-    library_large_private,
-    favorite_paintings_md5 = [],
     is_admin = false,
     user_ckey = null,
   } = data;
+  const library = Array.isArray(data.library) ? data.library : [];
+  const library_secure = Array.isArray(data.library_secure)
+    ? data.library_secure
+    : [];
+  const library_private = Array.isArray(data.library_private)
+    ? data.library_private
+    : [];
+  const library_large = Array.isArray(data.library_large)
+    ? data.library_large
+    : [];
+  const library_large_private = Array.isArray(data.library_large_private)
+    ? data.library_large_private
+    : [];
+  // null из DM не подхватывается дефолтом деструктуризации - приводим явно.
+  const favorite_paintings_md5 = Array.isArray(data.favorite_paintings_md5)
+    ? data.favorite_paintings_md5
+    : [];
 
   const allPortraits = [
-    ...(library || []).map(p => ({ ...p, asset_prefix: 'library' })),
-    ...(library_secure || []).map(p => ({ ...p, asset_prefix: 'library_secure' })),
-    ...(library_private || []).map(p => ({ ...p, asset_prefix: 'library_private' })),
-    ...(library_large || []).map(p => ({ ...p, asset_prefix: 'library_large' })),
-    ...(library_large_private || []).map(p => ({ ...p, asset_prefix: 'library_large_private' })),
+    ...library.map(p => ({ ...p, asset_prefix: 'library' })),
+    ...library_secure.map(p => ({ ...p, asset_prefix: 'library_secure' })),
+    ...library_private.map(p => ({ ...p, asset_prefix: 'library_private' })),
+    ...library_large.map(p => ({ ...p, asset_prefix: 'library_large' })),
+    ...library_large_private.map(p => ({ ...p, asset_prefix: 'library_large_private' })),
   ];
 
   const favoritesList = allPortraits.filter(p => favorite_paintings_md5.includes(p.md5));
@@ -62,6 +79,21 @@ export const NtosPortraitPrinter = (props) => {
       always: true, // показывать вкладку даже если пока пусто
     },
   ];
+  const firstPopulatedTabIndex = TABS.findIndex(
+    tab => tab.list && tab.list.length > 0
+  );
+  const requestedTabIndex = Number.isInteger(storedTabIndex)
+    ? storedTabIndex
+    : -1;
+  const tabIndex =
+    requestedTabIndex >= 0 &&
+    requestedTabIndex < TABS.length &&
+    TABS[requestedTabIndex].list &&
+    TABS[requestedTabIndex].list.length > 0
+      ? requestedTabIndex
+      : firstPopulatedTabIndex >= 0
+        ? firstPopulatedTabIndex
+        : 0;
   const baseList = TABS[tabIndex].list || [];
   // Скрытые картины видны только админам (чтобы они могли восстановить)
   const displayList = is_admin ? baseList : baseList.filter(p => !p.hidden);
@@ -84,8 +116,9 @@ export const NtosPortraitPrinter = (props) => {
       });
 
   const hasPortraits = filteredList.length > 0;
+  const requestedIndex = Number.isInteger(listIndex) ? listIndex : 0;
   const safeIndex = hasPortraits
-    ? Math.min(listIndex, filteredList.length - 1)
+    ? Math.min(Math.max(0, requestedIndex), filteredList.length - 1)
     : 0;
 
   // СНАЧАЛА вычисляем currentPortrait
@@ -243,7 +276,7 @@ export const NtosPortraitPrinter = (props) => {
                       <Button
                         disabled={!hasPortraits || safeIndex === 0}
                         icon="chevron-left"
-                        onClick={() => setListIndex(listIndex - 1)}
+                        onClick={() => setListIndex(safeIndex - 1)}
                       />
                     </Stack.Item>
                     <Stack.Item grow={3}>
@@ -261,7 +294,7 @@ export const NtosPortraitPrinter = (props) => {
                       <Button
                         icon="chevron-right"
                         disabled={!hasPortraits || safeIndex === filteredList.length - 1}
-                        onClick={() => setListIndex(listIndex + 1)}
+                        onClick={() => setListIndex(safeIndex + 1)}
                       />
                     </Stack.Item>
                     <Stack.Item>

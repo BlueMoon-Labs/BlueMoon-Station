@@ -145,6 +145,12 @@
 		return icon(minimap_icon, minimap_icon_state)
 	return getFlatIcon(image(src), no_anim = TRUE)
 
+// Совпадает у атомов, для которых get_minimap_icon() без типа рисует одно и то же.
+/atom/proc/get_minimap_icon_key()
+	if(minimap_icon)
+		return "minimap|[minimap_icon]|[minimap_icon_state]"
+	return flat_icon_cache_key(src)
+
 /**
  * Called when an atom is created in byond (built in engine proc)
  *

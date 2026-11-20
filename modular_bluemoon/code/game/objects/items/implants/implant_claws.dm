@@ -417,6 +417,9 @@
 	icon_state = "wolverine"
 	zone = BODY_ZONE_R_ARM
 	holder = /obj/item/kitchen/knife/razor_claws
+	// Один имплант занимает обе руки и раскрывает по копии когтей в каждой —
+	// как двурукие клинки/моноструна, а не отдельные импланты на каждую руку.
+	occupies_both_arms = TRUE
 
 /obj/item/organ/cyberimp/arm/razor_claws/ExtendPlaySound(obj/item/I)
 	. = ..()

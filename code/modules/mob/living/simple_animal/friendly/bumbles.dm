@@ -38,6 +38,7 @@
 
 /mob/living/simple_animal/pet/bumbles/ComponentInitialize()
 	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)
 	AddElement(/datum/element/wuv, "bzzs!")
 
 /mob/living/simple_animal/pet/bumbles/update_mobility()

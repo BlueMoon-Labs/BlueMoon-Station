@@ -186,7 +186,7 @@
 /datum/uplink_item/bundles_tc/reroll
 	name = "Renegotiate Contract"
 	desc = "Сообщите работодателям, что хотите новые задания. Первый рерол бесплатный, каждый следующий — 1 ТК."
-	item = /obj/effect/gibspawner/generic
+	item = ABSTRACT_UPLINK_ITEM
 	cost = 0
 	cant_discount = TRUE
 	restricted = TRUE
@@ -203,7 +203,7 @@
 /datum/uplink_item/bundles_tc/random
 	name = "Random Item"
 	desc = "Купит случайный предмет. Полезно, если есть лишние TC или не определились со стратегией."
-	item = /obj/effect/gibspawner/generic
+	item = ABSTRACT_UPLINK_ITEM
 	cost = 0
 	cant_discount = TRUE
 
@@ -213,54 +213,6 @@
 		var/datum/uplink_item/I = pick(possible_items)
 		U.record_random_item(I)
 		U.MakePurchase(user, I)
-
-/datum/uplink_item/bundles_tc/telecrystal
-	name = "1 Telecrystal"
-	desc = "A telecrystal in its rawest and purest form; can be utilized on active uplinks to increase their telecrystal count."
-	item = /obj/item/stack/telecrystal
-	cost = 1
-	surplus = 0
-	cant_discount = TRUE
-	// Don't add telecrystals to the purchase_log since
-	// it's just used to buy more items (including itself!)
-	purchase_log_vis = FALSE
-	purchasable_from = (UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
-
-/datum/uplink_item/bundles_tc/telecrystal/five
-	name = "5 Telecrystals"
-	desc = "Five telecrystals in their rawest and purest form; can be utilized on active uplinks to increase their telecrystal count."
-	item = /obj/item/stack/telecrystal/five
-	cost = 5
-	purchasable_from = (UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
-
-/datum/uplink_item/bundles_tc/telecrystal/twenty
-	name = "20 Telecrystals"
-	desc = "Twenty telecrystals in their rawest and purest form; can be utilized on active uplinks to increase their telecrystal count."
-	item = /obj/item/stack/telecrystal/twenty
-	cost = 20
-	purchasable_from = (UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
-
-/datum/uplink_item/bundles_tc/telecrystal/inteq
-	name = "1 Tele Credit"
-	desc = "Золотой кредит. Можно вставить в аплинк."
-	item = /obj/item/stack/telecrystal/inteq
-	cost = 1
-	surplus = 0
-	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
-
-/datum/uplink_item/bundles_tc/telecrystal/five/inteq
-	name = "5 Tele Credits"
-	desc = "Пять золотых кредитов. Можно вставить в аплинк."
-	item = /obj/item/stack/telecrystal/inteq/five
-	cost = 5
-	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
-
-/datum/uplink_item/bundles_tc/telecrystal/twenty/inteq
-	name = "20 Tele Credits"
-	desc = "Двадцать золотых кредитов. Можно вставить в аплинк."
-	item = /obj/item/stack/telecrystal/inteq/twenty
-	cost = 20
-	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/bundles_tc/conversion_kit
 	name = "InteQ Conversion Kit"

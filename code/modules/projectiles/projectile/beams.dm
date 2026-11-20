@@ -75,6 +75,8 @@
 	name = "heavy laser"
 	icon_state = "heavylaser"
 	damage = 40
+	wound_bonus = 16
+	bare_wound_bonus = 24
 	fire_hazard = TRUE
 	tracer_type = /obj/effect/projectile/tracer/heavy_laser
 	muzzle_type = /obj/effect/projectile/muzzle/heavy_laser

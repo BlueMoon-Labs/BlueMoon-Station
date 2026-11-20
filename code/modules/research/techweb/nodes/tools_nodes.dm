@@ -3,7 +3,7 @@
 /datum/techweb_node/basic_tools
 	id = "basic_tools"
 	display_name = "Basic Tools"
-	description = "Basic mechanical, electronic, surgical and botanical tools."
+	description = "Базовые механические, электронные, хирургические и ботанические инструменты."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("base")
 	design_ids = list("screwdriver", "wrench", "bolter_wrench", "wirecutters", "crowbar", "multitool", "welding_tool", "wirebrush", "tscanner", "dirtscanner", "analyzer", "geigercounter", "pipe_painter", "airlock_painter", "decal_painter", "tile_sprayer", "drapes", "scalpel", "circular_saw", "surgicaldrill", "bonesetter", "bloodfilter", "retractor", "cautery", "hemostat", "cultivator", "plant_analyzer", "shovel", "spade", "hatchet", "mop", "broom", "normtrash", "spraycan")
@@ -12,7 +12,7 @@
 /datum/techweb_node/basic_mining
 	id = "basic_mining"
 	display_name = "Mining Technology"
-	description = "Better than Efficiency V."
+	description = "Лучше, чем Эффективность V."
 	informing_radio_channels = list(RADIO_CHANNEL_SUPPLY)
 	prereq_ids = list("engineering", "basic_plasma")
 	design_ids = list("drill", "superresonator", "triggermod", "damagemod", "cooldownmod", "rangemod", "ore_redemption", "mining_equipment_vendor", "cargoexpress", "plasmacutter")//e a r l y    g a  m e)
@@ -21,7 +21,7 @@
 /datum/techweb_node/adv_mining
 	id = "adv_mining"
 	display_name = "Advanced Mining Technology"
-	description = "Efficiency Level 127"	//dumb mc references
+	description = "Уровень эффективности 127"	//dumb mc references
 	informing_radio_channels = list(RADIO_CHANNEL_SUPPLY)
 	prereq_ids = list("basic_mining", "adv_engi", "adv_power", "adv_plasma")
 	design_ids = list("drill_diamond", "hypermod", "plasmacutter_adv", "ore_silo", "plasteel_pick", "titanium_pick") // BLUEMOON убран айди jackhammer: перенесён в вендомат шахты.
@@ -30,7 +30,7 @@
 /datum/techweb_node/janitor
 	id = "janitor"
 	display_name = "Advanced Sanitation Technology"
-	description = "Clean things better, faster, stronger, and harder!"
+	description = "Мойте лучше, быстрее, сильнее и жёстче!"
 	informing_radio_channels = list(RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("basic_tools", "adv_engi") // BLUEMOON ADD basic_tools for order consistency
 	design_ids = list("advmop", "advbroom", "buffer", "vacuum", "light_replacer", "beartrap", "ci-janitor", "paint_remover", "adv_mop_charge", "adv_mop_light", "adv_mop_capacity", "mod_selfcleaner")
@@ -39,7 +39,7 @@
 /datum/techweb_node/botany
 	id = "botany"
 	display_name = "Botanical Engineering"
-	description = "Botanical tools."
+	description = "Ботанические инструменты."
 	informing_radio_channels = list(RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("adv_engi", "biotech")
 	design_ids = list("diskplantgene", "portaseeder", "plantgenes", "flora_gun", "hydro_tray", "biogenerator", "seed_extractor", "autoloom")
@@ -48,7 +48,7 @@
 /datum/techweb_node/exp_tools
 	id = "exp_tools"
 	display_name = "Experimental Tools"
-	description = "Highly advanced construction tools."
+	description = "Высокотехнологичные строительные инструменты."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	design_ids = list("exwelder", "jawsoflife", "handdrill", "holosigncombifan", "ranged_analyzer", "tricorder", "handdrillsci", "jawsoflifesci")
 	prereq_ids = list("basic_tools", "adv_engi") // BLUEMOON ADD basic_tools for order consistency
@@ -59,7 +59,7 @@
 /datum/techweb_node/sustained_projection
 	id = "sustained_projection"
 	display_name = "Sustained Field Projection"
-	description = "Closed-loop emitters that feed a projected barrier while it stands."
+	description = "Эмиттеры с замкнутым контуром, питающие проекционную ограду, пока та стоит."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	design_ids = list("holosignatmos_sustained")
 	prereq_ids = list("exp_tools")
@@ -68,7 +68,7 @@
 /datum/techweb_node/sec_basic
 	id = "sec_basic"
 	display_name = "Basic Security Equipment"
-	description = "Standard equipment used by security."
+	description = "Стандартное оснащение охраны."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	design_ids = list("seclite", "pepperspray", "bola_energy", "body_camera", "zipties", "evidencebag")
 	prereq_ids = list("base")

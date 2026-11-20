@@ -89,7 +89,7 @@
 /datum/uplink_item/stealthy_tools/failsafe
 	name = "Failsafe Uplink Code"
 	desc = "При вводе аплинк немедленно самоуничтожится."
-	item = /obj/effect/gibspawner/generic
+	item = ABSTRACT_UPLINK_ITEM
 	cost = 1
 	surplus = 0
 	restricted = TRUE

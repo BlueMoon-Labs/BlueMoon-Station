@@ -3,7 +3,7 @@
 /datum/techweb_node/cloning
 	id = "cloning"
 	display_name = "Genetic Engineering"
-	description = "We have the technology to make him."
+	description = "У нас есть технологии, чтобы создать его."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("biotech")
 	design_ids = list("clonecontrol", "clonepod", "clonescanner", "scan_console", "self_actualization_device", "cloning_disk")
@@ -12,7 +12,7 @@
 /datum/techweb_node/cryotech
 	id = "cryotech"
 	display_name = "Cryostasis Technology"
-	description = "Smart freezing of objects to preserve them!"
+	description = "Умная заморозка предметов для их сохранения!"
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("adv_engi", "biotech")
 	design_ids = list("splitbeaker", "cryotube", "cryo_Grenade", "stasis")
@@ -21,7 +21,7 @@
 /datum/techweb_node/adv_cryotech
 	id = "adv_cryotech"
 	display_name = "Advanced Cryostasis Technology"
-	description = "Stasis, but now mobile!"
+	description = "Стазис, но теперь мобильный!"
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("cryotech", "adv_biotech")
 	design_ids = list("stasis_roller_bed", "noreactsyringe")
@@ -30,7 +30,7 @@
 /datum/techweb_node/adv_defibrillator_tec
 	id = "adv_defibrillator_tec"
 	display_name = "Defibrillator Upgrades"
-	description = "More ways to bring back the newly dead."
+	description = "Больше способов вернуть недавно мёртвых к жизни."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("adv_biotech", "exp_surgery", "adv_engi", "adv_power")
 	design_ids = list("defib_decay", "defib_shock", "defib_heal", "defib_speed")
@@ -39,7 +39,7 @@
 /datum/techweb_node/plumbing
 	id = "plumbing"
 	display_name = "Reagent Plumbing Technology"
-	description = "Tubes, and machinery used for manipulating things in them."
+	description = "Трубы и механизмы для работы с объектами внутри них."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("adv_engi")
 	//design_ids = list("acclimator", "disposer", "plumb_filter", "plumb_synth", "plumb_grinder", "reaction_chamber", "plumb_splitter", "pill_press", "plumb_pump", "plumb_in", "plumb_out", "plumb_tank", "medipen_refiller")
@@ -51,7 +51,7 @@
 /datum/techweb_node/surplus_limbs
 	id = "surplus_limbs"
 	display_name = "Basic Prosthetics"
-	description = "Basic fragile prosthetics for the impaired."
+	description = "Базовые хрупкие протезы для людей с ограниченными возможностями."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	starting_node = TRUE
 	prereq_ids = list("biotech")
@@ -60,7 +60,7 @@
 /datum/techweb_node/advance_limbs
 	id = "advance_limbs"
 	display_name = "Upgraded Prosthetics"
-	description = "Reinforced prosthetics for the impaired."
+	description = "Укреплённые протезы для людей с ограниченными возможностями."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("adv_biotech", "surplus_limbs")
 	design_ids = list("adv_l_arm", "adv_r_arm", "adv_r_leg", "adv_l_leg")
@@ -70,14 +70,14 @@
 	id = "basic_cyber_organs"
 	starting_node = TRUE
 	display_name = "Basic Cybernetic Organs"
-	description = "We have the techinology to force him to live a disgusting halflife."
+	description = "У нас есть технологии, чтобы заставить его жить отвратительной полужизнью."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
-	design_ids = list("cybernetic_liver", "cybernetic_heart", "cybernetic_lungs", "cybernetic_stomach")
+	design_ids = list("cybernetic_liver", "cybernetic_heart", "cybernetic_lungs", "cybernetic_stomach", "shawarma_spit_implant")
 
 /datum/techweb_node/cyber_organs
 	id = "cyber_organs"
 	display_name = "Cybernetic Organs"
-	description = "We have the technology to rebuild him."
+	description = "У нас есть технологии, чтобы восстановить его."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("biotech")
 	design_ids = list("cybernetic_ears", "cybernetic_heart_tier2", "cybernetic_liver_tier2", "cybernetic_lungs_tier2", "cybernetic_stomach_tier2")
@@ -86,7 +86,7 @@
 /datum/techweb_node/cyber_organs_upgraded
 	id = "cyber_organs_upgraded"
 	display_name = "Upgraded Cybernetic Organs"
-	description = "We have the technology to upgrade him."
+	description = "У нас есть технологии, чтобы улучшить его."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("adv_biotech", "cyber_organs")
 	design_ids = list("cybernetic_ears_u", "cybernetic_heart_tier3", "cybernetic_liver_tier3", "cybernetic_lungs_tier3", "cybernetic_stomach_tier3")
@@ -95,7 +95,7 @@
 /datum/techweb_node/cyber_implants
 	id = "cyber_implants"
 	display_name = "Cybernetic Implants"
-	description = "Electronic implants that improve humans."
+	description = "Электронные имплантаты, улучшающие человека."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_biotech", "adv_datatheory")
 	design_ids = list("ci-nutriment", "ci-breather", "ci-gloweyes", "ci-welding", "ci-medhud", "ci-sechud", "ci-service", "ci-power-cord","ci_claws")
@@ -104,26 +104,26 @@
 /datum/techweb_node/adv_cyber_implants
 	id = "adv_cyber_implants"
 	display_name = "Advanced Cybernetic Implants"
-	description = "Upgraded and more powerful cybernetic implants."
+	description = "Улучшенные и более мощные кибернетические имплантаты."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("neural_programming", "cyber_implants","integrated_HUDs")
-	design_ids = list("ci-toolset", "ci-surgery", "ci-reviver", "ci-reviver-hack", "ci-nutrimentplus", "ci-robot-radshielding")
+	design_ids = list("ci-toolset", "ci-surgery", "ci-reviver", "ci-reviver-hack", "ci-nutrimentplus", "ci-robot-radshielding", "ci-leg-tendons", "ci-leg-ankles", "ci-monostring", "ci-monostring-hack", "ci-gorilla-arms", "ci-gorilla-arms-hack", "ci-handcannon", "ci-handcannon-hack", "ci-ballistic-processor", "ci-leg-lynx-paws", "ci-kiroshi-optics")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/combat_cyber_implants
 	id = "combat_cyber_implants"
 	display_name = "Combat Cybernetic Implants"
-	description = "Military grade combat implants to improve performance."
+	description = "Военные боевые имплантаты для повышения эффективности."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_cyber_implants","weaponry","NVGtech","high_efficiency")
-	design_ids = list("ci-thermals", "ci-thermals-hack", "ci-antidrop", "ci-antidrop-hack", "ci-antistun", "ci-antistun-hack", "ci-thrusters", "ci-shield", "ci-shield-hack", "ci-chemseq", "ci-chemseq-hack")
+	design_ids = list("ci-thermals", "ci-thermals-hack", "ci-antidrop", "ci-antidrop-hack", "ci-antistun", "ci-antistun-hack", "ci-thrusters", "ci-shield", "ci-shield-hack", "ci-chemseq", "ci-chemseq-hack", "ci-sandevistan-corp", "ci-sandevistan-hack", "ci-berserker-corp", "ci-berserker-hack",  "ci-militech-optics")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /////////////////////////Advanced Surgery/////////////////////////
 /datum/techweb_node/imp_wt_surgery
 	id = "imp_wt_surgery"
 	display_name = "Improved Wound-Tending Surgery"
-	description = "Who would have known being more gentle with a hemostat decreases patient pain?"
+	description = "Кто бы мог подумать, что более бережное обращение с гемостатом уменьшает боль пациента?"
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("biotech")
 	design_ids = list("surgery_heal_brute_upgrade","surgery_heal_burn_upgrade")
@@ -132,7 +132,7 @@
 /datum/techweb_node/adv_surgery
 	id = "adv_surgery"
 	display_name = "Advanced Surgery"
-	description = "When simple medicine doesn't cut it."
+	description = "Когда простой медицины недостаточно."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("imp_wt_surgery")
 	design_ids = list("surgery_lobotomy", "surgery_heal_brute_upgrade_femto","surgery_heal_burn_upgrade_femto","surgery_heal_robo_upgrade","surgery_heal_combo", "surgery_toxinhealing", "surgery_adv_dissection")
@@ -141,7 +141,7 @@
 /datum/techweb_node/advance_surgerytools
 	id = "advance_surgerytools"
 	display_name = "Advanced Surgery Tools"
-	description = "Refined and improved redesigns for the run-of-the-mill medical utensils."
+	description = "Улучшенные и доработанные версии обычных медицинских инструментов."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("upgraded_surgerytools", "adv_surgery") // BLUEMOON ADD basic_tools for order consistency
 	design_ids = list("retractor_adv", "surgicaldrill_adv", "scalpel_adv", "autodoc")
@@ -150,7 +150,7 @@
 /datum/techweb_node/exp_surgery
 	id = "exp_surgery"
 	display_name = "Experimental Surgery"
-	description = "When evolution isn't fast enough."
+	description = "Когда эволюции недостаточно быстро."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("adv_surgery")
 	design_ids = list("surgery_pacify","surgery_vein_thread","surgery_muscled_veins","surgery_nerve_splice","surgery_nerve_ground","surgery_ligament_hook","surgery_ligament_reinforcement","surgery_viral_bond", "surgery_exp_dissection","surgery_heal_robo_upgrade_femto","surgery_heal_combo_upgrade")
@@ -159,7 +159,7 @@
 /datum/techweb_node/alien_surgery
 	id = "alien_surgery"
 	display_name = "Alien Surgery"
-	description = "Abductors did nothing wrong."
+	description = "Похитители ничего не нарушили."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("exp_surgery", "alientech")
 	design_ids = list("surgery_brainwashing", "surgery_robot_brainwashing", "surgery_zombie", "surgery_ext_dissection", "surgery_heal_combo_upgrade_femto")

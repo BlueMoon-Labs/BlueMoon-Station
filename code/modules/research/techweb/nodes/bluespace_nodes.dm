@@ -3,7 +3,7 @@
 /datum/techweb_node/bluespace_basic //Bluespace-memery
 	id = "bluespace_basic"
 	display_name = "Basic Bluespace Theory"
-	description = "Basic studies into the mysterious alternate dimension known as bluespace."
+	description = "Базовые исследования таинственного параллельного измерения, известного как блюспейс."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("base", "datatheory")
 	design_ids = list(
@@ -20,7 +20,7 @@
 /datum/techweb_node/practical_bluespace
 	id = "practical_bluespace"
 	display_name = "Applied Bluespace Research"
-	description = "Using bluespace to make things faster and better."
+	description = "Использование блюспейса, чтобы делать вещи быстрее и лучше."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_ENGINEERING, RADIO_CHANNEL_SUPPLY, RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("bluespace_basic", "engineering")
 	design_ids = list("bs_rped", "biobag_holding", "minerbag_holding", "bluespacebeaker", "hypovial_bs", "large_hypovial_bs", "bluespacesyringe", "phasic_scanning", "bluespacesmartdart", "bluespace_tray", "m_warp_beacon") // BLUEMOON REMOIVAL of "light_replacer_blue" to /datum/techweb_node/janitor/bspspray
@@ -29,7 +29,7 @@
 /datum/techweb_node/adv_bluespace
 	id = "adv_bluespace"
 	display_name = "Advanced Bluespace Research"
-	description = "Deeper understanding of how the Bluespace dimension works"
+	description = "Более глубокое понимание того, как работает измерение блюспейса"
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("practical_bluespace", "high_efficiency")
 	design_ids = list("bluespace_matter_bin", "femto_mani", "triphasic_scanning", "bluespace_crystal")
@@ -38,7 +38,7 @@
 /datum/techweb_node/emp_super
 	id = "emp_super"
 	display_name = "Quantum Electromagnetic Technology"
-	description = "Even better electromagnetic technology."
+	description = "Ещё более совершенная электромагнитная технология."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("emp_adv", "adv_bluespace") // why should the rest of T4 be locked but not this node? grmblgrmbl
 	design_ids = list("quadultra_micro_laser")
@@ -47,7 +47,7 @@
 /datum/techweb_node/bluespace_power
 	id = "bluespace_power"
 	display_name = "Bluespace Power Technology"
-	description = "Even more powerful.. power!"
+	description = "Ещё более мощная... ЭНЕРГИЯ!"
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("adv_power", "adv_bluespace")
 	design_ids = list("bluespace_cell", "quadratic_capacitor")
@@ -56,7 +56,7 @@
 /datum/techweb_node/bluespace_holding
 	id = "bluespace_holding"
 	display_name = "Bluespace Pockets"
-	description = "Studies into the mysterious alternate dimension known as bluespace and how to place items in the threads of reality."
+	description = "Исследования таинственного параллельного измерения, известного как блюспейс, и того, как помещать предметы в нити реальности."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("adv_power", "adv_bluespace", "adv_biotech", "adv_plasma")
 	design_ids = list("bluespacebodybag","bag_holding", "bluespace_pod", "borg_upgrade_trashofholding", "blutrash", "satchel_holding", "bsblood_bag", "duffelbag_holding")
@@ -65,7 +65,7 @@
 /datum/techweb_node/bluespace_portal
 	id = "bluespace_portal"
 	display_name = "Bluespace Portals"
-	description = "Allows for Bluespace Tech to be used tandem with Wormhole tech."
+	description = "Позволяет использовать технологии блюспейса совместно с технологиями червоточин."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_weaponry", "adv_bluespace")
 	design_ids = list("wormholeprojector")
@@ -74,7 +74,7 @@
 /datum/techweb_node/bluespace_warping
 	id = "bluespace_warping"
 	display_name = "Bluespace Travel"
-	description = "Application of Bluespace for static teleportation technology."
+	description = "Применение блюспейса в технологиях стационарной телепортации."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("adv_power", "adv_bluespace")
 	design_ids = list("tele_station", "tele_hub", "quantumpad", "quantum_keycard", "launchpad", "launchpad_console", "teleconsole", "roastingstick", "swapper")
@@ -92,7 +92,7 @@
 /datum/techweb_node/basic_shuttle_tech
 	id = "basic_shuttle"
 	display_name = "Basic Shuttle Research"
-	description = "Research the technology required to create and use basic shuttles."
+	description = "Изучите технологии, необходимые для создания и использования базовых шаттлов."
 	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("practical_bluespace", "adv_engi")
 	design_ids = list("shuttle_creator", "engine_plasma", "engine_heater", "shuttle_control", "shuttle_docker","spaceship_navigation_beacon")
@@ -101,7 +101,7 @@
 /datum/techweb_node/shuttle_route_upgrade
 	id = "shuttle_route_upgrade"
 	display_name = "Route Optimisation Upgrade"
-	description = "Research into bluespace tunnelling, allowing us to reduce flight times by up to 20%!"
+	description = "Исследования блюспейс-туннелирования, позволяющие сократить время полёта на величину до 20%!"
 	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("basic_shuttle")
 	design_ids = list("disk_shuttle_route")
@@ -110,7 +110,7 @@
 /datum/techweb_node/shuttle_route_upgrade_hyper
 	id = "shuttle_route_upgrade_hyper"
 	display_name = "Hyperlane Optimisation Upgrade"
-	description = "Research into bluespace hyperlane, allowing us to reduce flight times by up to 40%!"
+	description = "Исследования блюспейс-гипертрассы, позволяющие сократить время полёта на величину до 40%!"
 	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("shuttle_route_upgrade", "bluespace_warping")
 	design_ids = list("disk_shuttle_route_hyper")
@@ -119,7 +119,7 @@
 /datum/techweb_node/shuttle_route_upgrade_void
 	id = "shuttle_route_upgrade_void"
 	display_name = "Nullspace Breaching Upgrade"
-	description = "Research into voidspace tunnelling, allowing us to significantly reduce flight times."
+	description = "Исследования туннелирования в пустоте, позволяющие значительно сократить время полёта."
 	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("shuttle_route_upgrade_hyper", "alientech")
 	design_ids = list("disk_shuttle_route_void", "engine_void")

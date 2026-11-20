@@ -1,7 +1,7 @@
 /datum/quirk/thirsty
 	name = "Жаждущий"
 	desc = "Вам необычайно хочется пить. Приходится пить в два раза больше, чем обычно."
-	value = -1
+	value = 0
 	flavor_quirk = TRUE
 	gain_text = span_danger("Вы начинаете испытывать жажду гораздо быстрее.")
 	lose_text = span_notice("Ваша повышенная тяга к воде начинает угасать.")

@@ -579,3 +579,19 @@
 	vocal_bark_id = "mutedc4"
 
 #undef GOAT_MOVE_TO_DELAY
+
+/mob/living/simple_animal/chick/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)
+
+/mob/living/simple_animal/chicken/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)
+
+/mob/living/simple_animal/kiwi/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)
+
+/mob/living/simple_animal/babyKiwi/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)

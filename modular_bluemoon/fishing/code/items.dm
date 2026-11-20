@@ -346,8 +346,6 @@
 			"products" = list(
 				/obj/item/fishing_rod = 6,
 				/obj/item/fishing_rod/fiberglass = 4,
-				/obj/item/fishing_rod/titanium = 2,
-				/obj/item/fishing_rod/science = 2,
 				/obj/item/fishing_line = 6,
 				/obj/item/fishing_line/reinforced = 4,
 				/obj/item/fishing_line/bouncy = 3,
@@ -412,6 +410,7 @@
 		),
 	)
 	premium = list(
+		/obj/item/fishing_rod/science = 2,
 		/obj/item/fishing_rod/gold = 1,
 		/obj/item/fishing_rod/lunar = 1,
 		/obj/item/fishing_line/auto_reel = 2,

@@ -95,6 +95,8 @@
 //Give cyborgs hotkey clicks without breaking existing uses of hotkey clicks
 // for non-doors/apcs
 /mob/living/silicon/robot/CtrlShiftClickOn(atom/A)
+	if(SEND_SIGNAL(src, COMSIG_MOB_CTRLSHIFTCLICKON, A) & COMSIG_MOB_CANCEL_CLICKON)
+		return
 	A.BorgCtrlShiftClick(src)
 /mob/living/silicon/robot/ShiftClickOn(atom/A)
 	A.BorgShiftClick(src)

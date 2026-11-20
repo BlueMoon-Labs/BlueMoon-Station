@@ -171,8 +171,11 @@
 	force = initial(force)
 	..(M, user, attackchain_flags, damage_multiplier)
 
-/obj/item/melee/sabre/proton_cutter/get_damage_to_obj(obj/O, mob/living/user)
-	return 40
+//WHITE-STEEL PORT: урон по структурам всегда базовый, без учёта force,
+//оставшегося после атаки по мобу (там force временно поднимается до 60).
+/obj/item/melee/sabre/proton_cutter/attack_obj(obj/O, mob/living/user)
+	force = initial(force)
+	. = ..()
 
 /obj/item/storage/belt/avangard_belt
 	name = "Vanguard belt"

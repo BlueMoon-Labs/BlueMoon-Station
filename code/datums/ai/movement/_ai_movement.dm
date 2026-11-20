@@ -1,6 +1,7 @@
 ///This datum is an abstract class that can be overriden for different types of movement
 /datum/ai_movement
-	///Assoc list ist of controllers that are currently moving as key, and what they are moving to as value
+	///Контроллер в движении -> weakref его цели (турф - как есть). Синглтон бессмертен: сильная ссылка держала
+	///удалённую цель, пока контроллер не тронется снова. Сравнивать через is_moving_towards()
 	var/list/moving_controllers = list()
 	///How many times a given controller can fail on their route before they just give up
 	var/max_pathing_attempts
@@ -10,7 +11,15 @@
 	SHOULD_CALL_PARENT(TRUE)
 	controller.pathing_attempts = 0
 	controller.blackboard[BB_CURRENT_MIN_MOVE_DISTANCE] = min_distance
-	moving_controllers[controller] = current_movement_target
+	//турф не удаляется, а weakref на нём остался бы до конца раунда
+	moving_controllers[controller] = isturf(current_movement_target) ? current_movement_target : WEAKREF(current_movement_target)
+
+///TRUE, если записанная погоня контроллера ведёт именно к этой цели
+/datum/ai_movement/proc/is_moving_towards(datum/ai_controller/controller, atom/target)
+	var/record = moving_controllers[controller]
+	if(isnull(record) || isnull(target))
+		return FALSE
+	return record == target || record == target.weak_reference
 
 /datum/ai_movement/proc/stop_moving_towards(datum/ai_controller/controller)
 	controller.pathing_attempts = 0

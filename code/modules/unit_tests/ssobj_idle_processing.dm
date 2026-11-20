@@ -264,4 +264,4 @@
 
 	var/datum/component/mood/mood = victim.GetComponent(/datum/component/mood)
 	TEST_ASSERT_NOTNULL(mood, "victim must have a mood component")
-	TEST_ASSERT_NOTNULL(LAZYACCESS(mood.mood_events, "inteq_propagand"), "pugach must apply the InteQ propaganda mood event to a nearby human")
+	TEST_ASSERT_NOTNULL(LAZYACCESS(mood.mood_events, "inteq_propagand_scared"), "pugach must apply the InteQ propaganda mood event to a nearby human")

@@ -23,6 +23,12 @@
 	var/jumper_allow_pass_flags
 	///Сколько клеток пролетает прыжок с разбега
 	var/leap_distance = 2
+	///Сколько дополнительных прыжков разрешено совершать, уже находясь в воздухе (0 — обычный прыжок).
+	var/air_jumps = 0
+	///Сколько прыжков уже совершено в текущем воздушном цикле.
+	var/jumps_performed = 0
+	///Токен текущего прыжка: колбэки end_jump от предыдущих прыжков игнорируются.
+	var/jump_token = 0
 
 /datum/component/jump/Initialize(_jump_duration, _jump_cooldown, _stamina_cost, _jump_height, _jump_sound, _jump_flags, _jumper_allow_pass_flags)
 	. = ..()
@@ -58,6 +64,11 @@
 	if(jumper.incapacitated())
 		return
 
+	// A second jump mid-air is only allowed if the component explicitly grants air jumps.
+	var/airborne = HAS_TRAIT(jumper, TRAIT_JUMPING)
+	if(airborne && jumps_performed > air_jumps)
+		return
+
 	var/has_gravity = jumper.has_gravity()
 	var/adjusted_stamina_cost = stamina_cost
 	if(!has_gravity)
@@ -66,6 +77,17 @@
 	if(adjusted_stamina_cost && (jumper.getStaminaLoss() < -adjusted_stamina_cost))
 		to_chat(jumper, span_warning("Catch your breath!"))
 		return
+
+	if(airborne)
+		jumps_performed++
+		// Stop the previous arc and the shadow animation so the new jump starts cleanly.
+		animate(jumper)
+		jumper.pixel_y = 0
+		jumper.remove_filter(JUMP_COMPONENT)
+	else
+		jumps_performed = 1
+	jump_token++
+	var/this_jump_token = jump_token
 
 	if(jump_sound)
 		playsound(jumper, jump_sound, 65)
@@ -77,6 +99,7 @@
 	jumper.pass_flags |= jumper_allow_pass_flags
 	ADD_TRAIT(jumper, TRAIT_SILENT_FOOTSTEPS, JUMP_COMPONENT)
 	ADD_TRAIT(jumper, TRAIT_JUMPING, JUMP_COMPONENT)
+	UnregisterSignal(parent, COMSIG_MOB_THROW)
 	RegisterSignal(parent, COMSIG_MOB_THROW, PROC_REF(jump_throw))
 
 	jumper.add_filter(JUMP_COMPONENT, 2, drop_shadow_filter(color = COLOR_TRANSPARENT_SHADOW, size = 0.9))
@@ -93,32 +116,35 @@
 		animate(shadow_filter, y = -jump_height, size = 4, time = jump_duration / 2, easing = CIRCULAR_EASING|EASE_OUT, flags = ANIMATION_PARALLEL)
 		animate(y = 0, size = 0.9, time = jump_duration / 2, easing = CIRCULAR_EASING|EASE_IN)
 
-	addtimer(CALLBACK(src, PROC_REF(end_jump), jumper), jump_duration)
+	addtimer(CALLBACK(src, PROC_REF(end_jump), jumper, this_jump_token), jump_duration)
 
 	TIMER_COOLDOWN_START(jumper, JUMP_COMPONENT_COOLDOWN, jump_cooldown)
 
 	if(leap_dir && has_gravity)
-		start_leap(jumper, leap_dir)
+		start_leap(jumper, leap_dir, this_jump_token)
 
 ///Несёт прыгуна по дуге прыжка на leap_distance клеток, рулить в полёте нельзя
-/datum/component/jump/proc/start_leap(mob/living/jumper, leap_dir)
+/datum/component/jump/proc/start_leap(mob/living/jumper, leap_dir, token)
 	var/step_delay = jump_duration / leap_distance
 	if(jumper.client)
 		jumper.client.move_delay = max(jumper.client.move_delay, world.time + jump_duration)
 	jumper.set_glide_size(DELAY_TO_GLIDE_SIZE(step_delay))
-	INVOKE_ASYNC(src, PROC_REF(leap_step), jumper, leap_dir, leap_distance, step_delay)
+	INVOKE_ASYNC(src, PROC_REF(leap_step), jumper, leap_dir, leap_distance, step_delay, token)
 
 ///Шаг прыжка с разбега; упёрся - дальше летит вертикально и приземляется на месте
-/datum/component/jump/proc/leap_step(mob/living/jumper, leap_dir, steps_left, step_delay)
-	if(QDELETED(jumper) || !HAS_TRAIT(jumper, TRAIT_JUMPING) || !isturf(jumper.loc))
+/datum/component/jump/proc/leap_step(mob/living/jumper, leap_dir, steps_left, step_delay, token)
+	if(token != jump_token || QDELETED(jumper) || !HAS_TRAIT(jumper, TRAIT_JUMPING) || !isturf(jumper.loc))
 		return
 	if(!step(jumper, leap_dir))
 		return
 	if(--steps_left > 0)
-		addtimer(CALLBACK(src, PROC_REF(leap_step), jumper, leap_dir, steps_left, step_delay), step_delay)
+		addtimer(CALLBACK(src, PROC_REF(leap_step), jumper, leap_dir, steps_left, step_delay, token), step_delay)
 
 ///Ends the jump
-/datum/component/jump/proc/end_jump(mob/living/jumper)
+/datum/component/jump/proc/end_jump(mob/living/jumper, token)
+	if(token != jump_token)
+		return
+	jumps_performed = 0
 	jumper.remove_filter(JUMP_COMPONENT)
 	jumper.layer = initial(jumper.layer)
 	jumper.pass_flags = initial(jumper.pass_flags)

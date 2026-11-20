@@ -300,7 +300,7 @@
 	minimum_required_age = 0 // BLUEMOON EDIT
 	restricted_roles = list("Head of Security","Bridge Officer", "Captain") // Just to be sure that a nukie getting picked won't ever imply a Captain or HoS not getting drafted
 	required_candidates = 5
-	weight = 3 //BLUEMOON CHANGES
+	weight = 2 //BLUEMOON CHANGES
 	cost = 20
 	intensity = 45
 	requirements = list(101,101,101,101,101,101,60,40,30,10) //BLUEMOON CHANGES
@@ -762,9 +762,10 @@ BLUEMOON REMOVAL END*/
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
 	required_candidates = 1
 	weight = 3
-	cost = 0
+	cost = 15
 	intensity = 15
 	requirements = list(101,101,101,101,101,101,101,101,101,101)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED)
 	flags = LONE_RULESET
 	var/players_per_carrier = 30
 	var/monkeys_to_win = 1
@@ -1342,6 +1343,66 @@ BLUEMOON REMOVAL END*/
 		SEND_SOUND(new_morph, sound('sound/magic/mutate.ogg'))
 		message_admins("[ADMIN_LOOKUPFLW(new_morph)] превращён в морфа раундстартовым правилом [name] ([i] из [MORPH_ROUNDSTART_COUNT]).")
 		log_game("DYNAMIC: [key_name(new_morph)] превращён в морфа раундстартовым правилом [name] ([i] из [MORPH_ROUNDSTART_COUNT]).")
+	return TRUE
+
+//////////////////////////////////////////////////////////
+//														//
+//              HIDDEN ZOMBIES              			//
+//                                          			//
+// 	Половина игроков заражаются спящим зомби-			//
+// 	вирусом от ромерола. Они							//
+// 	остаются обычными людьми до смерти, после			//
+// 	чего встают зомби. Скрытые крупные антагонисты.   	//
+//////////////////////////////////////////////////////////
+
+/datum/dynamic_ruleset/roundstart/hidden_zombies
+	name = "Hidden Zombies"
+	antag_flag = null
+	force_antag_preference = TRUE // заражение без согласия игрока
+	antag_datum = null // не выдаётся заранее — спящий вирус активируется только после смерти
+	minimum_required_age = 0
+	restricted_roles = list("AI", "Cyborg", "Positronic Brain")
+	required_candidates = 2
+	weight = 2
+	cost = 10
+	intensity = 15 // спящие антаги, активны только после смерти
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
+	requirements = list(101,10,10,10,10,10,10,10,10,10) //BLUEMOON CHANGES
+	antag_cap = list("denominator" = 2) // половина экипажа
+
+/datum/dynamic_ruleset/roundstart/hidden_zombies/pre_execute(population)
+	. = ..()
+	if(candidates.len <= 0)
+		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+		return FALSE
+	var/list/human_pool = list()
+	for(var/mob/M in candidates)
+		if(ishuman(M))
+			human_pool += M
+	var/half = round(length(human_pool) / 2)
+	if(half < 1)
+		half = 1
+	if(length(human_pool) < half)
+		message_admins("Рулсет [name] не был активирован: недостаточно человеческих кандидатов ([length(human_pool)] из [half]).")
+		return FALSE
+	for(var/i = 1 to half)
+		var/mob/M = pick_n_take(human_pool)
+		candidates -= M
+		assigned += M.mind
+		M.mind.special_role = "Скрытый Зомби"
+		M.mind.restricted_roles = restricted_roles
+	return TRUE
+
+/// Внедряет спящий зомби-орган (как после введения ромерола) в живые тела заражённых.
+/// Антаг-датум не выдаётся заранее — игрок скрыт до вставания после смерти.
+/datum/dynamic_ruleset/roundstart/hidden_zombies/execute()
+	for(var/datum/mind/M in assigned)
+		var/mob/living/carbon/C = M.current
+		if(C && ishuman(C) && !C.getorganslot(ORGAN_SLOT_ZOMBIE))
+			var/obj/item/organ/zombie_infection/nodamage/ZI = new()
+			ZI.Insert(C)
+			message_admins("[ADMIN_LOOKUPFLW(C)] заражён спящим зомби-вирусом правилом [name].")
+			log_game("DYNAMIC: [key_name(C)] заражён спящим зомби-вирусом правилом [name].")
 	return TRUE
 
 #undef MORPH_ROUNDSTART_COUNT

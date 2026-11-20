@@ -16,7 +16,7 @@
 
 /datum/uplink_item/ammo/pistol
 	name = "10mm Handgun Magazine"
-	desc = "Дополнительный магазин на 8 патронов 10mm для пистолета Стечкин. Патроны дешёвые как грязь, но вдвое слабее .357."
+	desc = "Дополнительный магазин на 16 патронов 10mm для пистолета Стечкин. Патроны дешёвые как грязь, но вдвое слабее .357."
 	item = /obj/item/ammo_box/magazine/m10mm
 	cost = 1
 	purchasable_from = ~UPLINK_CLOWN_OPS
@@ -29,7 +29,7 @@
 
 /datum/uplink_item/ammo/pistolzzz
 	name = "10mm Soporific Magazine"
-	desc = "Дополнительный магазин на 8 усыпляющих патронов 10mm для пистолета Стечкин. Вырубают цель в сон. \
+	desc = "Дополнительный магазин на 16 усыпляющих патронов 10mm для пистолета Стечкин. Вырубают цель в сон. \
 			ВНИМАНИЕ: усыпляющий эффект не мгновенный из-за ограничений калибра. Обычно нужно три попадания."
 	item = /obj/item/ammo_box/magazine/m10mm/soporific
 	cost = 1
@@ -42,7 +42,7 @@
 
 /datum/uplink_item/ammo/pistolap
 	name = "10mm Armour Piercing Magazine"
-	desc = "Дополнительный магазин на 8 бронебойных патронов 10mm для пистолета Стечкин. Хуже ранят, зато пробивают защиту."
+	desc = "Дополнительный магазин на 16 бронебойных патронов 10mm для пистолета Стечкин. Хуже ранят, зато пробивают защиту."
 	item = /obj/item/ammo_box/magazine/m10mm/ap
 	cost = 2
 	purchasable_from = ~UPLINK_CLOWN_OPS
@@ -55,7 +55,7 @@
 
 /datum/uplink_item/ammo/pistolhp
 	name = "10mm Hollow Point Magazine"
-	desc = "Дополнительный магазин на 8 экспансивных патронов 10mm для пистолета Стечкин. Наносят больше урона, но бесполезны против брони."
+	desc = "Дополнительный магазин на 16 экспансивных патронов 10mm для пистолета Стечкин. Наносят больше урона, но бесполезны против брони."
 	item = /obj/item/ammo_box/magazine/m10mm/hp
 	cost = 3
 	purchasable_from = ~UPLINK_CLOWN_OPS
@@ -68,7 +68,7 @@
 
 /datum/uplink_item/ammo/pistolfire
 	name = "10mm Incendiary Magazine"
-	desc = "Дополнительный магазин на 8 зажигательных патронов 10mm для пистолета Стечкин. Урон небольшой, зато поджигают цель."
+	desc = "Дополнительный магазин на 16 зажигательных патронов 10mm для пистолета Стечкин. Урон небольшой, зато поджигают цель."
 	item = /obj/item/ammo_box/magazine/m10mm/fire
 	cost = 2
 	purchasable_from = ~UPLINK_CLOWN_OPS

@@ -217,7 +217,7 @@
 /datum/techweb_node/c45ammo
 	id = "c45_ammo"
 	display_name = ".45 Ammunition"
-	description = "Ammo for 45 Caliber pistols."
+	description = "Патроны для пистолетов калибра .45."
 	prereq_ids = list("weaponry")
 	design_ids = list(
 		"c45r", "c45leath", "c45t", "c45hydra", /*"c45trac",*/ "e45", "e45_rubber", "e45_lethal", "e45_taser", /*"e45_trac",*/ "e45_hydra",
@@ -228,7 +228,7 @@
 /datum/techweb_node/advc45ammo
 	id = "advc45_ammo"
 	display_name = "Advance .45 Ammunition"
-	description = "Make .45 ammo your bitch and make it do crazy shit."
+	description = "Подчините патроны .45 себе и заставьте их творить безумные вещи."
 	prereq_ids = list("weaponry", "c45_ammo", "ballistic_weapons")
 	design_ids = list(
 		"e45_ion", "e45_stun", "e45_laser","e45_hot", "c45hot","c45las", "c45ion","c45stun",

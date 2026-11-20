@@ -46,6 +46,8 @@ type Pack = {
   in_stock?: BooleanLike;
   /** id отдела, в каталог которого входит пак */
   budget?: string;
+  /** Расходник: сотрудник отдела заказывает его из бюджета без одобрения, в пределах часового лимита */
+  staple?: BooleanLike;
 };
 
 /** Чей бюджет оплатит заявку зрителя на пак каталога отдела; any - ГП и капитан, им платит отдел пака. */
@@ -55,9 +57,11 @@ type BudgetRequest = {
   balance?: number | null;
   manager: BooleanLike;
   any: BooleanLike;
-  /** Есть кому одобрить заявку: без него паки дороже auto_limit уходят снабжению */
+  /** Есть кому одобрить заявку (начальство или ИИ): без него паки дороже auto_limit уходят снабжению */
   approver?: BooleanLike;
   auto_limit: number;
+  /** Сколько расходников зритель ещё закажет без одобрения в этом часе */
+  staple_left?: number;
 };
 
 /** Цена, id поставщика и наличие пака: приходят отдельно от каталога и обновляются после пересчёта цен. */
@@ -451,22 +455,30 @@ const packTags = (pack: Pack) => {
   return tags;
 };
 
-/** Заявку на этот пак оплатит бюджет отдела зрителя, а не снабжение. Без начальства на смене пак дороже лимита автоодобрения уходит снабжению. */
+/** Заявку на этот пак оплатит бюджет отдела зрителя, а не снабжение. Когда на смене некому решить, пак дороже лимита автоодобрения уходит снабжению; расходник - только сверх часового лимита. */
 const paidByBudget = (pack: Pack, budget?: BudgetRequest | null) => {
   if (!budget || !pack.budget || (!budget.any && pack.budget !== budget.id)) {
     return false;
   }
-  return !!budget.manager || !!budget.approver || (pack.cost || 0) <= budget.auto_limit;
+  const cost = pack.cost || 0;
+  if (pack.staple) {
+    return !!budget.manager || !!budget.approver || cost <= (budget.staple_left || 0);
+  }
+  return !!budget.manager || !!budget.approver || cost <= budget.auto_limit;
 };
 
 const BudgetNotice = (props: { budget: BudgetRequest }) => {
   const { budget } = props;
   const own = budget.name && !budget.any ? `отдела "${budget.name}" (сейчас ${formatCredits(budget.balance || 0)})` : 'отдела пака';
-  let text = `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявку одобряет глава отдела, ГП или капитан в программе "Бюджет отдела" на КПК; если ответа долго нет, заявка до ${formatCredits(budget.auto_limit)} одобряется сама.`;
+  const deciders = budget.id === 'SEC' ? 'глава отдела, ГП или капитан' : 'глава отдела, ГП, капитан или ИИ';
+  let text = `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявку одобряет ${deciders} в программе "Бюджет отдела"; если ответа долго нет, заявка до ${formatCredits(budget.auto_limit)} одобряется сама, кроме расходников.`;
   if (budget.manager) {
     text = `Паки с пометкой "бюджет отдела" вы заказываете сразу за бюджет ${own}: заказ уходит в снабжение оплаченным.`;
   } else if (!budget.approver) {
-    text = `Начальства отдела на смене нет: пак своего каталога до ${formatCredits(budget.auto_limit)} оплатит бюджет ${own}, заявка одобрится сама. Пак дороже уйдёт заявкой снабжению.`;
+    text = `Начальства отдела${budget.id === 'SEC' ? '' : ' и ИИ'} на смене нет: пак своего каталога до ${formatCredits(budget.auto_limit)}, кроме расходников, оплатит бюджет ${own}, заявка одобрится сама. Пак дороже уйдёт заявкой снабжению.`;
+  }
+  if (!budget.manager && budget.staple_left !== undefined) {
+    text += ` Расходники своего отдела вы заказываете без одобрения, по своему часовому лимиту, осталось ${formatCredits(budget.staple_left)} Сверх остатка расходник ждёт решения${budget.approver ? '' : ' или уходит заявкой снабжению'}, сам он не одобряется.`;
   }
   return (
     <NoticeBox info>

@@ -2,7 +2,7 @@
 	id = "mod"
 	starting_node = TRUE
 	display_name = "Basic Modular Suits"
-	description = "Specialized back mounted power suits with various different modules."
+	description = "Специализированные силовые костюмы с размещением за спиной и различными модулями."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	design_ids = list(
 		"mod_shell",
@@ -28,7 +28,7 @@
 /datum/techweb_node/mod_advanced
 	id = "mod_advanced"
 	display_name = "Advanced Modular Suits"
-	description = "More advanced modules, to improve modular suits."
+	description = "Более продвинутые модули для улучшения модульных костюмов."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod", "robotics")
 	design_ids = list(
@@ -57,7 +57,7 @@
 /datum/techweb_node/mod_engineering
 	id = "mod_engineering"
 	display_name = "Engineering Modular Suits"
-	description = "Engineering suits, for powered engineers."
+	description = "Инженерные костюмы для инженеров-силовиков."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_advanced", "engineering")
 	design_ids = list(
@@ -75,7 +75,7 @@
 /datum/techweb_node/mod_advanced_engineering
 	id = "mod_advanced_engineering"
 	display_name = "Advanced Engineering Modular Suits"
-	description = "Advanced Engineering suits, for advanced powered engineers."
+	description = "Продвинутые инженерные костюмы для продвинутых инженеров-силовиков."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_engineering", "adv_engi")
 	design_ids = list(
@@ -91,7 +91,7 @@
 /datum/techweb_node/mod_medical
 	id = "mod_medical"
 	display_name = "Medical Modular Suits"
-	description = "Medical suits for quick rescue purposes."
+	description = "Медицинские костюмы для быстрого спасения."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_advanced", "biotech")
 	design_ids = list(
@@ -110,7 +110,7 @@
 /datum/techweb_node/mod_advanced_medical
 	id = "mod_advanced_medical"
 	display_name = "Advanced Medical Modular Suits"
-	description = "Advanced medical suits for quicker rescue purposes."
+	description = "Продвинутые медицинские костюмы для более быстрого спасения."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_medical", "adv_biotech")
 	design_ids = list(
@@ -124,7 +124,7 @@
 /datum/techweb_node/mod_security
 	id = "mod_security"
 	display_name = "Security Modular Suits"
-	description = "Security suits for space crime handling."
+	description = "Костюмы охраны для борьбы с космической преступностью."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_advanced", "sec_basic")
 	design_ids = list(
@@ -145,7 +145,7 @@
 /datum/techweb_node/mod_entertainment
 	id = "mod_entertainment"
 	display_name = "Entertainment Modular Suits"
-	description = "Powered suits for protection against low-humor environments."
+	description = "Силовые костюмы для защиты от сред с низким чувством юмора."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_advanced", "clown")
 	design_ids = list(
@@ -160,7 +160,7 @@
 /datum/techweb_node/mod_anomaly
 	id = "mod_anomaly"
 	display_name = "Anomalock Modular Suits"
-	description = "Modules for modular suits that require anomaly cores to function."
+	description = "Модули для модульных костюмов, для работы которых требуются ядра аномалий."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_advanced", "anomaly_research")
 	design_ids = list(
@@ -174,7 +174,7 @@
 /datum/techweb_node/mod_superior
 	id = "mod_superior"
 	display_name = "Superior Modular Suits"
-	description = "Constructively upgraded versions of old modules which can greately enhance modular suit usefulness."
+	description = "Конструктивно улучшенные версии старых модулей, которые могут значительно повысить полезность модульных костюмов."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_anomaly")
 	design_ids = list(
