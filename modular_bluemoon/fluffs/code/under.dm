@@ -1013,11 +1013,18 @@
 
 /obj/item/clothing/underwear/shirt/h_thin_tshirt
 	name = "Thin T-shirt"
-	desc = "Обычная темная майка."
+	desc = "Обычная облегающая майка настоящего мужчины."
 	icon_state = "h_thin_tshirt"
 	item_state = "h_thin_tshirt"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'
+	var/list/poly_colors = list("#FFFFFF")
+
+/obj/item/clothing/under/h_thin_tshirt/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#FFFFFF"), 1)
+
 
 /obj/item/clothing/underwear/briefs/h_thin_slim_tshirt
 	name = "Slim T-shirt"
@@ -1026,6 +1033,14 @@
 	item_state = "h_slim_tshirt"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'
+	body_parts_covered = CHEST|GROIN
+	var/list/poly_colors = list("#FFFFFF")
+
+/obj/item/clothing/under/h_thin_slim_tshirt/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#FFFFFF"), 1)
+
 
 /obj/item/clothing/underwear/briefs/h_thin_eslim_tshirt
 	name = "EXTRA Slim T-shirt"
@@ -1034,6 +1049,14 @@
 	item_state = "h_eslim_tshirt"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'
+	body_parts_covered = CHEST|GROIN
+	var/list/poly_colors = list("#FFFFFF")
+
+/obj/item/clothing/under/h_thin_eslim_tshirt/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#FFFFFF"), 1)
+
 
 /obj/item/clothing/under/donator/bm/renory_jumpsuit
 	name = "Leather Jumpsuit"
