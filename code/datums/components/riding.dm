@@ -518,12 +518,12 @@
 		RIDING_BELLY 				= list(TEXT_NORTH = list(0, 2), TEXT_SOUTH = list(0, 2), TEXT_EAST = list(10, 0), TEXT_WEST = list(-10, 0)),
 		RIDING_BELLY_TAUR 			= list(TEXT_NORTH = list(0, -7), TEXT_SOUTH = list(0, -7), TEXT_EAST = list(-3, -12), TEXT_WEST = list(3, -12)),
 		RIDING_BELLY_REVERSED		= list(TEXT_NORTH = list(-1, 4), TEXT_SOUTH = list(-1, 4), TEXT_EAST = list(5, 5), TEXT_WEST = list(-6, 5)),
-		RIDING_BELLY_TAUR_REVERSED	= list(TEXT_NORTH = list(-1, 2), TEXT_SOUTH = list(-1, 2), TEXT_EAST = list(2, -11), TEXT_WEST = list(-2, -11)),
+		RIDING_BELLY_TAUR_REVERSED	= list(TEXT_NORTH = list(-1, 2), TEXT_SOUTH = list(-1, 2), TEXT_EAST = list(1, -13), TEXT_WEST = list(-1, -13)),
 		"lying" 					= list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(0, 6), TEXT_WEST = list(0, 6)),
 		"else" 						= list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(-6, 6), TEXT_WEST = list(6, 6)),
 	)
 	var/key_name = buckle_type
-	
+
 	if(RIDING_IS_BELLY(key_name) && belly_harness?.reversed_pose)
 		key_name = (key_name == RIDING_BELLY_TAUR ? RIDING_BELLY_TAUR_REVERSED : RIDING_BELLY_REVERSED)
 	var/list/result = offsets_by_type[key_name]
@@ -577,8 +577,8 @@
 	var/front_y
 	// Поправки на размер отсчитываются от точки крепления и положения рта на спрайте при 100%.
 	if(pose == RIDING_BELLY_TAUR_REVERSED)
-		side_x = -7 * carrier_size_delta + 9 * passenger_size_delta
-		side_y = -11 * carrier_size_delta
+		side_x = -8 * carrier_size_delta + 9 * passenger_size_delta
+		side_y = -13 * carrier_size_delta
 		front_y = -6 * carrier_size_delta + 8 * passenger_size_delta
 	else
 		side_x = 4.5 * carrier_size_delta + passenger_size_delta
