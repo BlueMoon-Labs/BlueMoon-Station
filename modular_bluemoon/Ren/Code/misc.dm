@@ -283,6 +283,8 @@
 	var/on_throw_speed = 2
 	var/active = 0
 	var/clumsy_check = TRUE
+	slowdown = 0
+
 
 /obj/item/shield/inteq_energy/Initialize(mapload)
 	. = ..()
