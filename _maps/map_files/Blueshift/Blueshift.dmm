@@ -49025,11 +49025,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 5
 	},
-<<<<<<< ours
-/obj/machinery/equipment_vendor/vanguard,
-=======
 /obj/machinery/bountyvend/plus,
->>>>>>> theirs
 /turf/open/floor/circuit,
 /area/command/gateway)
 "hwF" = (
