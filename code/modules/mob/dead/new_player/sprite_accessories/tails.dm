@@ -1181,13 +1181,3 @@
 	name = "Wolf"
 	icon_state = "wolf"
 	matrixed_sections = MATRIX_RED
-
-/datum/sprite_accessory/tails/mam_tail/takahiro_kitsune
-	name = "Takahiro Kitsune Tails"
-	icon_state = "7sune"
-	matrixed_sections = MATRIX_RED_GREEN
-
-/datum/sprite_accessory/tails_animated/mam_tails_animated/takahiro_kitsune
-	name = "Takahiro Kitsune Tails"
-	icon_state = "7sune"
-	matrixed_sections = MATRIX_RED_GREEN

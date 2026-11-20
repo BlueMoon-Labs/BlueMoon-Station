@@ -21,7 +21,6 @@
 	a_intent = INTENT_HARM
 	stop_automated_movement = 1
 	status_flags = CANPUSH
-	move_resist = MOVE_FORCE_STRONG
 	attack_sound = 'sound/magic/demon_attack1.ogg'
 	var/feast_sound = 'sound/magic/demon_consume.ogg'
 	death_sound = 'sound/magic/demon_dies.ogg'
@@ -40,7 +39,6 @@
 	melee_damage_upper = 30
 	wound_bonus = 10
 	bare_wound_bonus = 15
-	armour_penetration = 30
 	sharpness = SHARP_EDGED
 	see_in_dark = 8
 	blood_volume = 0 //No bleeding on getting shot, for skeddadles

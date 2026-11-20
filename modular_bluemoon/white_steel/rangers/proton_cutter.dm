@@ -68,7 +68,7 @@
 		if(last_activation + recharge < world.time)
 			icon_state = "proton-on"
 			item_state = "proton-on"
-			light_range = 5
+			light_range = 3
 			playsound(user, 'modular_bluemoon/white/Feline/sounds/proton_cutter.ogg', 100, TRUE)
 			user.visible_message(span_warning("Протонный резак в руках [user] выплескивает шквал искр!"), span_notice("Форсирую генератор гамма излучения. Протонный резак выплескивает шквал искр!"))
 			sparks.start()
@@ -100,7 +100,7 @@
 /obj/item/melee/sabre/proton_cutter/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)	// 	Атака
 	// 	Мобы
 	if(!iscarbon(M) && !iscyborg(M))
-		if(amplification && !ismegafauna(M) && !M.mind)
+		if(amplification && !ismegafauna(M))
 			if(ishostile(M))
 				var/mob/living/simple_animal/stun_target = M
 				stun_target.toggle_ai(AI_OFF)
@@ -109,10 +109,6 @@
 			force = 60
 			M.Paralyze(5 SECONDS, ignore_canstun = TRUE)
 			M.Jitter(5 SECONDS)
-			proton_off()
-			proton_attack(M, user, 5)
-		else if(amplification && M.mind && !ismegafauna(M))
-			force = 60
 			proton_off()
 			proton_attack(M, user, 5)
 		else if(amplification)
@@ -124,7 +120,7 @@
 // 	Киборги
 	if(iscyborg(M))
 		if(amplification)
-			force = 25
+			force = 30
 			M.Paralyze(5 SECONDS)
 			proton_off()
 			proton_attack(M, user, 5)
@@ -135,7 +131,7 @@
 // 	Космонавтики
 	if(iscarbon(M) && !isalien(M))
 		if(amplification)
-			force = 20
+			force = 25
 			M.add_movespeed_modifier(/datum/movespeed_modifier/proton_cutter)
 			addtimer(CALLBACK(M, /mob/proc/remove_movespeed_modifier, /datum/movespeed_modifier/proton_cutter), 5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 			proton_off()
@@ -149,15 +145,15 @@
 		if(amplification)
 			force = 60
 
-			if(ishostile(M) && !isalienroyal(M) && !M.mind)
+			if(ishostile(M) && !isalienroyal(M))
 				var/mob/living/simple_animal/stun_target = M
 				stun_target.toggle_ai(AI_OFF)
 				addtimer(CALLBACK(stun_target, /mob/living/simple_animal/proc/re_ai), 5 SECONDS)
 				addtimer(CALLBACK(M, /atom/proc/cut_overlay, stun_overlay), 5 SECONDS)
 
-			if(!isalienroyal(M) && !M.mind)
+			if(!isalienroyal(M))
 				M.Paralyze(5 SECONDS, ignore_canstun = TRUE)
-			else if(isalienroyal(M))
+			else
 				M.add_movespeed_modifier(/datum/movespeed_modifier/proton_cutter_heavy)
 				addtimer(CALLBACK(M, /mob/proc/remove_movespeed_modifier, /datum/movespeed_modifier/proton_cutter_heavy), 5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 
@@ -171,11 +167,8 @@
 	force = initial(force)
 	..(M, user, attackchain_flags, damage_multiplier)
 
-//WHITE-STEEL PORT: урон по структурам всегда базовый, без учёта force,
-//оставшегося после атаки по мобу (там force временно поднимается до 60).
-/obj/item/melee/sabre/proton_cutter/attack_obj(obj/O, mob/living/user)
-	force = initial(force)
-	. = ..()
+/obj/item/melee/sabre/proton_cutter/get_damage_to_obj(obj/O, mob/living/user)
+	return 60
 
 /obj/item/storage/belt/avangard_belt
 	name = "Vanguard belt"

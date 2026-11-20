@@ -325,7 +325,7 @@
 		/obj/item/broken/bulldog = 1500,
 		/obj/item/broken/ushm = 5000,
 		/obj/item/broken/sniper_rifle = 5000,
-		/obj/item/broken = 1,
+		/obj/item/broken = 10000000,
 		/obj/item/broken/vss = 3500,
 		/obj/item/broken/homemadeak = 4500,
 		/obj/item/broken/m1garand = 2250,
@@ -360,10 +360,8 @@
 		/obj/item/clothing/under/syndicate/combat/civil = 0,
 		/obj/item/clothing/head/soft/sec/syndicate/civil = 0,
 		/obj/item/clothing/head/beret/sec/syndicate/civil = 0,
-		/obj/item/gun/ballistic/revolver/gatfruit = 0, //Спасибо дорогой публику ДС-1!
 		/obj/item/clothing/under/syndicate/maid/civil = 0,
 		/obj/item/gun/ballistic/automatic/ak12/r = 0, // ПОШЁЛ НАХУЙ НОКС!!!
-		/obj/item/gun/ballistic/automatic/pistol/sigsauer = 0,
 		//Mechs
 		/obj/vehicle/sealed/mecha/combat/five_stars = 100000,
 		/obj/vehicle/sealed/mecha/combat/durand/zeus = 25000,

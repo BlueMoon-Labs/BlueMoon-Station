@@ -840,11 +840,6 @@
 /mob/living/simple_animal/hostile/looter/crusher,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/Luter_Ship/Large_Ship)
-"Ae" = (
-/obj/structure/table/reinforced,
-/obj/item/paper/fluff/ruins/forgottenship/password,
-/turf/open/floor/mineral/plastitanium,
-/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
 "Cy" = (
 /obj/machinery/light/small/directional/north,
 /mob/living/simple_animal/hostile/looter/ranged/space,
@@ -1803,7 +1798,7 @@ af
 co
 af
 VF
-Ae
+cO
 bg
 aD
 cD

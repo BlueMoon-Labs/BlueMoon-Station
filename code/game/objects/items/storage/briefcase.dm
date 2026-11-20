@@ -113,14 +113,3 @@
 	new /obj/item/healthanalyzer(src)
 	..() //Incase of paperwork
 
-/obj/item/storage/briefcase/medical/psychologist
-
-	name = "psychologist briefcase"
-	desc = "A white with a blue cross brieface, this is meant to hold a psychologist medicne."
-
-/obj/item/storage/briefcase/medical/psychologist/PopulateContents()
-	new /obj/item/storage/pill_bottle/mannitol(src)
-	new /obj/item/storage/pill_bottle/psicodine(src)
-	new /obj/item/storage/pill_bottle/paxpsych(src)
-	new /obj/item/storage/pill_bottle/happinesspsych(src)
-	new /obj/item/storage/pill_bottle/lsdpsych(src)

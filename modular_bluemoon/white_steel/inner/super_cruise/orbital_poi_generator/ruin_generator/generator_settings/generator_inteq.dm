@@ -31,10 +31,11 @@
 		/obj/item/storage/fancy/cigarettes/cigpack_inteq = 2,
 		/obj/item/storage/box/inteq_box = 1,
 		/obj/item/storage/box/inteq_box/inteq_clothes = 1,
-		/obj/item/documents/inteq = 0.05,
-		/obj/item/folder/inteq = 0.05,
+		/obj/item/documents/inteq = 0.1,
+		/obj/item/folder/inteq = 0.1,
 		/obj/item/clothing/under/inteq = 1,
 		/obj/item/storage/toolbox/inteq = 1,
+		/obj/item/gun/ballistic/revolver/inteq = 0.1,
 		null = 130,
 	)
 	. += get_broken_stuff()

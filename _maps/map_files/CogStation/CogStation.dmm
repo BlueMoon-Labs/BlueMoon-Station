@@ -6576,7 +6576,7 @@
 /turf/open/floor/wood,
 /area/service/lawoffice)
 "atb" = (
-/obj/machinery/equipment_vendor/vanguard,
+/obj/machinery/bountyvend/plus,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "atc" = (
@@ -51062,6 +51062,10 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/maintenance/department/eva)
+"diK" = (
+/turf/closed/wall/r_wall,
+/area/space,
+/area/maintenance/fore/upper)
 "dje" = (
 /obj/machinery/light_switch/directional/east,
 /obj/machinery/light,
@@ -142233,7 +142237,7 @@ aaa
 aaa
 qaC
 qaC
-rXx
+diK
 qaC
 cVy
 tUs
@@ -174035,6 +174039,26 @@ ckl
 ckl
 ckl
 ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+ckl
+"}
+kl
 ckl
 ckl
 ckl

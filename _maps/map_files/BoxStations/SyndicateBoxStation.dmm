@@ -31203,9 +31203,6 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/obj/machinery/computer/shuttle_flight/exploration{
-	dir = 4
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/science/misc_lab)
 "bUl" = (
@@ -41004,6 +41001,9 @@
 /turf/open/floor/mineral/plastitanium,
 /area/science/mixing)
 "cBC" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
 /obj/effect/landmark/event_spawn,
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -64409,10 +64409,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/locker)
-"ocM" = (
-/obj/structure/fulton_beacon,
-/turf/open/floor/mineral/plastitanium,
-/area/command/gateway)
 "ocR" = (
 /turf/closed/wall/r_wall/r_plastitanium,
 /area/science/xenobiology)
@@ -76763,7 +76759,7 @@
 /area/maintenance/aft)
 "uAC" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/line,
-/obj/machinery/equipment_vendor/vanguard,
+/obj/machinery/bountyvend/plus,
 /turf/open/floor/mineral/plastitanium,
 /area/command/gateway)
 "uBa" = (
@@ -110167,7 +110163,7 @@ cCb
 cCb
 cCb
 cCb
-ocM
+cCb
 ykT
 uAC
 wql
