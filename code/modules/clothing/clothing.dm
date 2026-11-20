@@ -490,8 +490,13 @@ BLIND     // can't see anything
 			if(istext(alpha_masks))
 				alpha_masks = list(alpha_masks)
 			for(var/alpha_state in alpha_masks)
-				var/icon/alpha = icon('icons/mob/clothing/alpha_masks.dmi', alpha_state)
-				I.Blend(alpha, ICON_MULTIPLY, -15, -15)
+				var/is_armbinder_mask = alpha_state == "armbinder_sleeves"
+				var/mask_file = is_armbinder_mask ? 'modular_splurt/icons/mob/clothing/lewd_clothing/armbinder_masks.dmi' : 'icons/mob/clothing/alpha_masks.dmi'
+				var/icon/alpha = icon(mask_file, alpha_state)
+				if(is_armbinder_mask)
+					I.Blend(alpha, ICON_MULTIPLY, 1 + round((I.Width() - alpha.Width()) / 2), 1 + round((I.Height() - alpha.Height()) / 2))
+				else
+					I.Blend(alpha, ICON_MULTIPLY, -15, -15)
 		. = GLOB.alpha_masked_worn_icons[index] = fcopy_rsc(I)
 	catch(var/exception/icon_error)
 		return note_icon_alloc_failure("одежда с альфа-маской [index]", icon_error)
