@@ -274,74 +274,81 @@
 	desc = "Used to manage access to research and manufacturing databases."
 	icon_screen = "generic"
 	icon_keyboard = "rd_key"
-	var/screen = 0
-	var/obj/machinery/rnd/server/temp_server
-	var/list/servers = list()
-	var/list/consoles = list()
-	var/badmin = 0
 	circuit = /obj/item/circuitboard/computer/rdservercontrol
 
-/obj/machinery/computer/rdservercontrol/Topic(href, href_list)
-	if(..())
-		return
+/obj/machinery/computer/rdservercontrol/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "RDServerControl", name)
+		ui.open()
 
-	add_fingerprint(usr)
-	usr.set_machine(src)
-	if(!src.allowed(usr) && !(obj_flags & EMAGGED))
-		to_chat(usr, "<span class='danger'>Доступ запрещён.</span>")
-		return
+/obj/machinery/computer/rdservercontrol/ui_data(mob/user)
+	var/list/data = list()
+	var/list/server_data = list()
+	var/list/networks = list()
+	var/online_servers = 0
+	var/total_income = 0
+	var/index = 0
 
-	if(href_list["main"])
-		screen = 0
+	for(var/obj/machinery/rnd/server/S in GLOB.machines)
+		if(QDELETED(S))
+			continue
+		index++
+		var/turf/T = get_turf(S)
+		var/datum/techweb/web = S.stored_research
+		var/connected = !!web
+		var/income = 0
+		if(S.working && connected)
+			var/list/mining_result = S.mine()
+			income = round(mining_result[TECHWEB_POINT_TYPE_GENERIC] || 0, 0.1)
+		if(S.working)
+			online_servers++
+		if(connected)
+			networks[web] = TRUE
+		total_income += income
 
-	updateUsrDialog()
-	return
+		var/status = "online"
+		if(S.machine_stat & BROKEN)
+			status = "broken"
+		else if(S.machine_stat & NOPOWER)
+			status = "no_power"
+		else if(S.machine_stat & EMPED)
+			status = "emp"
+		else if(!S.working)
+			status = "overheated"
+		else if(S.obj_flags & EMAGGED)
+			status = "emagged"
 
-/obj/machinery/computer/rdservercontrol/ui_interact(mob/user)
+		var/env_temp = S.get_env_temp()
+		server_data += list(list(
+			"id" = uppertext(S.server_id),
+			"path" = "C:\\RND\\SERVER_[index]",
+			"network" = connected ? (web.organization || "НЕИЗВЕСТНО") : "НЕ ПОДКЛЮЧЕН",
+			"connected" = connected,
+			"location" = T ? "([T.x], [T.y], [T.z])" : "НЕИЗВЕСТНО",
+			"income" = income,
+			"temperature" = round(env_temp - T0C),
+			"temp_high" = round(S.temp_tolerance_high - T0C),
+			"temp_critical" = round(S.temp_tolerance_high + 50 - T0C),
+			"status" = status,
+		))
+
+	data["servers"] = server_data
+	data["total_servers"] = length(server_data)
+	data["online_servers"] = online_servers
+	data["network_count"] = length(networks)
+	data["total_income"] = round(total_income, 0.1)
+	data["emagged"] = !!(obj_flags & EMAGGED)
+	return data
+
+/obj/machinery/computer/rdservercontrol/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
-	var/dat = ""
+	if(.)
+		return
 
-	switch(screen)
-		if(0)
-			var/total_servers = 0
-			for(var/obj/machinery/rnd/server/S in GLOB.machines)
-				total_servers++
-
-			// Шапка со всяким флаффом декоративным
-			dat += "<b>Nanotrasen Research Division DOS v3.4.2</b><br>"
-			dat += "Copyright (C) 2565 Nanotrasen Corporation<br>"
-			dat += "All Rights Reserved.<br><br>"
-			dat += "Initializing system resources... <span class='dim'>OK</span><br>"
-			dat += "Loading device drivers... <span class='dim'>OK</span><br>"
-			dat += "Establishing uplink... <span class='dim'>CONNECTED</span><br>"
-			dat += "Loading R&D server control interface... <span class='dim'>READY</span><br>"
-			dat += "<hr>"
-			// Реальная информация
-			dat += "C:\\>Connected Servers<br><br>"
-			if(total_servers == 0)
-				dat += "NO SERVERS DETECTED.<br>"
-			else
-				var/i = 1
-				for(var/obj/machinery/rnd/server/S in GLOB.machines)
-					var/turf/T = get_turf(S) // Ищем координаты
-					var/web_info = S.stored_research ? S.stored_research.organization : "НЕ ПОДКЛЮЧЕН"
-					dat += "[i]. Server: [uppertext(S.server_id)]<br>"
-					dat += "___Path: C:\\RND\\SERVER_[i]<br>"
-					dat += "___Income stream: <b>[S.income_gen]</b> RP/tick<br>"
-					dat += "___Research network: <b>[web_info]</b><br>"
-					dat += "___Server location: ([T.x], [T.y], [T.z])<br><br>"
-					i++
-				dat += "Total servers detected: <b>[total_servers]</b><br>"
-
-			dat += "<hr>"
-			dat += "C:\\>System ready.<br>"
-			dat += "C:\\>"
-
-	var/datum/browser/popup = new(user, "server_control", "R&D Server Control", 600, 450)
-	popup.add_head_content({"<style>body { background-color: #000000; color: #00FF00; font-family: 'Courier New', monospace; font-size: 13px; } hr { border: 1px solid #00FF00; } b { color: #80FF80; } .dim { color: #007700; }</style>"})
-	popup.set_content(dat)
-	popup.open()
-	return
+	switch(action)
+		if("refresh")
+			return TRUE
 
 /obj/machinery/computer/rdservercontrol/attackby(obj/item/D, mob/user, params)
 	. = ..()
