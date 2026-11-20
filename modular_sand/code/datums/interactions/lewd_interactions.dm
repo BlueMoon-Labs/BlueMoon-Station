@@ -34,7 +34,7 @@
 	// Validate special constructions for BOTH carbon anatomy and synthetic profiles.
 	// These flags were previously declared but never enforced in evaluate_user().
 	if(required_from_user & (INTERACTION_REQUIRE_KNOT | INTERACTION_REQUIRE_DOUBLE_PENIS))
-		var/knot_capability = SYNTHETIC_KNOT_NONE
+		var/knot_capability = user.get_knotting_capability()
 		var/has_double_penis = FALSE
 		if(iscyborg(user))
 			var/mob/living/silicon/robot/R = user
@@ -45,7 +45,6 @@
 			var/mob/living/carbon/C = user
 			var/obj/item/organ/genital/penis/P = C.getorganslot(ORGAN_SLOT_PENIS)
 			if(P && !QDELETED(P))
-				knot_capability = P.knot_size
 				// Match the criterion which sets this flag in the interaction menu.
 				has_double_penis = !!findtext(get_penis_shape_desc(C), "двойн")
 		if((required_from_user & INTERACTION_REQUIRE_KNOT) && knot_capability < SYNTHETIC_KNOT_SINGLE)
