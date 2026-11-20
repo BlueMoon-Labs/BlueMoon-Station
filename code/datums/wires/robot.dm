@@ -47,10 +47,11 @@
 						R.notify_ai(AI_SHELL)
 					else
 						R.notify_ai(TRUE)
-		if(WIRE_CAMERA) // Pulse to disable the camera.
+		if(WIRE_CAMERA)
 			if(!QDELETED(R.builtInCamera) && !R.scrambledcodes)
-				R.builtInCamera.toggle_cam(usr, 0)
-				R.visible_message("Линзы камеры [R] громко фокусируются.", "Линзы вашей камеры громко фокусируются.")
+				if(R.builtInCamera.status || !(R.disabled_modules & BORG_MODULE_ALL_DISABLED))
+					R.builtInCamera.toggle_cam(null, FALSE)
+					R.visible_message("Линзы камеры [R] громко фокусируются.", "Линзы вашей камеры громко фокусируются.")
 		if(WIRE_LAWSYNC) // Forces a law update if possible.
 			if(R.lawupdate)
 				R.visible_message("[R] негромко звенит.", "Протокол LawSync задействован.")
@@ -77,11 +78,12 @@
 					R.lawupdate = TRUE
 			else if(!R.deployed) //AI shells must always have the same laws as the AI
 				R.lawupdate = FALSE
-		if (WIRE_CAMERA) // Disable the camera.
+		if(WIRE_CAMERA)
 			if(!QDELETED(R.builtInCamera) && !R.scrambledcodes)
-				R.builtInCamera.status = mend
-				R.builtInCamera.toggle_cam(usr, 0)
-				R.visible_message("Линзы камеры [R] громко фокусируются.", "Линзы вашей камеры громко фокусируются.")
+				var/should_enable = mend && !(R.disabled_modules & BORG_MODULE_ALL_DISABLED)
+				if(R.builtInCamera.status != should_enable)
+					R.builtInCamera.toggle_cam(null, FALSE)
+					R.visible_message("Линзы камеры [R] громко фокусируются.", "Линзы вашей камеры громко фокусируются.")
 		if(WIRE_LOCKDOWN) // Simple lockdown.
 			R.SetLockdown(!mend)
 		if(WIRE_RESET_MODULE)

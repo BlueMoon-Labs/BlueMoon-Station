@@ -18,7 +18,7 @@
 	var/list/full_options = list()
 	LAZYADD(full_options, GLOB.genital_fluids_list)
 	new_fluid = tgui_input_list(src, "Silicon Liquid", "Liquid selection", full_options)
-	if(new_fluid && iscyborg(src))
+	if(new_fluid && (new_fluid in GLOB.genital_fluids_list) && iscyborg(src) && !QDELETED(src))
 		var/mob/living/silicon/robot/R = src
 		R.current_fluid = new_fluid
 		refill_fluid(R)
@@ -87,7 +87,7 @@
 			R.silicon_fluid.copy_to(copy, R.silicon_fluid.total_volume)
 			if(istype(receiver, /obj/item/organ/genital/vagina) || istype(receiver, /obj/item/organ/genital/anus))
 				cummed_on.apply_status_effect(STATUS_EFFECT_DRIPPING_CUM, copy, get_blood_dna_list(), receiver)
-		R.silicon_fluid.trans_to(target,R.silicon_fluid.total_volume, log = TRUE)
+		R.silicon_fluid.trans_to(resolve_pleasuremaw_fluid_target(target, spill), R.silicon_fluid.total_volume, log = TRUE)
 
 	if(!Process_Spacemove(turn(dir, 180)))
 		newtonian_move(turn(dir, 180))
@@ -221,6 +221,7 @@
 					partner = forced_partner
 			if(partner)
 				mob_climax_partner_silicon(R, partner, forced_spillage, 0, forced_receiving_genital, forced_climax, anonymous)
+				return // One release, never also produce a second outside.
 		mob_climax_outside_silicon(R, mb_time = 0)
 		return
 

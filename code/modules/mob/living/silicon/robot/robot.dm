@@ -168,6 +168,8 @@
 	return ..()
 
 /mob/living/silicon/robot/proc/pick_module()
+	if(!client || !module || QDELETED(module))
+		return
 	if(module.type != /obj/item/robot_module)
 		return
 
@@ -189,8 +191,8 @@
 	if(BORG_SEC_AVAILABLE || CONFIG_GET(flag/bypass_secborg_code))
 		modulelist["Security"] = /obj/item/robot_module/security
 
-	var/input_module = input("Please, select a module!", "Robot", null, null) as null|anything in sort_list(modulelist)
-	if(!input_module || module.type != /obj/item/robot_module)
+	var/input_module = input(src, "Please, select a module!", "Robot", null) as null|anything in sort_list(modulelist)
+	if(!input_module || !client || QDELETED(module) || module.type != /obj/item/robot_module)
 		return
 
 	module.transform_to(modulelist[input_module])
@@ -328,6 +330,7 @@
 				to_chat(user, span_notice("You start fixing [src]..."))
 				if(!W.use_tool(src, user, 3 SECONDS, 1))
 					to_chat(user, span_warning("You need more cable to repair [src]!"))
+					return
 				adjustFireLoss(-30)
 				adjustToxLoss(-30)
 				updatehealth()

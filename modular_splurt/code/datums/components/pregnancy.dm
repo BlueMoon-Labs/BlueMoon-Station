@@ -26,6 +26,8 @@
 	COOLDOWN_DECLARE(hatch_request_cooldown)
 	/// Prevent multiple hatch() calls during the ghost poll/name dialog.
 	var/hatch_in_progress = FALSE
+	/// Active only while an egg has no living carrier; cancelled on insertion.
+	var/tmp/external_stage_timer
 
 	var/added_size = 0
 	/// this boolean is for identifying whether this preg is in the egg state or not
@@ -97,6 +99,11 @@
 /datum/component/pregnancy/RegisterWithParent()
 	if(carrier)
 		register_carrier()
+
+	if(container && !QDELETED(container))
+		register_container()
+	if(!carrier)
+		schedule_external_incubation()
 	RegisterSignal(parent, COMSIG_ATOM_ENTERING, PROC_REF(on_entering))
 	RegisterSignal(parent, COMSIG_OBJ_BREAK, PROC_REF(on_obj_break))
 	RegisterSignal(parent, COMSIG_OBJ_WRITTEN_ON, PROC_REF(name_egg))
@@ -106,6 +113,9 @@
 /datum/component/pregnancy/UnregisterFromParent()
 	if(carrier)
 		unregister_carrier()
+	if(container)
+		unregister_container()
+	cancel_external_incubation()
 	UnregisterSignal(parent, COMSIG_ATOM_ENTERING)
 	UnregisterSignal(parent, COMSIG_OBJ_BREAK)
 	UnregisterSignal(parent, COMSIG_OBJ_WRITTEN_ON)
@@ -115,7 +125,7 @@
 /datum/component/pregnancy/proc/register_carrier()
 	if(!carrier || QDELETED(carrier))
 		return
-	if(coordinator && coordinator.carrier == carrier)
+	if(coordinator && !QDELETED(coordinator) && coordinator.carrier == carrier)
 		return
 	var/datum/pregnancy_coordinator/M = carrier.pregnancy_coordinator
 	if(!M || QDELETED(M))
@@ -128,7 +138,45 @@
 		coordinator.remove_pregnancy(src)
 	coordinator = null
 
+/// Egg tracking follows the *organ*, not just its former owner.
+/// No periodic polling: the organ already emits insertion/removal signals.
+/datum/component/pregnancy/proc/register_container()
+	if(!container || QDELETED(container))
+		return
+	RegisterSignal(container, COMSIG_ORGAN_INSERTED, PROC_REF(on_container_inserted))
+	RegisterSignal(container, COMSIG_ORGAN_REMOVED, PROC_REF(on_container_removed))
+
+/datum/component/pregnancy/proc/unregister_container()
+	if(container && !QDELETED(container))
+		UnregisterSignal(container, list(COMSIG_ORGAN_INSERTED, COMSIG_ORGAN_REMOVED))
+
+/datum/component/pregnancy/proc/on_container_inserted(datum/source)
+	SIGNAL_HANDLER
+	if(source != container || QDELETED(container))
+		return
+	var/mob/living/new_carrier = container.owner
+	if(carrier == new_carrier)
+		return
+	if(carrier)
+		unregister_carrier()
+	carrier = new_carrier
+	if(carrier)
+		cancel_external_incubation()
+		pregnancy_inflation = carrier.client?.prefs?.pregnancy_inflation
+		pregnancy_breast_growth = carrier.client?.prefs?.pregnancy_breast_growth
+		register_carrier()
+
+/datum/component/pregnancy/proc/on_container_removed(datum/source)
+	SIGNAL_HANDLER
+	if(source != container)
+		return
+	if(carrier)
+		unregister_carrier()
+	carrier = null
+	schedule_external_incubation()
+
 /datum/component/pregnancy/Destroy()
+	cancel_external_incubation()
 	unregister_carrier()
 	return ..()
 
@@ -162,26 +210,48 @@
 
 /datum/component/pregnancy/proc/on_entering(datum/source, atom/destination, atom/oldLoc)
 	SIGNAL_HANDLER
+	var/obj/item/organ/new_container = istype(destination, /obj/item/organ) ? destination : null
+	if(new_container == container)
+		return
 
-	if(istype(destination, /obj/item/organ))
-		var/obj/item/organ/preg_container = destination
-		if(!preg_container.owner)
-			if(carrier)
-				unregister_carrier()
-			carrier = null
-			container = null
-			return
-		if(carrier != preg_container.owner)
-			unregister_carrier()
-		carrier = preg_container.owner
-		container = preg_container
+	var/mob/living/new_carrier = new_container?.owner
+	if(container)
+		unregister_container()
+	if(carrier && carrier != new_carrier)
+		unregister_carrier()
+
+	container = new_container
+	carrier = new_carrier
+	if(container)
+		register_container()
+	if(carrier)
+		cancel_external_incubation()
 		pregnancy_inflation = carrier.client?.prefs?.pregnancy_inflation
 		pregnancy_breast_growth = carrier.client?.prefs?.pregnancy_breast_growth
 		register_carrier()
-	else if(carrier)
-		unregister_carrier()
-		carrier = null
-		container = null
+	else
+		schedule_external_incubation()
+
+/// Laid eggs and eggs in detached organs still mature without a carrier.
+/// Only one stoppable timer per egg is active, and it ends at max_stage.
+/datum/component/pregnancy/proc/schedule_external_incubation()
+	if(carrier || QDELETED(parent) || stage >= max_stage || external_stage_timer)
+		return
+	external_stage_timer = addtimer(CALLBACK(src, PROC_REF(advance_external_stage)), max(1, COOLDOWN_TIMELEFT(src, stage_time)), TIMER_STOPPABLE)
+
+/datum/component/pregnancy/proc/cancel_external_incubation()
+	if(external_stage_timer)
+		deltimer(external_stage_timer)
+		external_stage_timer = null
+
+/datum/component/pregnancy/proc/advance_external_stage()
+	external_stage_timer = null
+	if(carrier || QDELETED(parent) || stage >= max_stage)
+		return
+	if(COOLDOWN_FINISHED(src, stage_time))
+		stage = min(stage + 1, max_stage)
+		COOLDOWN_START(src, stage_time, PREGNANCY_STAGE_DURATION)
+	schedule_external_incubation()
 
 /datum/component/pregnancy/proc/handle_life(seconds)
 	SIGNAL_HANDLER
@@ -246,33 +316,27 @@
 
 	if(QDELETED(src) || QDELETED(parent))
 		return
-	if(!LAZYLEN(candidates))
+	// If no ghosts volunteer, delivery still completes with an unoccupied mob.
+	// This is especially important for the Common Pregnancy birth verb.
+	var/mob/player = LAZYLEN(candidates) ? pick(candidates) : null
+	var/turf/birth_turf = get_turf(parent)
+	if(!birth_turf && carrier && !QDELETED(carrier))
+		birth_turf = get_turf(carrier)
+	if(!birth_turf)
 		hatch_in_progress = FALSE
-		to_chat(user, span_info("\The [parent] doesn't seems to hatch, try again later?"))
+		if(user && !QDELETED(user))
+			to_chat(user, span_warning("Роды не удалось завершить: отсутствует безопасная позиция для ребёнка."))
 		return
-
-	var/mob/player = pick(candidates)
+	if(!player && user && !QDELETED(user))
+		to_chat(user, span_notice("Никто не откликнулся на роль ребёнка. Роды завершатся без игрока."))
 
 	playsound(parent, 'sound/effects/splat.ogg', 70, TRUE)
-	var/mob/living/babby = new baby_type(get_turf(parent))
+	var/mob/living/babby = new baby_type(birth_turf)
 
-	if(ishuman(user) && ishuman(babby))
-		var/mob/living/carbon/human/human_attacker = user
-		var/datum/dna/attacker_dna = new /datum/dna
-		human_attacker.dna.copy_dna(attacker_dna)
+	if(ishuman(babby))
 		var/mob/living/carbon/human/babby_human = babby
-		attacker_dna.transfer_identity(babby_human, TRUE)
-		babby_human.real_name = attacker_dna.real_name
-
-		var/obj/item/modular_computer/pda/worn = human_attacker.wear_id
-		var/obj/item/card/id/W = human_attacker.wear_id?.GetID()
-		if(W)
-			W.registered_name = babby_human.real_name
-			W.update_label()
-			if(worn && istype(worn, /obj/item/modular_computer/pda))
-				worn.owner = W.registered_name
-				worn.update_label()
-
+		determine_baby_features(babby_human)
+		determine_baby_dna(babby_human)
 		babby_human.updateappearance(mutcolor_update=1)
 		babby_human.domutcheck()
 
@@ -284,9 +348,9 @@
 	var/name
 	if(egg_name)
 		name = egg_name
-	else if(user)
+	else if(user && !QDELETED(user))
 		name = input(user, "What will be your baby's name?", "Name the baby") as null|text
-	else
+	else if(babby.client)
 		name = input(babby, "What will be your name?", "Name yourself") as null|text
 
 	if(!name)
@@ -300,7 +364,7 @@
 		babby?.mind?.store_memory("[mother_name] is your mother!")
 
 	var/obj/item = parent
-	item.forceMove(get_turf(parent))
+	item.forceMove(birth_turf)
 	item.obj_break(MELEE)
 	qdel(src)
 
@@ -373,6 +437,34 @@
 
 	return TRUE
 
+// Inherit appearance and DNA from stored parents, never from the hatch initiator.
+/datum/component/pregnancy/proc/determine_baby_dna(mob/living/carbon/human/babby)
+	if(mother_dna && father_dna)
+		mother_dna.transfer_identity_random(father_dna, babby)
+	else if(mother_dna && !father_dna)
+		mother_dna.transfer_identity_random(babby.dna, babby)
+	else if(!mother_dna && father_dna)
+		father_dna.transfer_identity_random(babby.dna, babby)
+
+/datum/component/pregnancy/proc/determine_baby_features(mob/living/carbon/human/babby)
+	var/list/final_features = list()
+	transfer_randomized_list(final_features, mother_features, father_features)
+	if(final_features["skin_tone"])
+		babby.skin_tone = final_features["skin_tone"]
+	if(final_features["hair_color"])
+		babby.hair_color = final_features["hair_color"]
+	if(final_features["facial_hair_color"])
+		babby.facial_hair_color = final_features["facial_hair_color"]
+	if(final_features["left_eye_color"])
+		babby.left_eye_color = final_features["left_eye_color"]
+	if(final_features["right_eye_color"])
+		babby.right_eye_color = final_features["right_eye_color"]
+	babby.hair_style = pick("Bedhead", "Bedhead 2", "Bedhead 3")
+	babby.facial_hair_style = "Shaved"
+	babby.underwear = "Nude"
+	babby.undershirt = "Nude"
+	babby.socks = "Nude"
+
 /datum/component/pregnancy/proc/generic_pragency_start()
 	if(revealed)
 		carrier.apply_status_effect(/datum/status_effect/pregnancy)
@@ -406,7 +498,10 @@
 /datum/component/pregnancy/proc/fetus_mortus()
 	SIGNAL_HANDLER
 
-	if(!QDELETED(carrier) && get_turf(carrier) && (stage >= 2))
+	if(!carrier || QDELETED(carrier))
+		qdel(src)
+		return
+	if(get_turf(carrier) && stage >= 2)
 		if(!oviposition)
 			new /obj/effect/gibspawner/generic(get_turf(carrier))
 		else

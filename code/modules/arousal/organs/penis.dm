@@ -90,6 +90,7 @@
 
 /obj/item/organ/genital/penis/update_appearance()
 	. = ..()
+	update_knotting_from_shape()
 
 	var/datum/sprite_accessory/S = GLOB.cock_shapes_list[shape]
 

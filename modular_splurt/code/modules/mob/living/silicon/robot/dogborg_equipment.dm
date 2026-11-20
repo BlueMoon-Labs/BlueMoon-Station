@@ -294,80 +294,99 @@ SLEEPER CODE IS IN game/objects/items/devices/dogborg_sleeper.dm !
 	item_flags |= NOBLUDGEON
 
 /mob/living/silicon/robot
-	var/leaping = 0
-	var/pounce_cooldown = 0
-	var/pounce_cooldown_time = 20 //Buffed to counter balance changes
+	var/leaping = FALSE
+	var/pounce_cooldown = FALSE
+	var/pounce_cooldown_until = 0
+	var/pounce_cooldown_time = 20 // Existing K9 recharge duration.
 	var/pounce_spoolup = 1
 	var/leap_at
 
-#define MAX_K9_LEAP_DIST 4 //because something's definitely borked the pounce functioning from a distance.
+#define MAX_K9_LEAP_DIST 4
+
+/mob/living/silicon/robot/proc/reset_pounce_cooldown()
+	// Older callbacks cannot cancel a newer recharge.
+	if(world.time >= pounce_cooldown_until)
+		pounce_cooldown = FALSE
 
 /obj/item/dogborg/pounce/afterattack(atom/A, mob/user)
 	var/mob/living/silicon/robot/R = user
-	if(R && !R.pounce_cooldown)
-		R.pounce_cooldown = !R.pounce_cooldown
-		to_chat(R, "<span class ='warning'>Your targeting systems lock on to [A]...</span>")
-		addtimer(CALLBACK(R, TYPE_PROC_REF(/mob/living/silicon/robot, leap_at), A), R.pounce_spoolup)
-		spawn(R.pounce_cooldown_time)
-			R.pounce_cooldown = !R.pounce_cooldown
-	else if(R && R.pounce_cooldown)
+	if(!istype(R) || !A)
+		return
+	if(R.pounce_cooldown && world.time < R.pounce_cooldown_until)
 		to_chat(R, "<span class='danger'>Your leg actuators are still recharging!</span>")
+		return
+	R.pounce_cooldown = TRUE
+	R.pounce_cooldown_until = world.time + R.pounce_cooldown_time
+	to_chat(R, "<span class='warning'>Your targeting systems lock on to [A]...</span>")
+	addtimer(CALLBACK(R, TYPE_PROC_REF(/mob/living/silicon/robot, leap_at), A), R.pounce_spoolup)
+	addtimer(CALLBACK(R, TYPE_PROC_REF(/mob/living/silicon/robot, reset_pounce_cooldown)), R.pounce_cooldown_time)
 
 /mob/living/silicon/robot/proc/leap_at(atom/A)
-	if(leaping || stat || buckled || lying)
+	if(leaping || stat || buckled || lying || QDELETED(A))
 		return
-
 	if(!has_gravity(src) || !has_gravity(A))
-		to_chat(src,"<span class='danger'>It is unsafe to leap without gravity!</span>")
-		//It's also extremely buggy visually, so it's balance+bugfix
+		to_chat(src, "<span class='danger'>It is unsafe to leap without gravity!</span>")
 		return
-
-	if(cell.charge <= 750)
-		to_chat(src,"<span class='danger'>Insufficent reserves for jump actuators!</span>")
+	if(!cell || cell.charge <= 750 || !cell.use(750))
+		to_chat(src, "<span class='danger'>Insufficient reserves for jump actuators!</span>")
 		return
-
-	else
-		leaping = 1
-		//weather_immunities += "lava"
-		pixel_y = 10
-		update_icons()
-		throw_at(A, MAX_K9_LEAP_DIST, 1, spin=0, diagonals_first = 1)
-		cell.use(750) //Less than a stunbaton since stunbatons hit everytime.
-		//weather_immunities -= "lava"
+	leaping = TRUE
+	pixel_y = 10
+	update_icons()
+	throw_at(A, MAX_K9_LEAP_DIST, 1, spin = 0, diagonals_first = 1)
 
 /mob/living/silicon/robot/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
-
 	if(!leaping)
 		return ..()
-
 	if(hit_atom)
 		if(isliving(hit_atom))
 			var/mob/living/L = hit_atom
 			var/list/block_return = list()
-			//if(!L.check_shields(0, "the [name]", src, attack_type = LEAP_ATTACK))
 			if(!(L.mob_run_block(src, 0, "the [name]", ATTACK_TYPE_TACKLE, 0, src, hit_atom, block_return) & BLOCK_SUCCESS))
-				L.visible_message("<span class ='danger'>[src] pounces on [L]!</span>", "<span class ='userdanger'>[src] pounces on you!</span>")
+				L.visible_message("<span class='danger'>[src] pounces on [L]!</span>", "<span class='userdanger'>[src] pounces on you!</span>")
 				L.DefaultCombatKnockdown(50, override_stamdmg = 0)
 				playsound(src, 'sound/weapons/Egloves.ogg', 50, 1)
-				sleep(2)//Runtime prevention (infinite bump() calls on hulks)
-				step_towards(src,L)
-				log_combat(src, L, "borg pounced")
+				sleep(2) // Prevent repeated Bump() calls on hulks.
+				if(!QDELETED(L))
+					step_towards(src, L)
+					log_combat(src, L, "borg pounced")
 			else
 				Knockdown(15, 1, 1)
-
-			pounce_cooldown = !pounce_cooldown
-			spawn(pounce_cooldown_time) //3s by default
-				pounce_cooldown = !pounce_cooldown
+			pounce_cooldown_until = max(pounce_cooldown_until, world.time + pounce_cooldown_time)
+			addtimer(CALLBACK(src, PROC_REF(reset_pounce_cooldown)), pounce_cooldown_time)
 		else if(hit_atom.density && !hit_atom.CanPass(src))
-			visible_message("<span class ='danger'>[src] smashes into [hit_atom]!</span>", "<span class ='userdanger'>You smash into [hit_atom]!</span>")
+			visible_message("<span class='danger'>[src] smashes into [hit_atom]!</span>", "<span class='userdanger'>You smash into [hit_atom]!</span>")
 			playsound(src, 'sound/items/trayhit1.ogg', 50, 1)
 			Knockdown(15, 1, 1)
+	// A miss also ends the leap; never leave the borg raised or immobile.
+	leaping = FALSE
+	pixel_y = initial(pixel_y)
+	update_icons()
+	update_mobility()
 
-		if(leaping)
-			leaping = 0
-			pixel_y = initial(pixel_y)
-			update_icons()
-			update_mobility()
+// PLEASUREMAW ERP ROUTING: retain existing climax and reagent production
+// Only tools actually activated in a robot's module slots can collect liquid.
+/mob/living/silicon/robot/proc/get_equipped_pleasuremaw()
+	if(!module || (disabled_modules & BORG_MODULE_ALL_DISABLED))
+		return null
+	for(var/obj/item/sucking_machine/pleasuremaw/maw in held_items)
+		if(QDELETED(maw) || maw.loc != src || !maw.on || !(maw in module.modules))
+			continue
+		if(QDELETED(maw.inserted_item) || !maw.inserted_item.reagents)
+			continue
+		return maw
+	return null
+
+// Called only when an existing climax procedure actually delivers its reagents.
+// The non-spill flag means the recipient is being filled, not splashed.
+/proc/resolve_pleasuremaw_fluid_target(atom/target, spill)
+	if(spill || !iscyborg(target))
+		return target
+	var/mob/living/silicon/robot/borg = target
+	var/obj/item/sucking_machine/pleasuremaw/maw = borg.get_equipped_pleasuremaw()
+	if(maw)
+		return maw.inserted_item
+	return target
 
 //pleasuremaw stuff
 /obj/item/sucking_machine/pleasuremaw
