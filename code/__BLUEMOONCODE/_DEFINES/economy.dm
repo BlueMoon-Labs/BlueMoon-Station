@@ -9,7 +9,10 @@
 #define CIV_JOB_CMO 17
 #define CIV_JOB_RD 18
 
-#define ECONOMY_CONFIG_PATH "config/economy.json"
+/// economy.json в папке конфига мира: она переопределяется параметром config-directory
+#define ECONOMY_CONFIG_PATH "[global.config.directory]/economy.json"
+/// economy.json из репозитория - для тестов, что он совпадает с дефолтами кода
+#define ECONOMY_REPO_CONFIG_PATH "config/economy.json"
 #define ECON_SNAPSHOT_MAX 48
 /// От этой суммы одного движения SSeconomy.move отказывает: вся эмиссия смены около миллиона, а выше 1e7 числа BYOND теряют точность до кредита
 #define ECON_MOVE_AMOUNT_MAX 10000000

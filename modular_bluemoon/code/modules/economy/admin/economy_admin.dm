@@ -30,8 +30,8 @@ GLOBAL_VAR(economy_config_reloaded_at)
 	panel.ui_interact(mob)
 
 /datum/economy_panel
-	/// Файл, который перечитывает reload_config
-	var/config_path = ECONOMY_CONFIG_PATH
+	/// Файл, который перечитывает reload_config; null - economy.json из папки конфига мира
+	var/config_path
 	var/message = ""
 
 /datum/economy_panel/ui_state(mob/user)
@@ -358,7 +358,7 @@ GLOBAL_VAR(economy_config_reloaded_at)
 
 /datum/economy_panel/proc/reload_config(mob/user, comment)
 	var/datum/economy_settings/fresh = new
-	var/list/errors = fresh.load(config_path)
+	var/list/errors = fresh.load(config_path || ECONOMY_CONFIG_PATH)
 	GLOB.economy_config_reloaded_at = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)
 	for(var/error in errors)
 		log_config("economy.json: [error]")

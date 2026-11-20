@@ -129,7 +129,7 @@
 	var/doubled = contract.payout()
 	SSeconomy.bounty_modifier = 1
 	var/saved_mult = SSeconomy.settings.contract_delivery_mult
-	SSeconomy.settings.contract_delivery_mult = 0.5
+	SSeconomy.settings.contract_delivery_mult = 0.25
 	var/halved = contract.payout()
 	SSeconomy.settings.contract_delivery_mult = saved_mult
 	SSeconomy.bounty_modifier = saved_modifier
@@ -144,7 +144,7 @@
 	econ_test_set_balance(civilian.account, before)
 	SSeconomy.contract_demand.Cut()
 	TEST_ASSERT_EQUAL(doubled, round(contract.reward * 2 * saved_mult * civilian_mult), "Модификатор наград применяется к выплате")
-	TEST_ASSERT_EQUAL(halved, round(contract.reward * 0.5 * civilian_mult), "Множитель contract_delivery_mult применяется к выплате")
+	TEST_ASSERT_EQUAL(halved, round(contract.reward * 0.25 * civilian_mult), "Множитель contract_delivery_mult применяется к выплате")
 	TEST_ASSERT(civilian_mult < 1, "Гражданские поделки не дешевле остальных заказов по умолчанию")
 	TEST_ASSERT_EQUAL(expected, round(contract.reward * saved_mult * civilian_mult), "Гражданский заказ без множителя поделок")
 	TEST_ASSERT_EQUAL(security_payout, round(contract.reward * saved_mult), "Множитель поделок задел заказ не гражданского отдела")

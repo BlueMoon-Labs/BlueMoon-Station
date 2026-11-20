@@ -216,7 +216,7 @@
 	var/list/data = panel.ui_static_data(admin)
 	var/list/errors = data["config_errors"]
 	var/shown = length(errors) && findtext(errors[1], "tax_max")
-	panel.config_path = ECONOMY_CONFIG_PATH
+	panel.config_path = ECONOMY_REPO_CONFIG_PATH
 	press(admin, panel, "reload_config")
 	var/replaced = SSeconomy.settings != saved_settings
 	var/clean = !length(GLOB.economy_config_errors)

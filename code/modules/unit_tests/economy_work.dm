@@ -91,7 +91,7 @@
 /datum/unit_test/economy_work/prices_config/Run()
 	var/datum/economy_settings/defaults = new
 	var/datum/economy_settings/settings = new
-	TEST_ASSERT(!length(settings.load(ECONOMY_CONFIG_PATH)), "economy.json грузится без ошибок")
+	TEST_ASSERT(!length(settings.load(ECONOMY_REPO_CONFIG_PATH)), "economy.json грузится без ошибок")
 	for(var/work_type in GLOB.econ_work_names)
 		TEST_ASSERT(isnum(defaults.work_prices[work_type]), "Нет цены у работы [work_type]")
 	var/list/overrides = settings.raw["settings"] || list()
