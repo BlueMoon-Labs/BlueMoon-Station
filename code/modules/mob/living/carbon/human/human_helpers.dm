@@ -125,8 +125,9 @@
 			balloon_alert(src, "Пальцы слишком большие!")
 			return FALSE
 	if(HAS_TRAIT(src, TRAIT_NOGUNS))
-		to_chat(src, span_warning("You can't bring yourself to use a ranged weapon!"))
-		return FALSE
+		if(!istype(G, /obj/item/gun/magic/hook)) //the meat hook is a tool, not a gun, and stays usable under sleeping carp and the like
+			to_chat(src, span_warning("You can't bring yourself to use a ranged weapon!"))
+			return FALSE
 
 //Returns the bank account of an ID the user may be holding.
 /mob/living/proc/get_bank_account()

@@ -67,7 +67,19 @@
 
 /mob/living/attack_ghost(mob/dead/observer/user)
 	if(user.client && user.health_scan)
-		healthscan(user, src, advanced = TRUE, include_chemistry = TRUE)
+		healthscan(user, src, advanced = TRUE, include_chemistry = user.ghost_reagent_scan)
+	else if(user.client && user.ghost_reagent_scan)
+		chemscan(user, src)
+	return ..()
+
+// Ghost gas scanner: click any floor and get the analyzer report, no analyzer
+// required. The report is chat-only (scan_turf has no side effects on src), so
+// the instance is never given a loc and is dropped right after.
+/turf/attack_ghost(mob/dead/observer/user)
+	if(user.client && user.ghost_gas_scan && istype(src, /turf/open))
+		var/obj/item/analyzer/scanner = new(null)
+		scanner.scan_turf(user, src)
+		qdel(scanner)
 	return ..()
 
 // ---------------------------------------

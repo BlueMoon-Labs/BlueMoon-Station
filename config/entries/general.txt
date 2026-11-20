@@ -144,7 +144,8 @@ ALLOW_AI_MULTICAM
 ROUNDSTART_AWAY
 
 ## Uncomment to load one of the virtual reality levels from vr_config at roundstart.
-ROUNDSTART_VR
+## Deathmatch arenas are loaded on demand instead, see code\modules\deathmatch\.
+#ROUNDSTART_VR
 
 ## How long the delay is before the Away Mission gate opens. Default is half an hour.
 ## 600 is one minute.
