@@ -50,7 +50,7 @@
 		maxcharge = borgo.cell.maxcharge
 	data["charge"] = charge //Current cell charge
 	data["maxcharge"] = maxcharge //Cell max charge
-	data["integrity"] = ((borgo.health + 100) / 2) //Borgo health, as percentage
+	data["integrity"] = borgo.maxHealth > 0 ? clamp(round(50 + (50 * borgo.health / borgo.maxHealth)), 0, 100) : 0
 	data["lampIntensity"] = borgo.lamp_intensity //Borgo lamp power setting
 	data["sensors"] = "[borgo.sensors_on?"ACTIVE":"DISABLED"]"
 	data["printerPictures"] =  borgo.connected_ai? borgo.connected_ai.aicamera.stored.len : borgo.aicamera.stored.len //Number of pictures taken, synced to AI if available
@@ -90,10 +90,15 @@
 	if(.)
 		return
 
-	var/mob/living/silicon/robot/borgo = tablet.borgo
+	var/mob/living/silicon/robot/borgo = tablet?.borgo
+	if(!istype(borgo) || usr != borgo)
+		return
 
 	switch(action)
 		if("coverunlock")
+			// A disabled TGUI button is not a server-side permission check.
+			if(borgo.designation == "Roleplay")
+				return
 			if(borgo.locked)
 				borgo.locked = FALSE
 				borgo.update_icons()
@@ -132,7 +137,10 @@
 			borgo.toggle_ionpulse()
 
 		if("lampIntensity")
-			borgo.lamp_intensity = params["ref"]
+			var/new_intensity = params["ref"]
+			if(!isnum(new_intensity))
+				return
+			borgo.lamp_intensity = clamp(round(new_intensity), 1, 5)
 			borgo.toggle_headlamp(FALSE, TRUE)
 
 /**

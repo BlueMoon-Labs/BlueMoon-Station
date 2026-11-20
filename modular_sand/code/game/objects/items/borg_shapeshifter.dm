@@ -15,6 +15,12 @@
 	var/savedOverride
 	var/savedPixelOffset
 	var/savedModuleName
+	var/savedDogborg
+	var/savedDrakerest
+	var/obj/item/robot_module/savedModule
+	/// Only our own startup animation filters may be removed.
+	var/list/startup_filters = list()
+	var/mob/living/silicon/robot/startup_user
 	var/active = FALSE
 	var/activationCost = 150
 	var/activationUpkeep = 5
@@ -84,7 +90,17 @@
 	friendlyName = pick(GLOB.ai_names)
 
 /obj/item/borg_shapeshifter/Destroy()
+	clear_startup_filters()
+	deactivate(user, TRUE)
 	return ..()
+
+/obj/item/borg_shapeshifter/proc/clear_startup_filters()
+	if(!QDELETED(startup_user))
+		for(var/own_filter in startup_filters)
+			animate(own_filter)
+			startup_user.filters -= own_filter
+	startup_filters.Cut()
+	startup_user = null
 
 /obj/item/borg_shapeshifter/dropped(mob/user)
 	. = ..()
@@ -108,6 +124,9 @@
 	return TRUE
 
 /obj/item/borg_shapeshifter/attack_self(mob/living/silicon/robot/user)
+	if(active && user == src.user)
+		toggle(user)
+		return
 	if(user && user.cell && user.cell.charge > activationCost)
 		if(isturf(user.loc))
 			toggle(user)
@@ -505,6 +524,8 @@ GLOBAL_LIST_INIT(borg_disguise_options, list(
 ))
 
 /obj/item/borg_shapeshifter/proc/toggle(mob/living/silicon/robot/user)
+	if(QDELETED(user) || loc != user || !user.module)
+		return
 	if(active)
 		playsound(src, 'sound/effects/pop.ogg', 100, TRUE, -6)
 		to_chat(user, "<span class='notice'>You deactivate \the [src].</span>")
@@ -545,6 +566,8 @@ GLOBAL_LIST_INIT(borg_disguise_options, list(
 		if(!choice)
 			return FALSE
 		var/list/chosen = option_keys[choice]
+		if(!chosen || QDELETED(src) || QDELETED(R) || loc != R || !R.module)
+			return FALSE
 		disguise = chosen["base"]
 		disguise_icon_override = chosen["icon"]
 		disguise_pixel_offset = chosen["pixel"]
@@ -554,37 +577,40 @@ GLOBAL_LIST_INIT(borg_disguise_options, list(
 		animation_playing = TRUE
 		to_chat(user, "<span class='notice'>You activate \the [src].</span>")
 		playsound(src, 'sound/effects/seedling_chargeup.ogg', 100, TRUE, -6)
-		var/start = user.filters.len
-		var/X,Y,rsq,i,f
+		startup_user = user
+		var/X,Y,rsq,i
 		for(i=1, i<=7, ++i)
 			do
 				X = 60*rand() - 30
 				Y = 60*rand() - 30
 				rsq = X*X + Y*Y
 			while(rsq<100 || rsq>900)
-			user.filters += filter(type="wave", x=X, y=Y, size=rand()*2.5+0.5, offset=rand())
-		for(i=1, i<=7, ++i)
-			f = user.filters[start+i]
-			animate(f, offset=f:offset, time=0, loop=3, flags=ANIMATION_PARALLEL)
-			animate(offset=f:offset-1, time=rand()*20+10)
-		if (do_after(user, 5 SECONDS, user) && user.cell.use(activationCost))
+			var/own_filter = filter(type="wave", x=X, y=Y, size=rand()*2.5+0.5, offset=rand())
+			startup_filters += own_filter
+			user.filters += own_filter
+			animate(own_filter, offset=own_filter:offset, time=0, loop=3, flags=ANIMATION_PARALLEL)
+			animate(offset=own_filter:offset-1, time=rand()*20+10)
+		var/completed = do_after(user, 5 SECONDS, user)
+		if(QDELETED(src))
+			return
+		if(completed && !QDELETED(user) && loc == user && user.module && user.cell?.use(activationCost))
 			playsound(src, 'sound/effects/bamf.ogg', 100, TRUE, -6)
 			to_chat(user, "<span class='notice'>You are now disguised as the Nanotrasen cyborg \"[friendlyName]\".</span>")
 			activate(user, module_selection)
-		else
+		else if(!QDELETED(user))
 			to_chat(user, "<span class='warning'>The chameleon field fizzles.</span>")
 			do_sparks(3, FALSE, user)
-			for(i=1, i<=min(7, user.filters.len), ++i) // removing filters that are animating does nothing, we gotta stop the animations first
-				f = user.filters[start+i]
-				animate(f)
-		user.filters = null
+		clear_startup_filters()
 		animation_playing = FALSE
 
 /obj/item/borg_shapeshifter/process()
-	if (user)
-		if (!user.cell || !user.cell.use(activationUpkeep))
-			disrupt(user)
-	else
+	if(!active)
+		return PROCESS_KILL
+	if(QDELETED(user) || !user.module || user.module != savedModule)
+		deactivate(user, TRUE)
+		return PROCESS_KILL
+	if(!user.cell || !user.cell.use(activationUpkeep))
+		disrupt(user)
 		return PROCESS_KILL
 
 /obj/item/borg_shapeshifter/proc/activate(mob/living/silicon/robot/user, disguiseModuleName)
@@ -596,6 +622,9 @@ GLOBAL_LIST_INIT(borg_disguise_options, list(
 	savedOverride = user.module.cyborg_icon_override
 	savedPixelOffset = user.module.cyborg_pixel_offset
 	savedModuleName = user.module.name
+	savedDogborg = user.module.dogborg
+	savedDrakerest = user.module.drakerest
+	savedModule = user.module
 	user.name = friendlyName
 	user.module.name = disguiseModuleName
 	user.module.cyborg_base_icon = disguise
@@ -614,31 +643,40 @@ GLOBAL_LIST_INIT(borg_disguise_options, list(
 	RegisterSignal(user, signalCache, PROC_REF(disrupt))
 	listeningTo = user
 
-/obj/item/borg_shapeshifter/proc/deactivate(mob/living/silicon/robot/user)
+/obj/item/borg_shapeshifter/proc/deactivate(mob/living/silicon/robot/target, silent = FALSE)
 	STOP_PROCESSING(SSobj, src)
-	if(listeningTo)
+	if(listeningTo && !QDELETED(listeningTo))
 		UnregisterSignal(listeningTo, signalCache)
-		listeningTo = null
-	do_sparks(5, FALSE, user)
-	user.name = savedName
-	user.module.name = savedModuleName
-	user.module.cyborg_base_icon = savedIcon
-	user.module.cyborg_icon_override = savedOverride
-	user.module.cyborg_pixel_offset = 0
-	user.module.dogborg = FALSE
-	user.module.drakerest = FALSE		//DarkSer request by Gardelin0
-	user.bubble_icon = savedBubbleIcon
+	listeningTo = null
+	var/was_active = active
 	active = FALSE
-	user.update_icons()
+	// The disguise may outlive the module it originally modified.
+	if(was_active && !QDELETED(target))
+		if(!silent)
+			do_sparks(5, FALSE, target)
+		if(target.name == friendlyName)
+			target.name = savedName
+		if(target.module == savedModule && !QDELETED(savedModule))
+			savedModule.name = savedModuleName
+			savedModule.cyborg_base_icon = savedIcon
+			savedModule.cyborg_icon_override = savedOverride
+			savedModule.cyborg_pixel_offset = savedPixelOffset
+			savedModule.dogborg = savedDogborg
+			savedModule.drakerest = savedDrakerest
+		if(target.bubble_icon == "robot")
+			target.bubble_icon = savedBubbleIcon
+		target.update_icons()
+	src.user = null
+	savedModule = null
 	disguise_pixel_offset = 0
 	disguise_dogborg = FALSE
-	disguise_drakerest = FALSE		//DarkSer request by Gardelin0
-	src.user = user
+	disguise_drakerest = FALSE
 
-/obj/item/borg_shapeshifter/proc/disrupt(mob/living/silicon/robot/user)
+/obj/item/borg_shapeshifter/proc/disrupt(mob/living/silicon/robot/target)
 	if(active)
-		to_chat(user, "<span class='danger'>Your chameleon field deactivates.</span>")
-		deactivate(user)
+		if(!QDELETED(target))
+			to_chat(target, "<span class='danger'>Your chameleon field deactivates.</span>")
+		deactivate(src.user)
 
 /obj/item/borg_shapeshifter/stable
 	signalCache = list()
