@@ -2509,6 +2509,42 @@ GLOBAL_VAR_INIT(unit_test_legacy_probe_loaded, FALSE)
 			timings["per_slot_read"] += TICK_USAGE_TO_MS(started) / repeats
 	log_world("PLAYER_SAVE_BENCHMARK slot_index [json_encode(timings)]")
 
+/// Смена слота на тяжёлых анкетах: многострочные описания декодировались 33 проходами replacetext (до 380 мс на загрузку).
+/datum/unit_test/player_save_json/switch_slot_benchmark/Run()
+	prepare()
+	var/list/lines = list()
+	// Описание у предела редактора MAX_FLAVOR_LEN, с переводом строки в каждой строке.
+	for(var/i in 1 to 45)
+		lines += "Строка описания персонажа номер [i]: внешность, привычки, манеры."
+	var/flavor = jointext(lines, "\n")
+	TEST_ASSERT(length_char(flavor) <= MAX_FLAVOR_LEN, "фикстура длиннее предела описания")
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	for(var/slot in 1 to 10)
+		prefs.default_slot = slot
+		prefs.random_character()
+		prefs.real_name = "Bench [slot]"
+		for(var/key in list("flavor_text", "naked_flavor_text", "ooc_notes", "silicon_flavor_text", "custom_species_lore"))
+			prefs.features[key] = flavor
+		prefs.custom_interactions = list()
+		for(var/i in 1 to 10)
+			var/datum/interaction/custom/custom = new
+			custom.name = "Действие [i]"
+			custom.message = "%USER% делает что-то очень подробное с %TARGET%, вариант [i]."
+			prefs.custom_interactions += custom
+		TEST_ASSERT(prefs.save_character(TRUE, TRUE, update_active_preset = FALSE), "не создан слот [slot]")
+	var/list/timings = list("save" = 0, "load" = 0)
+	var/repeats = 12
+	for(var/iteration in 1 to repeats)
+		var/started = TICK_USAGE_REAL
+		prefs.save_character(TRUE, TRUE, update_active_preset = FALSE)
+		timings["save"] += TICK_USAGE_TO_MS(started) / repeats
+		started = TICK_USAGE_REAL
+		TEST_ASSERT(prefs.load_character((iteration % 9) + 2, TRUE), "не загружен слот")
+		timings["load"] += TICK_USAGE_TO_MS(started) / repeats
+	TEST_ASSERT_EQUAL(prefs.features["flavor_text"], flavor, "описание изменилось при переносе")
+	log_world("PLAYER_SAVE_BENCHMARK switch_slot [json_encode(timings)]")
+
 /datum/unit_test/player_save_json/benchmark
 	var/datum/preferences/benchmark_prefs
 

@@ -10,6 +10,35 @@
 		revisions[path] = (revisions[path] || 0) + 1
 	return revisions[path] || 0
 
+/proc/player_save_escape_control(match)
+	return "%[num2text(text2ascii(match), 2, 16)]"
+
+/// Каждый % в экранированной строке начинает код: исходные % записаны как %25.
+/proc/player_save_unescape_text(escaped)
+	if(!findtext(escaped, "%"))
+		return escaped
+	var/static/list/escapes
+	if(!escapes)
+		escapes = list("ff" = copytext("\proper x", 1, 2), "25" = "%")
+		for(var/code in 1 to 31)
+			escapes[num2text(code, 2, 16)] = ascii2text(code)
+	var/list/parts = splittext(escaped, "%")
+	for(var/index in 2 to length(parts))
+		var/part = parts[index]
+		var/replacement = escapes[copytext(part, 1, 3)]
+		parts[index] = isnull(replacement) ? "%[part]" : "[replacement][copytext(part, 3)]"
+	return jointext(parts, "")
+
+/// Значения старых модулей проходят через savefile; новый временный файл на каждое значение стоил ~2 мс.
+/proc/player_save_compatibility_savefile()
+	var/static/savefile/scratch
+	if(!scratch)
+		scratch = new
+	scratch.cd = "/"
+	for(var/key in scratch.dir.Copy())
+		scratch.dir.Remove(key)
+	return scratch
+
 /proc/player_save_encode_value(value, depth = 0)
 	if(depth > PLAYER_SAVE_JSON_DEPTH)
 		throw EXCEPTION("Слишком глубокий или циклический список в сохранении")
@@ -26,8 +55,9 @@
 		var/static/regex/control_characters = regex("\[\\x00-\\x1f\]")
 		if(control_characters.Find(value) || findtext(value, copytext("\proper x", 1, 2)))
 			var/escaped = replacetext(replacetext(value, "%", "%25"), copytext("\proper x", 1, 2), "%ff")
-			for(var/code in 1 to 31)
-				escaped = replacetext(escaped, ascii2text(code), "%[num2text(code, 2, 16)]")
+			// Один проход вместо replacetext на каждый код: на длинной кириллице тот стоил ~1 мс за проход.
+			var/static/regex/control_escape = regex("\[\\x01-\\x1f\]", "g")
+			escaped = control_escape.Replace(escaped, GLOBAL_PROC_REF(player_save_escape_control))
 			return list("type" = "text", "value" = escaped)
 		return value
 	if(istype(value, /matrix))
@@ -38,9 +68,11 @@
 	if(!islist(value))
 		// У старых модулей встречаются сериализованные датумы и ресурсы. Для них
 		// сохраняем штатное текстовое представление BYOND, не приводя объект к имени.
-		var/savefile/compatibility = new
+		var/savefile/compatibility = player_save_compatibility_savefile()
 		compatibility["value"] << value
-		return list("type" = "byond", "text" = player_save_encode_value(compatibility.ExportText("/"), depth + 1))
+		var/serialized = compatibility.ExportText("/")
+		compatibility.dir.Remove("value")
+		return list("type" = "byond", "text" = player_save_encode_value(serialized, depth + 1))
 	var/list/source = value
 	var/list/items = list()
 	var/list/associations = list()
@@ -66,18 +98,16 @@
 	if(node["type"] == "text")
 		if(!istext(node["value"]))
 			throw EXCEPTION("Некорректная экранированная строка JSON сохранения")
-		var/decoded = node["value"]
-		for(var/code in 1 to 31)
-			decoded = replacetext(decoded, "%[num2text(code, 2, 16)]", ascii2text(code))
-		return replacetext(replacetext(decoded, "%ff", copytext("\proper x", 1, 2)), "%25", "%")
+		return player_save_unescape_text(node["value"])
 	if(node["type"] == "byond")
 		var/serialized = player_save_decode_value(node["text"], depth + 1)
 		if(!istext(serialized))
 			throw EXCEPTION("Некорректное совместимое значение JSON сохранения")
-		var/savefile/compatibility = new
+		var/savefile/compatibility = player_save_compatibility_savefile()
 		compatibility.ImportText("/", serialized)
 		var/restored
 		compatibility["value"] >> restored
+		compatibility.dir.Remove("value")
 		if(isnull(restored))
 			throw EXCEPTION("Не удалось прочитать совместимое значение JSON сохранения")
 		return restored
