@@ -82,8 +82,8 @@
 	icon_state = "storage_syndi"
 	silent = TRUE
 
-/obj/item/mod/module/storage/extended/syndicate/super
-	name = "MOD Blood-red Super Extended storage module"
+/obj/item/mod/module/storage/extended/syndicate/large
+	name = "MOD Blood-red Large storage module"
 	desc = "Большой модуль хранилища с лого Синдиката и модной кроваво-красной расцвекой."
 	icon_state = "storage_syndi_super"
 	max_volume = STORAGE_VOLUME_DUFFLEBAG
