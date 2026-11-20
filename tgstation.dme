@@ -4508,6 +4508,7 @@
 #include "code\modules\tgui\status_composers.dm"
 #include "code\modules\tgui\tgui.dm"
 #include "code\modules\tgui\tgui_window.dm"
+#include "code\modules\tgui\roundend.dm"
 #include "code\modules\tgui\plugins\login.dm"
 #include "code\modules\tgui\plugins\modal.dm"
 #include "code\modules\tgui\states\admin.dm"

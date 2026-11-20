@@ -480,16 +480,39 @@
 	text2file(content, filename)
 
 /datum/controller/subsystem/ticker/proc/show_roundend_report(client/C, report_type = null)
+	var/list/data
+
+	if(report_type == PERSONAL_LAST_ROUND) //Look at this player's last round
+		data = load_roundend_tgui_data(C.roundend_report_tgui_file())
+	else if(report_type == SERVER_LAST_ROUND) //Look at the last round that this server has seen
+		data = load_roundend_tgui_data(server_roundend_tgui_file())
+	else //report_type is null, so make a new report based on the current round and show that to the player
+		data = build_roundend_tgui_data(C, GLOB.roundend_popcount)
+		save_roundend_tgui_data(C.roundend_report_tgui_file(), data)
+		remove_verb(C, /client/proc/show_previous_roundend_report)
+
+	if(!data)
+		// Старые HTML-отчёты, сохранённые до перехода на tgui, открываем как раньше.
+		show_roundend_report_legacy(C, report_type)
+		return
+
+	if(!istype(C.roundend_report_ui))
+		C.roundend_report_ui = new(C)
+	C.roundend_report_ui.report_data = data
+	C.roundend_report_ui.ui_interact(C.mob)
+
+/// Резервный путь для отчётов, сохранённых в HTML до появления tgui-версии.
+/datum/controller/subsystem/ticker/proc/show_roundend_report_legacy(client/C, report_type = null)
 	var/datum/browser/roundend_report = new(C, "roundend")
 	roundend_report.width = 800
 	roundend_report.height = 600
 	var/content
 	var/filename = C.roundend_report_file()
-	if(report_type == PERSONAL_LAST_ROUND) //Look at this player's last round
+	if(report_type == PERSONAL_LAST_ROUND)
 		content = file2text(filename)
-	else if (report_type == SERVER_LAST_ROUND) //Look at the last round that this server has seen
+	else if(report_type == SERVER_LAST_ROUND)
 		content = file2text("data/server_last_roundend_report.html")
-	else //report_type is null, so make a new report based on the current round and show that to the player
+	else
 		var/list/report_parts = list(personal_report(C), GLOB.common_report)
 		content = report_parts.Join()
 		remove_verb(C, /client/proc/show_previous_roundend_report)
@@ -536,7 +559,9 @@
 /datum/controller/subsystem/ticker/proc/display_report(popcount)
 	GLOB.common_report = build_roundend_report()
 	GLOB.survivor_report = survivor_report(popcount)
+	GLOB.roundend_popcount = popcount
 	log_roundend_report()
+	save_roundend_tgui_data(server_roundend_tgui_file(), build_roundend_tgui_data(null, popcount))
 	for(var/client/C in GLOB.clients)
 		show_roundend_report(C)
 		give_show_report_button(C)
