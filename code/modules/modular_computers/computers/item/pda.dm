@@ -185,6 +185,11 @@
 		. += "<span class='notice'>Заряд батареи: [battery]%.</span>"
 	if(device_theme)
 		. += "<span class='notice'>Тема: [device_theme].</span>"
+	var/datum/computer_file/program/wallet/wallet = find_file_by_name("wallet")
+	if(istype(wallet) && (loc == user || owner == user.real_name))
+		var/spend_hint = econ_wallet_examine_hint(wallet.wallet_account(user), user)
+		if(spend_hint)
+			. += spend_hint
 	. += stored_id ? "<span class='notice'>Alt-click для извлечения ID-карты.</span>" : ""
 	if(inserted_item && (!isturf(loc)))
 		. += "<span class='notice'>Ctrl-click для извлечения [inserted_item].</span>"

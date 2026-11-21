@@ -104,6 +104,41 @@ describe('NtosWallet', () => {
     expect(content).toContain('Медицина (№111)');
   });
 
+  test('куда потратить: с первого экрана - в магазин, оплату и запрос оплаты рядом и каталог', () => {
+    const nearby = [
+      { ref: '[0x2000abc]', name: 'Джон Доу', job: 'Bartender', requestable: 1 },
+      { ref: '[0x2000def]', name: 'Спящий', job: null, requestable: 0 },
+    ];
+    const { container, getByText, queryByText } = setup({ cart_max: 6, pay_request_minutes: 5, nearby_range: 3, nearby });
+    expect(text(container)).toContain('Куда потратить');
+    expect(text(container)).toContain('до 6 вещей одной капсулой сразу');
+    expect(text(container)).toContain('отеля Гильберта');
+    fireEvent.click(getByText('Попросить оплату'));
+    expect(text(container)).toContain('Запрос ждёт 5 мин.');
+    expect(queryByText('Спящий')).toBeNull();
+    fireEvent.click(getByText('Счёт'));
+    fireEvent.click(getByText('Заплатить человеку рядом'));
+    expect(getByText('Спящий')).toBeTruthy();
+    expect(text(container)).not.toContain('Запрос ждёт 5 мин.');
+    fireEvent.click(getByText('Счёт'));
+    fireEvent.click(getByText('Попросить оплату'));
+    fireEvent.click(getByText('Счёт'));
+    fireEvent.click(getByText('Перевод'));
+    expect(getByText('Спящий')).toBeTruthy();
+    fireEvent.click(getByText('Счёт'));
+    fireEvent.click(getByText('Магазин с доставкой'));
+    expect(text(container)).toContain('Соберите корзину до 6');
+    fireEvent.click(getByText('Счёт'));
+    fireEvent.click(getByText('Заказ из каталога'));
+    expect(text(container)).toContain('Личный каталог');
+  });
+
+  test('куда потратить: замороженному и не личному счёту блока нет', () => {
+    expect(text(setup({ state: 'frozen' }).container)).not.toContain('Куда потратить');
+    document.body.innerHTML = '';
+    expect(text(setup({ personal: 0 }).container)).not.toContain('Куда потратить');
+  });
+
   test('без оклада или отдела - минимум NT, а не "не начисляется"', () => {
     const fired = text(setup({ wage: { ...base.wage!, grade: null, department: null, amount: 0, floor_only: 1 } }).container);
     expect(fired).toContain('Оклада нет: отдел не платит, NT платит минимум 30 кр. раз в 10 мин.');

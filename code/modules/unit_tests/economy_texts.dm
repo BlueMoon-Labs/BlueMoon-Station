@@ -53,6 +53,7 @@
 	TEST_ASSERT(findtext(text, "[settings.work_personal_share + settings.tax_goodwill_premium_bonus]% вместо"), "Памятка не называет премию при низком налоге")
 	TEST_ASSERT(findtext(text, "не больше [settings.auction_rival_cap_max]% оценки") && findtext(text, "около [settings.auction_rival_free_chance]% лотов"), "Памятка не называет потолок соперников аукциона")
 	TEST_ASSERT(findtext(text, "\"Магазин\"") && findtext(text, "по его ID-карте"), "Памятка не говорит о магазине и оплате человеку рядом")
+	TEST_ASSERT(findtext(text, "«Куда потратить»") && findtext(text, "попросить у него оплату"), "Памятка не говорит, где в Кошельке тратить и что можно попросить оплату")
 	TEST_ASSERT(findtext(text, "только при владельце"), "Памятка не говорит, когда кассир проводит чужую карту")
 	TEST_ASSERT(findtext(text, "отеля Гильберта") && findtext(text, "не доставят за [DisplayTimeText(ROOM_SERVICE_STAFF_WAIT)]") && findtext(text, "кейтеринг NT [econ_times_text(ROOM_SERVICE_CATERING_MULT)] дороже"), "Памятка не объясняет заказ в номер отеля")
 	TEST_ASSERT(findtext(text, "акции продаются по рынку"), "Памятка не говорит, что акции продаются в конце смены")

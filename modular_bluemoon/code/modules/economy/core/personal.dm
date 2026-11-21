@@ -38,6 +38,12 @@
 		return "Ваш счёт заморожен."
 	return null
 
+/// Строка осмотра своей карты или КПК: где тратить деньги. Только владельцу счёта, который может платить; иначе null.
+/proc/econ_wallet_examine_hint(datum/bank_account/account, mob/user)
+	if(!account || account != econ_account_of(user) || SSeconomy.personal_account_problem(account, TRUE))
+		return null
+	return span_notice("Потратить деньги - Кошелёк на КПК, блок «Куда потратить» на первом экране: магазин с доставкой капсулой, заплатить или попросить оплату у человека рядом, заказ из каталога.")
+
 /// Все неспящие личные счета с этим именем владельца, без учёта регистра.
 /datum/controller/subsystem/economy/proc/find_accounts_by_name(name)
 	. = list()

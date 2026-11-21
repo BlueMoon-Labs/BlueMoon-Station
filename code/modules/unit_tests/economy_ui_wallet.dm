@@ -236,6 +236,26 @@
 	var/list/data = wallet.wallet_data(owner)
 	TEST_ASSERT(!data["metadollars_available"], "Вкладка M$ знает, что связи нет")
 
+/// Осмотр своей ID-карты и КПК говорит, где в Кошельке тратить деньги; чужому и с замороженного счёта - нет.
+/datum/unit_test/economy_ui_wallet/examine_spend_hint/Run()
+	var/mob/living/carbon/human/owner = make_owner("Econ Wallet Spender", 100)
+	var/datum/bank_account/own = account_of(owner)
+	owner.account_id = own.account_id
+	var/obj/item/modular_computer/pda/pda = owner.get_active_held_item()
+	var/obj/item/card/id/card = pda.stored_id
+	var/hint = "блок «Куда потратить»"
+	TEST_ASSERT(findtext(jointext(card.examine(owner), " "), hint), "Своя карта не подсказывает, где тратить деньги")
+	TEST_ASSERT(findtext(jointext(pda.examine(owner), " "), hint), "Свой КПК не подсказывает, где тратить деньги")
+	var/mob/living/carbon/human/stranger = allocate(/mob/living/carbon/human)
+	var/datum/bank_account/stranger_account = make_account("Econ Wallet Onlooker")
+	stranger.account_id = stranger_account.account_id
+	TEST_ASSERT(!findtext(jointext(card.examine(stranger), " "), hint), "Чужая карта подсказывает трату чужих денег")
+	TEST_ASSERT(!findtext(jointext(pda.examine(stranger), " "), hint), "Чужой КПК подсказывает трату денег")
+	own.state = ACCOUNT_FROZEN
+	var/frozen_text = jointext(card.examine(owner), " ")
+	own.state = ACCOUNT_ACTIVE
+	TEST_ASSERT(!findtext(frozen_text, hint), "Замороженный счёт зовёт тратить деньги")
+
 /// Человек в клетке dx, dy от левого нижнего угла пола, с ID-картой в руке и счётом account; card_name - имя на карте.
 /datum/unit_test/economy_ui_wallet/proc/make_bystander(datum/bank_account/account, card_name, dx, dy)
 	var/turf/spot = locate(run_loc_floor_bottom_left.x + dx, run_loc_floor_bottom_left.y + dy, run_loc_floor_bottom_left.z)

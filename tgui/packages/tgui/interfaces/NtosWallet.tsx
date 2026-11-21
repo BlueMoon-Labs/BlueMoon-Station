@@ -244,6 +244,11 @@ export const NtosWallet = () => (
 export const NtosWalletContent = () => {
   const { data } = useBackend<WalletData>();
   const [tab, setTab] = useState<Tab>('account');
+  const [askFirst, setAskFirst] = useState(false);
+  const open = (id: Tab, ask = false) => {
+    setAskFirst(ask);
+    setTab(id);
+  };
   const needsAccount = tab !== 'meta' && !data.has_account;
   const crewOpen = freeCrewRequests(data.contracts || [], data.my_account);
   const waiting: Partial<Record<Tab, number>> = {
@@ -255,7 +260,7 @@ export const NtosWalletContent = () => {
     <>
       <Tabs>
         {TABS.map(([id, label, icon]) => (
-          <Tabs.Tab key={id} icon={icon} selected={tab === id} onClick={() => setTab(id)}>
+          <Tabs.Tab key={id} icon={icon} selected={tab === id} onClick={() => open(id)}>
             {(waiting[id] || 0) > 0 ? `${label} (${waiting[id]})` : label}
           </Tabs.Tab>
         ))}
@@ -265,9 +270,9 @@ export const NtosWalletContent = () => {
         <NoticeBox>Счёт не найден: вставьте в КПК ID-карту со счётом.</NoticeBox>
       ) : (
         <>
-          {tab === 'account' && <AccountTab />}
+          {tab === 'account' && <AccountTab open={open} />}
           {tab === 'shop' && <ShopTab />}
-          {tab === 'transfer' && <TransferTab />}
+          {tab === 'transfer' && <TransferTab asking={askFirst} />}
           {tab === 'orders' && <OrdersTab />}
           {tab === 'jobs' && <JobsTab />}
           {tab === 'shares' && <SharesTab />}
@@ -406,7 +411,49 @@ const LotterySection = () => {
   );
 };
 
-const AccountTab = () => {
+type OpenTab = (id: Tab, ask?: boolean) => void;
+
+const SpendSection = (props: { open: OpenTab }) => {
+  const { data } = useBackend<WalletData>();
+  const { open } = props;
+  if (!data.personal || data.state === 'frozen') {
+    return null;
+  }
+  const ways: [string, string, string, () => void][] = [
+    [
+      'store',
+      'Магазин с доставкой',
+      `одежда, игрушки и питомцы, до ${data.cart_max ?? 0} вещей одной капсулой сразу, себе или в подарок`,
+      () => open('shop'),
+    ],
+    ['hand-holding-usd', 'Заплатить человеку рядом', 'по его ID-карте, без номера счёта', () => open('transfer')],
+    ['file-invoice-dollar', 'Попросить оплату', 'у человека рядом: он оплатит или откажет в своём Кошельке', () => open('transfer', true)],
+    ['box-open', 'Заказ из каталога', 'питомцы, одежда, праздник и уют, везёт шаттл снабжения', () => open('orders')],
+  ];
+  return (
+    <Section title="Куда потратить">
+      <Table>
+        {ways.map(([icon, label, note, onClick]) => (
+          <Table.Row key={label}>
+            <Table.Cell collapsing py={0.25}>
+              <Button fluid icon={icon} onClick={onClick}>
+                {label}
+              </Button>
+            </Table.Cell>
+            <Table.Cell color="label" pl={1}>
+              {note}
+            </Table.Cell>
+          </Table.Row>
+        ))}
+      </Table>
+      <Box color="label" mt={0.5}>
+        В номере отеля Гильберта на терминале обслуживания заказывают еду и напитки с кухни и бара.
+      </Box>
+    </Section>
+  );
+};
+
+const AccountTab = (props: { open: OpenTab }) => {
   const { data } = useBackend<WalletData>();
   return (
     <>
@@ -423,6 +470,7 @@ const AccountTab = () => {
           </LabeledList.Item>
         </LabeledList>
       </Section>
+      <SpendSection open={props.open} />
       <LotterySection />
       <WageSection />
       <Section title="История">
@@ -484,11 +532,11 @@ const PayRequestsSection = () => {
   );
 };
 
-const NearbySection = () => {
+const NearbySection = (props: { asking?: boolean }) => {
   const { act, data } = useBackend<WalletData>();
   const people = data.nearby || [];
   const [chosen, setChosen] = useState<string | null>(null);
-  const [asking, setAsking] = useState(false);
+  const [asking, setAsking] = useState(!!props.asking);
   const [amount, setAmount] = useState(10);
   const [memo, setMemo] = useState('');
   const listed = asking ? people.filter((entry) => entry.requestable) : people;
@@ -578,7 +626,7 @@ const NearbySection = () => {
   );
 };
 
-const TransferTab = () => {
+const TransferTab = (props: { asking?: boolean }) => {
   const { act, data } = useBackend<WalletData>();
   const [target, setTarget] = useState('');
   const [amount, setAmount] = useState(10);
@@ -589,7 +637,7 @@ const TransferTab = () => {
     <>
       <AccountNotices />
       <PayRequestsSection />
-      <NearbySection />
+      <NearbySection asking={props.asking} />
       <Section title="Перевод и чаевые по имени или номеру">
         <Box color="label" mb={1}>
           Только с личного счёта на личный: бюджеты отделов и системные счета не принимают. Без налога, до{' '}

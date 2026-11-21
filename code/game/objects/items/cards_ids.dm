@@ -130,6 +130,9 @@
 		. += span_info("Привязанный к ID-карте аккаунт записан на имя \"[registered_account.account_holder]\". На счету находится \
 		[registered_account.account_balance] [ru_plural(registered_account.account_balance, "кредит", "кредита", "кредитов")] \
 		[span_tooltip_fast("Кредиты в форме голочипов можно извлечь из ID через alt-клик. Вы можете пополнить счёт, прижимая голочипы, наличные или монеты к ID.")].")
+		var/spend_hint = econ_wallet_examine_hint(registered_account, user)
+		if(spend_hint)
+			. += spend_hint
 		. += span_boldnotice("Можно осмотреть получше.")
 	else
 		. += span_info("У данной карты нет зарегистрированного аккаунта. Alt-клик, чтобы добавить.")
