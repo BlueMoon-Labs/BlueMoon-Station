@@ -65,7 +65,7 @@
 
 /datum/nanite_program/sensor/health
 	name = "Health Sensor"
-	desc = "Наниты получают сигнал, когда здоровье носителя выше/ниже заданного процента."
+	desc = "Наниты отправляют сигнал, когда здоровье носителя выше/ниже заданного процента."
 	can_rule = TRUE
 	var/spent = FALSE
 
@@ -105,7 +105,7 @@
 
 /datum/nanite_program/sensor/crit
 	name = "Critical Health Sensor"
-	desc = "Наниты получают сигнал, когда носитель впервые достигает критического состояния."
+	desc = "Наниты отправляют сигнал, когда носитель впервые достигает критического состояния."
 	can_rule = TRUE
 	var/spent = FALSE
 
@@ -125,7 +125,7 @@
 
 /datum/nanite_program/sensor/death
 	name = "Death Sensor"
-	desc = "Наниты получают сигнал, когда обнаруживают, что носитель мёртв."
+	desc = "Наниты отправляют сигнал, когда обнаруживают, что носитель мёртв."
 	can_rule = TRUE
 	var/spent = FALSE
 
@@ -138,7 +138,7 @@
 
 /datum/nanite_program/sensor/nanite_volume
 	name = "Nanite Volume Sensor"
-	desc = "Наниты получают сигнал, когда запас нанитов выше/ниже определённого процента."
+	desc = "Наниты отправляют сигнал, когда запас нанитов выше/ниже определённого процента."
 	can_rule = TRUE
 	var/spent = FALSE
 
@@ -178,7 +178,7 @@
 
 /datum/nanite_program/sensor/damage
 	name = "Damage Sensor"
-	desc = "Наниты получают сигнал, когда определённый вид урона у носителя выше/ниже заданного значения."
+	desc = "Наниты отправляют сигнал, когда определённый вид урона у носителя выше/ниже заданного значения."
 	can_rule = TRUE
 	var/spent = FALSE
 
@@ -237,7 +237,7 @@
 
 /datum/nanite_program/sensor/voice
 	name = "Voice Sensor"
-	desc = "Наниты получают сигнал, когда слышат определённое заранее запрограммированное слово или фразу."
+	desc = "Наниты отправляют сигнал, когда слышат определённое заранее запрограммированное слово или фразу."
 
 /datum/nanite_program/sensor/voice/register_extra_settings()
 	. = ..()

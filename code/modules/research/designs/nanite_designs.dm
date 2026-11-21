@@ -523,28 +523,28 @@
 
 /datum/design/nanites/sensor_health
 	name = "Health Sensor"
-	desc = "Наниты получают сигнал, когда здоровье носителя выше/ниже определённого процента."
+	desc = "Наниты отправляют сигнал, когда здоровье носителя выше/ниже определённого процента."
 	id = "sensor_health_nanites"
 	program_type = /datum/nanite_program/sensor/health
 	category = list("Sensor Nanites")
 
 /datum/design/nanites/sensor_damage
 	name = "Damage Sensor"
-	desc = "Наниты получают сигнал, когда определённый вид урона у носителя выше/ниже заданного значения."
+	desc = "Наниты отправляют сигнал, когда определённый вид урона у носителя выше/ниже заданного значения."
 	id = "sensor_damage_nanites"
 	program_type = /datum/nanite_program/sensor/damage
 	category = list("Sensor Nanites")
 
 /datum/design/nanites/sensor_crit
 	name = "Critical Health Sensor"
-	desc = "Наниты получают сигнал, когда носитель впервые достигает критического состояния."
+	desc = "Наниты отправляют сигнал, когда носитель впервые достигает критического состояния."
 	id = "sensor_crit_nanites"
 	program_type = /datum/nanite_program/sensor/crit
 	category = list("Sensor Nanites")
 
 /datum/design/nanites/sensor_death
 	name = "Death Sensor"
-	desc = "Наниты получают сигнал, когда обнаруживают, что носитель мёртв."
+	desc = "Наниты отправляют сигнал, когда обнаруживают, что носитель мёртв."
 	id = "sensor_death_nanites"
 	program_type = /datum/nanite_program/sensor/death
 	category = list("Sensor Nanites")
@@ -558,7 +558,7 @@
 
 /datum/design/nanites/sensor_nanite_volume
 	name = "Nanite Volume Sensor"
-	desc = "Наниты получают сигнал, когда запас нанитов выше/ниже определённого процента."
+	desc = "Наниты отправляют сигнал, когда запас нанитов выше/ниже определённого процента."
 	id = "sensor_nanite_volume"
 	program_type = /datum/nanite_program/sensor/nanite_volume
 	category = list("Sensor Nanites")
