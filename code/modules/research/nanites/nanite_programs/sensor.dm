@@ -1,6 +1,6 @@
 /datum/nanite_program/sensor
 	name = "Sensor Nanites"
-	desc = "These nanites send a signal code when a certain condition is met."
+	desc = "Эти наниты отправляют код сигнала при выполнении определённого условия."
 	unique = FALSE
 	var/can_rule = FALSE
 
@@ -24,7 +24,7 @@
 
 /datum/nanite_program/sensor/repeat
 	name = "Signal Repeater"
-	desc = "When triggered, sends another signal to the nanites, optionally with a delay."
+	desc = "При срабатывании отправляет ещё один сигнал нанитам, при необходимости с задержкой."
 	can_trigger = TRUE
 	trigger_cost = 0
 	trigger_cooldown = 10
@@ -40,7 +40,7 @@
 
 /datum/nanite_program/sensor/relay_repeat
 	name = "Relay Signal Repeater"
-	desc = "When triggered, sends another signal to a relay channel, optionally with a delay."
+	desc = "При срабатывании отправляет ещё один сигнал на канал ретрансляции, при необходимости с задержкой."
 	can_trigger = TRUE
 	trigger_cost = 0
 	trigger_cooldown = 10
@@ -65,7 +65,7 @@
 
 /datum/nanite_program/sensor/health
 	name = "Health Sensor"
-	desc = "The nanites receive a signal when the host's health is above/below a target percentage."
+	desc = "Наниты получают сигнал, когда здоровье носителя выше/ниже заданного процента."
 	can_rule = TRUE
 	var/spent = FALSE
 
@@ -105,7 +105,7 @@
 
 /datum/nanite_program/sensor/crit
 	name = "Critical Health Sensor"
-	desc = "The nanites receive a signal when the host first reaches critical health."
+	desc = "Наниты получают сигнал, когда носитель впервые достигает критического состояния."
 	can_rule = TRUE
 	var/spent = FALSE
 
@@ -125,7 +125,7 @@
 
 /datum/nanite_program/sensor/death
 	name = "Death Sensor"
-	desc = "The nanites receive a signal when they detect the host is dead."
+	desc = "Наниты получают сигнал, когда обнаруживают, что носитель мёртв."
 	can_rule = TRUE
 	var/spent = FALSE
 
@@ -138,7 +138,7 @@
 
 /datum/nanite_program/sensor/nanite_volume
 	name = "Nanite Volume Sensor"
-	desc = "The nanites receive a signal when the nanite supply is above/below a certain percentage."
+	desc = "Наниты получают сигнал, когда запас нанитов выше/ниже определённого процента."
 	can_rule = TRUE
 	var/spent = FALSE
 
@@ -178,7 +178,7 @@
 
 /datum/nanite_program/sensor/damage
 	name = "Damage Sensor"
-	desc = "The nanites receive a signal when a host's specific damage type is above/below a target value."
+	desc = "Наниты получают сигнал, когда определённый вид урона у носителя выше/ниже заданного значения."
 	can_rule = TRUE
 	var/spent = FALSE
 
@@ -237,7 +237,7 @@
 
 /datum/nanite_program/sensor/voice
 	name = "Voice Sensor"
-	desc = "The nanites receive a signal when they detect a specific, preprogrammed word or phrase being said."
+	desc = "Наниты получают сигнал, когда слышат определённое заранее запрограммированное слово или фразу."
 
 /datum/nanite_program/sensor/voice/register_extra_settings()
 	. = ..()

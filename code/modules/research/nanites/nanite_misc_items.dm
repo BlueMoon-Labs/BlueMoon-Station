@@ -1,6 +1,6 @@
 /obj/item/nanite_injector
 	name = "nanite injector (FOR TESTING)"
-	desc = "Injects nanites into the user."
+	desc = "Внедряет наниты в пользователя."
 	w_class = WEIGHT_CLASS_SMALL
 	icon = 'icons/obj/device.dmi'
 	icon_state = "nanite_remote"
@@ -12,7 +12,7 @@
 
 /obj/item/implant/nanite_pump
 	name = "nanite pump"
-	desc = "This device looks like a pump with an input and output and functions as a small nanomachine factory, a filter for spent nanomachines, and a similar reprogrammer that restores damaged programs. However, without constant updates and reprocessing, these programs are short-lived."
+	desc = "Это устройство выглядит как насос с входом и выходом и работает как маленькая фабрика наномашин, фильтр отработанных наномашин и перепрограмматор, восстанавливающий повреждённые программы. Однако без постоянных обновлений и переобработки эти программы недолговечны."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "pumpextreme"
 	var/datum/component/nanites/nanite_pump/pump_nanites = null
@@ -150,6 +150,6 @@
 
 /obj/item/implantcase/nanite_pump
 	name = "implant case - 'Nanite Pump'"
-	desc = "A glass case containing an nanite pump implant."
+	desc = "Стеклянный футляр с имплантом-насосом для нанитов."
 	imp_type = /obj/item/implant/nanite_pump
 

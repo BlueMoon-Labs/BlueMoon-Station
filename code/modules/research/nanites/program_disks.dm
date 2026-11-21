@@ -3,7 +3,7 @@
 
 /obj/item/disk/nanite_program
 	name = "nanite program disk"
-	desc = "A disk capable of storing nanite programs. Can be customized using a Nanite Programming Console."
+	desc = "Диск, способный хранить программы нанитов. Можно настроить с помощью консоли программирования нанитов."
 	var/program_type
 	var/datum/nanite_program/program
 

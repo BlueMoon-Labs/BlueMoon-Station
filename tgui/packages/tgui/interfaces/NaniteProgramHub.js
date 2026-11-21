@@ -28,51 +28,51 @@ export const NaniteProgramHub = (props) => {
       resizable>
       <Window.Content overflow="auto">
         <Section
-          title="Program Disk"
+          title="Диск с программой"
           buttons={(
             <>
               <Button
                 icon="eject"
-                content="Eject"
+                content="Извлечь"
                 onClick={() => act('eject')} />
               <Button
                 icon="minus-circle"
-                content="Delete Program"
+                content="Удалить программу"
                 onClick={() => act('clear')} />
             </>
           )}>
           {has_disk ? (
             has_program ? (
               <LabeledList>
-                <LabeledList.Item label="Program Name">
+                <LabeledList.Item label="Название программы">
                   {disk.name}
                 </LabeledList.Item>
-                <LabeledList.Item label="Description">
+                <LabeledList.Item label="Описание">
                   {disk.desc}
                 </LabeledList.Item>
               </LabeledList>
             ) : (
               <NoticeBox>
-                No Program Installed
+                Программа не установлена
               </NoticeBox>
             )
           ) : (
             <NoticeBox>
-              Insert Disk
+              Вставьте диск
             </NoticeBox>
           )}
         </Section>
         <Section
-          title="Programs"
+          title="Программы"
           buttons={(
             <>
               <Button
                 icon={detail_view ? 'info' : 'list'}
-                content={detail_view ? 'Detailed' : 'Compact'}
+                content={detail_view ? 'Подробно' : 'Кратко'}
                 onClick={() => act('toggle_details')} />
               <Button
                 icon="sync"
-                content="Sync Research"
+                content="Обновить исследования"
                 onClick={() => act('refresh')} />
             </>
           )}>
@@ -107,7 +107,7 @@ export const NaniteProgramHub = (props) => {
                       buttons={(
                         <Button
                           icon="download"
-                          content="Download"
+                          content="Скачать"
                           disabled={!has_disk}
                           onClick={() => act('download', {
                             program_id: program.id,
@@ -125,7 +125,7 @@ export const NaniteProgramHub = (props) => {
                         buttons={(
                           <Button
                             icon="download"
-                            content="Download"
+                            content="Скачать"
                             disabled={!has_disk}
                             onClick={() => act('download', {
                               program_id: program.id,
@@ -138,7 +138,7 @@ export const NaniteProgramHub = (props) => {
             </Flex>
           ) : (
             <NoticeBox>
-              No nanite programs are currently researched.
+              Программы нанитов пока не исследованы.
             </NoticeBox>
           )}
         </Section>
