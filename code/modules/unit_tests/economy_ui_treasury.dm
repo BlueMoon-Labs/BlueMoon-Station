@@ -434,6 +434,7 @@
 	var/saved_cargo_mult
 	var/saved_shift_cap
 	var/saved_orbital_paid
+	var/saved_overcap_share
 
 /datum/unit_test/economy_ui_treasury/orbital/New()
 	. = ..()
@@ -442,6 +443,7 @@
 	saved_cargo_mult = SSeconomy.settings.orbital_cargo_mult
 	saved_shift_cap = SSeconomy.settings.orbital_shift_cap
 	saved_orbital_paid = SSeconomy.orbital_paid
+	saved_overcap_share = SSeconomy.settings.orbital_overcap_share
 	SSeconomy.orbital_paid = 0
 	SSeconomy.settings.orbital_shift_cap = 0
 
@@ -451,9 +453,10 @@
 	SSeconomy.settings.orbital_cargo_mult = saved_cargo_mult
 	SSeconomy.settings.orbital_shift_cap = saved_shift_cap
 	SSeconomy.orbital_paid = saved_orbital_paid
+	SSeconomy.settings.orbital_overcap_share = saved_overcap_share
 	return ..()
 
-/// Орбитальные задания вместе с долей снабжения выпускают за смену не больше orbital_shift_cap: задание на границе платит остаток, следующее - без денег, а консоль заданий показывает остаток и сколько оплатится за каждое задание.
+/// Мягкий потолок: пока задания смены вместе с долей снабжения выпустили меньше orbital_shift_cap, задание платит полную награду (и то, что потолок перешагнёт), дальше - orbital_overcap_share процентов; консоль заданий показывает остаток и сколько оплатится.
 /datum/unit_test/economy_ui_treasury/orbital/shift_cap/Run()
 	var/mob/living/carbon/human/hop = make_person(ACCOUNT_SRV, job_type = /datum/job/hop)
 	var/datum/bank_account/crew = econ_account_of(hop)
@@ -462,9 +465,13 @@
 	SSeconomy.tax_rate = 0
 	SSeconomy.settings.orbital_cargo_mult = 0.5
 	SSeconomy.settings.orbital_shift_cap = 2250
-	var/list/expected_cargo = list(500, 250, 0)
-	var/list/expected_payable = list(1000, 500, 0)
-	for(var/number in 1 to 3)
+	SSeconomy.settings.orbital_overcap_share = 50
+	// Третье задание закрыто после потолка, четвёртое - при доле 0
+	var/list/expected_cargo = list(500, 500, 250, 0)
+	var/list/expected_payable = list(1000, 1000, 500, 0)
+	for(var/number in 1 to 4)
+		if(number == 4)
+			SSeconomy.settings.orbital_overcap_share = 0
 		var/cargo_before = cargo.account_balance
 		var/crew_before = crew.account_balance
 		var/datum/orbital_objective/objective = new
@@ -473,12 +480,28 @@
 		TEST_ASSERT_EQUAL(computer.ui_data(hop)["payable"]["[objective.id]"], expected_payable[number], "Консоль заданий: сколько оплатится за задание [number]")
 		objective.complete_objective()
 		TEST_ASSERT_EQUAL(cargo.account_balance - cargo_before, expected_cargo[number], "Снабжению за задание [number]")
-		if(number < 3)
+		if(number < 4)
 			TEST_ASSERT(crew.account_balance > crew_before, "Экипажу доля за задание [number]")
 		else
-			TEST_ASSERT_EQUAL(crew.account_balance, crew_before, "Сверх потолка смены экипажу заплатили")
-	TEST_ASSERT_EQUAL(SSeconomy.orbital_paid, 2250, "Выпущено за смену вместе с долей снабжения")
-	TEST_ASSERT_EQUAL(computer.ui_data(hop)["shift_left"], 0, "Консоль заданий не показывает исчерпанный потолок")
+			TEST_ASSERT_EQUAL(crew.account_balance, crew_before, "При доле 0 сверх потолка экипажу заплатили")
+	TEST_ASSERT_EQUAL(SSeconomy.orbital_paid, 3750, "Выпущено за смену вместе с долей снабжения")
+	TEST_ASSERT_EQUAL(computer.ui_data(hop)["shift_left"], 0, "Консоль заданий не показывает пройденный потолок")
+
+/// Одно задание дороже всего потолка (охота за головами) платит полную награду, если до него потолок не пройден.
+/datum/unit_test/economy_ui_treasury/orbital/shift_cap_single/Run()
+	var/obj/machinery/computer/objective/computer = allocate(/obj/machinery/computer/objective)
+	var/mob/living/carbon/human/hop = make_person(ACCOUNT_SRV, job_type = /datum/job/hop)
+	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	SSeconomy.settings.orbital_cargo_mult = 0.5
+	SSeconomy.settings.orbital_shift_cap = 2250
+	SSeconomy.settings.orbital_overcap_share = 50
+	var/datum/orbital_objective/objective = new
+	objective.payout = 5000
+	SSorbits.current_objective = objective
+	TEST_ASSERT_EQUAL(computer.ui_data(hop)["payable"]["[objective.id]"], 5000, "Первое задание дороже потолка оплатится полностью")
+	var/cargo_before = cargo.account_balance
+	objective.complete_objective()
+	TEST_ASSERT_EQUAL(cargo.account_balance - cargo_before, 2500, "Снабжению доля полной награды")
 
 /// Орбитальная доля, эмиссионная раздача всем счетам, не достаётся пустому счёту, открытому из казны.
 /datum/unit_test/economy_ui_treasury/orbital/needs_owner/Run()

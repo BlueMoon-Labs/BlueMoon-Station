@@ -37,6 +37,7 @@
 	return list(
 		"shift_cap" = SSeconomy.settings.orbital_shift_cap,
 		"shift_left" = SSeconomy.orbital_payout_left(),
+		"overcap_share" = SSeconomy.settings.orbital_overcap_share,
 		"payable" = payable,
 	)
 

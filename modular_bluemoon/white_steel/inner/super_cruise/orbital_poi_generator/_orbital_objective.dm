@@ -359,12 +359,12 @@
 	/// Сколько денег орбитальные задания выпустили за смену: людям и доля снабжения
 	var/orbital_paid = 0
 
-/// Какую часть награды payout NT оплатит, если задание закрыть сейчас: вместе с долей снабжения все задания смены выпускают не больше orbital_shift_cap.
+/// Какую часть награды payout NT оплатит, если задание закрыть сейчас: до orbital_shift_cap за смену - всю (и задание, которое его перешагнёт), после - orbital_overcap_share процентов.
 /datum/controller/subsystem/economy/proc/orbital_payable(payout)
 	var/cap = settings.orbital_shift_cap
-	if(!cap)
+	if(!cap || orbital_paid < cap)
 		return payout
-	return clamp(round(max(cap - orbital_paid, 0) / (1 + settings.orbital_cargo_mult)), 0, payout)
+	return round(payout * settings.orbital_overcap_share / 100)
 
 /// Оплачиваемая часть награды payout; вся эмиссия задания идёт в счёт потолка смены.
 /datum/controller/subsystem/economy/proc/claim_orbital_payout(payout)
@@ -382,7 +382,7 @@
 		return
 	completed = TRUE
 	var/paid = SSeconomy.claim_orbital_payout(payout)
-	var/cap_note = paid < payout ? " NT тратит на орбитальные задания до [SSeconomy.settings.orbital_shift_cap] кр. за смену вместе с долей снабжения: за это - [paid] из [payout] кр." : ""
+	var/cap_note = paid < payout ? " Задания смены вместе с долей снабжения уже выпустили больше [SSeconomy.settings.orbital_shift_cap] кр., поэтому NT платит [SSeconomy.settings.orbital_overcap_share]% награды: [paid] из [payout] кр." : ""
 	var/list/datum/bank_account/ranger_accounts = list()
 	var/list/datum/bank_account/crew_accounts = list()
 	for(var/datum/bank_account/payee_account as anything in SSeconomy.bank_accounts)
@@ -400,7 +400,7 @@
 		if(net)
 			payee_account.bank_card_talk("Орбитальное задание: [ranger_share] кр. до налога, на руки [net] кр.[cap_note]", balloon = "задание +[net] кр")
 		else if(!paid)
-			payee_account.bank_card_talk("Орбитальное задание выполнено, но NT уже потратил на задания [SSeconomy.settings.orbital_shift_cap] кр. за смену: денег за него не будет, очки Авангарда - участникам вылета.")
+			payee_account.bank_card_talk("Орбитальное задание выполнено, но задания смены уже выпустили больше [SSeconomy.settings.orbital_shift_cap] кр., а сверх этого NT сейчас не платит: денег за него не будет, очки Авангарда - участникам вылета.")
 	var/crew_share = length(crew_accounts) ? round((paid / 2) / length(crew_accounts)) : 0
 	for(var/datum/bank_account/payee_account as anything in crew_accounts)
 		var/net = SSeconomy.pay_personal(null, payee_account, crew_share, ECON_ORBITAL, memo = "Содействие орбитальному заданию")

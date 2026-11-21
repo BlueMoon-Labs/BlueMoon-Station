@@ -9,6 +9,7 @@ export const Objective = (props) => {
     selected_objective = null,
     shift_cap = 0,
     shift_left = null,
+    overcap_share = 0,
     payable = {},
   } = data;
   return (
@@ -29,8 +30,10 @@ export const Objective = (props) => {
           {!!shift_cap && (
             <Box mt={1} color={shift_left > 0 ? 'label' : 'average'}>
               {shift_left > 0
-                ? `NT тратит на задания до ${shift_cap} кр. за смену вместе с долей снабжения, осталось ${shift_left} кр.`
-                : `Лимит оплаты заданий на смену (${shift_cap} кр.) исчерпан: дальше только очки Авангарда участникам вылета.`}
+                ? `Полная награда, пока задания смены вместе с долей снабжения не выпустили ${shift_cap} кр.: осталось ${shift_left} кр., дальше - ${overcap_share}% награды.`
+                : overcap_share > 0
+                  ? `Задания смены выпустили больше ${shift_cap} кр.: теперь NT платит ${overcap_share}% награды, очки Авангарда - полностью.`
+                  : `Задания смены выпустили больше ${shift_cap} кр.: дальше только очки Авангарда участникам вылета.`}
             </Box>
           )}
         </Section>
