@@ -537,9 +537,14 @@
 		if(!istype(cand) || (cand in used_turfs) || (cand in candidates) || !valid_rift_turf(cand) || turf_has_portal(cand))
 			continue
 		candidates += cand
+	var/portal_type = /obj/effect/portal/mesa_rift/nihilanth_rift
+	if(landmark_type == /obj/effect/landmark/awaymission/blackmesa/nihilanth_exit)
+		portal_type = /obj/effect/portal/mesa_rift/nihilanth_rift/exit
+	else if(landmark_type == /obj/effect/landmark/awaymission/blackmesa/nihilanth_complex)
+		portal_type = /obj/effect/portal/mesa_rift/nihilanth_rift/complex
 	var/obj/effect/portal/P = null
 	for(var/turf/cand in candidates)
-		var/obj/effect/portal/try_P = new /obj/effect/portal/mesa_rift/nihilanth_rift(cand)
+		var/obj/effect/portal/try_P = new portal_type(cand)
 		// new на турф с уже стоящим порталом не падает, а оставляет объект
 		// без лока - проверяем, что портал реально встал на кандидат.
 		if(istype(try_P) && get_turf(try_P) == cand)

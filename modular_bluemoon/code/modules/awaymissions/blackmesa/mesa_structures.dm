@@ -421,6 +421,13 @@
 	log_world("NIHILANTH-RIFT: teleport mob=[M] from=[orig_str] real_target=[rt_str] hard_target=[ht_str] linked=[istype(linked)] hardlinked=[hardlinked]")
 	return ..()
 
+/obj/effect/portal/mesa_rift/nihilanth_rift/exit
+	name = "Вернуться домой"
+
+/obj/effect/portal/mesa_rift/nihilanth_rift/complex
+	name = "Продолжить путь по комплексу"
+	color = COLOR_RED
+
 // Все особые ксено-пилоны саморегистрируются здесь - испытаниям Нихиланта
 // не нужен проход по world (сотни тысяч атомов) ради горстки пилонов.
 GLOBAL_VAR_INIT(nihilanth_pylons, list())
