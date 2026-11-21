@@ -20,6 +20,8 @@
 #define ECON_TEXT_DIGITS 12
 /// С этой суммы наличные не со снятия со счёта пишут при внесении строку econ.log с составом и происхождением
 #define ECON_CASH_IN_LOG_MIN 1000
+/// Символов в происхождении пачки или голочипа: при слиянии сверх него первыми уходят части "снято со счёта"
+#define ECON_CASH_ORIGIN_MAX 1000
 
 #define ACCOUNT_CMD "CMD"
 #define ACCOUNT_CMD_NAME "Казна станции"

@@ -48,6 +48,10 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 	var/plays = 0
 	var/working = FALSE
 	var/balance = 0 //How much money is in the machine, ready to be CONSUMED.
+	/// Происхождение внесённого в balance, все ли деньги сняты со счёта и сколько внесено: выплата голочипом наследует это, а выигрыш от ECON_CASH_IN_LOG_MIN кр. сверх внесённого снятым не считается
+	var/balance_origin
+	var/balance_withdrawn = FALSE
+	var/balance_deposited = 0
 	var/jackpots = 0
 	var/list/reels = list(list("", "", "") = 0, list("", "", "") = 0, list("", "", "") = 0, list("", "", "") = 0, list("", "", "") = 0)
 	var/list/symbols = list(SYMBOL_SEVEN = 1, "cherry" = 3, "banana" = 3, "strawberry" = 3, "grape" = 3, "diamond" = 3, "star" = 3, "watermelon" = 3, SYMBOL_WILD = 1, SYMBOL_SCATTER = 1)
@@ -109,7 +113,7 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 
 /obj/machinery/computer/slot_machine/Destroy()
 	if(balance)
-		give_payout(balance)
+		give_payout(balance, TRUE)
 	var/pools = round(prize_bank)
 	if(pools > 0)
 		SSeconomy.move(SSeconomy.cash_account, null, pools, ECON_GAMBLING, memo = "Банк разобранного игрового автомата")
@@ -174,6 +178,7 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 		return FALSE
 	if(!SSeconomy.move(account, SSeconomy.cash_account, amount, ECON_CASH_OUT, user, "Игровой автомат"))
 		return FALSE
+	note_balance_in(amount, TRUE, "[econ_cash_withdrawn_origin(account, user)], [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] в [name] ([get_area_name(src)])")
 	balance += amount
 	playsound(src, 'modular_bluemoon/sound/machines/slot-machine/money.ogg', 50, TRUE)
 	return TRUE
@@ -211,6 +216,7 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 		to_chat(user, span_notice("Вы вставляете в автомат голочип на [H.credits] кр."))
 		playsound(src, 'modular_bluemoon/sound/machines/slot-machine/money.ogg', 50, TRUE)
 		SSeconomy.note_cash_in(econ_cash_note(list(H)), H.credits, "игровой автомат ([get_area_name(src)])", user, uncovered = SSeconomy.cash_shortfall(H.credits))
+		note_balance_in(H.credits, H.withdrawn, H.origin)
 		balance += H.credits
 		qdel(H)
 	else
@@ -299,7 +305,7 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 			. = TRUE
 		if("refund")
 			if(balance > 0)
-				give_payout(balance)
+				give_payout(balance, TRUE)
 				balance = 0
 				session_winnings = 0
 				win_streak = 0
@@ -762,14 +768,31 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 		visible_message(span_warning("[src] пищит: в банке выигрышей не хватило денег, выплачено [paid] из [round(amount)] кр."))
 	return paid
 
-/obj/machinery/computer/slot_machine/proc/give_payout(amount)
+/// Деньги, внесённые в balance: их происхождение и пометка снятия перейдут к выплате.
+/obj/machinery/computer/slot_machine/proc/note_balance_in(amount, withdrawn, origin)
+	if(balance <= 0)
+		balance_origin = null
+		balance_withdrawn = TRUE
+		balance_deposited = 0
+	balance_withdrawn = balance_withdrawn && withdrawn
+	balance_origin = econ_cash_origin_join(balance_origin, origin)
+	balance_deposited += amount
+
+/// Выплата голочипом; from_balance - это деньги игрока из balance, а не россыпь из банка.
+/obj/machinery/computer/slot_machine/proc/give_payout(amount, from_balance = FALSE)
 	if(amount <= 0)
 		return
 	var/obj/item/holochip/chip = new(loc, amount)
+	if(from_balance)
+		econ_cash_pass_on(chip, balance_origin, balance_withdrawn && amount - balance_deposited < ECON_CASH_IN_LOG_MIN, "выплата игрового автомата [name],")
+		balance_origin = null
+		balance_withdrawn = FALSE
+		balance_deposited = 0
 	if(obj_flags & EMAGGED)
 		var/mob/living/target = locate() in range(2, src)
 		if(target)
 			chip.throw_at(target, 3, 10)
+	return chip
 
 #undef SYMBOL_SEVEN
 #undef SPIN_TIME

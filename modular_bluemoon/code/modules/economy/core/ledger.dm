@@ -254,7 +254,7 @@
 		return "Банк не принял [money_name]."
 	return "Банк не принял [money_name]: таких сумм наличными не бывает, это подделка или сбой. Деньги остались у вас."
 
-//// Внесение наличных items из "Наличных в обороте" на target (null - сток) по reason. Строка econ.log с составом - если часть суммы выпущена как found_cash, если среди внесённого от ECON_CASH_IN_LOG_MIN кр. не со снятия со счёта или если банк отказал из-за суммы.
+/// Внесение наличных items из "Наличных в обороте" на target (null - сток) по reason. Строка econ.log с составом - если часть суммы выпущена как found_cash, если среди внесённого от ECON_CASH_IN_LOG_MIN кр. не со снятия со счёта или если банк отказал из-за суммы.
 /datum/controller/subsystem/economy/proc/cash_in(list/items, datum/bank_account/target, amount, mob/user, memo, log_tag, reason = ECON_CASH_IN)
 	var/list/note = econ_cash_note(items)
 	var/found = cash_shortfall(amount)
@@ -271,12 +271,13 @@
 		return 0
 	return max(round(amount) - cash_account.account_balance, 0)
 
-/// Строка econ.log о внесённых наличных по составу note из econ_cash_note: found - выпущено как found_cash, uncovered - не покрыто оборотом, но ещё не выпущено (деньги остались в автомате). Без них - только если не со снятия со счёта от ECON_CASH_IN_LOG_MIN кр.
+/// Строка econ.log о внесённых наличных по составу note из econ_cash_note: found - выпущено как found_cash, uncovered - не покрыто оборотом, но ещё не выпущено (деньги остались в автомате). Без них - только если не со снятия со счёта от ECON_CASH_IN_LOG_MIN кр. из самой внесённой amount: чип на 5000 кр., оплативший 25 кр., строки не пишет.
 /datum/controller/subsystem/economy/proc/note_cash_in(list/note, amount, where, mob/user, found = 0, uncovered = 0)
-	if(found <= 0 && uncovered <= 0 && note["unbacked"] < ECON_CASH_IN_LOG_MIN)
+	var/unbacked = min(note["unbacked"], round(amount))
+	if(found <= 0 && uncovered <= 0 && unbacked < ECON_CASH_IN_LOG_MIN)
 		return
 	var/sum = num2text(round(amount), ECON_TEXT_DIGITS)
-	var/head = "Наличные не со снятия со счёта: [num2text(note["unbacked"], ECON_TEXT_DIGITS)] кр. из внесённых [sum] кр."
+	var/head = "Наличные не со снятия со счёта: [num2text(unbacked, ECON_TEXT_DIGITS)] кр. из внесённых [sum] кр."
 	if(found > 0)
 		head = "Найденные наличные: [num2text(found, ECON_TEXT_DIGITS)] кр. из внесённых [sum] кр."
 	else if(uncovered > 0)
@@ -308,17 +309,26 @@
 		parts += "и ещё [hidden] предм."
 	return list("text" = jointext(parts, "; "), "unbacked" = unbacked)
 
+#define ECON_CASH_ORIGIN_SEP " + "
+#define ECON_CASH_ORIGIN_MORE "другие пачки"
+#define ECON_CASH_WITHDRAWN_MARK "снято со счёта"
+#define ECON_CASH_PASS_ON_MONEY ", деньги - "
+
 /// Голочип целиком снят со счёта: такие при внесении не пишутся строкой о наличных не со снятия.
 /proc/econ_cash_withdrawn(obj/item/money)
 	var/obj/item/holochip/chip = money
 	return istype(chip) && chip.withdrawn
+
+/// Начало происхождения денег, снятых со счёта account.
+/proc/econ_cash_withdrawn_origin(datum/bank_account/account, mob/user)
+	return "[ECON_CASH_WITHDRAWN_MARK] [account?.account_holder] №[account?.account_id][user ? " by [key_name(user)]" : ""]"
 
 /// Помечает голочип, только что снятый со счёта account.
 /proc/econ_cash_mark_withdrawn(obj/item/holochip/chip, datum/bank_account/account, mob/user)
 	if(!chip)
 		return
 	chip.withdrawn = TRUE
-	chip.origin = "снято со счёта [account?.account_holder] №[account?.account_id][user ? " by [key_name(user)]" : ""], [chip.origin]"
+	chip.origin = econ_cash_origin_cap("[econ_cash_withdrawn_origin(account, user)], [chip.origin]")
 
 /proc/econ_cash_origin_of(obj/item/money)
 	var/obj/item/stack/spacecash/bills = money
@@ -328,12 +338,17 @@
 	if(istype(chip))
 		return chip.origin
 
-/// Голочип из ранее внесённых денег (сдача, вывод из аплинка): пометка снятия и происхождение - от них, how - откуда выдан.
+/// Голочип из ранее внесённых денег (сдача, вывод из аплинка): пометка снятия и происхождение - от них, how - откуда выдан. Деньги, уже выданные тем же how, второй раз не вкладываются: круг ввода и вывода не растит строку.
 /proc/econ_cash_pass_on(obj/item/holochip/chip, from_origin, from_withdrawn, how)
 	if(!chip)
 		return
 	chip.withdrawn = !!from_withdrawn
-	chip.origin = "[how] [chip.origin], деньги - [from_origin || "происхождение не записано"]"
+	var/money = from_origin || "происхождение не записано"
+	if(findtext(money, "[how] ") == 1)
+		var/inner = findtext(money, ECON_CASH_PASS_ON_MONEY)
+		if(inner)
+			money = copytext(money, inner + length(ECON_CASH_PASS_ON_MONEY))
+	chip.origin = econ_cash_origin_cap("[how] [chip.origin][ECON_CASH_PASS_ON_MONEY][money]")
 
 /// Происхождение пачки наличных: станционное время, где появилась, какой прок какого типа её создал и usr. Зовётся из Initialize самой пачки.
 /proc/econ_cash_origin(atom/movable/thing, mapload)
@@ -362,21 +377,47 @@
 		where = "на полу"
 	return "[when] [where] ([get_area_name(thing) || "вне зон"])[creator]"
 
-#define ECON_CASH_ORIGIN_MAX 600
-#define ECON_CASH_ORIGIN_MORE " + другие пачки"
+/// Происхождение не длиннее ECON_CASH_ORIGIN_MAX символов.
+/proc/econ_cash_origin_cap(origin)
+	if(length_char(origin) <= ECON_CASH_ORIGIN_MAX)
+		return origin
+	var/tail = "[ECON_CASH_ORIGIN_SEP][ECON_CASH_ORIGIN_MORE]"
+	return "[copytext_char(origin, 1, ECON_CASH_ORIGIN_MAX - length_char(tail) + 1)][tail]"
 
-/// Происхождение слитой пачки: обе строки без повторов, длина ограничена.
+/// Часть происхождения - деньги, снятые со счёта: при слиянии они идут после остальных и первыми уходят при переполнении.
+/proc/econ_cash_origin_withdrawn_part(part)
+	return findtext(part, ECON_CASH_WITHDRAWN_MARK) == 1 || findtext(part, "[ECON_CASH_PASS_ON_MONEY][ECON_CASH_WITHDRAWN_MARK]")
+
+/// Происхождение слитой пачки: части обеих строк без повторов, не со снятия со счёта первыми, длина ограничена.
 /proc/econ_cash_origin_join(origin, added)
 	if(!origin)
-		return added
-	if(!added || findtext(origin, added))
+		return econ_cash_origin_cap(added)
+	if(!added || origin == added)
 		return origin
-	if(length(origin) + length(added) > ECON_CASH_ORIGIN_MAX)
-		return findtext(origin, ECON_CASH_ORIGIN_MORE) ? origin : "[origin][ECON_CASH_ORIGIN_MORE]"
-	return "[origin] + [added]"
+	var/list/parts = list()
+	var/list/withdrawn = list()
+	var/cut = FALSE
+	for(var/part in splittext(origin, ECON_CASH_ORIGIN_SEP) + splittext(added, ECON_CASH_ORIGIN_SEP))
+		if(part == ECON_CASH_ORIGIN_MORE)
+			cut = TRUE
+		else if(!(part in parts) && !(part in withdrawn))
+			if(econ_cash_origin_withdrawn_part(part))
+				withdrawn += part
+			else
+				parts += part
+	parts += withdrawn
+	var/room = ECON_CASH_ORIGIN_MAX - length_char("[ECON_CASH_ORIGIN_SEP][ECON_CASH_ORIGIN_MORE]")
+	if(length_char(jointext(parts, ECON_CASH_ORIGIN_SEP)) > ECON_CASH_ORIGIN_MAX)
+		cut = TRUE
+		while(length(parts) > 1 && length_char(jointext(parts, ECON_CASH_ORIGIN_SEP)) > room)
+			parts.Cut(length(parts))
+	var/joined = jointext(parts, ECON_CASH_ORIGIN_SEP)
+	return econ_cash_origin_cap(cut ? "[joined][ECON_CASH_ORIGIN_SEP][ECON_CASH_ORIGIN_MORE]" : joined)
 
-#undef ECON_CASH_ORIGIN_MAX
+#undef ECON_CASH_ORIGIN_SEP
 #undef ECON_CASH_ORIGIN_MORE
+#undef ECON_CASH_WITHDRAWN_MARK
+#undef ECON_CASH_PASS_ON_MONEY
 
 /// Учёт уже совершённого движения: журнал, истории счетов, сигнал и лог. log_tag - пометка только для лога; history_names - list(плательщик, получатель): имена с ID-карт для историй сторон вместо владельцев счетов, без номеров. Журнал, аудит и лог - по настоящим счетам.
 /datum/controller/subsystem/economy/proc/record_move(datum/bank_account/source, datum/bank_account/target, amount, reason, mob/actor, memo, log_tag, list/history_names)

@@ -135,7 +135,8 @@ describe('NtosDepartmentBudget', () => {
     expect(content).toContain('меньше 30 кр., NT доплачивает');
     expect(content).toContain('Кто дольше 10 мин. мёртв или не на смене, зарплату не получает');
     expect(content).not.toContain('в игре');
-    expect(content).toContain('Премия себе открывает дело финансового аудита. Премии сотруднику - только если ему выписали больше 3 000 кр. за 30 мин.');
+    expect(content).toContain('Премия себе открывает дело финансового аудита, премии сотрудникам в пределах лимита - нет.');
+    expect(content).not.toContain('3 000 кр. за 30 мин.');
     expect(content).toContain('Аудит ведут: глава СБ и капитан.');
     expect(content).toContain('Глав Врач (вы)');
   });

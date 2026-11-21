@@ -284,7 +284,8 @@ describe('NtosFinancialAudit', () => {
     fireEvent.click(getByText('Правила'));
     const content = text(container);
     expect(content).toContain('на 1 000 кр. и больше за 30 мин.');
-    expect(content).toContain('дело, только если ему выписали больше 6 000 кр. за 30 мин.: столько премий в лимите');
+    expect(content).toContain('Премии главы сотруднику в пределах лимита премий дела не открывают.');
+    expect(content).not.toContain('6 000 кр. за 30 мин.');
     expect(content).toContain('5 и больше личных переводов одному получателю за 5 мин.');
     expect(content).toContain('сделки после того, как она встала в очередь: она выходит через 3-5 мин.');
     expect(content).toContain('сделки за 5 мин. до его выхода');

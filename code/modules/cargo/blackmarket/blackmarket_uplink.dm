@@ -32,7 +32,7 @@
 			to_chat(user, span_warning("[src] не принимает [I]."))
 			return
 		money_withdrawn = (money ? money_withdrawn : TRUE) && econ_cash_withdrawn(I)
-		money_origin = money ? econ_cash_origin_join(money_origin, econ_cash_origin_of(I)) : econ_cash_origin_of(I)
+		money_origin = econ_cash_origin_join(money ? money_origin : null, econ_cash_origin_of(I))
 		money += worth
 		to_chat(user, "<span class='notice'>You slot [I] into [src] and it reports a total of [money] credits inserted.</span>")
 		qdel(I)

@@ -565,7 +565,7 @@ const StaffSection = () => {
         />
       }>
       <Box className="NtTerm__hint" mb={1}>
-        {`Премия себе открывает дело финансового аудита. Премии сотруднику - только если ему выписали больше ${formatCredits(data.audit_bonus_allowance)} за ${data.audit_siphon_minutes} мин. Аудит ведут: ${data.audit_rights}.`}
+        {`Премия себе открывает дело финансового аудита, премии сотрудникам в пределах лимита - нет. Аудит ведут: ${data.audit_rights}.`}
       </Box>
       {staff.length ? (
         <Table>

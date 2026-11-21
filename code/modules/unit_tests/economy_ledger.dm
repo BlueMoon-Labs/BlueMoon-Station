@@ -431,11 +431,117 @@
 	stand.my_card = seller.get_idcard(TRUE)
 	var/obj/item/holochip/stand_chip = allocate(/obj/item/holochip, run_loc_floor_bottom_left, 1200)
 	var/stand_origin = stand_chip.origin
+	person.dropItemToGround(washed)
+	person.put_in_hands(stand_chip)
 	log_start = econ_test_log_length()
 	TEST_ASSERT(stand.pay_holochip(person, stand_chip, 1200), "Оплата голочипом на стенде")
 	stand.my_card = null
 	text = jointext(econ_test_cash_lines(log_start, "Найденные наличные: 1200 кр."), " | ")
 	TEST_ASSERT(findtext(text, stand_origin), "Стенд не называет, откуда найденные наличные: [jointext(econ_test_log_since(log_start), " | ")]")
+
+/// Найденный голочип, слитый со снятыми со счёта, стоит в происхождении первым: строка внесения называет его, даже когда снятые уходят под "другие пачки".
+/datum/unit_test/economy_found_cash_origin/merged_found_first/Run()
+	var/datum/bank_account/cash = SSeconomy.cash_account
+	saved_cash = cash.account_balance
+	econ_test_set_balance(cash, 0)
+	var/mob/living/carbon/human/person = econ_test_card_holder(src, "econ_test_cash_merge", 0)
+	var/obj/item/card/id/card = person.get_idcard(TRUE)
+	var/datum/bank_account/account = card.registered_account
+	var/obj/item/holochip/pile = allocate(/obj/item/holochip, run_loc_floor_bottom_left, 100)
+	econ_cash_mark_withdrawn(pile, account, person)
+	var/obj/item/holochip/second = allocate(/obj/item/holochip, run_loc_floor_bottom_left, 100)
+	second.origin += " (вторая пачка)"
+	econ_cash_mark_withdrawn(second, account, person)
+	pile.attackby(second, person)
+	var/obj/item/holochip/found = allocate(/obj/item/holochip, run_loc_floor_bottom_left, 1000)
+	var/found_origin = found.origin
+	pile.attackby(found, person)
+	TEST_ASSERT_EQUAL(findtext(pile.origin, found_origin), 1, "Найденное не первым в происхождении слитого чипа: [pile.origin]")
+	for(var/i in 1 to 12)
+		var/obj/item/holochip/more = allocate(/obj/item/holochip, run_loc_floor_bottom_left, 100)
+		more.origin += " (пачка [i])"
+		econ_cash_mark_withdrawn(more, account, person)
+		pile.attackby(more, person)
+	TEST_ASSERT(length_char(pile.origin) <= ECON_CASH_ORIGIN_MAX && findtext(pile.origin, "другие пачки"), "Происхождение без потолка: [length_char(pile.origin)] символов")
+	var/log_start = econ_test_log_length()
+	card.attackby(pile, person)
+	var/text = jointext(econ_test_cash_lines(log_start, "Найденные наличные: 2400 кр."), " | ")
+	TEST_ASSERT(findtext(text, found_origin), "Строка внесения потеряла найденный чип среди снятых: [jointext(econ_test_log_since(log_start), " | ")]")
+
+/// Круг ввода и вывода через аплинк не растит происхождение: вывод того же аплинка не вкладывается в себя.
+/datum/unit_test/economy_found_cash_origin/uplink_cycle/Run()
+	saved_cash = SSeconomy.cash_account.account_balance
+	var/mob/living/carbon/human/person = econ_test_card_holder(src, "econ_test_cash_cycle", 0)
+	var/obj/item/blackmarket_uplink/uplink = allocate(/obj/item/blackmarket_uplink, run_loc_floor_bottom_left)
+	var/obj/item/holochip/chip = allocate(/obj/item/holochip, run_loc_floor_bottom_left, 500)
+	var/chip_origin = chip.origin
+	for(var/i in 1 to 6)
+		uplink.attackby(chip, person)
+		chip = uplink.withdraw_money(person, 500)
+		allocated += chip
+	var/nested = length(splittext(chip.origin, "из аплинка чёрного рынка")) - 1
+	TEST_ASSERT_EQUAL(nested, 1, "Вывод аплинка вложен в себя: [chip.origin]")
+	TEST_ASSERT(findtext(chip.origin, chip_origin), "Круг через аплинк потерял, откуда деньги: [chip.origin]")
+
+/// Стенд не тратит голочип, отданный другому, пока вводили сумму, и не списывает сумму, которую банк не проведёт; частичная оплата пишет в econ.log уплаченное, а не номинал чипа.
+/datum/unit_test/economy_found_cash_origin/paystand_chip/Run()
+	var/datum/bank_account/cash = SSeconomy.cash_account
+	saved_cash = cash.account_balance
+	econ_test_set_balance(cash, 100000)
+	var/mob/living/carbon/human/person = econ_test_card_holder(src, "econ_test_stand_payer", 0)
+	var/mob/living/carbon/human/other = econ_test_card_holder(src, "econ_test_stand_other", 0)
+	var/mob/living/carbon/human/seller = econ_test_card_holder(src, "econ_test_stand_seller", 0)
+	var/datum/bank_account/seller_account = econ_test_card_account(seller)
+	var/obj/machinery/paystand/stand = allocate(/obj/machinery/paystand, run_loc_floor_bottom_left)
+	stand.my_card = seller.get_idcard(TRUE)
+	var/obj/item/holochip/chip = allocate(/obj/item/holochip, null, 5000)
+	other.put_in_hands(chip)
+	TEST_ASSERT(!stand.pay_holochip(person, chip, 100), "Стенд взял голочип, который уже отдан другому")
+	TEST_ASSERT_EQUAL(chip.credits, 5000, "С отданного голочипа списано")
+	TEST_ASSERT_EQUAL(seller_account.account_balance, 0, "Владелец стенда получил деньги с чужого голочипа")
+	other.dropItemToGround(chip)
+	person.put_in_hands(chip)
+	var/log_start = econ_test_log_length()
+	TEST_ASSERT(stand.pay_holochip(person, chip, 25), "Оплата 25 кр. с голочипа")
+	TEST_ASSERT_EQUAL(length(econ_test_cash_lines(log_start, "Вносили:")), 0, "Оплата 25 кр. пишет номинал всего голочипа: [jointext(econ_test_log_since(log_start), " | ")]")
+	log_start = econ_test_log_length()
+	TEST_ASSERT(stand.pay_holochip(person, chip, 1500), "Оплата 1500 кр. с голочипа")
+	TEST_ASSERT_EQUAL(length(econ_test_cash_lines(log_start, "Наличные не со снятия со счёта: 1500 кр. из внесённых 1500 кр.")), 1, "Строка не называет уплаченное: [jointext(econ_test_log_since(log_start), " | ")]")
+	TEST_ASSERT_EQUAL(chip.credits, 3475, "С голочипа списано уплаченное")
+	person.dropItemToGround(chip)
+	var/obj/item/holochip/absurd = allocate(/obj/item/holochip, null, ECON_MOVE_AMOUNT_MAX)
+	person.put_in_hands(absurd)
+	var/paid_before = seller_account.account_balance
+	TEST_ASSERT(!stand.pay_holochip(person, absurd, ECON_MOVE_AMOUNT_MAX), "Стенд принял сумму, которую банк не проводит")
+	TEST_ASSERT(!QDELETED(absurd) && absurd.credits == ECON_MOVE_AMOUNT_MAX, "Голочип списан, хотя оплата не прошла")
+	TEST_ASSERT_EQUAL(seller_account.account_balance, paid_before, "Владелец стенда получил непроведённую сумму")
+	stand.my_card = null
+
+/// Выплата игрового автомата наследует происхождение и пометку снятия внесённого, крупный выигрыш сверх внесённого снятым не считается; лут пиратского глушителя помечен снятым с бюджета снабжения.
+/datum/unit_test/economy_found_cash_origin/slot_and_pirate_payout/Run()
+	var/datum/bank_account/cash = SSeconomy.cash_account
+	saved_cash = cash.account_balance
+	var/mob/living/carbon/human/person = econ_test_card_holder(src, "econ_test_cash_slot_payout", 2000)
+	var/datum/bank_account/account = econ_test_card_account(person)
+	var/obj/machinery/computer/slot_machine/slots = allocate(/obj/machinery/computer/slot_machine, run_loc_floor_bottom_left)
+	TEST_ASSERT(slots.card_deposit(person, 500), "Внесение с карты в автомат")
+	var/obj/item/holochip/payout = slots.give_payout(slots.balance, TRUE)
+	slots.balance = 0
+	allocated += payout
+	TEST_ASSERT(payout?.withdrawn && findtext(payout.origin, "выплата игрового автомата") && findtext(payout.origin, "снято со счёта [account.account_holder]"), "Выплата не помнит, что деньги сняты с карты: [payout?.origin]")
+	TEST_ASSERT(slots.card_deposit(person, 100), "Ещё внесение с карты")
+	slots.balance += ECON_CASH_IN_LOG_MIN
+	var/obj/item/holochip/winnings = slots.give_payout(slots.balance, TRUE)
+	slots.balance = 0
+	allocated += winnings
+	TEST_ASSERT(winnings && !winnings.withdrawn, "Выигрыш от [ECON_CASH_IN_LOG_MIN] кр. сверх внесённого считается снятым со счёта")
+	var/obj/machinery/shuttle_scrambler/scrambler = allocate(/obj/machinery/shuttle_scrambler, run_loc_floor_top_right)
+	scrambler.credits_stored = 300
+	scrambler.dump_loot(person)
+	var/obj/item/holochip/loot = locate() in scrambler.drop_location()
+	allocated += loot
+	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	TEST_ASSERT(loot?.withdrawn && findtext(loot.origin, "снято со счёта [cargo.account_holder]"), "Лут глушителя не помечен снятым с бюджета снабжения: [loot?.origin]")
 
 /datum/unit_test/economy_vv_balance_edit
 	var/list/moves = list()

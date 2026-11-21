@@ -126,21 +126,28 @@
 /obj/machinery/paystand/proc/card_payment_problem(datum/bank_account/payer)
 	return SSeconomy.personal_account_problem(payer, TRUE) || SSeconomy.personal_account_problem(my_card?.registered_account, FALSE)
 
-/// Оплата с голочипа: деньги чипа уходят из "Наличных в обороте" владельцу стенда, состав - в econ.log, если он того стоит.
+/// Оплата с голочипа в руке user: деньги чипа уходят из "Наличных в обороте" владельцу стенда, состав - в econ.log, если он того стоит. Чип, отданный, пока user вводил сумму, не тратится.
 /obj/machinery/paystand/proc/pay_holochip(mob/user, obj/item/holochip/H, cashmoney)
-	if(QDELETED(H))
+	if(QDELETED(H) || !user.is_holding(H) || !user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
 		return FALSE
 	var/seller_problem = SSeconomy.personal_account_problem(my_card?.registered_account, FALSE)
 	if(seller_problem)
 		to_chat(user, span_warning(seller_problem))
 		return FALSE
-	var/list/cash_note = econ_cash_note(list(H))
-	var/found = SSeconomy.cash_shortfall(cashmoney)
-	if(!H.spend(cashmoney, FALSE))
+	if(H.credits < cashmoney)
 		to_chat(user, span_warning("На голочипе не хватает кредитов."))
 		return FALSE
-	if(purchase(user, cashmoney, SSeconomy.cash_account, user))
-		SSeconomy.note_cash_in(cash_note, cashmoney, "стенд [name], владелец [my_card.registered_account.account_holder]", user, found)
+	if(!econ_amount_valid(cashmoney))
+		to_chat(user, span_warning(econ_cash_refusal_text(H.name, cashmoney)))
+		return FALSE
+	var/list/cash_note = econ_cash_note(list(H))
+	var/found = SSeconomy.cash_shortfall(cashmoney)
+	var/seller_name = my_card.registered_account.account_holder
+	if(!purchase(user, cashmoney, SSeconomy.cash_account, user))
+		to_chat(user, span_warning("Оплата не прошла, голочип цел."))
+		return FALSE
+	H.spend(cashmoney, FALSE)
+	SSeconomy.note_cash_in(cash_note, cashmoney, "стенд [name], владелец [seller_name]", user, found)
 	to_chat(user, span_notice("Оплачено [cashmoney] кр., владелец стенда получил уведомление."))
 	return TRUE
 

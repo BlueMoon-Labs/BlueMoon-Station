@@ -281,6 +281,34 @@
 	for(var/obj/item/econ_receipt/extra in customer.held_items + counter.contents)
 		qdel(extra)
 
+/// Мелкая покупка с крупного голочипа не пишет в econ.log номинал всего чипа; крупная пишет уплаченное.
+/datum/unit_test/economy_register/cash_found_line/partial_chip/Run()
+	setup_register()
+	open_with_item(25)
+	var/datum/register_cashier/seller = till()
+	seller.order_at -= REGISTER_SELECT_GRACE
+	saved_cash = SSeconomy.cash_account.account_balance
+	econ_test_set_balance(SSeconomy.cash_account, 100000)
+	var/obj/item/card/id/card = customer.get_active_held_item()
+	customer.dropItemToGround(card)
+	var/obj/item/holochip/chip = allocate(/obj/item/holochip, null, 5000)
+	customer.put_in_active_hand(chip)
+	var/log_start = econ_test_log_length()
+	chip.melee_attack_chain(customer, register)
+	TEST_ASSERT_EQUAL(chip.credits, 4975, "С голочипа списано 25 кр.")
+	TEST_ASSERT_EQUAL(length(econ_test_cash_lines(log_start, "Вносили:")), 0, "Покупка на 25 кр. пишет номинал всего голочипа: [jointext(econ_test_log_since(log_start), " | ")]")
+	TEST_ASSERT(register.register_act(cashier, "add_item", list("name" = "Коньяк", "price" = 1500)), "Дорогая позиция добавлена")
+	TEST_ASSERT(order(cashier, 2), "Дорогая позиция в счёте")
+	seller.order_at -= REGISTER_SELECT_GRACE
+	log_start = econ_test_log_length()
+	chip.melee_attack_chain(customer, register)
+	TEST_ASSERT_EQUAL(chip.credits, 3475, "С голочипа списано 1500 кр.")
+	TEST_ASSERT_EQUAL(length(econ_test_cash_lines(log_start, "Наличные не со снятия со счёта: 1500 кр. из внесённых 1500 кр.")), 1, "Строка не называет уплаченное: [jointext(econ_test_log_since(log_start), " | ")]")
+	QDEL_NULL(chip)
+	var/atom/counter = register.drop_location()
+	for(var/obj/item/econ_receipt/extra in customer.held_items + counter.contents)
+		qdel(extra)
+
 /// Замороженный и приостановленный счёт не платят и не дают чаевых ни при какой доле, касса ничего не засчитывает.
 /datum/unit_test/economy_register/blocked_payer/Run()
 	setup_register()
