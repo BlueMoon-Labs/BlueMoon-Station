@@ -7,6 +7,8 @@ unused icons/effects/parallax/goon/weather/clouds_1.dmi  # маски без ц�
 unused icons/effects/parallax/goon/weather/clouds_2.dmi  # то же
 unused modular_bluemoon/sound/items/frying_pan.ogg  # для сковороды, закомментированной в fluffs/code/items.dm
 unused modular_bluemoon/fluffs/icons/obj/melee_inventory.dmi  # то же
+unused modular_bluemoon/icons/mob/gibsnguts/infected.dmi  # в будущем будет закончено. Реворк мезы
+unused modular_bluemoon/icons/obj/urbanism/bigbox.dmi  # в будущем будет закончено. Реворк мезы
 
 duplicate modular_sand/icons/hud/screen_*/*.dmi  # ui_style_modular() собирает путь из каталога стиля, одинаковые листы у стилей нормальны
 duplicate modular_bluemoon/fluffs/icons/mob/inhands/security_*hand.dmi  # правую руку не дорисовали, это копия левой
