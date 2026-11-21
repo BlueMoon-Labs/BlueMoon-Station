@@ -322,7 +322,7 @@
 	if(!cash_money)
 		to_chat(user, span_warning("[I.name] не кажется стоящим что-либо!"))
 		return
-	if(!SSeconomy.move(SSeconomy.cash_account, registered_account, cash_money, ECON_CASH_IN, user, "Внесение: [I.name]"))
+	if(!SSeconomy.cash_in(list(I), registered_account, cash_money, user, "Внесение: [I.name]"))
 		var/refusal = econ_cash_refusal_text(I.name, cash_money)
 		to_chat(user, span_warning(refusal))
 		return
@@ -355,7 +355,7 @@
 
 	if(!total)
 		return FALSE
-	if(!SSeconomy.move(SSeconomy.cash_account, registered_account, total, ECON_CASH_IN, user, "Внесение наличных", "[length(taken)] предм."))
+	if(!SSeconomy.cash_in(taken, registered_account, total, user, "Внесение наличных", "[length(taken)] предм."))
 		var/refusal = econ_cash_refusal_text(what, total)
 		to_chat(user, span_warning(refusal))
 		return FALSE

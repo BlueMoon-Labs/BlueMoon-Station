@@ -36,7 +36,7 @@
 		value = H.credits
 	if(value)
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-		if(!D || !SSeconomy.move(SSeconomy.cash_account, D, value, ECON_CASH_IN, user, "Внесение наличных: [econ_public_name(user)]"))
+		if(!D || !SSeconomy.cash_in(list(I), D, value, user, "Внесение наличных: [econ_public_name(user)]"))
 			var/refusal = econ_cash_refusal_text(I.name, value)
 			to_chat(user, span_warning(refusal))
 			return

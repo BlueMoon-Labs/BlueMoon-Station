@@ -7,8 +7,11 @@
 	force = 0
 	w_class = WEIGHT_CLASS_TINY
 	var/credits = 0
+	/// Когда, где и каким проком создан чип, как у пачки наличных
+	var/origin
 
 /obj/item/holochip/Initialize(mapload, amount)
+	origin = econ_cash_origin(src, mapload)
 	. = ..()
 	credits = amount
 	update_icon()
@@ -79,6 +82,7 @@
 	if(istype(I, /obj/item/holochip))
 		var/obj/item/holochip/H = I
 		credits += H.credits
+		origin = econ_cash_origin_join(origin, H.origin)
 		to_chat(user, "<span class='notice'>You insert the credits into [src].</span>")
 		update_icon()
 		qdel(H)
@@ -96,6 +100,7 @@
 	else
 		var/new_credits = spend(split_amount, TRUE)
 		var/obj/item/holochip/H = new(user ? user : drop_location(), new_credits)
+		H.origin = origin
 		if(user)
 			if(!user.put_in_hands(H))
 				H.forceMove(user.drop_location())

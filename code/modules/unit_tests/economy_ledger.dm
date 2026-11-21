@@ -275,6 +275,53 @@
 	TEST_ASSERT_EQUAL(cash.account_balance, 0, "Сток наличными тоже не уводит оборот в минус")
 	TEST_ASSERT_EQUAL((SSeconomy.ledger.minted_by_reason[ECON_FOUND_CASH] || 0) - found_before, 50, "Сток найденных наличных эмитирован перед сжиганием")
 
+/datum/unit_test/economy_found_cash_origin
+	var/saved_cash
+
+/datum/unit_test/economy_found_cash_origin/Destroy()
+	if(!isnull(saved_cash))
+		econ_test_set_balance(SSeconomy.cash_account, saved_cash)
+	return ..()
+
+/// Внесение наличных сверх снятых пишет одну строку econ.log, из каких пачек и голочипов найденное: тип, номинал, где, когда и кем создана пачка. Деление и слияние пачек это сохраняют.
+/datum/unit_test/economy_found_cash_origin/Run()
+	var/datum/bank_account/cash = SSeconomy.cash_account
+	saved_cash = cash.account_balance
+	econ_test_set_balance(cash, 0)
+	var/mob/living/carbon/human/person = econ_test_card_holder(src, "econ_test_found_cash", 5000)
+	var/obj/item/card/id/card = person.get_idcard(TRUE)
+	var/datum/bank_account/account = card.registered_account
+	var/obj/item/stack/spacecash/c1000/bills = allocate(/obj/item/stack/spacecash/c1000, run_loc_floor_bottom_left, 3)
+	var/floor_origin = bills.origin
+	TEST_ASSERT(findtext(floor_origin, "на полу"), "Пачка на полу помнит, где создана: [floor_origin]")
+	TEST_ASSERT(findtext(floor_origin, "allocate"), "Пачка помнит, кто её создал: [floor_origin]")
+	var/obj/item/stack/spacecash/c1000/part = bills.split_stack(null, 1)
+	TEST_ASSERT_EQUAL(part.origin, floor_origin, "Отделённая часть помнит происхождение пачки")
+	var/log_start = econ_test_log_length()
+	card.attackby(part, person)
+	var/list/found = list()
+	for(var/line in econ_test_log_since(log_start))
+		if(findtext(line, "Найденные наличные:"))
+			found += line
+	TEST_ASSERT_EQUAL(length(found), 1, "Одна строка о найденных наличных: [jointext(found, " | ")]")
+	if(length(found))
+		TEST_ASSERT(findtext(found[1], "1000 кр.") && findtext(found[1], "[/obj/item/stack/spacecash/c1000] x1") && findtext(found[1], floor_origin), "Строка называет сумму, пачку и её происхождение: [found[1]]")
+	var/obj/item/stack/spacecash/c1000/held = allocate(/obj/item/stack/spacecash/c1000, person)
+	TEST_ASSERT(findtext(held.origin, "у ") && findtext(held.origin, person.real_name), "Пачка в вещах моба помнит владельца: [held.origin]")
+	held.merge(bills)
+	TEST_ASSERT(findtext(bills.origin, floor_origin) && findtext(bills.origin, person.real_name), "Слитая пачка помнит оба происхождения: [bills.origin]")
+	TEST_ASSERT(SSeconomy.move(account, cash, bills.get_item_credit_value(), ECON_CASH_OUT), "Снятие на сумму пачки")
+	log_start = econ_test_log_length()
+	card.attackby(bills, person)
+	for(var/line in econ_test_log_since(log_start))
+		TEST_ASSERT(!findtext(line, "Найденные наличные:"), "Внесение в пределах снятого пишет найденные наличные: [line]")
+	var/obj/item/holochip/chip = allocate(/obj/item/holochip, run_loc_floor_bottom_left, 500)
+	var/chip_origin = chip.origin
+	log_start = econ_test_log_length()
+	card.attackby(chip, person)
+	var/chip_line = jointext(econ_test_log_since(log_start), "\n")
+	TEST_ASSERT(findtext(chip_line, "Найденные наличные: 500 кр.") && findtext(chip_line, "[/obj/item/holochip] на 500 кр. ([chip_origin])"), "Голочип тоже называет происхождение: [chip_line]")
+
 /datum/unit_test/economy_vv_balance_edit
 	var/list/moves = list()
 

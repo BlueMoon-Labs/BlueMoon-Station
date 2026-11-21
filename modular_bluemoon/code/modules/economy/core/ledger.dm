@@ -254,6 +254,76 @@
 		return "Банк не принял [money_name]."
 	return "Банк не принял [money_name]: таких сумм наличными не бывает, это подделка или сбой. Деньги остались у вас."
 
+/// Внесение наличных items на счёт target. Если "Наличных в обороте" не хватило и часть суммы выпущена как found_cash, в econ.log - строка, из каких пачек она.
+/datum/controller/subsystem/economy/proc/cash_in(list/items, datum/bank_account/target, amount, mob/user, memo, log_tag)
+	var/found = round(amount) - cash_account.account_balance
+	if(!move(cash_account, target, amount, ECON_CASH_IN, user, memo, log_tag))
+		return FALSE
+	if(found > 0)
+		log_econ("Найденные наличные: [num2text(found, ECON_TEXT_DIGITS)] кр. из внесённых [num2text(round(amount), ECON_TEXT_DIGITS)] кр. на [target.account_holder][user ? " by [key_name(user)]" : ""], сейчас [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] по станции. Вносили: [econ_cash_items_text(items)]")
+	return TRUE
+
+/// Что вносили, для строки найденных наличных: пачки и голочипы с происхождением первыми, остальное - тип и сумма.
+/proc/econ_cash_items_text(list/items)
+	var/list/parts = list()
+	var/list/others = list()
+	for(var/obj/item/money as anything in items)
+		var/obj/item/stack/spacecash/bills = money
+		var/obj/item/holochip/chip = money
+		if(istype(bills))
+			parts += "[bills.type] x[bills.amount] по [bills.value] кр. ([bills.origin || "происхождение не записано"])"
+		else if(istype(chip))
+			parts += "[chip.type] на [chip.credits] кр. ([chip.origin || "происхождение не записано"])"
+		else
+			others += "[money.type] на [money.get_item_credit_value()] кр."
+	parts += others
+	var/shown = 8
+	if(length(parts) > shown)
+		var/hidden = length(parts) - shown
+		parts.Cut(shown + 1)
+		parts += "и ещё [hidden] предм."
+	return jointext(parts, "; ")
+
+/// Происхождение пачки наличных: станционное время, где появилась и какой прок её создал. Зовётся из Initialize самой пачки.
+/proc/econ_cash_origin(atom/movable/thing, mapload)
+	var/when = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)
+	if(mapload)
+		return "[when] на карте при загрузке ([get_area_name(thing)])"
+	var/creator = ""
+	var/callee/frame = caller
+	for(var/depth in 1 to 10)
+		if(!frame)
+			break
+		if(frame.src != thing && frame.src != SSatoms)
+			creator = ", создал [frame.proc]"
+			break
+		frame = frame.caller
+	if(!thing.loc)
+		return "[when] вне карты[creator]"
+	var/where = "в [thing.loc.name]"
+	var/mob/holder = get(thing.loc, /mob)
+	if(holder)
+		where = "у [key_name(holder)]"
+	else if(isturf(thing.loc))
+		where = "на полу"
+	return "[when] [where] ([get_area_name(thing) || "вне зон"])[creator]"
+
+#define ECON_CASH_ORIGIN_MAX 600
+#define ECON_CASH_ORIGIN_MORE " + другие пачки"
+
+/// Происхождение слитой пачки: обе строки без повторов, длина ограничена.
+/proc/econ_cash_origin_join(origin, added)
+	if(!origin)
+		return added
+	if(!added || findtext(origin, added))
+		return origin
+	if(length(origin) + length(added) > ECON_CASH_ORIGIN_MAX)
+		return findtext(origin, ECON_CASH_ORIGIN_MORE) ? origin : "[origin][ECON_CASH_ORIGIN_MORE]"
+	return "[origin] + [added]"
+
+#undef ECON_CASH_ORIGIN_MAX
+#undef ECON_CASH_ORIGIN_MORE
+
 /// Учёт уже совершённого движения: журнал, истории счетов, сигнал и лог. log_tag - пометка только для лога; history_names - list(плательщик, получатель): имена с ID-карт для историй сторон вместо владельцев счетов, без номеров. Журнал, аудит и лог - по настоящим счетам.
 /datum/controller/subsystem/economy/proc/record_move(datum/bank_account/source, datum/bank_account/target, amount, reason, mob/actor, memo, log_tag, list/history_names)
 	ledger.record(source, target, amount, reason)
