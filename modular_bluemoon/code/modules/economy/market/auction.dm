@@ -422,16 +422,18 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	lot.note_bid(account.account_holder, amount)
 	return null
 
-/// Ставка с личного счёта: деньги замораживаются на счёте биржи до конца торгов или пока ставку не перебьют; outbid - ставка из outbid_price() вместо amount. Возвращает текст отказа или null.
+/// Ставка с личного счёта: деньги замораживаются на счёте биржи до конца торгов или пока ставку не перебьют; outbid - ставка по outbid_price(), amount - сумма с кнопки, и если цена с тех пор сменилась, ставка не идёт. Возвращает текст отказа или null.
 /datum/controller/subsystem/market/proc/place_auction_bid(datum/bank_account/account, amount, mob/user, uid, outbid = FALSE)
 	var/datum/auction_lot/lot = find_auction_lot(uid)
 	. = auction_bidder_problem(lot, account)
 	if(.)
 		return
 	if(outbid)
-		amount = lot.outbid_price()
-		if(!amount)
+		var/price = lot.outbid_price()
+		if(!price)
 			return length(lot.rivals) ? "Дороже [lot.rival_ceiling()] кр. станции сектора не дают - их уже не нужно перебивать, хватит ставки от [lot.min_bid()] кр." : "Станций сектора на этих торгах нет: ставьте от [lot.min_bid()] кр."
+		if(amount != price)
+			return "Цена изменилась: теперь [price] кр."
 	var/datum/auction_lot/crew/crew_lot = lot
 	if(istype(crew_lot) && crew_lot.buyout && (lot.min_bid() >= crew_lot.buyout || (isnum(amount) && amount >= crew_lot.buyout)))
 		return "Ставка не дойдёт до цены выкупа: этот лот можно сразу купить за [crew_lot.buyout] кр."

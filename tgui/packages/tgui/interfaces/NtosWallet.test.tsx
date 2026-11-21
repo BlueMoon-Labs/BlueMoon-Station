@@ -455,7 +455,7 @@ describe('NtosWallet', () => {
     fireEvent.click(getByText('Перебить соперников: 1 049 кр.'));
     expect(sent(topic, 'auction_bid')).toEqual([
       { uid: 1, amount: 900 },
-      { uid: 1, outbid: true },
+      { uid: 1, outbid: true, amount: 1049 },
     ]);
   });
 

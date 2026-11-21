@@ -151,6 +151,9 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"performer_share" = settings.contract_performer_share,
 		"contracts_help_topics" = econ_contracts_help_topics(),
 		"audit_rights" = SSeconomy.audit_rights_text(),
+		"audit_bonus_allowance" = SSeconomy.audit_bonus_allowance(),
+		"audit_siphon_minutes" = settings.audit_siphon_minutes,
+		"bundle_first" = round(BUNDLE_DEPARTMENT_FIRST / (1 MINUTES)),
 		"grant_price" = settings.research_grant_price_per_point,
 		"grant_cap" = settings.research_grant_cap_hour,
 	)

@@ -111,7 +111,7 @@ export const AuctionBidEntry = (props: AuctionBidEntryProps) => {
                   ? `Не хватает денег на счёте: нужно ${formatCredits(outbidCost)}`
                   : `Станции сектора дают не больше ${lot.rival_cap ?? 0}% оценки (${formatCredits(lot.rival_ceiling)}): после этой ставки они её уже не перебьют, а экипаж - может.${lot.mine ? ` Доплатите только разницу: ${formatCredits(outbidCost)}` : ''}`
               }
-              onClick={() => act('auction_bid', { uid: lot.uid, outbid: true })}>
+              onClick={() => act('auction_bid', { uid: lot.uid, outbid: true, amount: outbid })}>
               {`Перебить соперников: ${formatCredits(outbid)}`}
             </Button>
           </Stack.Item>

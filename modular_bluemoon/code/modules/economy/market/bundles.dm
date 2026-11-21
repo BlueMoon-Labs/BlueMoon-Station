@@ -15,8 +15,12 @@
 	/// Паки пачки: ящик наполняют они сами
 	var/list/source_packs = list()
 	var/list/pack_names = list()
-	/// Что из пачки отделу нужно сейчас и почему, из "нужно сейчас" окна бюджета; пусто - пачка на каждый день
-	var/need
+	/// Тип пака пачки из "нужно сейчас" отдела; почему нужен, берёт need_reason() живьём. Пусто - пачка на каждый день
+	var/need_pack
+	/// До этого world.time пачку берут только за бюджет её отдела; 0 - окна нет или оно прошло
+	var/department_until = 0
+	/// Кто и как взял пачку: "имя (должность) лично"
+	var/taken_by
 
 /datum/supply_pack/bundle/Destroy()
 	source_packs = null
@@ -39,6 +43,17 @@
 		crate_type = /obj/structure/closet/crate/secure
 		return TRUE
 	return access == pack.access && access_any ~= pack.access_any
+
+/// Почему need_pack нужен отделу сейчас; нужда прошла - null.
+/datum/supply_pack/bundle/proc/need_reason()
+	if(!need_pack)
+		return null
+	var/datum/economy_department/department = SSeconomy.get_department(department_id)
+	return department?.needs_now()[need_pack]
+
+/// Сколько ещё пачку берут только за бюджет её отдела, в децисекундах.
+/datum/supply_pack/bundle/proc/department_left()
+	return max(0, department_until - world.time)
 
 /// Для кого пачка, в названии: "Скупка для медбея".
 /proc/econ_bundle_whom(department_id)
@@ -68,6 +83,9 @@
 			var/datum/trade_partner/seller = get_partner(bundle.seller_id)
 			seller?.note_bundle_ignored(bundle)
 			qdel(bundle)
+		else if(bundle.department_until && !bundle.department_left())
+			bundle.department_until = 0
+			log_econ("Скупка #[bundle.uid] открыта снабжению и для личной покупки")
 	if(!next_bundle_at)
 		next_bundle_at = world.time + rand(BUNDLE_GAP_MIN, BUNDLE_GAP_MAX)
 		return
@@ -181,8 +199,10 @@
 		value += pack_value
 		bundle.source_packs += pack
 		bundle.pack_names += pack.name
-		if(!bundle.need && needs[pack.type])
-			bundle.need = "[pack.name] - [needs[pack.type]]"
+		if(!pack.can_private_buy)
+			bundle.can_private_buy = FALSE
+		if(!bundle.need_pack && needs[pack.type])
+			bundle.need_pack = pack.type
 	if(length(bundle.source_packs) < BUNDLE_PACKS_MIN)
 		qdel(bundle)
 		return null
@@ -197,15 +217,17 @@
 	bundle.price = max(1, round(bundle.full_value * (100 - bundle.discount) / 100))
 	bundle.cost = bundle.price
 	bundle.expires_at = world.time + BUNDLE_LIFETIME
+	if(department.has_approver_on_shift())
+		bundle.department_until = world.time + BUNDLE_DEPARTMENT_FIRST
 	bundle.name = "Скупка для [econ_bundle_whom(department_id)]: [jointext(bundle.pack_names, ", ")]"
 	bundle.desc = "Только целиком, у \"[seller.name]\"."
 	bundle.crate_name = "ящик скупки для [econ_bundle_whom(department_id)]"
 	bundles += bundle
-	log_econ("Скупка #[bundle.uid] у [seller.name] для [department.name]: [jointext(bundle.pack_names, ", ")] за [bundle.price] кр. вместо [bundle.full_value]")
+	log_econ("Скупка #[bundle.uid] у [seller.name] для [department.name]: [jointext(bundle.pack_names, ", ")] за [bundle.price] кр. вместо [bundle.full_value][bundle.department_until ? ", первые [round(BUNDLE_DEPARTMENT_FIRST / (1 MINUTES))] мин. - только за бюджет отдела" : ""][bundle.can_private_buy ? "" : ", лично не купить"]")
 	announce_bundle(bundle)
 	return bundle
 
-/// Строка о новой пачке в канал её отдела, не чаще BUNDLE_RADIO_COOLDOWN на отдел. Возвращает сообщение или null.
+/// Строка о новой пачке в канал её отдела и на карты его начальства на смене, не чаще BUNDLE_RADIO_COOLDOWN на отдел. Возвращает сообщение или null.
 /datum/controller/subsystem/market/proc/announce_bundle(datum/supply_pack/bundle/bundle)
 	var/datum/economy_department/department = SSeconomy.get_department(bundle.department_id)
 	var/channel = GLOB.econ_department_radio[bundle.department_id]
@@ -213,8 +235,23 @@
 		return null
 	COOLDOWN_START(department, bundle_notice_cooldown, BUNDLE_RADIO_COOLDOWN)
 	var/datum/trade_partner/seller = get_partner(bundle.seller_id)
-	. = "[bundle.name]. У \"[seller?.name]\" за [bundle.price] кр. вместо [bundle.full_value], только целиком и ещё [round(BUNDLE_LIFETIME / (1 MINUTES))] мин.[bundle.need ? " Нужно сейчас: [bundle.need]." : ""] Взять за бюджет отдела может глава, ГП или капитан в \"Бюджете отдела\" на КПК или в окне снабжения."
+	var/datum/supply_pack/needed = SSshuttle.supply_packs[bundle.need_pack]
+	var/reason = bundle.need_reason()
+	var/first = bundle.department_until ? " Первые [round(BUNDLE_DEPARTMENT_FIRST / (1 MINUTES))] мин. она только для отдела." : ""
+	. = "[bundle.name]. У \"[seller?.name]\" за [bundle.price] кр. вместо [bundle.full_value], только целиком и ещё [round(BUNDLE_LIFETIME / (1 MINUTES))] мин.[reason ? " Нужно сейчас: [needed.name] - [reason]." : ""] Взять за бюджет отдела может глава, ГП или капитан в \"Бюджете отдела\" на КПК или в окне снабжения.[first]"
 	paperwork_radio(., channel)
+	for(var/datum/bank_account/manager_account as anything in department.managers_on_shift())
+		manager_account.bank_card_talk(.)
+
+/// Канал отдела пачки слышит, кто и как её взял: how - "за бюджет отдела", "за бюджет снабжения" или "лично". Имя и должность - по ID-карте из заказа.
+/proc/econ_bundle_taken(datum/supply_pack/bundle/bundle, datum/supply_order/order, how)
+	var/static/list/no_rank = list("No id", "No job", "*None Provided*")
+	var/who = length(order.orderer) && order.orderer != "*None Provided*" ? order.orderer : "без имени на ID-карте"
+	var/rank = length(order.orderer_rank) && !(order.orderer_rank in no_rank) ? order.orderer_rank : null
+	bundle.taken_by = "[who][rank ? " ([rank])" : ""] [how]"
+	var/channel = GLOB.econ_department_radio[bundle.department_id]
+	if(channel)
+		paperwork_radio("Пачку скупки для [econ_bundle_whom(bundle.department_id)] взяли [how]: [who][rank ? ", [rank]" : ""].", channel)
 
 /datum/controller/subsystem/market/proc/bundle_by_uid(uid)
 	for(var/datum/supply_pack/bundle/bundle as anything in bundles)
@@ -248,9 +285,11 @@
 	SSmarket.bundles -= bundle
 	order.partner_id = bundle.seller_id
 	log_econ("[key_name(user)] берёт скупку #[bundle.uid] за [bundle.price] кр. из бюджета отдела [department.name]")
+	econ_bundle_taken(bundle, order, "за бюджет отдела")
 	return list(TRUE, "Пачка в корзине снабжения: [bundle.price] кр. списано, [department.budget_name] сэкономил [bundle.full_value - bundle.price] кр.")
 
-/// Покупка пачки из окна снабжения: за бюджет её отдела (budget) - глава, ГП или капитан; за бюджет снабжения - снабжение; или лично. Заявкой скупку не взять, у партнёра под эмбарго - тоже. Пачка уходит в корзину и пропадает из скупки.
+/// Покупка пачки из окна снабжения: за бюджет её отдела (budget) - глава, ГП или капитан; за бюджет снабжения - снабжение; или лично, если все её паки продаются лично и на счёте хватает на цену с наценкой частного заказа.
+/// Пока идёт окно department_left(), только за бюджет отдела. Заявкой скупку не взять, у партнёра под эмбарго - тоже. Пачка уходит в корзину и пропадает из скупки.
 /proc/econ_cargo_buy_bundle(mob/user, list/params, atom/movable/speaker, self_paid, can_buy_for_cargo, show_contraband = FALSE)
 	var/uid = params["uid"]
 	if(istext(uid))
@@ -267,29 +306,48 @@
 		speaker.say("Партнёр под эмбарго: пачку можно будет купить, когда его снимут.")
 		return FALSE
 	if(!self_paid && !can_buy_for_cargo)
-		speaker.say("За бюджет снабжения скупку берёт только снабжение. Пачку для отдела берёт за его бюджет глава, ГП или капитан, лично - любой.")
+		speaker.say("За бюджет снабжения скупку берёт только снабжение. Пачку для отдела берёт за его бюджет глава, ГП или капитан, лично - любой, если в ней нет паков, которые лично не продаются.")
+		return FALSE
+	var/first_left = bundle.department_left()
+	if(first_left)
+		var/datum/economy_department/department = SSeconomy.get_department(bundle.department_id)
+		speaker.say("Первые [round(BUNDLE_DEPARTMENT_FIRST / (1 MINUTES))] мин. эту пачку берут только за [department?.budget_name || "бюджет её отдела"]: снабжению и лично она откроется через [CEILING(first_left / (1 MINUTES), 1)] мин.")
 		return FALSE
 	var/datum/bank_account/account
 	if(self_paid)
+		if(!bundle.can_private_buy)
+			speaker.say("В этой пачке есть паки, которые лично не продаются: её берут за бюджет отдела или снабжения.")
+			return FALSE
 		account = econ_cargo_private_account(user, speaker)
 		if(!account)
+			return FALSE
+		var/private_price = round(bundle.price * ECON_PRIVATE_ORDER_MARKUP)
+		if(!account.has_money(private_price))
+			speaker.say("На счёте не хватает: лично пачка стоит [private_price] кр. с наценкой частного заказа, на счёте [account.account_balance] кр.")
 			return FALSE
 	SSmarket.bundles -= bundle
 	var/datum/supply_order/order = econ_cargo_new_order(user, bundle, "", account, FALSE)
 	order.partner_id = bundle.seller_id
 	order.contraband_supply = show_contraband
-	speaker.say("Пачка скупки в корзине: [bundle.price] кр.[account ? ", оплата со счёта [account.account_holder] при доставке" : ""].")
+	speaker.say(account ? "Пачка скупки в корзине: [round(bundle.price * ECON_PRIVATE_ORDER_MARKUP)] кр. с наценкой частного заказа, оплата со счёта [account.account_holder] при доставке." : "Пачка скупки в корзине: [bundle.price] кр.")
 	log_econ("[key_name(user)] берёт скупку #[bundle.uid] за [bundle.price] кр.[account ? " лично" : ""]")
+	econ_bundle_taken(bundle, order, account ? "лично" : "за бюджет снабжения")
 	return TRUE
 
 /// Скупка для окон снабжения и бюджета отдела (only_department - только пачки этого отдела); can_budget - user может взять пачку за бюджет её отдела.
+/// need - пак, который отделу нужен сейчас; почему нужен (need_why) видят окно бюджета, сотрудники отдела и те, кто берёт пачку за его бюджет: в причине бывают данные датчиков.
 /proc/econ_bundles_ui_data(mob/living/user, only_department)
 	. = list()
+	var/datum/bank_account/user_account = econ_account_of(user)
+	var/user_department = user_account?.department_id
 	for(var/datum/supply_pack/bundle/bundle as anything in SSmarket.bundles)
 		if(only_department && bundle.department_id != only_department)
 			continue
 		var/datum/trade_partner/seller = SSmarket.get_partner(bundle.seller_id)
 		var/datum/economy_department/department = SSeconomy.get_department(bundle.department_id)
+		var/can_budget = !!department?.can_manage(user)
+		var/reason = bundle.need_reason()
+		var/datum/supply_pack/needed = reason && SSshuttle.supply_packs[bundle.need_pack]
 		. += list(list(
 			"uid" = bundle.uid,
 			"partner" = seller?.name,
@@ -297,11 +355,14 @@
 			"department" = department?.name,
 			"whom" = econ_bundle_whom(bundle.department_id),
 			"packs" = bundle.pack_names,
-			"need" = bundle.need,
+			"need" = needed?.name,
+			"need_why" = (needed && (only_department || can_budget || user_department == bundle.department_id)) ? reason : null,
 			"full_value" = bundle.full_value,
 			"price" = bundle.price,
 			"discount" = bundle.discount,
 			"embargoed" = !econ_bundle_seller(bundle),
 			"left" = max(0, CEILING((bundle.expires_at - world.time) / (1 SECONDS), 1)),
-			"can_budget" = !!department?.can_manage(user),
+			"can_budget" = can_budget,
+			"private_ok" = bundle.can_private_buy,
+			"department_left" = CEILING(bundle.department_left() / (1 SECONDS), 1),
 		))

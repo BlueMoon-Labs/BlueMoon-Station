@@ -681,7 +681,7 @@ test('аукцион: вписанная сумма ставится одним 
   fireEvent.click(ui.getByText('Перебить соперников: 4 191 кр.'));
   expect(sent(ui.topic, 'auction_bid')).toEqual([
     { uid: 4, amount: 2400 },
-    { uid: 4, outbid: true },
+    { uid: 4, outbid: true, amount: 4191 },
   ]);
   ui.store.dispatch(backendUpdate({ data: { auction: { ...lot, outbid_price: 4191 }, my_balance: 4000 } }));
   ui.rerender(<CargoContent />);
@@ -799,7 +799,8 @@ test('скупка: пачка для отдела только целиком, 
         department: 'Медицина',
         whom: 'медбея',
         packs: ['Medical Supplies Crate', 'Blood Pack Variety Crate'],
-        need: 'Medical Supplies Crate - Раненых на станции: 3',
+        need: 'Medical Supplies Crate',
+        need_why: 'Раненых на станции: 3',
         full_value: 2000,
         price: 1400,
         discount: 30,
@@ -814,7 +815,7 @@ test('скупка: пачка для отдела только целиком, 
   expect(ui.getByText('1 400 кр.')).toBeTruthy();
   expect(ui.getByText('ещё 10:00')).toBeTruthy();
   expect(ui.queryByText('За бюджет отдела')).toBeNull();
-  fireEvent.click(ui.getByText('Купить пачкой'));
+  fireEvent.click(ui.getByText('Купить пачку'));
   expect(sent(ui.topic, 'buy_bundle')).toEqual([{ uid: 9 }]);
 });
 
@@ -842,6 +843,39 @@ test('глава отдела берёт пачку скупки за бюдже
   expect(sent(ui.topic, 'buy_bundle')).toEqual([{ uid: 9, budget: 1 }]);
 });
 
+test('скупка: чужому отделу причина нужды не видна, лично пачку с паками СБ не купить, в окно отдела - только за его бюджет', () => {
+  const bundle = {
+    uid: 9,
+    partner: 'НТ Логистика',
+    partner_id: 'nt_logistics',
+    department: 'Служба безопасности',
+    whom: 'СБ',
+    packs: ['Bulletproof Armor Crate', 'Riot Shotguns Crate'],
+    need: 'Bulletproof Armor Crate',
+    full_value: 6000,
+    price: 4200,
+    discount: 30,
+    left: 900,
+    private_ok: 0,
+  };
+  const ui = setup({ self_paid: 1, bundle_first: 5, bundles: [bundle] });
+  fireEvent.click(ui.getByText('Скупка'));
+  expect(ui.getByText('Нужно сейчас: Bulletproof Armor Crate')).toBeTruthy();
+  const buy = ui.getByText('Купить пачку').closest('.Button');
+  expect(buy?.className).toContain('Button--disabled');
+  fireEvent.click(ui.getByText('Купить пачку'));
+  expect(sent(ui.topic, 'buy_bundle')).toEqual([]);
+  ui.store.dispatch(backendUpdate({ data: { self_paid: 1, bundles: [{ ...bundle, private_ok: 1, department_left: 170 }] } }));
+  ui.rerender(<CargoContent />);
+  expect(ui.getByText('для отдела ещё 3 мин.')).toBeTruthy();
+  expect(ui.getByText('Купить пачку').closest('.Button')?.className).toContain('Button--disabled');
+  ui.store.dispatch(backendUpdate({ data: { self_paid: 1, bundles: [{ ...bundle, private_ok: 1, department_left: 0 }] } }));
+  ui.rerender(<CargoContent />);
+  expect(ui.queryByText(/для отдела ещё/)).toBeNull();
+  fireEvent.click(ui.getByText('Купить пачку'));
+  expect(sent(ui.topic, 'buy_bundle')).toEqual([{ uid: 9 }]);
+});
+
 test('пачку партнёра под эмбарго купить нельзя', () => {
   const ui = setup({
     bundles: [
@@ -861,7 +895,7 @@ test('пачку партнёра под эмбарго купить нельз�
   });
   fireEvent.click(ui.getByText('Скупка'));
   expect(ui.getByText('Эмбарго: пока не купить')).toBeTruthy();
-  expect(ui.queryByText('Купить пачкой')).toBeNull();
+  expect(ui.queryByText('Купить пачку')).toBeNull();
   expect(ui.queryByText('За бюджет отдела')).toBeNull();
 });
 

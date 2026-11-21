@@ -763,7 +763,11 @@
 	var/list/entry = console.ui_data(bidder)["auction"]
 	TEST_ASSERT_EQUAL(entry["rival_ceiling"], 1100, "Окно не знает потолок соперников")
 	TEST_ASSERT_EQUAL(entry["outbid_price"], 1049, "Окно не знает наименьшую ставку, которую соперники не перебьют")
-	press(bidder, console, "auction_bid", list("uid" = "[lot.uid]", "outbid" = 1))
+	var/stale_answer = SSmarket.place_auction_bid(account, 900, bidder, lot.uid, TRUE)
+	TEST_ASSERT_EQUAL(stale_answer, "Цена изменилась: теперь 1049 кр.", "«Перебить соперников» по старой цене не отказало")
+	TEST_ASSERT_EQUAL(lot.bid, 742, "«Перебить соперников» по старой цене поставило другую сумму")
+	TEST_ASSERT_EQUAL(SSeconomy.ledger.by_reason[ECON_AUCTION_BID] - bids_before, 742, "Отказ «Перебить соперников» списал деньги")
+	press(bidder, console, "auction_bid", list("uid" = "[lot.uid]", "outbid" = 1, "amount" = "1049"))
 	TEST_ASSERT_EQUAL(lot.bid, 1049, "«Перебить» поставило не наименьшую сумму выше досягаемого соперниками")
 	TEST_ASSERT_NULL(SSmarket.rival_bid(lot, TRUE), "Соперник с потолком из окна перебил ставку «Перебить»")
 	TEST_ASSERT_EQUAL(SSeconomy.ledger.by_reason[ECON_AUCTION_BID] - bids_before, 1049, "Подъём своей ставки списал не только разницу")
@@ -906,7 +910,7 @@
 			break
 	TEST_ASSERT_NOTNULL(needed, "Вей-Мед не везёт ничего из того, что медицине нужно сейчас")
 	TEST_ASSERT(needed in bundle.source_packs, "Пачка собрана мимо того, что медицине нужно сейчас: [needed.name]")
-	TEST_ASSERT(findtext(bundle.need, needed.name), "Пачка не говорит, что из неё нужно сейчас: [bundle.need]")
+	TEST_ASSERT_EQUAL(bundle.need_pack, needed.type, "Пачка не помнит, что из неё нужно сейчас")
 
 	TEST_ASSERT(!COOLDOWN_FINISHED(medical, bundle_notice_cooldown), "Канал медицины не услышал о новой пачке")
 	TEST_ASSERT_NULL(SSmarket.announce_bundle(bundle), "О пачке объявили раньше кулдауна")
@@ -944,6 +948,119 @@
 	TEST_ASSERT_EQUAL(order.department_id, ACCOUNT_MED, "Заказ не оплачен медициной")
 	TEST_ASSERT_EQUAL(order.prepaid, bundle.price, "Оплачена не цена пачки")
 	TEST_ASSERT_EQUAL(econ_order_supplier(order), vey, "Везёт не партнёр пачки")
+
+/// Пачка с паками, которые лично не продаются (СБ у НТ Логистики), лично не покупается и в личном режиме окна не активна; за бюджет снабжения едет запертым ящиком с доступом её паков, который открывает только этот доступ.
+/datum/unit_test/economy_ui_cargo/bundle_private_refused/Run()
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo)
+	var/obj/machinery/computer/cargo/request/request_console = allocate(/obj/machinery/computer/cargo/request)
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED, list(ACCESS_MEDICAL))
+	var/obj/item/card/id/doctor_card = doctor.get_idcard(TRUE)
+	doctor_card.registered_account = econ_account_of(doctor)
+	econ_test_set_balance(doctor_card.registered_account, 100000)
+	var/mob/living/carbon/human/technician = make_staff(ACCOUNT_CAR, list(ACCESS_CARGO))
+	var/datum/trade_partner/nt = SSmarket.get_partner(PARTNER_UNIVERSAL_ID)
+	var/datum/supply_pack/bundle/bundle = SSmarket.generate_bundle(nt, ACCOUNT_SEC)
+	TEST_ASSERT_NOTNULL(bundle, "НТ Логистика не собрала пачку для СБ")
+	TEST_ASSERT(!bundle.can_private_buy, "Пачка из паков СБ продаётся лично")
+	TEST_ASSERT(!find_entry(console.ui_data(doctor)["bundles"], "uid", bundle.uid)["private_ok"], "Окно не знает, что пачку лично не купить")
+	request_console.self_paid = TRUE
+	press(doctor, request_console, "buy_bundle", list("uid" = "[bundle.uid]"))
+	TEST_ASSERT(bundle in SSmarket.bundles, "Пачку с паками СБ купили лично с консоли заявок")
+	TEST_ASSERT_EQUAL(doctor_card.registered_account.account_balance, 100000, "Отказ тронул счёт")
+
+	press(technician, console, "buy_bundle", list("uid" = "[bundle.uid]"))
+	TEST_ASSERT(!(bundle in SSmarket.bundles), "Снабжение не взяло пачку СБ за свой бюджет")
+	var/datum/supply_order/order = SSshuttle.shoppinglist[length(SSshuttle.shoppinglist)]
+	TEST_ASSERT_EQUAL(order.pack, bundle, "В корзине не та пачка")
+	TEST_ASSERT(findtext(bundle.taken_by, "за бюджет снабжения"), "Не записано, как взяли пачку: [bundle.taken_by]")
+	var/obj/structure/closet/crate/crate = order.generate(run_loc_floor_bottom_left)
+	allocated += crate
+	TEST_ASSERT(istype(crate, /obj/structure/closet/crate/secure) && !istype(crate, /obj/structure/closet/crate/secure/owned), "Ящик пачки не запертый ящик снабжения: [crate.type]")
+	TEST_ASSERT(crate.locked, "Ящик пачки приехал открытым")
+	TEST_ASSERT(bundle.access && (bundle.access in crate.req_access), "Ящик пачки заперт не доступом её паков: [json_encode(crate.req_access)]")
+	for(var/item_type in bundle.contains)
+		TEST_ASSERT_NOTNULL(locate(item_type) in crate, "В ящике пачки нет [item_type]")
+	TEST_ASSERT(!crate.allowed(doctor), "Ящик пачки СБ открывается без её доступа")
+	var/mob/living/carbon/human/officer = make_staff(ACCOUNT_SEC, list(bundle.access))
+	TEST_ASSERT(crate.allowed(officer), "Ящик пачки СБ не открывается её доступом")
+	for(var/atom/movable/thing as anything in crate.contents)
+		qdel(thing)
+
+/// Пока на смене есть кому одобрить пачку отдела, первые BUNDLE_DEPARTMENT_FIRST её берут только за бюджет отдела; потом - снабжение и лично, лично - только при деньгах на цену с наценкой.
+/// Почему пак нужен отделу, видят его сотрудники, глава и окно бюджета, чужим - только имя пака, а прошедшая нужда пропадает. Канал отдела слышит, кто и как взял пачку.
+/datum/unit_test/economy_ui_cargo/bundle_department/first_dibs
+	var/list/fake_players = list()
+
+/datum/unit_test/economy_ui_cargo/bundle_department/first_dibs/Destroy()
+	GLOB.player_list -= fake_players
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	medical.needs_cache_until = 0
+	return ..()
+
+/datum/unit_test/economy_ui_cargo/bundle_department/first_dibs/Run()
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo)
+	var/mob/living/carbon/human/chief = make_staff(ACCOUNT_MED, list(ACCESS_MEDICAL, ACCESS_CMO))
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED, list(ACCESS_MEDICAL))
+	var/mob/living/carbon/human/engineer = make_staff(ACCOUNT_ENG, list(ACCESS_ENGINE))
+	var/mob/living/carbon/human/technician = make_staff(ACCOUNT_CAR, list(ACCESS_CARGO))
+	var/obj/item/card/id/technician_card = technician.get_idcard(TRUE)
+	technician_card.registered_name = "Тест Грузчиков"
+	technician_card.assignment = "Cargo Technician"
+	technician_card.registered_account = econ_account_of(technician)
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/datum/trade_partner/vey = SSmarket.get_partner("vey_med")
+
+	var/datum/supply_pack/bundle/open_bundle = SSmarket.generate_bundle(vey)
+	TEST_ASSERT_NOTNULL(open_bundle, "У Вей-Мед есть что сложить в пачку")
+	TEST_ASSERT_EQUAL(open_bundle.department_until, 0, "Окно отдела открылось без начальства на смене")
+	SSmarket.bundles -= open_bundle
+	qdel(open_bundle)
+
+	GLOB.player_list += chief
+	fake_players += chief
+	var/datum/supply_pack/bundle/bundle = SSmarket.generate_bundle(vey)
+	TEST_ASSERT_NOTNULL(bundle, "У Вей-Мед есть что сложить в пачку")
+	TEST_ASSERT(bundle.department_left() > BUNDLE_DEPARTMENT_FIRST - 1 SECONDS, "Окно отдела не открылось при главе на смене: [bundle.department_left()]")
+	var/list/row = find_entry(console.ui_data(technician)["bundles"], "uid", bundle.uid)
+	TEST_ASSERT(row["department_left"] > 0, "Окно снабжения не говорит, сколько пачка ещё для отдела")
+	press(technician, console, "buy_bundle", list("uid" = "[bundle.uid]"))
+	TEST_ASSERT(bundle in SSmarket.bundles, "Снабжение взяло пачку отдела в его окно")
+	console.self_paid = TRUE
+	econ_test_set_balance(technician_card.registered_account, 100000)
+	press(technician, console, "buy_bundle", list("uid" = "[bundle.uid]"))
+	TEST_ASSERT(bundle in SSmarket.bundles, "Пачку отдела купили лично в его окно")
+
+	var/list/needs = medical.needs_now()
+	TEST_ASSERT(length(needs), "Медицине ничего не нужно сейчас")
+	bundle.need_pack = needs[1]
+	var/datum/supply_pack/needed = SSshuttle.supply_packs[bundle.need_pack]
+	row = find_entry(console.ui_data(engineer)["bundles"], "uid", bundle.uid)
+	TEST_ASSERT(row["need"] == needed.name && isnull(row["need_why"]), "Чужой отдел видит, почему пак нужен медицине: [json_encode(row)]")
+	row = find_entry(console.ui_data(doctor)["bundles"], "uid", bundle.uid)
+	TEST_ASSERT_EQUAL(row["need_why"], needs[bundle.need_pack], "Сотрудник медицины не видит, почему пак нужен")
+	var/datum/computer_file/program/department_budget/app = new
+	allocated += app
+	row = find_entry(app.budget_data(chief)["bundles"], "uid", bundle.uid)
+	TEST_ASSERT_EQUAL(row["need_why"], needs[bundle.need_pack], "Окно бюджета не видит, почему пак нужен")
+	medical.needs_cache = list()
+	medical.needs_cache_until = world.time + 1 HOURS
+	row = find_entry(app.budget_data(chief)["bundles"], "uid", bundle.uid)
+	TEST_ASSERT(isnull(row["need"]) && isnull(row["need_why"]), "Прошедшая нужда осталась в окне бюджета: [json_encode(row)]")
+
+	bundle.department_until = world.time - 1
+	SSmarket.tick_bundles()
+	TEST_ASSERT_EQUAL(bundle.department_until, 0, "Окно отдела не закрылось на тике скупки")
+	TEST_ASSERT_EQUAL(find_entry(console.ui_data(technician)["bundles"], "uid", bundle.uid)["department_left"], 0, "Окно снабжения держит пачку за отделом после окна")
+	var/private_price = round(bundle.price * ECON_PRIVATE_ORDER_MARKUP)
+	econ_test_set_balance(technician_card.registered_account, private_price - 1)
+	press(technician, console, "buy_bundle", list("uid" = "[bundle.uid]"))
+	TEST_ASSERT(bundle in SSmarket.bundles, "Пачку сняли с рынка личной покупкой без денег на счёте")
+	econ_test_set_balance(technician_card.registered_account, private_price)
+	press(technician, console, "buy_bundle", list("uid" = "[bundle.uid]"))
+	TEST_ASSERT(!(bundle in SSmarket.bundles), "Лично с деньгами на счёте пачку не взять")
+	var/datum/supply_order/order = SSshuttle.shoppinglist[length(SSshuttle.shoppinglist)]
+	TEST_ASSERT(order.pack == bundle && order.paying_account == technician_card.registered_account, "Личный заказ пачки не на счёт покупателя")
+	TEST_ASSERT_EQUAL(bundle.taken_by, "Тест Грузчиков (Cargo Technician) лично", "Канал отдела услышит не того, кто взял пачку")
 
 /// Непринятое предложение аренды шаттла снимается с концом события: по нему не сдать шаттл и консоль не застревает на «передан ЦК».
 /datum/unit_test/economy_ui_cargo/shuttle_loan_expires/Run()

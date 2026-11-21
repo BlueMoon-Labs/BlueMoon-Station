@@ -45,6 +45,8 @@ const base: BudgetData = {
   performer_share: 30,
   contracts_help_topics: [{ title: 'Как выполнить', lines: ['Контракты NT: справка.'] }],
   audit_rights: 'глава СБ и капитан',
+  audit_bonus_allowance: 3000,
+  audit_siphon_minutes: 30,
   grant_price: 3,
   grant_cap: 10000,
   message: '',
@@ -133,7 +135,7 @@ describe('NtosDepartmentBudget', () => {
     expect(content).toContain('меньше 30 кр., NT доплачивает');
     expect(content).toContain('Кто дольше 10 мин. мёртв или не на смене, зарплату не получает');
     expect(content).not.toContain('в игре');
-    expect(content).toContain('Премия себе и крупные или частые выплаты одному человеку');
+    expect(content).toContain('Премия себе открывает дело финансового аудита. Премии сотруднику - только если ему выписали больше 3 000 кр. за 30 мин.');
     expect(content).toContain('Аудит ведут: глава СБ и капитан.');
     expect(content).toContain('Глав Врач (вы)');
   });
@@ -407,7 +409,8 @@ describe('NtosDepartmentBudget', () => {
         uid: 4,
         partner: 'Вей-Мед',
         packs: ['Medical Supplies Crate', 'Blood Pack Variety Crate'],
-        need: 'Blood Pack Variety Crate - Мало крови у 2 чел. по датчикам костюмов',
+        need: 'Blood Pack Variety Crate',
+        need_why: 'Мало крови у 2 чел. по датчикам костюмов',
         full_value: 3000,
         price: 2200,
         discount: 27,
@@ -422,6 +425,10 @@ describe('NtosDepartmentBudget', () => {
     fireEvent.click(head.getByText('Купить пачку'));
     expect(sent(head.topic, 'buy_bundle')).toEqual([{ uid: 4 }]);
     head.unmount();
+    const first = setup({ bundles: [{ ...bundles[0], department_left: 240 }], bundle_first: 5 });
+    expect(text(first.container)).toContain('для отдела ещё 4 мин.');
+    expect(text(first.container)).toContain('первые 5 мин. пачку берут только за бюджет отдела');
+    first.unmount();
     const staff = setup({ bundles: [{ ...bundles[0], can_budget: 0 }], can_manage: 0, staff: [] });
     expect(staff.queryByText('Купить пачку')).toBeNull();
     expect(text(staff.container)).toContain('Берёт глава, ГП или капитан');

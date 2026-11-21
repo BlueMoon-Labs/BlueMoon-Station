@@ -526,8 +526,12 @@
 	var/datum/computer_file/program/department_budget/program = give_pda(chief, /obj/item/modular_computer/pda/heads/cmo)
 	var/list/static_data = program.budget_static_data(chief)
 	var/list/data = program.budget_data(chief)
+	// Лимит премий сотруднику открыт и в памятке главам
+	var/list/public_audit = list("audit_rights", "audit_bonus_allowance", "audit_siphon_minutes")
 	for(var/key in static_data + data)
-		TEST_ASSERT(key == "audit_rights" || !findtext(key, "audit"), "Окно отдаёт порог аудита [key]")
+		TEST_ASSERT((key in public_audit) || !findtext(key, "audit"), "Окно отдаёт порог аудита [key]")
+	TEST_ASSERT_EQUAL(static_data["audit_bonus_allowance"], SSeconomy.audit_bonus_allowance(), "Лимит премий в окне - не тот, по которому открывается дело")
+	TEST_ASSERT_EQUAL(static_data["audit_siphon_minutes"], SSeconomy.settings.audit_siphon_minutes, "Окно премий аудита не из настроек")
 	TEST_ASSERT(data["can_manage"], "Главврач управляет медициной")
 	TEST_ASSERT(length(data["staff"]) >= 1, "Главе виден список сотрудников")
 	var/list/work_prices = data["work_prices"]

@@ -92,13 +92,17 @@ type BundleEntry = {
   uid: number;
   partner: string;
   packs: string[];
+  /** Пак из пачки, который отделу нужен сейчас, и почему */
   need?: string | null;
+  need_why?: string | null;
   full_value: number;
   price: number;
   discount: number;
   left: number;
   embargoed?: BooleanLike;
   can_budget?: BooleanLike;
+  /** Сколько секунд пачку ещё берут только за бюджет отдела */
+  department_left?: number;
 };
 
 type WorkLogEntry = {
@@ -158,6 +162,10 @@ export type BudgetData = {
   performer_share: number;
   contracts_help_topics?: NtHelpTopic[];
   audit_rights: string;
+  /** Сверх стольких кредитов премий одному сотруднику за audit_siphon_minutes открывается дело аудита */
+  audit_bonus_allowance: number;
+  audit_siphon_minutes: number;
+  bundle_first?: number;
   grant_price: number;
   grant_cap: number;
   message: string;
@@ -557,8 +565,7 @@ const StaffSection = () => {
         />
       }>
       <Box className="NtTerm__hint" mb={1}>
-        Премия себе и крупные или частые выплаты одному человеку открывают дело финансового аудита. Аудит ведут:{' '}
-        {data.audit_rights}.
+        {`Премия себе открывает дело финансового аудита. Премии сотруднику - только если ему выписали больше ${formatCredits(data.audit_bonus_allowance)} за ${data.audit_siphon_minutes} мин. Аудит ведут: ${data.audit_rights}.`}
       </Box>
       {staff.length ? (
         <Table>
@@ -887,7 +894,7 @@ const BundlesSection = () => {
   return (
     <NtFrame
       title="Скупка для отдела"
-      help="Партнёр снабжения собрал паки вашего каталога в одну пачку, сперва из того, что отделу нужно сейчас, и отдаёт её дешевле, чем паки по отдельности, но только целиком и недолго. Пачка приедет шаттлом снабжения в одном ящике. Взять её за бюджет отдела может глава, ГП или капитан - здесь или в окне снабжения; деньги спишутся сразу.">
+      help={`Партнёр снабжения собрал паки вашего каталога в одну пачку, сперва из того, что отделу нужно сейчас, и отдаёт её дешевле, чем паки по отдельности, но только целиком и недолго. Пачка приедет шаттлом снабжения в одном ящике. Взять её за бюджет отдела может глава, ГП или капитан - здесь или в окне снабжения; деньги спишутся сразу. Если на смене есть кому её одобрить, первые ${data.bundle_first ?? 'несколько'} мин. пачку берут только за бюджет отдела, потом - и снабжение, и лично.`}>
       {bundles.map((bundle) => (
         <Box key={bundle.uid} className="candystripe" p={0.5}>
           <Stack align="center">
@@ -895,10 +902,12 @@ const BundlesSection = () => {
               <Box bold>{bundle.packs.join(', ')}</Box>
               <Box className="NtTerm__hint">
                 {bundle.partner}, ещё {formatLeft(bundle.left)}
+                {(bundle.department_left || 0) > 0 && `, для отдела ещё ${Math.ceil((bundle.department_left || 0) / 60)} мин.`}
               </Box>
               {!!bundle.need && (
                 <Box italic color="label">
                   Нужно сейчас: {bundle.need}
+                  {bundle.need_why ? ` - ${bundle.need_why}` : ''}
                 </Box>
               )}
             </Stack.Item>

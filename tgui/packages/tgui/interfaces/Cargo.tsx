@@ -188,8 +188,9 @@ type BundleOffer = {
   department?: string | null;
   whom?: string | null;
   packs: string[];
-  /** Что из пачки отделу нужно сейчас и почему */
+  /** Пак из пачки, который отделу нужен сейчас, и почему - только своим: в причине бывают данные датчиков */
   need?: string | null;
+  need_why?: string | null;
   full_value: number;
   price: number;
   discount: number;
@@ -197,6 +198,10 @@ type BundleOffer = {
   embargoed?: BooleanLike;
   /** Зритель - глава отдела пачки, ГП или капитан: берёт её за бюджет отдела */
   can_budget?: BooleanLike;
+  /** Все паки пачки продаются лично */
+  private_ok?: BooleanLike;
+  /** Сколько секунд пачку ещё берут только за бюджет её отдела */
+  department_left?: number;
 };
 
 type AuctionResult = { name: string; winner: string | null; price: number; ours: BooleanLike };
@@ -247,6 +252,8 @@ type CargoData = {
   bundles?: BundleOffer[];
   /** Раз во сколько минут партнёры выставляют новую пачку, "8-15" */
   bundle_gap?: string;
+  /** Столько минут с выставления пачку берут только за бюджет отдела, если на смене есть кому одобрить */
+  bundle_first?: number;
   auction_next?: number;
   auction_results?: AuctionResult[];
   crew_results?: CrewResult[];
@@ -1114,12 +1121,12 @@ const SpecialOffers = (props) => {
 const Bundles = (props) => {
   const { act, data } = useBackend<CargoData>();
   const bundles = data.bundles || [];
-  const { self_paid, private_markup = 1, requestonly, can_send, bundle_gap } = data;
+  const { self_paid, private_markup = 1, requestonly, can_send, bundle_gap, bundle_first } = data;
   const forCargo = !!can_send && !requestonly;
   return (
     <NtFrame
       title="Скупка"
-      help={`Партнёры собирают пачку из нескольких паков каталога одного отдела, сперва из того, что ему нужно сейчас, и отдают её дешевле, чем паки по отдельности, но только целиком. О новой пачке слышит канал её отдела. За бюджет отдела пачку берёт его глава, ГП или капитан - здесь или в «Бюджете отдела» на КПК; за бюджет снабжения - снабжение, лично - любой. Взятая пачка уходит в корзину и из скупки пропадает. Новые пачки появляются раз в ${bundle_gap || 'несколько'} мин.; пачки, которые не берут, партнёр выставляет реже. У партнёра под эмбарго пачку не купить.`}
+      help={`Партнёры собирают пачку из нескольких паков каталога одного отдела, сперва из того, что ему нужно сейчас, и отдают её дешевле, чем паки по отдельности, но только целиком. О новой пачке слышат канал её отдела и карты его начальства на смене, а о взятой - кто и как её взял. За бюджет отдела пачку берёт его глава, ГП или капитан - здесь или в «Бюджете отдела» на КПК; за бюджет снабжения - снабжение, лично - любой, если на счёте хватает на цену с наценкой частного заказа и в пачке нет паков, которые лично не продаются (как у СБ). Если на смене есть кому одобрить пачку отдела, первые ${bundle_first ?? 'несколько'} мин. её берут только за его бюджет. Взятая пачка уходит в корзину и из скупки пропадает. Новые пачки появляются раз в ${bundle_gap || 'несколько'} мин.; пачки, которые не берут, партнёр выставляет реже. У партнёра под эмбарго пачку не купить.`}
       buttons={
         <Button.Checkbox checked={self_paid} onClick={() => act('toggleprivate')}>
           Купить лично
@@ -1127,13 +1134,20 @@ const Bundles = (props) => {
       }>
       {!forCargo && (
         <Box className="NtTerm__hint" mb={1}>
-          За бюджет снабжения скупку берёт снабжение с консоли. Пачку для отдела берёт за его бюджет глава, ГП или капитан; лично купить может любой.
+          За бюджет снабжения скупку берёт снабжение с консоли. Пачку для отдела берёт за его бюджет глава, ГП или капитан; лично - любой, если в ней нет паков, которые лично не продаются.
         </Box>
       )}
       {bundles.length === 0 && <NtEmpty>Сейчас партнёры ничего не распродают. Партнёры выставляют реже, когда их не берут.</NtEmpty>}
       {bundles.map((bundle) => {
         const price = self_paid ? Math.round(bundle.price * private_markup) : bundle.price;
-        const canBuy = !!self_paid || forCargo;
+        const departmentOnly = (bundle.department_left || 0) > 0;
+        const privateBlocked = !!self_paid && !bundle.private_ok;
+        const canBuy = (!!self_paid || forCargo) && !departmentOnly && !privateBlocked;
+        const buyRefusal = departmentOnly
+          ? `Пока пачка только для отдела «${bundle.department}»: ещё ${Math.ceil((bundle.department_left || 0) / 60)} мин.`
+          : privateBlocked
+            ? 'В пачке есть паки, которые лично не продаются'
+            : undefined;
         return (
           <Box key={bundle.uid} className="NtTerm__contract">
             <Box className="NtTerm__contractMain">
@@ -1148,6 +1162,7 @@ const Bundles = (props) => {
               {!!bundle.need && (
                 <Box italic color="label" mt={0.5}>
                   Нужно сейчас: {bundle.need}
+                  {bundle.need_why ? ` - ${bundle.need_why}` : ''}
                 </Box>
               )}
             </Box>
@@ -1157,6 +1172,7 @@ const Bundles = (props) => {
               </Box>
               <Box className="NtTerm__contractReward">{formatCredits(price)}</Box>
               <Box className={bundle.left < 120 ? 'color-average' : 'NtTerm__hint'}>ещё {formatTime(bundle.left)}</Box>
+              {departmentOnly && <Box className="NtTerm__hint">для отдела ещё {Math.ceil((bundle.department_left || 0) / 60)} мин.</Box>}
               <Box mt={0.5}>
                 {bundle.embargoed ? (
                   <Box color="bad">Эмбарго: пока не купить</Box>
@@ -1170,8 +1186,8 @@ const Bundles = (props) => {
                         За бюджет отдела
                       </Button>
                     )}
-                    <Button color="good" disabled={!canBuy} onClick={() => act('buy_bundle', { uid: bundle.uid })}>
-                      Купить пачкой
+                    <Button color="good" disabled={!canBuy} tooltip={buyRefusal} onClick={() => act('buy_bundle', { uid: bundle.uid })}>
+                      Купить пачку
                     </Button>
                   </>
                 )}
