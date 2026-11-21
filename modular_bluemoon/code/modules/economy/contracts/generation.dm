@@ -270,7 +270,7 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 
 /datum/controller/subsystem/economy/proc/generate_contract(department_id, list/avoid)
 	if(prob(settings.contract_relay_chance))
-		var/datum/econ_contract/relay_stage = start_relay(department_id)
+		var/datum/econ_contract/relay_stage = start_relay(department_id, avoid)
 		if(relay_stage)
 			return relay_stage
 	var/datum/economy_department/department = get_department(department_id)

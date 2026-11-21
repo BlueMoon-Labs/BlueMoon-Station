@@ -29,13 +29,13 @@ GLOBAL_LIST_INIT(econ_department_radio, list(
 	/// Идущие эстафеты отделов
 	var/list/relays = list()
 
-/// Эстафета, которая начинается с отдела department_id, ещё не идёт и которую есть кому пройти; её первый этап уже на доске. null, если такой нет.
-/datum/controller/subsystem/economy/proc/start_relay(department_id)
+/// Эстафета, которая начинается с отдела department_id, ещё не идёт и которую есть кому пройти; её первый этап уже на доске. null, если такой нет. Эстафета, чей первый этап - из avoid (снятых сбросом доски), не начинается.
+/datum/controller/subsystem/economy/proc/start_relay(department_id, list/avoid)
 	var/list/candidates = list()
 	for(var/list/template as anything in GLOB.econ_relay_templates)
 		var/list/stages = template["stages"]
 		var/list/first = stages[1]
-		if(first["department"] == department_id && !relay_running(template["title"]) && relay_staffed(template))
+		if(first["department"] == department_id && !relay_running(template["title"]) && relay_staffed(template) && !econ_relay_stage_avoided(first, avoid))
 			candidates += list(template)
 	if(!length(candidates))
 		return null
@@ -45,6 +45,13 @@ GLOBAL_LIST_INIT(econ_department_radio, list(
 	for(var/datum/econ_relay/relay as anything in relays)
 		if(relay.title == title)
 			return relay
+
+/// Этап spec - тот же контракт деятельности или баунти того же базового типа, что одно из avoid.
+/proc/econ_relay_stage_avoided(list/spec, list/avoid)
+	for(var/avoided in avoid)
+		if(avoided == spec["contract"] || (spec["bounty"] && ispath(avoided, spec["bounty"])))
+			return TRUE
+	return FALSE
 
 /// У отдела каждого этапа есть сотрудник в игре.
 /datum/controller/subsystem/economy/proc/relay_staffed(list/template)
@@ -186,6 +193,15 @@ GLOBAL_LIST_INIT(econ_department_radio, list(
 	current = contract
 	if(!contract.taker && !contract.urgent)
 		contract.deadline = 0
+
+/// Взявший ушёл с этапа: срочный хранит свой срок, остальной ждёт отдел до срока этапа, но не меньше ротации, чтобы отдел успел услышать предупреждение.
+/datum/econ_relay/proc/stage_released(datum/econ_contract/contract)
+	if(contract != current)
+		return
+	if(!contract.urgent)
+		contract.deadline = 0
+	stage_posted_at = max(stage_posted_at, world.time - stage_lifetime() + SSeconomy.contract_rotation_age())
+	warned = FALSE
 
 /// Взятый или начатый такой же контракт деятельности на доске отдела: его не снять, этапом станет он.
 /datum/econ_relay/proc/busy_same_activity(datum/economy_department/department, contract_type)

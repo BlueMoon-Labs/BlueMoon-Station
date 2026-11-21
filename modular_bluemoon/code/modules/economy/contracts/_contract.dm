@@ -162,9 +162,8 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	return TRUE
 
 /datum/econ_contract/proc/after_drop()
-	// Этап эстафеты остаётся на доске без своего срока и ждёт отдел до срока этапа
 	if(relay)
-		deadline = 0
+		relay.stage_released(src)
 		return
 	if(!urgent)
 		deadline = 0
@@ -182,8 +181,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 /datum/econ_contract/proc/on_taker_deleted(datum/source)
 	SIGNAL_HANDLER
 	release_taker()
-	if(relay)
-		deadline = 0
+	relay?.stage_released(src)
 
 /datum/econ_contract/proc/has_progress()
 	return FALSE

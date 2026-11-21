@@ -153,6 +153,79 @@
 	TEST_ASSERT_EQUAL(first.rotation_due_at(), relay.stage_due_at(), "Свободный этап снимется не в срок этапа")
 	TEST_ASSERT_EQUAL(length(spy.heard), 0, "После отказа что-то прозвучало: [jointext(spy.heard, " | ")]")
 
+/// Срочный контракт, ставший этапом, после отказа взявшего и после удаления счёта взявшего остаётся срочным и со своим сроком.
+/datum/unit_test/economy_relay/urgent_stage_drop/Run()
+	var/datum/economy_department/service = SSeconomy.get_department(ACCOUNT_SRV)
+	var/datum/econ_contract/activity/service_plants/plants = new(ACCOUNT_SRV)
+	service.contracts += plants
+	plants.urgent = TRUE
+	plants.set_deadline(world.time + 20 MINUTES)
+	var/urgent_deadline = plants.deadline
+	var/datum/bank_account/gardener = new("econ_test_gardener")
+	allocated += gardener
+	gardener.department_id = ACCOUNT_SRV
+	TEST_ASSERT(plants.take(gardener), "Урожай не взят: [plants.take_refusal(gardener)]")
+	var/datum/econ_contract/first = SSeconomy.begin_relay(template_titled("От грядки до бокала"))
+	TEST_ASSERT(first == plants, "Этапом стал не взятый урожай, а [first?.type]")
+	TEST_ASSERT(first.drop(gardener), "Отказ от этапа не принят")
+	TEST_ASSERT(!QDELETED(first) && first.relay, "Отказ оборвал эстафету")
+	TEST_ASSERT(first.urgent, "Этап перестал быть срочным")
+	TEST_ASSERT_EQUAL(first.deadline, urgent_deadline, "Срочный этап после отказа потерял свой срок")
+
+	var/datum/bank_account/cook = new("econ_test_cook")
+	allocated += cook
+	cook.department_id = ACCOUNT_SRV
+	TEST_ASSERT(first.take(cook), "Этап не взят снова: [first.take_refusal(cook)]")
+	qdel(cook)
+	TEST_ASSERT_NULL(first.taker, "Удалённый счёт остался взявшим")
+	TEST_ASSERT(!QDELETED(first) && first.relay, "Удаление счёта взявшего оборвало эстафету")
+	TEST_ASSERT_EQUAL(first.deadline, urgent_deadline, "Срочный этап без счёта взявшего потерял свой срок")
+
+/// Отказ от этапа, чей срок вышел, пока этап держал взявший, не рвёт эстафету на ближайшей ротации: отдел слышит предупреждение и ждёт ещё ротацию.
+/datum/unit_test/economy_relay/late_drop_warns/Run()
+	var/obj/item/radio/headset/econ_test_spy/spy = spy_announcer()
+	TEST_ASSERT(SSeconomy.settings.contract_relay_stage_rotations > 1, "Этап живёт одну ротацию, предупреждать некогда")
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/datum/econ_contract/first = SSeconomy.begin_relay(template_titled("Лекарства для медбея"))
+	TEST_ASSERT_NOTNULL(first, "Первый этап не выставлен")
+	var/datum/econ_relay/relay = first.relay
+	var/datum/bank_account/chemist = new("econ_test_chemist")
+	allocated += chemist
+	chemist.department_id = ACCOUNT_MED
+	TEST_ASSERT(first.take(chemist), "Этап не взят: [first.take_refusal(chemist)]")
+	age_stage(relay, relay.stage_lifetime())
+	TEST_ASSERT(world.time > relay.stage_due_at(), "Срок этапа не вышел, проверка ничего не скажет")
+	spy.heard.Cut()
+	TEST_ASSERT(first.drop(chemist), "Отказ от этапа не принят")
+	SSeconomy.refresh_contracts()
+	TEST_ASSERT(!QDELETED(first) && (first in medical.contracts), "Этап сняли на первой же ротации после отказа")
+	TEST_ASSERT(!QDELETED(relay) && relay.current == first, "Эстафета оборвалась на первой же ротации после отказа")
+	// Следующая ротация - чуть позже отказа, а не в тот же миг
+	age_stage(relay, 0)
+	SSeconomy.refresh_contracts()
+	TEST_ASSERT(!QDELETED(first) && (first in medical.contracts), "Этап сняли раньше, чем отдел услышал предупреждение")
+	var/warning = "[RADIO_CHANNEL_MEDICAL]: Эстафета «Лекарства для медбея»: этап «[first.title]» всё ещё ждёт"
+	TEST_ASSERT_EQUAL(length(heard_starting(spy, warning)), 1, "Отдел не услышал предупреждение: [jointext(spy.heard, " | ")]")
+
+/// Сброс доски снимает свободный первый этап, а добор доски не запускает ту же эстафету заново.
+/datum/unit_test/economy_relay/reset_no_restart/Run()
+	SSeconomy.contracts_started = TRUE
+	SSeconomy.settings.contract_relay_chance = 100
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	crew_member(ACCOUNT_MED, "econ_test_chemist")
+	var/mob/living/carbon/human/head = allocate(/mob/living/carbon/human)
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	card.access = list(ACCESS_CAPTAIN)
+	head.put_in_hands(card)
+	var/datum/econ_contract/first = SSeconomy.start_relay(ACCOUNT_MED)
+	TEST_ASSERT_NOTNULL(first, "Эстафета не началась при медике в игре")
+	var/datum/econ_relay/relay = first.relay
+	var/list/result = medical.reset_contracts(head)
+	TEST_ASSERT(result[1], "Сброс не прошёл: [result[2]]")
+	TEST_ASSERT(QDELETED(relay), "Эстафета не оборвалась вместе со снятым этапом")
+	TEST_ASSERT_NULL(SSeconomy.relay_running("Лекарства для медбея"), "Добор доски после сброса тут же запустил ту же эстафету")
+	TEST_ASSERT_EQUAL(medical.regular_contracts(), SSeconomy.settings.contracts_per_department, "Доска не добрана после сброса")
+
 /// Эстафета не стартует, если её некому пройти: у отдела какого-то этапа нет никого в игре или первый этап все в игре уже выполнили до лимита.
 /datum/unit_test/economy_relay/start_needs_crew/Run()
 	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
