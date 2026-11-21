@@ -43,6 +43,8 @@ export type ContractEntry = {
   relay_title?: string;
   relay_label?: string;
   relay_next?: string;
+  /** Сколько минут невзятый этап ждёт свой отдел. */
+  relay_minutes?: number;
   /** Авария: кому достаётся доля людей и когда контракт закроется. */
   incident_team?: string;
   incident_note?: string;

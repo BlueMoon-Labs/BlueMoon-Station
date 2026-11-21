@@ -238,6 +238,8 @@ test('эстафета, серия с потолком, авария и масс
         relay_title: 'От грядки до бокала',
         relay_label: 'ботаника',
         relay_next: 'кухня, бар',
+        relay_minutes: 60,
+        rotates_in: 2400,
         chain_bonus: 50,
         chain_cap: 15000,
       }),
@@ -253,7 +255,8 @@ test('эстафета, серия с потолком, авария и масс
     ],
   });
   expect(ui.getByText('Эстафета: этап 1 из 3')).toBeTruthy();
-  expect(ui.container.textContent).toContain('«От грядки до бокала»: сейчас ботаника, дальше - кухня, бар.');
+  expect(ui.container.textContent).toContain('«От грядки до бокала»: сейчас ботаника, дальше - кухня, бар. На этап - 60 мин., потом эстафета оборвётся.');
+  expect(ui.getByText('Не выполните за 40:00 - эстафета оборвётся')).toBeTruthy();
   const text = (ui.container.textContent || '').replace(/\u00a0/g, ' ');
   expect(text).toContain('Каждый этап оплачивается сразу своему отделу, за последний - премия 50% от суммы этапов, всего не больше 15 000 кр.0/1');
   expect(text).toContain('Каждый этап оплачивается сразу, за последний - премия 50% от суммы этапов, всего не больше 15 000 кр.0/1');

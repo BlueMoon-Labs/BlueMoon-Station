@@ -225,6 +225,16 @@ const RewardNote = (props: { contract: ContractEntry; myAccount?: number | null 
   return null;
 };
 
+/** Когда невзятый контракт снимут: этап эстафеты, не выполненный к сроку, обрывает всю эстафету. */
+const rotationNote = (contract: ContractEntry, left: number) => {
+  if (contract.kind === 'relay') {
+    return `Не выполните за ${formatTimeLeft(left)} - эстафета оборвётся`;
+  }
+  return contract.started
+    ? `Снимется через ${formatTimeLeft(left)}, отгруженное не вернётся`
+    : `Смена через ${formatTimeLeft(left)}`;
+};
+
 export const ContractRow = (props: { contract: ContractEntry; myAccount?: number | null; readOnly?: boolean }) => {
   const { contract, myAccount, readOnly } = props;
   const share = progressShare(contract.progress);
@@ -259,6 +269,7 @@ export const ContractRow = (props: { contract: ContractEntry; myAccount?: number
           <div className="NtTerm__hint">
             «{contract.relay_title}»: сейчас {contract.relay_label}
             {contract.relay_next ? `, дальше - ${contract.relay_next}` : ', это последний этап'}.{' '}
+            {!contract.taken_by && !!contract.relay_minutes && `На этап - ${contract.relay_minutes} мин., потом эстафета оборвётся. `}
             {stagesNote(contract, 'Каждый этап оплачивается сразу своему отделу')}
           </div>
         )}
@@ -286,10 +297,8 @@ export const ContractRow = (props: { contract: ContractEntry; myAccount?: number
           <div className="NtTerm__hint">Осталось {formatTimeLeft(contract.time_left)}</div>
         )}
         {contract.rotates_in !== null && contract.rotates_in !== undefined && (
-          <div className={contract.started ? 'color-average' : 'NtTerm__hint'}>
-            {contract.started
-              ? `Снимется через ${formatTimeLeft(contract.rotates_in)}, отгруженное не вернётся`
-              : `Смена через ${formatTimeLeft(contract.rotates_in)}`}
+          <div className={contract.started || contract.kind === 'relay' ? 'color-average' : 'NtTerm__hint'}>
+            {rotationNote(contract, contract.rotates_in)}
           </div>
         )}
         <Box mt={0.5}>
@@ -382,7 +391,7 @@ const resetTooltip = (board: BoardReset) => {
   if (board.left > 0) {
     return `Снова можно через ${formatTimeLeft(board.left)}`;
   }
-  const rules = `Неначатые контракты отдела сменятся новыми. Взятые снимаются без штрафа репутации и без паузы на взятие, кроме вашего собственного и взятых меньше ${board.grace_minutes} мин. назад - если взявший не в игре, его контракт снимется всё равно. Начатые и заказы ЦК останутся. Не чаще раза в ${board.minutes} мин.`;
+  const rules = `Неначатые контракты отдела сменятся новыми. Взятые снимаются без штрафа репутации и без паузы на взятие, кроме вашего собственного и взятых меньше ${board.grace_minutes} мин. назад - если взявший не в игре, его контракт снимется всё равно. Начатые, этапы эстафет и заказы ЦК останутся. Не чаще раза в ${board.minutes} мин.`;
   return board.remove > 0 ? rules : `Сейчас снимать нечего. ${rules}`;
 };
 

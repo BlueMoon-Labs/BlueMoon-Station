@@ -53,7 +53,7 @@ GLOBAL_LIST_INIT(econ_department_radio, list(
 	var/datum/econ_contract/first = relay.advance()
 	var/channel = first && GLOB.econ_department_radio[first.department_id]
 	if(channel)
-		paperwork_radio("Эстафета «[relay.title]» началась: первой идёт [relay.stage_label(1)] - «[first.title]» на доске контрактов, дальше - [relay.next_labels()].", channel)
+		paperwork_radio("Эстафета «[relay.title]» началась: первой идёт [relay.stage_label(1)] - «[first.title]» на доске контрактов, на этап [relay.stage_minutes()] мин., дальше - [relay.next_labels()].", channel)
 	return first
 
 /// Эстафета отделов: этапы идут по одному, каждый платит своему отделу, за последний - премия от суммы этапов, всё вместе - не выше потолка серий.
@@ -64,6 +64,8 @@ GLOBAL_LIST_INIT(econ_department_radio, list(
 	/// Сумма наград выполненных этапов
 	var/paid = 0
 	var/datum/econ_contract/current
+	/// Когда нынешний этап вышел на доску
+	var/stage_posted_at = 0
 
 /datum/econ_relay/New(list/template)
 	title = template["title"]
@@ -92,6 +94,16 @@ GLOBAL_LIST_INIT(econ_department_radio, list(
 /datum/econ_relay/proc/final_stage()
 	return stage >= length(stages)
 
+/// Сколько невзятый этап ждёт свой отдел: несколько ротаций доски, а не одну, как обычный контракт.
+/datum/econ_relay/proc/stage_lifetime()
+	return SSeconomy.contract_rotation_age() * max(SSeconomy.settings.contract_relay_stage_rotations, 1)
+
+/datum/econ_relay/proc/stage_minutes()
+	return round(stage_lifetime() / (1 MINUTES))
+
+/datum/econ_relay/proc/stage_due_at()
+	return stage_posted_at + stage_lifetime()
+
 /// Выставляет следующий этап на доску его отдела. Возвращает контракт этапа; если этапы кончились или этап не собрать - эстафета удаляется и возвращается null.
 /datum/econ_relay/proc/advance()
 	stage++
@@ -102,10 +114,10 @@ GLOBAL_LIST_INIT(econ_department_radio, list(
 	var/list/spec = stages[stage]
 	var/department_id = spec["department"]
 	var/datum/economy_department/department = SSeconomy.get_department(department_id)
+	stage_posted_at = world.time
 	var/datum/econ_contract/contract = department && busy_same_activity(department, spec["contract"])
 	if(contract)
-		contract.relay = src
-		current = contract
+		claim_stage(contract)
 		return contract
 	if(department)
 		contract = make_stage(spec, department_id)
@@ -113,14 +125,20 @@ GLOBAL_LIST_INIT(econ_department_radio, list(
 		log_econ("Эстафета \"[title]\" оборвалась: этап [stage] ([spec["label"]]) не собрать")
 		qdel(src)
 		return null
-	contract.relay = src
-	current = contract
+	claim_stage(contract)
 	// Одна и та же работа не платит дважды: свободный такой же контракт деятельности уступает место этапу, а взятый или начатый сам становится этапом.
 	for(var/datum/econ_contract/activity/existing in department.contracts.Copy())
 		if(existing != contract && existing.type == contract.type && !existing.relay && !existing.taker && !existing.started() && !existing.pinned)
 			qdel(existing)
 	department.contracts |= contract
 	return contract
+
+/// Контракт становится нынешним этапом. Свой срок деятельности короче срока этапа: невзятый этап снимает ротация, а взятому срок даст take().
+/datum/econ_relay/proc/claim_stage(datum/econ_contract/contract)
+	contract.relay = src
+	current = contract
+	if(!contract.taker && !contract.urgent)
+		contract.deadline = 0
 
 /// Взятый или начатый такой же контракт деятельности на доске отдела: его не снять, этапом станет он.
 /datum/econ_relay/proc/busy_same_activity(datum/economy_department/department, contract_type)
@@ -169,12 +187,22 @@ GLOBAL_LIST_INIT(econ_department_radio, list(
 		return
 	var/channel = GLOB.econ_department_radio[next.department_id]
 	if(channel)
-		paperwork_radio("Эстафета «[title]»: [done_label] справилась, теперь ваша очередь - «[next.title]» на доске контрактов.", channel)
+		paperwork_radio("Эстафета «[title]»: [done_label] справилась, теперь ваша очередь - «[next.title]» на доске контрактов, на этап [stage_minutes()] мин.", channel)
 
-/// Этап снят без выполнения: ротацией, сроком или сбросом доски. Эстафета обрывается.
+/// Этап снят без выполнения: по сроку этапа, по сроку взятого контракта или иначе. Эстафета обрывается, отдел этапа слышит об этом по своему каналу.
 /datum/econ_relay/proc/stage_lost(datum/econ_contract/contract)
 	if(contract != current)
 		return
 	current = null
-	log_econ("Эстафета \"[title]\" оборвалась на этапе [stage] из [length(stages)] ([stage_label(stage)]): контракт снят, выплачено [paid] кр.")
+	var/reason
+	if(contract.is_expired())
+		reason = contract.taker ? "взявший не успел к сроку" : "вышел срок контракта"
+	else if(!contract.taker && world.time >= stage_due_at())
+		reason = "за [stage_minutes()] мин. этап никто не выполнил"
+	else
+		reason = "контракт сняли с доски"
+	log_econ("Эстафета \"[title]\" оборвалась на этапе [stage] из [length(stages)] ([stage_label(stage)]): [reason], выплачено [paid] кр.")
+	var/channel = GLOB.econ_department_radio[contract.department_id]
+	if(channel)
+		paperwork_radio("Эстафета «[title]» оборвалась на этапе «[contract.title]»: [reason].[paid ? " Пройденные этапы уже оплачены." : ""]", channel)
 	qdel(src)

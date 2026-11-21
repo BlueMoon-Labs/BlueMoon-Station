@@ -108,7 +108,7 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	refresh_contracts(force = TRUE)
 	post_roundstart_specials()
 
-/// force снимает все невзятые контракты без прогресса, иначе - только те, чей срок ротации вышел.
+/// force снимает все невзятые контракты без прогресса, кроме этапов эстафет, иначе - только те, чей срок ротации вышел.
 /datum/controller/subsystem/economy/proc/refresh_contracts(force = FALSE)
 	for(var/id in departments)
 		if(id == ACCOUNT_CMD)
@@ -169,9 +169,9 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	var/mob/living/body = taker_body()
 	return !!body && body.stat != DEAD && !!GET_CLIENT(body)
 
-/// Снимет ли сброс доски главой user этот контракт: неначатый, не заказ ЦК, не свой контракт главы и не взятый игроком в игре меньше ECON_CONTRACT_BOARD_RESET_GRACE назад.
+/// Снимет ли сброс доски главой user этот контракт: неначатый, не этап эстафеты, не заказ ЦК, не свой контракт главы и не взятый игроком в игре меньше ECON_CONTRACT_BOARD_RESET_GRACE назад.
 /datum/econ_contract/proc/board_reset_removes(datum/bank_account/head_account)
-	if(pinned || completed || is_expired() || started())
+	if(pinned || completed || relay || is_expired() || started())
 		return FALSE
 	if(!taker)
 		return TRUE
@@ -202,11 +202,11 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 			contract.taker.bank_card_talk("Глава отдела сбросил доску: контракт \"[contract.title]\" снят. Репутация не пострадала, новый контракт можно взять сразу.")
 		qdel(contract)
 	if(!length(removed_types))
-		return list(FALSE, "На доске отдела \"[name]\" нечего сбрасывать: остались только начатые, заказы ЦК, ваш контракт и взятые меньше [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_GRACE)] назад.")
+		return list(FALSE, "На доске отдела \"[name]\" нечего сбрасывать: остались только начатые, этапы эстафет, заказы ЦК, ваш контракт и взятые меньше [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_GRACE)] назад.")
 	COOLDOWN_START(src, contract_reset_cooldown, ECON_CONTRACT_BOARD_RESET_COOLDOWN)
 	SSeconomy.fill_department_contracts(src, removed_types)
 	log_econ("[key_name(user)] сбросил доску контрактов отдела [id]: снято [length(removed_types)], из них взятых [freed]")
-	return list(TRUE, "Доска отдела \"[name]\" сброшена: снято контрактов - [length(removed_types)][freed ? ", из них взятых - [freed]" : ""]. Начатые, заказы ЦК, ваш контракт и недавно взятые остались. Следующий сброс - через [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_COOLDOWN)].")
+	return list(TRUE, "Доска отдела \"[name]\" сброшена: снято контрактов - [length(removed_types)][freed ? ", из них взятых - [freed]" : ""]. Начатые, этапы эстафет, заказы ЦК, ваш контракт и недавно взятые остались. Следующий сброс - через [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_COOLDOWN)].")
 
 /// Доски, которые user может сбросить (по умолчанию - всех отделов): id, имя, секунды до следующего сброса, минуты между сбросами и сколько контрактов (из них взятых) снимет сброс сейчас.
 /proc/econ_contract_resets_ui(mob/user, list/departments)
@@ -245,7 +245,7 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	var/due = contract.rotation_due_at()
 	if(isnull(due))
 		return FALSE
-	return world.time >= due || (force && !contract.started())
+	return world.time >= due || (force && !contract.started() && !contract.relay)
 
 /// Можно ли выставить контракт сейчас: у станции есть всё, чтобы его выполнить.
 /datum/econ_contract/proc/postable()
