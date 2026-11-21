@@ -199,7 +199,7 @@
 		shake_camera(src, 2, 3)
 		var/throwtarget = get_edge_target_turf(src, get_dir(src, get_step_away(L, src)))
 		L.throw_at(throwtarget, 6, 1, src)
-	elif(hit_atom && hit_atom.density && !hit_atom.CanPass(src, get_turf(hit_atom)))
+	else if(hit_atom && hit_atom.density && !hit_atom.CanPass(src, get_turf(hit_atom)))
 		visible_message(span_boldwarning("[src] врезается в [hit_atom]!"))
 		playsound(get_turf(src), 'sound/effects/bang.ogg', 100, TRUE)
 		Stun(40)
