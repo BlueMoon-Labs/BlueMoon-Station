@@ -160,14 +160,17 @@
 		return null
 	var/datum/economy_department/department = SSeconomy.get_department(department_id)
 	var/list/needs = department.needs_now()
-	var/list/candidates = list()
+	var/list/needed = list()
 	for(var/pack_type in needs)
 		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_type]
 		if(pack in packs)
-			candidates += pack
-	candidates += shuffle(packs - candidates)
-	var/datum/supply_pack/bundle/bundle = new
+			needed += pack
+	var/list/rest = shuffle(packs - needed)
 	var/wanted = rand(BUNDLE_PACKS_MIN, BUNDLE_PACKS_MAX)
+	// Одно место - не из "нужно сейчас", иначе пачки отдела выходят одинаковыми
+	var/first_needed = min(length(needed), length(rest) ? wanted - 1 : wanted)
+	var/list/candidates = needed.Copy(1, first_needed + 1) + rest + needed.Copy(first_needed + 1)
+	var/datum/supply_pack/bundle/bundle = new
 	var/value = 0
 	for(var/datum/supply_pack/pack as anything in candidates)
 		if(length(bundle.source_packs) >= wanted)
