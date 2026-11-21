@@ -18,6 +18,8 @@
 #define ECON_MOVE_AMOUNT_MAX 10000000
 /// Значащих цифр в суммах для текста: без этого числа от миллиона печатаются как 1e+006
 #define ECON_TEXT_DIGITS 12
+/// С этой суммы наличные не со снятия со счёта пишут при внесении строку econ.log с составом и происхождением
+#define ECON_CASH_IN_LOG_MIN 1000
 
 #define ACCOUNT_CMD "CMD"
 #define ACCOUNT_CMD_NAME "Казна станции"
@@ -183,6 +185,8 @@
 #define AUDIT_OWN_MOVES_REFUSAL "Вы сами двигали деньги по этому делу: его закрывает другой аудитор."
 /// Исходящие одному получателю складываются в корзины этой длины: память пары не зависит от числа операций
 #define AUDIT_BUCKET (1 MINUTES)
+/// Окно лимита премий одному человеку: начинается с первой премии и не скользит
+#define ECON_BONUS_WINDOW (1 HOURS)
 #define AUDIT_BUCKET_START 1
 #define AUDIT_BUCKET_AMOUNT 2
 #define AUDIT_BUCKET_COUNT 3

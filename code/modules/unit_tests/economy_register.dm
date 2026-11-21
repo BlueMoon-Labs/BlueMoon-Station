@@ -249,6 +249,38 @@
 		qdel(extra)
 	QDEL_NULL(chip)
 
+/datum/unit_test/economy_register/cash_found_line
+	var/saved_cash
+
+/datum/unit_test/economy_register/cash_found_line/Destroy()
+	if(!isnull(saved_cash))
+		econ_test_set_balance(SSeconomy.cash_account, saved_cash)
+	return ..()
+
+/// Наличные сверх оборота на кассе пишут найденные наличные с происхождением купюр, сдача помнит, откуда деньги.
+/datum/unit_test/economy_register/cash_found_line/Run()
+	setup_register()
+	open_with_item(25)
+	var/datum/register_cashier/seller = till()
+	seller.order_at -= REGISTER_SELECT_GRACE
+	saved_cash = SSeconomy.cash_account.account_balance
+	econ_test_set_balance(SSeconomy.cash_account, 0)
+	var/obj/item/card/id/card = customer.get_active_held_item()
+	customer.dropItemToGround(card)
+	var/obj/item/stack/spacecash/c20/bills = allocate(/obj/item/stack/spacecash/c20, null, 2)
+	var/bills_origin = bills.origin
+	customer.put_in_active_hand(bills)
+	var/log_start = econ_test_log_length()
+	bills.melee_attack_chain(customer, register)
+	var/text = jointext(econ_test_cash_lines(log_start, "Найденные наличные: 25 кр."), " | ")
+	TEST_ASSERT(findtext(text, bills_origin) && findtext(text, "кассу [register.name]"), "Касса не называет, откуда найденные наличные: [jointext(econ_test_log_since(log_start), " | ")]")
+	var/obj/item/holochip/change = locate() in customer.held_items
+	TEST_ASSERT(change?.credits == 15 && findtext(change.origin, "сдача кассы") && findtext(change.origin, bills_origin), "Сдача не помнит, откуда деньги: [change?.origin]")
+	QDEL_NULL(change)
+	var/atom/counter = register.drop_location()
+	for(var/obj/item/econ_receipt/extra in customer.held_items + counter.contents)
+		qdel(extra)
+
 /// Замороженный и приостановленный счёт не платят и не дают чаевых ни при какой доле, касса ничего не засчитывает.
 /datum/unit_test/economy_register/blocked_payer/Run()
 	setup_register()

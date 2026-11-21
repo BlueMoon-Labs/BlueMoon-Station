@@ -104,5 +104,6 @@
 
 /obj/machinery/computer/bank_machine/proc/end_syphon()
 	siphoning = FALSE
-	new /obj/item/holochip(drop_location(), syphoning_credits) //get the loot
+	var/obj/item/holochip/loot = new(drop_location(), syphoning_credits)
+	econ_cash_mark_withdrawn(loot, SSeconomy.get_dep_account(ACCOUNT_CAR))
 	syphoning_credits = 0

@@ -210,6 +210,7 @@ GLOBAL_LIST_INIT(slot_bet_options, list(5, 10, 25, 50, 100))
 			return
 		to_chat(user, span_notice("Вы вставляете в автомат голочип на [H.credits] кр."))
 		playsound(src, 'modular_bluemoon/sound/machines/slot-machine/money.ogg', 50, TRUE)
+		SSeconomy.note_cash_in(econ_cash_note(list(H)), H.credits, "игровой автомат ([get_area_name(src)])", user, uncovered = SSeconomy.cash_shortfall(H.credits))
 		balance += H.credits
 		qdel(H)
 	else

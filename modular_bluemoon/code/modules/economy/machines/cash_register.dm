@@ -423,13 +423,20 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 		return FALSE
 	var/list/lines = order_lines(cashier)
 	var/cashier_name = cashier.name
+	var/list/cash_note = econ_cash_note(list(money))
+	var/money_origin = econ_cash_origin_of(money)
+	var/money_withdrawn = econ_cash_withdrawn(money)
 	var/change = take_cash(money, total)
 	if(isnull(change))
 		to_chat(customer, span_warning("Касса не смогла взять [total] кр. из [money.name]."))
 		return FALSE
+	var/found = SSeconomy.cash_shortfall(total)
 	var/cashier_part = settle(cashier, SSeconomy.cash_account, total, customer)
+	if(!isnull(cashier_part))
+		SSeconomy.note_cash_in(cash_note, total, "кассу [name], кассир [cashier_name]", customer, found)
 	if(change > 0)
 		var/obj/item/holochip/change_chip = new(drop_location(), change)
+		econ_cash_pass_on(change_chip, money_origin, money_withdrawn, "сдача кассы [name],")
 		customer.put_in_hands(change_chip)
 	finish_sale(cashier, customer, total, cashier_part || 0, "наличными")
 	give_receipt(customer, list("lines" = receipt_lines(lines), "total" = total, "cashier" = cashier_name, "time" = STATION_TIME_TIMESTAMP("hh:mm", world.time)), change)

@@ -9,6 +9,8 @@
 	var/credits = 0
 	/// Когда, где и каким проком создан чип, как у пачки наличных
 	var/origin
+	/// Все деньги чипа сняты со счёта: внесение таких не пишется строкой о наличных не со снятия
+	var/withdrawn = FALSE
 
 /obj/item/holochip/Initialize(mapload, amount)
 	origin = econ_cash_origin(src, mapload)
@@ -83,6 +85,7 @@
 		var/obj/item/holochip/H = I
 		credits += H.credits
 		origin = econ_cash_origin_join(origin, H.origin)
+		withdrawn = withdrawn && H.withdrawn
 		to_chat(user, "<span class='notice'>You insert the credits into [src].</span>")
 		update_icon()
 		qdel(H)
@@ -101,6 +104,7 @@
 		var/new_credits = spend(split_amount, TRUE)
 		var/obj/item/holochip/H = new(user ? user : drop_location(), new_credits)
 		H.origin = origin
+		H.withdrawn = withdrawn
 		if(user)
 			if(!user.put_in_hands(H))
 				H.forceMove(user.drop_location())

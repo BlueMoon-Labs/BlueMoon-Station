@@ -254,37 +254,88 @@
 		return "Банк не принял [money_name]."
 	return "Банк не принял [money_name]: таких сумм наличными не бывает, это подделка или сбой. Деньги остались у вас."
 
-/// Внесение наличных items на счёт target. Если "Наличных в обороте" не хватило и часть суммы выпущена как found_cash, в econ.log - строка, из каких пачек она.
-/datum/controller/subsystem/economy/proc/cash_in(list/items, datum/bank_account/target, amount, mob/user, memo, log_tag)
-	var/found = round(amount) - cash_account.account_balance
-	if(!move(cash_account, target, amount, ECON_CASH_IN, user, memo, log_tag))
+//// Внесение наличных items из "Наличных в обороте" на target (null - сток) по reason. Строка econ.log с составом - если часть суммы выпущена как found_cash, если среди внесённого от ECON_CASH_IN_LOG_MIN кр. не со снятия со счёта или если банк отказал из-за суммы.
+/datum/controller/subsystem/economy/proc/cash_in(list/items, datum/bank_account/target, amount, mob/user, memo, log_tag, reason = ECON_CASH_IN)
+	var/list/note = econ_cash_note(items)
+	var/found = cash_shortfall(amount)
+	if(!move(cash_account, target, amount, reason, user, memo, log_tag))
+		if(!isnull(amount) && amount != 0 && !econ_amount_valid(amount))
+			log_econ("Отклонено внесение наличных: [num2text(amount, ECON_TEXT_DIGITS)] кр. на [econ_move_side(target, "сток")][user ? " by [key_name(user)]" : ""], сейчас [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] по станции. Вносили: [note["text"]]")
 		return FALSE
-	if(found > 0)
-		log_econ("Найденные наличные: [num2text(found, ECON_TEXT_DIGITS)] кр. из внесённых [num2text(round(amount), ECON_TEXT_DIGITS)] кр. на [target.account_holder][user ? " by [key_name(user)]" : ""], сейчас [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] по станции. Вносили: [econ_cash_items_text(items)]")
+	note_cash_in(note, amount, econ_move_side(target, "сток"), user, found)
 	return TRUE
 
-/// Что вносили, для строки найденных наличных: пачки и голочипы с происхождением первыми, остальное - тип и сумма.
-/proc/econ_cash_items_text(list/items)
+/// Сколько из amount наличными "Наличные в обороте" не покрывают: столько move выпустит как found_cash.
+/datum/controller/subsystem/economy/proc/cash_shortfall(amount)
+	if(!econ_amount_valid(amount))
+		return 0
+	return max(round(amount) - cash_account.account_balance, 0)
+
+/// Строка econ.log о внесённых наличных по составу note из econ_cash_note: found - выпущено как found_cash, uncovered - не покрыто оборотом, но ещё не выпущено (деньги остались в автомате). Без них - только если не со снятия со счёта от ECON_CASH_IN_LOG_MIN кр.
+/datum/controller/subsystem/economy/proc/note_cash_in(list/note, amount, where, mob/user, found = 0, uncovered = 0)
+	if(found <= 0 && uncovered <= 0 && note["unbacked"] < ECON_CASH_IN_LOG_MIN)
+		return
+	var/sum = num2text(round(amount), ECON_TEXT_DIGITS)
+	var/head = "Наличные не со снятия со счёта: [num2text(note["unbacked"], ECON_TEXT_DIGITS)] кр. из внесённых [sum] кр."
+	if(found > 0)
+		head = "Найденные наличные: [num2text(found, ECON_TEXT_DIGITS)] кр. из внесённых [sum] кр."
+	else if(uncovered > 0)
+		head = "Наличные сверх оборота: [num2text(uncovered, ECON_TEXT_DIGITS)] кр. из внесённых [sum] кр."
+	log_econ("[head] на [where][user ? " by [key_name(user)]" : ""], сейчас [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] по станции. Вносили: [note["text"]]")
+
+/// Состав наличных для econ.log, пока предметы живы: list("text" - пачки и голочипы с происхождением первыми, остальное - тип и сумма; "unbacked" - сумма не со снятия со счёта).
+/proc/econ_cash_note(list/items)
 	var/list/parts = list()
 	var/list/others = list()
+	var/unbacked = 0
 	for(var/obj/item/money as anything in items)
+		var/value = money.get_item_credit_value()
+		if(!econ_cash_withdrawn(money))
+			unbacked += value
 		var/obj/item/stack/spacecash/bills = money
 		var/obj/item/holochip/chip = money
 		if(istype(bills))
-			parts += "[bills.type] x[bills.amount] по [bills.value] кр. ([bills.origin || "происхождение не записано"])"
+			parts += "[bills.type] x[bills.amount] по [num2text(bills.value, ECON_TEXT_DIGITS)] кр. ([bills.origin || "происхождение не записано"])"
 		else if(istype(chip))
-			parts += "[chip.type] на [chip.credits] кр. ([chip.origin || "происхождение не записано"])"
+			parts += "[chip.type] на [num2text(chip.credits, ECON_TEXT_DIGITS)] кр. ([chip.origin || "происхождение не записано"])"
 		else
-			others += "[money.type] на [money.get_item_credit_value()] кр."
+			others += "[money.type] на [num2text(value, ECON_TEXT_DIGITS)] кр."
 	parts += others
 	var/shown = 8
 	if(length(parts) > shown)
 		var/hidden = length(parts) - shown
 		parts.Cut(shown + 1)
 		parts += "и ещё [hidden] предм."
-	return jointext(parts, "; ")
+	return list("text" = jointext(parts, "; "), "unbacked" = unbacked)
 
-/// Происхождение пачки наличных: станционное время, где появилась и какой прок её создал. Зовётся из Initialize самой пачки.
+/// Голочип целиком снят со счёта: такие при внесении не пишутся строкой о наличных не со снятия.
+/proc/econ_cash_withdrawn(obj/item/money)
+	var/obj/item/holochip/chip = money
+	return istype(chip) && chip.withdrawn
+
+/// Помечает голочип, только что снятый со счёта account.
+/proc/econ_cash_mark_withdrawn(obj/item/holochip/chip, datum/bank_account/account, mob/user)
+	if(!chip)
+		return
+	chip.withdrawn = TRUE
+	chip.origin = "снято со счёта [account?.account_holder] №[account?.account_id][user ? " by [key_name(user)]" : ""], [chip.origin]"
+
+/proc/econ_cash_origin_of(obj/item/money)
+	var/obj/item/stack/spacecash/bills = money
+	var/obj/item/holochip/chip = money
+	if(istype(bills))
+		return bills.origin
+	if(istype(chip))
+		return chip.origin
+
+/// Голочип из ранее внесённых денег (сдача, вывод из аплинка): пометка снятия и происхождение - от них, how - откуда выдан.
+/proc/econ_cash_pass_on(obj/item/holochip/chip, from_origin, from_withdrawn, how)
+	if(!chip)
+		return
+	chip.withdrawn = !!from_withdrawn
+	chip.origin = "[how] [chip.origin], деньги - [from_origin || "происхождение не записано"]"
+
+/// Происхождение пачки наличных: станционное время, где появилась, какой прок какого типа её создал и usr. Зовётся из Initialize самой пачки.
 /proc/econ_cash_origin(atom/movable/thing, mapload)
 	var/when = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)
 	if(mapload)
@@ -295,9 +346,12 @@
 		if(!frame)
 			break
 		if(frame.src != thing && frame.src != SSatoms)
-			creator = ", создал [frame.proc]"
+			var/datum/maker = isdatum(frame.src) ? frame.src : null
+			creator = ", создал [frame.proc][maker ? " ([maker.type])" : ""]"
 			break
 		frame = frame.caller
+	if(usr)
+		creator += ", usr [key_name(usr)]"
 	if(!thing.loc)
 		return "[when] вне карты[creator]"
 	var/where = "в [thing.loc.name]"
@@ -333,6 +387,8 @@
 	source?.add_log_to_history(-amount, label, target_shown, reason, history_names ? null : target?.account_id)
 	target?.add_log_to_history(amount, label, source_shown, reason, history_names ? null : source?.account_id)
 	audit_move(source, target, amount, reason, actor)
+	if(reason == ECON_PERSONAL_CATALOG && source)
+		source.shop_used = TRUE
 	SEND_SIGNAL(src, COMSIG_ECONOMY_MOVED, source, target, amount, reason, actor)
 	log_econ("[num2text(amount, ECON_TEXT_DIGITS)] кр.: [econ_move_side(source, "эмиссия")] -> [econ_move_side(target, "сток")] ([reason][log_tag ? ", [log_tag]" : ""])[actor ? " by [key_name(actor)]" : ""]")
 

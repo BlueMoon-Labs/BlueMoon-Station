@@ -493,6 +493,7 @@
 	amount_to_remove = FLOOR(clamp(amount_to_remove, 0, max(0, registered_account.account_balance)), 1)
 	if(amount_to_remove && SSeconomy.move(registered_account, SSeconomy.cash_account, amount_to_remove, ECON_CASH_OUT, user))
 		var/obj/item/holochip/holochip = new (user.drop_location(), amount_to_remove)
+		econ_cash_mark_withdrawn(holochip, registered_account, user)
 		user.put_in_hands(holochip)
 		to_chat(user, span_notice("Вы сняли [amount_to_remove] [ru_plural(amount_to_remove, "кредит", "кредита", "кредитов")] в форме голочипа."))
 		return

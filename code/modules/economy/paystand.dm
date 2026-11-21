@@ -79,18 +79,8 @@
 		if(!(cashmoney >= 1))
 			to_chat(user, span_warning("Сумма должна быть не меньше 1 кр."))
 			return
-		cashmoney = round(cashmoney)
-		var/seller_problem = SSeconomy.personal_account_problem(my_card?.registered_account, FALSE)
-		if(seller_problem)
-			to_chat(user, span_warning(seller_problem))
-			return
-		if(H.spend(cashmoney, FALSE))
-			purchase(user, cashmoney, SSeconomy.cash_account, user)
-			to_chat(user, span_notice("Оплачено [cashmoney] кр., владелец стенда получил уведомление."))
-			return
-		else
-			to_chat(user, span_warning("На голочипе не хватает кредитов."))
-			return
+		pay_holochip(user, H, round(cashmoney))
+		return
 	if(istype(W, /obj/item/stack/spacecash))
 		to_chat(user, "What is this, the 2000s? We only take card here.")
 		return
@@ -135,6 +125,24 @@
 
 /obj/machinery/paystand/proc/card_payment_problem(datum/bank_account/payer)
 	return SSeconomy.personal_account_problem(payer, TRUE) || SSeconomy.personal_account_problem(my_card?.registered_account, FALSE)
+
+/// Оплата с голочипа: деньги чипа уходят из "Наличных в обороте" владельцу стенда, состав - в econ.log, если он того стоит.
+/obj/machinery/paystand/proc/pay_holochip(mob/user, obj/item/holochip/H, cashmoney)
+	if(QDELETED(H))
+		return FALSE
+	var/seller_problem = SSeconomy.personal_account_problem(my_card?.registered_account, FALSE)
+	if(seller_problem)
+		to_chat(user, span_warning(seller_problem))
+		return FALSE
+	var/list/cash_note = econ_cash_note(list(H))
+	var/found = SSeconomy.cash_shortfall(cashmoney)
+	if(!H.spend(cashmoney, FALSE))
+		to_chat(user, span_warning("На голочипе не хватает кредитов."))
+		return FALSE
+	if(purchase(user, cashmoney, SSeconomy.cash_account, user))
+		SSeconomy.note_cash_in(cash_note, cashmoney, "стенд [name], владелец [my_card.registered_account.account_holder]", user, found)
+	to_chat(user, span_notice("Оплачено [cashmoney] кр., владелец стенда получил уведомление."))
+	return TRUE
 
 /obj/machinery/paystand/proc/purchase(buyer, price, datum/bank_account/payer, mob/user)
 	if(!my_card?.registered_account || !SSeconomy.move(payer, my_card.registered_account, price, ECON_PURCHASE, user, "Оплата на стенде: [name]"))
