@@ -235,9 +235,27 @@
 /obj/item/fish_analyzer
 	name = "fish analyzer"
 	desc = "Ручной сканер, показывающий здоровье и настроение рыбы."
-	icon = 'modular_bluemoon/fishing/icons/obj/devices/scanner.dmi'
-	icon_state = "analyzer"
+	icon = 'icons/obj/device.dmi'
+	icon_state = "fish_analyzer_map"
+	base_icon_state = "fish_analyzer"
 	w_class = WEIGHT_CLASS_SMALL
+	var/case_color
+
+/obj/item/fish_analyzer/Initialize(mapload)
+	case_color = rgb(rand(16, 255), rand(16, 255), rand(16, 255))
+	. = ..()
+	update_appearance()
+
+/obj/item/fish_analyzer/update_icon_state()
+	. = ..()
+	icon_state = base_icon_state
+
+/obj/item/fish_analyzer/update_overlays()
+	. = ..()
+	var/mutable_appearance/case = mutable_appearance(icon, "fish_analyzer_case")
+	case.color = case_color
+	. += case
+	. += emissive_appearance(icon, "fish_analyzer_emissive", offset_spokesman = src)
 
 /obj/item/fish_analyzer/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	if(!proximity_flag)

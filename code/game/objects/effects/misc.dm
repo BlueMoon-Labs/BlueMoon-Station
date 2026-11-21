@@ -106,3 +106,15 @@ GLOBAL_LIST_EMPTY(fullbright_turf_overlays)
 	. = ..()
 	if(!ismob(loc))
 		return INITIALIZE_HINT_QDEL
+
+// Карты используют путь без /fluff/, поэтому псевдоним ведёт на настоящий тип.
+/obj/structure/broken_flooring
+	parent_type = /obj/structure/fluff/broken_flooring
+
+MAPPING_DIRECTIONAL_HELPERS(/obj/structure/broken_flooring/corner, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/structure/broken_flooring/corner/always_floorplane, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/structure/broken_flooring/pile, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/structure/broken_flooring/side, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/structure/broken_flooring/singular, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/structure/broken_flooring/singular/always_floorplane, 0)
+

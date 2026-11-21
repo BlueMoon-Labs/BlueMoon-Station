@@ -716,6 +716,8 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 ///Movement type traits for movables. See elements/movetype_handler.dm
 #define TRAIT_MOVE_GROUND "move_ground"
 #define TRAIT_MOVE_FLYING "move_flying"
+/// Позволяет мобу ходить по обрывам, не падая, пока он жив.
+#define TRAIT_CLIFF_WALKER "cliff_walker"
 #define TRAIT_MOVE_VENTCRAWLING "move_ventcrawling"
 #define TRAIT_MOVE_FLOATING "move_floating"
 #define TRAIT_MOVE_PHASING "move_phasing"
@@ -1004,3 +1006,15 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 
 /// Трейт для персонажа. Дает +2 к муду.
 #define TRAIT_BIRTHDAY_BOY "birthday_boy"
+
+/// Трейты битраннинга и виртуальных доменов.
+#define TRAIT_ACT_AS_HERETIC "act_as_heretic"
+#define TRAIT_MIND_TEMPORARILY_GONE "mind_temporarily_gone"
+#define TRAIT_NO_AUGMENTS "no_augments"
+#define TRAIT_NO_DNA_COPY "no_dna_copy"
+#define TRAIT_NO_MINDSWAP "no_mindswap"
+#define TRAIT_NOBLOOD "noblood"
+#define TRAIT_STASIS "stasis"
+#define TRAIT_TEMPORARY_BODY "temporary_body"
+/// Хелпер для трейтов статус-эффектов, как в современном /tg/.
+#define TRAIT_STATUS_EFFECT(effect_id) "status_effect_[effect_id]"

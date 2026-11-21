@@ -985,3 +985,36 @@ Class Procs:
 ///Called when the value of `is_operational` changes, so we can react to it.
 /obj/machinery/proc/on_set_is_operational(old_value)
 	return
+
+// Направленные подтипы для карт: смещения задаются здесь, а не в каждом объекте.
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/motion, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/entertainment, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/forgotten_ship/sci, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/defibrillator_mount, 28)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/digital_clock, 28)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/right, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/left, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/flasher, 26)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/health_station, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/incident_display/delam, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/iv_drip/health_station, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/auto_name, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/requests_console, 30)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/ticket_machine, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/wall_healer/free, 32)
+
+// Карты используют путь через /power/, а сам генератор объявлен без него.
+/obj/machinery/power/shieldwallgen
+	parent_type = /obj/machinery/shieldwallgen
+
+/obj/machinery/power/shieldwallgen/anchored
+	anchored = TRUE
+
+/obj/machinery/power/shieldwallgen/unlocked
+	locked = FALSE
+
+/obj/machinery/vending/boozeomat/syndicate
+	parent_type = /obj/machinery/vending/boozeomat/syndicate_access
+

@@ -1,0 +1,5084 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"al" = (
+/obj/machinery/vending/cigarette,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"aE" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/janitor)
+"aG" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "cin_place"
+	},
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"aO" = (
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"aP" = (
+/obj/structure/closet/crate/trashcart,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"aR" = (
+/obj/structure/closet/crate/secure,
+/obj/machinery/light/small/dim/directional/north,
+/obj/item/construction/rld/mini,
+/obj/item/rcd_ammo,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"ba" = (
+/obj/machinery/light/directional/east,
+/obj/machinery/vending/snack,
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"bd" = (
+/obj/machinery/power,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/safehouse)
+"bm" = (
+/obj/machinery/light/floor,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"bw" = (
+/obj/item/storage/box,
+/obj/structure/sign/poster/random/directional/south,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"by" = (
+/obj/effect/mapping_helpers,
+/obj/item/mecha_ammo,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"bB" = (
+/obj/structure/inflatable{
+	color = "#556B2F";
+	opacity = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"bM" = (
+/obj/item/stack/rods,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"bN" = (
+/obj/structure/railing/corner/end/flip,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"cb" = (
+/obj/structure/railing/corner{
+	dir = 1
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"co" = (
+/obj/item/pen/fourcolor,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"cx" = (
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/snpc_cave)
+"cF" = (
+/obj/structure/sign/poster/random/directional/west,
+/obj/structure/rack,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"cV" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"dd" = (
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/hallway)
+"dh" = (
+/obj/machinery/light/small/dim/directional/south,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_cave)
+"dm" = (
+/obj/effect/landmark/bitrunning/curiosity_spawn,
+/turf/open/floor/grass/fairy,
+/area/virtual_domain/protected_space/ancient_milsim)
+"ds" = (
+/obj/item/stack/sheet/mineral/sandbags,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"dw" = (
+/obj/effect/spawner/structure,
+/obj/structure/barricade/sandbags,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"dB" = (
+/obj/effect/landmark/bitrunning/curiosity_spawn,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"dC" = (
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"dH" = (
+/obj/effect/landmark/bitrunning/mob_segment,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"ea" = (
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"ec" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"ed" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/obj/machinery/door/poddoor/ancient_milsim{
+	id = "engagement_control"
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"ek" = (
+/obj/item/grenade/smokebomb,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"er" = (
+/turf/closed/indestructible/rock,
+/area/virtual_domain)
+"et" = (
+/obj/structure/chair/stool/bar/directional/south,
+/obj/effect/mob_spawn/human/virtual_domain/ancient_milsim,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"eC" = (
+/obj/structure/chair/stool/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"eE" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"eF" = (
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"eJ" = (
+/obj/effect/mob_spawn/human/virtual_domain/ancient_milsim,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"eQ" = (
+/obj/structure/flora/ausbushes/brflowers,
+/obj/machinery/door/poddoor/ancient_milsim{
+	id = "engagement_control"
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"eR" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"fk" = (
+/obj/machinery/light/floor,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"ft" = (
+/obj/machinery/door/airlock/multi_tile/glass,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"fu" = (
+/obj/machinery/door/airlock/multi_tile/metal{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"fy" = (
+/mob/living/simple_animal/crab,
+/turf/open/floor/grass/fairy,
+/area/virtual_domain/protected_space/ancient_milsim)
+"fJ" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/indestructible/reinforced,
+/area/virtual_domain/ancient_milsim/snpc_reward)
+"gb" = (
+/obj/item/keycard,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"go" = (
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/janitor)
+"gE" = (
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"gL" = (
+/obj/structure/table,
+/obj/item/grenade/iedcasing,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"gP" = (
+/obj/item/storage/firstaid/regular,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"hj" = (
+/obj/structure/flora/ausbushes/brflowers,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"ho" = (
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"hp" = (
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"hy" = (
+/obj/machinery/door/poddoor/ancient_milsim{
+	id = "engagement_control"
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"hH" = (
+/obj/structure/table,
+/obj/item/storage/box,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"hJ" = (
+/obj/structure/table_frame,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"hO" = (
+/obj/machinery/conveyor/auto{
+	dir = 4;
+	id = "sol_invasion"
+	},
+/obj/machinery/door/window/left/directional/south,
+/obj/structure/window/reinforced/spawner/directional/east,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"hZ" = (
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/entrance)
+"ie" = (
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"im" = (
+/obj/item/grown/log,
+/obj/item/grown/log,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"iq" = (
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/medbay)
+"ir" = (
+/obj/structure/barricade/sandbags,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"iw" = (
+/obj/item/paper,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"iz" = (
+/obj/structure/table,
+/obj/item/storage/firstaid/regular,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"iI" = (
+/obj/machinery/washing_machine{
+	pixel_y = -26
+	},
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_toilet)
+"iO" = (
+/obj/machinery/door/airlock/multi_tile/glass,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"iU" = (
+/obj/item/paper_bin,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"iW" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"iZ" = (
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"jc" = (
+/obj/structure/table,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"jn" = (
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"jo" = (
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"jE" = (
+/obj/machinery/ammo_workbench/unlocked,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"jR" = (
+/obj/structure/rack/shelf,
+/obj/item/ammo_box/shotgun/loaded/incendiary{
+	pixel_x = -4;
+	pixel_y = -9
+	},
+/obj/item/ammo_box/shotgun/loaded/flechette{
+	pixel_x = -4;
+	pixel_y = 9
+	},
+/obj/item/ammo_box/shotgun/loaded/buckshot{
+	pixel_x = 4;
+	pixel_y = -8
+	},
+/obj/item/ammo_box/shotgun/loaded/buckshot{
+	pixel_x = 9;
+	pixel_y = 3
+	},
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"jS" = (
+/obj/structure/chair/sofa/corp/left{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"jV" = (
+/turf/closed/indestructible/rock,
+/area/virtual_domain/ancient_milsim/entrance)
+"ka" = (
+/obj/machinery/door/airlock/public,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_toilet)
+"ke" = (
+/obj/item/storage/toolbox/syndicate,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"kh" = (
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"ki" = (
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"kj" = (
+/obj/item/storage/box,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"kp" = (
+/obj/effect/landmark/bitrunning/curiosity_spawn,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_reward)
+"kv" = (
+/obj/structure/extinguisher_cabinet/directional/north,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"kC" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"kJ" = (
+/obj/structure/chair/stool/directional/west,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"kL" = (
+/obj/structure/table,
+/obj/item/reagent_containers/food/drinks/bottle/champagne,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_reward)
+"kS" = (
+/obj/structure/sign/flag/terragov/directional/south,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/entrance)
+"kT" = (
+/obj/structure/reagent_dispensers/water_cooler,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"kX" = (
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_cave)
+"lc" = (
+/obj/item/storage/toolbox/syndicate,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"lf" = (
+/obj/machinery/door/airlock/maintenance_hatch,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"lr" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"ls" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/snpc_cave)
+"lt" = (
+/obj/structure/sign/poster/random/directional/south,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"lu" = (
+/obj/machinery/door/poddoor/ancient_milsim{
+	id = "engagement_control"
+	},
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/entrance)
+"ly" = (
+/obj/machinery/light/directional/south,
+/obj/structure/barricade/sandbags,
+/turf/open/floor/plasteel{
+	dir = 4
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"lz" = (
+/obj/machinery/door/airlock/multi_tile/glass,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"lE" = (
+/turf/template_noop,
+/area/virtual_domain/safehouse)
+"lG" = (
+/obj/effect/landmark/bitrunning/mob_segment,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"lX" = (
+/obj/structure/table/optable,
+/obj/item/surgical_processor,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"mi" = (
+/obj/effect/mob_spawn/human/corpse,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"mu" = (
+/obj/item/kitchen/knife/combat,
+/obj/structure/table/wood,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"mZ" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"ne" = (
+/obj/structure/toilet,
+/obj/machinery/light/small/dim/directional/north,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_toilet)
+"no" = (
+/obj/effect/spawner/structure/window/survival_pod,
+/obj/machinery/door/poddoor/shutters/preopen,
+/obj/effect/mapping_helpers,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"nu" = (
+/turf/template_noop,
+/area/template_noop)
+"nw" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"nA" = (
+/obj/machinery/door/poddoor/ancient_milsim{
+	id = "engagement_control"
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/entrance)
+"nH" = (
+/obj/item/storage/barricade,
+/obj/structure/closet/crate,
+/obj/item/storage/barricade,
+/obj/item/storage/barricade,
+/obj/machinery/button/door/directional/north{
+	id = "cin_place"
+	},
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"nM" = (
+/obj/item/storage/box,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"nQ" = (
+/obj/item/grenade/mirage,
+/obj/effect/landmark/bitrunning/mob_segment,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"nZ" = (
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"ob" = (
+/obj/machinery/vending/snack,
+/obj/structure/sign/poster/random/directional/west,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"oe" = (
+/obj/machinery/light/directional/west,
+/obj/machinery/vending/cola,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"oj" = (
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"ol" = (
+/obj/item/mecha_ammo/lmg,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"or" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"ot" = (
+/obj/item/paper,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"oz" = (
+/obj/machinery/light/directional/east,
+/obj/structure/closet/crate,
+/obj/item/grenade/frag,
+/obj/item/grenade/frag,
+/obj/item/grenade/frag,
+/obj/item/grenade/frag,
+/obj/item/grenade/frag,
+/obj/item/grenade/frag,
+/obj/item/grenade/frag,
+/obj/item/grenade/frag,
+/obj/item/grenade/frag,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"oJ" = (
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/snpc_toilet)
+"oU" = (
+/obj/structure/chair/comfy/shuttle,
+/obj/machinery/computer{
+	dir = 1;
+	name = "vehicle console";
+	icon_screen = "shuttle";
+	icon = 'icons/obj/computer.dmi';
+	icon_state = "computer";
+	desc = "An armored vehicle control computer. Doesn't work anymore... who would've thought.";
+	density = 0;
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"pn" = (
+/obj/structure/fluff/fokoff_sign,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"pN" = (
+/obj/machinery/health_station/directional/south,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"pY" = (
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"qn" = (
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"qp" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/virtual_domain/safehouse)
+"qr" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/atrium)
+"qs" = (
+/obj/machinery/light/directional/south,
+/obj/structure/barricade/sandbags,
+/turf/open/floor/plasteel{
+	dir = 1
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"qA" = (
+/obj/structure/fence{
+	dir = 4
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"qB" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/maintenance)
+"qC" = (
+/obj/structure/flora/ausbushes/fernybush,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"qD" = (
+/obj/effect/spawner/structure,
+/obj/item/storage/backpack/duffelbag,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"qV" = (
+/obj/machinery/vending/medical,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"qZ" = (
+/obj/structure/bonfire/prelit,
+/turf/open/floor/grass/fairy,
+/area/virtual_domain/protected_space/ancient_milsim)
+"rb" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"re" = (
+/obj/item/instrument/guitar,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"rl" = (
+/obj/structure/table,
+/obj/machinery/light/cold/directional/south,
+/obj/item/tape/ruins/ancient_milsim/devlog_two,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"rx" = (
+/obj/machinery/iv_drip,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"rB" = (
+/obj/effect/spawner/structure/window/reinforced/no_firelock,
+/obj/machinery/door/poddoor/preopen{
+	id = "cin_place"
+	},
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"rK" = (
+/obj/effect/spawner/structure,
+/obj/structure/closet/crate/freezer/blood,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"rO" = (
+/obj/structure/rack/shelf,
+/obj/item/gun/ballistic/revolver,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"rP" = (
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/item/stock_parts/matter_bin/super,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"rT" = (
+/obj/effect/spawner/structure/window/reinforced/no_firelock,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"sa" = (
+/obj/machinery/door/airlock/public/glass,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_exit)
+"ss" = (
+/obj/machinery/light/floor,
+/obj/structure/table,
+/obj/item/ammo_box/a762x39/ap,
+/obj/item/ammo_box/a762x39/ap,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"sG" = (
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_reward)
+"sS" = (
+/obj/item/grown/log,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"sV" = (
+/obj/item/stack/sheet/mineral/sandbags,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"sX" = (
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"sY" = (
+/obj/machinery/door/poddoor/ancient_milsim{
+	id = "engagement_control"
+	},
+/turf/open/floor/grass/fairy,
+/area/virtual_domain/protected_space/ancient_milsim)
+"td" = (
+/obj/item/storage/box,
+/obj/structure/table/wood,
+/obj/item/ammo_box/magazine/m10mm{
+	pixel_x = -10;
+	pixel_y = 13
+	},
+/obj/item/ammo_box/magazine/m10mm{
+	pixel_x = 9;
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"te" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/obj/structure/sign/flag/hc/directional/east,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"tg" = (
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"th" = (
+/obj/machinery/recycler{
+	dir = 8
+	},
+/obj/machinery/conveyor/auto{
+	dir = 4;
+	id = "sol_invasion"
+	},
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"tA" = (
+/obj/effect/spawner,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"tH" = (
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"tI" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"tU" = (
+/obj/structure/fluff/fokoff_sign,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"ue" = (
+/obj/machinery/biogenerator/food_replicator{
+	biomass = 1500
+	},
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"uf" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"uj" = (
+/obj/structure/flora/tree/mushroom,
+/turf/open/floor/grass/fairy,
+/area/virtual_domain/protected_space/ancient_milsim)
+"ul" = (
+/obj/structure/flora/tree/mushroom,
+/turf/open/floor/grass/fairy,
+/area/virtual_domain/protected_space/ancient_milsim)
+"uq" = (
+/obj/structure/chair/stool/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"uy" = (
+/obj/structure/sign/departments/science/alt/directional/north,
+/obj/structure/sign/flag/hc/directional/north,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/entrance)
+"uz" = (
+/turf/closed/indestructible/reinforced,
+/area/virtual_domain/ancient_milsim/snpc_exit)
+"uC" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"uE" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/obj/machinery/light/broken/directional/south,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"uM" = (
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/obj/structure/closet/crate,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"uY" = (
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"uZ" = (
+/obj/machinery/vending/cola,
+/obj/machinery/light/directional/west,
+/obj/structure/sign/poster/random/directional/west,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"va" = (
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"vd" = (
+/obj/structure/chair/office,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"vf" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/obj/machinery/health_station/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"vr" = (
+/obj/item/storage/backpack/duffelbag/syndie/c4,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"vs" = (
+/obj/machinery/light/small/dim/directional/west,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_cave)
+"vu" = (
+/obj/item/storage/backpack/duffelbag/syndie/c4,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"vA" = (
+/obj/structure/closet/crate/trashcart,
+/obj/item/storage/firstaid/regular,
+/obj/item/tank/internals/plasma/full,
+/obj/item/flamethrower/full/tank,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"vH" = (
+/obj/item/storage/toolbox/emergency/turret,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"vL" = (
+/obj/structure/fence,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"vQ" = (
+/obj/effect/landmark/bitrunning/curiosity_spawn,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"vU" = (
+/obj/structure/falsewall/reinforced,
+/turf/open/floor/grass/fairy,
+/area/virtual_domain/ancient_milsim/janitor)
+"wh" = (
+/obj/structure/table,
+/obj/item/grenade/chem_grenade/cleaner,
+/obj/item/grenade/chem_grenade/cleaner,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"wr" = (
+/obj/structure/rack/shelf,
+/obj/item/ammo_box/magazine/m10mm{
+	pixel_y = 4;
+	pixel_x = -8
+	},
+/obj/item/ammo_box/magazine/m10mm{
+	pixel_y = 4;
+	pixel_x = 4
+	},
+/obj/item/ammo_box/magazine/m10mm{
+	pixel_x = -3;
+	pixel_y = 0
+	},
+/obj/item/ammo_box/magazine/m10mm{
+	pixel_x = 3;
+	pixel_y = 0
+	},
+/obj/item/ammo_box/magazine/m10mm{
+	pixel_x = -9;
+	pixel_y = 0
+	},
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"ws" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/template_noop,
+/area/virtual_domain/safehouse)
+"wv" = (
+/obj/item/tape/ruins/ancient_milsim/devlog_three,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"wx" = (
+/turf/open/floor/plasteel{
+	dir = 1
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"wy" = (
+/obj/structure/table/wood,
+/obj/item/gun/energy/laser{
+	pixel_x = -3;
+	pixel_y = 9
+	},
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"wz" = (
+/obj/structure/flora/stump,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"wQ" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"wZ" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/hallway)
+"xa" = (
+/obj/structure/closet/crate/freezer/blood,
+/obj/item/storage/firstaid/regular,
+/obj/item/storage/firstaid/regular,
+/obj/item/storage/backpack/duffelbag,
+/obj/item/storage/firstaid/regular,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"xe" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"xB" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"xS" = (
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"yd" = (
+/obj/item/inflatable/torn,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"yh" = (
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/maintenance)
+"yl" = (
+/obj/structure/rack{
+	density = 1;
+	anchored = 1
+	},
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"yn" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"yt" = (
+/obj/item/chair,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"yv" = (
+/obj/structure/rack{
+	density = 1;
+	anchored = 1
+	},
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"yI" = (
+/obj/structure/fence/cut/large{
+	dir = 4;
+	density = 0
+	},
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"yV" = (
+/obj/machinery/vending/cigarette,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"zf" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"zp" = (
+/obj/machinery/door/airlock/public/glass,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_reward)
+"zx" = (
+/obj/machinery/light/small/dim/directional/north,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_cave)
+"zE" = (
+/obj/machinery/vending/drugs,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"zL" = (
+/obj/machinery/light/small/dim/directional/south,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/snpc_cave)
+"Ab" = (
+/obj/structure/table,
+/obj/item/folder/documents,
+/obj/item/binoculars,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Am" = (
+/obj/structure/flora,
+/turf/open/floor/grass/fairy,
+/area/virtual_domain/protected_space/ancient_milsim)
+"An" = (
+/obj/structure/flora,
+/turf/open/floor/grass/fairy,
+/area/virtual_domain/protected_space/ancient_milsim)
+"Aw" = (
+/obj/machinery/door/poddoor/ancient_milsim{
+	id = "engagement_control"
+	},
+/turf/open/water/jungle,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"AB" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"AC" = (
+/obj/structure/closet/crate/trashcart,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/stock_parts,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"AE" = (
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"AH" = (
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_toilet)
+"AN" = (
+/obj/structure/bedsheetbin,
+/obj/structure/table/wood,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"AR" = (
+/obj/machinery/vending/wardrobe/jani_wardrobe,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"AW" = (
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_exit)
+"AY" = (
+/obj/machinery/conveyor/auto{
+	dir = 4;
+	id = "sol_invasion"
+	},
+/obj/machinery/door/window/left/directional/south,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"Bd" = (
+/obj/structure/chair/stool/bar/directional/south,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"Bg" = (
+/obj/effect/landmark/bitrunning/mob_segment,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"Bs" = (
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"BO" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Cd" = (
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"Cf" = (
+/obj/machinery/door/airlock/multi_tile/metal{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"Cg" = (
+/obj/item/storage/firstaid/regular,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"Cj" = (
+/obj/item/storage/barricade,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Cr" = (
+/obj/structure/chair/office/light{
+	dir = 4
+	},
+/obj/structure/sign/poster/contraband/busty_backdoor_xeno_babes_6/directional/west,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"Cs" = (
+/obj/structure/railing{
+	dir = 9
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"CC" = (
+/turf/closed/wall/r_wall,
+/area/virtual_domain)
+"CJ" = (
+/obj/structure/chair/sofa/corp/right{
+	dir = 8
+	},
+/turf/open/floor/plasteel{
+	dir = 1
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"CT" = (
+/obj/structure/table,
+/obj/machinery/health_station/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Dd" = (
+/obj/structure/closet/crate/trashcart,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/stock_parts,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"De" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/obj/structure/sign/poster/random/directional/west,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"Dj" = (
+/obj/effect/spawner/structure{
+	dir = 8
+	},
+/obj/effect/spawner/structure,
+/obj/structure/barricade/sandbags,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"Dk" = (
+/obj/machinery/biogenerator/food_replicator{
+	biomass = 1500
+	},
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"Do" = (
+/obj/machinery/light/small/dim/directional/north,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_exit)
+"Dt" = (
+/obj/item/gun/ballistic/automatic/pistol,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Dw" = (
+/obj/item/beacon,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"Dy" = (
+/obj/structure/sink/directional/north,
+/obj/structure/mirror/directional/south,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_toilet)
+"DE" = (
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/safehouse)
+"DL" = (
+/obj/effect/landmark/bitrunning/cache_spawn,
+/obj/machinery/light/small/dim/directional/south,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_reward)
+"DO" = (
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"DS" = (
+/obj/effect/mapping_helpers,
+/obj/item/mecha_ammo/lmg,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"DT" = (
+/obj/structure/flora/tree/jungle,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"DW" = (
+/obj/item/storage/box,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"Ee" = (
+/obj/structure/railing/corner{
+	dir = 1
+	},
+/turf/open/water/jungle,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"Eg" = (
+/turf/closed/indestructible/reinforced,
+/area/virtual_domain/ancient_milsim/snpc_reward)
+"Eh" = (
+/obj/machinery/door/poddoor/shutters/preopen,
+/turf/open/floor/plasteel/dark/side,
+/area/virtual_domain/ancient_milsim/carrier)
+"Ei" = (
+/obj/item/stock_parts/micro_laser/ultra,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Ek" = (
+/obj/structure/chair/sofa/corp/left{
+	dir = 4
+	},
+/turf/open/floor/plasteel{
+	dir = 1
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"El" = (
+/obj/item/keycard,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"Ey" = (
+/obj/effect/landmark/bitrunning/mob_segment,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"EB" = (
+/obj/machinery/door/airlock/survival_pod/glass,
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"ED" = (
+/obj/structure/closet/crate/secure,
+/obj/item/keycard,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_cave)
+"EE" = (
+/obj/structure/table,
+/obj/item/food/cake/birthday,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_reward)
+"EQ" = (
+/obj/item/grenade/plastic/c4,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"EW" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"Fb" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Fc" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"Ff" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/obj/machinery/light/directional/north,
+/obj/structure/sign/poster/random/directional/north,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"Fn" = (
+/obj/effect/spawner/structure/window/reinforced/no_firelock,
+/obj/machinery/door/poddoor/preopen{
+	id = "cin_place"
+	},
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"Fq" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/obj/effect/mob_spawn/human/virtual_domain/ancient_milsim,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"Fr" = (
+/obj/effect/spawner/random/contraband/grenades/dangerous,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"Fv" = (
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"FG" = (
+/obj/item/storage/toolbox/emergency/turret,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"FN" = (
+/obj/item/binoculars,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"FO" = (
+/obj/structure/closet/crate,
+/obj/item/grenade/mirage,
+/obj/item/grenade/mirage,
+/obj/item/grenade/mirage,
+/obj/item/grenade/mirage,
+/obj/item/grenade/mirage,
+/obj/item/grenade/mirage,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"FT" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"FX" = (
+/obj/effect/gibspawner/human,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"Gd" = (
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"Gl" = (
+/obj/structure/barricade/sandbags,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"Go" = (
+/obj/machinery/vending/snack,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"Gp" = (
+/obj/item/kitchen/knife/combat,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"GJ" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"GR" = (
+/obj/structure/sign/departments/custodian/directional/north,
+/obj/item/grenade/smokebomb,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"GS" = (
+/obj/machinery/conveyor_switch/oneway{
+	id = "sol_invasion"
+	},
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"Hd" = (
+/turf/open/floor/grass/fairy,
+/area/virtual_domain/protected_space/ancient_milsim)
+"Hk" = (
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"Hn" = (
+/obj/machinery/camera/directional/north{
+	status = 0
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"Hq" = (
+/obj/structure/flora/tree/jungle/small,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"HG" = (
+/obj/machinery/sleeper,
+/obj/machinery/light/cold/directional/north,
+/obj/structure/extinguisher_cabinet/directional/north,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"HM" = (
+/obj/machinery/vending/wardrobe/bar_wardrobe,
+/obj/machinery/light/directional/south,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"HT" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/atrium)
+"Ia" = (
+/obj/effect/spawner/random/contraband/grenades/dangerous,
+/turf/open/floor/plasteel{
+	dir = 1
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"Ib" = (
+/obj/structure/toilet,
+/obj/machinery/light/small/dim/directional/north,
+/obj/effect/mob_spawn/human/virtual_domain/ancient_milsim,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_toilet)
+"Ir" = (
+/obj/machinery/door/airlock/multi_tile/glass,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"Is" = (
+/obj/item/grenade/mirage,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"Iw" = (
+/obj/structure/railing{
+	dir = 5
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"Iy" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Iz" = (
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"IH" = (
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/plasteel{
+	dir = 4
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"IS" = (
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"Jj" = (
+/obj/structure/chair/sofa/corp/right{
+	dir = 4
+	},
+/turf/open/floor/plasteel{
+	dir = 1
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"Jk" = (
+/obj/effect/spawner/random/contraband/grenades/dangerous,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"Jl" = (
+/obj/effect/landmark/bitrunning/curiosity_spawn,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Jn" = (
+/obj/structure/barricade/sandbags,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"Jq" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/snpc_toilet)
+"Js" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/indestructible/rock,
+/area/virtual_domain/protected_space/ancient_milsim)
+"JG" = (
+/turf/open/water/jungle,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"JM" = (
+/obj/item/chair,
+/obj/structure/sign/poster/random/directional/north,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"JU" = (
+/obj/modular_map_root/safehouse{
+	key = "ancient_milsim"
+	},
+/turf/template_noop,
+/area/virtual_domain/safehouse)
+"JZ" = (
+/obj/effect/spawner/random/contraband/grenades/dangerous,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"Kf" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"Kl" = (
+/obj/structure/sign/departments/medbay/directional/west,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"Ku" = (
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/atrium)
+"Kw" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/indestructible/binary,
+/area/virtual_domain)
+"Kx" = (
+/obj/item/storage/box,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"KA" = (
+/obj/structure/table/optable,
+/obj/item/surgical_processor,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"KN" = (
+/obj/machinery/vending/snack,
+/turf/open/floor/plasteel{
+	dir = 4
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"Lr" = (
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"LD" = (
+/obj/structure/flora/tree/jungle/small,
+/obj/machinery/door/poddoor/ancient_milsim{
+	id = "engagement_control"
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"LI" = (
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"LP" = (
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"Ma" = (
+/obj/machinery/vending/snack,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"Mo" = (
+/obj/machinery/light/floor,
+/obj/structure/table,
+/obj/item/megaphone,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Mq" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/wall/mineral/titanium/survival,
+/area/virtual_domain/ancient_milsim/carrier)
+"Mv" = (
+/turf/closed/wall/mineral/titanium/survival,
+/area/virtual_domain/ancient_milsim/carrier)
+"My" = (
+/obj/structure/table,
+/obj/item/storage/barricade,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Mz" = (
+/obj/structure/barricade/sandbags,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"MN" = (
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/snpc_cave)
+"MQ" = (
+/obj/item/keycard,
+/obj/effect/landmark/bitrunning/mob_segment,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"MU" = (
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"MW" = (
+/obj/structure/table/wood,
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"MY" = (
+/obj/effect/landmark/bitrunning/cache_spawn,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_reward)
+"Nl" = (
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/obj/structure/closet/crate,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"NA" = (
+/obj/structure/sign/poster/random/directional/west,
+/obj/item/storage/box,
+/obj/structure/table/wood,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"NJ" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"NY" = (
+/obj/structure/table,
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"On" = (
+/obj/structure/table,
+/obj/item/reagent_containers/food/drinks/trophy/gold_cup,
+/obj/machinery/light/small/dim/directional/north,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_reward)
+"Ow" = (
+/obj/item/storage/box,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"Ox" = (
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"OA" = (
+/obj/machinery/iv_drip,
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"OG" = (
+/obj/machinery/light/small/dim/directional/south,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_exit)
+"OI" = (
+/obj/effect/spawner/structure{
+	dir = 4
+	},
+/obj/effect/spawner/structure,
+/obj/structure/barricade/sandbags,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"OS" = (
+/obj/machinery/vending/boozeomat,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"OV" = (
+/obj/machinery/conveyor/auto{
+	dir = 4;
+	id = "sol_invasion"
+	},
+/obj/structure/window/reinforced/spawner/directional/south,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"OZ" = (
+/obj/structure/chair/sofa/corp/left{
+	dir = 8
+	},
+/turf/open/floor/plasteel{
+	dir = 1
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"Pi" = (
+/obj/machinery/photocopier,
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"Pj" = (
+/obj/structure/filingcabinet/chestdrawer/wheeled,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Pt" = (
+/turf/closed/indestructible/rock,
+/area/virtual_domain/protected_space/ancient_milsim)
+"Pw" = (
+/obj/machinery/vending/snack,
+/obj/machinery/light/directional/west,
+/obj/structure/sign/poster/random/directional/west,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"PE" = (
+/obj/machinery/door/airlock/public/glass,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_exit)
+"PM" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_toilet)
+"PO" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_cave)
+"PS" = (
+/obj/machinery/door/poddoor/ancient_milsim{
+	id = "engagement_control"
+	},
+/turf/closed/indestructible/rock,
+/area/virtual_domain/protected_space/ancient_milsim)
+"PT" = (
+/obj/machinery/power,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/entrance)
+"Qb" = (
+/obj/structure/railing/corner{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/ancient_milsim{
+	id = "engagement_control"
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"Qn" = (
+/obj/structure/table,
+/obj/item/storage/firstaid/regular{
+	pixel_x = 8
+	},
+/obj/item/storage/firstaid/regular{
+	pixel_x = -8
+	},
+/obj/item/storage/firstaid/regular{
+	pixel_y = 4
+	},
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"Qr" = (
+/turf/open/floor/plasteel{
+	dir = 1
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"QF" = (
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"QI" = (
+/obj/structure/flora,
+/turf/open/floor/grass/fairy,
+/area/virtual_domain/protected_space/ancient_milsim)
+"QP" = (
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Rk" = (
+/obj/structure/table,
+/obj/item/storage/firstaid/regular,
+/obj/machinery/health_station/directional/east,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"Rl" = (
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/ammo_box/magazine/m10mm{
+	pixel_x = -3;
+	pixel_y = -14
+	},
+/obj/item/ammo_box/magazine/m10mm{
+	pixel_x = 8;
+	pixel_y = -12
+	},
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"Rn" = (
+/obj/structure/curtain{
+	color = "#556B2F"
+	},
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Rq" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"Rv" = (
+/obj/effect/landmark/bitrunning/mob_segment,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"RA" = (
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/stock_parts/matter_bin/super,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/obj/item/minespawner/ancient_milsim,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"RC" = (
+/obj/structure/chair/office/light{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/virtual_domain/ancient_milsim/medbay)
+"RG" = (
+/obj/structure/table/wood,
+/obj/item/kitchen/knife/combat,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"RP" = (
+/obj/effect/mapping_helpers,
+/obj/vehicle/sealed/mecha/working/ripley,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"RU" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/obj/machinery/light/small/dim/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"RY" = (
+/obj/machinery/door/airlock/multi_tile/glass{
+	dir = 8
+	},
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"RZ" = (
+/obj/effect/mapping_helpers,
+/obj/machinery/light/small/broken/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/carrier)
+"Sh" = (
+/obj/structure/urinal{
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_toilet)
+"Sl" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/indestructible/reinforced,
+/area/virtual_domain/ancient_milsim/snpc_exit)
+"Sv" = (
+/obj/structure/flora/ausbushes/brflowers,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"SB" = (
+/obj/structure/shipping_container/kosmologistika,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"SG" = (
+/obj/structure/table,
+/obj/item/folder/blue,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Tx" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/medbay)
+"TB" = (
+/obj/structure/fence/door{
+	dir = 4
+	},
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"TD" = (
+/obj/structure/table,
+/obj/machinery/recharger,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"TE" = (
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"TG" = (
+/obj/item/grown/log,
+/obj/item/grown/log,
+/obj/item/grown/log,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"TP" = (
+/obj/machinery/door/airlock/maintenance_hatch,
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"TQ" = (
+/obj/item/stack/sheet/iron/fifty,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"TT" = (
+/obj/structure/chair/sofa/corp/right{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"TY" = (
+/obj/structure/railing{
+	dir = 10
+	},
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"Ue" = (
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/mineral/sandbags,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"Ug" = (
+/obj/machinery/light/small/broken/directional/west,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_cave)
+"Ux" = (
+/obj/structure/closet/crate/trashcart,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/janitor)
+"Uz" = (
+/turf/closed/indestructible/binary,
+/area/virtual_domain)
+"UD" = (
+/obj/structure/table,
+/obj/item/kitchen/knife/combat,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"UQ" = (
+/obj/machinery/vending/cola,
+/obj/structure/sign/poster/random/directional/west,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"UX" = (
+/obj/structure/flora/tree/mushroom,
+/turf/open/floor/grass/fairy,
+/area/virtual_domain/protected_space/ancient_milsim)
+"Vi" = (
+/obj/structure/chair/stool/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Vj" = (
+/obj/item/reagent_containers/glass/bottle,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"Vl" = (
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Vp" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"Vr" = (
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"VA" = (
+/turf/open/floor/plasteel{
+	dir = 4
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"VC" = (
+/obj/machinery/washing_machine{
+	pixel_y = -26
+	},
+/obj/item/keycard,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_toilet)
+"VO" = (
+/obj/machinery/vending/cigarette,
+/turf/open/floor/plasteel{
+	dir = 1
+	},
+/area/virtual_domain/ancient_milsim/atrium)
+"VX" = (
+/obj/structure/extinguisher_cabinet/directional/west,
+/obj/item/storage/backpack/duffelbag/syndie/c4,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"VZ" = (
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/entrance)
+"Wh" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"Wq" = (
+/obj/machinery/door/morgue,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_toilet)
+"Wr" = (
+/obj/structure/flora/ausbushes/fernybush,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/snpc_ground)
+"Wv" = (
+/obj/machinery/button/door/indestructible/ancient_milsim{
+	pixel_y = 24
+	},
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"Ww" = (
+/obj/structure/inflatable,
+/turf/open/floor/plasteel/dark,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"WG" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"WR" = (
+/obj/effect/baseturf_helper/virtual_domain,
+/turf/closed/wall/r_wall,
+/area/virtual_domain/ancient_milsim/hallway)
+"WY" = (
+/obj/item/gun/ballistic/automatic/pistol,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"Xh" = (
+/obj/item/ammo_box/a762x39/ap,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/maintenance)
+"XK" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/obj/structure/sign/poster/random/directional/north,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"XS" = (
+/obj/machinery/vending/cola,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/atrium)
+"XU" = (
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"XV" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+"XZ" = (
+/obj/machinery/light/small/broken/directional/south,
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_cave)
+"Yd" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/obj/structure/sign/poster/random/directional/south,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"Yl" = (
+/mob/living/simple_animal/hostile/jungle/mook,
+/turf/open/floor/grass/fairy,
+/area/virtual_domain/protected_space/ancient_milsim)
+"Yx" = (
+/obj/structure/sign/departments/science/directional/north,
+/obj/effect/baseturf_helper/virtual_domain,
+/obj/structure/sign/flag/hc/directional/north,
+/turf/open/floor/grass,
+/area/virtual_domain/ancient_milsim/entrance)
+"YE" = (
+/turf/open/floor/plating,
+/area/virtual_domain/ancient_milsim/snpc_cafe)
+"YF" = (
+/obj/structure/chair/sofa/corp/left{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/hallway)
+"YY" = (
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"Zd" = (
+/obj/structure/chair/sofa/corp/right{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_hallway)
+"Zg" = (
+/obj/structure/sign/poster/random/directional/west,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"ZA" = (
+/obj/effect/landmark/bitrunning/mob_segment,
+/turf/open/floor/plating/dirt,
+/area/virtual_domain/ancient_milsim/loot_camp)
+"ZQ" = (
+/obj/structure/sign/flag/hc/directional/east,
+/turf/open/floor/carpet/red,
+/area/virtual_domain/ancient_milsim/snpc_bar)
+"ZY" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plasteel,
+/area/virtual_domain/ancient_milsim/snpc_garage)
+
+(1,1,1) = {"
+nu
+nu
+nu
+nu
+nu
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+nu
+nu
+nu
+nu
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+"}
+(2,1,1) = {"
+nu
+nu
+nu
+nu
+nu
+Uz
+qn
+qn
+qn
+JG
+qn
+xS
+Cd
+Cd
+er
+er
+er
+er
+er
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+er
+er
+er
+er
+er
+er
+er
+er
+er
+er
+er
+er
+er
+er
+er
+er
+er
+er
+Uz
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+"}
+(3,1,1) = {"
+nu
+nu
+nu
+nu
+nu
+Uz
+qn
+JG
+qn
+JG
+dB
+xS
+DT
+Cd
+JG
+JG
+JG
+Cd
+er
+er
+er
+er
+er
+er
+er
+er
+Cd
+Cd
+Cd
+eF
+eF
+eF
+eF
+eF
+eF
+eF
+eF
+eF
+eF
+eF
+eF
+eF
+er
+Uz
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+"}
+(4,1,1) = {"
+nu
+nu
+nu
+nu
+nu
+Uz
+qn
+qn
+qn
+qn
+qn
+Iw
+Cd
+ho
+Cd
+JG
+JG
+JG
+Cd
+Cd
+JG
+JG
+Cd
+Cd
+Cd
+Cd
+Cd
+Hq
+Cd
+eF
+ZY
+nw
+eE
+nw
+nw
+mZ
+mZ
+AE
+ea
+gE
+AE
+eF
+er
+Uz
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+"}
+(5,1,1) = {"
+nu
+nu
+nu
+nu
+nu
+Uz
+qn
+qn
+JG
+qn
+qn
+qn
+bM
+Cd
+Cd
+Cd
+DT
+Cd
+Cd
+Cd
+Hq
+Cd
+JG
+Wr
+Cd
+Cd
+Cd
+Cd
+Cd
+eF
+kv
+Gp
+gE
+gE
+gE
+gE
+gE
+gE
+gE
+gE
+zf
+eF
+er
+Uz
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+"}
+(6,1,1) = {"
+nu
+nu
+nu
+nu
+nu
+Uz
+qn
+qn
+JG
+qn
+qn
+qn
+qn
+Iw
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+qn
+qn
+qn
+qn
+aG
+Gd
+Gd
+Gd
+Gd
+Gd
+Gd
+Gd
+Gd
+Gd
+gE
+ec
+eF
+er
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+nu
+nu
+nu
+nu
+"}
+(7,1,1) = {"
+nu
+nu
+nu
+nu
+nu
+Uz
+qn
+qn
+qn
+qn
+qn
+Cd
+qn
+qn
+Mv
+Mv
+Mv
+Mv
+Mv
+Mv
+Mv
+Mv
+JG
+qn
+qn
+qn
+qn
+qn
+qn
+aG
+Gd
+Gd
+Gd
+Gd
+Gd
+Gd
+Gd
+Gd
+Gd
+gE
+uE
+eF
+er
+Uz
+er
+er
+er
+er
+er
+er
+er
+Uz
+nu
+nu
+nu
+nu
+"}
+(8,1,1) = {"
+nu
+nu
+nu
+nu
+nu
+Uz
+qn
+qn
+qn
+qn
+qn
+Cd
+Cd
+bM
+Eh
+uf
+RU
+vf
+Mv
+aR
+oU
+Mv
+Cd
+Cd
+Cd
+JG
+JG
+Cd
+Cd
+aG
+Gd
+Gd
+Gd
+Gd
+Gd
+Gd
+Gd
+Gd
+Gd
+gE
+gE
+eF
+er
+er
+er
+Eg
+Eg
+Eg
+Eg
+Eg
+er
+Uz
+nu
+nu
+nu
+nu
+"}
+(9,1,1) = {"
+nu
+nu
+nu
+nu
+nu
+Uz
+qn
+JG
+qn
+qn
+qn
+qn
+Cd
+Cd
+Eh
+Rl
+by
+DS
+EB
+RP
+ol
+no
+Cd
+Cd
+Cd
+JG
+JG
+JG
+Cd
+aG
+Gd
+Gd
+Gd
+Gd
+Gd
+Gd
+Fr
+Gd
+Gd
+gE
+Gd
+Gd
+cx
+MN
+MN
+Eg
+kL
+sG
+MY
+Eg
+er
+Uz
+nu
+nu
+nu
+nu
+"}
+(10,1,1) = {"
+nu
+nu
+nu
+nu
+nu
+Uz
+qn
+qn
+qn
+qn
+qn
+qn
+qn
+Cd
+Eh
+FT
+qn
+qn
+Mv
+RZ
+oU
+Mv
+Hn
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+aG
+Gd
+EQ
+EQ
+EQ
+Fr
+Gd
+Gd
+Gd
+Gd
+gE
+iZ
+Gd
+kX
+kX
+MN
+Eg
+On
+kp
+DL
+Eg
+er
+Uz
+Uz
+Uz
+Uz
+Uz
+"}
+(11,1,1) = {"
+nu
+nu
+nu
+nu
+nu
+Uz
+qn
+JG
+qn
+qn
+qn
+Cd
+qn
+qn
+Mq
+Mv
+qn
+FX
+qn
+qn
+Mv
+Mv
+Cd
+JG
+qn
+qn
+qn
+qn
+qn
+aG
+Gd
+kj
+jo
+jo
+Fr
+jo
+Fr
+Gd
+Gd
+gE
+XV
+eF
+kX
+MN
+MN
+Eg
+EE
+sG
+MY
+Eg
+er
+er
+er
+er
+er
+Uz
+"}
+(12,1,1) = {"
+nu
+nu
+nu
+nu
+Uz
+Uz
+qn
+JG
+qn
+qn
+qn
+xS
+GJ
+TY
+bM
+qn
+qn
+qn
+qn
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+qn
+qn
+aG
+Gd
+eJ
+FG
+Gd
+FG
+jo
+Gd
+Gd
+Gd
+gE
+SB
+eF
+zx
+kX
+MN
+fJ
+Eg
+zp
+Eg
+Eg
+MN
+MN
+MN
+cx
+er
+Uz
+"}
+(13,1,1) = {"
+nu
+nu
+nu
+Uz
+Uz
+qn
+qn
+qn
+JG
+JG
+qn
+xS
+bM
+Cd
+bN
+Cd
+qn
+qn
+qn
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+eF
+nH
+uM
+uM
+FN
+vu
+lc
+vH
+gE
+gE
+gE
+gE
+eF
+kX
+kX
+MN
+vs
+kX
+kX
+kX
+kX
+kX
+kX
+MN
+cx
+er
+Uz
+"}
+(14,1,1) = {"
+nu
+nu
+Uz
+Uz
+qn
+qn
+qn
+qn
+qn
+qn
+qn
+xS
+Cd
+Hq
+Cd
+bM
+Cd
+qn
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Wr
+Cd
+Cd
+Cd
+Cd
+eF
+Ue
+Nl
+oz
+FO
+Dw
+Hk
+Hk
+gE
+gE
+gE
+gE
+eF
+PO
+kX
+kX
+kX
+kX
+kX
+kX
+kX
+kX
+kX
+kX
+cx
+er
+Uz
+"}
+(15,1,1) = {"
+nu
+Uz
+Uz
+qn
+qn
+qn
+qn
+qn
+qn
+qn
+Cs
+cb
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+JG
+JG
+Cd
+JG
+JG
+JG
+Cd
+Cd
+Cd
+Sv
+uC
+eF
+eF
+eF
+eF
+gE
+fu
+eF
+eF
+eF
+eF
+eF
+eF
+IS
+IS
+IS
+IS
+IS
+YE
+YE
+IS
+IS
+kX
+kX
+cx
+er
+Uz
+"}
+(16,1,1) = {"
+Uz
+Uz
+qn
+JG
+JG
+qn
+qn
+qn
+JG
+qn
+xS
+Cd
+Cd
+Cd
+Cd
+DT
+Cd
+JG
+JG
+JG
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Wr
+Sv
+rB
+rO
+UQ
+Pw
+De
+YY
+Ow
+wr
+cF
+ob
+uZ
+jS
+Zd
+rT
+sX
+sX
+sX
+LP
+YE
+Bs
+sX
+IS
+MN
+zL
+cx
+er
+Uz
+"}
+(17,1,1) = {"
+Uz
+qn
+qn
+qn
+qn
+qn
+qn
+qn
+qn
+Cs
+Ee
+JG
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+JG
+JG
+Cd
+Hq
+Cd
+JG
+Cd
+Cd
+Cd
+Sv
+Sv
+rB
+YY
+YY
+YY
+YY
+YY
+YY
+YY
+YY
+YY
+YY
+YY
+YY
+lz
+sX
+DW
+sX
+jc
+sX
+hJ
+bw
+IS
+MN
+MN
+cx
+er
+Uz
+"}
+(18,1,1) = {"
+Uz
+qn
+qn
+qn
+qn
+qn
+qn
+qn
+Cs
+cb
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+JG
+JG
+Cd
+Hq
+Sv
+Sv
+Fn
+jR
+YY
+tg
+YY
+YY
+YY
+YY
+YY
+tg
+YY
+YY
+YY
+Vp
+sX
+yt
+yt
+UD
+sX
+jc
+Wh
+IS
+MN
+MN
+cx
+er
+Uz
+"}
+(19,1,1) = {"
+Uz
+JG
+qn
+qn
+qn
+JG
+qn
+Cs
+cb
+Cd
+Cd
+Cd
+DT
+Cd
+Cd
+Cd
+Cd
+DT
+Cd
+Cd
+Cd
+Cd
+Cd
+JG
+Cd
+Cd
+Cd
+Cd
+Sv
+oJ
+oJ
+oJ
+oJ
+ka
+oJ
+oJ
+TE
+RY
+Ox
+Ox
+Ox
+Ox
+Ox
+JM
+sV
+nM
+sX
+sX
+sX
+lt
+IS
+kX
+kX
+MN
+er
+Uz
+"}
+(20,1,1) = {"
+Uz
+qn
+qn
+qn
+qn
+qn
+Cs
+cb
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+pn
+Cd
+Cd
+JG
+JG
+JG
+Cd
+Cd
+Cd
+JG
+pn
+Cd
+Cd
+Cd
+Cd
+oJ
+Ib
+Wq
+AH
+AH
+VC
+oJ
+TE
+TE
+Bd
+NA
+Zg
+OS
+Ox
+Dk
+sX
+yt
+TD
+sX
+TD
+iW
+IS
+kX
+kX
+cx
+er
+Uz
+"}
+(21,1,1) = {"
+Uz
+qn
+qn
+qn
+qn
+Cs
+Ee
+Cd
+Cd
+Cd
+Cd
+Cd
+JG
+Cd
+Cd
+Cd
+Cd
+JG
+JG
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+oJ
+oJ
+oJ
+AH
+AH
+Dy
+oJ
+AN
+TE
+Bd
+td
+re
+yV
+Ox
+XK
+yt
+yt
+hH
+Fq
+hH
+Yd
+IS
+kX
+kX
+cx
+er
+Uz
+"}
+(22,1,1) = {"
+Uz
+qn
+JG
+qn
+Cs
+cb
+Cd
+Cd
+Cd
+Cd
+DT
+Cd
+JG
+JG
+Cd
+Cd
+Hq
+JG
+Cd
+Cd
+Cd
+Cd
+DT
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+oJ
+ne
+Wq
+AH
+AH
+PM
+oJ
+AB
+Kx
+et
+wy
+TE
+HM
+Ox
+Ff
+sX
+sX
+sX
+sX
+yt
+Wh
+IS
+kX
+kX
+cx
+er
+Uz
+"}
+(23,1,1) = {"
+Uz
+qn
+qn
+Cs
+cb
+Cd
+DT
+Cd
+Cd
+Cd
+Cd
+Cd
+JG
+Cd
+Hq
+Cd
+Cd
+Cd
+Cd
+Hq
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Wr
+DT
+Cd
+oJ
+oJ
+oJ
+AH
+AH
+Dy
+oJ
+lr
+TE
+Bd
+MW
+TE
+yn
+Ox
+Dk
+sX
+rx
+qD
+nM
+jc
+Yd
+IS
+kX
+MN
+cx
+er
+Uz
+"}
+(24,1,1) = {"
+Uz
+qn
+Cs
+cb
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+JG
+Cd
+Wr
+Cd
+Cd
+Cd
+Cd
+Cd
+JG
+Cd
+Cd
+Cd
+JG
+JG
+JG
+Cd
+Cd
+Cd
+oJ
+ne
+Wq
+Sh
+Sh
+iI
+oJ
+RG
+te
+TE
+TE
+ZQ
+mu
+Ox
+Qn
+Rk
+lX
+rK
+MU
+hH
+iW
+IS
+kX
+kX
+cx
+er
+Uz
+"}
+(25,1,1) = {"
+Uz
+Cs
+cb
+Cd
+Cd
+JG
+JG
+Cd
+Cd
+Cd
+DT
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+Cd
+DT
+JG
+Cd
+Wr
+Cd
+JG
+JG
+JG
+JG
+Cd
+Wr
+Jq
+oJ
+oJ
+oJ
+oJ
+oJ
+oJ
+or
+Ox
+Ox
+Ox
+Ox
+Ox
+Ox
+IS
+IS
+IS
+IS
+IS
+IS
+IS
+IS
+kX
+dh
+cx
+er
+Uz
+"}
+(26,1,1) = {"
+Uz
+Qb
+LD
+hy
+LD
+hy
+hy
+LD
+hy
+hy
+hy
+hy
+hy
+hy
+LD
+hy
+hy
+hy
+hy
+Aw
+hy
+hy
+hy
+hy
+LD
+hy
+eQ
+hy
+hy
+PS
+PS
+PS
+PS
+PS
+PS
+PS
+PS
+PS
+PS
+PS
+PS
+PS
+PS
+cx
+kX
+kX
+kX
+kX
+Ug
+kX
+kX
+kX
+kX
+MN
+er
+Uz
+"}
+(27,1,1) = {"
+Uz
+ed
+hy
+hy
+hy
+eQ
+hy
+hy
+hy
+hy
+hy
+hy
+hy
+hy
+hy
+hy
+hy
+hy
+hy
+hy
+hy
+hy
+hy
+hy
+hy
+eQ
+eQ
+eQ
+PS
+PS
+sY
+sY
+sY
+sY
+sY
+sY
+sY
+sY
+sY
+sY
+sY
+sY
+PS
+cx
+ED
+kX
+kX
+kX
+kX
+kX
+kX
+kX
+kX
+MN
+er
+Uz
+"}
+(28,1,1) = {"
+Uz
+Vl
+Vl
+Vl
+Vl
+Vl
+Mz
+Mz
+Mz
+Mz
+Mz
+Mz
+tU
+hj
+Vl
+Vl
+er
+yh
+oj
+oj
+yh
+er
+yh
+oj
+oj
+yh
+Pt
+Pt
+Pt
+Hd
+Hd
+Am
+Hd
+Hd
+Hd
+uj
+Hd
+dm
+Hd
+Hd
+Hd
+sY
+PS
+cx
+kX
+kX
+cx
+cx
+cx
+cx
+cx
+MN
+MN
+MN
+er
+Uz
+"}
+(29,1,1) = {"
+Uz
+hj
+Vl
+Vl
+Vl
+Vl
+Mz
+kJ
+QP
+QP
+QP
+Mz
+Vl
+Vl
+qC
+Vl
+er
+yh
+oj
+oj
+yh
+er
+yh
+oj
+oj
+yh
+Pt
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+fy
+Hd
+Hd
+Hd
+Hd
+sY
+PS
+ls
+kX
+XZ
+cx
+er
+er
+er
+er
+er
+er
+er
+er
+Uz
+"}
+(30,1,1) = {"
+Uz
+Vl
+Vl
+Vl
+qC
+Vl
+Vl
+QP
+QP
+QP
+QP
+Vl
+Vl
+Vl
+Vl
+Vl
+er
+yh
+oj
+oj
+yh
+er
+yh
+oj
+oj
+yh
+Pt
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Yl
+qZ
+Hd
+Hd
+sY
+PS
+uz
+uz
+PE
+uz
+er
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+"}
+(31,1,1) = {"
+Uz
+Vl
+Vl
+Vl
+Vl
+hj
+Vl
+QP
+QP
+ZA
+QP
+Vl
+Vl
+Vl
+hj
+Vl
+er
+yh
+oj
+oj
+yh
+er
+yh
+oj
+oj
+yh
+Pt
+QI
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+An
+Hd
+Hd
+Hd
+Hd
+Hd
+sY
+PS
+uz
+AW
+AW
+uz
+er
+Uz
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+"}
+(32,1,1) = {"
+Uz
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+QP
+QP
+Vl
+Vl
+qC
+Vl
+Vl
+Vl
+er
+yh
+oj
+oj
+yh
+er
+yh
+oj
+oj
+yh
+Pt
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+sY
+PS
+uz
+Do
+OG
+uz
+er
+Uz
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+"}
+(33,1,1) = {"
+Uz
+vL
+vL
+vL
+vL
+vL
+vL
+vL
+TB
+TB
+vL
+vL
+vL
+vL
+vL
+vL
+er
+yh
+oj
+oj
+yh
+er
+yh
+oj
+oj
+yh
+Js
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+UX
+Hd
+Hd
+sY
+PS
+uz
+AW
+AW
+uz
+er
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+"}
+(34,1,1) = {"
+Uz
+wz
+Vl
+Vl
+Vl
+Vl
+Vl
+wv
+QP
+QP
+Vl
+wz
+Vl
+Vl
+Vl
+Vl
+yh
+yh
+TP
+TP
+yh
+yh
+yh
+TP
+TP
+yh
+go
+go
+go
+vU
+go
+go
+Pt
+Hd
+ul
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+sY
+PS
+Sl
+uz
+sa
+uz
+er
+er
+er
+er
+er
+er
+er
+er
+Uz
+"}
+(35,1,1) = {"
+Uz
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+jn
+Wv
+QP
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+TP
+oj
+oj
+fk
+gP
+oj
+oj
+oj
+oj
+fk
+go
+AY
+eR
+Cr
+wh
+go
+Pt
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+Hd
+PS
+PS
+nA
+nA
+nA
+nA
+nA
+nA
+nA
+nA
+nA
+nA
+nA
+nA
+Uz
+"}
+(36,1,1) = {"
+Uz
+Vl
+Vl
+Vl
+wz
+Vl
+Vl
+Vl
+QP
+QP
+Vl
+bB
+bB
+bB
+bB
+Vl
+qB
+rP
+oj
+oj
+Rv
+oj
+oj
+oj
+Is
+Xh
+go
+OV
+aO
+MQ
+gL
+go
+Pt
+Pt
+Pt
+Pt
+Pt
+Pt
+Hd
+Hd
+Pt
+PS
+nA
+nA
+nA
+nA
+nA
+nA
+nA
+nA
+nA
+nA
+nA
+nA
+lu
+Uz
+"}
+(37,1,1) = {"
+Uz
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+QP
+QP
+Vl
+bB
+RA
+nZ
+bB
+Vl
+yh
+yh
+yh
+yh
+yh
+yh
+yh
+yl
+oj
+oj
+go
+th
+GS
+aO
+AR
+go
+Ku
+Ku
+Ku
+Ku
+Ku
+Pt
+Pt
+Pt
+Pt
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+VZ
+VZ
+VZ
+Uz
+"}
+(38,1,1) = {"
+Uz
+ds
+Vl
+Vl
+TG
+sS
+Vl
+Vl
+Vl
+QP
+QP
+Ww
+Vi
+bm
+bB
+Vl
+iq
+qV
+Cg
+Lr
+RC
+xa
+yh
+EW
+oj
+WY
+go
+hO
+aO
+pY
+go
+go
+oe
+Ek
+Jj
+KN
+Ku
+Ku
+Ku
+Ku
+jV
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+VZ
+VZ
+Uz
+"}
+(39,1,1) = {"
+Uz
+Vl
+wz
+Vl
+im
+im
+Vl
+Vl
+Vl
+QP
+QP
+Ww
+My
+ki
+bB
+Vl
+iq
+zE
+kh
+iz
+NY
+rl
+yh
+uY
+oj
+nQ
+go
+AC
+aO
+aO
+go
+GR
+Ia
+ek
+Iz
+hp
+Qr
+IH
+Ku
+Ku
+Ku
+hZ
+hZ
+hZ
+hZ
+lE
+lE
+lE
+lE
+lE
+JU
+qp
+VZ
+VZ
+VZ
+Uz
+"}
+(40,1,1) = {"
+Uz
+Vl
+Vl
+bB
+bB
+bB
+Ww
+Ww
+Vl
+QP
+QP
+bB
+Rn
+Rn
+bB
+Vl
+iq
+HG
+Bg
+Lr
+Lr
+Bg
+yh
+Rq
+Is
+QF
+go
+Ux
+cV
+aO
+lf
+Jk
+ek
+JZ
+Iz
+Iz
+Iz
+hp
+ly
+Ku
+uy
+hZ
+hZ
+hZ
+hZ
+lE
+lE
+lE
+lE
+lE
+lE
+bd
+VZ
+VZ
+VZ
+Uz
+"}
+(41,1,1) = {"
+Uz
+TQ
+bB
+bB
+Cj
+vQ
+ki
+Ww
+Ww
+QP
+QP
+Vl
+QP
+QP
+Vl
+Vl
+iq
+tA
+Lr
+Lr
+Lr
+pN
+yh
+yv
+oj
+fk
+aE
+go
+go
+lf
+go
+al
+Iz
+Kf
+Jn
+Dj
+Iz
+Iz
+Gl
+HT
+hZ
+hZ
+hZ
+hZ
+kS
+lE
+lE
+lE
+lE
+lE
+lE
+DE
+VZ
+PT
+VZ
+Uz
+"}
+(42,1,1) = {"
+Uz
+bB
+bB
+jE
+ki
+ss
+ki
+ki
+bB
+QP
+QP
+Vl
+QP
+ke
+Vl
+Vl
+iq
+KA
+Lr
+OA
+Lr
+Lr
+yh
+yl
+oj
+vr
+VX
+oj
+Vj
+Vj
+yh
+Go
+LI
+co
+vd
+dw
+Iz
+Iz
+Fv
+iO
+hZ
+hZ
+hZ
+hZ
+hZ
+lE
+lE
+lE
+lE
+lE
+lE
+DE
+VZ
+VZ
+VZ
+Uz
+"}
+(43,1,1) = {"
+Uz
+bB
+Pj
+ki
+eC
+SG
+ki
+ki
+Rn
+QP
+QP
+ZA
+QP
+QP
+QP
+Vl
+Tx
+iq
+iq
+iq
+Lr
+Cf
+yh
+yh
+yh
+yh
+yh
+yh
+yh
+yh
+yh
+XS
+Iz
+ie
+El
+dw
+Iz
+Iz
+Gl
+Iz
+hZ
+hZ
+hZ
+hZ
+hZ
+lE
+lE
+lE
+lE
+lE
+lE
+DE
+VZ
+VZ
+VZ
+Uz
+"}
+(44,1,1) = {"
+Uz
+bB
+Pj
+gb
+ki
+Ab
+ki
+ki
+Rn
+QP
+QP
+QP
+QP
+QP
+QP
+QP
+ft
+dC
+WG
+Kl
+dC
+dC
+dC
+dC
+dC
+dC
+WG
+dC
+dC
+dC
+Ir
+ot
+Ey
+iU
+Jn
+OI
+Iz
+Iz
+Gl
+HT
+hZ
+hZ
+hZ
+hZ
+hZ
+lE
+lE
+lE
+lE
+lE
+lE
+bd
+VZ
+VZ
+VZ
+Uz
+"}
+(45,1,1) = {"
+Uz
+bB
+bB
+Pj
+ki
+Mo
+ki
+ki
+bB
+Vl
+Vl
+Vl
+QP
+QP
+QP
+QP
+va
+dC
+dC
+dC
+dH
+dC
+dC
+dC
+dC
+ir
+dC
+dC
+dC
+dC
+dC
+Fv
+Iz
+Iz
+iw
+Iz
+Iz
+DO
+qs
+Ku
+Yx
+hZ
+hZ
+hZ
+hZ
+ws
+lE
+lE
+lE
+lE
+lE
+qp
+VZ
+VZ
+VZ
+Uz
+"}
+(46,1,1) = {"
+Uz
+Ei
+bB
+bB
+ki
+ki
+ki
+Ww
+Ww
+Vl
+Vl
+Vl
+QP
+QP
+Vl
+Vl
+wZ
+dC
+tH
+dC
+dC
+dC
+Fc
+XU
+dC
+ir
+Ma
+TT
+YF
+kT
+dd
+Pi
+VA
+Iz
+Iz
+DO
+Qr
+wx
+Ku
+Ku
+Ku
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+VZ
+VZ
+VZ
+Uz
+"}
+(47,1,1) = {"
+Uz
+Vr
+mi
+bB
+bB
+bB
+Ww
+Ww
+Vl
+Vl
+bB
+Ww
+Ww
+Rn
+bB
+Vl
+WR
+dd
+dd
+dd
+dd
+dd
+dd
+dd
+dd
+dd
+dd
+dd
+dd
+dd
+dd
+Ku
+ba
+CJ
+OZ
+VO
+Ku
+Ku
+Ku
+CC
+jV
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+VZ
+VZ
+Uz
+"}
+(48,1,1) = {"
+Uz
+Dt
+Vr
+Vl
+Vl
+Vl
+Vl
+Vl
+wz
+Vl
+jn
+CT
+uq
+ki
+bB
+Vl
+qA
+Vl
+xe
+Fb
+rb
+Dd
+vA
+er
+er
+er
+er
+er
+er
+er
+er
+qr
+Ku
+Ku
+Ku
+Ku
+Ku
+er
+er
+er
+er
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+VZ
+VZ
+VZ
+Uz
+"}
+(49,1,1) = {"
+Uz
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+bB
+ue
+bm
+ki
+yd
+QP
+yI
+Iy
+tI
+QP
+QP
+QP
+BO
+aP
+er
+Uz
+Uz
+Uz
+Uz
+Uz
+er
+er
+er
+er
+er
+er
+er
+er
+Uz
+Uz
+er
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+Uz
+"}
+(50,1,1) = {"
+Uz
+Vr
+wz
+lG
+Vl
+Vl
+wz
+Vl
+Vl
+Vl
+bB
+bB
+bB
+bB
+bB
+Vl
+qA
+Vl
+QP
+QP
+wQ
+ZA
+Jl
+aP
+er
+Uz
+nu
+nu
+nu
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+er
+er
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+Uz
+"}
+(51,1,1) = {"
+Uz
+NJ
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+Vl
+Ei
+Vl
+Vl
+Vl
+Vl
+qA
+xB
+kC
+QP
+tI
+aP
+er
+er
+er
+Uz
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+Uz
+Uz
+er
+er
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+hZ
+Uz
+"}
+(52,1,1) = {"
+Kw
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+nu
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+Uz
+"}

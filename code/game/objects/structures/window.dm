@@ -1323,3 +1323,8 @@
 	CanAtmosPass = ATMOS_PASS_NO
 	intact = /obj/item/airbag_module
 	torn = null
+
+// Направленные подтипы окон-спавнеров для карт.
+MAPPING_DIRECTIONAL_HELPERS(/obj/structure/window/reinforced/spawner, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/structure/window/spawner, 0)
+
