@@ -523,7 +523,7 @@
 		shake_camera(src, 2, 3)
 
 		var/throwtarget = get_edge_target_turf(src, get_dir(src, get_step_away(L, src)))
-		L.throw_at(throwtarget, 5)
+		L.throw_at(throwtarget, 5, 1, src)
 
 	else if(hit_atom.density && !hit_atom.CanPass(src, get_turf(hit_atom)))
 		visible_message("<span class='danger'>[src] crashes into [hit_atom]!</span>")
@@ -532,9 +532,11 @@
 	charge_end()
 
 /mob/living/simple_animal/hostile/infected/charger/enter_charge(var/atom/target)
-	if(!target || QDELETED(target) || charge_recovering)
+	if(!target || QDELETED(target) || charge_recovering || !target.has_gravity())
 		return FALSE
-	if(!target.has_gravity())
+	// Сначала родительская проверка: без mobility/grav/cooldown она вернёт FALSE
+	// и не поставит таймер - телеграф и звук в этом случае показывать нельзя.
+	if(!..())
 		return FALSE
 
 	visible_message("<span class='danger'><b>[src]</b> braces for a charge!</span>")
@@ -542,7 +544,7 @@
 	var/obj/effect/temp_visual/decoy/telegraph = new /obj/effect/temp_visual/decoy(loc, src)
 	if(telegraph)
 		animate(telegraph, alpha = 0, color = "#FF0000", transform = matrix() * 2, time = 15)
-	return ..()
+	return TRUE
 
 /mob/living/simple_animal/hostile/infected/charger/charge_end()
 	if(!charge_state)
@@ -766,7 +768,11 @@
 	shake_camera(src, 2, 2)
 	is_leaping = TRUE
 	leap_cooldown = world.time + 5 SECONDS
-	throw_at(A, jumpdistance, jumpspeed, spin = FALSE, diagonals_first = TRUE)
+	// Бросок может быть отменён компонентом на COMSIG_MOVABLE_PRE_THROW
+	// (например magnetic_catch) - тогда throw_impact/Bump не придут и без
+	// сброса флага хищник навсегда потеряет подвижность.
+	if(!throw_at(A, jumpdistance, jumpspeed, spin = FALSE, diagonals_first = TRUE))
+		is_leaping = FALSE
 	ranged_cooldown = world.time + ranged_cooldown_time
 
 /mob/living/simple_animal/hostile/infected/hunter/Bump(atom/A)
@@ -797,7 +803,7 @@
 	else if(hit_atom.density && !hit_atom.CanPass(src, get_turf(hit_atom)))
 		visible_message("<span class='danger'>[src] crashes into [hit_atom]!</span>")
 		playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/hunter/punch2.ogg', 70, FALSE)
-		Stun(miss_stun_duration * 10)
+		Stun(miss_stun_duration)
 
 /mob/living/simple_animal/hostile/infected/hunter/death(gibbed)
 	. = ..(gibbed)
@@ -1007,6 +1013,15 @@
 /mob/living/simple_animal/hostile/infected/tank/proc/update_theme_listeners()
 	if(stat == DEAD || QDELETED(src))
 		return
+
+	// Выход из зоны ihategordon не шлёт сигнала - перепроверяем записанных
+	// слушателей даже без цели, иначе тема играла бы у покинувших область
+	// до смерти/удаления танка.
+	for(var/mob/listener in tank_theme_listeners.Copy())
+		var/listener_valid = listener && !QDELETED(listener) && listener.stat != DEAD && listener.client && listener.client.prefs && (listener.client.prefs.toggles & SOUND_AMBIENCE) && istype(get_area(listener), /area/awaymission/ihategordon)
+		if(!listener_valid)
+			stop_theme_listener_sound(listener)
+			unregister_theme_listener(listener)
 
 	if(!isliving(target))
 		return

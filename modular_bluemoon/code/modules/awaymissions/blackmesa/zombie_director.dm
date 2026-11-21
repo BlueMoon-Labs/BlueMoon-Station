@@ -146,7 +146,7 @@
 
 /datum/ai_director/zombie_mission/proc/pick_special_infected_type(list/alive_specials)
 	// Tank is a rare bonus on high difficulty and still counts toward the cap.
-	if(difficulty_level >= 5 && prob(tank_special_chance / 100.0) && !has_special_type(alive_specials, /mob/living/simple_animal/hostile/infected/tank))
+	if(difficulty_level >= 5 && prob(tank_special_chance) && !has_special_type(alive_specials, /mob/living/simple_animal/hostile/infected/tank))
 		return /mob/living/simple_animal/hostile/infected/tank
 	// Hunter is weighted higher - it is the signature special of the event.
 	var/list/candidates = list()
@@ -166,7 +166,7 @@
 		return
 	if(!players || !players.len)
 		return
-	if(is_generator_horde_active())
+	if(is_generator_horde_active(TRUE))
 		return
 	if(world.time - last_special_event_time < min_special_event_interval)
 		return
@@ -202,7 +202,7 @@
 /datum/ai_director/zombie_mission/proc/attempt_spawn_wave()
 	if(!src)
 		return
-	if(is_generator_horde_active())
+	if(is_generator_horde_active(TRUE))
 		return
 	if(spawning_wave)
 		log_world("[src] Already spawning a wave, skipping duplicate spawn")
@@ -375,7 +375,7 @@
 	if(difficulty_level >= 5)
 		// Tanks scale with difficulty, capped at 30% on difficulty 8.
 		var/tank_chance = min(30, (difficulty_level - 4) * 8)
-		if(can_spawn_specials && prob(tank_chance / 100.0))
+		if(can_spawn_specials && prob(tank_chance))
 			mob_type = pick_wave_special_type(list(/mob/living/simple_animal/hostile/infected/tank), already_specials)
 			if(!mob_type)
 				mob_type = /mob/living/simple_animal/hostile/infected
@@ -679,7 +679,7 @@
 		return
 	if(spawning_wave)
 		return
-	if(is_generator_horde_active() && !from_generator)
+	if(is_generator_horde_active(TRUE) && !from_generator)
 		return
 	var/list/alive_players = get_alive_players_in_mission()
 	if(!alive_players || !alive_players.len)
@@ -717,8 +717,11 @@
 		next_horde_state_check = world.time + 5 SECONDS
 	return cached_fuel_horde_active
 
-/datum/ai_director/zombie_mission/proc/is_generator_horde_active()
-	if(world.time >= next_horde_state_check)
+/datum/ai_director/zombie_mission/proc/is_generator_horde_active(force_refresh = FALSE)
+	// Точечные решения (волна, trigger_horde, спец-инфицированные) запрашивают
+	// свежий статус - иначе до 5 секунд кэша генератор мог запустить обычную
+	// волну в генераторной фазе или наоборот отклонить ручной запрос.
+	if(force_refresh || world.time >= next_horde_state_check)
 		refresh_horde_state()
 		next_horde_state_check = world.time + 5 SECONDS
 	return cached_horde_active

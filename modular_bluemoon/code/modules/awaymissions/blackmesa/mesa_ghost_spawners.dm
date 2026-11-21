@@ -35,6 +35,21 @@
 		return FALSE
 	return TRUE
 
+// Общие проверки допуска из /obj/effect/mob_spawn/attack_ghost. Ветка
+// случайного персонажа обходит allow_spawn (там стоит проверка расы),
+// но раунд, ghost_usable, джоббан и право повторного входа - нет.
+/obj/effect/mob_spawn/human/black_mesa/proc/ghost_role_allowed(mob/user)
+	if(!SSticker.HasRoundStarted() || !loc || !ghost_usable)
+		return FALSE
+	if(jobban_isbanned(user, banType))
+		to_chat(user, "<span class='warning'>You are jobanned!</span>")
+		return FALSE
+	if(isobserver(user) && !skip_reentry_check)
+		var/mob/dead/observer/O = user
+		if(!O.can_reenter_round())
+			return FALSE
+	return TRUE
+
 /obj/effect/mob_spawn/human/black_mesa/attack_ghost(mob/user, latejoinercalling)
 	if(!user || !user.client || !user.client.prefs || !restricted_species)
 		return ..()
@@ -42,6 +57,8 @@
 	if(!user_species)
 		return ..()
 	if(initial(user_species.id) != restricted_species)
+		if(!ghost_role_allowed(user))
+			return
 		var/warning = tgui_alert(user, "Этот гост-роль разрешает только расу: [restricted_species]. Ваша текущая раса: [initial(user_species.name)].\n\nВы хотите зайти за случайно сгенерированного персонажа расы [restricted_species]?", "Ограничение расы", list("Да", "Нет"))
 		if(warning != "Да")
 			return

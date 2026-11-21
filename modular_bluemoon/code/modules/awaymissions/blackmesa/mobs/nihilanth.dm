@@ -397,6 +397,8 @@
 
 // Свободный открытый турф рядом с мобом (не космос/бездна, не сквозь стену).
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/free_turf_near(atom/center, range = 4)
+	if(!center || QDELETED(center))
+		return null
 	var/turf/CT = get_turf(center)
 	if(!istype(CT))
 		return null

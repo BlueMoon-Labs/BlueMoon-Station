@@ -180,6 +180,17 @@ SUBSYSTEM_DEF(blackmesa_events)
 
 	log_world("mesa_announce: '[title]' - notified [players_notified] players in Black Mesa area")
 
+// Единая проверка "игрок в зоне Сектора H" для трансивера и declare_hecu_conflict:
+// area/ihategordon ИЛИ z-уровень миссии (турфы /area/space - тамбур, скалы).
+/datum/controller/subsystem/blackmesa_events/proc/mesa_actor_in_zone(mob/L)
+	var/turf/UT = get_turf(L)
+	if(!UT)
+		return FALSE
+	if(istype(get_area(L), /area/awaymission/ihategordon))
+		return TRUE
+	var/list/mission_zs = mesa_mission_zlevels()
+	return mission_zs && (UT.z in mission_zs)
+
 /datum/controller/subsystem/blackmesa_events/proc/declare_hecu_conflict(mob/living/user, conflict_mode, custom_announcement)
 	if(SSticker && hecu_conflict_round_start_time != SSticker.round_start_time)
 		hecu_conflict_round_start_time = SSticker.round_start_time
@@ -187,7 +198,7 @@ SUBSYSTEM_DEF(blackmesa_events)
 	if(hecu_conflict_mode)
 		to_chat(user, span_warning("Конфликт уже был объявлен. Повторное объявление невозможно."))
 		return FALSE
-	if(!user || !user.client || !(FACTION_HECU in user.faction) || !istype(get_area(user), /area/awaymission/ihategordon))
+	if(!user || !user.client || !(FACTION_HECU in user.faction) || !mesa_actor_in_zone(user))
 		to_chat(user, span_warning("Устройство работает только для HECU внутри гейта Сектора H."))
 		return FALSE
 	if(conflict_mode != "war" && conflict_mode != "truce")
@@ -230,7 +241,7 @@ SUBSYSTEM_DEF(blackmesa_events)
 	)
 	issue_hecu_orders(
 		"Перемирие установлено. HECU должны немедленно эвакуироваться из гейта Сектора H.",
-		"Объеденится с персоналом и вторженцами, после чего немедленно эвакуироваться из гейта Сектора H.",
+		"Объединиться с персоналом и вторженцами, после чего немедленно эвакуироваться из гейта Сектора H.",
 	)
 	spawn_conflict_ghost_roles(
 		/obj/effect/mob_spawn/human/black_mesa/hecu/blackops/assault,
@@ -412,7 +423,7 @@ SUBSYSTEM_DEF(blackmesa_events)
 	director.difficulty_level = 8
 	director.zombie_hp_multiplier = 3.0
 	mesa_announce(
-		"Отряд ХЕКУ объявляет перемирие и ОТКАЗЫВАЕТСЯ следовать приказу по уничтожению свидетелй. Уровень опасности Сектора H повышен до максимального. Ожидается резкое усиление враждебной активности.",
+		"Отряд ХЕКУ объявляет перемирие и ОТКАЗЫВАЕТСЯ следовать приказу по уничтожению свидетелей. Уровень опасности Сектора H повышен до максимального. Ожидается резкое усиление враждебной активности.",
 		"МАКСИМАЛЬНЫЙ УРОВЕНЬ ОПАСНОСТИ",
 		'modular_bluemoon/sound/ambience/mesa/BMAS3.ogg',
 	)

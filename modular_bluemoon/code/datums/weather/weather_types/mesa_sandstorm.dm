@@ -10,18 +10,18 @@
 	wind_sign = -1
 
 	telegraph_message = "<span class='boldwarning'>Ветер усиливается, поднимая тучи песка с поверхности.</span>"
-	telegraph_duration = 300
+	telegraph_duration = 30 SECONDS
 
 	weather_message = "<span class='userdanger'><i>Песчаная буря охватила сектор!</i></span>"
 
 	end_message = "<span class='boldannounce'>Ветер стихает, и песок оседает на землю.</span>"
-	end_duration = 300
+	end_duration = 30 SECONDS
 
 	aesthetic = TRUE
 	probability = 0
 
-	weather_duration_lower = 1800
-	weather_duration_upper = 3600
+	weather_duration_lower = 3 MINUTES
+	weather_duration_upper = 6 MINUTES
 
 	area_type = /area/awaymission/ihategordon/outsideofmesa
 	protect_indoors = TRUE

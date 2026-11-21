@@ -1829,9 +1829,8 @@ var/mob/living/bipod_signal_user
 		to_chat(user, span_warning("The transceiver only responds to HECU personnel."))
 		return
 	var/mob/living/L = user
-	var/turf/UT = get_turf(L)
-	var/list/mission_zs = SSblackmesa_events ? SSblackmesa_events.mesa_mission_zlevels() : null
-	if(!UT || (!istype(get_area(L), /area/awaymission/ihategordon) && !(mission_zs && (UT.z in mission_zs))))
+	var/in_mission = SSblackmesa_events ? SSblackmesa_events.mesa_actor_in_zone(L) : istype(get_area(L), /area/awaymission/ihategordon)
+	if(!in_mission)
 		to_chat(L, span_warning("The transceiver only works inside the Sector H gate."))
 		return
 
