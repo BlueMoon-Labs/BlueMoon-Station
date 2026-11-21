@@ -149,7 +149,7 @@
 #define BUNDLE_DISCOUNT_MIN 20
 #define BUNDLE_DISCOUNT_MAX 35
 #define BUNDLE_LIFETIME (20 MINUTES)
-/// Столько с выставления пачку берут только за бюджет её отдела, если на смене есть кому её одобрить
+/// Столько с выставления пачку берут только за бюджет её отдела, если о ней объявили и на смене есть кому её одобрить
 #define BUNDLE_DEPARTMENT_FIRST (5 MINUTES)
 #define BUNDLE_GAP_MIN (8 MINUTES)
 #define BUNDLE_GAP_MAX (15 MINUTES)
