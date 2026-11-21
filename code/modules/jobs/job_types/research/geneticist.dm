@@ -61,6 +61,7 @@
 	satchel = /obj/item/storage/backpack/satchel/gen
 	duffelbag = /obj/item/storage/backpack/duffelbag/med
 	l_pocket = /obj/item/sequence_scanner
+	l_hand = /obj/item/storage/lockbox/geneticist
 
 /datum/outfit/job/geneticist/syndicate
 	name = "Syndicate Geneticist"
@@ -75,6 +76,7 @@
 	suit =  /obj/item/clothing/suit/toggle/labcoat/genetics
 	suit_store =  /obj/item/flashlight/pen
 	l_pocket = /obj/item/sequence_scanner
+	l_hand = /obj/item/storage/lockbox/geneticist
 
 	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med

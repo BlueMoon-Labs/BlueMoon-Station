@@ -244,3 +244,26 @@
 	if(privacy_lock)
 		SEND_SIGNAL(src, COMSIG_TRY_STORAGE_HIDE_ALL)
 	user.visible_message(span_notice("[user] [privacy_lock ? "запирает" : "отпирает"] [src]."), span_notice("Вы [privacy_lock ? "запираете" : "отпираете"] [src]."))
+
+//-----------------------------------------------//
+
+/obj/item/storage/lockbox/geneticist
+	name = "CRISPR Case"
+	desc = "Небольшой запертый кейс c необходимым оборудованием для использования CRISPR."
+	req_access = list(ACCESS_GENETICS)
+
+/obj/item/storage/lockbox/geneticist/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_w_class = WEIGHT_CLASS_SMALL
+	STR.max_combined_w_class = 5
+	STR.max_items = 5
+	STR.locked = TRUE
+
+/obj/item/storage/lockbox/geneticist/PopulateContents()
+	for(var/i in 1 to 2)
+		new /obj/item/reagent_containers/glass/bottle/viral_evolutinaty(src)
+	new /obj/item/reagent_containers/glass/beaker(src)
+	new /obj/item/reagent_containers/syringe(src)
+	new /obj/item/reagent_containers/dropper(src)
+
