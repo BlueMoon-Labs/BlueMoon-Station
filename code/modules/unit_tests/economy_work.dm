@@ -6,6 +6,8 @@
 	var/datum/bank_account/department/budget
 	var/saved_budget
 	var/list/stashed_contracts
+	/// SSeconomy.can_fire до паузы тиков; null - тики не останавливались
+	var/economy_could_fire
 
 /// В тестовом мире клиентов нет, а медицина оживляет только тело с игроком: пациент проходит ту же проверку, что учебная цель полигона.
 /mob/living/carbon/human/econ_test_patient
@@ -31,6 +33,8 @@
 	saved_budget = budget.account_balance
 
 /datum/unit_test/economy_work/Destroy()
+	if(!isnull(economy_could_fire))
+		SSeconomy.can_fire = economy_could_fire
 	econ_test_restore_contracts(stashed_contracts)
 	if(budget)
 		budget.debit(max(budget.account_balance, 0), ECON_ADMIN)
