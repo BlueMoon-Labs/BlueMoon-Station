@@ -612,7 +612,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			var/datum/admin_rank/localhost_rank = new("!localhost!", R_EVERYTHING, R_DBRANKS, R_EVERYTHING) //+EVERYTHING -DBRANKS *EVERYTHING
 			new /datum/admins(localhost_rank, ckey, 1, 1)
 
-	if(fexists(roundend_report_file()))
+	// tgui-снимок может существовать без старого HTML-отчёта (и наоборот).
+	if(fexists(roundend_report_file()) || fexists(roundend_report_tgui_file()))
 		add_verb(src, /client/proc/show_previous_roundend_report)
 
 	var/full_version = "[byond_version].[byond_build ? byond_build : "xxx"]"

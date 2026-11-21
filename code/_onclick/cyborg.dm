@@ -41,9 +41,9 @@
 		RestrainedClickOn(A)
 		return
 	*/
-	if(aicamera.in_camera_mode) //Cyborg picture taking
+	if(aicamera?.in_camera_mode) // Cyborg picture taking
 		aicamera.camera_mode_off()
-		INVOKE_ASYNC(aicamera, TYPE_PROC_REF(/obj/item/camera, captureimage), A, usr)
+		INVOKE_ASYNC(aicamera, TYPE_PROC_REF(/obj/item/camera, captureimage), A, src)
 		return
 
 	var/obj/item/W = get_active_held_item(TRUE)

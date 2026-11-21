@@ -149,11 +149,14 @@
 			return TRUE
 		return FALSE
 
-	private_skin_optional_menu_used = TRUE
 	if(choice == "Default")
+		private_skin_optional_menu_used = TRUE
 		return TRUE
 
-	return apply_donator_borg_icon(choice, R.client)
+	if(!apply_donator_borg_icon(choice, R.client))
+		return FALSE
+	private_skin_optional_menu_used = TRUE
+	return TRUE
 
 /obj/item/robot_module/proc/apply_donator_borg_icon(selection_name, client/C)
 	if(!selection_name || !C)

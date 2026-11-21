@@ -1529,6 +1529,12 @@ GENETICS SCANNER
 	buffer = list()
 	var/ready = TRUE
 	var/cooldown = 200
+	/// Последний просканированный субъект — заголовок окна.
+	var/subject_name = ""
+	/// Результат последнего анализа: список name/sequence для интерфейса.
+	var/list/last_result
+	/// Мировое время, когда сканер снова будет готов.
+	var/next_ready = 0
 
 /obj/item/sequence_scanner/attack(mob/living/M, mob/living/carbon/human/user)
 	add_fingerprint(user)
@@ -1541,10 +1547,63 @@ GENETICS SCANNER
 		user.visible_message("<span class='notice'>[user] failed to analyse [M]'s genetic sequence.</span>", "<span class='warning'>[M] has no readable genetic sequence!</span>")
 
 /obj/item/sequence_scanner/attack_self(mob/user)
-	display_sequence(user)
+	ui_interact(user)
 
 /obj/item/sequence_scanner/attack_self_tk(mob/user)
 	return
+
+/obj/item/sequence_scanner/ui_state(mob/user)
+	return GLOB.hands_state
+
+/obj/item/sequence_scanner/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "SequenceAnalyzer", "Genetic Sequence Analyzer")
+		ui.open()
+
+/obj/item/sequence_scanner/ui_data(mob/user)
+	var/list/data = list()
+	data["subject"] = subject_name
+	data["ready"] = ready
+	data["cooldown"] = cooldown
+	data["rechargeLeft"] = max(0, next_ready - world.time)
+	data["result"] = last_result
+	var/list/mutations = list()
+	for(var/A in buffer)
+		mutations += list(list(
+			"id" = "[A]",
+			"name" = get_display_name(A),
+			"discovered" = !!(A in discovered),
+		))
+	data["mutations"] = mutations
+	return data
+
+/obj/item/sequence_scanner/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(. || !isliving(usr) || !usr.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
+		return TRUE
+	switch(action)
+		if("analyze")
+			if(!ready)
+				return TRUE
+			var/mutation = text2path(params["mutation"]) || params["mutation"]
+			if(!mutation || !(mutation in buffer))
+				return TRUE
+			var/sequence = buffer[mutation]
+			if(!sequence)
+				return TRUE
+			var/display = decode_sequence(sequence)
+			last_result = list("name" = get_display_name(mutation), "sequence" = display)
+			to_chat(usr, "<span class='boldnotice'>[display]</span><br>")
+			ready = FALSE
+			icon_state = "[icon_state]_recharging"
+			next_ready = world.time + cooldown
+			addtimer(CALLBACK(src, PROC_REF(recharge)), cooldown, TIMER_UNIQUE)
+			return TRUE
+		if("chat")
+			if(last_result)
+				to_chat(usr, "<span class='boldnotice'>[last_result["sequence"]]</span><br>")
+			return TRUE
 
 /obj/item/sequence_scanner/afterattack(obj/O, mob/user, proximity)
 	. = ..()
@@ -1562,7 +1621,9 @@ GENETICS SCANNER
 /obj/item/sequence_scanner/proc/gene_scan(mob/living/carbon/C, mob/living/user)
 	if(!iscarbon(C) || !C.has_dna() || HAS_TRAIT(C, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - у синтетиков "нет" генов, полезных для хранилища
 		return
-	buffer = C.dna.mutation_index
+	buffer = C.dna.mutation_index.Copy()
+	subject_name = C.name
+	last_result = null
 	var/text = "<span class='notice'>Subject [C.name]'s DNA sequence has been saved to buffer.</span>"
 	if(LAZYLEN(buffer))
 		text += "<hr>"
@@ -1571,39 +1632,20 @@ GENETICS SCANNER
 			lines += "<span class='notice'>[get_display_name(A)]</span>"
 		text += lines.Join("\n")
 	to_chat(user, examine_block(text))
+	SStgui.update_uis(src)
 
-
-/obj/item/sequence_scanner/proc/display_sequence(mob/living/user)
-	if(!LAZYLEN(buffer) || !ready)
-		return
-	var/list/options = list()
-	for(var/A in buffer)
-		options += get_display_name(A)
-
-	var/answer = input(user, "Analyze Potential", "Sequence Analyzer")  as null|anything in sort_list(options)
-	if(answer && ready && user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
-		var/sequence
-		for(var/A in buffer) //this physically hurts but i dont know what anything else short of an assoc list
-			if(get_display_name(A) == answer)
-				sequence = buffer[A]
-				break
-
-		if(sequence)
-			var/display
-			for(var/i in 0 to length_char(sequence) / DNA_MUTATION_BLOCKS-1)
-				if(i)
-					display += "-"
-				display += copytext_char(sequence, 1 + i*DNA_MUTATION_BLOCKS, DNA_MUTATION_BLOCKS*(1+i) + 1)
-
-			to_chat(user, "<span class='boldnotice'>[display]</span><br>")
-
-		ready = FALSE
-		icon_state = "[icon_state]_recharging"
-		addtimer(CALLBACK(src, PROC_REF(recharge)), cooldown, TIMER_UNIQUE)
+/// Разворачивает последовательность в читаемые блоки через дефис.
+/obj/item/sequence_scanner/proc/decode_sequence(sequence)
+	. = ""
+	for(var/i in 0 to length_char(sequence) / DNA_MUTATION_BLOCKS-1)
+		if(i)
+			. += "-"
+		. += copytext_char(sequence, 1 + i*DNA_MUTATION_BLOCKS, DNA_MUTATION_BLOCKS*(1+i) + 1)
 
 /obj/item/sequence_scanner/proc/recharge()
 	icon_state = initial(icon_state)
 	ready = TRUE
+	next_ready = 0
 
 /obj/item/sequence_scanner/proc/get_display_name(mutation)
 	var/datum/mutation/human/HM = GET_INITIALIZED_MUTATION(mutation)

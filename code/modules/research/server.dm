@@ -1,12 +1,14 @@
 /// Общий множитель выработки сервера.
 ///
-/// Убывающую отдачу от количества серверов считает SSresearch.calculate_server_coefficient()
-/// - sqrt(100/N) на всю ферму. Здесь раньше висела ВТОРАЯ такая кривая, персональная: сервера
+/// Убывающую отдачу от количества серверов в сети считает SSresearch.calculate_server_coefficient()
+/// - sqrt(100/N) отдельно для каждой сети. Здесь раньше висела ВТОРАЯ такая кривая, персональная: сервера
 /// с четвёртого получали ещё и личный штраф по позиции в списке. Две кривые перемножались, и
 /// суммарный доход фермы переставал расти - пятый сервер давал станции МЕНЬШЕ очков, чем четыре
 /// (≈40*ig против 46*ig). Отсюда и жалобы "чинится доп. серверами... а нет, не чинится".
 /// Оставлен только прежний бонус, чтобы выработка одиночного сервера не изменилась.
 #define RESEARCH_SERVER_OUTPUT_MULTIPLIER 1.2
+/// Запас до верхней границы температуры, при которой сервер отключается.
+#define RESEARCH_SERVER_TEMP_SHUTDOWN_MARGIN 50
 
 /obj/machinery/rnd/server
 	name = "\improper R&D Server"
@@ -57,7 +59,7 @@
 /obj/machinery/rnd/server/process()
 	if(!(machine_stat & NOPOWER) && working)
 		produce_heat() //аргументов не принимает: раньше сюда уходил ключ ассоциативного списка
-	if(get_env_temp() >= (temp_tolerance_high + 50) || get_env_temp() <= temp_tolerance_low)
+	if(get_env_temp() >= (temp_tolerance_high + RESEARCH_SERVER_TEMP_SHUTDOWN_MARGIN) || get_env_temp() <= temp_tolerance_low)
 		if(working)
 			working = FALSE
 			play_alarm()
@@ -274,74 +276,108 @@
 	desc = "Used to manage access to research and manufacturing databases."
 	icon_screen = "generic"
 	icon_keyboard = "rd_key"
-	var/screen = 0
-	var/obj/machinery/rnd/server/temp_server
-	var/list/servers = list()
-	var/list/consoles = list()
-	var/badmin = 0
 	circuit = /obj/item/circuitboard/computer/rdservercontrol
 
-/obj/machinery/computer/rdservercontrol/Topic(href, href_list)
-	if(..())
-		return
+/obj/machinery/computer/rdservercontrol/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "RDServerControl", name)
+		ui.open()
 
-	add_fingerprint(usr)
-	usr.set_machine(src)
-	if(!src.allowed(usr) && !(obj_flags & EMAGGED))
-		to_chat(usr, "<span class='danger'>Доступ запрещён.</span>")
-		return
+/// Единый предикат доступности сервера: статус карточки и счётчик онлайн-серверов
+/// должны использовать одно и то же условие, иначе обесточенный сервер с working = TRUE
+/// попадёт в сводку как работающий.
+/obj/machinery/computer/rdservercontrol/proc/is_server_online(obj/machinery/rnd/server/server)
+	return server.working && !(server.machine_stat & (NOPOWER|BROKEN|EMPED))
 
-	if(href_list["main"])
-		screen = 0
+/obj/machinery/computer/rdservercontrol/ui_data(mob/user)
+	var/list/data = list()
+	var/list/server_data = list()
+	var/list/networks = list()
+	var/list/working_servers_by_network = list()
+	var/list/income_by_network = list()
+	var/online_servers = 0
+	var/total_income = 0
+	var/index = 0
 
-	updateUsrDialog()
-	return
+	// Считаем работающие серверы по сетям и доход по тем же правилам, что SSresearch.fire().
+	for(var/obj/machinery/rnd/server/server in GLOB.machines)
+		if(QDELETED(server) || !server.working || !server.stored_research)
+			continue
+		var/datum/techweb/web = server.stored_research
+		working_servers_by_network[web] = (working_servers_by_network[web] || 0) + 1
+		if(!SSresearch.multiserver_calculation)
+			continue
+		var/list/mining_result = server.mine()
+		income_by_network[web] = (income_by_network[web] || 0) + (mining_result[TECHWEB_POINT_TYPE_GENERIC] || 0)
 
-/obj/machinery/computer/rdservercontrol/ui_interact(mob/user)
+	if(SSresearch.multiserver_calculation)
+		for(var/datum/techweb/web as anything in income_by_network)
+			income_by_network[web] *= SSresearch.calculate_server_coefficient(working_servers_by_network[web])
+	else
+		for(var/datum/techweb/web as anything in working_servers_by_network)
+			income_by_network[web] = SSresearch.single_server_income[TECHWEB_POINT_TYPE_GENERIC] || 0
+
+	for(var/obj/machinery/rnd/server/server in GLOB.machines)
+		if(QDELETED(server))
+			continue
+		index++
+		var/turf/server_turf = get_turf(server)
+		var/datum/techweb/web = server.stored_research
+		var/connected = !!web
+		var/is_online = is_server_online(server)
+		var/income = 0
+		if(connected && is_online)
+			// fire() начисляет доход на всю сеть, поэтому на карточку приходится доля сервера.
+			income = round((income_by_network[web] || 0) / (working_servers_by_network[web] || 1), 0.1)
+		if(is_online)
+			online_servers++
+		if(connected)
+			networks[web] = TRUE
+		total_income += income
+
+		var/status = "online"
+		if(server.machine_stat & BROKEN)
+			status = "broken"
+		else if(server.machine_stat & NOPOWER)
+			status = "no_power"
+		else if(server.machine_stat & EMPED)
+			status = "emp"
+		else if(!server.working)
+			status = "bad_temp"
+		else if(server.obj_flags & EMAGGED)
+			status = "emagged"
+
+		var/env_temp = server.get_env_temp()
+		server_data += list(list(
+			"id" = uppertext(server.server_id),
+			"path" = "C:\\RND\\SERVER_[index]",
+			"network" = connected ? (web.organization || "НЕИЗВЕСТНО") : "НЕ ПОДКЛЮЧЕН",
+			"connected" = connected,
+			"location" = server_turf ? "([server_turf.x], [server_turf.y], [server_turf.z])" : "НЕИЗВЕСТНО",
+			"income" = income,
+			"temperature" = round(env_temp - T0C),
+			"temp_high" = round(server.temp_tolerance_high - T0C),
+			"temp_critical" = round(server.temp_tolerance_high + RESEARCH_SERVER_TEMP_SHUTDOWN_MARGIN - T0C),
+			"status" = status,
+		))
+
+	data["servers"] = server_data
+	data["total_servers"] = length(server_data)
+	data["online_servers"] = online_servers
+	data["network_count"] = length(networks)
+	data["total_income"] = round(total_income, 0.1)
+	data["emagged"] = !!(obj_flags & EMAGGED)
+	return data
+
+/obj/machinery/computer/rdservercontrol/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
-	var/dat = ""
+	if(.)
+		return
 
-	switch(screen)
-		if(0)
-			var/total_servers = 0
-			for(var/obj/machinery/rnd/server/S in GLOB.machines)
-				total_servers++
-
-			// Шапка со всяким флаффом декоративным
-			dat += "<b>Nanotrasen Research Division DOS v3.4.2</b><br>"
-			dat += "Copyright (C) 2565 Nanotrasen Corporation<br>"
-			dat += "All Rights Reserved.<br><br>"
-			dat += "Initializing system resources... <span class='dim'>OK</span><br>"
-			dat += "Loading device drivers... <span class='dim'>OK</span><br>"
-			dat += "Establishing uplink... <span class='dim'>CONNECTED</span><br>"
-			dat += "Loading R&D server control interface... <span class='dim'>READY</span><br>"
-			dat += "<hr>"
-			// Реальная информация
-			dat += "C:\\>Connected Servers<br><br>"
-			if(total_servers == 0)
-				dat += "NO SERVERS DETECTED.<br>"
-			else
-				var/i = 1
-				for(var/obj/machinery/rnd/server/S in GLOB.machines)
-					var/turf/T = get_turf(S) // Ищем координаты
-					var/web_info = S.stored_research ? S.stored_research.organization : "НЕ ПОДКЛЮЧЕН"
-					dat += "[i]. Server: [uppertext(S.server_id)]<br>"
-					dat += "___Path: C:\\RND\\SERVER_[i]<br>"
-					dat += "___Income stream: <b>[S.income_gen]</b> RP/tick<br>"
-					dat += "___Research network: <b>[web_info]</b><br>"
-					dat += "___Server location: ([T.x], [T.y], [T.z])<br><br>"
-					i++
-				dat += "Total servers detected: <b>[total_servers]</b><br>"
-
-			dat += "<hr>"
-			dat += "C:\\>System ready.<br>"
-			dat += "C:\\>"
-
-	var/datum/browser/popup = new(user, "server_control", "R&D Server Control", 600, 450)
-	popup.add_head_content({"<style>body { background-color: #000000; color: #00FF00; font-family: 'Courier New', monospace; font-size: 13px; } hr { border: 1px solid #00FF00; } b { color: #80FF80; } .dim { color: #007700; }</style>"})
-	popup.set_content(dat)
-	popup.open()
-	return
+	switch(action)
+		if("refresh")
+			return TRUE
 
 /obj/machinery/computer/rdservercontrol/attackby(obj/item/D, mob/user, params)
 	. = ..()
@@ -358,3 +394,4 @@
 	return TRUE
 
 #undef RESEARCH_SERVER_OUTPUT_MULTIPLIER
+#undef RESEARCH_SERVER_TEMP_SHUTDOWN_MARGIN

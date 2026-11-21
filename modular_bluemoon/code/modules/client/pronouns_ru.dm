@@ -276,9 +276,11 @@
 	else
 		. = "ен"
 
-// Conceal gender when both the face and the underlying clothing are hidden.
-/mob/living/carbon/human/proc/is_gender_obscured()
-	return ((wear_mask && (wear_mask.flags_inv & HIDEFACE)) || (head && (head.flags_inv & HIDEFACE))) && (ITEM_SLOT_ICLOTHING in check_obscured_slots())
+// При скрытом теле пол определяется по доступному лицу.
+/mob/living/carbon/human/proc/is_gender_obscured(mob/user)
+	if(!(ITEM_SLOT_ICLOTHING in check_obscured_slots()))
+		return FALSE
+	return !get_bodypart(BODY_ZONE_HEAD) || (wear_mask && (wear_mask.flags_inv & HIDEFACE)) || (head && (head.flags_inv & HIDEFACE)) || (isliving(user) && HAS_TRAIT(user, TRAIT_PROSOPAGNOSIA))
 
 /mob/living/carbon/human/ru_who(capitalized, temp_gender)
 	if(!temp_gender && is_gender_obscured())

@@ -70,34 +70,41 @@ Borg Hypospray
 	reagent_names[initial(reagent.name)] = reagent
 
 /obj/item/reagent_containers/borghypo/proc/del_reagent(datum/reagent/reagent)
-	reagent_ids -= reagent
+	var/index = reagent_ids.Find(reagent)
+	if(!index)
+		return FALSE
+	var/selected_reagent = reagent_ids[mode]
+	var/datum/reagents/reservoir = reagent_list[index]
+	reagent_ids.Cut(index, index + 1)
+	reagent_list.Cut(index, index + 1)
 	reagent_names -= initial(reagent.name)
-	var/datum/reagents/RG
-	var/datum/reagents/TRG
+	qdel(reservoir)
+	// Modes map reagent paths to reservoir indices, which shift after deletion.
+	modes = list()
 	for(var/i in 1 to reagent_ids.len)
-		TRG = reagent_list[i]
-		if (TRG.has_reagent(reagent))
-			RG = TRG
-			break
-	if (RG)
-		reagent_list -= RG
-		RG.del_reagent(reagent)
-
-		modes[reagent] = modes.len - 1
+		modes[reagent_ids[i]] = i
+	if(selected_reagent && modes[selected_reagent])
+		mode = modes[selected_reagent]
+	else
+		mode = reagent_ids.len ? 1 : 0
+	return TRUE
 
 /obj/item/reagent_containers/borghypo/proc/regenerate_reagents()
-	if(iscyborg(src.loc))
-		var/mob/living/silicon/robot/R = src.loc
-		if(R && R.cell)
-			for(var/i in 1 to reagent_ids.len)
-				var/datum/reagents/RG = reagent_list[i]
-				if(RG.total_volume < RG.maximum_volume) 	//Don't recharge reagents and drain power if the storage is full.
-					R.cell.use(charge_cost) 					//Take power from borg...
-					RG.add_reagent(reagent_ids[i], 5)		//And fill hypo with reagent.
+	var/mob/living/silicon/robot/borg = loc
+	if(!istype(borg) || !borg.cell)
+		return
+	for(var/i in 1 to reagent_ids.len)
+		var/datum/reagents/reservoir = reagent_list[i]
+		if(!reservoir || reservoir.total_volume >= reservoir.maximum_volume)
+			continue
+		// Never create reagents without successfully drawing their power.
+		if(!borg.cell.use(charge_cost))
+			break
+		reservoir.add_reagent(reagent_ids[i], min(5, reservoir.maximum_volume - reservoir.total_volume))
 
 /obj/item/reagent_containers/borghypo/attack(mob/living/carbon/M, mob/user)
 	var/datum/reagents/R = reagent_list[mode]
-	if(!R.total_volume)
+	if(!R || !R.total_volume)
 		to_chat(user, "<span class='notice'>The injector is empty.</span>")
 		return
 	if(!istype(M))
@@ -199,17 +206,6 @@ Borg Shaker
 /obj/item/reagent_containers/borghypo/borgshaker/attack(mob/M, mob/user)
 	return //Can't inject stuff with a shaker, can we? //not with that attitude
 
-/obj/item/reagent_containers/borghypo/borgshaker/regenerate_reagents()
-	if(iscyborg(src.loc))
-		var/mob/living/silicon/robot/R = src.loc
-		if(R && R.cell)
-			for(var/i in modes) //Lots of reagents in this one, so it's best to regenrate them all at once to keep it from being tedious.
-				var/valueofi = modes[i]
-				var/datum/reagents/RG = reagent_list[valueofi]
-				if(RG.total_volume < RG.maximum_volume)
-					R.cell.use(charge_cost)
-					RG.add_reagent(reagent_ids[valueofi], 5)
-
 /obj/item/reagent_containers/borghypo/borgshaker/afterattack(obj/target, mob/user, proximity)
 	. = ..()
 	if(!proximity)
@@ -217,7 +213,7 @@ Borg Shaker
 
 	else if(target.is_refillable())
 		var/datum/reagents/R = reagent_list[mode]
-		if(!R.total_volume)
+		if(!R || !R.total_volume)
 			to_chat(user, "<span class='warning'>[src] is currently out of this ingredient! Please allow some time for the synthesizer to produce more.</span>")
 			return
 
@@ -232,7 +228,9 @@ Borg Shaker
 	var/empty = 1
 
 	var/datum/reagents/RS = reagent_list[mode]
-	var/datum/reagent/R = locate() in RS.reagent_list
+	var/datum/reagent/R
+	if(RS)
+		R = locate() in RS.reagent_list
 	if(R)
 		to_chat(usr, "<span class='notice'>It currently has [R.volume] unit\s of [R.name] stored.</span>")
 		empty = 0

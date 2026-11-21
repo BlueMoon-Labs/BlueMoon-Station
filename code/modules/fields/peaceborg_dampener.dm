@@ -32,6 +32,7 @@
 /datum/proximity_monitor/advanced/peaceborg_dampener/process()
 	if(!istype(projector))
 		qdel(src)
+		return
 	var/list/ranged = list()
 	for(var/obj/item/projectile/P in range(current_range, get_turf(host)))
 		ranged += P

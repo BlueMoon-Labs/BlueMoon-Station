@@ -155,6 +155,8 @@ GLOBAL_LIST_INIT(mutant_overlay_layer_bumps, list(
 		return
 	remove_overlay(BODY_HARDLIGHT_LAYER)
 	for(var/obj/item/bodypart/part as anything in bodyparts)
+		if(arms_bound_behind_back && (part.body_part & ARMS))
+			continue
 		var/list/params = layers_for_apply_effect[part.body_zone]
 		if(!params)
 			continue

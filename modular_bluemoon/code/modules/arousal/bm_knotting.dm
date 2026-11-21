@@ -65,10 +65,6 @@
 	. = ..()
 	update_knotting_from_shape()
 
-/obj/item/organ/genital/penis/update_appearance()
-	. = ..()
-	update_knotting_from_shape()
-
 /obj/item/organ/genital/penis/Destroy()
 	// Surgical Remove() already calls cleanup. Destruction is a technical cleanup,
 	// not a forceful pull (which would hurt deleted / absent participants).
@@ -828,14 +824,50 @@
 		return
 	active_knot.start_resist_attempt(src)
 
+/// Single source of truth for knot-capable equipment in the ERP menu and server.
+/// This is queried on demand; there is no new processing loop.
+/mob/living/proc/get_knotting_capability()
+	if(iscyborg(src))
+		var/mob/living/silicon/robot/R = src
+		if(!R.synthetic_profile_selected)
+			return SYNTHETIC_KNOT_NONE
+		return R.synthetic_knot_style
+	if(!ishuman(src))
+		return SYNTHETIC_KNOT_NONE
+	var/mob/living/carbon/human/H = src
+	var/obj/item/organ/genital/penis/P = H.getorganslot(ORGAN_SLOT_PENIS)
+	if(QDELETED(P))
+		return SYNTHETIC_KNOT_NONE
+	P.update_knotting_from_shape()
+	return P.knot_size
+
+// Global admin diagnostic for isolated testing. Timeboxed, OFF by default.
+// Real players who declined the preference are never opted in by this switch.
+/proc/knotting_debug_subject(mob/living/M)
+	if(QDELETED(M))
+		return FALSE
+	if(!M.client)
+		return !M.ckey // freshly spawned test dummy, not an SSD player
+	return check_rights_for(M.client, R_DEBUG)
+
+/proc/knotting_debug_prefs_active()
+	return world.time < GLOB.knot_debug_ignore_prefs_until
+
+/// Unified check used by UI and try_apply_knot.
+/proc/knotting_prefs_satisfied(mob/living/user, mob/living/partner)
+	if(QDELETED(user) || QDELETED(partner))
+		return FALSE
+	if(user.client?.prefs?.sexknotting && partner.client?.prefs?.sexknotting)
+		return TRUE
+	return knotting_debug_prefs_active() && knotting_debug_subject(user) && knotting_debug_subject(partner)
+
 /proc/try_apply_knot(mob/living/user, mob/living/partner, target_zone, force_override = FALSE, force_knot = FALSE, is_hidden = FALSE)
 	if(QDELETED(user) || QDELETED(partner) || user == partner)
 		return FALSE
 	if(!(ishuman(user) || iscyborg(user)) || !(ishuman(partner) || iscyborg(partner)))
 		return FALSE
-	if(!force_override)
-		if(!user.client?.prefs?.sexknotting || !partner.client?.prefs?.sexknotting)
-			return FALSE
+	if(!force_override && !knotting_prefs_satisfied(user, partner))
+		return FALSE
 	if(!(target_zone in list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS, CUM_TARGET_MOUTH, CUM_TARGET_THROAT)))
 		return FALSE
 	var/obj/item/organ/genital/penis/P
@@ -844,6 +876,7 @@
 		P = HU.getorganslot(ORGAN_SLOT_PENIS)
 		if(!P || P.owner != user)
 			return FALSE
+		P.update_knotting_from_shape()
 		var/threshold = HU.get_climax_threshold()
 		if(threshold <= 0)
 			return FALSE

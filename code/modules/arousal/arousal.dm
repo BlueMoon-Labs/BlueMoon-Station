@@ -136,7 +136,7 @@
 			var/amount_to_transfer = R.total_volume * (spill ? sender.fluid_transfer_factor : 1)
 			var/mob/living/carbon/human/cummed_on = target
 			if(!istype(cummed_on)) // not human
-				R.trans_to(target, amount_to_transfer, log = TRUE)
+				R.trans_to(resolve_pleasuremaw_fluid_target(target, spill), amount_to_transfer, log = TRUE)
 				if(R.total_volume > 0 && cummed_on.is_open_container())
 					visible_message(span_lewd("<b>[src] переполняет [cummed_on], расплёскивая излишки на пол[HIDDEN_REACTION_SUFFIX(is_hidden)].</b>"), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 					// к сожалению готовые решения генерации капель расплескавшихся жидкостей есть далеко не для всех реагентов, но это уже совсем другая история.

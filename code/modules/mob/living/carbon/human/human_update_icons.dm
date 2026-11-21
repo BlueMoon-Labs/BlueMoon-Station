@@ -92,6 +92,29 @@ There are several things that need to be remembered:
 /mob/living/carbon/human/update_fire()
 	..((fire_stacks > 3) ? "Standing" : "Generic_mob_burning")
 
+/mob/living/carbon/human/update_inv_handcuffed()
+	var/bound = istype(handcuffed, /obj/item/restraints/handcuffs/armbinder)
+	if(arms_bound_behind_back != bound)
+		arms_bound_behind_back = bound
+		if(dna?.species && !HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
+			update_body_parts()
+			if(w_uniform)
+				update_inv_w_uniform()
+			if(w_shirt)
+				update_inv_w_shirt()
+			if(wear_suit)
+				update_inv_wear_suit()
+			if(gloves || bloody_hands)
+				update_inv_gloves()
+			if(wrists || bloody_hands)
+				update_inv_wrists()
+	return ..()
+
+/mob/living/carbon/human/proc/get_bound_arms_clothing_mask(existing_mask)
+	if(existing_mask)
+		return list(existing_mask, "armbinder_sleeves")
+	return "armbinder_sleeves"
+
 /* --------------------------------------- */
 //For legacy support.
 /mob/living/carbon/human/regenerate_icons(block_recursive_calls = FALSE)
@@ -217,6 +240,8 @@ There are several things that need to be remembered:
 			var/mutable_appearance/uniform_overlay
 
 			var/gendered = (dna?.species.sexes && dna.features["body_model"] == FEMALE) ? U.fitted : NO_FEMALE_UNIFORM
+			if(arms_bound_behind_back)
+				mask = get_bound_arms_clothing_mask(mask)
 			uniform_overlay = U.build_worn_icon( UNIFORM_LAYER, alt_worn, FALSE, gendered, target_overlay, variant_flag, FALSE, mask)
 
 			if(OFFSET_UNIFORM in dna.species.offset_features)
@@ -366,6 +391,8 @@ There are several things that need to be remembered:
 			var/mutable_appearance/underwear_overlay
 
 			var/gendered = (dna?.species.sexes && dna.features["body_model"] == FEMALE) ? U.fitted : NO_FEMALE_UNIFORM
+			if(arms_bound_behind_back)
+				mask = get_bound_arms_clothing_mask(mask)
 			underwear_overlay = U.build_worn_icon(SHIRT_LAYER, alt_worn, FALSE, gendered, null, variant_flag, FALSE, mask)
 
 			if(OFFSET_UNDERWEAR in dna.species.offset_features)
@@ -410,7 +437,7 @@ There are several things that need to be remembered:
 			var/atom/movable/screen/inventory/inv = hud_used.inv_slots[TOBITSHIFT(ITEM_SLOT_GLOVES) + 1]
 			inv.update_icon()
 
-		if(!gloves && bloody_hands)
+		if(!arms_bound_behind_back && !gloves && bloody_hands)
 			var/mutable_appearance/bloody_overlay = mutable_appearance('icons/effects/blood.dmi', "bloodyhands", -GLOVES_LAYER, color = blood_DNA_to_color(), blend_mode = blood_DNA_to_blend())
 			if(get_num_arms(FALSE) < 2)
 				if(has_left_hand(FALSE))
@@ -427,6 +454,8 @@ There are several things that need to be remembered:
 				if(hud_used.inventory_shown)
 					client.screen += gloves
 			update_observer_view(gloves,1)
+			if(arms_bound_behind_back)
+				return
 			var/species_icon = dna.species.species_worn_icon(dna.species.icon_hands, gloves.item_state || gloves.icon_state)
 			overlays_standing[GLOVES_LAYER] = gloves.build_worn_icon(default_layer = GLOVES_LAYER, default_icon_file = species_icon || 'icons/mob/clothing/hands.dmi', use_mob_overlay_icon = !species_icon)
 			gloves_overlay = overlays_standing[GLOVES_LAYER]
@@ -445,7 +474,7 @@ There are several things that need to be remembered:
 			var/atom/movable/screen/inventory/inv = hud_used.inv_slots[TOBITSHIFT(ITEM_SLOT_WRISTS) + 1]
 			inv.update_icon()
 
-		if(!wrists && bloody_hands)
+		if(!arms_bound_behind_back && !wrists && bloody_hands)
 			var/mutable_appearance/bloody_overlay = mutable_appearance('icons/effects/blood.dmi', "bloodyhands", -WRISTS_LAYER, color = blood_DNA_to_color())
 			if(get_num_arms(FALSE) < 2)
 				if(has_left_hand(FALSE))
@@ -462,6 +491,8 @@ There are several things that need to be remembered:
 				if(hud_used.inventory_shown)
 					client.screen += wrists
 			update_observer_view(wrists,1)
+			if(arms_bound_behind_back)
+				return
 			overlays_standing[WRISTS_LAYER] = wrists.build_worn_icon(default_layer = WRISTS_LAYER, default_icon_file = 'modular_sand/icons/mob/clothing/wrists.dmi')
 			wrists_overlay = overlays_standing[WRISTS_LAYER]
 			if(OFFSET_WRISTS in dna.species.offset_features)
@@ -798,7 +829,10 @@ There are several things that need to be remembered:
 						worn_icon = S.anthro_mob_worn_overlay || 'icons/mob/clothing/suit_digi.dmi'
 						variation_flag |= STYLE_DIGITIGRADE
 
-			overlays_standing[SUIT_LAYER] = S.build_worn_icon(SUIT_LAYER, worn_icon, FALSE, NO_FEMALE_UNIFORM, worn_state, variation_flag, FALSE, missing_naga_tail ? "taur_mask_naga" : null)
+			var/sleeve_mask = missing_naga_tail ? "taur_mask_naga" : null
+			if(arms_bound_behind_back)
+				sleeve_mask = get_bound_arms_clothing_mask(sleeve_mask)
+			overlays_standing[SUIT_LAYER] = S.build_worn_icon(SUIT_LAYER, worn_icon, FALSE, NO_FEMALE_UNIFORM, worn_state, variation_flag, FALSE, sleeve_mask)
 			var/mutable_appearance/suit_overlay = overlays_standing[SUIT_LAYER]
 			if(OFFSET_SUIT in dna.species.offset_features)
 				suit_overlay.pixel_x += dna.species.offset_features[OFFSET_SUIT][1]
@@ -1031,6 +1065,8 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 //produces a key based on the human's limbs
 /mob/living/carbon/human/generate_icon_render_key(plane_offset = LIMB_PLANE_OFFSET(src))
 	. = "[dna.species.mutant_bodyparts["limbs_id"]]"
+	if(arms_bound_behind_back)
+		. += "-arms-bound"
 	if(plane_offset)
 		. += "-floor[plane_offset]"
 	. += "[dna.features["color_scheme"]]"

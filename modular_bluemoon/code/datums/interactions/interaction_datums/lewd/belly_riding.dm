@@ -26,12 +26,12 @@
 		return FALSE
 
 /datum/interaction/lewd/belly_riding/display_interaction(mob/living/user, mob/living/partner, is_hidden)
-	var/distance = 7
+	var/distance = 3
 	if(is_hidden)
 		distance = 1
 	var/picked_hidden = pick(hidden_additional)
 	var/is_fucking = user.is_fucking(partner, target_organ)
-	var/message = "[is_hidden ? (picked_hidden) : null]" +  pick_message(user, partner, is_fucking)
+	var/message = "[is_hidden ? (picked_hidden) : null]" + pick_message(user, partner, is_fucking)
 	if(!is_fucking)
 		user.set_is_fucking(partner, target_organ, user.getorganslot(ORGAN_SLOT_PENIS))
 
@@ -131,3 +131,64 @@
 			"USER хватает TARGET и начинает насаживать попкой на свой [shape_desc]",
 			"USER мощным толчком погружает свой [shape_desc] внутрь сфинктера TARGET",
 			"USER с силой загоняет [shape_desc] в анальное колечко TARGET, заставляя повиснуть на нем")
+
+/datum/interaction/lewd/belly_riding/oral
+	description = "Belly riding. Запихнуть в рот."
+	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
+	required_from_target = INTERACTION_REQUIRE_MOUTH
+	interaction_sound = list(
+		'modular_sand/sound/interactions/oral1.ogg',
+		'modular_sand/sound/interactions/oral2.ogg',
+	)
+	p13user_emote = PLUG13_EMOTE_PENIS
+	p13target_emote = PLUG13_EMOTE_MOUTH
+	target_organ = CUM_TARGET_THROAT
+
+/datum/interaction/lewd/belly_riding/oral/display_interaction(mob/living/user, mob/living/partner, is_hidden)
+	. = ..()
+	if(user.a_intent != INTENT_HARM)
+		return
+
+	partner.adjustOxyLoss(1)
+	var/gasp_chance = 0
+	var/twitch_chance = 0
+	switch(partner.stat)
+		if(CONSCIOUS)
+			gasp_chance = 5
+		if(SOFT_CRIT)
+			gasp_chance = 35
+			twitch_chance = 20
+		if(UNCONSCIOUS)
+			gasp_chance = 70
+			twitch_chance = 60
+	if(prob(gasp_chance))
+		partner.emote("gasp")
+	if(prob(twitch_chance))
+		partner.emote("twitch")
+
+/datum/interaction/lewd/belly_riding/oral/pick_message(mob/living/user, mob/living/partner, is_fucking = TRUE)
+	var/shape_desc = user.has_strapon() ? "дилдо" : get_penis_shape_desc(user)
+	if(is_fucking)
+		if(user.a_intent == INTENT_HARM)
+			. = pick(
+				"При движении, USER долбится в ротик TARGET, заставляя задыхаться",
+				"USER глубоко вводит свой [shape_desc] в горло TARGET, перекрывая дыхание",
+				"В движении, [shape_desc] TARGET скользит по горлу USER, не оставляя место воздуху",
+				"[user.has_balls() ? "Яйца" : "Бедра"] USER шлепаются о лицо TARGET, пока [partner.ru_who()] задыхается, глоткой насаженная на [shape_desc]",
+				"USER ритмично двигается, заставляя TARGET издавать хлюпающие звуки и закатывать глаза от недостатка воздуха",
+				"TARGET дергается в ремнях, задыхаясь, насаженная ротиком на [shape_desc] USER")
+			return span_danger(.)
+		else
+			return pick(
+				"При движении, USER долбится в ротик TARGET, заставляя скрепеть ремни",
+				"USER глубоко вводит свой [shape_desc] в горло TARGET",
+				"В движении, [shape_desc] TARGET скользит по горлу USER",
+				"[user.has_balls() ? "Яйца" : "Бедра"] USER шлепаются о лицо TARGET, пока [partner.ru_ego()] глотка насаженна на [shape_desc]",
+				"USER ритмично двигается, заставляя TARGET издавать хлюпающие звуки при каждом толчке",
+				"TARGET покачивается в ремнях, насаженная ротиком на [shape_desc] USER")
+	else
+		return pick(
+			"USER медленно вводит свой [shape_desc] в рот TARGET, надежно фиксируя",
+			"USER плотно прижимает TARGET к себе и проталкивает в горло [shape_desc]",
+			"USER с силой загоняет [shape_desc] в глотку TARGET, используя как насадку",
+			"USER мощным толчком погружает свой [shape_desc] внутрь ротика TARGET, смотря за раздувшися горлом")
