@@ -228,6 +228,10 @@
 	var/list/pending_areas = list()
 	var/list/restore_areas = list()
 	var/list/outage_lights = list()
+	/// Состояние каждой зоны ДО сбоя: assoc area -> list(power_light,
+	/// power_equip, power_environ, lightswitch). 4 bool'а на зону -
+	/// память и тики не растут, зоны у нас считаются штуками.
+	var/outage_state = alist()
 
 /datum/round_event/blackmesa/power_outage/start()
 	var/list/areas = get_mesa_areas()
@@ -241,6 +245,10 @@
 	// всем машинам области, и все области Сектора H разом - это 60+ мс в одном тике.
 	pending_areas = areas
 	restore_areas = areas.Copy()
+	// Запоминаем исходные флаги питания/выключателя каждой зоны - после
+	// сбоя возвращаем именно их, а не безусловные TRUE.
+	for(var/area/A in areas)
+		outage_state[A] = list(A.power_light, A.power_equip, A.power_environ, A.lightswitch)
 	collect_outage_lights(areas)
 	power_outage_step()
 
@@ -266,11 +274,16 @@
 		return
 	var/area/A = restore_areas[1]
 	restore_areas -= A
-	A.power_light = TRUE
-	A.power_equip = TRUE
-	A.power_environ = TRUE
-	A.lightswitch = TRUE
-	A.power_change()
+	var/list/saved = outage_state[A]
+	if(islist(saved) && length(saved) >= 4 && !QDELETED(A))
+		// Возвращаем ровно то, что было до сбоя: зона с выключенным светом
+		// или ручным lightswitch=FALSE остаётся в своём состоянии.
+		A.power_light = saved[1]
+		A.power_equip = saved[2]
+		A.power_environ = saved[3]
+		A.lightswitch = saved[4]
+		A.power_change()
+	outage_state -= A
 	if(restore_areas.len)
 		addtimer(CALLBACK(src, PROC_REF(restore_power_step)), 1)
 	else

@@ -693,7 +693,9 @@
 	key_third_person = "sweetvoices"
 	message = "издаёт сладкий голос!"
 	message_mime = "изображает сладкий голос."
-	sound = 'modular_bluemoon/sound/weapons/mesa/sweetvoice.ogg'
+	// Звук поёт только выстрел самого рупора (afterattack) - на нажатии
+	// эмоута он дублировал бы выстрел.
+	sound = null
 	emote_cooldown = 0.5 SECONDS
 	emote_type = EMOTE_BOTH
 

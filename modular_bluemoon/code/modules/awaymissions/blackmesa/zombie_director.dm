@@ -17,6 +17,9 @@
 	var/horde_music_start_time = 0
 	var/horde_music_duration = 12000
 	var/horde_music_cutoff_threshold = 5
+	/// Мобы, получившие музыку при старте: ушедшие из зоны продолжают её
+	/// слышать, поэтому глушим канал именно по этому списку, а не по зонам.
+	var/list/horde_music_listeners = list()
 	var/difficulty_level = 0
 	var/zombie_hp_multiplier = 1.0
 	var/initialized = FALSE
@@ -77,6 +80,10 @@
 
 /datum/ai_director/zombie_mission/Destroy()
 	STOP_PROCESSING(SSprocessing, src)
+	// Глушим музыку у всех, кому она реально играла, и чистим список -
+	// иначе канал 991 догорает у игроков до конца записи.
+	stop_horde_music()
+	horde_music_listeners.Cut()
 	active_zombies.Cut()
 	. = ..()
 
@@ -747,6 +754,7 @@
 
 	horde_music_playing = TRUE
 	horde_music_start_time = world.time
+	horde_music_listeners.Cut()
 
 	var/list/valid_areas = get_mesa_areas()
 	if(!valid_areas || !valid_areas.len)
@@ -764,6 +772,7 @@
 				if(istype(A, /area/awaymission/ihategordon/custom_event))
 					music_file = 'modular_bluemoon/sound/ambience/mesa/xenhorde.ogg'
 				SEND_SOUND(M, sound(music_file, repeat = FALSE, volume = 50, channel = horde_music_channel))
+				horde_music_listeners += M
 
 /datum/ai_director/zombie_mission/proc/stop_horde_music()
 	if(!src)
@@ -773,18 +782,12 @@
 
 	horde_music_playing = FALSE
 
-	var/list/valid_areas = get_mesa_areas()
-	if(!valid_areas || !valid_areas.len)
-		return
-
-	for(var/mob/M in GLOB.player_list)
-		if(!M || isnewplayer(M))
-			continue
-		var/area/A = get_area(M)
-		if(!A)
-			continue
-		if(A in valid_areas)
+	// Глушим канал у всех, кому музыка реально играла - в том числе у тех,
+	// кто уже покинул зону миссии. По живым зонам фильтровать нельзя.
+	for(var/mob/M as anything in horde_music_listeners)
+		if(M && !QDELETED(M) && M.client)
 			M.stop_sound_channel(horde_music_channel)
+	horde_music_listeners.Cut()
 
 /datum/ai_director/zombie_mission/proc/manage_horde_music()
 	if(!src)

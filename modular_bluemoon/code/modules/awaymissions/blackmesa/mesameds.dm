@@ -258,7 +258,12 @@
 		if(istype(suit.loc, /mob/living/carbon))
 			var/list/shields = suit.GetComponents(/datum/component/shielded)
 			if(!length(shields))
-				suit.AddComponent(/datum/component/shielded, current = 5, max = 5, delay = 20 SECONDS, rate = 0, slots = ITEM_SLOT_OCLOTHING, state = "shield-red")
+				var/datum/component/shielded/new_shield = suit.AddComponent(/datum/component/shielded, current = 5, max = 5, delay = 20 SECONDS, rate = 0, slots = ITEM_SLOT_OCLOTHING, state = "shield-red")
+				// Костюм уже надет: COMSIG_ITEM_EQUIPPED прошёл до появления
+				// компонента, on_equip не вызовется сам - привязываем щит к
+				// текущему носителю вручную, иначе holder останется null.
+				if(new_shield && istype(suit.current_user, /mob/living))
+					new_shield.on_equip(suit, suit.current_user, ITEM_SLOT_OCLOTHING)
 				to_chat(user, "<span class='green'>Вы зарядили [suit] и активировали защитный щит!</span>")
 			else
 				var/datum/component/shielded/shield = shields[1]

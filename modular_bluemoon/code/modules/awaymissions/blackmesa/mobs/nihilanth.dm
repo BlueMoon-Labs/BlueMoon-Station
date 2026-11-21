@@ -395,6 +395,19 @@
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/remove_minion(datum/source, forced)
 	alive_minions -= source
 
+// Тот же фильтр, что в free_turf_near: открытый турф, но не хасма/космос
+// и не плотный - isopenturf() их пропускает, а стоять на них нельзя.
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/valid_rift_turf(turf/T)
+	return istype(T) && istype(T, /turf/open) && !istype(T, /turf/open/chasm) && !istype(T, /turf/open/space) && !T.density
+
+// На турфе уже стоит портал - Move() нового портала вернёт FALSE, и объект
+// останется без лока (невидимый «фантом»).
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/turf_has_portal(turf/T)
+	for(var/atom/movable/AM in T)
+		if(istype(AM, /obj/effect/portal) && !QDELETED(AM))
+			return TRUE
+	return FALSE
+
 // Свободный открытый турф рядом с мобом (не космос/бездна, не сквозь стену).
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/free_turf_near(atom/center, range = 4)
 	if(!center || QDELETED(center))
@@ -444,6 +457,10 @@
 	trial_portal = null
 	. = ..()
 	spawn_death_portals(death_turf)
+	// Босс не оставляет труп: добиваем гибом (gib() сам вызовет death(1)
+	// только если stat ещё не DEAD - здесь он уже DEAD, рекурсии нет).
+	if(!gibbed)
+		gib()
 
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/Destroy()
 	if(istype(trial_portal) && !QDELETED(trial_portal))
@@ -493,33 +510,48 @@
 		log_world("[src] spawn_death_portal: landmark [landmark_type] not found in GLOB.landmarks_list")
 		visible_message("<span class='warning'>Разлом не смог стабилизироваться - точка назначения не найдена.</span>")
 		return
-	if(!isopenturf(dest))
+	if(!valid_rift_turf(dest))
 		dest = free_turf_near(dest, 4)
-	if(!istype(dest) || !isopenturf(dest))
+	if(!valid_rift_turf(dest))
 		log_world("[src] spawn_death_portal: landmark [landmark_type] has no open destination turf")
 		visible_message("<span class='warning'>Разлом не смог стабилизироваться - точка назначения недоступна.</span>")
 		return
+	// Кандидаты на установку: сначала турф под трупом, затем случайные
+	// рядом. Турфы с уже стоящим порталом пропускаем - Move() портала
+	// вернёт FALSE, и разлом «родится» невидимым объектом без привязки.
+	var/list/candidates = list()
 	var/turf/T = near_turf
-	if(T in used_turfs || !isopenturf(T))
-		T = null
-	else
+	if(istype(T) && !(T in used_turfs) && valid_rift_turf(T))
 		// Труп может быть плотным - портал под ним будет недостижим.
+		var/blocked = FALSE
 		for(var/atom/movable/AM in T)
 			if(AM.density)
-				T = null
+				blocked = TRUE
 				break
-	for(var/attempt in 1 to 8)
-		if(istype(T) && !(T in used_turfs))
+		if(!blocked && !turf_has_portal(T))
+			candidates += T
+	for(var/attempt in 1 to 12)
+		if(candidates.len >= 4)
 			break
-		T = free_turf_near(near_turf, 3)
-	if(!istype(T) || (T in used_turfs))
-		log_world("[src] spawn_death_portal: no free turf near [near_turf] for [landmark_type]")
+		var/turf/cand = free_turf_near(near_turf, 3)
+		if(!istype(cand) || (cand in used_turfs) || (cand in candidates) || !valid_rift_turf(cand) || turf_has_portal(cand))
+			continue
+		candidates += cand
+	var/obj/effect/portal/P = null
+	for(var/turf/cand in candidates)
+		var/obj/effect/portal/try_P = new /obj/effect/portal/mesa_rift/nihilanth_rift(cand)
+		// new на турф с уже стоящим порталом не падает, а оставляет объект
+		// без лока - проверяем, что портал реально встал на кандидат.
+		if(istype(try_P) && get_turf(try_P) == cand)
+			P = try_P
+			T = cand
+			break
+		if(istype(try_P))
+			qdel(try_P)
+	if(!istype(P))
+		log_world("[src] spawn_death_portal: no placeable turf near [near_turf] for [landmark_type]")
 		return
 	used_turfs += T
-	var/obj/effect/portal/P = new /obj/effect/portal/mesa_rift/nihilanth_rift(T)
-	if(!istype(P))
-		log_world("[src] spawn_death_portal: portal to [landmark_type] failed to place on [T]")
-		return
 	P.hard_target = dest
 	P.hardlinked = FALSE
 	playsound(T, 'sound/effects/space_wind.ogg', 90, FALSE, -4)

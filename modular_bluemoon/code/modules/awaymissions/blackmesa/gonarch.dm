@@ -105,14 +105,17 @@
 		new /datum/boss_attack("charge", PROC_REF(legionnaire_charge), 5 SECONDS, 10, 2, 10),
 		new /datum/boss_attack("acid trishot", PROC_REF(herald_trishot), 3 SECONDS, 10),
 		// На низком HP плевок идёт чаще и тяжелее: отдельная запись с фазовым
-		// окном max_health_frac=0.30 и укороченным кулдауном. Её cooldown_time
-		// также задаёт общий ranged_cooldown, так что каденс реально растёт.
+		// окном max_health_frac=0.30 и укороченным кулдауном - каденс растёт
+		// через next_use_time записи, общий ranged_cooldown не участвует.
 		new /datum/boss_attack("acid barrage", PROC_REF(herald_trishot), 2 SECONDS, 20, 0, INFINITY, 0, 0.30),
 		new /datum/boss_attack("spawn children", PROC_REF(spawn_children), 12 SECONDS, 8),
 		new /datum/boss_attack("rage", PROC_REF(rage), 25 SECONDS, 6),
 		new /datum/boss_attack("call children", PROC_REF(call_children), 10 SECONDS, 6),
 	)
 	for(var/datum/boss_attack/entry as anything in table)
+		// Кулдауны живут в записях (next_use_time): общий ranged_cooldown
+		// не трогаем, иначе rage на 25с глушил бы все остальные способности.
+		entry.sync_ranged_cooldown = FALSE
 		if(entry.attack_proc in list(PROC_REF(legionnaire_charge), PROC_REF(herald_trishot), PROC_REF(spawn_children)))
 			entry.pass_target = TRUE
 	return table
@@ -177,7 +180,6 @@
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/proc/legionnaire_charge(atom/target)
 	if(QDELETED(src) || stat == DEAD || !target)
 		return
-	ranged_cooldown = world.time + 5 SECONDS
 	visible_message(span_boldwarning("[src] опускает головой и готовится к рывку!"))
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchroar.ogg', 75, FALSE)
 	enter_charge(target)
@@ -228,11 +230,9 @@
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/proc/herald_trishot(atom/target)
 	if(QDELETED(src) || stat == DEAD || !target)
 		return
-	// При HP < 30% плевок идёт чаще (2с вместо 3с - это же пишет
-	// boss_use_attack в ranged_cooldown через cooldown_time записи) и
-	// выстреливает тремя залпами вместо одного.
+	// При HP < 30% плевок идёт чаще (2с вместо 3с - кулдаун записи
+	// "acid barrage" в таблице) и выстреливает тремя залпами вместо одного.
 	var/low_hp = health < maxHealth * 0.30
-	ranged_cooldown = world.time + (low_hp ? 2 SECONDS : 3 SECONDS)
 	var/startloc = get_turf(src)
 	var/turf/target_turf = get_turf(target)
 	if(!startloc || !target_turf)
@@ -257,7 +257,6 @@
 
 /// Spawns up to six mesa headcrabs near the gonarch, capped at 8 children.
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/proc/spawn_children(atom/target = null)
-	ranged_cooldown = world.time + 12 SECONDS
 	if(QDELETED(src) || stat == DEAD)
 		return
 	var/turf/home = get_turf(src)
@@ -309,7 +308,6 @@
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/proc/rage()
 	if(QDELETED(src) || stat == DEAD)
 		return
-	ranged_cooldown = world.time + 25 SECONDS
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchroar.ogg', 75, FALSE)
 	visible_message(span_warning("[src] starts picking up speed!"))
 	if(!rage_tint)
@@ -332,7 +330,6 @@
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/proc/call_children()
 	if(QDELETED(src) || stat == DEAD)
 		return
-	ranged_cooldown = world.time + 10 SECONDS
 	visible_message(span_warning("The ground shakes near [src]!"))
 	var/list/directions = GLOB.cardinals.Copy() + GLOB.diagonals.Copy()
 	var/summoned = FALSE

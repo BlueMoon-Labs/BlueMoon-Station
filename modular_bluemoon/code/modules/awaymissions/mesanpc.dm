@@ -616,8 +616,11 @@
 
 	if(target_console.linked_radio && !target_console.linked_radio.bombardment_active)
 		target_console.linked_radio.trigger_bombardment(target_turf)
-		// Schedule radio announcement when cooldown ends
-		addtimer(CALLBACK(target_console.linked_radio, TYPE_PROC_REF(/obj/machinery/negotiations_radio/bombardment, announce_ready)), target_console.mark_cooldown)
+		// Schedule radio announcement when cooldown ends - только если
+		// заряды ещё есть: на последнем выстреле «система готова»
+		// противоречила бы announce_out_of_fuel.
+		if(target_console.charges_remaining > 0)
+			addtimer(CALLBACK(target_console.linked_radio, TYPE_PROC_REF(/obj/machinery/negotiations_radio/bombardment, announce_ready)), target_console.mark_cooldown)
 
 	if(target_console.charges_remaining <= 0 && target_console.linked_radio)
 		addtimer(CALLBACK(target_console.linked_radio, TYPE_PROC_REF(/obj/machinery/negotiations_radio/bombardment, announce_out_of_fuel)), 15 SECONDS)

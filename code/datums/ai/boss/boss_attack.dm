@@ -27,6 +27,11 @@
 	var/pass_target = FALSE
 	///world.time следующего допустимого использования
 	var/next_use_time = 0
+	///Писать ли выбранную способность в общий mob.ranged_cooldown. TRUE по
+	///умолчанию - легаси-поведение. Способности, чей кулдаун записан в самой
+	///проке (например rage у гонарча), ставят FALSE: иначе один длинный
+	///кулдаун блокировал бы выбор ВСЕХ способностей через общий гейт.
+	var/sync_ranged_cooldown = TRUE
 
 /datum/boss_attack/New(name, attack_proc, cooldown_time, weight, min_range, max_range, min_health_frac, max_health_frac, list/attack_args)
 	if(name)
@@ -180,7 +185,7 @@
 	//и селектор не должен успеть выбрать вторую способность во время телеграфа.
 	//Атака, задающая свой кулдаун (элитки, пандора), перезапишет его позже сама.
 	chosen.next_use_time = world.time + chosen.cooldown_time
-	if(boss.ranged_cooldown <= world.time)
+	if(chosen.sync_ranged_cooldown && boss.ranged_cooldown <= world.time)
 		boss.ranged_cooldown = world.time + chosen.cooldown_time
 	controller.set_blackboard_key(BB_AI_BOSS_LAST_ATTACK, chosen) //анти-повтор колоды
 	INVOKE_ASYNC(src, PROC_REF(run_attack_chain), chosen, boss, target)

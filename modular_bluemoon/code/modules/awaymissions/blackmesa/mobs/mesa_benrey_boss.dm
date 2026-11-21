@@ -217,8 +217,10 @@
 	var/projectile_color = intent_colors[user_intent] || "#ffffff"
 	var/sound_pitch = intent_pitches[user_intent] || 1.0
 
-	// Проигрываем звук с нужным тоном
-	playsound(user.loc, 'modular_bluemoon/sound/weapons/mesa/sweetvoice.ogg', 50, sound_pitch, 3)
+	// Тон передаём через frequency (абсолютная частота = базовая 44100 Гц
+	// x множитель намерения), vary=TRUE включает её применение - иначе
+	// playsound возьмёт случайную частоту из get_rand_frequency().
+	playsound(user.loc, 'modular_bluemoon/sound/weapons/mesa/sweetvoice.ogg', 50, TRUE, 3, frequency = 44100 * sound_pitch)
 
 	var/obj/item/projectile/sweetvoice/blown_voice = new(get_turf(user))
 	blown_voice.color = projectile_color
@@ -248,6 +250,36 @@
 	range = 7
 	color = "#ffffff" // Dynamic color set by emote
 
+// Временное свечение sweet voice: живёт секунду, светит цветом снаряда и
+// следует за целью - собственный свет моба не трогаем.
+/obj/effect/temp_visual/sweetvoice_glow
+	name = "sweet voice glow"
+	desc = "A brief bloom of amplified voice-light."
+	density = FALSE
+	duration = 1 SECONDS
+	light_range = 2
+	light_power = 1
+	var/mob/living/glow_target
+	var/follow_timer
+
+/obj/effect/temp_visual/sweetvoice_glow/Initialize(mapload, mob/living/target = null, color = "#ffffff")
+	. = ..()
+	glow_target = target
+	light_color = color
+	if(istype(glow_target))
+		follow_timer = addtimer(CALLBACK(src, PROC_REF(follow_glow_target)), 0.4 SECONDS)
+
+/obj/effect/temp_visual/sweetvoice_glow/proc/follow_glow_target()
+	if(QDELETED(src) || QDELETED(glow_target) || glow_target.stat == DEAD)
+		return
+	var/turf/TT = get_turf(glow_target)
+	if(istype(TT) && TT != get_turf(src))
+		Move(TT)
+
+/obj/effect/temp_visual/sweetvoice_glow/Destroy()
+	deltimer(follow_timer)
+	..()
+
 /obj/item/projectile/sweetvoice/on_hit(atom/target, blocked = FALSE)
 	. = ..()
 	if(!target)
@@ -259,6 +291,7 @@
 		if(L == firer)
 			return // Don't affect the firer
 
-		// Add soft light effect
-		L.set_light(2, 1, color)
-		addtimer(CALLBACK(L, TYPE_PROC_REF(/atom, set_light), 0), 1 SECONDS)
+		// Свечение - отдельный временный источник света, привязанный к цели:
+		// set_light() на самом мобе затирал его собственный свет, а первый
+		// из двух таймеров гасил свечение второго попадания.
+		new /obj/effect/temp_visual/sweetvoice_glow(get_turf(L), L, color)

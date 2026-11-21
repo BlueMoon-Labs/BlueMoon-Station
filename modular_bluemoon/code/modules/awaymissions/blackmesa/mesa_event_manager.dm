@@ -350,25 +350,38 @@ SUBSYSTEM_DEF(blackmesa_events)
 	deploy_hecu_role_landmarks()
 	if(!hecu_role_landmarks.len)
 		return
-	hecu_roles_activated = TRUE
 	var/spawned_count = 0
-	for(var/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/L in hecu_role_landmarks)
+	// Метку удаляем ТОЛЬКО после успешной постановки её спавнера: занятый
+	// или невалидный турф не должен сжигать роль навсегда. Нереализованные
+	// метки остаются в списке, и следующий вход в зону анонса повторит
+	// попытку только для них (deploy не дублирует - список не пуст).
+	for(var/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/L in hecu_role_landmarks.Copy())
 		if(QDELETED(L))
+			hecu_role_landmarks -= L
 			continue
 		var/turf/T = get_turf(L)
+		var/obj/effect/mob_spawn/human/black_mesa/spawner = null
 		if(T && !T.density && !T.is_blocked_turf() && L.spawner_type)
-			var/obj/effect/mob_spawn/human/black_mesa/spawner = new L.spawner_type(T)
-			if(spawner)
-				spawned_count++
-				notify_ghosts(
-					"Доступна гост-роль HECU: [spawner.name]. Нажмите на уведомление, чтобы перейти к спавнеру и выбрать эту роль.",
-					source = spawner,
-					action = NOTIFY_ATTACK,
-					header = "Доступны гост-роли HECU",
-					ignore_dnr_observers = TRUE,
-				)
+			spawner = new L.spawner_type(T)
+		if(!spawner)
+			continue
+		if(get_turf(spawner) != T)
+			// Объект без лока - фантом, убираем и пробуем позже.
+			qdel(spawner)
+			continue
+		spawned_count++
+		notify_ghosts(
+			"Доступна гост-роль HECU: [spawner.name]. Нажмите на уведомление, чтобы перейти к спавнеру и выбрать эту роль.",
+			source = spawner,
+			action = NOTIFY_ATTACK,
+			header = "Доступны гост-роли HECU",
+			ignore_dnr_observers = TRUE,
+		)
 		qdel(L)
-	hecu_role_landmarks.Cut()
+		hecu_role_landmarks -= L
+	// Полный успех - больше не дёргаем. Остаток ждёт следующего Enter.
+	if(!hecu_role_landmarks.len)
+		hecu_roles_activated = TRUE
 	if(spawned_count)
 		mesa_announce(
 			"Внимание! У лагеря HECU зафиксирована активность. Похоже, в Сектор H прибыло подкрепление. Рекомендуется проявлять осторожность.",

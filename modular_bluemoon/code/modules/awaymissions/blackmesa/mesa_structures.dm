@@ -489,7 +489,10 @@ GLOBAL_VAR_INIT(nihilanth_site_used, list())
 	if(QDELETED(M) || M.stat == DEAD || (M in aegis_mobs))
 		return
 	M.xen_aegis++
-	var/datum/beam/created_beam = src.Beam(M, icon_state = "red_lightning", time = 10 MINUTES, maxdistance = (shield_range - 1), beam_sleep_time = 10)
+	// Луч живёт пока get_dist < maxdistance, а щит удерживается до
+	// get_dist <= shield_range: даём +1, иначе на границе beam умирал,
+	// aegis_beam_died снимал щит, а ре-скан выдавал его обратно - мерцание.
+	var/datum/beam/created_beam = src.Beam(M, icon_state = "red_lightning", time = 10 MINUTES, maxdistance = (shield_range + 1), beam_sleep_time = 10)
 	aegis_mobs[M] = created_beam
 	RegisterSignal(created_beam, COMSIG_QDELETING, PROC_REF(aegis_beam_died), override = TRUE)
 	RegisterSignal(M, COMSIG_QDELETING, PROC_REF(aegis_mob_died), override = TRUE)
