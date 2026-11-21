@@ -37,7 +37,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 	filedesc = "Бюджет отдела"
 	category = PROGRAM_CATEGORY_CREW
 	program_icon_state = "deptbudget"
-	extended_desc = "Бюджет своего отдела: что нужно отделу сейчас, заказы из каталога (недорогие и расходники - без одобрения), контракты и оплаченная работа. Глава отдела одобряет заявки, выписывает премии и надбавки, просит деньги из казны; ИИ решает заявки сотрудников, кроме СБ."
+	extended_desc = "Бюджет своего отдела: что нужно отделу сейчас, заказы из каталога (недорогие и расходники - без одобрения), пачки скупки для отдела, контракты и оплаченная работа. Глава отдела одобряет заявки, выписывает премии и надбавки, просит деньги из казны; ИИ решает заявки сотрудников, кроме СБ."
 	requires_ntnet = FALSE
 	usage_flags = PROGRAM_ALL
 	size = 4
@@ -209,6 +209,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		prices["[pack.type]"] = list("price" = row["cost"], "available" = row["in_stock"])
 	data["prices"] = prices
 	data["needs"] = department.needs_ui()
+	data["bundles"] = econ_bundles_ui_data(user, department.id)
 	data["head_on_shift"] = department.has_approver_on_shift()
 	data["work_share"] = SSeconomy.work_premium_share()
 	var/list/work_prices = list()
@@ -457,6 +458,13 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 				messages[user_ref] = manage_refusal
 			else
 				messages[user_ref] = department.order_pack(pack, user, "Заказ главы: [department.name]") ? "\"[pack.name]\" заказан, деньги списаны из бюджета." : department.order_refusal(pack)
+		if("buy_bundle")
+			var/datum/supply_pack/bundle/bundle = SSmarket.bundle_by_uid(econ_ui_number(params["uid"]))
+			if(!bundle || bundle.department_id != department.id)
+				messages[user_ref] = "Этой пачки для отдела в скупке уже нет."
+			else
+				var/list/result = econ_bundle_buy_for_department(user, bundle)
+				messages[user_ref] = result[2]
 		if("bonus")
 			var/datum/bank_account/member = staff_member(department, params["number"])
 			var/amount = econ_ui_number(params["amount"])

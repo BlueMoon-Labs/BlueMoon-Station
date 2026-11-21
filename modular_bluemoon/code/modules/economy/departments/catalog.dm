@@ -540,9 +540,9 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	econ_trim_resolved(requests)
 	return TRUE
 
-/// Заказ из каталога за счёт бюджета: деньги списываются сразу, заказ встаёт в очередь снабжения предоплаченным. Возвращает заказ или FALSE.
+/// Заказ из каталога или пачки скупки для отдела за счёт бюджета: деньги списываются сразу, заказ встаёт в очередь снабжения предоплаченным. Возвращает заказ или FALSE.
 /datum/economy_department/proc/order_pack(datum/supply_pack/pack, mob/living/user, reason, automatic = FALSE)
-	if(!pack || !(pack in catalog()) || (!automatic && !can_manage(user)) || econ_pack_unavailable(pack))
+	if(!pack || !(econ_bundle_department(pack) == id || (pack in catalog())) || (!automatic && !can_manage(user)) || econ_pack_unavailable(pack))
 		return FALSE
 	var/price = round(econ_pack_price(pack))
 	if(!account.debit(price, ECON_IMPORT, user, "Закупка: [pack.name]"))

@@ -401,6 +401,35 @@ describe('NtosDepartmentBudget', () => {
     expect(text(empty.container)).not.toContain('На что тратить бюджет');
   });
 
+  test('скупка для отдела: глава берёт пачку за бюджет, сотрудник видит, кто её берёт', () => {
+    const bundles = [
+      {
+        uid: 4,
+        partner: 'Вей-Мед',
+        packs: ['Medical Supplies Crate', 'Blood Pack Variety Crate'],
+        need: 'Blood Pack Variety Crate - Мало крови у 2 чел. по датчикам костюмов',
+        full_value: 3000,
+        price: 2200,
+        discount: 27,
+        left: 600,
+        can_budget: 1,
+      },
+    ];
+    const head = setup({ bundles });
+    expect(text(head.container)).toContain('Скупка для отдела');
+    expect(text(head.container)).toContain('Medical Supplies Crate, Blood Pack Variety Crate');
+    expect(text(head.container)).toContain('Нужно сейчас: Blood Pack Variety Crate - Мало крови');
+    fireEvent.click(head.getByText('Купить пачку'));
+    expect(sent(head.topic, 'buy_bundle')).toEqual([{ uid: 4 }]);
+    head.unmount();
+    const staff = setup({ bundles: [{ ...bundles[0], can_budget: 0 }], can_manage: 0, staff: [] });
+    expect(staff.queryByText('Купить пачку')).toBeNull();
+    expect(text(staff.container)).toContain('Берёт глава, ГП или капитан');
+    staff.unmount();
+    const empty = setup({ bundles: [] });
+    expect(text(empty.container)).not.toContain('Скупка для отдела');
+  });
+
   test('грант не нужен, когда бюджет на уровне', () => {
     const { container } = setup({ department: { ...base.department!, grant: 0 } });
     expect(text(container)).toContain('не нужен: бюджет не ниже 9 600 кр.');

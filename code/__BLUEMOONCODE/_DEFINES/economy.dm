@@ -137,18 +137,20 @@
 #define AUCTION_INSCRIPTION_MAX 120
 /// Вещь с такой силой удара и выше аукцион экипажа считает оружием
 #define AUCTION_WEAPON_FORCE 15
-/// Скупка: пачки разных предметов партнёра только целиком, со скидкой к сумме по отдельности
+/// Скупка: несколько паков каталога одного отдела у одного партнёра, только целиком, со скидкой к сумме по отдельности
 #define BUNDLE_GROUP "Скупка"
 #define BUNDLES_MAX 3
-#define BUNDLE_ITEMS_MIN 4
-#define BUNDLE_ITEMS_MAX 6
+#define BUNDLE_PACKS_MIN 2
+#define BUNDLE_PACKS_MAX 3
 #define BUNDLE_DISCOUNT_MIN 20
 #define BUNDLE_DISCOUNT_MAX 35
 #define BUNDLE_LIFETIME (20 MINUTES)
 #define BUNDLE_GAP_MIN (8 MINUTES)
 #define BUNDLE_GAP_MAX (15 MINUTES)
-/// Предметы для пачки берутся из паков не больше чем на столько вещей: из больших наборов цена одной вещи слишком мала
-#define BUNDLE_SOURCE_PACK_MAX 12
+/// Паки пачки вместе стоят по отдельности не больше: дороже бюджету отдела не потянуть
+#define BUNDLE_VALUE_MAX 8000
+/// Канал отдела слышит о новой пачке для него не чаще
+#define BUNDLE_RADIO_COOLDOWN (10 MINUTES)
 /// Столько одинаковых паков консоль снабжения добавляет одним нажатием
 #define ECON_CARGO_ADD_MAX 10
 /// В скольких клетках от заказавшего ищется пол для капсулы экспресс-доставки отдела

@@ -789,14 +789,17 @@ test('аукцион: лот экипажа покупают сразу с по�
   expect(content).not.toContain('наша станция: Анна');
 });
 
-test('скупка: пачка только целиком, цена со скидкой, покупка шлёт buy_bundle', () => {
+test('скупка: пачка для отдела только целиком, цена со скидкой, покупка шлёт buy_bundle', () => {
   const ui = setup({
     bundles: [
       {
         uid: 9,
         partner: 'Вей-Мед',
         partner_id: 'vey_med',
-        items: ['бинт', 'шина', 'пакет крови', 'скальпель'],
+        department: 'Медицина',
+        whom: 'медбея',
+        packs: ['Medical Supplies Crate', 'Blood Pack Variety Crate'],
+        need: 'Medical Supplies Crate - Раненых на станции: 3',
         full_value: 2000,
         price: 1400,
         discount: 30,
@@ -805,12 +808,38 @@ test('скупка: пачка только целиком, цена со ски
     ],
   });
   fireEvent.click(ui.getByText('Скупка'));
-  expect(ui.getByText('4 предмета, только вместе')).toBeTruthy();
-  expect(ui.getByText('бинт, шина, пакет крови, скальпель')).toBeTruthy();
+  expect(ui.getByText('Для медбея: 2 пака, только вместе')).toBeTruthy();
+  expect(ui.getByText('Medical Supplies Crate, Blood Pack Variety Crate')).toBeTruthy();
+  expect(ui.getByText('Нужно сейчас: Medical Supplies Crate - Раненых на станции: 3')).toBeTruthy();
   expect(ui.getByText('1 400 кр.')).toBeTruthy();
   expect(ui.getByText('ещё 10:00')).toBeTruthy();
+  expect(ui.queryByText('За бюджет отдела')).toBeNull();
   fireEvent.click(ui.getByText('Купить пачкой'));
   expect(sent(ui.topic, 'buy_bundle')).toEqual([{ uid: 9 }]);
+});
+
+test('глава отдела берёт пачку скупки за бюджет отдела', () => {
+  const ui = setup({
+    requestonly: 1,
+    bundles: [
+      {
+        uid: 9,
+        partner: 'Вей-Мед',
+        partner_id: 'vey_med',
+        department: 'Медицина',
+        whom: 'медбея',
+        packs: ['Medical Supplies Crate', 'Blood Pack Variety Crate'],
+        full_value: 2000,
+        price: 1400,
+        discount: 30,
+        left: 600,
+        can_budget: 1,
+      },
+    ],
+  });
+  fireEvent.click(ui.getByText('Скупка'));
+  fireEvent.click(ui.getByText('За бюджет отдела'));
+  expect(sent(ui.topic, 'buy_bundle')).toEqual([{ uid: 9, budget: 1 }]);
 });
 
 test('пачку партнёра под эмбарго купить нельзя', () => {
@@ -820,18 +849,20 @@ test('пачку партнёра под эмбарго купить нельз�
         uid: 9,
         partner: 'Вей-Мед',
         partner_id: 'vey_med',
-        items: ['бинт', 'шина', 'пакет крови'],
+        packs: ['Medical Supplies Crate', 'Blood Pack Variety Crate'],
         full_value: 2000,
         price: 1400,
         discount: 30,
         left: 600,
         embargoed: 1,
+        can_budget: 1,
       },
     ],
   });
   fireEvent.click(ui.getByText('Скупка'));
   expect(ui.getByText('Эмбарго: пока не купить')).toBeTruthy();
   expect(ui.queryByText('Купить пачкой')).toBeNull();
+  expect(ui.queryByText('За бюджет отдела')).toBeNull();
 });
 
 test('счётчики дел видны в навигации', () => {

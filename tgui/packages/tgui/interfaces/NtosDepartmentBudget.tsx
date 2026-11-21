@@ -87,6 +87,20 @@ type NeedEntry = {
   why: string;
 };
 
+/** Пачка скупки для отдела: несколько паков его каталога у одного партнёра, со скидкой и только целиком. */
+type BundleEntry = {
+  uid: number;
+  partner: string;
+  packs: string[];
+  need?: string | null;
+  full_value: number;
+  price: number;
+  discount: number;
+  left: number;
+  embargoed?: BooleanLike;
+  can_budget?: BooleanLike;
+};
+
 type WorkLogEntry = {
   time: string;
   type: string;
@@ -165,6 +179,7 @@ export type BudgetData = {
   department?: DepartmentInfo;
   prices?: Record<string, PriceEntry>;
   needs?: NeedEntry[];
+  bundles?: BundleEntry[];
   /** Недорогая заявка сотрудника одобряется сразу: у всех, кроме СБ при начальстве на смене */
   instant_approval?: BooleanLike;
   /** Глава отдела, ГП или капитан на смене */
@@ -367,7 +382,7 @@ const OverviewTab = () => {
           <NoticeBox warning>
             Бюджет выше порога: через {department.return_in ? `${department.return_in} мин.` : 'несколько минут'} NT заберёт{' '}
             <Credits amount={department.return_due} /> Потратьте излишек на закупки, одобрите ждущие заявки или назначьте цель
-            накопления в каталоге.
+            накопления в каталоге.{(data.bundles || []).length > 0 && ' Дешевле всего сейчас - пачка скупки для отдела ниже.'}
           </NoticeBox>
         )}
         <NtLine label="На смене">{department.staff_on_shift} чел.</NtLine>
@@ -395,6 +410,7 @@ const OverviewTab = () => {
         {!!data.manifest_department && <ManifestButton />}
       </NtFrame>
       <SpendingSection />
+      <BundlesSection />
       {!!data.can_manage && <StaffSection />}
       {!!data.can_manage && <TreasurySection />}
       {!data.can_manage && (data.treasury_requests || []).length > 0 && <TreasurySection />}
@@ -855,6 +871,61 @@ const SpendingSection = () => {
           </Table>
         </>
       )}
+    </NtFrame>
+  );
+};
+
+const formatLeft = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+
+/** Пачки скупки для отдела: глава, ГП или капитан берут их за бюджет отдела, остальные видят, что предлагают. */
+const BundlesSection = () => {
+  const { act, data } = useBackend<BudgetData>();
+  const bundles = data.bundles || [];
+  if (!bundles.length) {
+    return null;
+  }
+  return (
+    <NtFrame
+      title="Скупка для отдела"
+      help="Партнёр снабжения собрал паки вашего каталога в одну пачку, сперва из того, что отделу нужно сейчас, и отдаёт её дешевле, чем паки по отдельности, но только целиком и недолго. Пачка приедет шаттлом снабжения в одном ящике. Взять её за бюджет отдела может глава, ГП или капитан - здесь или в окне снабжения; деньги спишутся сразу.">
+      {bundles.map((bundle) => (
+        <Box key={bundle.uid} className="candystripe" p={0.5}>
+          <Stack align="center">
+            <Stack.Item grow>
+              <Box bold>{bundle.packs.join(', ')}</Box>
+              <Box className="NtTerm__hint">
+                {bundle.partner}, ещё {formatLeft(bundle.left)}
+              </Box>
+              {!!bundle.need && (
+                <Box italic color="label">
+                  Нужно сейчас: {bundle.need}
+                </Box>
+              )}
+            </Stack.Item>
+            <Stack.Item>
+              <Box className="NtTerm__hint">
+                <s>{formatCredits(bundle.full_value)}</s> −{bundle.discount}%
+              </Box>
+              <Credits amount={bundle.price} />
+            </Stack.Item>
+            <Stack.Item>
+              {bundle.embargoed ? (
+                <Box color="bad">Эмбарго: пока не купить</Box>
+              ) : bundle.can_budget ? (
+                <Button
+                  color="good"
+                  disabled={(data.department?.balance ?? 0) < bundle.price}
+                  tooltip={`Сразу списать ${formatCredits(bundle.price)} из бюджета`}
+                  onClick={() => act('buy_bundle', { uid: bundle.uid })}>
+                  Купить пачку
+                </Button>
+              ) : (
+                <Box className="NtTerm__hint">Берёт глава, ГП или капитан</Box>
+              )}
+            </Stack.Item>
+          </Stack>
+        </Box>
+      ))}
     </NtFrame>
   );
 };
