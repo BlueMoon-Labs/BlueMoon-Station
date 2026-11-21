@@ -981,6 +981,11 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	if(spawned_count > 0)
 		visible_message(span_danger("Орда зомби появляется вокруг генератора!"))
 
+/obj/structure/urbanism_generator/bullet_act(obj/item/projectile/P, def_zone, piercing_hit = FALSE)
+	if(P && istype(P.firer, /obj/machinery/porta_turret/hecu/infected))
+		return BULLET_ACT_FORCE_PIERCE
+	return ..()
+
 /obj/structure/urbanism_generator/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, attack_dir)
 	if(!src)
 		return
