@@ -290,9 +290,19 @@ GLOBAL_LIST_INIT(custom_interaction_orgasm_targets, list(
 	return jointext(labels, ", ")
 
 /datum/interaction/custom/proc/sanitize_values()
-	name = copytext(strip_html(name), 1, MAX_CUSTOM_INTERACTION_NAME_LENGTH + 1)
-	message = copytext(strip_html(message), 1, MAX_CUSTOM_INTERACTION_MESSAGE_LENGTH + 1)
+	name = custom_interaction_clean_text(name, MAX_CUSTOM_INTERACTION_NAME_LENGTH)
+	message = custom_interaction_clean_text(message, MAX_CUSTOM_INTERACTION_MESSAGE_LENGTH)
 	sanitize_settings()
+
+/// Текст хранится закодированным. Повторная загрузка кодировала его заново, и & копился в &amp;amp;amp;: раскодируем до исходного и кодируем один раз.
+/proc/custom_interaction_clean_text(text, max_length)
+	text = "[text]"
+	for(var/i in 1 to 8)
+		var/decoded = html_decode(text)
+		if(decoded == text)
+			break
+		text = decoded
+	return copytext(strip_html(text), 1, max_length + 1)
 
 /datum/interaction/custom/proc/sanitize_settings()
 	interaction_type = sanitize_inlist(interaction_type, CUSTOM_INTERACTION_TYPES, CUSTOM_INTERACTION_TYPE_NORMAL)
