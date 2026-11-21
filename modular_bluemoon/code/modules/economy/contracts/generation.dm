@@ -27,10 +27,15 @@ GLOBAL_LIST_INIT(econ_bounty_department, list(
 GLOBAL_LIST_INIT(econ_activity_contracts, list(
 	ACCOUNT_MED = list(/datum/econ_contract/activity/medical_discharges, /datum/econ_contract/activity/medical_surgeries),
 	ACCOUNT_ENG = list(/datum/econ_contract/activity/engineering_export),
-	ACCOUNT_SCI = list(/datum/econ_contract/activity/science_nodes),
-	ACCOUNT_SRV = list(/datum/econ_contract/activity/service_dishes, /datum/econ_contract/activity/service_cleaning),
+	ACCOUNT_SCI = list(/datum/econ_contract/activity/science_nodes, /datum/econ_contract/activity/science_extracts, /datum/econ_contract/activity/science_mechs),
+	ACCOUNT_SRV = list(/datum/econ_contract/activity/service_dishes, /datum/econ_contract/activity/service_cleaning, /datum/econ_contract/activity/service_drinks, /datum/econ_contract/activity/service_plants),
 	ACCOUNT_SEC = list(/datum/econ_contract/activity/security_contraband),
 	ACCOUNT_CAR = list(/datum/econ_contract/activity/cargo_ore),
+))
+
+/// Работа без записи в журнал отдела: отдел -> типы контрактов. Выпадают вместе с деятельностью.
+GLOBAL_LIST_INIT(econ_task_contracts, list(
+	ACCOUNT_SEC = list(/datum/econ_contract/patrol),
 ))
 
 /// Особые заказы ЦК на всю смену, выставляются при старте экономики.
@@ -40,9 +45,11 @@ GLOBAL_LIST_INIT(econ_roundstart_special_bounties, list(
 	/datum/bounty/item/adamantine,
 ))
 
-/// Заказы, которые на станции не из чего сделать: нужное продают только автоматы и снабжение, а купленное контракты не засчитывают.
+/// Заказы, которые на станции не из чего сделать: нужное продают только автоматы и снабжение, а купленное контракты не засчитывают, или его нет вовсе.
 GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	/datum/bounty/item/assistant/cheesiehonkers,
+	/datum/bounty/item/assistant/shadyjims,
+	/datum/bounty/item/science/boh,
 )))
 
 /proc/econ_bounty_department_of(bounty_type)
@@ -101,7 +108,7 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	refresh_contracts(force = TRUE)
 	post_roundstart_specials()
 
-/// force снимает все невзятые контракты без прогресса, иначе - только те, чей срок ротации вышел.
+/// force снимает все невзятые контракты без прогресса, кроме этапов эстафет, иначе - только те, чей срок ротации вышел.
 /datum/controller/subsystem/economy/proc/refresh_contracts(force = FALSE)
 	for(var/id in departments)
 		if(id == ACCOUNT_CMD)
@@ -111,29 +118,35 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 			if(contract.is_expired())
 				contract.expire()
 			else if(contract_rotates(contract, force))
-				qdel(contract)
+				contract.withdraw("rotation")
 		fill_department_contracts(department)
 	for(var/datum/econ_contract/contract as anything in loose_contracts.Copy())
 		if(contract.is_expired())
 			contract.expire()
 		else if(contract_rotates(contract, force))
-			qdel(contract)
+			contract.withdraw("rotation")
+	for(var/datum/econ_relay/relay as anything in relays)
+		relay.warn_if_late()
 
 /// Добирает доску отдела до contracts_per_department обычных контрактов; заказы из avoid выдаются, только если других не осталось.
 /datum/controller/subsystem/economy/proc/fill_department_contracts(datum/economy_department/department, list/avoid)
-	var/regular = 0
-	for(var/datum/econ_contract/contract as anything in department.contracts)
-		if(!contract.pinned)
-			regular++
-	while(regular < settings.contracts_per_department)
+	// Этап эстафеты снимает с доски такой же неначатый контракт, поэтому места пересчитываются каждый раз
+	for(var/attempt in 1 to settings.contracts_per_department * 3)
+		if(department.regular_contracts() >= settings.contracts_per_department)
+			return
 		var/datum/econ_contract/fresh = generate_contract(department.id, avoid)
 		if(!fresh && length(avoid))
 			avoid = null
 			continue
 		if(!fresh)
-			break
-		department.contracts += fresh
-		regular++
+			return
+		department.contracts |= fresh
+
+/datum/economy_department/proc/regular_contracts()
+	. = 0
+	for(var/datum/econ_contract/contract as anything in contracts)
+		if(contract.occupies_slot())
+			.++
 
 /datum/economy_department
 	COOLDOWN_DECLARE(contract_reset_cooldown)
@@ -149,16 +162,25 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	if(!COOLDOWN_FINISHED(src, contract_reset_cooldown))
 		return "Доску отдела \"[name]\" можно сбросить через [DisplayTimeText(COOLDOWN_TIMELEFT(src, contract_reset_cooldown), 1)]."
 
+/// Нынешнее тело взявшего: по разуму владельца счёта, а без него - по самому владельцу.
+/datum/econ_contract/proc/taker_body()
+	return taker?.owner_body()
+
 /// Взявший в игре: тело живо и с клиентом. Без него контракт только держит слот.
 /datum/econ_contract/proc/taker_in_game()
-	var/datum/mind/taker_mind = taker?.owner_mind_ref?.resolve()
-	var/mob/living/body = isliving(taker_mind?.current) ? taker_mind.current : taker?.owner_ref?.resolve()
+	return econ_account_in_game(taker)
+
+/// Владелец счёта в игре: его тело живо и с клиентом.
+/proc/econ_account_in_game(datum/bank_account/account)
+	var/mob/living/body = account?.owner_body()
 	return !!body && body.stat != DEAD && !!GET_CLIENT(body)
 
-/// Снимет ли сброс доски главой user этот контракт: неначатый, не заказ ЦК, не свой контракт главы и не взятый игроком в игре меньше ECON_CONTRACT_BOARD_RESET_GRACE назад.
+/// Снимет ли сброс доски главой user этот контракт: неначатый, не заказ ЦК, не свой контракт главы и не взятый игроком в игре меньше ECON_CONTRACT_BOARD_RESET_GRACE назад. Этап эстафеты - только первый и никем не взятый.
 /datum/econ_contract/proc/board_reset_removes(datum/bank_account/head_account)
-	if(pinned || completed || is_expired() || has_progress())
+	if(pinned || completed || is_expired() || started())
 		return FALSE
+	if(relay)
+		return !taker
 	if(!taker)
 		return TRUE
 	if(taker == head_account)
@@ -186,13 +208,13 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 		if(contract.taker)
 			freed++
 			contract.taker.bank_card_talk("Глава отдела сбросил доску: контракт \"[contract.title]\" снят. Репутация не пострадала, новый контракт можно взять сразу.")
-		qdel(contract)
+		contract.withdraw("reset")
 	if(!length(removed_types))
-		return list(FALSE, "На доске отдела \"[name]\" нечего сбрасывать: остались только начатые, заказы ЦК, ваш контракт и взятые меньше [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_GRACE)] назад.")
+		return list(FALSE, "На доске отдела \"[name]\" нечего сбрасывать: остались только начатые, взятые этапы эстафет и этапы со второго, заказы ЦК, ваш контракт и взятые меньше [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_GRACE)] назад.")
 	COOLDOWN_START(src, contract_reset_cooldown, ECON_CONTRACT_BOARD_RESET_COOLDOWN)
 	SSeconomy.fill_department_contracts(src, removed_types)
 	log_econ("[key_name(user)] сбросил доску контрактов отдела [id]: снято [length(removed_types)], из них взятых [freed]")
-	return list(TRUE, "Доска отдела \"[name]\" сброшена: снято контрактов - [length(removed_types)][freed ? ", из них взятых - [freed]" : ""]. Начатые, заказы ЦК, ваш контракт и недавно взятые остались. Следующий сброс - через [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_COOLDOWN)].")
+	return list(TRUE, "Доска отдела \"[name]\" сброшена: снято контрактов - [length(removed_types)][freed ? ", из них взятых - [freed]" : ""]. Начатые, взятые этапы эстафет и этапы со второго, заказы ЦК, ваш контракт и недавно взятые остались. Следующий сброс - через [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_COOLDOWN)].")
 
 /// Доски, которые user может сбросить (по умолчанию - всех отделов): id, имя, секунды до следующего сброса, минуты между сбросами и сколько контрактов (из них взятых) снимет сброс сейчас.
 /proc/econ_contract_resets_ui(mob/user, list/departments)
@@ -231,24 +253,42 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 	var/due = contract.rotation_due_at()
 	if(isnull(due))
 		return FALSE
-	return world.time >= due || (force && !contract.has_progress())
+	return world.time >= due || (force && !contract.started() && !contract.relay)
+
+/// Можно ли выставить контракт сейчас: у станции есть всё, чтобы его выполнить.
+/datum/econ_contract/proc/postable()
+	return TRUE
+
+/// Контракт деятельности или задача отдела из types, которые сейчас можно выполнить; выбранные типы из списка убираются.
+/datum/controller/subsystem/economy/proc/pick_activity(department_id, list/types)
+	while(length(types))
+		var/contract_type = pick_n_take(types)
+		var/datum/econ_contract/contract = new contract_type(department_id)
+		if(contract.postable())
+			return contract
+		qdel(contract)
 
 /datum/controller/subsystem/economy/proc/generate_contract(department_id, list/avoid)
+	if(prob(settings.contract_relay_chance))
+		var/datum/econ_contract/relay_stage = start_relay(department_id, avoid)
+		if(relay_stage)
+			return relay_stage
 	var/datum/economy_department/department = get_department(department_id)
 	var/list/present = LAZYCOPY(avoid)
 	for(var/datum/econ_contract/existing as anything in department?.contracts)
 		var/datum/econ_contract/delivery/delivery = existing
 		present += istype(delivery) ? delivery.bounty.type : existing.type
 	var/list/by_department = econ_bounty_types_by_department()
-	var/list/activity_types = GLOB.econ_activity_contracts[department_id]
+	var/list/activities = GLOB.econ_activity_contracts[department_id]
+	var/list/tasks = GLOB.econ_task_contracts[department_id]
+	var/list/activity_types = LAZYCOPY(activities) | LAZYCOPY(tasks)
 	var/list/bounty_types = by_department[department_id]
-	activity_types = LAZYCOPY(activity_types) - present
+	activity_types -= present
 	bounty_types = LAZYCOPY(bounty_types) - present
 	var/datum/econ_contract/contract
 	if(length(activity_types) && (!length(bounty_types) || prob(ECON_CONTRACT_ACTIVITY_CHANCE)))
-		var/activity_type = pick(activity_types)
-		contract = new activity_type(department_id)
-	else
+		contract = pick_activity(department_id, activity_types)
+	if(!contract)
 		var/datum/bounty/bounty = pick_bounty(bounty_types)
 		if(bounty && prob(settings.contract_chain_chance))
 			contract = generate_chain(department_id, bounty, bounty_types)
@@ -270,14 +310,25 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 		var/picked = pickweight(weights)
 		bounty_types -= picked
 		var/datum/bounty/bounty = new picked
-		if(bounty.name && bounty.description)
+		if(bounty.name && bounty.description && bounty.econ_available())
 			return bounty
 		qdel(bounty)
 	return null
 
-/// Особый заказ ЦК: контракт поставки отдела по типу баунти (по умолчанию снабжения), без ротации и без исполнителя.
+/// Выполним ли заказ на этой карте. Сюда - то, что зависит от карты, а не от правила про купленное.
+/datum/bounty/proc/econ_available()
+	return TRUE
+
+/// Номера штампует только пресс, а его плату не напечатать.
+/datum/bounty/item/security/plates/econ_available()
+	for(var/obj/machinery/plate_press/press in GLOB.machines)
+		if(is_station_level(press.z))
+			return TRUE
+	return FALSE
+
+/// Особый заказ ЦК: контракт поставки отдела по типу баунти (по умолчанию снабжения), без ротации и без исполнителя. Невыполнимые заказы не выставляются и по событию.
 /datum/controller/subsystem/economy/proc/post_special_contract(datum/bounty/bounty)
-	if(!bounty?.name || !bounty.description)
+	if(!bounty?.name || !bounty.description || GLOB.econ_bounty_unobtainable[bounty.type] || !bounty.econ_available())
 		return null
 	for(var/datum/econ_contract/delivery/existing in all_contracts())
 		if(!existing.bounty.compatible_with(bounty) || !bounty.compatible_with(existing.bounty))

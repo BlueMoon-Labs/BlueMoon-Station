@@ -3,7 +3,7 @@ import { combineReducers, createStore, setGlobalStore } from 'common/redux';
 
 import { backendReducer, backendUpdate } from '../backend';
 import { debugReducer } from '../debug';
-import { BudgetData, DepartmentConsole, NtosDepartmentBudgetContent } from './NtosDepartmentBudget';
+import { BudgetData, DepartmentConsole, NtosDepartmentBudgetContent, ordersItself, requestTooltip } from './NtosDepartmentBudget';
 
 const base: BudgetData = {
   departments: [
@@ -45,6 +45,8 @@ const base: BudgetData = {
   performer_share: 30,
   contracts_help_topics: [{ title: 'Как выполнить', lines: ['Контракты NT: справка.'] }],
   audit_rights: 'глава СБ и капитан',
+  audit_bonus_allowance: 3000,
+  audit_siphon_minutes: 30,
   grant_price: 3,
   grant_cap: 10000,
   message: '',
@@ -54,7 +56,7 @@ const base: BudgetData = {
   manifest_department: 'Медицина',
   can_manage: 1,
   is_staff: 1,
-  department: { id: 'MED', name: 'Медицина', balance: 4000, owed: 0, staff_on_shift: 3, grant: 400, grant_has_base: 1, threshold: 9000, return_due: 0 },
+  department: { id: 'MED', name: 'Медицина', balance: 4000, owed: 0, staff_on_shift: 3, grant: 400, grant_max: 500, grant_level: 9600, grant_has_base: 1, threshold: 9000, return_due: 0 },
   prices: { '/datum/supply_pack/medical/surgery': { price: 2500, available: 1 } },
   requests: [
     { uid: 5, pack: 'Surgical Kit', price: 2500, requester: 'Анна', reason: 'Нет скальпелей', status: 'pending' },
@@ -125,13 +127,16 @@ describe('NtosDepartmentBudget', () => {
     const { container } = setup();
     const content = text(container);
     expect(content).toContain('4 000 кр.');
-    expect(content).toContain('раз в 5 мин.: 100% окладов сотрудников на смене и 100 кр. на закупки из каталога.');
+    expect(content).toContain('Грант NT доливает бюджет раз в 5 мин. до 9 600 кр.: порог бюджета, долги и следующая зарплата сотрудникам и цель накопления.');
+    expect(content).toContain('За цикл не больше 500 кр.: 100% окладов сотрудников на смене и 100 кр. на закупки из каталога.');
+    expect(content).toContain('400 кр. на ближайшем цикле');
     expect(content).toContain('не больше 6 базовых окладов');
     expect(content).toContain('долг гасится частями');
     expect(content).toContain('меньше 30 кр., NT доплачивает');
     expect(content).toContain('Кто дольше 10 мин. мёртв или не на смене, зарплату не получает');
     expect(content).not.toContain('в игре');
-    expect(content).toContain('Премия себе и крупные или частые выплаты одному человеку');
+    expect(content).toContain('Премия себе открывает дело финансового аудита, премии сотрудникам в пределах лимита - нет.');
+    expect(content).not.toContain('3 000 кр. за 30 мин.');
     expect(content).toContain('Аудит ведут: глава СБ и капитан.');
     expect(content).toContain('Глав Врач (вы)');
   });
@@ -331,10 +336,111 @@ describe('NtosDepartmentBudget', () => {
     fireEvent.click(getByText('Каталог'));
     expect(queryByText('Заказать')).toBeNull();
     expect(text(container)).toContain('заявка до 1000 кр. одобряется сама');
-    expect(text(container)).toContain('Если ответа нет 10 мин., такая заявка одобряется сама и при начальстве на смене.');
     fireEvent.input(getByPlaceholderText('Причина заявки'), { target: { value: 'бинты' } });
     fireEvent.click(getByText('Заявка'));
     expect(sent(topic, 'request')).toEqual([{ pack: '/datum/supply_pack/medical/surgery', reason: 'бинты' }]);
+  });
+
+  test('сотрудник: недорогой пак при мгновенном одобрении заказывается сразу, после заказа - перерыв', () => {
+    const cheap = { prices: { '/datum/supply_pack/medical/surgery': { price: 800, available: 1 } } };
+    const ready = setup({ ...cheap, can_manage: 0, staff: [], instant_approval: 1, auto_ready_in: 0 });
+    fireEvent.click(ready.getByText('Каталог'));
+    expect(text(ready.container)).toContain('Заявка до 1 000 кр. одобряется сама сразу, не чаще раза в 10 мин. на сотрудника.');
+    expect(text(ready.container)).not.toContain('Если на смене некому одобрить');
+    expect(text(ready.container)).toContain('Если ответа нет 10 мин., недорогая заявка одобряется сама и при начальстве на смене.');
+    fireEvent.click(ready.getByText('Заказать'));
+    expect(sent(ready.topic, 'request')).toEqual([{ pack: '/datum/supply_pack/medical/surgery', reason: '' }]);
+    ready.unmount();
+    const waiting = setup({ ...cheap, can_manage: 0, staff: [], instant_approval: 1, auto_ready_in: 7 });
+    fireEvent.click(waiting.getByText('Каталог'));
+    expect(waiting.queryByText('Заказать')).toBeNull();
+    expect(waiting.getByText('Заявка')).toBeTruthy();
+    waiting.unmount();
+    const security = setup({ ...cheap, can_manage: 0, staff: [], instant_approval: 0, auto_ready_in: 0 });
+    fireEvent.click(security.getByText('Каталог'));
+    expect(security.queryByText('Заказать')).toBeNull();
+    expect(text(security.container)).toContain('Если на смене некому одобрить, заявка до 1000 кр. одобряется сама');
+    expect(text(security.container)).not.toContain('Если ответа нет');
+  });
+
+  test('сотрудник: заказ без одобрения не трогает деньги на зарплату, подсказка объясняет, чего ждёт заявка', () => {
+    const cheap = { prices: { '/datum/supply_pack/medical/surgery': { price: 800, available: 1 } } };
+    const staffView = { ...cheap, can_manage: 0, staff: [], instant_approval: 1, auto_ready_in: 0 };
+    const reserved = setup({ ...staffView, department: { ...base.department!, balance: 1500, reserve: 800 } });
+    fireEvent.click(reserved.getByText('Каталог'));
+    expect(reserved.queryByText('Заказать')).toBeNull();
+    expect(text(reserved.container)).toContain('после заказа в бюджете останется на долги и следующую зарплату сотрудникам (сейчас 800 кр.)');
+    reserved.unmount();
+    const enough = setup({ ...staffView, department: { ...base.department!, balance: 1600, reserve: 800 } });
+    fireEvent.click(enough.getByText('Каталог'));
+    expect(enough.getByText('Заказать')).toBeTruthy();
+    enough.unmount();
+    const data = { ...base, ...staffView } as BudgetData;
+    expect(requestTooltip({ ...data, department: { ...base.department!, balance: 500 } }, 800).replace(/\u00a0/g, ' ')).toBe('В бюджете сейчас 500 кр., пак стоит 800 кр.: заявка подождёт денег');
+    expect(requestTooltip({ ...data, head_on_shift: 1 }, 800)).toBe('Заявка главе: ему придёт сообщение на карту');
+    expect(requestTooltip({ ...data, head_on_shift: 0 }, 800)).not.toContain('главе');
+    expect(ordersItself({ ...data, department: { ...base.department!, balance: 1500, reserve: 800 } }, { staple: 1 }, 800)).toBe(false);
+  });
+
+  test('на что тратить бюджет: советы и "нужно сейчас" с кнопкой', () => {
+    const needs = [{ type: '/datum/supply_pack/medical/surgery', name: 'Surgical Kit', why: 'Раненых на станции: 3' }];
+    const advice = ['Кровь, бинты и мази кончаются первыми.'];
+    const head = setup({ needs, advice });
+    expect(text(head.container)).toContain('На что тратить бюджет');
+    expect(text(head.container)).toContain('Кровь, бинты и мази кончаются первыми.');
+    expect(text(head.container)).toContain('Раненых на станции: 3');
+    fireEvent.click(head.getByText('Заказать'));
+    expect(sent(head.topic, 'order')).toEqual([{ pack: '/datum/supply_pack/medical/surgery' }]);
+    head.unmount();
+    const staff = setup({ needs, advice, can_manage: 0, staff: [], instant_approval: 1, auto_ready_in: 0 });
+    fireEvent.click(staff.getByText('Заявка'));
+    expect(sent(staff.topic, 'request')).toEqual([{ pack: '/datum/supply_pack/medical/surgery', reason: 'Раненых на станции: 3' }]);
+    staff.unmount();
+    const outsider = setup({ needs, advice, can_manage: 0, is_staff: 0, staff: [] });
+    expect(text(outsider.container)).toContain('Раненых на станции: 3');
+    expect(outsider.queryByText('Заявка')).toBeNull();
+    outsider.unmount();
+    const empty = setup({ needs: [], advice: [] });
+    expect(text(empty.container)).not.toContain('На что тратить бюджет');
+  });
+
+  test('скупка для отдела: глава берёт пачку за бюджет, сотрудник видит, кто её берёт', () => {
+    const bundles = [
+      {
+        uid: 4,
+        partner: 'Вей-Мед',
+        packs: ['Medical Supplies Crate', 'Blood Pack Variety Crate'],
+        need: 'Blood Pack Variety Crate',
+        need_why: 'Мало крови у 2 чел. по датчикам костюмов',
+        full_value: 3000,
+        price: 2200,
+        discount: 27,
+        left: 600,
+        can_budget: 1,
+      },
+    ];
+    const head = setup({ bundles });
+    expect(text(head.container)).toContain('Скупка для отдела');
+    expect(text(head.container)).toContain('Medical Supplies Crate, Blood Pack Variety Crate');
+    expect(text(head.container)).toContain('Нужно сейчас: Blood Pack Variety Crate - Мало крови');
+    fireEvent.click(head.getByText('Купить пачку'));
+    expect(sent(head.topic, 'buy_bundle')).toEqual([{ uid: 4 }]);
+    head.unmount();
+    const first = setup({ bundles: [{ ...bundles[0], department_left: 240 }], bundle_first: 5 });
+    expect(text(first.container)).toContain('для отдела ещё 4 мин.');
+    expect(text(first.container)).toContain('первые 5 мин. пачку берут только за бюджет отдела');
+    first.unmount();
+    const staff = setup({ bundles: [{ ...bundles[0], can_budget: 0 }], can_manage: 0, staff: [] });
+    expect(staff.queryByText('Купить пачку')).toBeNull();
+    expect(text(staff.container)).toContain('Берёт глава, ГП или капитан');
+    staff.unmount();
+    const empty = setup({ bundles: [] });
+    expect(text(empty.container)).not.toContain('Скупка для отдела');
+  });
+
+  test('грант не нужен, когда бюджет на уровне', () => {
+    const { container } = setup({ department: { ...base.department!, grant: 0 } });
+    expect(text(container)).toContain('не нужен: бюджет не ниже 9 600 кр.');
   });
 
   test('чужой отдел у консоли: ни заявок, ни заказов', () => {

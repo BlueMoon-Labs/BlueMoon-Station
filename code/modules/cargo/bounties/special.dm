@@ -1,9 +1,17 @@
 /datum/bounty/item/alien_organs
 	name = "Alien Organs"
-	description = "Nanotrasen is interested in studying Xenomorph biology. Ship a set of organs to be thoroughly compensated."
+	description = "NT изучает биологию ксеноморфов: пришлите органы из их тел. Напечатанные на станции не принимаются."
 	reward = 35000
 	required_count = 3
 	wanted_types = list(/obj/item/organ/brain/alien, /obj/item/organ/alien, /obj/item/organ/body_egg/alien_embryo)
+
+/// Нужна настоящая биология ксеноморфа: органы, напечатанные на станции, не годятся.
+/datum/bounty/item/alien_organs/applies_to(obj/O)
+	return ..() && !islist(O.econ_print_cap)
+
+/datum/bounty/item/alien_organs/econ_shortfall(atom/movable/thing)
+	if(islist(thing.econ_print_cap) && is_type_in_list(thing, wanted_types))
+		return "[thing.name]: напечатан на станции, а NT нужны органы из тел ксеноморфов"
 
 /datum/bounty/item/syndicate_documents
 	name = "Syndicate Documents"

@@ -1,4 +1,4 @@
-import { fireEvent, render, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, within } from '@testing-library/react';
 import { combineReducers, createStore, setGlobalStore } from 'common/redux';
 
 import { backendReducer, backendUpdate } from '../backend';
@@ -73,6 +73,7 @@ const base: StockExchangeData = {
   orders_max: 5,
   dividend_share: 5,
   payroll_minutes: 10,
+  evac: 0,
 };
 
 const setup = (data: Partial<StockExchangeData> = {}, component = <NtosStockExchangeContent />) => {
@@ -200,9 +201,37 @@ describe('NtosStockExchange', () => {
     expect(content).toContain('по 20% базовой');
     expect(content).toContain('стоимость позиции сохраняется');
     expect(content).toContain('сдвигаясь на 20% к базовой');
+    expect(content).toContain('Непроданные акции в конце смены продаются по рыночной цене, кроме остановленных торгов и замороженных счетов; о вызове эвакуационного шаттла напомнит ID-карта.');
+    expect(content).not.toContain('сгор');
     expect(content).toContain('крупные сделки с акциями компании перед новостью о ней или до опровержения фальшивки');
     expect(content).not.toContain('2 000');
     expect(content).toContain('только капитан');
+  });
+
+  test('во время эвакуации на любой странице видно, что в конце смены акции продадутся по рынку', () => {
+    const { container } = setup({ evac: 1 });
+    const warning = 'Эвакуация: в конце смены непроданные акции продадутся по рыночной цене. Хотите выбрать момент сами - продайте раньше.';
+    expect(text(container)).toContain(warning);
+    openPage(container, 'Портфель');
+    expect(text(container)).toContain(warning);
+  });
+
+  test('«Продать все акции» в плашке эвакуации - одна команда окну; без акций кнопки нет, у замороженного счёта она выключена', () => {
+    const { getByText, topic } = setup({ evac: 1, holdings: { AGRO: 4, CYBS: 2 } });
+    fireEvent.click(getByText('Продать все акции'));
+    expect(sent(topic, 'sell_all')).toEqual([{}]);
+    cleanup();
+    expect(setup({ evac: 1, holdings: {} }).queryByText('Продать все акции')).toBeNull();
+    cleanup();
+    const frozen = setup({ evac: 1, holdings: { AGRO: 4 }, frozen: 1 });
+    fireEvent.click(frozen.getByText('Продать все акции'));
+    expect(sent(frozen.topic, 'sell_all')).toEqual([]);
+  });
+
+  test('без эвакуации плашки и кнопки продажи всех акций нет', () => {
+    const { container, queryByText } = setup({ holdings: { AGRO: 4 } });
+    expect(text(container)).not.toContain('Эвакуация');
+    expect(queryByText('Продать все акции')).toBeNull();
   });
 
   test('сноски: у компании видно, что и насколько двигает её цену', () => {

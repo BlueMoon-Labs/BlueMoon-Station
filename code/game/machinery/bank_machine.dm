@@ -36,8 +36,11 @@
 		value = H.credits
 	if(value)
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-		if(D && SSeconomy.move(SSeconomy.cash_account, D, value, ECON_CASH_IN, user))
-			to_chat(user, span_notice("Вы вкладываете [I]. В бюджете снабжения теперь [D.account_balance] кр."))
+		if(!D || !SSeconomy.cash_in(list(I), D, value, user, "Внесение наличных: [econ_public_name(user)]"))
+			var/refusal = econ_cash_refusal_text(I.name, value)
+			to_chat(user, span_warning(refusal))
+			return
+		to_chat(user, span_notice("Вы вкладываете [I.name]. В бюджете снабжения теперь [num2text(D.account_balance, ECON_TEXT_DIGITS)] кр."))
 		qdel(I)
 		return
 	return ..()
@@ -101,5 +104,6 @@
 
 /obj/machinery/computer/bank_machine/proc/end_syphon()
 	siphoning = FALSE
-	new /obj/item/holochip(drop_location(), syphoning_credits) //get the loot
+	var/obj/item/holochip/loot = new(drop_location(), syphoning_credits)
+	econ_cash_mark_withdrawn(loot, SSeconomy.get_dep_account(ACCOUNT_CAR))
 	syphoning_credits = 0

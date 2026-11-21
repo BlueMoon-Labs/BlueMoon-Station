@@ -175,21 +175,27 @@ test('справка о контрактах и пустая доска без �
 
 const rank = { name: 'Подрядчик', rep: 30, done: 4, slots: 3, used: 1, bonus: 5, next_name: 'Мастер', next_rep: 50 };
 
-test('вкладки: доска без объявлений экипажа, мои с репутацией, счётчики дел на вкладках', () => {
+test('вкладки: на доске сверху свободные чужие объявления, мои с репутацией, счётчики дел на вкладках', () => {
   const contracts = [
     ...backend.contracts,
     contract(4, { kind: 'crew', poster: 'Повар', poster_id: 222, department_name: 'Экипаж', title: 'Помыть кухню' }),
     contract(5, { kind: 'crew', poster: 'Тест Тестов', poster_id: 111, department_name: 'Экипаж', title: 'Моё объявление' }),
+    contract(6, { kind: 'crew', poster: 'Повар', poster_id: 222, department_name: 'Экипаж', title: 'Уже взятое', taken_by: 'Другой', taker_id: 333 }),
   ];
   const ui = setup({ contracts, rank });
   const menu = ui.container.querySelector('.NtTerm__menu') as HTMLElement;
   expect(menu.textContent).toContain('Мои2');
   expect(menu.textContent).toContain('Экипаж1');
-  expect(ui.queryByText('Помыть кухню')).toBeNull();
+  expect(ui.getByText('Просит экипаж')).toBeTruthy();
+  const titles = Array.from(ui.container.querySelectorAll('.NtTerm__contractTitle')).map((node) => node.textContent);
+  expect(titles[1]).toContain('Помыть кухню');
+  expect(ui.queryByText('Моё объявление')).toBeNull();
+  expect(ui.queryByText('Уже взятое')).toBeNull();
   expect(ui.getByText('Все (3)')).toBeTruthy();
   fireEvent.click(ui.getByText('Свободные (1)'));
   expect(ui.queryByText('Ваш контракт')).toBeNull();
-  expect(ui.getByText('Взять')).toBeTruthy();
+  fireEvent.click(ui.getAllByText('Взять')[0]);
+  expect(sent(ui.topic, 'take')).toEqual([{ uid: 4 }]);
   fireEvent.click(ui.getByText('Мои'));
   expect(ui.container.querySelector('.NtTerm__rankName')?.textContent).toBe('Подрядчик');
   expect(ui.getByText('До ранга «Мастер»: ещё 20')).toBeTruthy();
@@ -203,7 +209,8 @@ test('экипаж: объявления и форма своего уходят
   const contracts = [contract(4, { kind: 'crew', poster: 'Повар', poster_id: 222, department_name: 'Экипаж', title: 'Помыть кухню' })];
   const crew_request = { min: 100, max: 5000, title_max: 60, desc_max: 300, minutes: 30, accept_minutes: 10 };
   const ui = setup({ contracts, rank, crew_request });
-  fireEvent.click(ui.getByText('Экипаж'));
+  fireEvent.click(ui.container.querySelector('.NtTerm__menu')?.querySelectorAll('.NtTerm__menuItem')[2] as HTMLElement);
+  expect(ui.getByText('Объявления экипажа')).toBeTruthy();
   expect(ui.getByText('Помыть кухню')).toBeTruthy();
   fireEvent.click(ui.getByText('Взять'));
   expect(sent(ui.topic, 'take')).toEqual([{ uid: 4 }]);
@@ -212,6 +219,20 @@ test('экипаж: объявления и форма своего уходят
   fireEvent.input(ui.getByPlaceholderText('Подробности: что, куда, к какому сроку'), { target: { value: 'В баре' } });
   fireEvent.click(ui.getByText('Разместить'));
   expect(sent(ui.topic, 'crew_post')).toEqual([{ title: 'Починить окно', desc: 'В баре', reward: 100 }]);
+});
+
+test('"Дать объявление" на доске открывает форму на вкладке экипажа', () => {
+  const crew_request = { min: 100, max: 5000, title_max: 60, desc_max: 300, minutes: 30, accept_minutes: 10 };
+  const ui = setup({ rank, crew_request });
+  expect(ui.queryByText('Просит экипаж')).toBeNull();
+  fireEvent.click(ui.getByText('Дать объявление'));
+  expect(ui.getByText('Объявления экипажа')).toBeTruthy();
+  fireEvent.input(ui.getByPlaceholderText('Что нужно сделать'), { target: { value: 'Принести кофе' } });
+  fireEvent.input(ui.getByPlaceholderText('Подробности: что, куда, к какому сроку'), { target: { value: 'На мостик' } });
+  fireEvent.click(ui.getByText('Разместить'));
+  expect(sent(ui.topic, 'crew_post')).toEqual([{ title: 'Принести кофе', desc: 'На мостик', reward: 100 }]);
+  document.body.innerHTML = '';
+  expect(setup({ crew_request }).queryByText('Дать объявление')).toBeNull();
 });
 
 test('спецзаказы партнёров и фильтр доски по отделу', () => {

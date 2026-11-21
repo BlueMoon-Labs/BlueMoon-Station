@@ -341,21 +341,27 @@
 	TEST_ASSERT_EQUAL(offer.delivered, 3, "Спецзаказ засчитал отправку с пада")
 	TEST_ASSERT(findtext(console.status_report, "по спецзаказам партнёров: 3 шт."), "Отчёт пульта: [console.status_report]")
 
-/// Сканер продажи Таркова сдаёт спецзаказ как пад подработки, но база и маржа идут бюджету Таркова, а не отделам станции; остаток стопки продаётся на рынке.
+/// Сканер продажи Таркова сдаёт спецзаказ как пад подработки, но база и маржа идут бюджету Таркова, а не отделам станции; остаток стопки продаётся на рынке. Станционный счёт платит с доли налог в казну, внестанционный - нет.
 /datum/unit_test/economy_offers/outpost_scanner
 	var/datum/bank_account/tarkov
 	var/saved_tarkov
+	var/datum/bank_account/treasury
+	var/saved_treasury
 	var/saved_tax_rate
 
 /datum/unit_test/economy_offers/outpost_scanner/New()
 	. = ..()
 	tarkov = SSeconomy.get_dep_account(ACCOUNT_TAR)
 	saved_tarkov = tarkov.account_balance
+	treasury = SSeconomy.treasury()
+	saved_treasury = treasury.account_balance
 	saved_tax_rate = SSeconomy.tax_rate
 
 /datum/unit_test/economy_offers/outpost_scanner/Destroy()
 	econ_test_set_balance(tarkov, saved_tarkov)
+	econ_test_set_balance(treasury, saved_treasury)
 	tarkov = null
+	treasury = null
 	SSeconomy.tax_rate = saved_tax_rate
 	return ..()
 
@@ -386,6 +392,10 @@
 	var/datum/economy_ledger/ledger = SSeconomy.ledger
 	var/station_minted_before = ledger.minted - ledger.outpost_minted
 	var/outpost_minted_before = ledger.outpost_minted
+	var/treasury_before = treasury.account_balance
+	var/list/income = SSeconomy.ledger.outpost_income[ACCOUNT_TAR]
+	var/offers_income_before = income ? income["offers"] : 0
+	var/market_income_before = income ? income["market"] : 0
 	var/obj/item/stack/sheet/mineral/plasma/first = allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 6)
 	TEST_ASSERT_EQUAL(scanner.sell_offstation(first, scavenger, ACCOUNT_TAR), 0, "Принятое спецзаказом продано ещё и на рынке")
 	TEST_ASSERT(offer.accepted && offer.delivered == 6, "Сканер не засчитал 6 штук в спецзаказ: [offer.delivered]")
@@ -393,9 +403,14 @@
 	TEST_ASSERT_EQUAL(ledger.minted - ledger.outpost_minted - station_minted_before, 0, "Сдача сканером аванпоста попала в эмиссию станции")
 	TEST_ASSERT_EQUAL(ledger.outpost_minted - outpost_minted_before, 600, "Эмиссия аванпоста - вся оплата за штуки, доля сдавшего из неё")
 	var/share = round(600 * settings.contract_team_share / 100)
-	TEST_ASSERT_EQUAL(account.account_balance, share - round(share * SSeconomy.tax_rate / 100), "Сдавшему доля участника за вычетом налога")
+	var/tax = round(share * SSeconomy.tax_rate / 100)
+	TEST_ASSERT_EQUAL(account.account_balance, share - tax, "Станционному счёту доля за вычетом налога")
+	TEST_ASSERT_EQUAL(treasury.account_balance - treasury_before, tax - round(tax * settings.tax_nt_share / 100), "Налог со станционного счёта ушёл в казну")
 	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 600 - share, "Бюджету Таркова база за штуки без доли")
 
+	account.offstation = TRUE
+	var/account_before = account.account_balance
+	treasury_before = treasury.account_balance
 	tarkov_before = tarkov.account_balance
 	var/obj/item/stack/sheet/mineral/plasma/second = allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 15)
 	var/market = scanner.sell_offstation(second, scavenger, ACCOUNT_TAR)
@@ -405,6 +420,11 @@
 	TEST_ASSERT(length(resolved) == 1 && resolved[1][2], "Нет сигнала выполнения")
 	share = round(400 * settings.contract_team_share / 100)
 	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 400 - share + 1000 + round(market), "Бюджету Таркова база, маржа выполнения и рынок")
+	TEST_ASSERT_EQUAL(account.account_balance - account_before, share, "Внестанционному счёту доля целиком")
+	income = SSeconomy.ledger.outpost_income[ACCOUNT_TAR]
+	TEST_ASSERT_EQUAL(income["offers"] - offers_income_before, 600 + 400 + 1000, "Заработок Таркова по спецзаказам для итогов раунда - база и маржа")
+	TEST_ASSERT_EQUAL(income["market"] - market_income_before, round(market), "Заработок Таркова на рынке для итогов раунда")
+	TEST_ASSERT_EQUAL(treasury.account_balance, treasury_before, "С внестанционного счёта налог ушёл в казну станции")
 	TEST_ASSERT_EQUAL(cargo.account_balance, cargo_before, "Снабжение станции получило деньги со сканера аванпоста")
 	TEST_ASSERT_EQUAL(medical.account.account_balance, medical_before, "Отдел станции получил деньги со сканера аванпоста")
 
@@ -524,6 +544,30 @@
 	qdel(offer)
 	TEST_ASSERT(findtext(jointext(machine.examine(buyer), "\n"), "уплаченного"), "Осмотр автомата не объясняет выкуп")
 
+/// Тару из автомата спецзаказ на реагент принимает, если нужное в неё налили после покупки, как контракт поставки; купленное уже с реагентом, тару из снабжения и саму тару - нет.
+/datum/unit_test/economy_offers/vended_container/Run()
+	var/gintonic = /datum/reagent/consumable/ethanol/gintonic
+	var/glass_type = /obj/item/reagent_containers/food/drinks/drinkingglass
+	var/datum/market_offer/offer = add_offer("agrarian", glass_type, 2, 2, 50, gintonic, 10)
+	var/obj/item/reagent_containers/bottled = allocate(glass_type)
+	bottled.reagents.add_reagent(gintonic, 10)
+	econ_mark_vended(bottled, 30)
+	TEST_ASSERT(!offer.matches(bottled), "Спецзаказ засчитал напиток, купленный готовым")
+	var/obj/item/reagent_containers/glass = allocate(glass_type)
+	econ_mark_vended(glass, 5)
+	glass.reagents.add_reagent(gintonic, 10)
+	TEST_ASSERT(offer.matches(glass), "Спецзаказ не принял свой коктейль в стакане из автомата")
+	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate)
+	var/obj/item/reagent_containers/crated = allocate(glass_type, crate)
+	crated.reagents.add_reagent(gintonic, 10)
+	econ_mark_imported(crate)
+	TEST_ASSERT(crated.econ_imported, "Стакан из ящика снабжения не помечен купленным")
+	TEST_ASSERT(!offer.matches(crated), "Спецзаказ засчитал стакан из снабжения")
+	var/datum/market_offer/plain = add_offer("agrarian", glass_type, 1, 2, 50)
+	TEST_ASSERT(!plain.matches(glass), "Спецзаказ на саму тару засчитал тару из автомата")
+	qdel(offer)
+	qdel(plain)
+
 /// Отломленный кусок стопки из автомата уносит свою долю потолка выкупа, а слитая с ним своя стопка получает потолок.
 /datum/unit_test/economy_offers/vended_stack_split/Run()
 	var/obj/machinery/vending/medical/machine = allocate(/obj/machinery/vending/medical)
@@ -596,6 +640,7 @@
 /// fire() раз в offer_minutes выставляет спецзаказы открытым партнёрам из их offer_items, не больше offers_max и без повторов товара.
 /datum/unit_test/economy_offers/generation/Run()
 	SSmarket.offer_chance = 100
+	SSmarket.offers_board_max = 100
 	for(var/fire_count in 1 to SSmarket.offers_max + 1)
 		SSmarket.next_offers = world.time
 		SSmarket.fire()
@@ -620,6 +665,283 @@
 			TEST_ASSERT(offer.quantity >= source["min"] && offer.quantity <= source["max"] && offer.unit_price == source["unit_price"], "Количество или цена не из записи [id]")
 			TEST_ASSERT(abs(offer.deadline - (world.time + SSmarket.offer_minutes * MARKET_OFFER_UNTAKEN_LIFETIME MINUTES)) < 1, "Срок невзятого")
 	TEST_ASSERT(length(SSmarket.all_offers()), "Ни одного спецзаказа")
+
+/// Невзятых на доске не больше offers_board_max: взятые и контрабандные места не занимают, полная доска не мешает контрабандному партнёру.
+/datum/unit_test/economy_offers/board_cap/Run()
+	SSmarket.offer_chance = 100
+	SSmarket.offers_board_max = 2
+	econ_test_partner_extremes()
+	for(var/fire_count in 1 to 4)
+		SSmarket.generate_offers()
+	TEST_ASSERT_EQUAL(board_count(), 2, "Невзятых на доске")
+	var/datum/trade_partner/free_traders = SSmarket.get_partner("free_traders")
+	TEST_ASSERT_EQUAL(length(free_traders.offers), SSmarket.offers_max, "Контрабандный партнёр не выставил из-за полной доски")
+	var/list/board = list()
+	for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
+		if(!offer.contraband())
+			board += offer
+	var/datum/market_offer/taken = board[1]
+	TEST_ASSERT(taken.accept(), "Спецзаказ с доски взят")
+	SSmarket.generate_offers()
+	TEST_ASSERT_EQUAL(board_count(), 2, "Взятый освободил место на доске")
+	SSmarket.offers_board_max = 0
+	var/total = length(SSmarket.all_offers())
+	SSmarket.generate_offers()
+	TEST_ASSERT_EQUAL(length(SSmarket.all_offers()), total, "Доска с нулевым лимитом получила спецзаказ")
+
+/datum/unit_test/economy_offers/board_cap/proc/board_count()
+	. = 0
+	for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
+		if(!offer.accepted && !offer.contraband() && offer.open())
+			.++
+
+/// Партнёр, чьи спецзаказы снимаются невзятыми, выставляет реже, но не реже offer_ignored_chance_min; снятое под эмбарго не в счёт, взятый возвращает прежний шанс.
+/datum/unit_test/economy_offers/ignored_partner_slows/Run()
+	SSmarket.offer_chance = 60
+	SSmarket.offer_ignored_factor = 0.5
+	SSmarket.offer_ignored_chance_min = 10
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 60, "Шанс без невзятых")
+	expire_untaken("prospectors", /obj/item/stack/sheet/mineral/silver)
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 30, "Шанс после одного невзятого")
+	for(var/list/row as anything in econ_cargo_partners_data(FALSE))
+		TEST_ASSERT_EQUAL(!!row["offers_slowed"], row["id"] == "prospectors", "Метка редких спецзаказов у [row["id"]]")
+	prospectors.embargo_until = world.time + 1 HOURS
+	expire_untaken("prospectors", /obj/item/stack/sheet/mineral/silver)
+	prospectors.embargo_until = 0
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 30, "Снятое под эмбарго посчитано невзятым")
+	var/datum/market_offer/crossed = add_offer("prospectors", /obj/item/stack/sheet/mineral/silver, 5, 2, 20)
+	crossed.posted_at = world.time - 10
+	prospectors.embargo_until = world.time - 5
+	crossed.deadline = world.time - 1
+	SSmarket.expire_offers()
+	prospectors.embargo_until = 0
+	TEST_ASSERT(QDELETED(crossed), "Невзятый после эмбарго не снят")
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 30, "Снятое после эмбарго, который шёл за его срок, посчитано невзятым")
+	expire_untaken("prospectors", /obj/item/stack/sheet/mineral/silver)
+	expire_untaken("prospectors", /obj/item/stack/sheet/mineral/silver)
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 10, "Шанс опустился ниже минимума")
+	SSmarket.offer_chance = 5
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 5, "Минимум поднял шанс выше обычного")
+
+	SSmarket.offer_chance = 100
+	SSmarket.offer_ignored_factor = 0
+	SSmarket.offer_ignored_chance_min = 0
+	SSmarket.offers_board_max = 100
+	var/datum/trade_partner/vey = SSmarket.get_partner("vey_med")
+	SSmarket.generate_offers()
+	TEST_ASSERT(!length(prospectors.offers), "Партнёр с невзятыми выставил при нулевом шансе")
+	TEST_ASSERT(length(vey.offers), "Партнёр без невзятых не выставил")
+	var/datum/market_offer/taken = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 5, 2, 60)
+	TEST_ASSERT(taken.accept(), "Спецзаказ взят")
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 100, "Взятый не вернул шанс")
+	SSmarket.generate_offers()
+	TEST_ASSERT_EQUAL(length(prospectors.offers), 2, "После взятого партнёр снова выставляет")
+
+/datum/unit_test/economy_offers/proc/expire_untaken(partner_id, wanted_type)
+	var/datum/market_offer/offer = add_offer(partner_id, wanted_type, 5, 2, 20)
+	offer.deadline = world.time - 1
+	SSmarket.expire_offers()
+	TEST_ASSERT(QDELETED(offer), "Невзятый не снят")
+	TEST_ASSERT(!length(resolved), "Невзятый дал сигнал провала")
+
+/// Товар, который станция сдала партнёру, выпадает в новых спецзаказах чаще, а снятый невзятым - реже; при нулевом весе остальных партнёр просит только сданное.
+/datum/unit_test/economy_offers/delivered_items_favoured/Run()
+	SSmarket.offer_ignored_factor = 0
+	SSmarket.offer_ignored_weight_min = 0
+	SSmarket.offer_delivered_weight = 3
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 2, 2, 60)
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/mob/living/carbon/human/technician = make_technician(station_turf)
+	var/obj/item/stack/sheet/mineral/gold/gold = allocate(/obj/item/stack/sheet/mineral/gold, station_turf, 1)
+	TEST_ASSERT_EQUAL(econ_offers_ship(gold, technician), 1, "Золото сдано с пада")
+	TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/gold), 3, "Вес сданного товара")
+	qdel(offer)
+	prospectors.offer_interest = list()
+	var/datum/market_offer/shuttle_offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 2, 2, 60)
+	shuttle_offer.accept()
+	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, station_turf)
+	new /obj/item/stack/sheet/mineral/gold(crate, 1)
+	shuttle_offer.deliver(crate)
+	TEST_ASSERT_EQUAL(shuttle_offer.delivered, 1, "Шаттл сдал золото")
+	TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/gold), 3, "Вес сданного шаттлом товара")
+	qdel(shuttle_offer)
+	for(var/list/item_entry as anything in prospectors.offer_items)
+		if(item_entry["path"] != /obj/item/stack/sheet/mineral/gold)
+			expire_untaken("prospectors", item_entry["path"])
+			TEST_ASSERT_EQUAL(prospectors.offer_item_weight(item_entry["path"]), 0, "Вес невзятого товара [item_entry["path"]]")
+	prospectors.offers_ignored = 0
+	for(var/attempt in 1 to 10)
+		var/datum/market_offer/fresh = prospectors.new_offer()
+		TEST_ASSERT_EQUAL(fresh.wanted_type, /obj/item/stack/sheet/mineral/gold, "Выпал товар с нулевым весом")
+		qdel(fresh)
+	var/datum/market_offer/gold_open = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 2, 2, 60)
+	var/datum/market_offer/fallback = prospectors.new_offer()
+	TEST_ASSERT_NOTNULL(fallback, "Когда у всех свободных товаров нулевой вес, спецзаказ всё равно выставляется")
+	qdel(fallback)
+	qdel(gold_open)
+
+/// Пачка скупки, снятая непроданной, снижает шанс следующей пачки её партнёра, если не была под эмбарго; продавца новой пачки выбирает этот шанс, и тот же шанс решает, выставит ли он её вообще.
+/datum/unit_test/economy_offers/ignored_bundles_slow/Run()
+	SSmarket.offer_ignored_factor = 0.5
+	SSmarket.offer_ignored_chance_min = 10
+	var/datum/trade_partner/vey = SSmarket.get_partner("vey_med")
+	TEST_ASSERT_EQUAL(vey.bundle_spawn_chance(), 100, "Шанс пачки без непроданных")
+	var/datum/supply_pack/bundle/stale = SSmarket.generate_bundle(vey)
+	TEST_ASSERT_NOTNULL(stale, "Пачка выставлена")
+	stale.expires_at = world.time - 1
+	SSmarket.tick_bundles()
+	TEST_ASSERT(!(stale in SSmarket.bundles), "Просроченная пачка не снята")
+	TEST_ASSERT_EQUAL(vey.bundle_spawn_chance(), 50, "Шанс пачки после непроданной")
+	var/datum/supply_pack/bundle/embargoed = SSmarket.generate_bundle(vey)
+	embargoed.expires_at = world.time - 1
+	vey.embargo_until = world.time - 2
+	SSmarket.tick_bundles()
+	vey.embargo_until = 0
+	TEST_ASSERT(!(embargoed in SSmarket.bundles), "Просроченная пачка после эмбарго не снята")
+	TEST_ASSERT_EQUAL(vey.bundle_spawn_chance(), 50, "Пачка, которую эмбарго не давал купить, посчитана непроданной")
+	SSmarket.offer_ignored_factor = 0
+	SSmarket.offer_ignored_chance_min = 0
+	for(var/id in SSmarket.partners)
+		var/datum/trade_partner/partner = SSmarket.partners[id]
+		partner.bundles_ignored = 1
+	SSmarket.next_bundle_at = world.time
+	SSmarket.tick_bundles()
+	TEST_ASSERT(!length(SSmarket.bundles), "Партнёр с непроданной пачкой выставил новую при нулевом шансе")
+	vey.bundles_ignored = 0
+	for(var/attempt in 1 to 8)
+		SSmarket.next_bundle_at = world.time
+		SSmarket.tick_bundles()
+		TEST_ASSERT_EQUAL(length(SSmarket.bundles), 1, "Срок новой пачки пропал впустую, хотя у одного партнёра шанс полный")
+		var/datum/supply_pack/bundle/fresh = SSmarket.bundles[1]
+		TEST_ASSERT_EQUAL(fresh.seller_id, "vey_med", "Пачку выставил партнёр с нулевым шансом")
+		SSmarket.bundles -= fresh
+		qdel(fresh)
+	SSmarket.offer_ignored_factor = 0.000001
+	vey.bundles_ignored = 1
+	var/spawned = 0
+	for(var/attempt in 1 to 20)
+		SSmarket.next_bundle_at = world.time
+		SSmarket.tick_bundles()
+		for(var/datum/supply_pack/bundle/fresh as anything in SSmarket.bundles.Copy())
+			spawned++
+			SSmarket.bundles -= fresh
+			qdel(fresh)
+	SSmarket.offer_ignored_factor = 0
+	vey.bundles_ignored = 0
+	TEST_ASSERT_EQUAL(spawned, 0, "Единственный продавец с почти нулевым шансом выставляет пачку каждый срок")
+	SSmarket.next_bundle_at = world.time + 1 HOURS
+
+/// Пачку партнёра под эмбарго не купить и не отгрузить; счётчик непроданных сбрасывает оплата пачки шаттлом, а не корзина.
+/datum/unit_test/economy_offers/bundle_embargo_and_purchase/Run()
+	SSmarket.offer_ignored_factor = 0.5
+	var/datum/trade_partner/vey = SSmarket.get_partner("vey_med")
+	var/datum/supply_pack/bundle/bundle = SSmarket.generate_bundle(vey)
+	TEST_ASSERT_NOTNULL(bundle, "Пачка выставлена")
+	var/turf/station_turf = find_walkable_station_turf()
+	var/mob/living/carbon/human/technician = make_technician(station_turf)
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo, station_turf)
+	vey.embargo_until = world.time + 1 HOURS
+	var/list/rows = econ_bundles_ui_data()
+	TEST_ASSERT(rows[1]["embargoed"], "Окно не помечает пачку партнёра под эмбарго")
+	var/orders_before = length(SSshuttle.shoppinglist)
+	TEST_ASSERT(!econ_cargo_buy_bundle(technician, list("uid" = bundle.uid), console, FALSE, TRUE), "Пачка партнёра под эмбарго куплена")
+	TEST_ASSERT(bundle in SSmarket.bundles, "Отказ убрал пачку из скупки")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), orders_before, "Отказ положил пачку в корзину")
+	vey.embargo_until = 0
+	rows = econ_bundles_ui_data()
+	TEST_ASSERT(!rows[1]["embargoed"], "Пачка без эмбарго помечена эмбарго")
+	vey.bundles_ignored = 2
+	TEST_ASSERT(econ_cargo_buy_bundle(technician, list("uid" = bundle.uid), console, FALSE, TRUE), "Пачка куплена")
+	TEST_ASSERT_EQUAL(vey.bundles_ignored, 2, "Корзина сбросила счётчик непроданных до оплаты")
+	var/datum/supply_order/order = SSshuttle.shoppinglist[length(SSshuttle.shoppinglist)]
+	TEST_ASSERT_EQUAL(order.pack, bundle, "В корзине пачка")
+	var/list/other_orders = SSshuttle.shoppinglist - order
+	SSshuttle.shoppinglist = list(order)
+	econ_test_set_balance(cargo, bundle.price * 10)
+	var/list/crates_before = shuttle_crates()
+	vey.embargo_until = world.time + 1 HOURS
+	TEST_ASSERT(econ_pack_unavailable(order.pack), "Пачка партнёра под эмбарго в наличии")
+	TEST_ASSERT_NULL(econ_order_supplier(order), "Пачку везёт партнёр под эмбарго")
+	SSshuttle.supply.buy()
+	TEST_ASSERT(order in SSshuttle.shoppinglist, "Шаттл отгрузил пачку партнёра под эмбарго")
+	TEST_ASSERT_EQUAL(vey.bundles_ignored, 2, "Неотгруженная пачка сбросила счётчик")
+	vey.embargo_until = 0
+	SSshuttle.supply.buy()
+	SSshuttle.orderhistory -= order
+	SSshuttle.shoppinglist = other_orders + SSshuttle.shoppinglist
+	for(var/obj/structure/closet/crate/crate as anything in shuttle_crates() - crates_before)
+		allocated += crate.GetAllContents()
+	TEST_ASSERT(!(order in SSshuttle.shoppinglist), "Пачка без эмбарго не отгружена")
+	TEST_ASSERT_EQUAL(vey.bundles_ignored, 0, "Оплаченная пачка не сбросила счётчик непроданных")
+	qdel(order)
+
+/datum/unit_test/economy_offers/proc/shuttle_crates()
+	. = list()
+	for(var/area/shuttle/shuttle_area as anything in SSshuttle.supply.shuttle_areas)
+		for(var/obj/structure/closet/crate/crate in shuttle_area)
+			. += crate
+
+/// Вес невзятого товара падает до offer_ignored_weight_min и не ниже; проваленный станцией спецзаказ режет вес так же, проваленный только аванпостом - нет.
+/datum/unit_test/economy_offers/ignored_item_weight_floor/Run()
+	SSmarket.offer_ignored_factor = 0.5
+	SSmarket.offer_ignored_weight_min = 0.25
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	var/list/expected = list(0.5, 0.25, 0.25)
+	for(var/weight in expected)
+		expire_untaken("prospectors", /obj/item/stack/sheet/mineral/silver)
+		TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/silver), weight, "Вес невзятого товара")
+	var/datum/market_offer/failed = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 5, 2, 60)
+	TEST_ASSERT(failed.accept(), "Спецзаказ взят станцией")
+	failed.deadline = world.time - 1
+	SSmarket.expire_offers()
+	TEST_ASSERT(QDELETED(failed), "Просроченный взятый не провален")
+	TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/gold), 0.5, "Проваленный станцией не снизил вес товара")
+	var/datum/market_offer/outpost_only = add_offer("prospectors", /obj/item/stack/sheet/mineral/titanium, 5, 2, 60)
+	TEST_ASSERT(outpost_only.accept(null, TRUE), "Спецзаказ взят аванпостом")
+	outpost_only.deadline = world.time - 1
+	SSmarket.expire_offers()
+	TEST_ASSERT(QDELETED(outpost_only), "Просроченный взятый аванпостом не провален")
+	TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/titanium), 1, "Провал только аванпоста снизил вес товара")
+
+/// Партнёры без невзятых спецзаказов первыми получают место на доске; невзятые спецзаказы партнёра под эмбарго места не занимают.
+/datum/unit_test/economy_offers/board_prefers_fresh_partners/Run()
+	SSmarket.offer_chance = 100
+	SSmarket.offer_ignored_factor = 1
+	SSmarket.offers_board_max = 1
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	prospectors.offers_ignored = 1
+	for(var/attempt in 1 to 10)
+		SSmarket.generate_offers()
+		TEST_ASSERT(!length(prospectors.offers), "Место на доске досталось партнёру с невзятыми, хотя были без них")
+		for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
+			qdel(offer)
+	var/datum/trade_partner/vey = SSmarket.get_partner("vey_med")
+	var/datum/market_offer/frozen = add_offer("vey_med", /obj/item/stack/sheet/bone, 5, 2, 20)
+	vey.embargo_until = world.time + 1 HOURS
+	SSmarket.generate_offers()
+	vey.embargo_until = 0
+	TEST_ASSERT_EQUAL(length(SSmarket.all_offers()), 2, "Невзятый спецзаказ партнёра под эмбарго занял место на доске")
+	qdel(frozen)
+
+/// Обычная продажа шаттлом предмета из offer_items партнёра-покупателя поднимает его вес до offer_delivered_weight; купленное через снабжение и контрабандный партнёр не в счёт.
+/datum/unit_test/economy_offers/export_raises_interest/Run()
+	SSmarket.offer_delivered_weight = 3
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, run_loc_floor_bottom_left)
+	new /obj/item/stack/sheet/mineral/gold(crate, 5)
+	var/obj/item/stack/sheet/mineral/silver/imported = new(crate, 5)
+	imported.econ_imported = TRUE
+	export_item_and_contents(crate, EXPORT_CARGO, delete_unsold = FALSE)
+	TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/gold), 3, "Проданное партнёру золото не подняло вес")
+	TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/silver), 1, "Перепродажа купленного серебра подняла вес")
+	var/datum/trade_partner/free_traders = SSmarket.get_partner("free_traders")
+	var/list/crack_entry = free_traders.offer_items[1]
+	var/obj/item/crack = allocate(crack_entry["path"], run_loc_floor_bottom_left)
+	free_traders.note_export_interest(crack)
+	TEST_ASSERT_EQUAL(free_traders.offer_item_weight(crack_entry["path"], crack_entry["reagent"]), 1, "Продажа контрабандному партнёру подняла вес")
 
 /// Консоль запросов, экспресс-консоль Deep Space и консоль снабжения вне станции спецзаказы не берут и не печатают; справка снабжения называет правила числами из настроек.
 /datum/unit_test/economy_offers/consoles_and_help/Run()
@@ -647,6 +969,9 @@
 	var/help = econ_cargo_market_help()
 	TEST_ASSERT(findtext(help, "до [SSmarket.offers_max], новые выходят раз в [SSmarket.offer_minutes] мин.") && findtext(help, "закрыть за [SSmarket.offer_deadline_minutes] мин.") && findtext(help, "+[MARKET_OFFER_REPUTATION_SUCCESS] репутации") && findtext(help, "маржа"), "Справка не описывает спецзаказы")
 	TEST_ASSERT(findtext(help, "сканером продажи в свой бюджет"), "Справка не говорит, что аванпосты сдают спецзаказы сканером")
+	TEST_ASSERT(findtext(help, "Невзятых на доске сразу не больше [SSmarket.offers_board_max], спецзаказы партнёра под эмбарго не в счёт.") && findtext(help, "но совсем не перестаёт") && findtext(help, "просит чаще"), "Справка не объясняет, как партнёр подстраивается под станцию")
+	TEST_ASSERT(!findtext(help, "в этот лимит не входят") && findtext(econ_cargo_market_help(TRUE), "Вольные торговцы в этот лимит не входят"), "Справка о лимите доски и Вольных торговцах не по допуску консоли")
+	TEST_ASSERT(findtext(help, "пачки партнёра уходят непроданными") && findtext(help, "У партнёра под эмбарго пачку не купить"), "Справка не объясняет скупку у партнёра под эмбарго и непроданную")
 
 /// Настройки спецзаказов и offer_items партнёров из economy.json совпадают со встроенными; любая битая запись оставляет список партнёра встроенным.
 /datum/unit_test/economy_offers/config/Run()
@@ -664,6 +989,11 @@
 		"offers_max" = 1.5,
 		"offer_chance" = 200,
 		"offer_deadline_minutes" = "долго",
+		"offers_board_max" = -1,
+		"offer_ignored_factor" = 2,
+		"offer_ignored_chance_min" = 0,
+		"offer_ignored_weight_min" = 0,
+		"offer_delivered_weight" = 0.5,
 		"commodities" = SSeconomy.settings.raw["market"]["commodities"],
 		"partners" = list(
 			"prospectors" = list("offer_items" = list(
@@ -679,7 +1009,7 @@
 		),
 	)
 	errors = SSmarket.load_settings(bad)
-	TEST_ASSERT_EQUAL(length(errors), 11, "Ошибки: интервал, число, шанс, срок, тип, min/max, реагент без объёма, /obj/item, абстрактный тип, реагент у стопки, не список ([jointext(errors, "; ")])")
+	TEST_ASSERT_EQUAL(length(errors), 16, "Ошибки: интервал, число, шанс, срок, доска, затухание, минимум шанса, минимум веса, вес сданного, тип, min/max, реагент без объёма, /obj/item, абстрактный тип, реагент у стопки, не список ([jointext(errors, "; ")])")
 	TEST_ASSERT_EQUAL(SSmarket.offer_minutes, initial(SSmarket.offer_minutes), "Нулевой интервал принят")
 	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
 	var/list/default_items = GLOB.market_default_partners["prospectors"]["offer_items"]
@@ -688,7 +1018,7 @@
 	SSmarket.load_settings(SSeconomy.settings.raw?["market"])
 
 /datum/unit_test/economy_offers/config/proc/snapshot()
-	. = list("settings" = "[SSmarket.offer_minutes]|[SSmarket.offers_max]|[SSmarket.offer_chance]|[SSmarket.offer_deadline_minutes]")
+	. = list("settings" = "[SSmarket.offer_minutes]|[SSmarket.offers_max]|[SSmarket.offer_chance]|[SSmarket.offer_deadline_minutes]|[SSmarket.offers_board_max]|[SSmarket.offer_ignored_factor]|[SSmarket.offer_ignored_chance_min]|[SSmarket.offer_ignored_weight_min]|[SSmarket.offer_delivered_weight]")
 	for(var/id in SSmarket.partners)
 		var/datum/trade_partner/partner = SSmarket.partners[id]
 		var/list/texts = list()

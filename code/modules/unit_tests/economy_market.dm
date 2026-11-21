@@ -25,6 +25,11 @@
 		"offer_minutes" = SSmarket.offer_minutes,
 		"offers_max" = SSmarket.offers_max,
 		"offer_chance" = SSmarket.offer_chance,
+		"offers_board_max" = SSmarket.offers_board_max,
+		"offer_ignored_factor" = SSmarket.offer_ignored_factor,
+		"offer_ignored_chance_min" = SSmarket.offer_ignored_chance_min,
+		"offer_ignored_weight_min" = SSmarket.offer_ignored_weight_min,
+		"offer_delivered_weight" = SSmarket.offer_delivered_weight,
 		"offer_deadline_minutes" = SSmarket.offer_deadline_minutes,
 		"next_offers" = SSmarket.next_offers,
 		"companies" = SSmarket.companies,
@@ -388,6 +393,32 @@
 	for(var/list/entry as anything in market["commodities"])
 		var/list/history = entry["history"]
 		TEST_ASSERT_EQUAL(length(history), 2, "[entry["id"]]: после первого сдвига в окне две точки тренда")
+
+/// Лот сектора по силам игроку со средними деньгами: станции-соперники не дают дороже 110% оценки, примерно каждый четвёртый лот идёт без них; шанс лота без соперников берётся из настроек.
+/datum/unit_test/economy_market/sector_auction_rivals/Run()
+	var/datum/economy_settings/settings = SSeconomy.settings
+	var/saved_chance = settings.auction_rival_free_chance
+	var/datum/auction_lot/lot = allocate(/datum/auction_lot)
+	lot.value = 1000
+	var/free = 0
+	var/top_cap = 0
+	for(var/i in 1 to 100)
+		SSmarket.roll_auction_rivals(lot)
+		if(!length(lot.rivals))
+			free++
+		for(var/rival in lot.rivals)
+			top_cap = max(top_cap, lot.rivals[rival])
+	settings.auction_rival_free_chance = 0
+	SSmarket.roll_auction_rivals(lot)
+	var/contested = length(lot.rivals)
+	settings.auction_rival_free_chance = 100
+	SSmarket.roll_auction_rivals(lot)
+	var/uncontested = length(lot.rivals)
+	settings.auction_rival_free_chance = saved_chance
+	TEST_ASSERT(top_cap <= 1100, "Соперник готов дать [top_cap] кр. за лот в 1000 кр.")
+	TEST_ASSERT(free >= 10, "Без соперников только [free] лотов из 100")
+	TEST_ASSERT(contested >= 2 && contested <= 3, "Соперников [contested] при нулевом шансе свободного лота")
+	TEST_ASSERT_EQUAL(uncontested, 0, "Соперники есть при шансе свободного лота 100%")
 
 /// Аукцион экипажа на подменённом рынке: пад подработки на станции, посылки с итогом встают на него.
 /datum/unit_test/economy_market/crew_auction
@@ -1076,3 +1107,17 @@
 	TEST_ASSERT_NOTNULL(list_item(shy, allocate(/obj/item/toy/plush/lizardplushie, pad_turf), 100, anonymous = TRUE), "Третий лот выставлен")
 	TEST_ASSERT_EQUAL(length(spy.heard), 2, "После кулдауна лот прозвучал")
 	TEST_ASSERT(findtext(spy.heard[2], "аноним") && !findtext(spy.heard[2], "Econ Auction Shy"), "Анонимный продавец назван в канале: [spy.heard[2]]")
+
+/// Лот сектора без станций-соперников объявляется с пометкой, что торговаться не с кем; лот с соперниками - без неё.
+/datum/unit_test/economy_market/crew_auction/sector_radio_rivals/Run()
+	var/obj/item/radio/headset/econ_test_spy/spy = spy_radio()
+	var/datum/auction_lot/lot = allocate(/datum/auction_lot)
+	lot.name = "Econ Test Lot"
+	lot.value = 1000
+	lot.rivals = list()
+	TEST_ASSERT(SSmarket.announce_auction_lot(lot, 5), "Лот без соперников объявлен")
+	TEST_ASSERT(findtext(spy.heard[1], "\"Econ Test Lot\", других станций на торгах нет."), "Нет пометки о лоте без соперников: [spy.heard[1]]")
+	SSmarket.auction_announce_ready_at = 0
+	lot.rivals = list("Станция Тест" = 1100)
+	TEST_ASSERT(SSmarket.announce_auction_lot(lot, 5), "Лот с соперниками объявлен")
+	TEST_ASSERT(!findtext(spy.heard[2], "других станций"), "Лот с соперниками объявлен как свободный: [spy.heard[2]]")

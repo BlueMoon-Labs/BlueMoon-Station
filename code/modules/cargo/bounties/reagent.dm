@@ -31,13 +31,24 @@
 	var/datum/bounty/reagent/R = other_bounty
 	return wanted_reagent.type != R.wanted_reagent.type
 
+/// Реагенты, из которых New() выбирает заказ; у заказа на один реагент - пусто.
+/datum/bounty/reagent/proc/possible_reagents()
+	return null
+
 /datum/bounty/reagent/simple_drink
 	name = ""
 	reward = 3500
 
 /datum/bounty/reagent/simple_drink/New()
+	var/reagent_type = pick(possible_reagents())
+	wanted_reagent = new reagent_type
+	name = wanted_reagent.name
+	description = "CentCom is thirsty! Send a shipment of [name] to CentCom to quench the company's thirst."
+	reward += rand(0, 2) * 500
+
+/datum/bounty/reagent/simple_drink/possible_reagents()
 	// Don't worry about making this comprehensive. It doesn't matter if some drinks are skipped.
-	var/static/list/possible_reagents = list(\
+	var/static/list/options = list(\
 		/datum/reagent/consumable/ethanol/antifreeze,\
 		/datum/reagent/consumable/ethanol/andalusia,\
 		/datum/reagent/consumable/tea/arnold_palmer,\
@@ -80,20 +91,22 @@
 		/datum/reagent/consumable/ethanol/crevice_spike,\
 		/datum/reagent/consumable/ethanol/singulo,\
 		/datum/reagent/consumable/ethanol/whiskey_sour)
-
-	var/reagent_type = pick(possible_reagents)
-	wanted_reagent = new reagent_type
-	name = wanted_reagent.name
-	description = "CentCom is thirsty! Send a shipment of [name] to CentCom to quench the company's thirst."
-	reward += rand(0, 2) * 500
+	return options
 
 /datum/bounty/reagent/complex_drink
 	name = "Complex Drink"
 	reward = 5500
 
 /datum/bounty/reagent/complex_drink/New()
+	var/reagent_type = pick(possible_reagents())
+	wanted_reagent = new reagent_type
+	name = wanted_reagent.name
+	description = "CentCom is offering a reward for talented mixologists. Ship a container of [name] to claim the prize."
+	reward += rand(1, 4) * 550
+
+/datum/bounty/reagent/complex_drink/possible_reagents()
 	// Don't worry about making this comprehensive. It doesn't matter if some drinks are skipped.
-	var/static/list/possible_reagents = list(\
+	var/static/list/options = list(\
 		/datum/reagent/consumable/ethanol/atomicbomb,\
 		/datum/reagent/consumable/ethanol/bacchus_blessing,\
 		/datum/reagent/consumable/ethanol/bastion_bourbon,\
@@ -112,12 +125,7 @@
 		/datum/reagent/consumable/ethanol/quintuple_sec,\
 		/datum/reagent/consumable/doctor_delight,\
 		/datum/reagent/consumable/ethanol/silencer)
-
-	var/reagent_type = pick(possible_reagents)
-	wanted_reagent = new reagent_type
-	name = wanted_reagent.name
-	description = "CentCom is offering a reward for talented mixologists. Ship a container of [name] to claim the prize."
-	reward += rand(1, 4) * 550
+	return options
 
 /datum/bounty/reagent/chemical
 	name = "Chemical"
@@ -125,8 +133,15 @@
 	required_volume = 30
 
 /datum/bounty/reagent/chemical/New()
+	var/reagent_type = pick(possible_reagents())
+	wanted_reagent = new reagent_type
+	name = wanted_reagent.name
+	description = "CentCom is in desperate need of the chemical [name]. Ship a container of it to be rewarded."
+	reward += rand(1, 4) * 700
+
+/datum/bounty/reagent/chemical/possible_reagents()
 	// Don't worry about making this comprehensive. It doesn't matter if some chems are skipped.
-	var/static/list/possible_reagents = list(\
+	var/static/list/options = list(\
 		/datum/reagent/medicine/leporazine,\
 		/datum/reagent/medicine/clonexadone,\
 		/datum/reagent/medicine/pyroxadone,\
@@ -164,10 +179,5 @@
 		/datum/reagent/toxin/anacea,\
 		/datum/reagent/toxin/mimesbane,\
 		/datum/reagent/pax)
-
-	var/reagent_type = pick(possible_reagents)
-	wanted_reagent = new reagent_type
-	name = wanted_reagent.name
-	description = "CentCom is in desperate need of the chemical [name]. Ship a container of it to be rewarded."
-	reward += rand(1, 4) * 700
+	return options
 

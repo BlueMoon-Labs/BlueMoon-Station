@@ -15,6 +15,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		WORK_SCI_NODE = "за каждые [ECON_NODE_POINTS_UNIT] очков изученного узла",
 		WORK_SCI_SLIME_DISCOVERY = "за очко ценности нового цвета экстракта",
 		WORK_SCI_ARTIFACT = "за очко ценности артефакта",
+		WORK_SCI_MECH = "за первого за смену собранного на станции меха каждой модели",
 	),
 	ACCOUNT_CAR = list(
 		WORK_MINING_ORE = "за очко руды в переработке",
@@ -36,7 +37,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 	filedesc = "Бюджет отдела"
 	category = PROGRAM_CATEGORY_CREW
 	program_icon_state = "deptbudget"
-	extended_desc = "Бюджет своего отдела: заявки на закупку из каталога, расходники без одобрения, контракты и оплаченная работа. Глава отдела одобряет заявки, выписывает премии и надбавки, просит деньги из казны; ИИ решает заявки сотрудников, кроме СБ."
+	extended_desc = "Бюджет своего отдела: что нужно отделу сейчас, заказы из каталога (недорогие и расходники - без одобрения), пачки скупки для отдела, контракты и оплаченная работа. Глава отдела одобряет заявки, выписывает премии и надбавки, просит деньги из казны; ИИ решает заявки сотрудников, кроме СБ."
 	requires_ntnet = FALSE
 	usage_flags = PROGRAM_ALL
 	size = 4
@@ -105,23 +106,19 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		var/datum/economy_department/listed = SSeconomy.departments[id]
 		departments += list(list("id" = id, "name" = listed.name))
 	var/list/catalog = list()
-	var/list/work_prices = list()
 	var/datum/economy_department/department = current_department(user)
 	if(department)
 		var/list/packs = department.catalog()
 		catalog_cache[department.id] = packs
 		for(var/datum/supply_pack/pack as anything in packs)
 			catalog += list(list("type" = "[pack.type]", "name" = pack.name, "desc" = pack.desc || pack.name, "staple" = econ_pack_staple(pack)))
-		var/list/works = GLOB.econ_department_work[department.id]
-		for(var/work_type in works)
-			work_prices += list(list("name" = econ_work_name(work_type), "price" = settings.work_prices[work_type], "unit" = works[work_type]))
 	var/list/goal_packs = istype(department, /datum/economy_department/cargo) ? econ_cargo_goal_packs(department) : list()
 	return list(
 		"goal_packs" = goal_packs,
 		"goal_max" = econ_cargo_goal_max(),
 		"departments" = departments,
 		"catalog" = catalog,
-		"work_prices" = work_prices,
+		"advice" = department?.spending_advice() || list(),
 		"reason_max" = ECON_REQUEST_REASON_MAX,
 		"grant_base" = settings.grant_base,
 		"grant_payroll_share" = settings.grant_payroll_share,
@@ -150,11 +147,13 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"handoff_minutes" = settings.request_handoff_minutes,
 		"pending_per_requester" = settings.request_pending_per_requester,
 		"handling_fee" = settings.cargo_handling_fee,
-		"work_share" = settings.work_personal_share,
 		"work_cap" = settings.work_personal_cap_hour,
 		"performer_share" = settings.contract_performer_share,
 		"contracts_help_topics" = econ_contracts_help_topics(),
 		"audit_rights" = SSeconomy.audit_rights_text(),
+		"audit_bonus_allowance" = SSeconomy.audit_bonus_allowance(),
+		"audit_siphon_minutes" = settings.audit_siphon_minutes,
+		"bundle_first" = round(BUNDLE_DEPARTMENT_FIRST / (1 MINUTES)),
 		"grant_price" = settings.research_grant_price_per_point,
 		"grant_cap" = settings.research_grant_cap_hour,
 	)
@@ -169,6 +168,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"has_department" = !!department,
 		"my_account" = own?.account_id,
 		"manifest_department" = manifest_department?.name,
+		"tax_mood_note" = SSeconomy.tax_mood_note(),
 	)
 	if(!department)
 		return data
@@ -190,11 +190,14 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"balance" = department.account.account_balance,
 		"owed" = department.owed,
 		"staff_on_shift" = on_shift,
-		"grant" = department.grant_amount(packs, staff_stats),
+		"grant" = department.grant_due(packs, staff_stats),
+		"grant_max" = department.grant_amount(packs, staff_stats),
+		"grant_level" = department.grant_level(staff_stats),
 		"grant_has_base" = length(packs) && SSeconomy.settings.grant_base > 0,
 		"threshold" = department.budget_threshold(staff_stats),
 		"threshold_floor" = department.budget_floor(),
 		"return_due" = department.budget_return_due(staff_stats),
+		"reserve" = department.owed_to_staff(staff_stats),
 		"return_in" = max(CEILING((SSeconomy.next_fire - world.time) / (1 MINUTES), 1), 1),
 		"shielded" = department.shielded(),
 		"goal_cooldown" = department.saving_goal_cooldown_minutes(),
@@ -208,6 +211,17 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		var/list/row = econ_cargo_price_row(pack, offers[pack])
 		prices["[pack.type]"] = list("price" = row["cost"], "available" = row["in_stock"])
 	data["prices"] = prices
+	data["needs"] = department.needs_ui()
+	data["bundles"] = econ_bundles_ui_data(user, department.id)
+	data["head_on_shift"] = department.has_approver_on_shift()
+	data["work_share"] = SSeconomy.work_premium_share()
+	var/list/work_prices = list()
+	var/list/works = GLOB.econ_department_work[department.id]
+	for(var/work_type in works)
+		work_prices += list(list("name" = econ_work_name(work_type), "price" = round(SSeconomy.work_price(work_type), 0.01), "unit" = works[work_type]))
+	data["work_prices"] = work_prices
+	data["instant_approval"] = department.instant_approval()
+	data["auto_ready_in"] = own?.department_id == department.id ? max(CEILING((department.auto_approve_after["[own.account_id]"] - world.time) / (1 MINUTES), 1), 0) : null
 	if(istype(department, /datum/economy_department/cargo))
 		var/list/goal_erts = list()
 		for(var/ert_id in 1 to length(GLOB.payed_ert))
@@ -359,14 +373,6 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 	var/datum/bank_account/member = SSeconomy.find_account(econ_ui_number(number))
 	return department.is_staff_account(member) ? member : null
 
-/datum/computer_file/program/department_budget/proc/order_refusal(datum/economy_department/department, datum/supply_pack/pack)
-	if(econ_pack_unavailable(pack))
-		return "\"[pack.name]\" нет в наличии у партнёров снабжения."
-	var/price = round(econ_pack_price(pack))
-	if(department.account.account_balance < price)
-		return "В бюджете не хватает денег: \"[pack.name]\" стоит [price] кр."
-	return "Заказ не оформлен."
-
 /datum/computer_file/program/department_budget/proc/budget_act(mob/living/user, action, list/params)
 	if(!isliving(user) || !islist(params))
 		return FALSE
@@ -386,13 +392,25 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			if(!pack)
 				messages[user_ref] = "Этого нет в каталоге отдела."
 				return TRUE
+			var/datum/econ_request/repeat = department.instant_repeat(pack, user)
+			if(repeat)
+				messages[user_ref] = econ_repeat_refusal(repeat)
+				return TRUE
 			var/datum/econ_request/request = department.submit_request(pack, user, econ_ui_reason(params["reason"]))
 			if(!request)
 				messages[user_ref] = "Заявку не приняли: подают сотрудники отдела, у одного сотрудника ждут решения не больше [SSeconomy.settings.request_pending_per_requester] заявок."
 			else if(request.status == ECON_REQUEST_APPROVED)
 				messages[user_ref] = "Заявка №[request.uid] одобрена, заказ ушёл в снабжение."
 			else
-				messages[user_ref] = "Заявка №[request.uid] подана и [department.pending_text(pack, user, 1)]."
+				var/list/parts = list(econ_sentence("Заявка №[request.uid] подана и [department.pending_text(pack, user, 1)]"))
+				var/money = department.money_note(pack)
+				if(money)
+					parts += money
+				var/datum/bank_account/requester_account = econ_account_of(user)
+				var/cooldown = department.cooldown_note(pack, requester_account?.account_id)
+				if(cooldown)
+					parts += cooldown
+				messages[user_ref] = jointext(parts, " ")
 		if("approve", "deny")
 			var/datum/economy_department/owner = department
 			if(istext(params["department"]) && params["department"] != department.id)
@@ -405,7 +423,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			else if(action == "deny")
 				messages[user_ref] = owner.deny(request, user) ? "Заявка №[request.uid] отклонена." : "Заявка не отклонена."
 			else
-				messages[user_ref] = owner.approve(request, user) ? "Заявка №[request.uid] одобрена, заказ ушёл в снабжение[owner == department ? "" : " за бюджет отдела \"[owner.name]\""]." : order_refusal(owner, request.pack)
+				messages[user_ref] = owner.approve(request, user) ? "Заявка №[request.uid] одобрена, заказ ушёл в снабжение[owner == department ? "" : " за бюджет отдела \"[owner.name]\""]." : owner.order_refusal(request.pack)
 		if("set_goal", "clear_goal")
 			var/datum/supply_pack/pack = goal_pack(department, params["pack"])
 			var/datum/economy_department/cargo/cargo = department
@@ -442,7 +460,14 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			else if(!can_manage)
 				messages[user_ref] = manage_refusal
 			else
-				messages[user_ref] = department.order_pack(pack, user, "Заказ главы: [department.name]") ? "\"[pack.name]\" заказан, деньги списаны из бюджета." : order_refusal(department, pack)
+				messages[user_ref] = department.order_pack(pack, user, "Заказ главы: [department.name]") ? "\"[pack.name]\" заказан, деньги списаны из бюджета." : department.order_refusal(pack)
+		if("buy_bundle")
+			var/datum/supply_pack/bundle/bundle = SSmarket.bundle_by_uid(econ_ui_number(params["uid"]))
+			if(!bundle || bundle.department_id != department.id)
+				messages[user_ref] = "Этой пачки для отдела в скупке уже нет."
+			else
+				var/list/result = econ_bundle_buy_for_department(user, bundle)
+				messages[user_ref] = result[2]
 		if("bonus")
 			var/datum/bank_account/member = staff_member(department, params["number"])
 			var/amount = econ_ui_number(params["amount"])

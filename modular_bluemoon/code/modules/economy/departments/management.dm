@@ -36,7 +36,7 @@
 
 /// Сколько премий этот счёт ещё может получить в текущем часе: от других глав или от самого себя.
 /datum/bank_account/proc/bonus_left(self_paid = FALSE)
-	if(world.time - bonus_window_start >= 1 HOURS)
+	if(world.time - bonus_window_start >= ECON_BONUS_WINDOW)
 		bonus_window_start = world.time
 		bonus_in_window = 0
 		self_bonus_in_window = 0

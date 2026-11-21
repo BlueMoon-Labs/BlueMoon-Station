@@ -57,7 +57,7 @@
 	. += span_notice("Мультитулом можно задать направление приёма/выдачи руды.")
 	var/datum/economy_department/cargo/cargo = SSeconomy.get_department(ACCOUNT_CAR)
 	if(cargo?.pays_ore_at(src))
-		. += span_notice("Каждое очко переработанной здесь руды приносит отделу снабжения [round(SSeconomy.settings.work_prices[WORK_MINING_ORE] * econ_sale_factor(COMMODITY_METALS), 0.01)] кр. по текущему рынку металлов.")
+		. += span_notice("Каждое очко переработанной здесь руды приносит отделу снабжения [round(SSeconomy.work_price(WORK_MINING_ORE) * econ_sale_factor(COMMODITY_METALS), 0.01)] кр. по текущему рынку металлов.")
 
 /obj/machinery/mineral/ore_redemption/examine_display_content(mob/user)
 	. += "– Плавится <b>[ore_multiplier]</b> шт. листов сырья за единицу руды.\n\

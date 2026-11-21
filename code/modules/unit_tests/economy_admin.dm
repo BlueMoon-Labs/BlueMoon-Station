@@ -197,7 +197,7 @@
 	var/after_garbage = SSeconomy.tax_rate
 	press(admin, panel, "set_tax", list("rate" = "5", "comment" = "проверка"))
 	var/set_rate = SSeconomy.tax_rate
-	SSeconomy.tax_rate = saved_rate
+	SSeconomy.set_tax_rate(saved_rate)
 	TEST_ASSERT_EQUAL(capped, SSeconomy.settings.tax_max, "Налог упирается в потолок конфига")
 	TEST_ASSERT_EQUAL(after_garbage, capped, "Мусор не меняет налог")
 	TEST_ASSERT_EQUAL(set_rate, 5, "Налог выставлен")
@@ -216,7 +216,7 @@
 	var/list/data = panel.ui_static_data(admin)
 	var/list/errors = data["config_errors"]
 	var/shown = length(errors) && findtext(errors[1], "tax_max")
-	panel.config_path = ECONOMY_CONFIG_PATH
+	panel.config_path = ECONOMY_REPO_CONFIG_PATH
 	press(admin, panel, "reload_config")
 	var/replaced = SSeconomy.settings != saved_settings
 	var/clean = !length(GLOB.economy_config_errors)

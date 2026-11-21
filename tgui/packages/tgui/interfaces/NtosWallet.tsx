@@ -1,4 +1,5 @@
 import { BooleanLike } from 'common/react';
+import { plural } from 'common/ru/plural';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
@@ -6,6 +7,7 @@ import {
   Box,
   Button,
   Dropdown,
+  Icon,
   Input,
   LabeledList,
   NoticeBox,
@@ -16,6 +18,7 @@ import {
   Tabs,
 } from '../components';
 import { NtosWindow } from '../layouts';
+import { AuctionBidEntry } from './common/AuctionBid';
 import { ContractTable, freeCrewRequests } from './common/ContractTable';
 import { ContractEntry, Credits, formatCredits, HistoryTable, TransactionEntry } from './common/Economy';
 import { NtHelpTopic, NtHelpTopics } from './common/NtTerminal';
@@ -28,6 +31,12 @@ type Wage = {
   amount: number;
   floor_only?: BooleanLike;
   tax_rate: number;
+  /** Какую долю налога сейчас забирает NT: при недовольстве экипажа больше */
+  tax_nt_share?: number;
+  /** Действующее настроение экипажа от налога */
+  tax_mood_note?: string;
+  /** Сколько налог уже держится в полосе, которая ещё не сменила настроение */
+  tax_mood_progress?: string;
   owed: number;
 };
 
@@ -62,6 +71,56 @@ type PersonalSection = {
   packs: PersonalPack[];
 };
 
+type ShopItem = {
+  id: string;
+  name: string;
+  note: string;
+  price: number;
+  /** Питомец: летит своей капсулой в переноске, вместо гравировки - кличка. */
+  pet?: BooleanLike;
+  /** Гравировку можно сделать (не питомец и не плакат). */
+  engravable?: BooleanLike;
+  /** CSS-класс иконки из листа econ_shop; null - лист ещё не собран. */
+  icon?: string | null;
+};
+
+type ShopSection = {
+  name: string;
+  novelty?: BooleanLike;
+  items: ShopItem[];
+};
+
+type NearbyPerson = {
+  ref: string;
+  /** Имя и должность с ID-карты. */
+  name: string;
+  job?: string | null;
+  /** У него можно попросить оплату: не SSD. */
+  requestable?: BooleanLike;
+};
+
+type PayRequest = {
+  id: number;
+  /** Имя просителя с его ID-карты. */
+  from: string;
+  amount: number;
+  reason: string;
+};
+
+type ShopGift = {
+  id: number;
+  /** Имя дарителя; null - аноним. */
+  from: string | null;
+  items: string;
+  /** Сколько минут подарок ещё ждёт. */
+  left: number;
+};
+
+type CartLine = {
+  item: ShopItem;
+  text: string;
+};
+
 type PersonalOrder = {
   id: number;
   name: string;
@@ -88,6 +147,11 @@ type AuctionLot = {
   increment: number;
   left: number;
   rivals?: number;
+  /** Дороже стольких процентов оценки станции-соперники не дают. */
+  rival_cap?: number | null;
+  rival_ceiling?: number | null;
+  /** Наименьшая ставка, которую станции-соперники уже не перебьют. */
+  outbid_price?: number | null;
   history: { who: string; amount: number }[];
   /** Лот экипажа: имя продавца или "аноним". */
   seller?: string | null;
@@ -125,6 +189,7 @@ export type WalletData = {
   blocked?: BooleanLike;
   anonymous?: BooleanLike;
   personal?: BooleanLike;
+  offstation?: BooleanLike;
   frozen_by?: string | null;
   freeze_reason?: string | null;
   freeze_source?: string | null;
@@ -137,6 +202,17 @@ export type WalletData = {
   portfolio?: number;
   personal_catalog?: PersonalSection[];
   personal_order_limit?: number;
+  shop?: ShopSection[];
+  engraving_price?: number;
+  engraving_max?: number;
+  shop_cooldown?: number;
+  cart_max?: number;
+  gift_minutes?: number;
+  shop_gifts?: ShopGift[];
+  nearby_range?: number;
+  nearby?: NearbyPerson[];
+  pay_request_minutes?: number;
+  pay_requests?: PayRequest[];
   /** "тип пака" -> [цена для этого счёта, есть ли у партнёров]. */
   personal_prices?: Record<string, [number, BooleanLike]>;
   personal_orders?: PersonalOrder[];
@@ -150,10 +226,11 @@ export type WalletData = {
   auction_lots_per_account?: number;
 };
 
-type Tab = 'account' | 'transfer' | 'orders' | 'jobs' | 'shares' | 'meta';
+type Tab = 'account' | 'shop' | 'transfer' | 'orders' | 'jobs' | 'shares' | 'meta';
 
 const TABS: [Tab, string, string][] = [
   ['account', 'Счёт', 'wallet'],
+  ['shop', 'Магазин', 'store'],
   ['transfer', 'Перевод', 'paper-plane'],
   ['orders', 'Заказы', 'box-open'],
   ['jobs', 'Подработка', 'briefcase'],
@@ -172,14 +249,24 @@ export const NtosWallet = () => (
 export const NtosWalletContent = () => {
   const { data } = useBackend<WalletData>();
   const [tab, setTab] = useState<Tab>('account');
+  const [askFirst, setAskFirst] = useState(false);
+  const open = (id: Tab, ask = false) => {
+    setAskFirst(ask);
+    setTab(id);
+  };
   const needsAccount = tab !== 'meta' && !data.has_account;
   const crewOpen = freeCrewRequests(data.contracts || [], data.my_account);
+  const waiting: Partial<Record<Tab, number>> = {
+    jobs: crewOpen,
+    shop: (data.shop_gifts || []).length,
+    transfer: (data.pay_requests || []).length,
+  };
   return (
     <>
       <Tabs>
         {TABS.map(([id, label, icon]) => (
-          <Tabs.Tab key={id} icon={icon} selected={tab === id} onClick={() => setTab(id)}>
-            {id === 'jobs' && crewOpen > 0 ? `${label} (${crewOpen})` : label}
+          <Tabs.Tab key={id} icon={icon} selected={tab === id} onClick={() => open(id)}>
+            {(waiting[id] || 0) > 0 ? `${label} (${waiting[id]})` : label}
           </Tabs.Tab>
         ))}
       </Tabs>
@@ -188,8 +275,9 @@ export const NtosWalletContent = () => {
         <NoticeBox>Счёт не найден: вставьте в КПК ID-карту со счётом.</NoticeBox>
       ) : (
         <>
-          {tab === 'account' && <AccountTab />}
-          {tab === 'transfer' && <TransferTab />}
+          {tab === 'account' && <AccountTab open={open} />}
+          {tab === 'shop' && <ShopTab />}
+          {tab === 'transfer' && <TransferTab asking={askFirst} />}
           {tab === 'orders' && <OrdersTab />}
           {tab === 'jobs' && <JobsTab />}
           {tab === 'shares' && <SharesTab />}
@@ -266,9 +354,19 @@ const WageSection = () => {
         )}
         <LabeledList.Item label="Налог">
           Налог {wage.tax_rate}% удерживается с зарплаты, премий (от главы и за работу) и доли контрактов,{' '}
-          {data.tax_nt_share ?? 0}% налога забирает NT, остальное получает казна. Без налога: доплата NT до минимума,
+          {wage.tax_nt_share ?? data.tax_nt_share ?? 0}% налога забирает NT, остальное получает казна. Без налога: доплата NT до минимума,
           переводы и чаевые. Казна - общий счёт станции: из неё капитан и ГП пополняют бюджеты отделов, из которых и
           платятся зарплаты, и закрывают расходы станции на чрезвычайные события.
+          {!!wage.tax_mood_note && (
+            <Box color="average" mt={0.5}>
+              {wage.tax_mood_note}
+            </Box>
+          )}
+          {!!wage.tax_mood_progress && (
+            <Box color="label" mt={0.5}>
+              {wage.tax_mood_progress}
+            </Box>
+          )}
         </LabeledList.Item>
         {wage.owed > 0 && (
           <LabeledList.Item label="Отдел должен" color="average">
@@ -318,7 +416,56 @@ const LotterySection = () => {
   );
 };
 
-const AccountTab = () => {
+type OpenTab = (id: Tab, ask?: boolean) => void;
+
+const SpendSection = (props: { open: OpenTab }) => {
+  const { data } = useBackend<WalletData>();
+  const { open } = props;
+  if (!data.personal || data.state === 'frozen') {
+    return null;
+  }
+  const ways: [string, string, string, () => void][] = [
+    [
+      'store',
+      'Магазин с доставкой',
+      `одежда, игрушки и питомцы, до ${data.cart_max ?? 0} вещей одной капсулой сразу: себе - только на станции, в подарок - всегда`,
+      () => open('shop'),
+    ],
+    ['hand-holding-usd', 'Заплатить человеку рядом', 'по его ID-карте, без номера счёта', () => open('transfer')],
+    ['file-invoice-dollar', 'Попросить оплату', 'у человека рядом: он оплатит или откажет в своём Кошельке', () => open('transfer', true)],
+  ];
+  if (!data.offstation) {
+    ways.push([
+      'box-open',
+      'Заказ из каталога',
+      'питомцы, одежда, праздник и уют, везёт шаттл снабжения',
+      () => open('orders'),
+    ]);
+  }
+  return (
+    <Section title="Куда потратить">
+      <Table>
+        {ways.map(([icon, label, note, onClick]) => (
+          <Table.Row key={label}>
+            <Table.Cell collapsing py={0.25}>
+              <Button fluid icon={icon} onClick={onClick}>
+                {label}
+              </Button>
+            </Table.Cell>
+            <Table.Cell color="label" pl={1}>
+              {note}
+            </Table.Cell>
+          </Table.Row>
+        ))}
+      </Table>
+      <Box color="label" mt={0.5}>
+        В номере отеля Гильберта на терминале обслуживания заказывают еду и напитки с кухни и бара.
+      </Box>
+    </Section>
+  );
+};
+
+const AccountTab = (props: { open: OpenTab }) => {
   const { data } = useBackend<WalletData>();
   return (
     <>
@@ -335,6 +482,7 @@ const AccountTab = () => {
           </LabeledList.Item>
         </LabeledList>
       </Section>
+      <SpendSection open={props.open} />
       <LotterySection />
       <WageSection />
       <Section title="История">
@@ -350,7 +498,147 @@ const AccountTab = () => {
   );
 };
 
-const TransferTab = () => {
+const PayRequestsSection = () => {
+  const { act, data } = useBackend<WalletData>();
+  const requests = data.pay_requests || [];
+  if (requests.length === 0) {
+    return null;
+  }
+  return (
+    <Section title="Вас просят заплатить">
+      <Table>
+        {requests.map((request) => (
+          <Table.Row key={request.id} className="candystripe">
+            <Table.Cell py={0.5}>
+              <b>{request.from}</b> просит <Credits amount={request.amount} /> за «{request.reason}»
+            </Table.Cell>
+            <Table.Cell collapsing py={0.5}>
+              <Button.Confirm
+                icon="check"
+                color="good"
+                content="Оплатить"
+                confirmContent={`Оплатить ${formatCredits(request.amount)}?`}
+                confirmColor="good"
+                disabled={(data.cooldown_left || 0) > 0}
+                onClick={() => act('pay_request_answer', { id: request.id, answer: 'pay' })}
+              />
+              <Button icon="times" onClick={() => act('pay_request_answer', { id: request.id, answer: 'decline' })}>
+                Отклонить
+              </Button>
+              <Button.Confirm
+                icon="ban"
+                color="bad"
+                content="Не принимать от него"
+                confirmContent="Больше не принимать?"
+                tooltip="Отклонить и до конца смены не получать от этого человека запросы оплаты"
+                onClick={() => act('pay_request_answer', { id: request.id, answer: 'mute' })}
+              />
+            </Table.Cell>
+          </Table.Row>
+        ))}
+      </Table>
+      <Box color="label" mt={0.5}>
+        Запрос ждёт ответа {data.pay_request_minutes ?? 0} мин. Оплата - обычный перевод с тем же лимитом и паузой.
+      </Box>
+    </Section>
+  );
+};
+
+const NearbySection = (props: { asking?: boolean }) => {
+  const { act, data } = useBackend<WalletData>();
+  const people = data.nearby || [];
+  const [chosen, setChosen] = useState<string | null>(null);
+  const [asking, setAsking] = useState(!!props.asking);
+  const [amount, setAmount] = useState(10);
+  const [memo, setMemo] = useState('');
+  const listed = asking ? people.filter((entry) => entry.requestable) : people;
+  const person = listed.find((entry) => entry.ref === chosen);
+  return (
+    <Section title="Человек рядом">
+      <Box color="label" mb={1}>
+        Номер счёта не нужен: здесь все, кто в {data.nearby_range ?? 0} шагах от вас и носит ID-карту. Имя и должность -
+        как на карте. Лимит и пауза те же, что у перевода; получатель увидит сумму, имя с вашей карты и комментарий.
+      </Box>
+      <Box mb={1}>
+        <Button icon="hand-holding-usd" selected={!asking} onClick={() => setAsking(false)}>
+          Заплатить ему
+        </Button>
+        <Button icon="file-invoice-dollar" selected={asking} onClick={() => setAsking(true)}>
+          Попросить оплату
+        </Button>
+      </Box>
+      {asking && (
+        <Box color="label" mb={1}>
+          Человек увидит, сколько и за что вы просите, и оплатит или отклонит запрос в своём Кошельке. Запрос ждёт{' '}
+          {data.pay_request_minutes ?? 0} мин.
+        </Box>
+      )}
+      {listed.length === 0 ? (
+        <Box color="label">
+          {asking ? 'Рядом нет никого, у кого можно попросить оплату.' : 'Рядом никого с ID-картой: подойдите ближе.'}
+        </Box>
+      ) : (
+        <>
+          <Box mb={1}>
+            {listed.map((entry) => (
+              <Button
+                key={entry.ref}
+                icon="user"
+                selected={entry.ref === chosen}
+                onClick={() => setChosen(entry.ref)}>
+                {entry.job ? `${entry.name}, ${entry.job}` : entry.name}
+              </Button>
+            ))}
+          </Box>
+          {!!person && (
+            <LabeledList>
+              <LabeledList.Item label="Сумма">
+                <RestrictedInput
+                  value={amount}
+                  minValue={1}
+                  maxValue={data.transfer_max}
+                  onChange={(_, value) => setAmount(value)}
+                />{' '}
+                кр.
+              </LabeledList.Item>
+              <LabeledList.Item label={asking ? 'За что' : 'Комментарий'}>
+                <Input
+                  fluid
+                  value={memo}
+                  maxLength={data.memo_max}
+                  placeholder={asking ? 'За что просите оплату' : 'Необязательно: за что платите'}
+                  onInput={(_, value) => setMemo(value)}
+                />
+              </LabeledList.Item>
+              <LabeledList.Item>
+                {asking ? (
+                  <Button
+                    icon="file-invoice-dollar"
+                    disabled={amount < 1 || memo.trim().length === 0}
+                    onClick={() => act('request_payment', { ref: person.ref, amount, reason: memo.trim() })}>
+                    {`Попросить: ${person.name}`}
+                  </Button>
+                ) : (
+                  <Button.Confirm
+                    icon="hand-holding-usd"
+                    color="good"
+                    content={`Заплатить: ${person.name}`}
+                    confirmContent={`Заплатить ${formatCredits(amount)}?`}
+                    confirmColor="good"
+                    disabled={amount < 1 || (data.cooldown_left || 0) > 0}
+                    onClick={() => act('pay_nearby', { ref: person.ref, amount, memo })}
+                  />
+                )}
+              </LabeledList.Item>
+            </LabeledList>
+          )}
+        </>
+      )}
+    </Section>
+  );
+};
+
+const TransferTab = (props: { asking?: boolean }) => {
   const { act, data } = useBackend<WalletData>();
   const [target, setTarget] = useState('');
   const [amount, setAmount] = useState(10);
@@ -360,7 +648,9 @@ const TransferTab = () => {
   return (
     <>
       <AccountNotices />
-      <Section title="Перевод и чаевые">
+      <PayRequestsSection />
+      <NearbySection asking={props.asking} />
+      <Section title="Перевод и чаевые по имени или номеру">
         <Box color="label" mb={1}>
           Только с личного счёта на личный: бюджеты отделов и системные счета не принимают. Без налога, до{' '}
           <Credits amount={data.transfer_max} /> за раз, не чаще раза в {data.transfer_cooldown} с - переводы и чаевые
@@ -529,8 +819,6 @@ const AuctionRow = (props: { lot: AuctionLot }) => {
   const { act, data } = useBackend<WalletData>();
   const { lot } = props;
   const [open, setOpen] = useState(false);
-  const [amount, setAmount] = useState<number | null>(null);
-  const bid = Math.max(amount ?? lot.min_bid, lot.min_bid);
   const crew = lot.seller !== undefined;
   const buyout = crew && !lot.my_lot ? lot.buyout || 0 : 0;
   const biddable = !lot.my_lot && (!buyout || lot.min_bid < buyout);
@@ -559,7 +847,10 @@ const AuctionRow = (props: { lot: AuctionLot }) => {
             {!!lot.buyout && <Box mt={0.5}>Купить сразу, без торгов: {formatCredits(lot.buyout)}.</Box>}
             {!crew && (
               <Box mt={0.5}>
-                Оценка лота <Credits amount={lot.value} />, торгуются ещё {lot.rivals} станции сектора.
+                Оценка лота <Credits amount={lot.value} />,{' '}
+                {lot.rivals
+                  ? `торгуются ещё ${lot.rivals} ${plural(lot.rivals, 'станция', 'станции', 'станций')} сектора, дороже ${lot.rival_cap ?? 0}% оценки они не дают.`
+                  : 'других станций на торгах нет.'}
               </Box>
             )}
             {lot.history.length > 0 && (
@@ -567,28 +858,16 @@ const AuctionRow = (props: { lot: AuctionLot }) => {
                 Ставки: {lot.history.map((entry) => `${entry.who} ${formatCredits(entry.amount)}`).join(', ')}.
               </Box>
             )}
-            {biddable && (
-              <Stack align="center" mt={0.5}>
-                <Stack.Item>
-                  <RestrictedInput
-                    width="7em"
-                    value={bid}
-                    minValue={lot.min_bid}
-                    maxValue={buyout ? buyout - 1 : 100000}
-                    onChange={(_, value) => setAmount(value)}
-                  />{' '}
-                  кр.
-                </Stack.Item>
-                <Stack.Item>
-                  <Button
-                    icon="gavel"
-                    disabled={shortOf(bid)}
-                    onClick={() => act('auction_bid', { uid: lot.uid, amount: bid })}>
-                    {`Поставить ${formatCredits(bid)}`}
-                  </Button>
-                </Stack.Item>
-              </Stack>
+            {biddable && crew && (
+              <Box mt={0.5}>
+                <AuctionBidEntry lot={lot} balance={data.balance || 0} buyout={buyout} />
+              </Box>
             )}
+          </Box>
+        )}
+        {biddable && !crew && (
+          <Box mt={0.5}>
+            <AuctionBidEntry key={lot.uid} lot={lot} balance={data.balance || 0} />
           </Box>
         )}
       </Table.Cell>
@@ -644,7 +923,9 @@ const AuctionSection = () => {
   return (
     <Section title="Аукцион">
       <Box color="label" mb={1}>
-        Ставка списывается сразу и ждёт конца торгов. Перебьют - деньги сразу вернутся, а незадолго до конца карта
+        Ставку можно вписать любой суммой - встанет одним нажатием, а «Перебить соперников» ставит наименьшую
+        сумму, которую станции сектора уже не перебьют. Ставка списывается сразу и ждёт конца торгов, к своей
+        доплачивается только разница. Перебьют - деньги сразу вернутся, а незадолго до конца карта
         напомнит о лоте; ставка в последнюю минуту продлевает торги. Лоты экипажа бывают с ценой «купить сразу» -
         тогда торги кончаются на месте. Выигрыш прилетает запертой посылкой на ваше имя капсулой в снабжение - и лот
         сектора, и лот экипажа. Свою вещь можно выставить с пада подработки: старт, срок и цену «купить сразу»
@@ -752,8 +1033,9 @@ const OrdersTab = () => {
       <MyOrders />
       <Section title="Личный каталог">
         <Box color="label" mb={1}>
-          Питомцы, наряды, угощение для праздника, музыка и уют за свой счёт - себе или в подарок. Цена партнёра без
-          наценки частного заказа списывается сразу. Заказ привезёт ближайший шаттл снабжения: запертая посылка на имя
+          Наборы шаттлом снабжения: питомцы, наряды, угощение для праздника, музыка и уют за свой счёт - себе или в
+          подарок. Одну шляпу, игрушку или котёнка быстрее купить во вкладке «Магазин»: там покупка прилетает капсулой
+          сразу. Цена партнёра без наценки частного заказа списывается сразу. Заказ привезёт ближайший шаттл снабжения: запертая посылка на имя
           получателя будет ждать в отделе снабжения, открыть её можно его ID-картой. Пока шаттл не вылетел, заказ можно
           отменить - деньги вернутся вам; если получатель уйдёт со смены раньше, заказ снимется сам. Ждать шаттла могут
           до {data.personal_order_limit} ваших заказов сразу.
@@ -819,6 +1101,270 @@ const OrdersTab = () => {
             <Table>
               {section.packs.map((pack) => (
                 <CatalogRow key={pack.id} pack={pack} full={full} recipient={recipient} signed={signed} />
+              ))}
+            </Table>
+          </Box>
+        ))}
+      </Section>
+    </>
+  );
+};
+
+const ShopIcon = (props: { item: ShopItem }) => {
+  const { item } = props;
+  return (
+    <Box width="32px" height="32px" style={{ overflow: 'hidden', position: 'relative' }}>
+      {item.icon ? (
+        <span className={item.icon} style={{ display: 'block', imageRendering: 'pixelated' }} />
+      ) : (
+        <Icon name={item.pet ? 'paw' : 'gift'} size={1.5} color="label" mt={0.5} ml={0.5} />
+      )}
+    </Box>
+  );
+};
+
+/** Почему вещь не положить в корзину; null - можно. */
+const cartRefusal = (cart: CartLine[], item: ShopItem, cartMax: number) => {
+  if (cart.some((line) => line.item.pet)) {
+    return 'Питомец летит своей капсулой: сначала оформите его.';
+  }
+  if (item.pet && cart.length > 0) {
+    return 'Питомец летит своей капсулой: оформите корзину или очистите её.';
+  }
+  if (cart.length >= cartMax) {
+    return `В одну капсулу помещается не больше ${cartMax} вещей.`;
+  }
+  return null;
+};
+
+const lineTotal = (line: CartLine, engravingPrice: number) =>
+  line.item.price + (line.item.engravable && line.text.trim().length > 0 ? engravingPrice : 0);
+
+type ShopRowProps = {
+  item: ShopItem;
+  refusal: string | null;
+  onAdd: () => void;
+};
+
+const ShopRow = (props: ShopRowProps) => {
+  const { item, refusal, onAdd } = props;
+  return (
+    <Table.Row className="candystripe">
+      <Table.Cell collapsing py={0.5}>
+        <ShopIcon item={item} />
+      </Table.Cell>
+      <Table.Cell py={0.5}>
+        <Box bold>{item.name}</Box>
+        <Box color="label">
+          {item.note}
+          {item.pet ? ' Прилетит в закрытой переноске.' : ''}
+        </Box>
+      </Table.Cell>
+      <Table.Cell collapsing py={0.5} textAlign="right">
+        <Credits amount={item.price} />
+      </Table.Cell>
+      <Table.Cell collapsing py={0.5}>
+        <Button icon="cart-plus" disabled={!!refusal} tooltip={refusal} onClick={onAdd}>
+          В корзину
+        </Button>
+      </Table.Cell>
+    </Table.Row>
+  );
+};
+
+const ShopGifts = () => {
+  const { act, data } = useBackend<WalletData>();
+  const gifts = data.shop_gifts || [];
+  if (gifts.length === 0) {
+    return null;
+  }
+  return (
+    <Section title="Вам подарки">
+      <Table>
+        {gifts.map((gift) => (
+          <Table.Row key={gift.id} className="candystripe">
+            <Table.Cell py={0.5}>
+              <Box bold>От {gift.from || 'анонимного дарителя'}</Box>
+              <Box color="label">
+                {gift.items}. Ждёт ещё {gift.left} мин.
+              </Box>
+            </Table.Cell>
+            <Table.Cell collapsing py={0.5}>
+              <Button icon="gift" color="good" onClick={() => act('shop_gift_accept', { id: gift.id })}>
+                Получить
+              </Button>
+            </Table.Cell>
+          </Table.Row>
+        ))}
+      </Table>
+      <Box color="label" mt={0.5}>
+        Капсула сядет на свободный пол рядом с вами, в том же помещении станции.
+      </Box>
+    </Section>
+  );
+};
+
+type ShopCartProps = {
+  cart: CartLine[];
+  setCart: (cart: CartLine[]) => void;
+};
+
+const ShopCart = (props: ShopCartProps) => {
+  const { act, data } = useBackend<WalletData>();
+  const { cart, setCart } = props;
+  const [recipient, setRecipient] = useState('');
+  const [signed, setSigned] = useState(true);
+  const gift = recipient !== '';
+  const engravingPrice = data.engraving_price || 0;
+  const total = cart.reduce((sum, line) => sum + lineTotal(line, engravingPrice), 0);
+  const crew = (data.crew || []).filter((name) => name !== data.holder);
+  const refusal = (data.balance || 0) < total ? 'Не хватает денег на счёте.' : null;
+  const setText = (index: number, text: string) =>
+    setCart(cart.map((line, at) => (at === index ? { ...line, text } : line)));
+  return (
+    <Section
+      title={`Корзина: ${cart.length} из ${data.cart_max ?? 0}`}
+      buttons={
+        <Button icon="trash" onClick={() => setCart([])}>
+          Очистить
+        </Button>
+      }>
+      <Table>
+        {cart.map((line, index) => (
+          <Table.Row key={index} className="candystripe">
+            <Table.Cell py={0.5}>
+              <Box bold>{line.item.name}</Box>
+              {line.item.pet || line.item.engravable ? (
+                <Input
+                  fluid
+                  value={line.text}
+                  maxLength={line.item.pet ? data.name_max : data.engraving_max}
+                  placeholder={
+                    line.item.pet
+                      ? 'Необязательно: кличка, бесплатно'
+                      : `Необязательно: гравировка за ${formatCredits(engravingPrice)}`
+                  }
+                  onInput={(_, value) => setText(index, value)}
+                />
+              ) : (
+                <Box color="label">Гравировку на эту вещь не сделать.</Box>
+              )}
+            </Table.Cell>
+            <Table.Cell collapsing py={0.5} textAlign="right">
+              <Credits amount={lineTotal(line, engravingPrice)} />
+            </Table.Cell>
+            <Table.Cell collapsing py={0.5}>
+              <Button icon="times" tooltip="Убрать" onClick={() => setCart(cart.filter((_, at) => at !== index))} />
+            </Table.Cell>
+          </Table.Row>
+        ))}
+      </Table>
+      <LabeledList>
+        <LabeledList.Item label="Кому">
+          <Stack align="center">
+            <Stack.Item grow>
+              <Input
+                fluid
+                value={recipient}
+                maxLength={data.name_max}
+                placeholder="Себе, или имя либо номер счёта получателя"
+                onInput={(_, value) => setRecipient(value)}
+              />
+            </Stack.Item>
+            <Stack.Item>
+              <Dropdown
+                width="12em"
+                options={[{ value: '', displayText: 'Себе' }, ...crew]}
+                selected={recipient}
+                onSelected={(value: string) => setRecipient(value)}
+              />
+            </Stack.Item>
+            {gift && (
+              <Stack.Item>
+                <Button.Checkbox checked={signed} onClick={() => setSigned(!signed)}>
+                  Подписать моим именем
+                </Button.Checkbox>
+              </Stack.Item>
+            )}
+          </Stack>
+        </LabeledList.Item>
+      </LabeledList>
+      {gift && (
+        <Box color="label" mt={0.5}>
+          Подарок для {recipient}: платите вы, карта получателя скажет, что это подарок
+          {signed ? ' от вас' : ' без вашего имени'}, а забирает он его сам в своём Кошельке. Не заберёт за{' '}
+          {data.gift_minutes ?? 0} мин. - деньги вернутся.
+        </Box>
+      )}
+      <Box mt={1}>
+        <Button.Confirm
+          icon={gift ? 'gift' : 'shopping-cart'}
+          color="good"
+          content={gift ? `Подарить за ${formatCredits(total)}` : `Оплатить ${formatCredits(total)}`}
+          confirmContent={gift ? `Подарить за ${formatCredits(total)}?` : `Оплатить ${formatCredits(total)}?`}
+          confirmColor="good"
+          disabled={!!refusal}
+          tooltip={refusal}
+          onClick={() => {
+            act('shop_order', {
+              items: cart.map((line) => ({ id: line.item.id, price: line.item.price, text: line.text.trim() })),
+              ...(gift ? { recipient, hide_name: !signed } : {}),
+            });
+            setCart([]);
+          }}
+        />
+      </Box>
+    </Section>
+  );
+};
+
+const ShopTab = () => {
+  const { data } = useBackend<WalletData>();
+  const sections = data.shop || [];
+  const [shown, setShown] = useState<string | null>(null);
+  const [cart, setCart] = useState<CartLine[]>([]);
+  const cartMax = data.cart_max || 0;
+  const visible = sections.filter((section) => !shown || section.name === shown);
+  return (
+    <>
+      <AccountNotices />
+      <ShopGifts />
+      {cart.length > 0 && <ShopCart cart={cart} setCart={setCart} />}
+      <Section title="Магазин">
+        <Box color="label" mb={1}>
+          Одежда, шляпы, краски, игрушки, вещи для каюты и мелкие питомцы за свой счёт. Соберите корзину до {cartMax}{' '}
+          вещей: деньги списываются сразу, а через пару секунд всё прилетает одной тихой блюспейс-капсулой на свободный
+          пол рядом с вами - без шаттла и очереди. Питомец летит отдельно, в закрытой переноске, и ему можно дать кличку.
+          Подарок получатель забирает сам в своём Кошельке, вместе с открыткой. Вещи с цветами на выбор красятся
+          Alt+кликом. Капсулу можно вызывать раз в {data.shop_cooldown ?? 0} с, а новинки каждую смену свои.
+        </Box>
+        <Box mt={1} mb={1}>
+          <Button selected={!shown} onClick={() => setShown(null)}>
+            Всё
+          </Button>
+          {sections.map((section) => (
+            <Button
+              key={section.name}
+              icon={section.novelty ? 'star' : undefined}
+              selected={shown === section.name}
+              onClick={() => setShown(section.name)}>
+              {section.name}
+            </Button>
+          ))}
+        </Box>
+        {visible.map((section) => (
+          <Box key={section.name} mb={1}>
+            <Box bold mb={0.5} color={section.novelty ? 'good' : undefined}>
+              {section.name}
+            </Box>
+            <Table>
+              {section.items.map((item) => (
+                <ShopRow
+                  key={item.id}
+                  item={item}
+                  refusal={cartRefusal(cart, item, cartMax)}
+                  onAdd={() => setCart([...cart, { item, text: '' }])}
+                />
               ))}
             </Table>
           </Box>

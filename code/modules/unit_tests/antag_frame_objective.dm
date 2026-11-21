@@ -89,7 +89,7 @@
 		TEST_ASSERT_EQUAL(frames, 1, "[class_type]: подстав у одного предателя")
 		QDEL_LIST(traitor.objectives)
 
-/// Подстава не меняет долю убийств: при том же зерне убийство и провал выпадают одинаково, есть кого подставить или нет.
+/// Подстава не меняет долю убийств: при том же зерне убийство и провал выпадают одинаково, есть кого подставить или нет; вместо подставы может не выпасть ничего.
 /datum/unit_test/antag_frame_kill_share/Run()
 	var/datum/antag_opt_in_test_world/world_state = allocate(/datum/antag_opt_in_test_world)
 	world_state.set_hard_round(src)
@@ -110,8 +110,10 @@
 		world_state.set_crew(security_crew)
 		for(var/seed in 1 to ANTAG_FRAME_TEST_TRIES)
 			var/without_frame = antag_frame_forge_traitor(class_type, owner, seed)
-			var/expected = with_frame[seed] == "frame" ? "other" : with_frame[seed]
-			TEST_ASSERT_EQUAL(without_frame, expected, "[class_type], зерно [seed]")
+			if(with_frame[seed] == "frame")
+				TEST_ASSERT(without_frame != "kill", "[class_type], зерно [seed]: без подставы выпало убийство")
+			else
+				TEST_ASSERT_EQUAL(without_frame, with_frame[seed], "[class_type], зерно [seed]")
 		var/kills = 0
 		for(var/outcome in with_frame)
 			kills += outcome == "kill"

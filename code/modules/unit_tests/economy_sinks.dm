@@ -482,15 +482,27 @@
 	var/civilian_grant = civilian.grant_amount()
 	var/service_grant = service.grant_amount()
 	var/civilian_before = civilian.account.account_balance
+	econ_test_set_balance(civilian.account, 0)
 	civilian.grant()
-	var/civilian_paid = civilian.account.account_balance - civilian_before
+	var/civilian_paid = civilian.account.account_balance
+	var/level = civilian.grant_level()
+	var/expected_level = civilian.budget_threshold() + civilian.owed_to_staff()
+	econ_test_set_balance(civilian.account, level - 7)
+	civilian.grant()
+	var/near_level_balance = civilian.account.account_balance
+	econ_test_set_balance(civilian.account, level + 500)
+	civilian.grant()
+	var/above_level_balance = civilian.account.account_balance
 	econ_test_set_balance(civilian.account, civilian_before)
 	qdel(assistant)
 	qdel(cook)
 	SSeconomy.bank_accounts = saved_accounts
 	TEST_ASSERT_EQUAL(civilian_grant, round(settings.wages[PAY_GRADE_ASSISTANT] * settings.grant_payroll_share / 100 / settings.payroll_interval_ticks), "Гражданским - доля оклада без надбавки и без базы")
 	TEST_ASSERT_EQUAL(service_grant, round(settings.wages[PAY_GRADE_EASY] * settings.grant_payroll_share / 100 / settings.payroll_interval_ticks) + settings.grant_base, "Сервису - доля оклада и база на закупки")
-	TEST_ASSERT_EQUAL(civilian_paid, civilian_grant, "grant() платит grant_amount()")
+	TEST_ASSERT_EQUAL(civilian_paid, civilian_grant, "Пустому бюджету grant() платит grant_amount()")
+	TEST_ASSERT_EQUAL(level, expected_level, "Грант доливает до порога и следующей зарплаты")
+	TEST_ASSERT_EQUAL(near_level_balance, level, "У самого уровня грант доливает только недостающее")
+	TEST_ASSERT_EQUAL(above_level_balance, level + 500, "Выше уровня грант не идёт: его забрал бы возврат излишка")
 
 /// Излишек бюджета сверх порога частью возвращается NT на тике экономики; деньги ниже порога, долг и следующая зарплата сотрудникам не трогаются.
 /datum/unit_test/economy_budget_cap
@@ -1074,8 +1086,8 @@
 	econ_test_set_balance(cargo.account, 10000)
 	var/list/flow = SSeconomy.ledger.department_flow(ACCOUNT_CAR)
 	var/burned_before = flow["burned"]
-	var/kept_before = flow["kept"]
+	var/in_before = flow["in"]
 	cargo.account.debit(4000, ECON_PURCHASE)
 	cargo.account.credit(4000, ECON_REFUND)
 	TEST_ASSERT_EQUAL(flow["burned"], burned_before, "Возврат отменил сток покупки")
-	TEST_ASSERT_EQUAL(flow["kept"], kept_before, "Возврат не стал оставшимися у отдела деньгами")
+	TEST_ASSERT_EQUAL(flow["in"], in_before, "Возврат не стал оставшимися у отдела деньгами")

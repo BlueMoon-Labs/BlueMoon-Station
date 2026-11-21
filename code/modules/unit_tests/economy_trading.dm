@@ -220,6 +220,77 @@
 	TEST_ASSERT(findtext(report, "Лучший трейдер смены: <b>[winner.account_holder]</b>, прибыль [winner.realized_stock_profit] кр."), "Нет трейдера в итогах: [report]")
 	TEST_ASSERT(!findtext(report, loser.account_holder), "Убыточный трейдер в итогах")
 
+/// Конец смены продаёт непроданные акции по рынку как обычная продажа, но без сдвига цены и сигнала сделки: деньги и прибыль на счёт, заявки сняты; остановленные торги и замороженный счёт пропускаются; потом биржа закрыта.
+/datum/unit_test/economy_trading/sell_off/Run()
+	company.price = 50
+	var/datum/stock_company/halted = SSmarket.get_company("CYBS")
+	var/datum/bank_account/holder = new_trader(0)
+	holder.shares = list("AGRO" = 4, "CYBS" = 2)
+	holder.cost_basis = list("AGRO" = 100, "CYBS" = 100)
+	holder.stock_orders += list(list("id" = 1, "ticker" = "AGRO", "side" = STOCK_ORDER_SELL_ABOVE, "count" = 4, "price" = 60))
+	var/datum/bank_account/frozen = new_trader(0)
+	frozen.shares = list("AGRO" = 3)
+	frozen.cost_basis = list("AGRO" = 10)
+	frozen.state = ACCOUNT_FROZEN
+	var/list/amounts = SSmarket.sale_amounts(company, 4)
+	var/net = amounts[1] - amounts[2]
+	halted.halted_until = world.time + STOCK_HALT_TIME
+	SSmarket.sell_off_shares()
+	halted.halted_until = 0
+	frozen.state = ACCOUNT_ACTIVE
+	TEST_ASSERT_EQUAL(company.price, 50, "Продажа в конце смены сдвинула цену")
+	TEST_ASSERT_EQUAL(holder.account_balance, net, "Зачислено не как за обычную продажу")
+	TEST_ASSERT(!holder.shares["AGRO"] && isnull(holder.cost_basis["AGRO"]), "AGRO не продан")
+	TEST_ASSERT_EQUAL(holder.shares["CYBS"], 2, "Остановленные торги продались")
+	TEST_ASSERT_EQUAL(holder.realized_stock_profit, net - 100, "Прибыль продажи в конце смены")
+	TEST_ASSERT_EQUAL(holder.traded_stock_profit(), 0, "Продажа в конце смены засчитана как своя сделка")
+	TEST_ASSERT(!length(holder.stock_orders), "Заявки пережили конец смены")
+	TEST_ASSERT(!length(trades), "Продажа в конце смены выглядит как сделка")
+	TEST_ASSERT_EQUAL(frozen.shares["AGRO"], 3, "Замороженный счёт продал")
+	TEST_ASSERT_EQUAL(frozen.account_balance, 0, "Замороженному счёту зачислено")
+	var/report = jointext(econ_market_report(), "\n")
+	TEST_ASSERT(findtext(report, "Лучший трейдер смены: <b>[holder.account_holder]</b>"), "Продажа в конце смены не попала в итоги: [report]")
+	var/saved_state = SSticker.current_state
+	SSticker.current_state = GAME_STATE_FINISHED
+	var/buy_error = SSmarket.try_buy_shares(holder, "AGRO", 1)
+	var/order_error = SSmarket.add_stock_order(holder, "AGRO", STOCK_ORDER_BUY_BELOW, 1, 10)
+	var/sell_all_error = SSmarket.sell_all_shares(holder)
+	SSticker.current_state = saved_state
+	TEST_ASSERT_EQUAL(buy_error, "Смена закончилась: биржа закрыта.", "Биржа торгует после конца смены")
+	TEST_ASSERT_EQUAL(order_error, "Смена закончилась: биржа закрыта.", "Заявка после конца смены")
+	TEST_ASSERT_EQUAL(sell_all_error, "Смена закончилась: биржа закрыта.", "Продажа всего после конца смены")
+	var/list/hooks = list()
+	for(var/datum/callback/callback as anything in SSticker.round_end_events)
+		if(callback.delegate == GLOBAL_PROC_REF(market_sell_off_shares))
+			hooks += callback
+	TEST_ASSERT_EQUAL(length(hooks), 1, "Продажа акций один раз подписана на конец раунда")
+
+/// Итог смены пишется после продажи акций в конце смены: её комиссии входят в сток итога.
+/datum/unit_test/economy_trading/summary_after_sell_off/Run()
+	company.price = 50
+	var/datum/bank_account/holder = new_trader(0)
+	holder.shares = list("AGRO" = 40)
+	holder.cost_basis = list("AGRO" = 2000)
+	var/list/amounts = SSmarket.sale_amounts(company, 40)
+	var/datum/economy_ledger/saved_ledger = SSeconomy.ledger
+	SSeconomy.ledger = new /datum/economy_ledger
+	var/log_start = econ_test_log_length()
+	var/logged = econ_log_round_summary()
+	var/datum/economy_ledger/test_ledger = SSeconomy.ledger
+	SSeconomy.ledger = saved_ledger
+	qdel(test_ledger)
+	// Комиссия автопродажи сожжена, пока стоял временный журнал: без неё общий журнал не сходится с деньгами на счетах
+	saved_ledger.record(holder, null, amounts[2], ECON_STOCK_FEE)
+	TEST_ASSERT(amounts[2] > 0, "test premise: у продажи есть комиссия")
+	TEST_ASSERT(logged, "Итог смены записан")
+	TEST_ASSERT(!holder.shares["AGRO"], "Акции не проданы до итога смены")
+	var/summary = ""
+	for(var/line in econ_test_log_since(log_start))
+		if(findtext(line, "Итог смены: эмиссия") && findtext(line, "сток"))
+			summary = line
+			break
+	TEST_ASSERT(findtext(summary, "[ECON_STOCK_FEE] [amounts[2]]"), "Сток итога смены без комиссии автопродажи: [summary]")
+
 /// Лимит позиции считается по цене не ниже базовой: после обвала и усреднением вниз позиция не растёт сверх лимита по базе.
 /datum/unit_test/economy_trading/crash_cap/Run()
 	var/datum/bank_account/trader = new_trader(100000)

@@ -213,6 +213,22 @@ test('партнёр под эмбарго показывает оставшие
   expect(ui.getByText('Эмбарго: ещё 17 мин. партнёр не покупает и не продаёт.')).toBeTruthy();
 });
 
+test('партнёр, чьи спецзаказы не берут, помечен на карточке', () => {
+  const ui = setup({
+    partners: [{ ...backend.partners[0], offers_slowed: 1 }, backend.partners[1]],
+  });
+  openTab(ui, /^Партнёры$/);
+  expect(ui.getAllByText('Выставляет реже: спецзаказы не берут')).toHaveLength(1);
+});
+
+test('пустые спецзаказы и скупка объясняют, что партнёры выставляют реже, когда их не берут', () => {
+  const ui = setup({ special_offers: [], bundles: [] });
+  openTab(ui, /^Спецзаказы/);
+  expect(ui.getByText('Спецзаказов сейчас нет. Партнёры выставляют реже, когда их не берут.')).toBeTruthy();
+  fireEvent.click(ui.getByText('Скупка'));
+  expect(ui.getByText('Сейчас партнёры ничего не распродают. Партнёры выставляют реже, когда их не берут.')).toBeTruthy();
+});
+
 test('спецзаказ: "Принять" шлёт accept_offer с uid, взятый печатает накладную', () => {
   const ui = setup();
   openTab(ui, /^Спецзаказы/);
@@ -285,7 +301,7 @@ test('консоль заявок: паки каталога отдела пом
     budget_request: { id: 'MED', name: 'Медицина', balance: 4500, manager: 0, any: 0, approver: 1, auto_limit: 2000 },
   });
   expect(ui.getByText(/оплатит бюджет отдела "Медицина" \(сейчас 4 500 кр\.\)/)).toBeTruthy();
-  expect(ui.getByText(/если ответа долго нет, заявка до 2 000 кр\. одобряется сама/)).toBeTruthy();
+  expect(ui.getByText(/или кнопкой в сообщении на карте, сама она не одобряется\./)).toBeTruthy();
   expect(ui.getByText('Каталог: заявка отделу или снабжению')).toBeTruthy();
   expect(ui.getByText('бюджет отдела')).toBeTruthy();
   fireEvent.click(ui.getByText('Medical Supplies'));
@@ -390,10 +406,16 @@ test('консоль заявок: дорогой расходник без на
   expect(cheapSpent.queryAllByText('бюджет отдела')).toHaveLength(0);
 });
 
+test('консоль заявок: недорогая заявка отделу одобряется сразу', () => {
+  const budget = { id: 'MED', name: 'Медицина', balance: 4500, manager: 0, any: 0, approver: 1, auto_limit: 2000, instant: 1, auto_cooldown: 10 };
+  const ui = setup({ requestonly: 1, can_send: 0, supplies: medicalSupplies, prices: medicalPrices, budget_request: budget });
+  expect(ui.getByText(/Заявка до 2 000 кр\., кроме расходников, одобряется сама сразу, если после заказа в бюджете остаётся на зарплату сотрудникам, не чаще раза в 10 мин\.; дороже - одобряет глава отдела, ГП, капитан или ИИ, им приходит сообщение на карту\./)).toBeTruthy();
+});
+
 test('консоль заявок СБ при начальстве на смене не предлагает ИИ', () => {
   const budget = { id: 'SEC', name: 'Служба безопасности', balance: 9000, manager: 0, any: 0, approver: 1, auto_limit: 2000 };
   const ui = setup({ requestonly: 1, can_send: 0, supplies: medicalSupplies, prices: medicalPrices, budget_request: budget });
-  expect(ui.getByText(/Заявку одобряет глава отдела, ГП или капитан в программе .*одобряется сама, кроме расходников\./)).toBeTruthy();
+  expect(ui.getByText(/Заявку одобряет глава отдела, ГП или капитан в программе .*сама она не одобряется\./)).toBeTruthy();
   expect(ui.queryByText(/или ИИ/)).toBeNull();
   ui.unmount();
   const medical = setup({ requestonly: 1, can_send: 0, supplies: medicalSupplies, prices: medicalPrices, budget_request: { ...budget, id: 'MED', name: 'Медицина' } });
@@ -594,6 +616,7 @@ test('аукцион: лот, ставки соперников и ставка 
       increment: 85,
       left: 45,
       rivals: 2,
+      rival_cap: 110,
       history: [
         { who: 'станция "Кило-7"', amount: 1700 },
         { who: 'Иван Петров', amount: 1600 },
@@ -605,6 +628,7 @@ test('аукцион: лот, ставки соперников и ставка 
   expect(ui.getByText('Лот: золотая скрипка')).toBeTruthy();
   expect(ui.getByText('осталось 0:45')).toBeTruthy();
   expect(ui.getByText('1 700 кр. - станция "Кило-7"')).toBeTruthy();
+  expect(ui.getByText('2 станции сектора, дороже 110% оценки не дают')).toBeTruthy();
   fireEvent.click(ui.getByText('Поставить 1 785 кр.'));
   fireEvent.click(ui.getByText('+2 шага'));
   fireEvent.click(ui.getByText('Поставить 1 955 кр.'));
@@ -612,6 +636,59 @@ test('аукцион: лот, ставки соперников и ставка 
     { uid: 4, amount: 1785 },
     { uid: 4, amount: 1955 },
   ]);
+});
+
+const typeBid = (input: HTMLInputElement, value: string, enter = false) => {
+  fireEvent.focus(input);
+  input.value = value;
+  fireEvent.input(input);
+  if (enter) {
+    fireEvent.keyDown(input, { key: 'Enter' });
+  } else {
+    fireEvent.blur(input);
+  }
+};
+
+test('аукцион: вписанная сумма ставится одним Enter, ниже шага - отказ с суммой, «Перебить соперников» шлёт outbid', () => {
+  const lot = {
+    uid: 4,
+    name: 'золотая скрипка',
+    desc: 'Скрипка из золота.',
+    value: 4000,
+    bid: 1700,
+    bidder: 'станция "Кило-7"',
+    mine: 0,
+    min_bid: 1785,
+    increment: 85,
+    left: 300,
+    rivals: 2,
+    rival_cap: 110,
+    rival_ceiling: 4400,
+    outbid_price: 4191,
+    history: [],
+  };
+  const ui = setup({ auction: lot, my_balance: 5000 });
+  fireEvent.click(ui.getByText(/^Аукцион/));
+  const input = ui.container.querySelector('.Input__input') as HTMLInputElement;
+  typeBid(input, '1750');
+  expect(ui.getByText('Мало: сейчас ставка 1 700 кр., шаг 85 кр. - ставьте от 1 785 кр.')).toBeTruthy();
+  expect(ui.getByText('Поставить 1 750 кр.').closest('.Button')?.className).toContain('Button--disabled');
+  typeBid(input, '1750', true);
+  expect(sent(ui.topic, 'auction_bid')).toEqual([]);
+  typeBid(input, '2400', true);
+  expect(sent(ui.topic, 'auction_bid')).toEqual([{ uid: 4, amount: 2400 }]);
+  expect(ui.getByText('Поставить 1 785 кр.')).toBeTruthy();
+  fireEvent.click(ui.getByText('Перебить соперников: 4 191 кр.'));
+  expect(sent(ui.topic, 'auction_bid')).toEqual([
+    { uid: 4, amount: 2400 },
+    { uid: 4, outbid: true, amount: 4191 },
+  ]);
+  ui.store.dispatch(backendUpdate({ data: { auction: { ...lot, outbid_price: 4191 }, my_balance: 4000 } }));
+  ui.rerender(<CargoContent />);
+  expect(ui.getByText('Перебить соперников: 4 191 кр.').closest('.Button')?.className).toContain('Button--disabled');
+  ui.store.dispatch(backendUpdate({ data: { auction: { ...lot, bid: 4191, mine: 1, min_bid: 4400, outbid_price: null }, my_balance: 4000 } }));
+  ui.rerender(<CargoContent />);
+  expect(ui.queryByText(/Перебить соперников/)).toBeNull();
 });
 
 test('аукцион без лота: когда следующий и итоги прошлых', () => {
@@ -712,14 +789,18 @@ test('аукцион: лот экипажа покупают сразу с по�
   expect(content).not.toContain('наша станция: Анна');
 });
 
-test('скупка: пачка только целиком, цена со скидкой, покупка шлёт buy_bundle', () => {
+test('скупка: пачка для отдела только целиком, цена со скидкой, покупка шлёт buy_bundle', () => {
   const ui = setup({
     bundles: [
       {
         uid: 9,
         partner: 'Вей-Мед',
         partner_id: 'vey_med',
-        items: ['бинт', 'шина', 'пакет крови', 'скальпель'],
+        department: 'Медицина',
+        whom: 'медбея',
+        packs: ['Medical Supplies Crate', 'Blood Pack Variety Crate'],
+        need: 'Medical Supplies Crate',
+        need_why: 'Раненых на станции: 3',
         full_value: 2000,
         price: 1400,
         discount: 30,
@@ -728,12 +809,104 @@ test('скупка: пачка только целиком, цена со ски
     ],
   });
   fireEvent.click(ui.getByText('Скупка'));
-  expect(ui.getByText('4 предмета, только вместе')).toBeTruthy();
-  expect(ui.getByText('бинт, шина, пакет крови, скальпель')).toBeTruthy();
+  expect(ui.getByText('Для медбея: 2 пака, только вместе')).toBeTruthy();
+  expect(ui.getByText('Medical Supplies Crate, Blood Pack Variety Crate')).toBeTruthy();
+  expect(ui.getByText('Нужно сейчас: Medical Supplies Crate - Раненых на станции: 3')).toBeTruthy();
   expect(ui.getByText('1 400 кр.')).toBeTruthy();
   expect(ui.getByText('ещё 10:00')).toBeTruthy();
-  fireEvent.click(ui.getByText('Купить пачкой'));
+  expect(ui.queryByText('За бюджет отдела')).toBeNull();
+  fireEvent.click(ui.getByText('Купить пачку'));
   expect(sent(ui.topic, 'buy_bundle')).toEqual([{ uid: 9 }]);
+});
+
+test('глава отдела берёт пачку скупки за бюджет отдела', () => {
+  const ui = setup({
+    requestonly: 1,
+    bundles: [
+      {
+        uid: 9,
+        partner: 'Вей-Мед',
+        partner_id: 'vey_med',
+        department: 'Медицина',
+        whom: 'медбея',
+        packs: ['Medical Supplies Crate', 'Blood Pack Variety Crate'],
+        full_value: 2000,
+        price: 1400,
+        discount: 30,
+        left: 600,
+        can_budget: 1,
+      },
+    ],
+  });
+  fireEvent.click(ui.getByText('Скупка'));
+  fireEvent.click(ui.getByText('За бюджет отдела'));
+  expect(sent(ui.topic, 'buy_bundle')).toEqual([{ uid: 9, budget: 1 }]);
+});
+
+test('скупка: чужому отделу причина нужды не видна, лично пачку с паками СБ не купить, в окно отдела - только за его бюджет', () => {
+  const bundle = {
+    uid: 9,
+    partner: 'НТ Логистика',
+    partner_id: 'nt_logistics',
+    department: 'Служба безопасности',
+    whom: 'СБ',
+    packs: ['Bulletproof Armor Crate', 'Riot Shotguns Crate'],
+    need: 'Bulletproof Armor Crate',
+    full_value: 6000,
+    price: 4200,
+    discount: 30,
+    left: 900,
+    private_ok: 0,
+  };
+  const ui = setup({ self_paid: 1, bundle_first: 5, bundles: [bundle] });
+  fireEvent.click(ui.getByText('Скупка'));
+  expect(ui.getByText('Нужно сейчас: Bulletproof Armor Crate')).toBeTruthy();
+  const buy = ui.getByText('Купить пачку').closest('.Button');
+  expect(buy?.className).toContain('Button--disabled');
+  fireEvent.click(ui.getByText('Купить пачку'));
+  expect(sent(ui.topic, 'buy_bundle')).toEqual([]);
+  ui.store.dispatch(backendUpdate({ data: { self_paid: 1, bundles: [{ ...bundle, private_ok: 1, department_left: 170 }] } }));
+  ui.rerender(<CargoContent />);
+  expect(ui.getByText('для отдела ещё 3 мин.')).toBeTruthy();
+  expect(ui.getByText('Купить пачку').closest('.Button')?.className).toContain('Button--disabled');
+  ui.store.dispatch(backendUpdate({ data: { self_paid: 1, bundles: [{ ...bundle, private_ok: 1, department_left: 0 }] } }));
+  ui.rerender(<CargoContent />);
+  expect(ui.queryByText(/для отдела ещё/)).toBeNull();
+  fireEvent.click(ui.getByText('Купить пачку'));
+  expect(sent(ui.topic, 'buy_bundle')).toEqual([{ uid: 9 }]);
+});
+
+test('лично пачка и пак стоят столько, сколько спишет сервер: цена пачки от сервера, наценка пака округляется вниз', () => {
+  const bundle = { uid: 9, partner: 'Вей-Мед', partner_id: 'vey_med', packs: ['Medical Supplies Crate', 'Blood Pack Variety Crate'], full_value: 2000, price: 1405, private_price: 1545, discount: 30, left: 600, private_ok: 1 };
+  const supplies = { Livestock: { name: 'Livestock', packs: [{ name: 'Cow Crate', id: '/datum/supply_pack/critter/cow', desc: 'Корова', cost: 3005, goody: 0, commodity: null, supplier: 'НТ Логистика', in_stock: 1 }] } };
+  const ui = setup({ self_paid: 1, supplies, bundles: [bundle] });
+  expect(ui.getByText('3 305 кр.')).toBeTruthy();
+  fireEvent.click(ui.getByText('Скупка'));
+  expect(ui.getByText('1 545 кр.')).toBeTruthy();
+  expect(ui.queryByText('1 546 кр.')).toBeNull();
+});
+
+test('пачку партнёра под эмбарго купить нельзя', () => {
+  const ui = setup({
+    bundles: [
+      {
+        uid: 9,
+        partner: 'Вей-Мед',
+        partner_id: 'vey_med',
+        packs: ['Medical Supplies Crate', 'Blood Pack Variety Crate'],
+        full_value: 2000,
+        price: 1400,
+        discount: 30,
+        left: 600,
+        embargoed: 1,
+        can_budget: 1,
+      },
+    ],
+  });
+  fireEvent.click(ui.getByText('Скупка'));
+  expect(ui.getByText('Эмбарго: пока не купить')).toBeTruthy();
+  expect(ui.queryByText('Купить пачку')).toBeNull();
+  expect(ui.queryByText('За бюджет отдела')).toBeNull();
 });
 
 test('счётчики дел видны в навигации', () => {

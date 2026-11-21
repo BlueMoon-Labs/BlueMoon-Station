@@ -284,7 +284,7 @@
 	TEST_ASSERT(series.has_progress(), "Начатая серия считается неначатой")
 	TEST_ASSERT_EQUAL(series.ui_entry()["stage"], 3, "Этап в данных окна")
 	var/obj/last = single_item(series)
-	var/last_stage = round(series.reward * SSeconomy.bounty_modifier * settings.contract_delivery_mult)
+	var/last_stage = round(series.reward * SSeconomy.bounty_modifier * settings.contract_delivery_mult * settings.contract_civilian_mult)
 	var/final_total = last_stage + round((stages_sum + last_stage) * settings.contract_chain_bonus / 100)
 	TEST_ASSERT_EQUAL(series.payout(), final_total, "Последний этап без премии серии")
 	TEST_ASSERT(econ_contracts_ship(last, user), "Последний этап: предмет не засчитан")
@@ -299,6 +299,100 @@
 	TEST_ASSERT(istype(full), "Серия не собрана")
 	TEST_ASSERT_EQUAL(full.stages_total, ECON_CONTRACT_CHAIN_STAGES, "Длина собранной серии")
 	qdel(full)
+
+/datum/unit_test/economy_contract_machines/board/chain_cap
+	var/saved_cap
+
+/datum/unit_test/economy_contract_machines/board/chain_cap/Destroy()
+	if(!isnull(saved_cap))
+		SSeconomy.settings.contract_chain_reward_cap = saved_cap
+	return ..()
+
+/// Серия платит за все этапы вместе с премией не больше contract_chain_reward_cap: этап на потолке получает остаток, после него этапы закрываются без денег.
+/datum/unit_test/economy_contract_machines/board/chain_cap/Run()
+	setup()
+	var/datum/economy_settings/settings = SSeconomy.settings
+	saved_cap = settings.contract_chain_reward_cap
+	var/datum/econ_contract/delivery/chain/series = new(ACCOUNT_CIV, new /datum/bounty/item/assistant/scooter, list(/datum/bounty/item/assistant/scooter, /datum/bounty/item/assistant/scooter))
+	civilian.contracts.Insert(1, series)
+	settings.contract_chain_reward_cap = 0
+	var/cap = round(series.payout() * 1.5)
+	var/paid = 0
+	for(var/stage in 1 to 3)
+		settings.contract_chain_reward_cap = 0
+		var/uncapped = series.payout()
+		settings.contract_chain_reward_cap = cap
+		var/expected = clamp(cap - paid, 0, uncapped)
+		TEST_ASSERT_EQUAL(series.payout(), expected, "Этап [stage]: награда сверх потолка серии")
+		var/budget_before = civilian.account.account_balance
+		TEST_ASSERT(econ_contracts_ship(single_item(series)), "Этап [stage]: предмет не засчитан")
+		TEST_ASSERT_EQUAL(civilian.account.account_balance - budget_before, expected, "Этап [stage] заплатил не по потолку")
+		paid += expected
+	TEST_ASSERT(series.completed, "Серия не закрылась после потолка")
+	TEST_ASSERT_EQUAL(paid, cap, "Вся серия заплатила не ровно потолок")
+
+/// Один и тот же заказ человек выполняет не больше contract_repeat_per_person раз за смену: дальше его не взять и не получить личным заказом, окно это помечает, другой человек берёт как обычно.
+/datum/unit_test/economy_contract_machines/board/repeat_limit/Run()
+	setup()
+	SSeconomy.settings.contract_repeat_per_person = 2
+	taker_account.adjust_contract_rep(15)
+	for(var/attempt in 1 to 2)
+		var/datum/econ_contract/delivery/done = post_scooter_contract()
+		TEST_ASSERT(done.take(taker_account), "Самокат [attempt] не взят: [done.take_refusal(taker_account)]")
+		TEST_ASSERT(econ_contracts_ship(single_item(done), user), "Самокат [attempt] не засчитан")
+		TEST_ASSERT(done.completed, "Самокат [attempt] не выполнен")
+	var/datum/econ_contract/delivery/third = post_scooter_contract()
+	TEST_ASSERT(findtext(third.take_refusal(taker_account), "столько раз, сколько можно"), "Третий такой же заказ тому же человеку: [third.take_refusal(taker_account) || "взят"]")
+	var/capped_for_taker = FALSE
+	for(var/list/entry as anything in econ_contracts_ui_data(user, taker_account)["contracts"])
+		if(entry["uid"] == third.uid)
+			capped_for_taker = entry["repeat_capped"]
+	TEST_ASSERT(capped_for_taker, "Окно не помечает исчерпанный заказ")
+	for(var/list/entry as anything in econ_contracts_ui_data(helper, helper_account)["contracts"])
+		if(entry["uid"] == third.uid)
+			TEST_ASSERT(!entry["repeat_capped"], "Исчерпанный заказ помечен для другого человека")
+	TEST_ASSERT(third.take(helper_account), "Другой человек не взял заказ: [third.take_refusal(helper_account)]")
+	var/list/by_department = econ_bounty_types_by_department()
+	var/list/pool = by_department[ACCOUNT_CIV]
+	var/kept = pool[1] == /datum/bounty/item/assistant/scooter ? pool[2] : pool[1]
+	for(var/bounty_type in pool)
+		if(bounty_type != kept)
+			taker_account.contract_repeats[bounty_type] = 2
+	for(var/datum/econ_contract/opened as anything in SSeconomy.personal_contracts_of(taker_account))
+		qdel(opened)
+	var/datum/econ_contract/delivery/offer = SSeconomy.generate_personal_contract(taker_account)
+	TEST_ASSERT_EQUAL(offer?.bounty.type, kept, "Личный заказ из исчерпанных")
+	TEST_ASSERT_NULL(SSeconomy.generate_personal_contract(taker_account), "Личный заказ сверх неисчерпанных")
+
+/// Лимит повторов касается и участия без взятия: каждая закрытая сдача пишется участнику, а сверх лимита его поставки и работа в свободный заказ не идут. Работу всего отдела лимит не трогает.
+/datum/unit_test/economy_contract_machines/board/repeat_contributions/Run()
+	setup()
+	SSeconomy.settings.contract_repeat_per_person = 2
+	econ_test_set_balance(helper_account, 0)
+	for(var/attempt in 1 to 2)
+		var/datum/econ_contract/delivery/done = post_scooter_contract()
+		TEST_ASSERT(econ_contracts_ship(single_item(done), helper), "Самокат [attempt] без взятия не засчитан")
+		TEST_ASSERT(done.completed, "Самокат [attempt] не выполнен")
+	TEST_ASSERT_EQUAL(helper_account.contract_repeats?[/datum/bounty/item/assistant/scooter], 2, "Сдачи без взятия не записаны в повторы")
+	var/paid = helper_account.account_balance
+	var/datum/econ_contract/delivery/third = post_scooter_contract()
+	var/obj/item = single_item(third)
+	TEST_ASSERT(!econ_contracts_ship(item, helper), "Третья сдача сверх лимита засчитана")
+	TEST_ASSERT(!third.completed && !QDELETED(item), "Третья сдача сверх лимита закрыла заказ")
+	TEST_ASSERT_EQUAL(helper_account.account_balance, paid, "Третья сдача сверх лимита заплатила")
+	TEST_ASSERT(econ_contracts_ship(item, user), "Другой человек не сдал тот же заказ")
+	var/datum/economy_department/service = SSeconomy.get_department(ACCOUNT_SRV)
+	var/datum/econ_contract/activity/service_cleaning/cleaning = new(ACCOUNT_SRV)
+	service.contracts += cleaning
+	LAZYSET(helper_account.contract_repeats, cleaning.type, 2)
+	var/saved_service = service.account.account_balance
+	SSeconomy.record_work(ACCOUNT_SRV, WORK_SRV_CLEANING, 1, helper)
+	TEST_ASSERT_EQUAL(cleaning.progress, 0, "Работа сверх лимита засчитана в свободный заказ")
+	var/datum/econ_contract/activity/engineering_export/shared = new(ACCOUNT_ENG)
+	LAZYSET(helper_account.contract_repeats, shared.type, 2)
+	TEST_ASSERT(!shared.repeats_exhausted(helper_account), "Лимит повторов закрыл работу всего отдела")
+	qdel(shared)
+	econ_test_set_balance(service.account, saved_service)
 
 /// Контракт без исполнителя делит долю участников по вкладу, остальное получает отдел.
 /datum/unit_test/economy_contract_machines/board/team_share/Run()
