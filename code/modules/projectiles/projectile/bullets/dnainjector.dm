@@ -9,7 +9,7 @@
 	if(iscarbon(target))
 		var/mob/living/carbon/M = target
 		if(blocked != 100)
-			if(M.can_inject_syringe(null, FALSE, def_zone, SYRINGE_PIERCE_THICK))   // ← can_inject_syringe, не can_inject
+			if(M.can_inject_syringe(null, FALSE, def_zone, SYRINGE_PIERCE_THICK))
 				if(injector.inject(M, firer))
 					QDEL_NULL(injector)
 					return BULLET_ACT_HIT
