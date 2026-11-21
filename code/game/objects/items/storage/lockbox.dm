@@ -259,6 +259,7 @@
 	STR.max_combined_w_class = 5
 	STR.max_items = 5
 	STR.locked = TRUE
+	STR.storage_flags |= STORAGE_LIMIT_COMBINED_W_CLASS
 
 /obj/item/storage/lockbox/geneticist/PopulateContents()
 	for(var/i in 1 to 2)
