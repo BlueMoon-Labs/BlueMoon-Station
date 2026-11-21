@@ -334,8 +334,8 @@
 	if(istext(uid))
 		uid = text2num(uid)
 	var/datum/auction_lot/lot = SSmarket.find_auction_lot(uid)
-	var/error = isnum(uid) ? SSmarket.place_auction_bid(wallet_account(user), amount, user, uid) : "Этот лот уже не продаётся."
-	message = error || "Ставка [amount] кр. на \"[lot.name]\" принята: деньги заморожены до конца торгов, перебьют - вернутся."
+	var/error = isnum(uid) ? SSmarket.place_auction_bid(wallet_account(user), amount, user, uid, !!params["outbid"]) : "Этот лот уже не продаётся."
+	message = error || "Ставка [lot.bid] кр. на \"[lot.name]\" принята: деньги заморожены до конца торгов, перебьют - вернутся."
 	return TRUE
 
 /// Метадоллары: постоянный счёт игрока, с кредитами станции не связан.

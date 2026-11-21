@@ -15,12 +15,12 @@ import {
   LabeledList,
   NoticeBox,
   ProgressBar,
-  RestrictedInput,
   Stack,
   Table,
   Tooltip,
 } from '../components';
 import { Window } from '../layouts';
+import { AuctionBidEntry } from './common/AuctionBid';
 import { ContractTable } from './common/ContractTable';
 import { ContractEntry, Credits, EconomyLogo, formatCredits, OfferEntry, Sparkline } from './common/Economy';
 import { NtEmpty, NtFrame, NtHelpTopic, NtHelpTopics, NtLine, NtMenu, NtMenuItem, NtPulse, NtReadout, NtScreen } from './common/NtTerminal';
@@ -166,6 +166,9 @@ type AuctionLot = {
   rivals: number;
   /** Дороже стольких процентов оценки станции-соперники не дают. */
   rival_cap?: number | null;
+  rival_ceiling?: number | null;
+  /** Наименьшая ставка, которую станции-соперники уже не перебьют. */
+  outbid_price?: number | null;
   history: { who: string; amount: number }[];
   outbid?: BooleanLike;
   /** Лот экипажа: имя продавца или "аноним". */
@@ -1173,19 +1176,16 @@ const useOutbid = (lot: AuctionLot | null | undefined) => {
 };
 
 const Auction = (props) => {
-  const { act, data } = useBackend<CargoData>();
+  const { data } = useBackend<CargoData>();
   const lot = data.auction;
   const results = data.auction_results || [];
-  const [amount, setAmount] = useState<number | null>(null);
   const outbid = useOutbid(lot);
-  const minBid = lot?.min_bid || 0;
-  const bid = Math.max(amount ?? minBid, minBid);
   return (
     <>
       {lot ? (
         <NtFrame
           title={`Лот: ${lot.name}`}
-          help="Ставка идёт с личного счёта и замораживается до конца торгов; если её перебьют, деньги сразу вернутся. Ставка в последнюю минуту продлевает торги до минуты. Выигранный лот прилетит капсулой на склад снабжения запертой посылкой на имя победителя."
+          help="Впишите сумму и нажмите «Поставить» или Enter - ставка встанет сразу. «Перебить соперников» ставит наименьшую сумму, которую станции сектора уже не перебьют. Ставка идёт с личного счёта и замораживается до конца торгов, к своей ставке доплачивается только разница; если её перебьют, деньги сразу вернутся. Ставка в последнюю минуту продлевает торги до минуты. Выигранный лот прилетит капсулой на склад снабжения запертой посылкой на имя победителя."
           buttons={
             <Box inline className="NtTerm__num" color={lot.left < 60 ? 'average' : 'label'}>
               осталось {formatTime(lot.left)}
@@ -1206,23 +1206,14 @@ const Auction = (props) => {
               ? `${lot.rivals} ${plural(lot.rivals, 'станция', 'станции', 'станций')} сектора, дороже ${lot.rival_cap ?? 0}% оценки не дают`
               : 'нет, торгуется только станция'}
           </NtLine>
-          <Stack align="center" mt={1.5} wrap>
-            <Stack.Item>
-              <RestrictedInput width="7em" value={bid} minValue={minBid} maxValue={100000} onChange={(_, value) => setAmount(value)} /> кр.
-            </Stack.Item>
-            <Stack.Item>
-              <Button onClick={() => setAmount(minBid)}>Минимум</Button>
-              <Button onClick={() => setAmount(minBid + lot.increment * 2)}>+2 шага</Button>
-            </Stack.Item>
-            <Stack.Item>
-              <Button color="good" icon="gavel" onClick={() => act('auction_bid', { uid: lot.uid, amount: bid })}>
-                {`Поставить ${formatCredits(bid)}`}
-              </Button>
-            </Stack.Item>
+          <Box mt={1.5}>
+            <AuctionBidEntry key={lot.uid} lot={lot} balance={data.my_balance} steps />
             {data.my_balance !== null && data.my_balance !== undefined && (
-              <Stack.Item className="NtTerm__hint">на счёте {formatCredits(data.my_balance)}</Stack.Item>
+              <Box className="NtTerm__hint" mt={0.5}>
+                на счёте {formatCredits(data.my_balance)}
+              </Box>
             )}
-          </Stack>
+          </Box>
           {lot.history.length > 0 && (
             <Box mt={1.5}>
               <Box className="NtTerm__hint" mb={0.5}>
@@ -1266,7 +1257,7 @@ const CrewLots = (props) => {
   return (
     <NtFrame
       title="Лоты экипажа"
-      help={`Вещи экипажа, выставленные с пада подработки. Торгуется только экипаж, ставка идёт с личного счёта и замораживается до конца торгов; лот с ценой «купить сразу» можно забрать без торгов. Продавцу уходит ставка без сбора NT ${data.auction_fee ?? 0}%, победителю - запертая посылка на его имя капсулой в снабжение.`}>
+      help={`Вещи экипажа, выставленные с пада подработки. Торгуется только экипаж, ставку можно вписать любой суммой, она идёт с личного счёта и замораживается до конца торгов; лот с ценой «купить сразу» можно забрать без торгов. Продавцу уходит ставка без сбора NT ${data.auction_fee ?? 0}%, победителю - запертая посылка на его имя капсулой в снабжение.`}>
       {lots.length === 0 ? (
         <NtEmpty>Лотов экипажа нет. Свою вещь выставляют с пада подработки.</NtEmpty>
       ) : (
@@ -1285,9 +1276,9 @@ const CrewLots = (props) => {
               </Box>
               {!!lot.inscription && <Box className="NtTerm__hint">На вещи надпись: {lot.inscription}</Box>}
               {biddable && (
-                <Button color="good" icon="gavel" mt={0.5} onClick={() => act('auction_bid', { uid: lot.uid, amount: lot.min_bid })}>
-                  {`${lot.mine ? 'Поднять до' : 'Поставить'} ${formatCredits(lot.min_bid)}`}
-                </Button>
+                <Box mt={0.5}>
+                  <AuctionBidEntry lot={lot} balance={data.my_balance} buyout={buyout} />
+                </Box>
               )}
               {!!buyout && (
                 <Button.Confirm

@@ -638,6 +638,59 @@ test('аукцион: лот, ставки соперников и ставка 
   ]);
 });
 
+const typeBid = (input: HTMLInputElement, value: string, enter = false) => {
+  fireEvent.focus(input);
+  input.value = value;
+  fireEvent.input(input);
+  if (enter) {
+    fireEvent.keyDown(input, { key: 'Enter' });
+  } else {
+    fireEvent.blur(input);
+  }
+};
+
+test('аукцион: вписанная сумма ставится одним Enter, ниже шага - отказ с суммой, «Перебить соперников» шлёт outbid', () => {
+  const lot = {
+    uid: 4,
+    name: 'золотая скрипка',
+    desc: 'Скрипка из золота.',
+    value: 4000,
+    bid: 1700,
+    bidder: 'станция "Кило-7"',
+    mine: 0,
+    min_bid: 1785,
+    increment: 85,
+    left: 300,
+    rivals: 2,
+    rival_cap: 110,
+    rival_ceiling: 4400,
+    outbid_price: 4191,
+    history: [],
+  };
+  const ui = setup({ auction: lot, my_balance: 5000 });
+  fireEvent.click(ui.getByText(/^Аукцион/));
+  const input = ui.container.querySelector('.Input__input') as HTMLInputElement;
+  typeBid(input, '1750');
+  expect(ui.getByText('Мало: сейчас ставка 1 700 кр., шаг 85 кр. - ставьте от 1 785 кр.')).toBeTruthy();
+  expect(ui.getByText('Поставить 1 750 кр.').closest('.Button')?.className).toContain('Button--disabled');
+  typeBid(input, '1750', true);
+  expect(sent(ui.topic, 'auction_bid')).toEqual([]);
+  typeBid(input, '2400', true);
+  expect(sent(ui.topic, 'auction_bid')).toEqual([{ uid: 4, amount: 2400 }]);
+  expect(ui.getByText('Поставить 1 785 кр.')).toBeTruthy();
+  fireEvent.click(ui.getByText('Перебить соперников: 4 191 кр.'));
+  expect(sent(ui.topic, 'auction_bid')).toEqual([
+    { uid: 4, amount: 2400 },
+    { uid: 4, outbid: true },
+  ]);
+  ui.store.dispatch(backendUpdate({ data: { auction: { ...lot, outbid_price: 4191 }, my_balance: 4000 } }));
+  ui.rerender(<CargoContent />);
+  expect(ui.getByText('Перебить соперников: 4 191 кр.').closest('.Button')?.className).toContain('Button--disabled');
+  ui.store.dispatch(backendUpdate({ data: { auction: { ...lot, bid: 4191, mine: 1, min_bid: 4400, outbid_price: null }, my_balance: 4000 } }));
+  ui.rerender(<CargoContent />);
+  expect(ui.queryByText(/Перебить соперников/)).toBeNull();
+});
+
 test('аукцион без лота: когда следующий и итоги прошлых', () => {
   const ui = setup({
     auction: null,

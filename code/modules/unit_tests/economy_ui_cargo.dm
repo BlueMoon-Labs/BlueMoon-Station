@@ -731,6 +731,60 @@
 	TEST_ASSERT_EQUAL(SSmarket.auction_results[1][2], "станция \"Тест\"", "Итог - соперник")
 	TEST_ASSERT(SSmarket.next_auction_at > world.time, "Следующий лот запланирован")
 
+/// Вписанная ставка встаёт одним нажатием, ставка ниже шага отклоняется с суммой, от которой ставить; «Перебить» ставит наименьшую сумму, которую соперники уже не перебьют; подъём своей ставки - одна доплата разницы, деньги сходятся до итоговой оплаты.
+/datum/unit_test/economy_ui_cargo/auction_bid_entry/Run()
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo)
+	var/mob/living/carbon/human/bidder = make_staff(ACCOUNT_CAR, list(ACCESS_CARGO))
+	var/datum/bank_account/account = econ_account_of(bidder)
+	account.credit(5000, ECON_ADMIN)
+	var/mob/living/carbon/human/other = make_staff(ACCOUNT_CIV)
+	var/datum/bank_account/other_account = econ_account_of(other)
+	other_account.credit(5000, ECON_ADMIN)
+	var/obj/item/modular_computer/pda/pda = allocate(/obj/item/modular_computer/pda)
+	other.put_in_hands(pda)
+	var/datum/computer_file/program/wallet/wallet = locate() in pda.get_all_files()
+	var/datum/tgui/wallet_window = allocate(/datum/tgui, other, wallet, "NtosWallet")
+	wallet_window.status = UI_INTERACTIVE
+	var/datum/bank_account/escrow = SSeconomy.market_account
+	var/money = account.account_balance + other_account.account_balance + escrow.account_balance
+	var/bids_before = SSeconomy.ledger.by_reason[ECON_AUCTION_BID]
+	var/refunds_before = SSeconomy.ledger.by_reason[ECON_AUCTION_REFUND]
+	var/datum/auction_lot/lot = SSmarket.start_auction(list("path" = /obj/item/toy/plush/carpplushie, "name" = "тестовый карп", "value" = 1000))
+	lot.rival_cap_percent = 110
+	lot.rivals = list("станция \"Тест\"" = 1100)
+
+	press(bidder, console, "auction_bid", list("uid" = "[lot.uid]", "amount" = "742"))
+	TEST_ASSERT(lot.bidder_account == account && lot.bid == 742, "Вписанная сумма не встала одним нажатием: [lot.bid]")
+	TEST_ASSERT_EQUAL(SSeconomy.ledger.by_reason[ECON_AUCTION_BID] - bids_before, 742, "Ставка заморожена не одним переводом")
+	var/answer = SSmarket.place_auction_bid(other_account, 770, other, lot.uid)
+	TEST_ASSERT(findtext(answer, "ставка 742 кр., шаг 37 кр.") && findtext(answer, "от 779 кр."), "Отказ ниже шага не говорит, сколько ставить: [answer]")
+	TEST_ASSERT(lot.bidder_account == account && lot.bid == 742, "Ставка ниже шага перебила ведущую")
+
+	var/list/entry = console.ui_data(bidder)["auction"]
+	TEST_ASSERT_EQUAL(entry["rival_ceiling"], 1100, "Окно не знает потолок соперников")
+	TEST_ASSERT_EQUAL(entry["outbid_price"], 1049, "Окно не знает наименьшую ставку, которую соперники не перебьют")
+	press(bidder, console, "auction_bid", list("uid" = "[lot.uid]", "outbid" = 1))
+	TEST_ASSERT_EQUAL(lot.bid, 1049, "«Перебить» поставило не наименьшую сумму выше досягаемого соперниками")
+	TEST_ASSERT_NULL(SSmarket.rival_bid(lot, TRUE), "Соперник с потолком из окна перебил ставку «Перебить»")
+	TEST_ASSERT_EQUAL(SSeconomy.ledger.by_reason[ECON_AUCTION_BID] - bids_before, 1049, "Подъём своей ставки списал не только разницу")
+	TEST_ASSERT_EQUAL(SSeconomy.ledger.by_reason[ECON_AUCTION_REFUND] - refunds_before, 0, "Подъём своей ставки вернул её и списал заново")
+	TEST_ASSERT_NULL(console.ui_data(bidder)["auction"]["outbid_price"], "«Перебить» осталось, когда соперникам уже не перебить")
+
+	usr = other
+	wallet.ui_act("auction_bid", list("uid" = lot.uid, "outbid" = 1), wallet_window)
+	TEST_ASSERT(findtext(wallet.message, "уже не нужно перебивать") && findtext(wallet.message, "от [lot.min_bid()] кр."), "Кошелёк не объяснил, почему «Перебить» не нужно: [wallet.message]")
+	wallet.ui_act("auction_bid", list("uid" = lot.uid, "amount" = "1200"), wallet_window)
+	usr = null
+	TEST_ASSERT(lot.bidder_account == other_account && lot.bid == 1200, "Вписанная в Кошельке ставка не встала: [wallet.message]")
+	TEST_ASSERT_EQUAL(account.account_balance + other_account.account_balance + escrow.account_balance, money, "Ставки и возвраты не сошлись")
+
+	SSmarket.auction_drop_turf = run_loc_floor_bottom_left
+	SSmarket.finish_auction()
+	TEST_ASSERT_EQUAL(account.account_balance + other_account.account_balance + escrow.account_balance, money - 1200, "Итог торгов взял не ровно выигравшую ставку")
+	var/obj/item/storage/lockbox/order/parcel = locate() in run_loc_floor_bottom_left
+	TEST_ASSERT(parcel?.buyer_account == other_account, "Лот не приехал победителю")
+	qdel(parcel)
+
 /// Итоги лотов экипажа идут в окно снабжения отдельно и не вытесняют итоги лотов сектора; «Купить сразу» из консоли снабжения закрывает лот экипажа проданным.
 /datum/unit_test/economy_ui_cargo/auction_crew/Run()
 	econ_test_contraband_ready()

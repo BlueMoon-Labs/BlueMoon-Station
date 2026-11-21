@@ -380,11 +380,12 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 	var/uid = params["uid"]
 	if(istext(uid))
 		uid = text2num(uid)
-	var/error = SSmarket.place_auction_bid(econ_account_of(user), amount, user, uid)
+	var/datum/auction_lot/lot = SSmarket.find_auction_lot(uid)
+	var/error = SSmarket.place_auction_bid(econ_account_of(user), amount, user, uid, !!params["outbid"])
 	if(error)
 		to_chat(user, span_warning(error))
 		return FALSE
-	speaker.say("Ставка принята: [amount] кр.")
+	speaker.say("Ставка принята: [lot.bid] кр.")
 	return TRUE
 
 /// Покупка лота экипажа сразу из окна снабжения с личного счёта; где ждать посылку, говорит окно и карта.

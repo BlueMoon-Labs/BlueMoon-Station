@@ -435,6 +435,38 @@ describe('NtosWallet', () => {
     expect(sent(topic, 'auction_bid')).toEqual([{ uid: 3, amount: 325 }]);
   });
 
+  test('заказы: ставку на лот сектора вписывают сразу, ниже шага - отказ, «Перебить соперников» шлёт outbid, своя ставка - доплата разницы', () => {
+    const sector = { ...auction.auction, value: 1000, bid: 742, bidder: 'Анна Смирнова', min_bid: 779, increment: 37, rival_ceiling: 1100, outbid_price: 1049 };
+    const { container, getByText, queryByText, topic } = setup({ ...personal, ...auction, auction: sector, crew_lots: [], balance: 1500 });
+    fireEvent.click(getByText('Заказы'));
+    const input = container.querySelector('.Input__input') as HTMLInputElement;
+    fireEvent.focus(input);
+    input.value = '760';
+    fireEvent.input(input);
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(text(container)).toContain('Мало: сейчас ставка 742 кр., шаг 37 кр. - ставьте от 779 кр.');
+    expect(sent(topic, 'auction_bid')).toEqual([]);
+    fireEvent.focus(input);
+    input.value = '900';
+    fireEvent.input(input);
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(sent(topic, 'auction_bid')).toEqual([{ uid: 1, amount: 900 }]);
+    expect(queryByText(/Мало:/)).toBeNull();
+    fireEvent.click(getByText('Перебить соперников: 1 049 кр.'));
+    expect(sent(topic, 'auction_bid')).toEqual([
+      { uid: 1, amount: 900 },
+      { uid: 1, outbid: true },
+    ]);
+  });
+
+  test('заказы: «Перебить соперников» к своей ставке просит только разницу', () => {
+    const sector = { ...auction.auction, value: 1000, bid: 742, bidder: 'Иван Петров', mine: 1, min_bid: 779, increment: 37, rival_ceiling: 1100, outbid_price: 1049 };
+    const { getByText } = setup({ ...personal, ...auction, auction: sector, crew_lots: [], balance: 400 });
+    fireEvent.click(getByText('Заказы'));
+    expect(getByText('Перебить соперников: 1 049 кр.').closest('.Button')?.className).not.toContain('Button--disabled');
+    expect(getByText('Поставить 779 кр.').closest('.Button')?.className).not.toContain('Button--disabled');
+  });
+
   test('заказы: лот экипажа покупают сразу с подтверждением, у цены выкупа ставка пропадает, надпись видна раскрытой', () => {
     const { container, getByText, getAllByText, queryByText, topic } = setup({
       ...personal,

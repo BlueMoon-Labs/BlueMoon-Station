@@ -18,6 +18,7 @@ import {
   Tabs,
 } from '../components';
 import { NtosWindow } from '../layouts';
+import { AuctionBidEntry } from './common/AuctionBid';
 import { ContractTable, freeCrewRequests } from './common/ContractTable';
 import { ContractEntry, Credits, formatCredits, HistoryTable, TransactionEntry } from './common/Economy';
 import { NtHelpTopic, NtHelpTopics } from './common/NtTerminal';
@@ -148,6 +149,9 @@ type AuctionLot = {
   rivals?: number;
   /** Дороже стольких процентов оценки станции-соперники не дают. */
   rival_cap?: number | null;
+  rival_ceiling?: number | null;
+  /** Наименьшая ставка, которую станции-соперники уже не перебьют. */
+  outbid_price?: number | null;
   history: { who: string; amount: number }[];
   /** Лот экипажа: имя продавца или "аноним". */
   seller?: string | null;
@@ -807,8 +811,6 @@ const AuctionRow = (props: { lot: AuctionLot }) => {
   const { act, data } = useBackend<WalletData>();
   const { lot } = props;
   const [open, setOpen] = useState(false);
-  const [amount, setAmount] = useState<number | null>(null);
-  const bid = Math.max(amount ?? lot.min_bid, lot.min_bid);
   const crew = lot.seller !== undefined;
   const buyout = crew && !lot.my_lot ? lot.buyout || 0 : 0;
   const biddable = !lot.my_lot && (!buyout || lot.min_bid < buyout);
@@ -848,28 +850,16 @@ const AuctionRow = (props: { lot: AuctionLot }) => {
                 Ставки: {lot.history.map((entry) => `${entry.who} ${formatCredits(entry.amount)}`).join(', ')}.
               </Box>
             )}
-            {biddable && (
-              <Stack align="center" mt={0.5}>
-                <Stack.Item>
-                  <RestrictedInput
-                    width="7em"
-                    value={bid}
-                    minValue={lot.min_bid}
-                    maxValue={buyout ? buyout - 1 : 100000}
-                    onChange={(_, value) => setAmount(value)}
-                  />{' '}
-                  кр.
-                </Stack.Item>
-                <Stack.Item>
-                  <Button
-                    icon="gavel"
-                    disabled={shortOf(bid)}
-                    onClick={() => act('auction_bid', { uid: lot.uid, amount: bid })}>
-                    {`Поставить ${formatCredits(bid)}`}
-                  </Button>
-                </Stack.Item>
-              </Stack>
+            {biddable && crew && (
+              <Box mt={0.5}>
+                <AuctionBidEntry lot={lot} balance={data.balance || 0} buyout={buyout} />
+              </Box>
             )}
+          </Box>
+        )}
+        {biddable && !crew && (
+          <Box mt={0.5}>
+            <AuctionBidEntry key={lot.uid} lot={lot} balance={data.balance || 0} />
           </Box>
         )}
       </Table.Cell>
@@ -925,7 +915,9 @@ const AuctionSection = () => {
   return (
     <Section title="Аукцион">
       <Box color="label" mb={1}>
-        Ставка списывается сразу и ждёт конца торгов. Перебьют - деньги сразу вернутся, а незадолго до конца карта
+        Ставку можно вписать любой суммой - встанет одним нажатием, а «Перебить соперников» ставит наименьшую
+        сумму, которую станции сектора уже не перебьют. Ставка списывается сразу и ждёт конца торгов, к своей
+        доплачивается только разница. Перебьют - деньги сразу вернутся, а незадолго до конца карта
         напомнит о лоте; ставка в последнюю минуту продлевает торги. Лоты экипажа бывают с ценой «купить сразу» -
         тогда торги кончаются на месте. Выигрыш прилетает запертой посылкой на ваше имя капсулой в снабжение - и лот
         сектора, и лот экипажа. Свою вещь можно выставить с пада подработки: старт, срок и цену «купить сразу»
