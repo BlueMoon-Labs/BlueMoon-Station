@@ -5,6 +5,8 @@
 /datum/bank_account
 	var/account_holder = "Rusty Venture"
 	var/account_balance = 0
+	/// Валюта вендора битраннинга.
+	var/bitrunning_points = 0
 	/// Regulatory fines may overdraw an account; normal purchases still require funds.
 	var/allow_debt = FALSE
 	var/datum/job/account_job

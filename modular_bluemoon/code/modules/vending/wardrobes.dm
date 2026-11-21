@@ -269,6 +269,7 @@
 		/obj/item/clothing/suit/hooded/wintercoat/cargo = 3,
 		/obj/item/clothing/under/rank/cargo/tech = 3,
 		/obj/item/clothing/under/rank/cargo/tech/skirt = 3,
+		/obj/item/clothing/under/rank/cargo/bitrunner = 3,
 		/obj/item/clothing/under/rank/cargo/util = 3,
 		/obj/item/clothing/suit/toggle/labcoat/depjacket/sup = 3,
 		/obj/item/clothing/under/rank/cargo/tech/long = 3,

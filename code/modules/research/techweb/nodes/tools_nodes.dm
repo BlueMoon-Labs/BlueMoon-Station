@@ -18,6 +18,15 @@
 	design_ids = list("drill", "superresonator", "triggermod", "damagemod", "cooldownmod", "rangemod", "ore_redemption", "mining_equipment_vendor", "cargoexpress", "plasmacutter")//e a r l y    g a  m e)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
+/datum/techweb_node/bitrunning
+	id = "bitrunning"
+	display_name = "Bitrunning Technology"
+	description = "Bluespace technology has led to the development of quantum-scale computing, which unlocks the means to materialize atomic structures while executing advanced programs."
+	informing_radio_channels = list(RADIO_CHANNEL_SUPPLY)
+	prereq_ids = list("basic_mining", "computer_board_gaming", "adv_bluespace")
+	design_ids = list("byteforge", "quantum_console", "netpod", "quantum_server", "bitrunning_rewards_vendor")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
+
 /datum/techweb_node/adv_mining
 	id = "adv_mining"
 	display_name = "Advanced Mining Technology"

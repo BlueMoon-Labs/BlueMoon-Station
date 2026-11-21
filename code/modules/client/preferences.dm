@@ -1513,6 +1513,19 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		character.update_body()
 		character.update_hair()
 
+/datum/preferences/proc/copy_appearance_to(mob/living/carbon/human/character, icon_updates = 1)
+	var/list/original_features = features
+	var/list/appearance_features = features.Copy()
+	appearance_features["body_size"] = RESIZE_DEFAULT_SIZE
+	features = appearance_features
+	copy_to(character, icon_updates, roundstart_checks = FALSE)
+	features = original_features
+
+	character.mob_weight = MOB_WEIGHT_NORMAL
+	character.update_weight(MOB_WEIGHT_NORMAL)
+	character.dna.features["body_size"] = RESIZE_DEFAULT_SIZE
+	character.update_size(RESIZE_DEFAULT_SIZE)
+
 /// Применяет к character сохранённые в префах модификации конечностей (протезы/ампутации).
 /// Сбрасывает все робо-конечности до плотских, регенерирует отсутствующие и затем
 /// накатывает modified_limbs из префов. Вызывается из copy_to() при initial_spawn,

@@ -2,6 +2,14 @@
 ///CARGO Boards////
 ///////////////////
 
+/datum/design/board/quantum_console
+	name = "Computer Design (Quantum Console)"
+	desc = "The circuit board for a quantum console."
+	id = "quantum_console"
+	build_path = /obj/item/circuitboard/computer/quantum_console
+	category = list("Computer Boards")
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO | DEPARTMENTAL_FLAG_ENGINEERING
+
 /datum/design/board/cargo
 	name = "Computer Design (Supply Console)"
 	desc = "Allows for the construction of circuit boards used to build a Supply Console."

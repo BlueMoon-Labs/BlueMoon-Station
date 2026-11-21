@@ -149,6 +149,8 @@
 					var/obj/item/card/id/card = M.get_idcard()
 					if(card)
 						assignment = "[ckey(card.get_job_name())]"
+						if(assignment in list("domainrunner", "netrunner", "quantumrunner"))
+							assignment = "bitrunner"
 
 				else if(issilicon(M) || isdrone(M)) // Для отображения иконок силиконов в orbit
 					if(iscyborg(M))

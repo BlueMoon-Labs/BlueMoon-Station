@@ -3847,7 +3847,7 @@
 /obj/machinery/firealarm/directional/west,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/stairs,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "aSq" = (
 /obj/structure/chair/comfy{
 	color = "#596479";
@@ -4232,15 +4232,15 @@
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 6
 	},
-/obj/structure/loot_pile/maint,
 /obj/structure/sign/poster/contraband/random{
 	pixel_x = 32
 	},
 /obj/machinery/camera/autoname{
 	dir = 8
 	},
+/obj/machinery/computer/order_console/bitrunning,
 /turf/open/floor/plasteel/dark/textured,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "aWb" = (
 /obj/structure/table/reinforced,
 /obj/item/folder/white{
@@ -5402,7 +5402,7 @@
 "bjD" = (
 /obj/structure/loot_pile/maint,
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "bjK" = (
 /obj/machinery/atmospherics/components/unary/portables_connector/visible,
 /obj/machinery/portable_atmospherics/scrubber,
@@ -7187,7 +7187,7 @@
 	},
 /obj/machinery/airalarm/directional/east,
 /turf/open/floor/plasteel/rivets,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "bIw" = (
 /obj/effect/turf_decal/tile/yellow/opposingcorners,
 /obj/effect/turf_decal/tile/red/opposingcorners{
@@ -11755,9 +11755,8 @@
 /obj/structure/sign/poster/contraband/random{
 	pixel_x = -32
 	},
-/obj/effect/landmark/start/cargo_technician,
 /turf/open/floor/plasteel/rivets,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "cOu" = (
 /obj/structure/table/reinforced/rglass,
 /obj/structure/window/reinforced,
@@ -16106,7 +16105,7 @@
 	pixel_y = 6
 	},
 /turf/open/floor/engine,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "dNh" = (
 /turf/open/floor/wood/wood_large,
 /area/commons/fitness/recreation/entertainment)
@@ -16170,7 +16169,7 @@
 /obj/machinery/light_switch/directional/west,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/rivets,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "dNL" = (
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
@@ -19324,8 +19323,9 @@
 /obj/effect/turf_decal/box/yellow/corners{
 	dir = 1
 	},
+/obj/machinery/byteforge,
 /turf/open/floor/engine,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "ewO" = (
 /obj/structure/closet/radiation,
 /obj/effect/turf_decal/bot,
@@ -19514,11 +19514,10 @@
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 4
 	},
-/obj/effect/landmark/start/cargo_technician,
 /turf/open/floor/plasteel/dark/textured/edge{
 	dir = 8
 	},
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "exE" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 8
@@ -30713,7 +30712,7 @@
 	open = 1
 	},
 /turf/open/floor/plating,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "gTJ" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
@@ -32003,7 +32002,7 @@
 	pixel_x = 27
 	},
 /turf/open/floor/plasteel/rivets,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "hjH" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -39405,8 +39404,12 @@
 /area/security/prison)
 "iQk" = (
 /obj/machinery/light/small/red/directional/east,
+/obj/machinery/computer/quantum_console{
+	dir = 8;
+	connectable = 0
+	},
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "iQn" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/spawner/lootdrop/crate_spawner,
@@ -44496,11 +44499,10 @@
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 8
 	},
-/obj/effect/landmark/start/cargo_technician,
 /turf/open/floor/plasteel/dark/textured/edge{
 	dir = 4
 	},
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "jYn" = (
 /obj/effect/turf_decal/delivery,
 /obj/structure/disposalpipe/segment,
@@ -46026,7 +46028,7 @@
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 4
 	},
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "krU" = (
 /obj/effect/turf_decal/tile/green/anticorner{
 	dir = 4
@@ -50656,10 +50658,11 @@
 /area/service/hydroponics)
 "lvp" = (
 /obj/effect/turf_decal/trimline/brown/filled/line,
+/obj/structure/loot_pile/maint,
 /turf/open/floor/plasteel/dark/textured/edge{
 	dir = 1
 	},
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "lvt" = (
 /turf/closed/wall,
 /area/maintenance/department/crew_quarters/bar)
@@ -54366,7 +54369,7 @@
 	pixel_x = 32
 	},
 /turf/open/floor/plasteel/rivets,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "mmM" = (
 /turf/closed/wall/r_wall,
 /area/science/research)
@@ -69852,9 +69855,6 @@
 /turf/open/floor/circuit,
 /area/ai_monitored/turret_protected/aisat/service)
 "pOF" = (
-/obj/machinery/door/airlock/mining{
-	name = "Bitrunning Den"
-	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
@@ -69869,6 +69869,10 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/machinery/door/airlock/mining{
+	req_access_txt = "84";
+	name = "Bitrunning Den"
 	},
 /turf/open/floor/plasteel/rivets,
 /area/cargo/miningdock)
@@ -70426,7 +70430,7 @@
 	dir = 5
 	},
 /turf/open/floor/plasteel/dark/textured,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "pUb" = (
 /obj/effect/spawner/lootdrop/trashbin,
 /turf/open/floor/plating,
@@ -71229,7 +71233,7 @@
 	icon_state = "1-2"
 	},
 /turf/open/floor/plasteel/rivets/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "qet" = (
 /obj/effect/turf_decal/siding/wood/thin{
 	dir = 6
@@ -73493,9 +73497,9 @@
 	},
 /area/hallway/primary/aft)
 "qCJ" = (
-/obj/machinery/vr_sleeper,
+/obj/machinery/netpod,
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "qCK" = (
 /obj/structure/closet/firecloset/wall{
 	pixel_x = -32
@@ -74183,8 +74187,9 @@
 /area/science/explab)
 "qIJ" = (
 /obj/structure/extinguisher_cabinet/directional/east,
+/obj/machinery/quantum_server,
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "qIY" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
@@ -74899,7 +74904,7 @@
 /obj/machinery/holopad,
 /obj/effect/turf_decal/trimline/brown/filled/corner,
 /turf/open/floor/plasteel/rivets/corner,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "qRQ" = (
 /obj/structure/chair/sofa/bench/right,
 /obj/machinery/firealarm/directional/north,
@@ -81528,7 +81533,7 @@
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 1
 	},
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "ssK" = (
 /obj/structure/chair/sofa/right/brown{
 	dir = 4
@@ -83501,9 +83506,8 @@
 /obj/structure/sign/poster/contraband/random{
 	pixel_y = 32
 	},
-/obj/effect/landmark/start/cargo_technician,
 /turf/open/floor/plasteel/rivets,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "sPU" = (
 /obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
 	dir = 1
@@ -86193,7 +86197,7 @@
 /area/science/xenobiology)
 "twY" = (
 /turf/closed/wall,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "txb" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -89610,7 +89614,7 @@
 	dir = 10
 	},
 /turf/open/floor/plasteel/dark/textured/edge,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "umn" = (
 /obj/machinery/light_switch/directional/north,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
@@ -89669,12 +89673,11 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 8
 	},
-/obj/effect/landmark/start/cargo_technician,
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
 /turf/open/floor/plasteel/rivets/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "umN" = (
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/wood/wood_large,
@@ -92079,7 +92082,7 @@
 /turf/open/floor/plasteel/rivets/corner{
 	dir = 4
 	},
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "uOO" = (
 /obj/machinery/door/airlock/maintenance{
 	name = "EVA Maintenance"
@@ -93385,7 +93388,7 @@
 	dir = 2
 	},
 /turf/open/floor/plasteel/rivets/edge,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "vdg" = (
 /obj/machinery/vending/wardrobe/chap_wardrobe,
 /obj/item/toy/figure/chaplain{
@@ -94844,9 +94847,8 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 5
 	},
-/obj/effect/landmark/start/cargo_technician,
 /turf/open/floor/plasteel/dark/textured,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "vta" = (
 /obj/structure/lattice/catwalk,
 /obj/machinery/camera{
@@ -101558,11 +101560,10 @@
 	dir = 8
 	},
 /obj/machinery/light/small/directional/west,
-/obj/effect/landmark/start/cargo_technician,
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 4
 	},
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "wSA" = (
 /obj/effect/mapping_helpers/airlock/access/all/service/chapel_office,
 /obj/machinery/door/airlock/maintenance{
@@ -101980,9 +101981,8 @@
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 10
 	},
-/obj/effect/landmark/start/cargo_technician,
 /turf/open/floor/plasteel/dark/textured,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "wYv" = (
 /obj/structure/closet/emcloset/wall{
 	pixel_y = -32
@@ -102674,7 +102674,7 @@
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark/textured/large,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "xgx" = (
 /obj/machinery/seed_extractor,
 /obj/item/seeds/tower,
@@ -102880,10 +102880,10 @@
 /turf/open/floor/plasteel/grimy,
 /area/commons/vacant_room/office)
 "xiQ" = (
-/obj/machinery/vr_sleeper,
 /obj/machinery/light/small/blacklight/directional/west,
+/obj/machinery/netpod,
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/cargo/den)
+/area/station/cargo/bitrunning/den)
 "xiR" = (
 /obj/structure/extinguisher_cabinet/directional/east,
 /obj/effect/turf_decal/trimline/purple/filled/line{

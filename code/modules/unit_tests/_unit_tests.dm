@@ -71,7 +71,7 @@
 /// A trait source when adding traits through unit tests
 #define TRAIT_SOURCE_UNIT_TESTS "unit_tests"
 
-/// Карты, перенесённые из tg и его форков: на них идут проверки снаряжения BlueMoon
+/// РљР°СЂС‚С‹, РїРµСЂРµРЅРµСЃС‘РЅРЅС‹Рµ РёР· tg Рё РµРіРѕ С„РѕСЂРєРѕРІ: РЅР° РЅРёС… РёРґСѓС‚ РїСЂРѕРІРµСЂРєРё СЃРЅР°СЂСЏР¶РµРЅРёСЏ BlueMoon
 #define PORTED_STATION_MAPS list("Tramstation", "NorthStar", "Void Raptor", "Ice Box Station", "Blueshift", "NebulaStation", "Catwalk Station", "Wawastation", "Biodome", "Ouroboros", "Kilo Station")
 
 #include "action_button_positions.dm"
@@ -186,6 +186,7 @@
 #include "window_airbag.dm"
 #include "bespoke_id.dm"
 #include "binary_insert.dm"
+#include "bitrunning.dm"
 #include "blob_multiz.dm"
 #include "blood_brothers.dm"
 #include "blood_brothers_bond.dm"

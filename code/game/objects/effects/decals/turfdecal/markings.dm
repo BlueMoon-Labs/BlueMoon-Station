@@ -153,3 +153,33 @@
 
 /obj/effect/turf_decal/misc/plaque
 	icon_state = "plaque"
+
+/obj/effect/turf_decal/bot_white
+	icon_state = "bot_white"
+
+/obj/effect/turf_decal/bot_white/left
+	icon_state = "bot_left_white"
+
+/obj/effect/turf_decal/bot_white/right
+	icon_state = "bot_right_white"
+
+/obj/effect/turf_decal/stripes
+	icon_state = "warningline"
+
+/obj/effect/turf_decal/stripes/line
+	icon_state = "warningline"
+
+/obj/effect/turf_decal/stripes/corner
+	icon_state = "warninglinecorner"
+
+/obj/effect/turf_decal/stripes/end
+	icon_state = "warn_end"
+
+/obj/effect/turf_decal/sand
+	name = "sandy floor"
+	icon_state = "sandyfloor"
+
+/obj/effect/turf_decal/sand/plating
+	name = "sandy plating"
+	icon_state = "sandyplating"
+

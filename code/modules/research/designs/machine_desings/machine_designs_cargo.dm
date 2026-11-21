@@ -1,6 +1,38 @@
 ///////////////////
 ///CARGO Boards//
 ///////////////////
+/datum/design/board/netpod
+	name = "Machine Design (Netpod)"
+	desc = "The circuit board for a netpod."
+	id = "netpod"
+	build_path = /obj/item/circuitboard/machine/netpod
+	category = list("Cargo Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO | DEPARTMENTAL_FLAG_ENGINEERING
+
+/datum/design/board/quantum_server
+	name = "Machine Design (Quantum Server)"
+	desc = "The circuit board for a quantum server."
+	id = "quantum_server"
+	build_path = /obj/item/circuitboard/machine/quantum_server
+	category = list("Cargo Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO | DEPARTMENTAL_FLAG_ENGINEERING
+
+/datum/design/board/byteforge
+	name = "Machine Design (Byteforge)"
+	desc = "The circuit board for a byteforge."
+	id = "byteforge"
+	build_path = /obj/item/circuitboard/machine/byteforge
+	category = list("Cargo Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO | DEPARTMENTAL_FLAG_ENGINEERING
+
+/datum/design/board/bitrunning_rewards_vendor
+	name = "Machine Design (Bitrunning Supplies Console)"
+	desc = "The circuit board for a bitrunning supplies console."
+	id = "bitrunning_rewards_vendor"
+	build_path = /obj/item/circuitboard/computer/order_console/bitrunning
+	category = list("Cargo Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO
+
 /datum/design/board/ore_silo
 	name = "Machine Design (Ore Silo)"
 	desc = "The circuit board for an ore silo."
