@@ -43,7 +43,7 @@
 	if(bounty.can_claim())
 		finish_stage(performer)
 
-/// Этап закрыт: награда этапа выплачена, серия переходит к следующему заказу, взятой серии срок отсчитывается заново.
+/// Этап закрыт: награда этапа выплачена, серия переходит к следующему заказу, и её срок - взятой или ротации у невзятой - отсчитывается заново.
 /datum/econ_contract/delivery/chain/proc/finish_stage(mob/performer)
 	var/total = payout()
 	var/to_people = pay_reward(total, performer)
@@ -61,6 +61,8 @@
 		taker.bank_card_talk("Серия поставок: этап [stage - 1] из [stages_total] закрыт, следующий заказ - \"[title]\".")
 		if(!urgent)
 			set_deadline(world.time + ECON_CONTRACT_TAKEN_TIME)
+	else
+		created = world.time
 
 /datum/econ_contract/delivery/chain/taken_text()
 	var/cap = SSeconomy.settings.contract_chain_reward_cap

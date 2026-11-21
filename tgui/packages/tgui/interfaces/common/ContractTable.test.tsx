@@ -257,6 +257,7 @@ test('эстафета, серия с потолком, авария и масс
   expect(ui.getByText('Эстафета: этап 1 из 3')).toBeTruthy();
   expect(ui.container.textContent).toContain('«От грядки до бокала»: сейчас ботаника, дальше - кухня, бар. На этап - 60 мин., потом эстафета оборвётся.');
   expect(ui.getByText('Не выполните за 40:00 - эстафета оборвётся')).toBeTruthy();
+  expect(ui.queryByText('Срыв срока оборвёт эстафету')).toBeNull();
   const text = (ui.container.textContent || '').replace(/\u00a0/g, ' ');
   expect(text).toContain('Каждый этап оплачивается сразу своему отделу, за последний - премия 50% от суммы этапов, всего не больше 15 000 кр.0/1');
   expect(text).toContain('Каждый этап оплачивается сразу, за последний - премия 50% от суммы этапов, всего не больше 15 000 кр.0/1');
@@ -269,6 +270,22 @@ test('эстафета, серия с потолком, авария и масс
   expect(ui.getByText('Брать не нужно: контракт закроется, когда медики выпишут пострадавших.')).toBeTruthy();
   fireEvent.click(ui.getByText('Взять'));
   expect(sent(ui.topic, 'take')).toEqual([{ uid: 40 }]);
+});
+
+test('у взятого и срочного этапа эстафеты карточка показывает его срок, а не срок этапа', () => {
+  const relay = { kind: 'relay', stage: 2, stages: 3, relay_title: 'От грядки до бокала', relay_label: 'кухня', relay_next: 'бар', chain_bonus: 50, chain_cap: 15000 };
+  const ui = setup({
+    contracts: [
+      contract(60, { ...relay, taken_by: 'Другой', taker_id: 222, time_left: 1500, relay_minutes: 25 }),
+      contract(61, { ...relay, title: 'Срочный этап', urgent: 1, time_left: 900, rotates_in: 2400, relay_minutes: 15 }),
+    ],
+  });
+  expect(ui.getByText('Осталось 25:00')).toBeTruthy();
+  expect(ui.getByText('Осталось 15:00')).toBeTruthy();
+  expect(ui.getAllByText('Срыв срока оборвёт эстафету')).toHaveLength(2);
+  expect(ui.queryByText(/Не выполните за/)).toBeNull();
+  expect(ui.container.textContent).not.toContain('На этап - 25 мин.');
+  expect(ui.container.textContent).toContain('На этап - 15 мин., потом эстафета оборвётся.');
 });
 
 test('заказ, выполненный за смену до лимита на человека, не взять', () => {

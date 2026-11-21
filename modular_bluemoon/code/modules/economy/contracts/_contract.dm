@@ -24,6 +24,8 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	var/list/contributions
 	/// Эстафета отделов, этапом которой выставлен контракт
 	var/datum/econ_relay/relay
+	/// Почему контракт снимают: её называет эстафета, если это её этап
+	var/removal_reason
 
 /datum/econ_contract/New(department_id)
 	uid = ++GLOB.econ_contract_uid
@@ -34,13 +36,18 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	if(relay)
 		var/datum/econ_relay/lost = relay
 		relay = null
-		lost.stage_lost(src)
+		lost.stage_lost(src, removal_reason)
 	release_taker()
 	set_owner(null)
 	SSeconomy.loose_contracts -= src
 	var/datum/economy_department/department = SSeconomy.get_department(department_id)
 	department?.contracts -= src
 	return ..()
+
+/// Снимает контракт по правилам доски: reason - "late", "expired", "rotation" или "reset".
+/datum/econ_contract/proc/withdraw(reason)
+	removal_reason = reason
+	qdel(src)
 
 /datum/econ_contract/proc/payout()
 	return round(reward * (urgent ? SSeconomy.settings.contract_urgent_mult : 1))
@@ -143,7 +150,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	log_econ("[account.account_holder] ([account.account_id]) взял контракт #[uid] \"[title]\"[department_id ? " отдела [department_id]" : ""]")
 	return TRUE
 
-/// Исполнитель отказывается: неначатый контракт уходит с доски, начатый снова свободен. Срок от взятия снимается, у срочного остаётся свой.
+/// Исполнитель отказывается: неначатый контракт уходит с доски, начатый и этап эстафеты снова свободны. Срок от взятия снимается, у срочного остаётся свой.
 /datum/econ_contract/proc/drop(datum/bank_account/account)
 	if(completed || !account || taker != account)
 		return FALSE
@@ -155,6 +162,10 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	return TRUE
 
 /datum/econ_contract/proc/after_drop()
+	// Этап эстафеты остаётся на доске без своего срока и ждёт отдел до срока этапа
+	if(relay)
+		deadline = 0
+		return
 	if(!urgent)
 		deadline = 0
 	if(!started())
@@ -171,17 +182,19 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 /datum/econ_contract/proc/on_taker_deleted(datum/source)
 	SIGNAL_HANDLER
 	release_taker()
+	if(relay)
+		deadline = 0
 
 /datum/econ_contract/proc/has_progress()
 	return FALSE
 
-/// Когда ротация снимет контракт: ничей и не особый, начатый - через ECON_CONTRACT_STALE_ROTATIONS возрастов, этап эстафеты - не раньше её срока этапа. null - не снимет.
+/// Когда ротация снимет контракт: ничей и не особый, начатый - через ECON_CONTRACT_STALE_ROTATIONS возрастов, этап эстафеты - в срок этапа. null - не снимет.
 /datum/econ_contract/proc/rotation_due_at()
 	if(taker || pinned)
 		return null
-	. = created + SSeconomy.contract_rotation_age() * (started() ? ECON_CONTRACT_STALE_ROTATIONS : 1)
 	if(relay)
-		. = max(., relay.stage_due_at())
+		return relay.stage_due_at()
+	return created + SSeconomy.contract_rotation_age() * (started() ? ECON_CONTRACT_STALE_ROTATIONS : 1)
 
 /datum/econ_contract/proc/is_expired()
 	return deadline && world.time > deadline
@@ -197,7 +210,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	if(taker)
 		taker.bank_card_talk("Срок контракта \"[title]\" истёк, контракт снят.")
 		taker.adjust_contract_rep(-ECON_CONTRACT_REP_EXPIRED)
-	qdel(src)
+	withdraw(taker ? "late" : "expired")
 
 /// Вклад в контракт без исполнителя: по нему участники делят свою долю награды.
 /datum/econ_contract/proc/note_contribution(mob/performer, units = 1)
@@ -305,7 +318,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 		.["relay_title"] = relay.title
 		.["relay_label"] = relay.stage_label(relay.stage)
 		.["relay_next"] = relay.next_labels()
-		.["relay_minutes"] = relay.stage_minutes()
+		.["relay_minutes"] = relay.stage_minutes_left()
 		.["chain_bonus"] = SSeconomy.settings.contract_chain_bonus
 		.["chain_cap"] = SSeconomy.settings.contract_chain_reward_cap
 
@@ -439,7 +452,7 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 		"Личный заказ видите только вы: награда меньше, зато вам [settings.contract_personal_share]%. Подборку можно обновить раз в [DisplayTimeText(ECON_CONTRACT_REROLL_COOLDOWN)].",
 		"Серия - [ECON_CONTRACT_CHAIN_STAGES] поставки подряд. Каждый этап оплачивается сразу, за последний - премия [settings.contract_chain_bonus]% от суммы этапов[cap_text]",
 		"Эстафета - этапы для разных отделов по очереди: ботаника, кухня и бар, химия и медицина, шахта и наука. Каждый этап оплачивается сразу своему отделу, за последний - премия [settings.contract_chain_bonus]% от суммы этапов[cap_text]",
-		"Этап эстафеты ждёт свой отдел [rotation_minutes * max(settings.contract_relay_stage_rotations, 1)] мин. Если его не выполнят, эстафета оборвётся, и отдел услышит это по своему каналу. Сброс доски этап не снимает.",
+		"Этап эстафеты ждёт свой отдел [rotation_minutes * max(settings.contract_relay_stage_rotations, 1)] мин. Если его не выполнят, эстафета оборвётся, и отдел услышит это по своему каналу[settings.contract_relay_stage_rotations > 1 ? ", а за [rotation_minutes] мин. до этого - предупреждение" : ""]. Взятый этап держит срок взявшего, сорвёт его - эстафета тоже оборвётся. Отказ от этапа эстафету не обрывает: этап снова свободен до своего срока.",
 		"Гражданские поделки - ящики, самокаты, наручники и прочее - стоят [round(settings.contract_civilian_mult * 100)]% обычной награды.",
 		"Срочный контракт платит [econ_times_text(settings.contract_urgent_mult)] больше, но снимается через [settings.contract_urgent_minutes] мин.",
 	)))
@@ -449,11 +462,11 @@ GLOBAL_VAR_INIT(econ_contract_uid, 0)
 	. += list(list("title" = "Спрос и смена доски", "icon" = "sync", "lines" = demand_lines + list(
 		"Невзятые контракты сменяются через [rotation_minutes] мин., начатые - через [rotation_minutes * ECON_CONTRACT_STALE_ROTATIONS] мин. Отгруженное по снятому контракту не возвращается.",
 		"Глава отдела (у снабжения - квартирмейстер), ГП или капитан раз в [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_COOLDOWN)] может сбросить доску отдела: неначатые контракты сменятся новыми. Взятые тоже снимаются, взявшим ничего не будет - репутация цела, новый контракт можно взять сразу.",
-		"Сброс не трогает начатые контракты, этапы эстафет, заказы ЦК, свой контракт сбрасывающего и взятые меньше [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_GRACE)] назад. Если взявший не в игре или мёртв, его контракт снимется всё равно.",
+		"Сброс не трогает начатые контракты, этапы эстафет со второго, заказы ЦК, свой контракт сбрасывающего и взятые меньше [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_GRACE)] назад. Если взявший не в игре или мёртв, его контракт снимется всё равно. Свободный первый этап эстафеты сброс снимает, и эстафета обрывается.",
 	)))
 	var/list/reputation_lines = list("Репутация подрядчика растёт за закрытые контракты и падает за отказы и сорванные сроки.")
 	reputation_lines += econ_contract_rank_lines()
-	reputation_lines += "От взятого контракта можно отказаться: неначатый уйдёт с доски, начатый снова станет свободным. Новый контракт отказавшийся возьмёт через [DisplayTimeText(ECON_CONTRACT_DROP_COOLDOWN)]."
+	reputation_lines += "От взятого контракта можно отказаться: неначатый уйдёт с доски, начатый и этап эстафеты снова станут свободными. Новый контракт отказавшийся возьмёт через [DisplayTimeText(ECON_CONTRACT_DROP_COOLDOWN)]."
 	. += list(list("title" = "Репутация и отказ", "icon" = "star", "lines" = reputation_lines))
 	. += list(list("title" = "Спецзаказы партнёров", "icon" = "truck-loading", "lines" = list(
 		"Сдаются на паде подработки, первая сдача берёт спецзаказ. Контрабандные - только шаттлом снабжения.",

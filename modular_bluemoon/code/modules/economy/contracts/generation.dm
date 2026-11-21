@@ -118,13 +118,15 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 			if(contract.is_expired())
 				contract.expire()
 			else if(contract_rotates(contract, force))
-				qdel(contract)
+				contract.withdraw("rotation")
 		fill_department_contracts(department)
 	for(var/datum/econ_contract/contract as anything in loose_contracts.Copy())
 		if(contract.is_expired())
 			contract.expire()
 		else if(contract_rotates(contract, force))
-			qdel(contract)
+			contract.withdraw("rotation")
+	for(var/datum/econ_relay/relay as anything in relays)
+		relay.warn_if_late()
 
 /// Добирает доску отдела до contracts_per_department обычных контрактов; заказы из avoid выдаются, только если других не осталось.
 /datum/controller/subsystem/economy/proc/fill_department_contracts(datum/economy_department/department, list/avoid)
@@ -166,13 +168,19 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 
 /// Взявший в игре: тело живо и с клиентом. Без него контракт только держит слот.
 /datum/econ_contract/proc/taker_in_game()
-	var/mob/living/body = taker_body()
+	return econ_account_in_game(taker)
+
+/// Владелец счёта в игре: его тело живо и с клиентом.
+/proc/econ_account_in_game(datum/bank_account/account)
+	var/mob/living/body = account?.owner_body()
 	return !!body && body.stat != DEAD && !!GET_CLIENT(body)
 
-/// Снимет ли сброс доски главой user этот контракт: неначатый, не этап эстафеты, не заказ ЦК, не свой контракт главы и не взятый игроком в игре меньше ECON_CONTRACT_BOARD_RESET_GRACE назад.
+/// Снимет ли сброс доски главой user этот контракт: неначатый, не заказ ЦК, не свой контракт главы и не взятый игроком в игре меньше ECON_CONTRACT_BOARD_RESET_GRACE назад. Этап эстафеты - только первый и никем не взятый.
 /datum/econ_contract/proc/board_reset_removes(datum/bank_account/head_account)
-	if(pinned || completed || relay || is_expired() || started())
+	if(pinned || completed || is_expired() || started())
 		return FALSE
+	if(relay)
+		return !taker
 	if(!taker)
 		return TRUE
 	if(taker == head_account)
@@ -200,13 +208,13 @@ GLOBAL_LIST_INIT(econ_bounty_unobtainable, typecacheof(list(
 		if(contract.taker)
 			freed++
 			contract.taker.bank_card_talk("Глава отдела сбросил доску: контракт \"[contract.title]\" снят. Репутация не пострадала, новый контракт можно взять сразу.")
-		qdel(contract)
+		contract.withdraw("reset")
 	if(!length(removed_types))
-		return list(FALSE, "На доске отдела \"[name]\" нечего сбрасывать: остались только начатые, этапы эстафет, заказы ЦК, ваш контракт и взятые меньше [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_GRACE)] назад.")
+		return list(FALSE, "На доске отдела \"[name]\" нечего сбрасывать: остались только начатые, взятые этапы эстафет и этапы со второго, заказы ЦК, ваш контракт и взятые меньше [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_GRACE)] назад.")
 	COOLDOWN_START(src, contract_reset_cooldown, ECON_CONTRACT_BOARD_RESET_COOLDOWN)
 	SSeconomy.fill_department_contracts(src, removed_types)
 	log_econ("[key_name(user)] сбросил доску контрактов отдела [id]: снято [length(removed_types)], из них взятых [freed]")
-	return list(TRUE, "Доска отдела \"[name]\" сброшена: снято контрактов - [length(removed_types)][freed ? ", из них взятых - [freed]" : ""]. Начатые, этапы эстафет, заказы ЦК, ваш контракт и недавно взятые остались. Следующий сброс - через [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_COOLDOWN)].")
+	return list(TRUE, "Доска отдела \"[name]\" сброшена: снято контрактов - [length(removed_types)][freed ? ", из них взятых - [freed]" : ""]. Начатые, взятые этапы эстафет и этапы со второго, заказы ЦК, ваш контракт и недавно взятые остались. Следующий сброс - через [DisplayTimeText(ECON_CONTRACT_BOARD_RESET_COOLDOWN)].")
 
 /// Доски, которые user может сбросить (по умолчанию - всех отделов): id, имя, секунды до следующего сброса, минуты между сбросами и сколько контрактов (из них взятых) снимет сброс сейчас.
 /proc/econ_contract_resets_ui(mob/user, list/departments)

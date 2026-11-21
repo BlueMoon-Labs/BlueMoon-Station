@@ -78,6 +78,8 @@ const DropButton = (props: { contract: ContractEntry }) => {
   let tooltip = `Контракт уйдёт с доски, на его место придёт другой.${cooldown}`;
   if (contract.kind === 'crew') {
     tooltip = `Объявление снова станет свободным.${cooldown}`;
+  } else if (contract.kind === 'relay') {
+    tooltip = `Этап снова станет свободным, эстафета не оборвётся, пока не выйдет срок этапа.${cooldown}`;
   } else if (contract.started) {
     tooltip = `Контракт снова станет свободным, отгруженное по нему останется засчитанным.${cooldown}`;
   }
@@ -240,6 +242,10 @@ export const ContractRow = (props: { contract: ContractEntry; myAccount?: number
   const share = progressShare(contract.progress);
   const mine = isMine(contract, myAccount) || isMyPost(contract, myAccount);
   const lowDemand = contract.demand !== undefined && contract.demand < 100;
+  const hasTimeLeft = contract.time_left !== null && contract.time_left !== undefined;
+  // Свой срок этапа эстафеты (взятого или срочного) наступит раньше ротации: его срыв и оборвёт эстафету
+  const relayDeadline =
+    contract.kind === 'relay' && hasTimeLeft && (contract.rotates_in === null || contract.rotates_in === undefined || (contract.time_left ?? 0) <= contract.rotates_in);
   return (
     <div className={mine ? 'NtTerm__contract NtTerm__contract--mine' : 'NtTerm__contract'}>
       <div className="NtTerm__contractMain">
@@ -293,10 +299,9 @@ export const ContractRow = (props: { contract: ContractEntry; myAccount?: number
       <div className="NtTerm__contractSide">
         <div className="NtTerm__contractReward">{formatCredits(contract.reward)}</div>
         {!readOnly && <RewardNote contract={contract} myAccount={myAccount} />}
-        {contract.time_left !== null && contract.time_left !== undefined && (
-          <div className="NtTerm__hint">Осталось {formatTimeLeft(contract.time_left)}</div>
-        )}
-        {contract.rotates_in !== null && contract.rotates_in !== undefined && (
+        {hasTimeLeft && <div className="NtTerm__hint">Осталось {formatTimeLeft(contract.time_left ?? 0)}</div>}
+        {relayDeadline && <div className="color-average">Срыв срока оборвёт эстафету</div>}
+        {contract.rotates_in !== null && contract.rotates_in !== undefined && !relayDeadline && (
           <div className={contract.started || contract.kind === 'relay' ? 'color-average' : 'NtTerm__hint'}>
             {rotationNote(contract, contract.rotates_in)}
           </div>
@@ -391,7 +396,7 @@ const resetTooltip = (board: BoardReset) => {
   if (board.left > 0) {
     return `Снова можно через ${formatTimeLeft(board.left)}`;
   }
-  const rules = `Неначатые контракты отдела сменятся новыми. Взятые снимаются без штрафа репутации и без паузы на взятие, кроме вашего собственного и взятых меньше ${board.grace_minutes} мин. назад - если взявший не в игре, его контракт снимется всё равно. Начатые, этапы эстафет и заказы ЦК останутся. Не чаще раза в ${board.minutes} мин.`;
+  const rules = `Неначатые контракты отдела сменятся новыми. Взятые снимаются без штрафа репутации и без паузы на взятие, кроме вашего собственного и взятых меньше ${board.grace_minutes} мин. назад - если взявший не в игре, его контракт снимется всё равно. Свободный первый этап эстафеты тоже снимется, и эстафета оборвётся. Начатые, взятые этапы эстафет и этапы со второго, заказы ЦК останутся. Не чаще раза в ${board.minutes} мин.`;
   return board.remove > 0 ? rules : `Сейчас снимать нечего. ${rules}`;
 };
 
