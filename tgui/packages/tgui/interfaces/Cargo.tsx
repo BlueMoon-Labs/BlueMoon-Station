@@ -193,6 +193,8 @@ type BundleOffer = {
   need_why?: string | null;
   full_value: number;
   price: number;
+  /** Цена лично с наценкой частного заказа, как её спишет сервер */
+  private_price?: number;
   discount: number;
   left: number;
   embargoed?: BooleanLike;
@@ -766,7 +768,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
           const pack = withPrice(listed, data.prices, partnerNames);
           const priced = typeof pack.cost === 'number';
           const outOfStock = !priced || (pack.in_stock !== undefined && !pack.in_stock);
-          const cost = self_paid && !express && !pack.goody && !pack.personal ? Math.round((pack.cost || 0) * private_markup) : pack.cost || 0;
+          const cost = self_paid && !express && !pack.goody && !pack.personal ? Math.floor((pack.cost || 0) * private_markup) : pack.cost || 0;
           const open = openId === pack.id;
           const favorite = favorites.includes(pack.id);
           const byBudget = paidByBudget(pack, budget);
@@ -1126,7 +1128,7 @@ const Bundles = (props) => {
   return (
     <NtFrame
       title="Скупка"
-      help={`Партнёры собирают пачку из нескольких паков каталога одного отдела, сперва из того, что ему нужно сейчас, и отдают её дешевле, чем паки по отдельности, но только целиком. О новой пачке слышат канал её отдела и карты его начальства на смене, а о взятой - кто и как её взял. За бюджет отдела пачку берёт его глава, ГП или капитан - здесь или в «Бюджете отдела» на КПК; за бюджет снабжения - снабжение, лично - любой, если на счёте хватает на цену с наценкой частного заказа и в пачке нет паков, которые лично не продаются (как у СБ). Если на смене есть кому одобрить пачку отдела, первые ${bundle_first ?? 'несколько'} мин. её берут только за его бюджет. Взятая пачка уходит в корзину и из скупки пропадает. Новые пачки появляются раз в ${bundle_gap || 'несколько'} мин.; пачки, которые не берут, партнёр выставляет реже. У партнёра под эмбарго пачку не купить.`}
+      help={`Партнёры собирают пачку из нескольких паков каталога одного отдела, сперва из того, что ему нужно сейчас, и отдают её дешевле, чем паки по отдельности, но только целиком. О новой пачке слышат канал её отдела и карты его начальства на смене, а о взятой - как её взяли, при покупке за бюджет - и кто. За бюджет отдела пачку берёт его глава, ГП или капитан - здесь или в «Бюджете отдела» на КПК; за бюджет снабжения - снабжение, лично - любой, если на счёте хватает на цену с наценкой частного заказа и в пачке нет паков, которые лично не продаются (как у СБ). Если отдел услышал о пачке и на смене есть кому её одобрить, первые ${bundle_first ?? 'несколько'} мин. её берут только за его бюджет. Взятая пачка уходит в корзину и из скупки пропадает. Новые пачки появляются раз в ${bundle_gap || 'несколько'} мин.; пачки, которые не берут, партнёр выставляет реже. У партнёра под эмбарго пачку не купить.`}
       buttons={
         <Button.Checkbox checked={self_paid} onClick={() => act('toggleprivate')}>
           Купить лично
@@ -1139,7 +1141,7 @@ const Bundles = (props) => {
       )}
       {bundles.length === 0 && <NtEmpty>Сейчас партнёры ничего не распродают. Партнёры выставляют реже, когда их не берут.</NtEmpty>}
       {bundles.map((bundle) => {
-        const price = self_paid ? Math.round(bundle.price * private_markup) : bundle.price;
+        const price = self_paid ? (bundle.private_price ?? Math.floor(bundle.price * private_markup)) : bundle.price;
         const departmentOnly = (bundle.department_left || 0) > 0;
         const privateBlocked = !!self_paid && !bundle.private_ok;
         const canBuy = (!!self_paid || forCargo) && !departmentOnly && !privateBlocked;

@@ -876,6 +876,16 @@ test('скупка: чужому отделу причина нужды не в�
   expect(sent(ui.topic, 'buy_bundle')).toEqual([{ uid: 9 }]);
 });
 
+test('лично пачка и пак стоят столько, сколько спишет сервер: цена пачки от сервера, наценка пака округляется вниз', () => {
+  const bundle = { uid: 9, partner: 'Вей-Мед', partner_id: 'vey_med', packs: ['Medical Supplies Crate', 'Blood Pack Variety Crate'], full_value: 2000, price: 1405, private_price: 1545, discount: 30, left: 600, private_ok: 1 };
+  const supplies = { Livestock: { name: 'Livestock', packs: [{ name: 'Cow Crate', id: '/datum/supply_pack/critter/cow', desc: 'Корова', cost: 3005, goody: 0, commodity: null, supplier: 'НТ Логистика', in_stock: 1 }] } };
+  const ui = setup({ self_paid: 1, supplies, bundles: [bundle] });
+  expect(ui.getByText('3 305 кр.')).toBeTruthy();
+  fireEvent.click(ui.getByText('Скупка'));
+  expect(ui.getByText('1 545 кр.')).toBeTruthy();
+  expect(ui.queryByText('1 546 кр.')).toBeNull();
+});
+
 test('пачку партнёра под эмбарго купить нельзя', () => {
   const ui = setup({
     bundles: [

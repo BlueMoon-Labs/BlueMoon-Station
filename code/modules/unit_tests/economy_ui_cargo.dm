@@ -986,8 +986,8 @@
 	for(var/atom/movable/thing as anything in crate.contents)
 		qdel(thing)
 
-/// Пока на смене есть кому одобрить пачку отдела, первые BUNDLE_DEPARTMENT_FIRST её берут только за бюджет отдела; потом - снабжение и лично, лично - только при деньгах на цену с наценкой.
-/// Почему пак нужен отделу, видят его сотрудники, глава и окно бюджета, чужим - только имя пака, а прошедшая нужда пропадает. Канал отдела слышит, кто и как взял пачку.
+/// Если отдел услышал о пачке и на смене есть кому её одобрить, первые BUNDLE_DEPARTMENT_FIRST её берут только за бюджет отдела; потом - снабжение и лично, лично - только при деньгах на цену с наценкой, которую окно знает от сервера.
+/// Почему пак нужен отделу, видят его сотрудники, глава и окно бюджета, чужим - только имя пака, а прошедшая нужда пропадает. Канал отдела слышит, как взяли пачку, и кто - только если не лично.
 /datum/unit_test/economy_ui_cargo/bundle_department/first_dibs
 	var/list/fake_players = list()
 
@@ -1018,6 +1018,13 @@
 
 	GLOB.player_list += chief
 	fake_players += chief
+	TEST_ASSERT(!COOLDOWN_FINISHED(medical, bundle_notice_cooldown), "Канал медицины не услышал о первой пачке")
+	var/datum/supply_pack/bundle/quiet_bundle = SSmarket.generate_bundle(vey)
+	TEST_ASSERT_NOTNULL(quiet_bundle, "У Вей-Мед есть что сложить в пачку")
+	TEST_ASSERT_EQUAL(quiet_bundle.department_until, 0, "Окно отдела открылось у пачки, о которой отдел не услышал")
+	SSmarket.bundles -= quiet_bundle
+	qdel(quiet_bundle)
+	medical.bundle_notice_cooldown = 0
 	var/datum/supply_pack/bundle/bundle = SSmarket.generate_bundle(vey)
 	TEST_ASSERT_NOTNULL(bundle, "У Вей-Мед есть что сложить в пачку")
 	TEST_ASSERT(bundle.department_left() > BUNDLE_DEPARTMENT_FIRST - 1 SECONDS, "Окно отдела не открылось при главе на смене: [bundle.department_left()]")
@@ -1052,6 +1059,7 @@
 	TEST_ASSERT_EQUAL(bundle.department_until, 0, "Окно отдела не закрылось на тике скупки")
 	TEST_ASSERT_EQUAL(find_entry(console.ui_data(technician)["bundles"], "uid", bundle.uid)["department_left"], 0, "Окно снабжения держит пачку за отделом после окна")
 	var/private_price = round(bundle.price * ECON_PRIVATE_ORDER_MARKUP)
+	TEST_ASSERT_EQUAL(find_entry(console.ui_data(technician)["bundles"], "uid", bundle.uid)["private_price"], private_price, "Окно снабжения не знает, сколько пачка стоит лично")
 	econ_test_set_balance(technician_card.registered_account, private_price - 1)
 	press(technician, console, "buy_bundle", list("uid" = "[bundle.uid]"))
 	TEST_ASSERT(bundle in SSmarket.bundles, "Пачку сняли с рынка личной покупкой без денег на счёте")
@@ -1060,7 +1068,11 @@
 	TEST_ASSERT(!(bundle in SSmarket.bundles), "Лично с деньгами на счёте пачку не взять")
 	var/datum/supply_order/order = SSshuttle.shoppinglist[length(SSshuttle.shoppinglist)]
 	TEST_ASSERT(order.pack == bundle && order.paying_account == technician_card.registered_account, "Личный заказ пачки не на счёт покупателя")
-	TEST_ASSERT_EQUAL(bundle.taken_by, "Тест Грузчиков (Cargo Technician) лично", "Канал отдела услышит не того, кто взял пачку")
+	TEST_ASSERT_EQUAL(bundle.taken_by, "лично", "Канал отдела услышит имя того, кто взял пачку лично")
+	var/datum/supply_order/nameless = new(bundle, "Unknown", "No id", null, "")
+	econ_bundle_taken(bundle, nameless, "за бюджет снабжения")
+	qdel(nameless)
+	TEST_ASSERT_EQUAL(bundle.taken_by, "без имени на ID-карте за бюджет снабжения", "Канал отдела услышит «Unknown» вместо имени")
 
 /// Непринятое предложение аренды шаттла снимается с концом события: по нему не сдать шаттл и консоль не застревает на «передан ЦК».
 /datum/unit_test/economy_ui_cargo/shuttle_loan_expires/Run()
