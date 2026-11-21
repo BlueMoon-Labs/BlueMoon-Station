@@ -21,6 +21,7 @@ import { Credits, formatCredits, HistoryTable, TransactionEntry } from './common
 type AuditRules = {
   siphon_threshold: number;
   siphon_minutes: number;
+  siphon_bonus_limit: number;
   structuring_count: number;
   structuring_minutes: number;
   insider_threshold: number;
@@ -741,9 +742,11 @@ const RulesTab = (props: { rules: AuditRules }) => {
     <Section title="Когда открывается дело">
       <LabeledList>
         <LabeledList.Item label={CASE_KIND.budget_siphon}>
-          Выплаты из бюджета отдела одному человеку (кроме зарплаты) на <Credits amount={rules.siphon_threshold} /> и
-          больше за {rules.siphon_minutes} мин. Выплаты на счета без владельца считаются вместе, как одному
-          получателю.
+          Выплаты из бюджета отдела одному человеку (кроме зарплаты и премий) на{' '}
+          <Credits amount={rules.siphon_threshold} /> и больше за {rules.siphon_minutes} мин. Премии главы
+          сотруднику считаются отдельно: дело, только если ему выписали больше{' '}
+          <Credits amount={rules.siphon_bonus_limit} /> за {rules.siphon_minutes} мин. Выплаты на счета без
+          владельца, премии тоже, считаются вместе, как одному получателю.
         </LabeledList.Item>
         <LabeledList.Item label={CASE_KIND.self_bonus}>
           Глава выписал премию на свой счёт, на любую сумму.

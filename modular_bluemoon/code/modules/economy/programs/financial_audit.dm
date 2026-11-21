@@ -56,6 +56,7 @@
 	data["rules"] = list(
 		"siphon_threshold" = settings.audit_bonus_threshold,
 		"siphon_minutes" = settings.audit_siphon_minutes,
+		"siphon_bonus_limit" = SSeconomy.audit_bonus_allowance(),
 		"structuring_count" = settings.audit_structuring_count,
 		"structuring_minutes" = settings.audit_structuring_minutes,
 		"insider_threshold" = settings.audit_insider_threshold,

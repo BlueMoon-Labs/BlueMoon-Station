@@ -111,6 +111,7 @@
 	TEST_ASSERT_EQUAL(length(data["cases"]), 1, "Дело видно")
 	var/list/rules = data["rules"]
 	TEST_ASSERT_EQUAL(rules["siphon_threshold"], SSeconomy.settings.audit_bonus_threshold, "Порог оттока из настроек")
+	TEST_ASSERT_EQUAL(rules["siphon_bonus_limit"], SSeconomy.audit_bonus_allowance(), "Лимит премий в справке - тот, по которому открывается дело")
 	TEST_ASSERT_EQUAL(rules["fee_percent"], SSeconomy.settings.audit_case_fee_percent, "Сбор СБ из настроек")
 	TEST_ASSERT_EQUAL(rules["cash_deposit_threshold"], SSeconomy.settings.audit_cash_deposit_threshold, "Порог крупного внесения наличных из настроек")
 

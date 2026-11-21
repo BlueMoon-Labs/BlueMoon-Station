@@ -56,6 +56,7 @@ const base: FinancialAuditData = {
   rules: {
     siphon_threshold: 1000,
     siphon_minutes: 30,
+    siphon_bonus_limit: 3000,
     structuring_count: 5,
     structuring_minutes: 5,
     insider_threshold: 2000,
@@ -283,6 +284,7 @@ describe('NtosFinancialAudit', () => {
     fireEvent.click(getByText('Правила'));
     const content = text(container);
     expect(content).toContain('на 1 000 кр. и больше за 30 мин.');
+    expect(content).toContain('дело, только если ему выписали больше 3 000 кр. за 30 мин.');
     expect(content).toContain('5 и больше личных переводов одному получателю за 5 мин.');
     expect(content).toContain('сделки после того, как она встала в очередь: она выходит через 3-5 мин.');
     expect(content).toContain('сделки за 5 мин. до его выхода');

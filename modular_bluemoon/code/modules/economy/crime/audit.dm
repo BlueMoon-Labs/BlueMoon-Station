@@ -113,6 +113,22 @@
 		return AUDIT_WATCH_UNOWNED
 	return "[counterparty?.account_id]"
 
+/// Премии кнопкой человеку копятся в audit_watch отдельно от прочих выплат бюджета: дело только сверх лимита премий за окно.
+/proc/econ_audit_bonus_key(number)
+	return "[number] bonus"
+
+/// Ключи audit_watch, копящие дело вида kind по паре: дело, открытое или закрытое по паре, сбрасывает их все.
+/proc/econ_audit_pair_keys(kind, counterparty_number, pooled)
+	if(pooled)
+		return list(AUDIT_WATCH_UNOWNED)
+	. = list("[counterparty_number]")
+	if(kind == AUDIT_FLAG_BUDGET_SIPHON)
+		. += econ_audit_bonus_key(counterparty_number)
+
+/// Сколько премий одному человеку за audit_siphon_minutes ещё не дело: часовой лимит премий от других глав, но не меньше порога выплат.
+/datum/controller/subsystem/economy/proc/audit_bonus_allowance()
+	return max(settings.bonus_cap_hour, settings.audit_bonus_threshold - 1)
+
 /// Ставка аукциона - залог, а не отток: след покупателя к продавцу пишет итог лота экипажа одной строкой
 GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, ECON_ADMIN, ECON_ACCOUNT_CLOSED, ECON_BUDGET_RETURN, ECON_AUCTION_BID))
 
@@ -174,6 +190,9 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 	if(reason == ECON_BONUS && econ_account_of(actor) == target)
 		add_audit_flag(source, AUDIT_FLAG_SELF_BONUS, "Глава выписал премию самому себе", amount, target, actor)
 		return
+	if(reason == ECON_BONUS && target.owner_ref)
+		watch_pair(source, target, amount, AUDIT_FLAG_BUDGET_SIPHON, "Премии одному человеку сверх лимита премий", actor, econ_audit_bonus_key(target.account_id), audit_bonus_allowance() + 1)
+		return
 	watch_pair(source, target, amount, AUDIT_FLAG_BUDGET_SIPHON, target.owner_ref ? "Крупные выплаты из бюджета одному человеку" : "Выплаты из бюджета на счета без владельца", actor)
 
 /// Доход криптомайнера на личный счёт: деньги, которые майнер платит снабжению, получил человек. Дело на бюджете снабжения, возврат - туда же.
@@ -207,14 +226,14 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 	if(source.audit_pool)
 		econ_audit_prune_pairs(source.audit_pool, world.time - settings.audit_siphon_minutes MINUTES)
 
-/// Дробление (число переводов) и отток бюджета (сумма) по паре: открытое дело пополняется, иначе копится до порога.
-/datum/controller/subsystem/economy/proc/watch_pair(datum/bank_account/source, datum/bank_account/target, amount, kind, text, mob/actor)
+/// Дробление (число переводов) и отток бюджета (сумма) по паре: открытое дело пополняется, иначе копится до порога. key и threshold - свой счётчик пары и свой порог суммы.
+/datum/controller/subsystem/economy/proc/watch_pair(datum/bank_account/source, datum/bank_account/target, amount, kind, text, mob/actor, key, threshold)
 	if(open_audit_flag(kind, source, target))
 		add_audit_flag(source, kind, text, amount, target, actor)
 		return
 	if(!source.audit_watch)
 		source.audit_watch = list()
-	var/key = econ_audit_watch_key(kind, target)
+	key ||= econ_audit_watch_key(kind, target)
 	var/list/buckets = source.audit_watch[key]
 	if(!buckets)
 		buckets = list()
@@ -236,7 +255,7 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 	var/structuring = kind == AUDIT_FLAG_STRUCTURING
 	var/since = world.time - (structuring ? settings.audit_structuring_minutes : settings.audit_siphon_minutes) MINUTES
 	var/list/stats = econ_audit_bucket_stats(buckets, since)
-	if(!(structuring ? stats[1] >= settings.audit_structuring_count : stats[2] >= settings.audit_bonus_threshold))
+	if(!(structuring ? stats[1] >= settings.audit_structuring_count : stats[2] >= (threshold || settings.audit_bonus_threshold)))
 		return
 	var/datum/econ_audit_flag/flag = add_audit_flag(source, kind, text, stats[2], target, actor)
 	if(!pooled)
@@ -278,12 +297,15 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 		LAZYINITLIST(flag.recipients)
 		flag.recipients["[counterparty.account_id]"] += amount
 	var/list/identities = econ_audit_identities(actor)
-	if(counterparty && account.audit_watch)
-		account.audit_watch -= econ_audit_watch_key(kind, counterparty)
-	if(counterparty && account.audit_watch_actors)
-		var/key = econ_audit_watch_key(kind, counterparty)
-		identities |= account.audit_watch_actors[key]
-		account.audit_watch_actors -= key
+	var/list/keys = counterparty ? econ_audit_pair_keys(kind, counterparty.account_id, flag.pooled) : null
+	if(keys && account.audit_watch)
+		account.audit_watch -= keys
+	if(keys && account.audit_watch_actors)
+		for(var/key in keys)
+			var/list/known = account.audit_watch_actors[key]
+			if(known)
+				identities |= known
+		account.audit_watch_actors -= keys
 	if(length(identities))
 		LAZYINITLIST(flag.actors)
 		flag.actors |= identities
@@ -341,11 +363,11 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 	else
 		ledger.audit_closed_dismissed++
 	var/datum/bank_account/source = find_account(flag.account_number)
-	var/key = flag.pooled ? AUDIT_WATCH_UNOWNED : "[flag.counterparty_number]"
+	var/list/keys = econ_audit_pair_keys(flag.kind, flag.counterparty_number, flag.pooled)
 	if(source?.audit_watch)
-		source.audit_watch -= key
+		source.audit_watch -= keys
 	if(source?.audit_watch_actors)
-		source.audit_watch_actors -= key
+		source.audit_watch_actors -= keys
 	if(source && flag.pooled)
 		source.audit_pool = null
 

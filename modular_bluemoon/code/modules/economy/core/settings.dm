@@ -223,7 +223,7 @@
 	/// Сколько скиммеры снимают с одного счёта за минуту, вместе
 	var/skim_rate = 300
 	var/skimmer_slots = 3
-	/// Сколько премий и переводов из бюджета одному человеку за audit_siphon_minutes помечается аудитом
+	/// Сколько выплат из бюджета одному человеку за audit_siphon_minutes помечается аудитом; премии кнопкой - только сверх bonus_cap_hour
 	var/audit_bonus_threshold = 1000
 	var/audit_siphon_minutes = 30
 	/// Столько личных переводов одному получателю за audit_structuring_minutes - дробление
