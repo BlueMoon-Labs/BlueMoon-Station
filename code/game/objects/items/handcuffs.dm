@@ -5,6 +5,7 @@
 	var/allow_breakout_movement = FALSE
 	/// Свой алерт вместо стандартного «Handcuffed»/«Legcuffed» с оверлеем предмета.
 	var/restrained_alert
+	var/handcuff_worn_layer = HANDCUFF_LAYER
 
 /obj/item/restraints/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] is strangling себя with [src]! It looks like [user.p_theyre()] trying to commit suicide!</span>")

@@ -48,6 +48,7 @@
 			"icon" = "handcuffs",
 			"products" = list(
 				/obj/item/restraints/handcuffs/fake/kinky = 5,
+				/obj/item/restraints/handcuffs/armbinder = 3,
 				/obj/item/restraints/bondage_rope = 5,
 				/obj/item/clothing/head/helmet/space/deprivation_helmet = 5,
 				/obj/item/clothing/glasses/sunglasses/blindfold = 4,
