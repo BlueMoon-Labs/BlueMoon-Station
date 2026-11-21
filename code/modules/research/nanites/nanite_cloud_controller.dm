@@ -1,6 +1,6 @@
 /obj/machinery/computer/nanite_cloud_controller
 	name = "nanite cloud controller"
-	desc = "Stores and controls nanite cloud backups."
+	desc = "Хранит резервные копии нанитов в облаке и управляет ими."
 	icon = 'icons/obj/machines/research.dmi'
 	icon_state = "nanite_cloud_controller"
 	circuit = /obj/item/circuitboard/computer/nanite_cloud_controller

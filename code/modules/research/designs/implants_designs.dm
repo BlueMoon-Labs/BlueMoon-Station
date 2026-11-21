@@ -647,7 +647,7 @@
 
 /datum/design/nanite_pump_implant
 	name = "Nanite Pump Implant Case"
-	desc = "A glass case containing an nanite pump implant"
+	desc = "Стеклянный футляр с имплантом-насосом для нанитов"
 	id = "implant_nanite_pump"
 	build_type = PROTOLATHE
 	materials = list(

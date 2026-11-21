@@ -1,8 +1,7 @@
 //Replication Protocols
 /datum/nanite_program/protocol/kickstart
 	name = "Kickstart Protocol"
-	desc = "Replication Protocol: the nanites focus on early growth, heavily boosting replication rate for a few minutes after the initial implantation, \
-			resulting in an additional 420 nanite volume being produced during the first two minutes."
+	desc = "Протокол репликации: наниты сосредоточиваются на раннем росте, резко ускоряя размножение на несколько минут после первоначальной имплантации, что даёт дополнительные 420 единиц объёма нанитов в первые две минуты."
 	use_rate = 0
 	rogue_types = list(/datum/nanite_program/necrotic)
 	protocol_class = NANITE_PROTOCOL_REPLICATION
@@ -18,9 +17,7 @@
 
 /datum/nanite_program/protocol/factory
 	name = "Factory Protocol"
-	desc = "Replication Protocol: the nanites build a factory matrix within the host, gradually increasing replication speed over time, \
-			granting a maximum of 2 additional nanite production after roughly 17 minutes. \
-			The factory decays if the protocol is not active, or if the nanites are disrupted by shocks or EMPs."
+	desc = "Протокол репликации: наниты строят внутри носителя матрицу-фабрику, постепенно увеличивая скорость размножения и давая в итоге до +2 к производству нанитов примерно через 17 минут. Фабрика разрушается, если протокол неактивен или наниты повреждены ударами током и ЭМИ."
 	use_rate = 0
 	rogue_types = list(/datum/nanite_program/necrotic)
 	protocol_class = NANITE_PROTOCOL_REPLICATION
@@ -50,8 +47,7 @@
 
 /datum/nanite_program/protocol/pyramid
 	name = "Pyramid Protocol"
-	desc = "Replication Protocol: the nanites implement an alternate cooperative replication protocol that is active as long as the nanite saturation level is above 80%, \
-			resulting in an additional volume production of 1.2 per second."
+	desc = "Протокол репликации: наниты применяют альтернативный кооперативный протокол размножения, активный, пока уровень насыщения нанитами выше 80%, что даёт дополнительное производство объёма 1,2 в секунду."
 	use_rate = 0
 	rogue_types = list(/datum/nanite_program/necrotic)
 	protocol_class = NANITE_PROTOCOL_REPLICATION
@@ -68,7 +64,7 @@
 
 /datum/nanite_program/protocol/offline
 	name = "Eclipse Protocol"
-	desc = "Replication Protocol: while the host is asleep or otherwise unconcious, the nanites exploit the reduced interference to replicate more quickly."
+	desc = "Протокол репликации: пока носитель спит или находится без сознания, наниты используют меньшее противодействие для более быстрого размножения."
 	use_rate = 0
 	rogue_types = list(/datum/nanite_program/necrotic)
 	protocol_class = NANITE_PROTOCOL_REPLICATION
@@ -92,7 +88,7 @@
 	nanites.adjust_nanites(null, boost)
 /datum/nanite_program/protocol/synergy
 	name = "Synergy Protocol"
-	desc = "Replication Protocol: the nanites syncronize their tasks and processes within a host, leading to an increase in replication speed proportional to the current nanite volume."
+	desc = "Протокол репликации: наниты синхронизируют свои задачи и процессы внутри носителя, увеличивая скорость размножения пропорционально текущему объёму нанитов."
 	use_rate = 0
 	rogue_types = list(/datum/nanite_program/necrotic)
 	protocol_class = NANITE_PROTOCOL_REPLICATION
@@ -103,7 +99,7 @@
 
 /datum/nanite_program/protocol/hive
 	name = "Hive Protocol"
-	desc = "Storage Protocol: the nanites use a more efficient grid arrangment for volume storage, increasing maximum volume to 750."
+	desc = "Протокол хранения: наниты используют более эффективную решётчатую укладку для хранения объёма, увеличивая максимум до 750."
 	use_rate = 0
 	rogue_types = list(/datum/nanite_program/necrotic)
 	protocol_class = NANITE_PROTOCOL_STORAGE
@@ -119,7 +115,7 @@
 
 /datum/nanite_program/protocol/zip
 	name = "Zip Protocol"
-	desc = "Storage Protocol: the nanites are disassembled and compacted when unused, increasing the maximum volume to 1000. However, the process slows down their replication rate slightly."
+	desc = "Протокол хранения: наниты разбираются и уплотняются в неактивном состоянии, увеличивая максимальный объём до 1000. Однако процесс немного замедляет скорость размножения."
 	use_rate = 0.2
 	rogue_types = list(/datum/nanite_program/necrotic)
 	protocol_class = NANITE_PROTOCOL_STORAGE
@@ -135,7 +131,7 @@
 
 /datum/nanite_program/protocol/free_range
 	name = "Free-range Protocol"
-	desc = "Storage Protocol: the nanites discard their default storage protocols in favour of a cheaper and more organic approach. Reduces maximum volume to 250, but increases the replication rate by 0.5."
+	desc = "Протокол хранения: наниты отказываются от стандартных протоколов хранения в пользу более дешёвого и органичного подхода. Максимальный объём снижается до 250, но скорость размножения растёт на 0,5."
 	use_rate = 0
 	rogue_types = list(/datum/nanite_program/necrotic)
 	protocol_class = NANITE_PROTOCOL_STORAGE
@@ -155,8 +151,7 @@
 
 /datum/nanite_program/protocol/unsafe_storage
 	name = "S.L.O. Protocol"
-	desc = "Storage Protocol: 'S.L.O.P.', or Storage Level Override Protocol, completely disables the safety measures normally present in nanites, \
-			allowing them to reach a whopping maximum volume level of 2000, but at the risk of causing damage to the host at nanite concentrations above the standard limit of 500."
+	desc = "Протокол хранения: «S.L.O.P.» — протокол переопределения уровня хранения — полностью отключает обычные для нанитов меры безопасности, позволяя им достигать максимального объёма целых 2000, но с риском нанести урон носителю при концентрации нанитов выше стандартного предела в 500."
 	use_rate = 0
 	rogue_types = list(/datum/nanite_program/necrotic)
 	protocol_class = NANITE_PROTOCOL_STORAGE
