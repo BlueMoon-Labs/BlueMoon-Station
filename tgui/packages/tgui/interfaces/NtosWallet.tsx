@@ -189,6 +189,7 @@ export type WalletData = {
   blocked?: BooleanLike;
   anonymous?: BooleanLike;
   personal?: BooleanLike;
+  offstation?: BooleanLike;
   frozen_by?: string | null;
   freeze_reason?: string | null;
   freeze_source?: string | null;
@@ -427,13 +428,20 @@ const SpendSection = (props: { open: OpenTab }) => {
     [
       'store',
       'Магазин с доставкой',
-      `одежда, игрушки и питомцы, до ${data.cart_max ?? 0} вещей одной капсулой сразу, себе или в подарок`,
+      `одежда, игрушки и питомцы, до ${data.cart_max ?? 0} вещей одной капсулой сразу: себе - только на станции, в подарок - всегда`,
       () => open('shop'),
     ],
     ['hand-holding-usd', 'Заплатить человеку рядом', 'по его ID-карте, без номера счёта', () => open('transfer')],
     ['file-invoice-dollar', 'Попросить оплату', 'у человека рядом: он оплатит или откажет в своём Кошельке', () => open('transfer', true)],
-    ['box-open', 'Заказ из каталога', 'питомцы, одежда, праздник и уют, везёт шаттл снабжения', () => open('orders')],
   ];
+  if (!data.offstation) {
+    ways.push([
+      'box-open',
+      'Заказ из каталога',
+      'питомцы, одежда, праздник и уют, везёт шаттл снабжения',
+      () => open('orders'),
+    ]);
+  }
   return (
     <Section title="Куда потратить">
       <Table>

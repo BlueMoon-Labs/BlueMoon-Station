@@ -745,8 +745,9 @@ const RulesTab = (props: { rules: AuditRules }) => {
           Выплаты из бюджета отдела одному человеку (кроме зарплаты и премий) на{' '}
           <Credits amount={rules.siphon_threshold} /> и больше за {rules.siphon_minutes} мин. Премии главы
           сотруднику считаются отдельно: дело, только если ему выписали больше{' '}
-          <Credits amount={rules.siphon_bonus_limit} /> за {rules.siphon_minutes} мин. Выплаты на счета без
-          владельца, премии тоже, считаются вместе, как одному получателю.
+          <Credits amount={rules.siphon_bonus_limit} /> за {rules.siphon_minutes} мин.: столько премий в лимите
+          можно законно выписать, если окно захватит конец одного часа лимита и начало следующего. Выплаты на
+          счета без владельца, премии тоже, считаются вместе, как одному получателю.
         </LabeledList.Item>
         <LabeledList.Item label={CASE_KIND.self_bonus}>
           Глава выписал премию на свой счёт, на любую сумму.

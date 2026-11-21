@@ -363,14 +363,22 @@
 	air.set_temperature(saved_temperature)
 	TEST_ASSERT_EQUAL(cargo.account_balance - cargo_before, heater.miningpoints, "Майнер заплатил за тик не один раз")
 
-/// Премии до часового лимита и новый час: за окно аудита одному человеку ушло на extra больше лимита.
-/datum/unit_test/economy_audit/proc/bonuses_over_cap(datum/economy_department/department, datum/bank_account/member, mob/living/chief, extra)
+/// Премии на весь лимит в windows окнах лимита подряд, каждое следующее - сразу за предыдущим; возвращает их сумму.
+/datum/unit_test/economy_audit/proc/bonus_windows_full(datum/economy_department/department, datum/bank_account/member, mob/living/chief, windows)
 	var/cap = SSeconomy.settings.bonus_cap_hour
-	TEST_ASSERT(department.pay_bonus(member, cap, chief), "Премия на весь часовой лимит")
-	TEST_ASSERT(!department.pay_bonus(member, 1, chief), "Сверх часового лимита премия не выписывается")
-	member.bonus_window_start -= 1 HOURS
-	TEST_ASSERT(department.pay_bonus(member, extra, chief), "Премия в новом часе")
-	return cap + extra
+	for(var/i in 1 to windows)
+		if(i > 1)
+			member.bonus_window_start -= ECON_BONUS_WINDOW
+		TEST_ASSERT(department.pay_bonus(member, cap, chief), "Премия на весь лимит окна [i]")
+		TEST_ASSERT(!department.pay_bonus(member, 1, chief), "Сверх лимита окна [i] премия не выписывается")
+	return cap * windows
+
+/// Премии на весь лимит во всех окнах лимита, что захватывает окно аудита, и ещё extra в следующем: за окно аудита одному человеку ушло на extra больше, чем пускает лимит.
+/datum/unit_test/economy_audit/proc/bonuses_over_cap(datum/economy_department/department, datum/bank_account/member, mob/living/chief, extra)
+	. = bonus_windows_full(department, member, chief, econ_audit_bonus_windows())
+	member.bonus_window_start -= ECON_BONUS_WINDOW
+	TEST_ASSERT(department.pay_bonus(member, extra, chief), "Премия в следующем окне лимита")
+	. += extra
 
 /// Вывод из бюджета: премии одному человеку за окно сверх лимита премий и крупное открытие счёта из казны.
 /datum/unit_test/economy_audit/budget_siphon/Run()
@@ -406,6 +414,17 @@
 	TEST_ASSERT(engineering.pay_bonus(member, first, chief), "Первая премия")
 	TEST_ASSERT(engineering.pay_bonus(member, cap - first, chief), "Премия до лимита")
 	TEST_ASSERT_EQUAL(length(SSeconomy.audit_flags), 0, "Премии в лимите открыли дело")
+
+/// Весь лимит премий в конце одного окна лимита и весь - в начале следующего: законно, дела нет.
+/datum/unit_test/economy_audit/bonus_window_seam/Run()
+	var/cap = SSeconomy.settings.bonus_cap_hour
+	var/datum/economy_department/engineering = SSeconomy.get_department(ACCOUNT_ENG)
+	econ_test_set_balance(engineering.account, cap * 3)
+	var/mob/living/carbon/human/chief = make_person("Econ Audit Chief", list(ACCESS_CE), null, ACCOUNT_ENG)
+	var/datum/bank_account/member = econ_account_of(make_person("Econ Audit Engineer", null, null, ACCOUNT_ENG))
+	bonus_windows_full(engineering, member, chief, 2)
+	TEST_ASSERT_EQUAL(length(SSeconomy.audit_flags), 0, "Законные премии на стыке окон лимита открыли дело")
+	TEST_ASSERT(SSeconomy.audit_bonus_allowance() >= cap * 2, "Памятка и справка аудита называют порог ниже двух лимитов премий")
 
 /// След денег: жертва -> вор -> мул и наличные; наличные не раскрываются дальше, глубина ограничена настройкой, старое за окном не видно.
 /datum/unit_test/economy_audit/trace/Run()
@@ -630,7 +649,7 @@
 	var/cap = SSeconomy.settings.bonus_cap_hour
 	var/part = round(cap * 0.2)
 	var/datum/economy_department/engineering = SSeconomy.get_department(ACCOUNT_ENG)
-	econ_test_set_balance(engineering.account, cap * 5)
+	econ_test_set_balance(engineering.account, cap * 8)
 	var/mob/living/carbon/human/chief = make_person("Econ Audit Chief", list(ACCESS_CE), null, ACCOUNT_ENG)
 	var/mob/living/carbon/human/engineer = make_person("Econ Audit Engineer", null, null, ACCOUNT_ENG)
 	var/mob/living/carbon/human/hos = make_person("Econ Audit HoS", list(ACCESS_HOS))
@@ -645,15 +664,15 @@
 	TEST_ASSERT(SSeconomy.refund(member, engineering.account, total, hos, flag.uid), "Возврат в бюджет")
 	TEST_ASSERT_EQUAL(sec.account_balance - sec_before, case_fee(total), "СБ получила только сбор")
 	TEST_ASSERT(SSeconomy.unfreeze_account(member, hos), "Разморожен")
-	member.bonus_window_start -= 1 HOURS
-	TEST_ASSERT(engineering.pay_bonus(member, cap, chief), "Премия после закрытия")
+	member.bonus_window_start -= ECON_BONUS_WINDOW
+	var/again = bonus_windows_full(engineering, member, chief, econ_audit_bonus_windows())
 	TEST_ASSERT_EQUAL(length(open_flags_of_kind(member, AUDIT_FLAG_BUDGET_SIPHON)), 0, "Возвращённые премии в новое дело не попали")
-	member.bonus_window_start -= 1 HOURS
+	member.bonus_window_start -= ECON_BONUS_WINDOW
 	TEST_ASSERT(engineering.pay_bonus(member, part, chief), "Ещё премия")
 	flags = open_flags_of_kind(member, AUDIT_FLAG_BUDGET_SIPHON)
 	TEST_ASSERT_EQUAL(length(flags), 1, "Новое дело")
 	var/datum/econ_audit_flag/second = flags[1]
-	TEST_ASSERT_EQUAL(second.amount, cap + part, "Новое дело ровно на новые премии")
+	TEST_ASSERT_EQUAL(second.amount, again + part, "Новое дело ровно на новые премии")
 
 /// Мелкие премии другим сотрудникам между крупными не прячут отток одному человеку.
 /datum/unit_test/economy_audit/siphon_not_evicted/Run()
@@ -669,12 +688,16 @@
 		var/datum/bank_account/other = make_account("Econ Audit Staff [i]")
 		other.department_id = ACCOUNT_ENG
 		TEST_ASSERT(engineering.pay_bonus(other, 1, chief), "Мелкая премия [i]")
-	accomplice.bonus_window_start -= 1 HOURS
-	TEST_ASSERT(engineering.pay_bonus(accomplice, part, chief), "Вторая крупная премия")
+	var/windows = econ_audit_bonus_windows()
+	for(var/i in 2 to windows)
+		accomplice.bonus_window_start -= ECON_BONUS_WINDOW
+		TEST_ASSERT(engineering.pay_bonus(accomplice, cap, chief), "Крупная премия в окне лимита [i]")
+	accomplice.bonus_window_start -= ECON_BONUS_WINDOW
+	TEST_ASSERT(engineering.pay_bonus(accomplice, part, chief), "Последняя крупная премия")
 	var/list/flags = open_flags_of_kind(accomplice, AUDIT_FLAG_BUDGET_SIPHON)
 	TEST_ASSERT_EQUAL(length(flags), 1, "Отток замечен")
 	var/datum/econ_audit_flag/flag = flags[1]
-	TEST_ASSERT_EQUAL(flag.amount, cap + part, "Обе крупные премии в деле")
+	TEST_ASSERT_EQUAL(flag.amount, cap * windows + part, "Все крупные премии в деле")
 
 /// Лимит дел вытесняет только закрытые; открытые сверх лимита остаются.
 /datum/unit_test/economy_audit/trim_keeps_open/Run()

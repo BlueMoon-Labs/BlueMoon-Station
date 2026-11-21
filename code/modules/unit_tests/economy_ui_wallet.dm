@@ -256,6 +256,26 @@
 	own.state = ACCOUNT_ACTIVE
 	TEST_ASSERT(!findtext(frozen_text, hint), "Замороженный счёт зовёт тратить деньги")
 
+/// Счёт вне станции: осмотр и блок «Куда потратить» не зовут в каталог, магазин себе - только на станции. Первая покупка в магазине или каталоге убирает подсказку осмотра.
+/datum/unit_test/economy_ui_wallet/examine_spend_hint_offstation/Run()
+	var/mob/living/carbon/human/owner = make_owner("Econ Wallet Ghost Role", 100)
+	var/datum/bank_account/own = account_of(owner)
+	owner.account_id = own.account_id
+	var/obj/item/modular_computer/pda/pda = owner.get_active_held_item()
+	var/obj/item/card/id/card = pda.stored_id
+	own.offstation = TRUE
+	var/offstation_text = jointext(card.examine(owner), " ")
+	TEST_ASSERT(findtext(offstation_text, "блок «Куда потратить»") && findtext(offstation_text, "себе только на станции"), "Счёт вне станции не предупреждён, что магазин себе - только на станции: [offstation_text]")
+	TEST_ASSERT(!findtext(offstation_text, "каталог"), "Счёт вне станции зовут в каталог, который ему откажет: [offstation_text]")
+	var/datum/computer_file/program/wallet/wallet = wallet_of(owner)
+	var/list/data = wallet.wallet_data(owner)
+	TEST_ASSERT(data["offstation"], "Кошелёк не знает, что счёт вне станции")
+	own.offstation = FALSE
+	TEST_ASSERT(findtext(jointext(card.examine(owner), " "), "заказ из каталога"), "Экипажу станции осмотр не называет каталог")
+	TEST_ASSERT(SSeconomy.move(own, null, 10, ECON_PERSONAL_CATALOG, owner, "Магазин: тест"), "Покупка в магазине")
+	TEST_ASSERT(!findtext(jointext(card.examine(owner), " "), "блок «Куда потратить»"), "После покупки в магазине осмотр карты всё ещё подсказывает, где тратить")
+	TEST_ASSERT(!findtext(jointext(pda.examine(owner), " "), "блок «Куда потратить»"), "После покупки в магазине осмотр КПК всё ещё подсказывает, где тратить")
+
 /// Человек в клетке dx, dy от левого нижнего угла пола, с ID-картой в руке и счётом account; card_name - имя на карте.
 /datum/unit_test/economy_ui_wallet/proc/make_bystander(datum/bank_account/account, card_name, dx, dy)
 	var/turf/spot = locate(run_loc_floor_bottom_left.x + dx, run_loc_floor_bottom_left.y + dy, run_loc_floor_bottom_left.z)

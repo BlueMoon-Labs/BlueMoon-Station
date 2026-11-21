@@ -139,6 +139,14 @@ describe('NtosWallet', () => {
     expect(text(setup({ personal: 0 }).container)).not.toContain('Куда потратить');
   });
 
+  test('куда потратить: счёту вне станции каталога нет, магазин себе - только на станции', () => {
+    const content = text(setup({ offstation: 1, cart_max: 6 }).container);
+    expect(content).toContain('Куда потратить');
+    expect(content).toContain('себе - только на станции, в подарок - всегда');
+    expect(content).toContain('Заплатить человеку рядом');
+    expect(content).not.toContain('Заказ из каталога');
+  });
+
   test('без оклада или отдела - минимум NT, а не "не начисляется"', () => {
     const fired = text(setup({ wage: { ...base.wage!, grade: null, department: null, amount: 0, floor_only: 1 } }).container);
     expect(fired).toContain('Оклада нет: отдел не платит, NT платит минимум 30 кр. раз в 10 мин.');

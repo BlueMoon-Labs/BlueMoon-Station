@@ -125,9 +125,12 @@
 	if(kind == AUDIT_FLAG_BUDGET_SIPHON)
 		. += econ_audit_bonus_key(counterparty_number)
 
-/// Сколько премий одному человеку за audit_siphon_minutes ещё не дело: часовой лимит премий от других глав, но не меньше порога выплат.
+/// Сколько премий одному человеку за audit_siphon_minutes ещё не дело: лимит премий за каждое окно ECON_BONUS_WINDOW, которое захватит окно аудита с корзинами (на стыке окон - два лимита), но не меньше порога выплат.
 /datum/controller/subsystem/economy/proc/audit_bonus_allowance()
-	return max(settings.bonus_cap_hour, settings.audit_bonus_threshold - 1)
+	return max(settings.bonus_cap_hour * econ_audit_bonus_windows(), settings.audit_bonus_threshold - 1)
+
+/proc/econ_audit_bonus_windows()
+	return CEILING((SSeconomy.settings.audit_siphon_minutes MINUTES + AUDIT_BUCKET) / ECON_BONUS_WINDOW, 1) + 1
 
 /// Ставка аукциона - залог, а не отток: след покупателя к продавцу пишет итог лота экипажа одной строкой
 GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, ECON_ADMIN, ECON_ACCOUNT_CLOSED, ECON_BUDGET_RETURN, ECON_AUCTION_BID))

@@ -92,6 +92,7 @@
 	data["blocked"] = !account.transferable
 	data["anonymous"] = istype(account, /datum/bank_account/anonymous)
 	data["personal"] = SSeconomy.is_personal_account(account)
+	data["offstation"] = account.offstation
 	data["frozen_by"] = account.frozen_by
 	data["freeze_source"] = account.state == ACCOUNT_FROZEN ? SSeconomy.freeze_source(account.frozen_by) : null
 	data["freeze_reason"] = account.freeze_reason
