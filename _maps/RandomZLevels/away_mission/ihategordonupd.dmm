@@ -39121,12 +39121,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"lWU" = (
-/obj/structure/shockplant,
-/turf/open/floor/grass/fakebasalt{
-	color = "#4cfbfb"
-	},
-/area/awaymission/ihategordon/custom_walking)
 "lXa" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "gib2_guts"
@@ -53277,13 +53271,6 @@
 	icon_state = "platingdmg3"
 	},
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
-"qon" = (
-/obj/machinery/power/floodlight/urbanismlight/mesamisc{
-	light_color = "#e2e8f0";
-	light_range = 45
-	},
-/turf/open/floor/plating/smooth/grass/urbanism,
-/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "qot" = (
 /obj/structure/flora/junglebush{
 	pixel_x = 9;
@@ -56627,10 +56614,6 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
-"rtd" = (
-/obj/structure/shockplant,
-/turf/open/floor/grass/fakebasalt,
-/area/awaymission/ihategordon/custom_walking)
 "rtp" = (
 /obj/effect/festive/street/streetlineinnerse,
 /turf/open/floor/plating/cobblestone,
@@ -71550,6 +71533,13 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"wlp" = (
+/obj/machinery/power/floodlight/urbanismlight/mesamisc{
+	light_color = "#e2e8f0";
+	light_range = 45
+	},
+/turf/open/floor/plating/smooth/grass/urbanism,
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "wlq" = (
 /obj/effect/turf_decal/tile/dark/half{
 	dir = 8;
@@ -126407,7 +126397,7 @@ lrU
 lrU
 lrU
 jbc
-qon
+wlp
 icY
 lrU
 lrU
@@ -169085,7 +169075,7 @@ cRO
 aAx
 aAx
 eJh
-rtd
+eJh
 cRO
 cRO
 cRO
@@ -171918,7 +171908,7 @@ bjQ
 cRO
 cRO
 aAx
-lWU
+aAx
 bjQ
 bjQ
 cRO

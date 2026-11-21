@@ -50,6 +50,11 @@
 
 	var/list/atom/movable/children_list = list()
 	var/charging = FALSE
+	/// Бросок-чардж как у charger-инфицированных: enter_charge() сам ведёт
+	/// кулдаун charge_cooldown/charge_frequency и делает throw_at-рывок.
+	charge_distance = 8
+	charge_frequency = 5 SECONDS
+	knockdown_time = 2 SECONDS
 	var/thebaby = /mob/living/simple_animal/hostile/headcrab/mesa
 	var/image/rage_tint = null
 	/// Varspeed/move delay to restore after rage. Boss variant runs faster,
@@ -93,12 +98,16 @@
 // adjacent, and the shared ranged_cooldown lets one long cooldown (rage)
 // silence every other attack.
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/can_use_ai_ability(atom/target)
-	return !charging
+	return !charging && !charge_state && !charge_windup_timer
 
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/build_ai_attack_table()
 	var/list/table = list(
 		new /datum/boss_attack("charge", PROC_REF(legionnaire_charge), 5 SECONDS, 10, 2, 10),
 		new /datum/boss_attack("acid trishot", PROC_REF(herald_trishot), 3 SECONDS, 10),
+		// На низком HP плевок идёт чаще и тяжелее: отдельная запись с фазовым
+		// окном max_health_frac=0.30 и укороченным кулдауном. Её cooldown_time
+		// также задаёт общий ranged_cooldown, так что каденс реально растёт.
+		new /datum/boss_attack("acid barrage", PROC_REF(herald_trishot), 2 SECONDS, 20, 0, INFINITY, 0, 0.30),
 		new /datum/boss_attack("spawn children", PROC_REF(spawn_children), 12 SECONDS, 8),
 		new /datum/boss_attack("rage", PROC_REF(rage), 25 SECONDS, 6),
 		new /datum/boss_attack("call children", PROC_REF(call_children), 10 SECONDS, 6),
@@ -109,7 +118,7 @@
 	return table
 
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/Move()
-	if(charging)
+	if(charging || charge_state || charge_windup_timer)
 		return FALSE
 	return ..()
 
@@ -161,67 +170,44 @@
 		if(GONARCH_CALL_CHILDREN)
 			call_children()
 
-/// Charge: roots the mob, then forceMoves it forward tile by tile, trampling
-/// and throwing aside anything in the way and drilling through minerals.
+/// Charge: стандартный рывок hostile-мобов (как у charger): enter_charge
+/// ставит 1.5-секундный телеграф и бросает моба в цель через throw_at -
+/// один резкий рывок вместо пошагового forceMove. Урон и отброс цели -
+/// в throw_impact.
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/proc/legionnaire_charge(atom/target)
 	if(QDELETED(src) || stat == DEAD || !target)
 		return
 	ranged_cooldown = world.time + 5 SECONDS
-	charging = TRUE
-	var/start_turf = get_turf(src)
-	var/dir_to_target = get_dir(start_turf, get_turf(target))
-	if(!dir_to_target || dir_to_target == 0)
-		charging = FALSE
-		return
-	var/turf/T = get_step(start_turf, dir_to_target)
-	for(var/i in 1 to 6)
-		T = get_step(T, dir_to_target)
-	if(!T)
-		charging = FALSE
-		return
-	playsound(src, 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchpain.ogg', 75, FALSE)
-	visible_message(span_boldwarning("[src] prepares to charge!"))
-	addtimer(CALLBACK(src, PROC_REF(legionnaire_charge_2), dir_to_target, 0), 4)
+	visible_message(span_boldwarning("[src] опускает головой и готовится к рывку!"))
+	playsound(src, 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchroar.ogg', 75, FALSE)
+	enter_charge(target)
 
-/mob/living/simple_animal/hostile/asteroid/elite/gonarch/proc/legionnaire_charge_2(var/move_dir, var/times_ran)
-	if(QDELETED(src) || stat == DEAD)
-		charging = FALSE
-		return
-	if(times_ran >= 6)
-		charging = FALSE
-		return
-	var/turf/T = get_step(get_turf(src), move_dir)
-	if(!T)
-		charging = FALSE
-		return
-	if(ismineralturf(T))
-		var/turf/closed/mineral/M = T
-		M.gets_drilled()
-	// Stop at anything solid: dense objects (walls, closed doors/windows, crates).
-	var/blocked = FALSE
-	for(var/atom/movable/A in T.contents)
-		if(A.density)
-			blocked = TRUE
-			break
-	if(blocked)
-		charging = FALSE
-		return
-	forceMove(T)
-	playsound(src, 'sound/effects/bang.ogg', 100, 1)
-	var/turf/throwtarget = get_edge_target_turf(src, move_dir)
-	if(!throwtarget)
-		throwtarget = T
-	for(var/mob/living/trample_target in T.contents)
-		if(trample_target == src)
-			continue
-		if(faction_check_mob(trample_target))
-			continue
-		visible_message(span_boldwarning("[src] tramples and kicks [trample_target]!"))
-		to_chat(trample_target, span_userdanger("[src] tramples you and kicks you away!"))
-		trample_target.safe_throw_at(throwtarget, 10, 1, src)
-		trample_target.Paralyze(3 SECONDS)
-		trample_target.adjustBruteLoss(melee_damage_upper/2)
-	addtimer(CALLBACK(src, PROC_REF(legionnaire_charge_2), move_dir, (times_ran + 1)), 7)
+/// Урон рывка: повторяет контракт /mob/living/simple_animal/hostile/throw_impact
+/// для charge_state, добавляя урон/стан/отброс как у infected charger.
+/mob/living/simple_animal/hostile/asteroid/elite/gonarch/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	if(!charge_state)
+		return ..()
+
+	if(isliving(hit_atom) && hit_atom != src)
+		var/mob/living/L = hit_atom
+		visible_message(span_boldwarning("[src] врезается в [L]!"))
+		to_chat(L, span_userdanger("[src] врезается в вас!"))
+		playsound(get_turf(L), 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchattack.ogg', 100, TRUE)
+		L.apply_damage(40, BRUTE)
+		L.adjustStaminaLoss(40)
+		shake_camera(L, 4, 3)
+		shake_camera(src, 2, 3)
+		var/throwtarget = get_edge_target_turf(src, get_dir(src, get_step_away(L, src)))
+		L.throw_at(throwtarget, 6, 1, src)
+	elif(hit_atom && hit_atom.density && !hit_atom.CanPass(src, get_turf(hit_atom)))
+		visible_message(span_boldwarning("[src] врезается в [hit_atom]!"))
+		playsound(get_turf(src), 'sound/effects/bang.ogg', 100, TRUE)
+		Stun(40)
+
+	if(charge_state)
+		charge_state = FALSE
+		update_icons()
+		update_mobility()
 
 /// Fires one acid spit projectile at the marker turf. is_trishot adds two
 /// extra shots at +/-15 degrees for the classic 3-way spread.
@@ -242,7 +228,11 @@
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/proc/herald_trishot(atom/target)
 	if(QDELETED(src) || stat == DEAD || !target)
 		return
-	ranged_cooldown = world.time + 3 SECONDS
+	// При HP < 30% плевок идёт чаще (2с вместо 3с - это же пишет
+	// boss_use_attack в ranged_cooldown через cooldown_time записи) и
+	// выстреливает тремя залпами вместо одного.
+	var/low_hp = health < maxHealth * 0.30
+	ranged_cooldown = world.time + (low_hp ? 2 SECONDS : 3 SECONDS)
 	var/startloc = get_turf(src)
 	var/turf/target_turf = get_turf(target)
 	if(!startloc || !target_turf)
@@ -251,12 +241,16 @@
 	icon_state = "gonarch_attack"
 	charging = TRUE
 	var/angle_to_target = get_projectile_angle(src, target_turf)
-	addtimer(CALLBACK(src, PROC_REF(herald_trishot_fire), target_turf, angle_to_target), 5)
+	addtimer(CALLBACK(src, PROC_REF(herald_trishot_fire), target_turf, angle_to_target, low_hp ? 3 : 1), 5)
 
-/mob/living/simple_animal/hostile/asteroid/elite/gonarch/proc/herald_trishot_fire(turf/marker, angle_to_target)
+/mob/living/simple_animal/hostile/asteroid/elite/gonarch/proc/herald_trishot_fire(turf/marker, angle_to_target, volleys_left = 1)
 	if(QDELETED(src) || stat == DEAD)
+		charging = FALSE
 		return
 	shoot_projectile(marker, angle_to_target, TRUE)
+	if(volleys_left > 1)
+		addtimer(CALLBACK(src, PROC_REF(herald_trishot_fire), marker, angle_to_target, volleys_left - 1), 4)
+		return
 	charging = FALSE
 	if(stat != DEAD)
 		icon_state = "gonarch"

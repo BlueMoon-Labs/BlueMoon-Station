@@ -227,10 +227,13 @@
 	wave_timer = rand(min_wave_interval, max_wave_interval)
 
 	log_world("[src] Attempting to spawn wave with threat=[threat_level]")
-	spawn_zombie_wave(threat_level, alive_players)
-
-	last_wave_time = world.time
-	current_wave_number++
+	if(spawn_zombie_wave(threat_level, alive_players))
+		last_wave_time = world.time
+		current_wave_number++
+	else
+		// Волна не стартовала (нет турфов/игроков и т.п.) - не сжигаем
+		// полный интервал, следующая попытка будет скоро.
+		last_wave_time = world.time - wave_timer + 30 SECONDS
 
 /datum/ai_director/zombie_mission/proc/get_alive_players_in_mission()
 	if(!src)
@@ -314,16 +317,16 @@
 
 /datum/ai_director/zombie_mission/proc/spawn_zombie_wave(threat_level, list/players)
 	if(!src)
-		return
+		return FALSE
 	if(spawning_wave)
 		log_world("[src] Already spawning a wave, skipping duplicate spawn")
-		return
+		return FALSE
 	if(!threat_level || threat_level <= 0)
 		log_world("[src] Invalid threat_level: [threat_level]")
-		return
+		return FALSE
 	if(!players || !players.len)
 		log_world("[src] No players provided")
-		return
+		return FALSE
 
 	var/wave_size_bonus = (difficulty_level >= 6) ? 5 : 0
 	var/zombies_to_spawn = max(1, round(min(threat_level + wave_size_bonus, max_zombies_per_wave) * horde_size_multiplier))
@@ -333,7 +336,7 @@
 	var/list/cached_spawn_turfs = get_cached_spawn_turfs(players)
 	if(!cached_spawn_turfs || !cached_spawn_turfs.len)
 		log_world("[src] No valid spawn turfs found")
-		return
+		return FALSE
 
 	log_world("[src] Starting zombie wave: threat=[threat_level], players=[players.len], zombies_to_spawn=[zombies_to_spawn]")
 
@@ -347,6 +350,7 @@
 	wave_batch_size = rand(5, 8)
 	wave_special_types = list()
 	spawn_wave_step()
+	return TRUE
 
 /datum/ai_director/zombie_mission/proc/is_special_mob_type(mob_type)
 	return mob_type == /mob/living/simple_animal/hostile/infected/hunter || mob_type == /mob/living/simple_animal/hostile/infected/acid_spitter || mob_type == /mob/living/simple_animal/hostile/infected/charger || mob_type == /mob/living/simple_animal/hostile/infected/tank
@@ -690,9 +694,14 @@
 		return
 
 	wave_timer = rand(min_wave_interval, max_wave_interval)
-	last_wave_time = world.time
-	spawn_zombie_wave(threat_level, alive_players)
-	current_wave_number++
+
+	if(spawn_zombie_wave(threat_level, alive_players))
+		last_wave_time = world.time
+		current_wave_number++
+	else
+		// Запуск не состоялся - повторим попытку скоро, а не через
+		// полный случайный интервал.
+		last_wave_time = world.time - wave_timer + 30 SECONDS
 
 /datum/ai_director/zombie_mission/proc/refresh_horde_state()
 	// Generators self-register in GLOB.urbanism_generators - no world scan.

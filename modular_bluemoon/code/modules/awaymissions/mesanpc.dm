@@ -220,31 +220,50 @@
 	dialogue_completed = TRUE
 	end_dialogue()
 
+// Возвращает list(doors_found, doors_opened): открытие shut-значение
+// (airlock.open() даёт FALSE на болтах/без питания) не должно считаться
+// успехом - иначе диалог завершался навсегда, а проход так и не открывался.
 /obj/machinery/negotiations_radio/proc/open_blastdoors()
 	if(!src || !blastdoor_id)
-		return
+		return list(0, 0)
 
+	var/doors_found = 0
 	var/doors_opened = 0
 
 	for(var/obj/machinery/door/poddoor/D in GLOB.machines)
 		if(D && D.id == blastdoor_id)
-			D.open()
-			doors_opened++
+			doors_found++
+			if(D.open())
+				doors_opened++
 
 	for(var/obj/machinery/door/window/brigdoor/W in GLOB.machines)
 		if(W && W.id == blastdoor_id)
-			W.open()
-			doors_opened++
+			doors_found++
+			if(W.open())
+				doors_opened++
 
 	for(var/obj/machinery/door/airlock/A in GLOB.airlocks)
 		if(A && A.id_tag == blastdoor_id)
-			A.open()
-			doors_opened++
+			doors_found++
+			if(A.open())
+				doors_opened++
 
-	if(doors_opened > 0)
-		visible_message(span_notice("Шлюзы с ID [blastdoor_id] открылись!"))
+	if(doors_found)
+		visible_message(span_notice("Шлюзы с ID [blastdoor_id] открылись ([doors_opened]/[doors_found])!"))
 	else
 		visible_message(span_warning("Не удалось найти шлюзы с ID [blastdoor_id]!"))
+	return list(doors_found, doors_opened)
+
+// FALSE только когда двери с заданным ID существуют, но ни одна не открылась
+// (болты локдауна, нет питания). Тогда confirm_action не завершает диалог и
+// игрок может повторить подтверждение после снятия блокировки. Отсутствие
+// дверей с ID - мисконфиг, диалог завершаем как раньше.
+/obj/machinery/negotiations_radio/proc/doors_ready_or_warn(mob/user)
+	var/list/result = open_blastdoors()
+	if(!blastdoor_id || !result[1] || result[2])
+		return TRUE
+	to_chat(user, span_warning("Шлюзы с ID [blastdoor_id] не открылись - они заблокированы. Попробуйте ещё раз позже."))
+	return FALSE
 
 /obj/machinery/negotiations_radio/Destroy()
 	STOP_PROCESSING(SSobj, src)
@@ -288,7 +307,8 @@
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
-	open_blastdoors()
+	if(!doors_ready_or_warn(user))
+		return
 	dialogue_completed = TRUE
 	end_dialogue()
 
@@ -688,7 +708,8 @@
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
-	open_blastdoors()
+	if(!doors_ready_or_warn(user))
+		return
 	dialogue_completed = TRUE
 	end_dialogue()
 
@@ -738,7 +759,8 @@
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
-	open_blastdoors()
+	if(!doors_ready_or_warn(user))
+		return
 	dialogue_completed = TRUE
 	end_dialogue()
 
@@ -782,7 +804,10 @@
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
 	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
-	open_blastdoors()
+	// Без открытого прохода не завершаем диалог и не выдаём награды -
+	// игрок сможет подтвердить снова после снятия блокировки дверей.
+	if(!doors_ready_or_warn(user))
+		return
 	var/batteries_spawned = 0
 	for(var/obj/effect/landmark/urbanism_battery_spawn/landmark in GLOB.landmarks_list)
 		if(!istype(get_area(landmark), /area/awaymission/ihategordon))

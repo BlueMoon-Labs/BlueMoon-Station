@@ -66,7 +66,7 @@
 
 	///Power cell for the suit's systems
 	var/obj/item/stock_parts/cell/cell = null
-	var/cell_type = /obj/item/stock_parts/cell/high
+	var/cell_type = /obj/item/stock_parts/cell/mesa_battery
 
 	///Current user of the suit
 	var/mob/living/carbon/current_user = null

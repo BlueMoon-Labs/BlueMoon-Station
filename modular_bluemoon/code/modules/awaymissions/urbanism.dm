@@ -626,6 +626,11 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 
 	var/activating = FALSE
 	var/active = FALSE
+	/// Токен текущей активации: do_after() игрока A может завершиться после
+	/// того, как interrupt/reset уже позволил игроку B начать свою активацию.
+	/// Без токена запоздавшее завершение A запускало begin_active_phase()
+	/// раньше времени или сбрасывало activating у B.
+	var/activation_token = 0
 	var/waiting_for_fuel = FALSE
 	var/activation_start_time = 0
 	var/next_mob_spawn_time = 0
@@ -719,6 +724,8 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	if(!src || !user)
 		return
 
+	activation_token++
+	var/my_token = activation_token
 	activating = TRUE
 	damage_taken = 0
 	next_mob_spawn_time = world.time + mob_spawn_interval
@@ -727,14 +734,19 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/generator/generator_start.ogg', 50, TRUE)
 
 	if(do_after(user, activation_time, target = src, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_HELD_ITEM | IGNORE_INCAPACITATED))
+		// Запоздавший do_after чужой/прерванной активации не должен ни
+		// запускать фазу, ни сбрасывать activating у нового запуска.
+		if(my_token != activation_token)
+			return
 		if(!activating || QDELETED(src) || QDELETED(user))
 			activating = FALSE
 			return
 
 		begin_active_phase()
 	else
-		activating = FALSE
-		to_chat(user, span_warning("Активация прервана!"))
+		if(my_token == activation_token)
+			activating = FALSE
+			to_chat(user, span_warning("Активация прервана!"))
 
 /obj/structure/urbanism_generator/proc/begin_active_phase()
 	if(!src)
@@ -781,27 +793,33 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	if(!src || !blastdoor_id)
 		return
 
+	var/doors_found = 0
 	var/doors_opened = 0
 
 	for(var/obj/machinery/door/poddoor/D in GLOB.machines)
 		if(D && D.id == blastdoor_id)
-			D.open()
-			doors_opened++
+			doors_found++
+			if(D.open())
+				doors_opened++
 
 	for(var/obj/machinery/door/window/brigdoor/W in GLOB.machines)
 		if(W && W.id == blastdoor_id)
-			W.open()
-			doors_opened++
+			doors_found++
+			if(W.open())
+				doors_opened++
 
 	for(var/obj/machinery/door/airlock/A in GLOB.airlocks)
 		if(A && A.id_tag == blastdoor_id)
-			A.open()
-			doors_opened++
+			doors_found++
+			if(A.open())
+				doors_opened++
 
-	log_world("open_blastdoor: blastdoor_id=[blastdoor_id], doors_opened=[doors_opened]")
+	log_world("open_blastdoor: blastdoor_id=[blastdoor_id], doors_found=[doors_found], doors_opened=[doors_opened]")
 
 	if(doors_opened > 0)
 		visible_message(span_notice("Открыто [doors_opened] дверей с ID [blastdoor_id]!"))
+	else if(doors_found)
+		visible_message(span_warning("Двери с ID [blastdoor_id] найдены, но не открылись (болты/нет питания)!"))
 	else
 		visible_message(span_warning("Не удалось найти двери с ID [blastdoor_id]!"))
 
@@ -981,6 +999,10 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	if(!src)
 		return
 
+	// Инвалидируем do_after() текущей активации: его завершение не должно
+	// ни запустить begin_active_phase(), ни сбросить activating у следующего
+	// запуска (см. activation_token в start_activation).
+	activation_token++
 	active = FALSE
 	activating = FALSE
 	icon_state = "generatorold-off"
