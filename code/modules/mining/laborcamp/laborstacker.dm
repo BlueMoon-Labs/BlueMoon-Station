@@ -202,3 +202,31 @@ GLOBAL_LIST(labor_sheet_values)
 		return
 
 	return ..()
+
+/**********************Point Lookup Console**************************/
+
+/obj/machinery/mineral/labor_points_checker
+	name = "points checking console"
+	desc = "Консоль, используемая заключенными для проверки прогресса выполнения плана. Просто приложите ID-карту заключенного."
+	icon = 'icons/obj/machines/mining_machines.dmi'
+	icon_state = "console"
+	density = FALSE
+
+/obj/machinery/mineral/labor_points_checker/attack_hand(mob/user)
+	. = ..()
+	if(. || user.is_blind())
+		return
+	user.examinate(src)
+
+/obj/machinery/mineral/labor_points_checker/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/card/id))
+		if(istype(I, /obj/item/card/id/prisoner))
+			var/obj/item/card/id/prisoner/prisoner_id = I
+			to_chat(user, "<span class='notice'><B>ID: [prisoner_id.registered_name]</B></span>")
+			to_chat(user, "<span class='notice'>Собрано очков: [prisoner_id.points]</span>")
+			to_chat(user, "<span class='notice'>Квота: [prisoner_id.goal]</span>")
+			to_chat(user, "<span class='notice'>Сдавайте переплавленные минералы в машину рядом с шаттлом. Достигните квоты, чтобы получить свободу.</span>")
+		else
+			to_chat(user, "<span class='warning'>Ошибка: Недействительная ID-карта</span>")
+	else
+		return ..()
