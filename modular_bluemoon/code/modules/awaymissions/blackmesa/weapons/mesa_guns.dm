@@ -1923,6 +1923,10 @@ GLOBAL_VAR_INIT(mesa_casing_tick_active, FALSE)
 	var/mesa_vvel = 0.0
 	var/mesa_friction = 0.0
 	var/mesa_angle = 0
+	/// Horizontal distance already covered by the shell, in pixels. The eject
+	/// is capped at roughly one tile so long arcs can't form.
+	var/mesa_travel = 0.0
+	var/mesa_max_travel = 34.0
 	var/mesa_still_warm = FALSE
 // A spent shell launches off the shooter on a ballistic arc - the same model
 // white-master's movable_physics uses (constant horizontal speed bleeding off
@@ -1960,15 +1964,15 @@ GLOBAL_VAR_INIT(mesa_casing_tick_active, FALSE)
 	var/matrix/M = matrix(transform)
 	M.Turn(rand(-170, 170))
 	transform = M
-	//Start on the tile edge facing the eject direction so the shell does not
-	//appear from directly under the player, then hand it real velocity.
-	mesa_edge_offset(angle2dir(eject_angle))
-	pixel_x += rand(-4, 4)
-	pixel_y += rand(-4, 4)
+	//The shell stays on the shooter's turf: a small random offset from the
+	//tile centre is plenty - the ballistic arc and tumble do the rest.
+	pixel_x = rand(-6, 6)
+	pixel_y = rand(-6, 6)
 	pixel_z = 8 //launch pop, same as white-master
 	mesa_angle = eject_angle
-	mesa_hvel = rand(450, 550) / 100
-	mesa_vvel = rand(400, 450) / 100
+	mesa_travel = 0
+	mesa_hvel = rand(700, 850) / 100
+	mesa_vvel = rand(400, 500) / 100
 	mesa_friction = rand(20, 24) / 100
 	mesa_flying = TRUE
 	if(!(src in GLOB.mesa_casing_flight))
@@ -1990,13 +1994,6 @@ GLOBAL_VAR_INIT(mesa_casing_tick_active, FALSE)
 			return FALSE
 	return TRUE
 
-/// Places the casing on the edge of its turf facing `direction` so the
-/// launch does not originate from the tile centre under the player.
-/obj/item/ammo_casing/proc/mesa_edge_offset(var/direction)
-	var/angle = dir2angle(direction)
-	pixel_x = round(sin(angle) * 10)
-	pixel_y = round(-cos(angle) * 10)
-
 /// One physics step, ported from white-master's movable_physics process():
 /// constant horizontal velocity with friction, pixel_z gravity arc, turf
 /// crossing at the tile border, wall ricochet and floor bounce. The brass
@@ -2017,40 +2014,32 @@ GLOBAL_VAR_INIT(mesa_casing_tick_active, FALSE)
 	//dir2angle() convention: 0 = north, clockwise; unit vector is (sin, -cos).
 	pixel_x += mesa_hvel * sin(mesa_angle)
 	pixel_y += mesa_hvel * -cos(mesa_angle)
+	mesa_travel += mesa_hvel
 	mesa_hvel = max(0, mesa_hvel - mesa_friction)
+	if(mesa_travel >= mesa_max_travel)
+		mesa_hvel = 0
 	pixel_z = max(0, pixel_z + mesa_vvel)
 	if(pixel_z > 0)
 		mesa_vvel -= 9.80665 * 0.05
 	if(pixel_z <= 0 && mesa_vvel != 0)
 		mesa_z_bounce()
-	//Crossing a tile border: glide into the neighbour turf, or ricochet.
+	//Turf borders act as walls: the shell hops and tumbles but never leaves
+	//the shooter's tile, so it always drops back under the player.
 	if(pixel_x > 16)
-		if(Move(get_step(src, EAST)))
-			pixel_x -= 32
-		else
-			pixel_x = 16
-			mesa_wall_bounce(TRUE)
+		pixel_x = 16
+		mesa_wall_bounce(TRUE)
 		return
 	if(pixel_x < -16)
-		if(Move(get_step(src, WEST)))
-			pixel_x += 32
-		else
-			pixel_x = -16
-			mesa_wall_bounce(TRUE)
+		pixel_x = -16
+		mesa_wall_bounce(TRUE)
 		return
 	if(pixel_y > 16)
-		if(Move(get_step(src, SOUTH)))
-			pixel_y -= 32
-		else
-			pixel_y = 16
-			mesa_wall_bounce(FALSE)
+		pixel_y = 16
+		mesa_wall_bounce(FALSE)
 		return
 	if(pixel_y < -16)
-		if(Move(get_step(src, NORTH)))
-			pixel_y += 32
-		else
-			pixel_y = -16
-			mesa_wall_bounce(FALSE)
+		pixel_y = -16
+		mesa_wall_bounce(FALSE)
 		return
 
 /// Reflects the launch angle off a wall impact. `horizontal` TRUE for
@@ -2067,7 +2056,8 @@ GLOBAL_VAR_INIT(mesa_casing_tick_active, FALSE)
 /obj/item/ammo_casing/proc/mesa_z_bounce()
 	mesa_angle += rand(-3000, 3000) / 100
 	pixel_z = 0
-	mesa_hvel = max(0, mesa_hvel + mesa_vvel * -0.8)
+	if(mesa_travel < mesa_max_travel)
+		mesa_hvel = max(0, mesa_hvel + mesa_vvel * -0.8)
 	mesa_vvel = max(0, mesa_vvel * -0.8 - 0.2)
 
 /// Final ground contact once the arc dies out: impact sound, one last tumble

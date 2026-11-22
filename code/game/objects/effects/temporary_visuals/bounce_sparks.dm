@@ -13,10 +13,10 @@
 	icon_state = "dot"
 	count = 12
 	spawning = 12
-	lifespan = 0.35 SECONDS
-	fade = 0.15 SECONDS
+	lifespan = 0.45 SECONDS
+	fade = 0.2 SECONDS
 	fadein = 0.02 SECONDS
-	scale = generator("num", 0.08, 0.2)
+	scale = generator("num", 0.15, 0.3)
 	position = generator("box", list(-4, -4, 0), list(4, 4, 0))
 	drift = generator("box", list(-0.3, -0.3, 0), list(0.3, 0.3, 0))
 	gravity = list(0, 0.1, 0)
@@ -150,6 +150,13 @@ GLOBAL_LIST_INIT(bounce_spark_throttle, list())
 	if(!burst)
 		return
 
+	// Dust/smoke puff where the round struck, drifting up off the wall.
+	var/obj/effect/firing_smoke/hit_smoke = new /obj/effect/firing_smoke(spawn_turf)
+	if(hit_smoke)
+		hit_smoke.pixel_x = px - BOUNCE_SPARK_CENTER_OFFSET
+		hit_smoke.pixel_y = py - BOUNCE_SPARK_CENTER_OFFSET
+		hit_smoke.particles.velocity = list(rand(-15, 15), rand(-30, -10), 0)
+
 	// Same incidental heat the old atom sparks applied on their first spark.
 	spawn_turf.hotspot_expose(1000, 100)
 
@@ -172,23 +179,25 @@ GLOBAL_LIST_INIT(bounce_spark_throttle, list())
 	pixel_x = spawn_px - BOUNCE_SPARK_CENTER_OFFSET
 	pixel_y = spawn_py - BOUNCE_SPARK_CENTER_OFFSET
 	particles = new /particles/bullet_sparks
+	var/p_speed
 	if(power)
-		// Muzzle blast: denser, faster, bigger flecks of powder smoke/sparks.
-		particles.count = particles.spawning = rand(16, 24)
-		particles.scale = generator("num", 0.15, 0.32)
-		particles.lifespan = 0.5 SECONDS
-		particles.fade = 0.25 SECONDS
-		var/p_speed = rand(60, 95) / 10
+		// Muzzle blast: a short scatter of powder flecks, kept dim so it
+		// doesn't read as a second flash.
+		particles.count = particles.spawning = rand(10, 16)
+		particles.scale = generator("num", 0.1, 0.2)
+		particles.lifespan = 0.35 SECONDS
+		particles.fade = 0.18 SECONDS
+		p_speed = rand(50, 75) / 10
 	else
-		particles.count = particles.spawning = rand(7, 11)
-		var/p_speed = rand(35, 60) / 10
+		particles.count = particles.spawning = rand(8, 12)
+		p_speed = rand(30, 50) / 10
 	// dir2angle(): 0 = north, clockwise; screen y grows downward.
 	var/vx = sin(launch_angle) * p_speed
 	var/vy = -cos(launch_angle) * p_speed
 	var/spread = p_speed * 0.6
 	particles.velocity = generator("vector", list(vx - spread, vy - spread, 0), list(vx + spread, vy + spread, 0))
-	particles.color = pick("#FFE080", "#FFB040", "#FFFFFF")
-	QDEL_IN(src, power ? 0.6 SECONDS : 0.45 SECONDS)
+	particles.color = pick("#FFB060", "#E8A050", "#FFD9A0")
+	QDEL_IN(src, power ? 0.45 SECONDS : 0.5 SECONDS)
 
 /obj/effect/bullet_spark_burst/Destroy()
 	particles = null

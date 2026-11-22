@@ -71,7 +71,7 @@
 	if(chambered)//We have a shell in the chamber
 		chambered.forceMove(drop_location())//Eject casing
 		if(mesa_casing_physics)
-			chambered.mesa_eject(M)
+			chambered.mesa_eject(M, chambered.BB)
 		else
 			chambered.bounce_away()
 		chambered = null

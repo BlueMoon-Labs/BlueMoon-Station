@@ -324,7 +324,7 @@
 		// Visible powder sparks spraying from the muzzle, offset toward the target.
 		var/muzzle_px = clamp(16 + sin(smoke_angle) * 10, 4, BOUNCE_SPARK_TILE_X - 4)
 		var/muzzle_py = clamp(16 - cos(smoke_angle) * 10, 4, BOUNCE_SPARK_TILE_Y - 4)
-		new(smoke_turf, /obj/effect/bullet_spark_burst, smoke_angle, muzzle_px, muzzle_py, TRUE)
+		new /obj/effect/bullet_spark_burst(smoke_turf, smoke_angle, muzzle_px, muzzle_py, TRUE)
 
 /obj/item/gun/emp_act(severity)
 	. = ..()

@@ -188,7 +188,10 @@
 		to_chat(user, "<span class='notice'>You pull the magazine out of \the [src].</span>")
 	else if(chambered)
 		AC.forceMove(drop_location())
-		AC.bounce_away()
+		if(mesa_casing_physics)
+			AC.mesa_eject(user, FALSE)
+		else
+			AC.bounce_away()
 		chambered = null
 		to_chat(user, "<span class='notice'>You unload the round from \the [src]'s chamber.</span>")
 		playsound(src, unlock_sound, 70, 1)
