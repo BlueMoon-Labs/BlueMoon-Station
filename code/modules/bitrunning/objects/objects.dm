@@ -675,8 +675,9 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 /obj/structure/closet/crate/secure/bitrunning
 	name = "base class cache"
 	desc = "Поговорите с кодером."
-	icon_state = "securecrate"
-	base_icon_state = "securecrate"
+	icon = 'icons/obj/storage/bitrunning.dmi'
+	icon_state = "bitrunning"
+	base_icon_state = "bitrunning"
 
 /obj/structure/closet/crate/secure/bitrunning/encrypted
 	name = "encrypted cache"

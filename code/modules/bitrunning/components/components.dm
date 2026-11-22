@@ -30,6 +30,7 @@
 	server.avatar_connection_refs.Add(WEAKREF(src))
 
 	avatar.PossessByPlayer(old_body.key)
+	start_virtual_ambience(avatar)
 	ADD_TRAIT(avatar, TRAIT_NO_MINDSWAP, REF(src))
 	ADD_TRAIT(old_body, TRAIT_MIND_TEMPORARILY_GONE, REF(src))
 

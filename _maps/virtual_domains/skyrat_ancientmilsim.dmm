@@ -200,7 +200,11 @@
 /turf/closed/indestructible/reinforced,
 /area/virtual_domain/ancient_milsim/snpc_reward)
 "gb" = (
-/obj/item/keycard,
+/obj/item/keycard{
+	name = "military keycard";
+	desc = "Карта доступа к хранилищу наград.";
+	puzzle_id = "milsim_reward"
+	},
 /turf/open/floor/plasteel/dark,
 /area/virtual_domain/ancient_milsim/loot_camp)
 "go" = (
@@ -443,7 +447,7 @@
 /turf/open/floor/plasteel,
 /area/virtual_domain/ancient_milsim/snpc_cafe)
 "lE" = (
-/turf/template_noop,
+/turf/open/indestructible/bitrunning_transport,
 /area/virtual_domain/safehouse)
 "lG" = (
 /obj/effect/landmark/bitrunning/mob_segment,
@@ -479,7 +483,7 @@
 /turf/open/floor/plasteel/dark,
 /area/virtual_domain/ancient_milsim/carrier)
 "nu" = (
-/turf/template_noop,
+/turf/closed/indestructible/binary,
 /area/template_noop)
 "nw" = (
 /obj/effect/spawner/lootdrop/trashbin,
@@ -684,8 +688,8 @@
 "ss" = (
 /obj/machinery/light/floor,
 /obj/structure/table,
-/obj/item/ammo_box/a762x39/ap,
-/obj/item/ammo_box/a762x39/ap,
+/obj/item/ammo_box/a357,
+/obj/item/ammo_box/a357,
 /turf/open/floor/plasteel/dark,
 /area/virtual_domain/ancient_milsim/loot_camp)
 "sG" = (
@@ -905,7 +909,7 @@
 /area/virtual_domain/ancient_milsim/snpc_hallway)
 "ws" = (
 /obj/effect/baseturf_helper/virtual_domain,
-/turf/template_noop,
+/turf/open/indestructible/bitrunning_transport,
 /area/virtual_domain/safehouse)
 "wv" = (
 /obj/item/tape/ruins/ancient_milsim/devlog_three,
@@ -1003,7 +1007,9 @@
 /turf/open/floor/plasteel,
 /area/virtual_domain/ancient_milsim/snpc_garage)
 "zp" = (
-/obj/machinery/door/airlock/public/glass,
+/obj/machinery/door/keycard{
+	puzzle_id = "milsim_reward"
+	},
 /turf/open/floor/plasteel,
 /area/virtual_domain/ancient_milsim/snpc_reward)
 "zx" = (
@@ -1476,7 +1482,7 @@
 /obj/modular_map_root/safehouse{
 	key = "ancient_milsim"
 	},
-/turf/template_noop,
+/turf/open/indestructible/bitrunning_transport,
 /area/virtual_domain/safehouse)
 "JZ" = (
 /obj/effect/spawner/random/contraband/grenades/dangerous,
@@ -1788,7 +1794,7 @@
 /area/virtual_domain/ancient_milsim/snpc_bar)
 "RP" = (
 /obj/effect/mapping_helpers,
-/obj/vehicle/sealed/mecha/working/ripley,
+/obj/vehicle/sealed/mecha/combat/gygax,
 /turf/open/floor/plasteel/dark,
 /area/virtual_domain/ancient_milsim/carrier)
 "RU" = (
@@ -1990,7 +1996,7 @@
 /turf/open/floor/plating,
 /area/virtual_domain/ancient_milsim/maintenance)
 "Xh" = (
-/obj/item/ammo_box/a762x39/ap,
+/obj/item/ammo_box/a357,
 /turf/open/floor/plating,
 /area/virtual_domain/ancient_milsim/maintenance)
 "XK" = (

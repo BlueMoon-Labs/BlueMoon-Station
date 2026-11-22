@@ -147,10 +147,10 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 		var/turf/current = queue[1]
 		queue.Cut(1, 2)
 		var/area/current_area = get_area(current)
-		if(isnull(current_area) || !(current_area.area_flags & VIRTUAL_SAFE_AREA))
-			if(current_area && (current_area.area_flags & VIRTUAL_AREA))
-				return current
+		if(isnull(current_area) || !(current_area.area_flags & VIRTUAL_AREA))
 			continue
+		if(!(current_area.area_flags & VIRTUAL_SAFE_AREA) && !current.is_blocked_turf(TRUE))
+			return current
 		if(get_dist(start, current) >= max_distance)
 			continue
 		for(var/direction in GLOB.alldirs)
@@ -430,11 +430,18 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 	if(!ishuman(player))
 		return
 
-	var/obj/item/card/id/id_card = player.wear_id
+	var/obj/item/id_slot = player.wear_id
+	var/obj/item/card/id/id_card = id_slot?.GetID()
+	if(isnull(id_card) && istype(id_slot, /obj/item/card/id))
+		id_card = id_slot
 	if(isnull(id_card))
 		id_card = new /obj/item/card/id/advanced(player)
-		// Обходим проверку "нужен комбинезон": у части виртуальных ролей его может не быть.
-		player.equip_to_slot(id_card, ITEM_SLOT_ID)
+		if(id_slot)
+			if(!id_slot.InsertID(id_card))
+				player.put_in_hands(id_card)
+		else
+			// Обходим проверку "нужен комбинезон": у части виртуальных ролей его может не быть.
+			player.equip_to_slot(id_card, ITEM_SLOT_ID)
 
 	if(isnull(id_card))
 		return
@@ -443,6 +450,14 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 	id_card.registered_name = player.real_name
 	id_card.virtual_ghost_owned = TRUE
 	id_card.update_label()
+	start_virtual_ambience(player)
+
+/proc/start_virtual_ambience(mob/living/player)
+	if(!isliving(player) || !player.client)
+		return
+	if(!(player.client.prefs?.toggles & SOUND_AMBIENCE))
+		return
+	addtimer(CALLBACK(player.client, TYPE_PROC_REF(/client, update_ambience)), 2)
 
 // Ghost-роли виртуальных доменов на старой базе используют mob_spawn.
 /obj/effect/mob_spawn/human/virtual_domain

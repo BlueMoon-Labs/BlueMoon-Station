@@ -2800,12 +2800,11 @@
 	pixel_x = 9;
 	pixel_y = -1
 	},
-/obj/item/disk/tech_disk{
+/obj/item/disk/tech_disk/major{
 	pixel_x = -2;
 	pixel_y = -3
 	},
-/obj/item/disk/design_disk{
-	name = "component design disk";
+/obj/item/disk/tech_disk/major{
 	pixel_y = 6
 	},
 /obj/structure/table/wood,

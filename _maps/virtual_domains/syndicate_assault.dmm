@@ -1025,7 +1025,6 @@
 /turf/open/floor/mineral/plastitanium,
 /area/virtual_domain/protected_space)
 "QG" = (
-/obj/structure/tank_dispenser/oxygen,
 /turf/closed/mineral/random,
 /area/ruin/space/virtual_domain)
 "QX" = (

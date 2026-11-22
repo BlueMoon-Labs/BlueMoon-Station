@@ -38,8 +38,17 @@ SUBSYSTEM_DEF(ambience)
 			if(!(current_area.forced_ambience && (client_old_areas?[client_iterator] != current_area) && prob(5)))
 				continue
 
+		var/list/ambient_tracks = current_area.ambientsounds
+		if(current_area.area_flags & VIRTUAL_AREA)
+			var/datum/component/avatar_connection/avatar_connection = client_mob.GetComponent(/datum/component/avatar_connection)
+			var/obj/machinery/quantum_server/server = avatar_connection?.server_ref?.resolve()
+			var/datum/lazy_template/virtual_domain/domain = server?.generated_domain
+			var/list/domain_tracks = domain?.get_ambient_sounds()
+			if(domain_tracks?.len)
+				ambient_tracks = domain_tracks
+
 		//Run play_ambience() on the client-mob and set a cooldown
-		ambience_listening_clients[client_iterator] = world.time + current_area.play_ambience(client_mob)
+		ambience_listening_clients[client_iterator] = world.time + current_area.play_ambience(client_mob, ambient_tracks?.len ? pick(ambient_tracks) : null)
 
 		//We REALLY don't want runtimes in SSambience
 		if(client_iterator)

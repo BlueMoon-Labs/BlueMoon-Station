@@ -245,7 +245,7 @@
 
 	if(can_generate_tech_disk(grade))
 		SSblackbox.record_feedback("tally", "bitrunning_bepis_rewarded", 1, generated_domain.key)
-		new /obj/item/disk/design_disk(reward_cache)
+		new /obj/item/disk/tech_disk/major(reward_cache)
 		generated_domain.disk_reward_spawned = TRUE
 
 	chosen_forge.start_to_spawn(reward_cache)
@@ -389,6 +389,8 @@
 	if(!length(connections))
 		balloon_alert_to_viewers("отключение домена...")
 		playsound(src, 'sound/machines/terminal_off.ogg', 40, vary = TRUE)
+		points = max(0, points - 1)
+		SStgui.update_uis(src)
 		reset()
 		return
 
@@ -405,6 +407,8 @@
 	if(!do_after(user, 20 SECONDS, src))
 		return
 
+	points = max(0, points - 1)
+	SStgui.update_uis(src)
 	reset()
 
 /obj/machinery/quantum_server/proc/cold_boot_map(map_key, was_random_selection)
@@ -561,12 +565,16 @@
 
 			new /obj/structure/hololadder(tile)
 
+	var/max_ghost_spawners = max(4, generated_domain.mission_max_candidates)
 	for(var/datum/turf_reservation/reservation as anything in generated_domain.reservations)
 		for(var/turf/tile as anything in reservation.reserved_turfs)
 			for(var/obj/effect/mob_spawn/human/virtual_domain/spawner in tile)
 				if(QDELETED(spawner))
 					continue
 				if(!generated_domain.announce_to_ghosts)
+					qdel(spawner)
+					continue
+				if(length(generated_domain.ghost_spawners) >= max_ghost_spawners)
 					qdel(spawner)
 					continue
 				spawner.invisibility = INVISIBILITY_ABSTRACT

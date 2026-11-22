@@ -263,6 +263,34 @@
 /datum/lazy_template/virtual_domain/proc/can_view_reward(scanner_tier, server_points)
 	return difficulty < (scanner_tier + 1) && cost <= server_points + 3
 
+/datum/lazy_template/virtual_domain/proc/get_ambient_sounds()
+	switch(key)
+		if("beach_bar", "island_brawl", "breeze_bay", "pirates")
+			return BEACH
+		if("pipedream")
+			return ENGINEERING
+		if("meta_central", "fredingtonfastingbear")
+			return MAINTENANCE
+		if("syndicate_assault")
+			return HIGHSEC
+		if("ash_drake", "blood_drunk_miner", "colossus", "hierophant", "bubblegum")
+			return MINING
+		if("stairs_and_cliffs", "wendigo")
+			return ICEMOON
+		if("heretic_hunt")
+			return HOLY
+		if("psyker_shuffle", "psyker_zombies", "xeno_nest")
+			return SPOOKY
+		if("abductor_ship", "gondola_asteroid")
+			return SPACE
+		if("vaporwave")
+			return VAPOR_AMBIENCE
+		if("ancient_milsim")
+			return AWAY_MISSION
+		if("clown_planet", "grasslands_hunt", "test_only", "test_only_expensive")
+			return GENERIC
+	return null
+
 /datum/lazy_template/virtual_domain/Destroy(force)
 	QDEL_LIST(ghost_spawners)
 	QDEL_LIST(ghost_mobs)

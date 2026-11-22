@@ -204,7 +204,7 @@ GLOBAL_LIST_INIT(netpod_outfit_sets, list(
 		if(ishuman(occupant))
 			var/mob/living/carbon/human/leaving_human = occupant
 			leaving_uniform = leaving_human.w_uniform
-			if(istype(leaving_uniform) && leaving_human.stat == CONSCIOUS)
+			if(istype(leaving_uniform))
 				leaving_uniform.has_sensor = stored_has_sensor
 				leaving_uniform.sensor_mode = stored_sensor_mode
 		stored_has_sensor = null

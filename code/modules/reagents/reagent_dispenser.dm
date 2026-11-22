@@ -219,6 +219,13 @@
 /obj/structure/reagent_dispensers/plumbed/storage/ComponentInitialize()
 	AddComponent(/datum/component/plumbing/tank)
 
+/obj/structure/reagent_dispensers/blackpowder
+	name = "gunpowder keg"
+	desc = "Деревянная бочка, доверху набитая чёрным порохом. Держите подальше от открытого огня."
+	icon_state = "barrel"
+	reagent_id = /datum/reagent/blackpowder
+	tank_volume = 500
+
 //////////////
 //Fuel Tanks//
 //////////////

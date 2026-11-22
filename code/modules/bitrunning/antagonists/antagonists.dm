@@ -75,14 +75,14 @@
 
 	var/mob/living/carbon/human/player = owner.current
 
-	var/obj/item/card/id/outfit_id = player.wear_id
+	grant_virtual_domain_access(player)
+	var/obj/item/card/id/outfit_id = player.wear_id?.GetID()
 	if(isnull(outfit_id))
 		return
 
 	outfit_id.registered_account = new /datum/bank_account(player.name)
 	outfit_id.registered_name = player.name
 	outfit_id.update_label()
-	grant_virtual_domain_access(player)
 
 /datum/antagonist/bitrunning_glitch/cyber_police
 	name = ROLE_CYBER_POLICE

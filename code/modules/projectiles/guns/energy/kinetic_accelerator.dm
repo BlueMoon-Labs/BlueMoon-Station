@@ -234,7 +234,12 @@
 		return
 	if(kinetic_gun)
 		var/list/mods = kinetic_gun.modkits
+		for(var/obj/item/borg/upgrade/modkit/human_passthrough/passthrough in mods)
+			if(passthrough.projectile_prehit(src, target, kinetic_gun) == PROJECTILE_PIERCE_PHASE)
+				return PROJECTILE_PIERCE_PHASE
 		for(var/obj/item/borg/upgrade/modkit/modkit in mods)
+			if(istype(modkit, /obj/item/borg/upgrade/modkit/human_passthrough))
+				continue
 			if(modkit.projectile_prehit(src, target, kinetic_gun) == PROJECTILE_PIERCE_PHASE)
 				return PROJECTILE_PIERCE_PHASE
 	if(ignores_pressure_penalty)
@@ -367,8 +372,9 @@
 // Позволяет пробивать союзников, не нанося им урон.
 /obj/item/borg/upgrade/modkit/human_passthrough
 	name = "human passthrough"
-	desc = "Causes kinetic accelerator shots to pass through humans, good for preventing friendly fire."
-	denied_type = /obj/item/borg/upgrade/modkit/minebot_passthrough
+	desc = "Позволяет снарядам кинетического ускорителя проходить сквозь людей, не нанося им урона."
+	denied_type = /obj/item/borg/upgrade/modkit/human_passthrough
+	incompatible_modkits = list(/obj/item/borg/upgrade/modkit/minebot_passthrough)
 	cost = 0
 
 /obj/item/borg/upgrade/modkit/human_passthrough/projectile_prehit(obj/item/projectile/kinetic/K, atom/target, obj/item/gun/energy/kinetic_accelerator/KA)
@@ -495,8 +501,9 @@
 //Minebot passthrough
 /obj/item/borg/upgrade/modkit/minebot_passthrough
 	name = "minebot passthrough"
-	desc = "Causes kinetic accelerator shots to pass through minebots."
+	desc = "Позволяет снарядам кинетического ускорителя проходить сквозь шахтёрских дронов."
 	denied_type = /obj/item/borg/upgrade/modkit/minebot_passthrough // If you have something cost zero, you can keep adding forever, why
+	incompatible_modkits = list(/obj/item/borg/upgrade/modkit/human_passthrough)
 	cost = 0
 
 //Tendril-unique modules
