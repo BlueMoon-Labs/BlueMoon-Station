@@ -69,6 +69,7 @@
 	playsound(vend, vend.vending_sound, 50, TRUE, extrarange = -3)
 	var/obj/item/vended_item = new redeem_path(vend.loc)
 	SSblackbox.record_feedback("nested tally", "vending_machine_voucher_usage", 1, list("[vend.type]", "[redeem_path]"))
+	qdel(src)
 
 	if(counterfeit)
 		var/datum/data/record/target_records = GLOB.data_core.security_by_name[user.name]
@@ -78,4 +79,3 @@
 		user.sec_hud_set_security_status()
 		var/crime = GLOB.data_core.createCrimeEntry(204, "Применение фальсифицированного воучера для приобретения [vended_item.name]", "AUTO", STATION_TIME_TIMESTAMP("hh:mm:ss", world.time), TRUE)
 		GLOB.data_core.addMinorCrime(target_records.fields["id"], crime)
-	qdel(src)
