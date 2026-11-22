@@ -175,6 +175,7 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 				LAZYADD(lockers_by_buyer[SO.gift_to || D], SO)
 			if(!SO.prepaid && !SO.paying_account)
 				econ_budget_goal_bought(D, SO.pack)
+				SO.cargo_paid = base_cost
 
 
 		if(SO.paying_account)
