@@ -16,10 +16,10 @@
 	lifespan = 0.45 SECONDS
 	fade = 0.2 SECONDS
 	fadein = 0.02 SECONDS
-	scale = generator("num", 0.15, 0.3)
+	scale = generator("num", 0.6, 1.0)
 	position = generator("box", list(-4, -4, 0), list(4, 4, 0))
 	drift = generator("box", list(-0.3, -0.3, 0), list(0.3, 0.3, 0))
-	gravity = list(0, 0.1, 0)
+	gravity = list(0, 0.15, 0)
 	color = "#FFCF7A"
 
 /// Open enough to spawn into — ignore dense contents (chairs, people). Closed turfs blocked.
@@ -45,7 +45,7 @@
 	return list(base, 0, clamp(impact_px + BOUNCE_SPARK_CENTER_OFFSET, 4, BOUNCE_SPARK_TILE_X - 4), clamp(impact_py + BOUNCE_SPARK_CENTER_OFFSET, 4, BOUNCE_SPARK_TILE_Y - 4))
 
 /// Pick an open turf next to a wall for the spark spray.
-/proc/pick_bounce_spark_wall_exit(turf/wall, impact_angle, impact_px, impact_py)
+/proc/pick_bounce_spark_wall_exit(/turf/closed/wall/wall, impact_angle, impact_px, impact_py)
 	if(!wall)
 		return null
 
@@ -125,7 +125,7 @@
 /// inside a short window into a single spray.
 GLOBAL_LIST_INIT(bounce_spark_throttle, list())
 
-/proc/spawn_metal_wall_bullet_sparks(turf/wall, impact_px, impact_py, impact_angle)
+/proc/spawn_metal_wall_bullet_sparks(/turf/closed/wall/wall, impact_px, impact_py, impact_angle)
 	if(!wall)
 		return
 
@@ -134,7 +134,7 @@ GLOBAL_LIST_INIT(bounce_spark_throttle, list())
 		return
 	GLOB.bounce_spark_throttle[wall] = world.realtime
 	if(length(GLOB.bounce_spark_throttle) > 500)
-		GLOB.bounce_spark_throttle.Cut()
+		GLOB.bounce_spark_throttle = list()
 
 	var/list/resolved = resolve_bounce_spark_spawn(wall, impact_angle, impact_px, impact_py)
 	if(!resolved)
@@ -146,16 +146,9 @@ GLOBAL_LIST_INIT(bounce_spark_throttle, list())
 	var/py = resolved[4]
 	var/base_angle = out_dir ? dir2angle(out_dir) : SIMPLIFY_DEGREES(impact_angle + 180)
 
-	var/obj/effect/bullet_spark_burst/burst = new(spawn_turf, base_angle, px, py)
+	var/obj/effect/bullet_spark_burst/burst = new /obj/effect/bullet_spark_burst(spawn_turf, base_angle, px, py)
 	if(!burst)
 		return
-
-	// Dust/smoke puff where the round struck, drifting up off the wall.
-	var/obj/effect/firing_smoke/hit_smoke = new /obj/effect/firing_smoke(spawn_turf)
-	if(hit_smoke)
-		hit_smoke.pixel_x = px - BOUNCE_SPARK_CENTER_OFFSET
-		hit_smoke.pixel_y = py - BOUNCE_SPARK_CENTER_OFFSET
-		hit_smoke.particles.velocity = list(rand(-15, 15), rand(-30, -10), 0)
 
 	// Same incidental heat the old atom sparks applied on their first spark.
 	spawn_turf.hotspot_expose(1000, 100)
@@ -184,13 +177,13 @@ GLOBAL_LIST_INIT(bounce_spark_throttle, list())
 		// Muzzle blast: a short scatter of powder flecks, kept dim so it
 		// doesn't read as a second flash.
 		particles.count = particles.spawning = rand(10, 16)
-		particles.scale = generator("num", 0.1, 0.2)
+		particles.scale = generator("num", 0.4, 0.7)
 		particles.lifespan = 0.35 SECONDS
 		particles.fade = 0.18 SECONDS
-		p_speed = rand(50, 75) / 10
+		p_speed = rand(60, 90) / 10
 	else
-		particles.count = particles.spawning = rand(8, 12)
-		p_speed = rand(30, 50) / 10
+		particles.count = particles.spawning = rand(9, 13)
+		p_speed = rand(70, 110) / 10
 	// dir2angle(): 0 = north, clockwise; screen y grows downward.
 	var/vx = sin(launch_angle) * p_speed
 	var/vy = -cos(launch_angle) * p_speed

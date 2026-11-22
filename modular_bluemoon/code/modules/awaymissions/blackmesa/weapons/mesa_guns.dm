@@ -19,7 +19,6 @@
 	mesa_muzzle_flash = TRUE
 	gunlight_state = "mini-light"
 	can_flashlight = 0
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/automatic/pistol/hl9mm/Initialize(mapload)
 	gun_light = new /obj/item/flashlight/seclite(src)
@@ -101,7 +100,6 @@
 	slot_flags = ITEM_SLOT_BACK
 	automatic_burst_overlay = FALSE
 	actions_types = list()
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/automatic/sniper_rifle/m4oa1/update_icon_state()
 	if(magazine)
@@ -138,7 +136,6 @@
 	slot_flags = ITEM_SLOT_BACK
 	automatic_burst_overlay = FALSE
 	actions_types = list()
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/automatic/sniper_rifle/javelin_vdd_svz/update_icon_state()
 	if(magazine)
@@ -243,7 +240,6 @@
 	fire_delay = 0.5 ///Это пиздец!
 	can_bayonet = FALSE
 	automatic_burst_overlay = FALSE
-	mesa_casing_physics = TRUE
 	var/progressive_spread_enabled = TRUE
 	var/progressive_spread_step = 1.5
 	var/progressive_spread_max = 36
@@ -464,7 +460,6 @@
 	projectile_simple_mob_damage_multiplier = 2
 	automatic_burst_overlay = FALSE
 	actions_types = list()
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/automatic/shotgun/aa12/hl/update_icon_state()
 	icon_state = magazine ? "aa12" : "aa12_mag"
@@ -493,7 +488,6 @@
 	tactical_reload = FALSE
 	automatic_burst_overlay = FALSE
 	actions_types = list()
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/automatic/shotgun/pancor/Initialize(mapload)
 	. = ..()
@@ -562,7 +556,6 @@
 	mesa_shotgun_bonus = TRUE
 	mesa_melee_knockback = TRUE
 	mesa_damage_bonus = 1.2
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/shotgun/m870/attack(mob/living/M, mob/user)
 	. = ..()
@@ -659,7 +652,6 @@
 	mesa_shotgun_bonus = TRUE
 	mesa_melee_knockback = TRUE
 	mesa_damage_bonus = 1.2
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/shotgun/spas/attack(mob/living/M, mob/user)
 	. = ..()
@@ -755,7 +747,6 @@
 	mesa_shotgun_bonus = TRUE
 	mesa_melee_knockback = TRUE
 	mesa_damage_bonus = 1.2
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/shotgun/m500/attack(mob/living/M, mob/user)
 	. = ..()
@@ -898,7 +889,6 @@
 		"Default" = list("icon_state" = "m16hl"),
 		"Alternative" = list("icon_state" = "m16hl_alt")
 	)
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/automatic/m16a4/mesa/Initialize(mapload)
 	gun_light = new /obj/item/flashlight/seclite(src)
@@ -984,7 +974,6 @@
 	weapon_weight = WEAPON_LIGHT
 	mag_type = /obj/item/ammo_box/magazine/mp7
 	projectile_simple_mob_damage_multiplier = 0.8
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/automatic/mp7/update_icon_state()
 	icon_state = "[initial(icon_state)][chambered ? "" : ""]"
@@ -1055,7 +1044,6 @@
 	weapon_weight = WEAPON_HEAVY
 	w_class = WEIGHT_CLASS_BULKY
 	mag_type = /obj/item/ammo_box/magazine/scar
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/automatic/scar/update_icon_state()
 	icon_state = "[initial(icon_state)][chambered ? "" : ""]"
@@ -1112,7 +1100,6 @@
 	weapon_weight = WEAPON_HEAVY
 	w_class = WEIGHT_CLASS_BULKY
 	mag_type = /obj/item/ammo_box/magazine/p90
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/automatic/p90/update_icon_state()
 	icon_state = "[initial(icon_state)][chambered ? "" : ""]"
@@ -1161,7 +1148,6 @@
 	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/rev357/taurus
 	fire_delay = 3
-	mesa_casing_physics = TRUE
 
 /obj/item/ammo_box/magazine/internal/cylinder/rev357/taurus
 	max_ammo = 4
@@ -1416,7 +1402,6 @@
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/hlrsh12
 	recoil = 6
 	fire_delay = 4
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/revolver/hlrsh12/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
 	var/result = ..(user, pointblank, pbtarget, message, stam_cost)
@@ -1473,7 +1458,6 @@
 	fire_delay = 6
 	can_flashlight = 0
 	unique_reskin = FALSE
-	mesa_casing_physics = TRUE
 
 /obj/item/gun/ballistic/automatic/pistol/deagle/hl/update_overlays()
 	. = ..()
@@ -1491,7 +1475,6 @@
 	icon_state = "hl357"
 	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/rev357
-	mesa_casing_physics = TRUE
 /obj/item/ammo_box/magazine/internal/cylinder/rev357
 	name = "revolver cylinder (.357)"
 	desc = "A revolver cylinder chambered for .357 Magnum rounds."
@@ -1526,7 +1509,6 @@
 	var/cover_open = FALSE
 	slowdown = 1.0
 	item_flags = SLOWS_WHILE_IN_HAND
-	mesa_casing_physics = TRUE
 
 	var/bipod_deployed = FALSE
 	var/heat_accumulated = 0
@@ -1898,208 +1880,3 @@ var/mob/living/bipod_signal_user
 	if(pierce_limit && pierces < pierce_limit && istype(target, /mob/living/simple_animal/hostile/infected))
 		return PROJECTILE_PIERCE_HIT
 	return ..()
-
-// ============================================================================
-// Realistic casing ejection - Black Mesa exclusive
-// ============================================================================
-
-/// Casings currently in mesa_eject() flight, driven by one shared ticker
-/// (mesa_casing_tick) instead of a per-casing timer chain.
-GLOBAL_LIST_EMPTY(mesa_casing_flight)
-/// TRUE while the shared mesa_casing_tick timer is scheduled.
-GLOBAL_VAR_INIT(mesa_casing_tick_active, FALSE)
-
-/obj/item/ammo_casing
-	/// TRUE while a mesa_eject() flight is in progress; cleared on landing so
-	/// any stray scheduled steps can't resume the flight afterwards.
-	var/mesa_flying = FALSE
-	/// Degrees of transform rotation applied per flight step - the brass tumble.
-	var/mesa_spin_dir = 0
-	/// Physics state mirroring white-master's movable_physics: horizontal
-	/// speed (px/step), vertical pixel_z speed, horizontal friction, launch
-	/// angle in dir2angle() convention (0 = north, clockwise) and whether the
-	/// shell is still hot for the landing sizzle.
-	var/mesa_hvel = 0.0
-	var/mesa_vvel = 0.0
-	var/mesa_friction = 0.0
-	var/mesa_angle = 0
-	/// Horizontal distance already covered by the shell, in pixels. The eject
-	/// is capped at roughly one tile so long arcs can't form.
-	var/mesa_travel = 0.0
-	var/mesa_max_travel = 34.0
-	var/mesa_still_warm = FALSE
-// A spent shell launches off the shooter on a ballistic arc - the same model
-// white-master's movable_physics uses (constant horizontal speed bleeding off
-// via friction, gravity on pixel_z, turf crossing at the tile border, damped
-// floor/wall bounces) - but keeps the Mesa tumble and landing effects.
-// The flight is a self-rescheduling addtimer loop at the world tick rate
-// (~0.05s), so burst fire stays cheap: a handful of one-shot timers.
-
-/// Entry point, called instead of bounce_away() for guns with
-/// `mesa_casing_physics` set. `shooter` provides the facing direction;
-/// the shell always leaves from its right side.
-/obj/item/ammo_casing/proc/mesa_eject(mob/living/shooter, still_warm = FALSE)
-	update_icon()
-	mesa_spin_dir = pick(-1, 1) * rand(50, 110)
-	mesa_still_warm = still_warm
-	var/turf/T = get_turf(src)
-	if(!T)
-		bounce_away(still_warm)
-		return
-	//Prefer the shooter's right side. If it is walled in, fall back to the
-	//left and then behind (like white-master's backward eject) so the shell
-	//does not pop from under the player.
-	var/base_dirs = list(dir)
-	if(shooter)
-		base_dirs = list(turn(shooter.dir, -90), turn(base_dirs[1], 180), turn(shooter.dir, 180))
-	else
-		base_dirs += turn(base_dirs[1], 180)
-	var/eject_angle = dir2angle(base_dirs[1]) + rand(-20, 20)
-	for(var/i in 1 to length(base_dirs))
-		var/candidate_angle = dir2angle(base_dirs[i]) + rand(-20, 20)
-		if(mesa_dir_open(T, angle2dir(candidate_angle)))
-			eject_angle = candidate_angle
-			break
-	setDir(angle2dir(eject_angle))
-	var/matrix/M = matrix(transform)
-	M.Turn(rand(-170, 170))
-	transform = M
-	//The shell stays on the shooter's turf: a small random offset from the
-	//tile centre is plenty - the ballistic arc and tumble do the rest.
-	pixel_x = rand(-6, 6)
-	pixel_y = rand(-6, 6)
-	pixel_z = 8 //launch pop, same as white-master
-	mesa_angle = eject_angle
-	mesa_travel = 0
-	mesa_hvel = rand(700, 850) / 100
-	mesa_vvel = rand(400, 500) / 100
-	mesa_friction = rand(20, 24) / 100
-	mesa_flying = TRUE
-	if(!(src in GLOB.mesa_casing_flight))
-		GLOB.mesa_casing_flight += src
-	if(!GLOB.mesa_casing_tick_active)
-	{
-		GLOB.mesa_casing_tick_active = TRUE
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mesa_casing_tick)), 0.05 SECONDS)
-	}
-
-/// TRUE if the turf one step in `direction` can accept the shell - not a
-/// wall, not density-flagged, and free of dense non-mob objects.
-/obj/item/ammo_casing/proc/mesa_dir_open(var/turf/T, var/direction)
-	var/turf/next = get_step(T, direction)
-	if(!isturf(next) || next.density)
-		return FALSE
-	for(var/atom/movable/A in next)
-		if(A.density && !ismob(A))
-			return FALSE
-	return TRUE
-
-/// One physics step, ported from white-master's movable_physics process():
-/// constant horizontal velocity with friction, pixel_z gravity arc, turf
-/// crossing at the tile border, wall ricochet and floor bounce. The brass
-/// tumble and the landing effects stay Mesa-exclusive.
-/obj/item/ammo_casing/proc/mesa_step()
-	if(QDELETED(src) || !mesa_flying)
-		return
-	if(!isturf(loc))
-		mesa_flying = FALSE
-		pixel_z = 0
-		return
-	if(mesa_hvel <= 0 && pixel_z <= 0)
-		mesa_land()
-		return
-	var/matrix/rot = matrix(transform)
-	rot.Turn(mesa_spin_dir * 0.5)
-	transform = rot
-	//dir2angle() convention: 0 = north, clockwise; unit vector is (sin, -cos).
-	pixel_x += mesa_hvel * sin(mesa_angle)
-	pixel_y += mesa_hvel * -cos(mesa_angle)
-	mesa_travel += mesa_hvel
-	mesa_hvel = max(0, mesa_hvel - mesa_friction)
-	if(mesa_travel >= mesa_max_travel)
-		mesa_hvel = 0
-	pixel_z = max(0, pixel_z + mesa_vvel)
-	if(pixel_z > 0)
-		mesa_vvel -= 9.80665 * 0.05
-	if(pixel_z <= 0 && mesa_vvel != 0)
-		mesa_z_bounce()
-	//Turf borders act as walls: the shell hops and tumbles but never leaves
-	//the shooter's tile, so it always drops back under the player.
-	if(pixel_x > 16)
-		pixel_x = 16
-		mesa_wall_bounce(TRUE)
-		return
-	if(pixel_x < -16)
-		pixel_x = -16
-		mesa_wall_bounce(TRUE)
-		return
-	if(pixel_y > 16)
-		pixel_y = 16
-		mesa_wall_bounce(FALSE)
-		return
-	if(pixel_y < -16)
-		pixel_y = -16
-		mesa_wall_bounce(FALSE)
-		return
-
-/// Reflects the launch angle off a wall impact. `horizontal` TRUE for
-/// east/west walls, FALSE for north/south; a small scatter keeps it organic.
-/obj/item/ammo_casing/proc/mesa_wall_bounce(var/horizontal)
-	if(horizontal)
-		mesa_angle = -mesa_angle
-	else
-		mesa_angle = 180 - mesa_angle
-	mesa_angle += rand(-15, 15)
-
-/// Floor contact: damped bounce where part of the vertical energy converts
-/// back into horizontal speed, same as white-master's z_floor_bounce().
-/obj/item/ammo_casing/proc/mesa_z_bounce()
-	mesa_angle += rand(-3000, 3000) / 100
-	pixel_z = 0
-	if(mesa_travel < mesa_max_travel)
-		mesa_hvel = max(0, mesa_hvel + mesa_vvel * -0.8)
-	mesa_vvel = max(0, mesa_vvel * -0.8 - 0.2)
-
-/// Final ground contact once the arc dies out: impact sound, one last tumble
-/// and the settle timer.
-/obj/item/ammo_casing/proc/mesa_land()
-	if(QDELETED(src) || !mesa_flying || !isturf(loc))
-		return
-	mesa_flying = FALSE
-	pixel_z = 0
-	var/turf/T = get_turf(src)
-	if(mesa_still_warm && T && (T.turf_flags & TURF_BULLET_SIZZLE))
-		playsound(src, 'sound/items/welder.ogg', 20, 1)
-	else if(T && T.bullet_bounce_sound)
-		playsound(src, T.bullet_bounce_sound, 60, 1)
-	var/matrix/rot = matrix(transform)
-	rot.Turn(mesa_spin_dir)
-	transform = rot
-	animate(src, pixel_y = -5, time = 2)
-	addtimer(CALLBACK(src, PROC_REF(mesa_settle)), 2, TIMER_DELETE_ME)
-
-/// After the bounce the shell drops flat and stops animating.
-/obj/item/ammo_casing/proc/mesa_settle()
-	if(QDELETED(src) || !isturf(loc))
-		return
-	animate(src, pixel_y = rand(-2, 2), time = 1)
-
-/// Shared ticker for every Mesa casing in flight. One timer walks the
-/// flight list each world tick instead of each casing chaining its own
-/// addtimer, so burst fire no longer allocates a timer + callback per step.
-/// Iterates backwards so landed/picked-up casings can be cut safely; new
-/// ejects append at the tail and are picked up next tick.
-/proc/mesa_casing_tick()
-	var/list/casings = GLOB.mesa_casing_flight
-	for(var/i = casings.len; i >= 1; i--)
-		var/obj/item/ammo_casing/casing = casings[i]
-		if(QDELETED(casing) || !casing.mesa_flying)
-			casings -= casing
-			continue
-		casing.mesa_step()
-		if(QDELETED(casing) || !casing.mesa_flying)
-			casings -= casing
-	if(length(casings))
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mesa_casing_tick)), 0.05 SECONDS)
-	else
-		GLOB.mesa_casing_tick_active = FALSE

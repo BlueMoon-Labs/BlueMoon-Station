@@ -67,18 +67,7 @@
 	if(istype(AC)) //there's a chambered round
 		if(casing_ejector)
 			AC.forceMove(drop_location()) //Eject casing onto ground.
-			if(mesa_casing_physics)
-				AC.mesa_eject(user, TRUE)
-			else
-				AC.bounce_away(TRUE)
-			chambered = null
-		else if(mesa_casing_physics && !AC.BB && istype(magazine, /obj/item/ammo_box/magazine/internal/cylinder))
-			//Spent revolver shell: pull it out of the cylinder and kick it out.
-			var/cyl_index = magazine.stored_ammo.Find(AC)
-			if(cyl_index)
-				magazine.stored_ammo[cyl_index] = null
-				AC.forceMove(drop_location())
-				AC.mesa_eject(user, FALSE)
+			AC.bounce_away(TRUE)
 			chambered = null
 		else if(empty_chamber)
 			chambered = null
@@ -188,10 +177,7 @@
 		to_chat(user, "<span class='notice'>You pull the magazine out of \the [src].</span>")
 	else if(chambered)
 		AC.forceMove(drop_location())
-		if(mesa_casing_physics)
-			AC.mesa_eject(user, FALSE)
-		else
-			AC.bounce_away()
+		AC.bounce_away()
 		chambered = null
 		to_chat(user, "<span class='notice'>You unload the round from \the [src]'s chamber.</span>")
 		playsound(src, unlock_sound, 70, 1)

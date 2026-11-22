@@ -9,15 +9,15 @@
 /particles/firing_smoke
 	icon = 'icons/effects/particles/smoke.dmi'
 	icon_state = list("smoke_1" = 1, "smoke_2" = 1, "smoke_3" = 2)
-	width = 500
-	height = 500
+	width = 96
+	height = 96
 	count = 5
 	spawning = 15
 	lifespan = 0.5 SECONDS
 	fade = 2.4 SECONDS
 	grow = 0.12
 	drift = generator("circle", 8, 8)
-	scale = generator("num", 0.45, 0.7)
+	scale = generator("num", 0.2, 0.35)
 	spin = generator("num", -20, 20)
 	velocity = list(50, 0, 0)
 	friction = generator("num", 0.3, 0.6)
