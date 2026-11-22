@@ -208,16 +208,19 @@ describe('speechOnly for AI messages', () => {
   // robot_talk в code/modules/mob/living/silicon/say.dm, говорит ИИ
   const BINARY_AI = '<span class="binarysay"><span class="binarysay">Robotic'
     + ' Talk,</span> <font size="3"><b>ИИ Ваня</b></font> <font size="3">'
-    + '<span class="command"><b>states, "Ваня на связи"</b></span></font>'
+    + '<span class="command"><b>states, "<span class="robot speech">Ваня на связи'
+    + '</span>"</b></span></font>'
     + '</span>';
   // То же, говорит киборг
   const BINARY_BORG = '<span class="binarysay"><span class="binarysay">Robotic'
     + ' Talk,</span> <span class="name">Ваня</span>'
-    + ' <span class="message">states, "Ваня тут"</span></span>';
+    + ' <span class="message">states, "<span class="robot speech">Ваня тут</span>"'
+    + '</span></span>';
   // relay_speech и relay_emote в code/modules/mob/living/silicon/ai/ai.dm
   const RELAYED_SPEECH = '<i><span class="game say">Relayed Speech: '
     + '<span class="name"><a href="#">Ваня (Инженер)</a> </span>'
-    + '<span class="message">говорит, "Ваня тут"</span></span></i>';
+    + '<span class="message">говорит, "<span class="speech">Ваня тут</span>"'
+    + '</span></span></i>';
   const RELAYED_EMOTE = '<i><span class="game say relayed_emote">Relayed'
     + ' Emote: <span class="name"><a href="#">Ваня (Инженер)</a> </span>'
     + '<span class="message">машет Ване.</span></span></i>';
@@ -398,5 +401,41 @@ describe('line breaks', () => {
       + '</font><br>Шаттл прибыл</span>';
     expect(render(html, [group({ highlightText: 'Внимание! Шаттл' })]).result)
       .toBeNull();
+  });
+});
+describe('speechOnly: only the reply itself', () => {
+  // compose_message + say_quote: глагол речи и действие лежат в span.message
+  // голым текстом, сама реплика - span.speech (attach_spans)
+  const say = message => '<span class="game say"><span class="name">Анна'
+    + '</span> <span class="message">' + message + '</span></span>';
+  const settings = [group({ highlightText: 'говорит, машет, Ване, Ваня',
+    matchWord: true, speechOnly: true })];
+
+  test('the say verb is not speech', () => {
+    expect(render(say('говорит, "<span class="speech">Ваня, привет</span>"'),
+      settings).words).toEqual(['Ваня']);
+  });
+
+  test('a "!" action is not speech', () => {
+    // "!машет рукой Ване": attach_spans пуст, say_mod вернул действие
+    expect(render(say('машет рукой Ване'), settings).result).toBeNull();
+  });
+
+  test('a "*" custom verb is not speech, the reply after it is', () => {
+    // "машет*Привет, Ваня"
+    expect(render(say('машет, "<span class="speech">Привет, Ваня</span>"'),
+      settings).words).toEqual(['Ваня']);
+  });
+
+  test('history without the speech class: only the inner span', () => {
+    expect(render(say('говорит, "<span class="">Ваня, привет</span>"'),
+      settings).words).toEqual(['Ваня']);
+    expect(render(say('машет рукой Ване'), settings).result).toBeNull();
+  });
+
+  test('without speechOnly the verb and action are highlighted too', () => {
+    expect(render(say('машет рукой Ване'), [group({
+      highlightText: 'машет, Ване', matchWord: true })]).words)
+      .toEqual(['машет', 'Ване']);
   });
 });

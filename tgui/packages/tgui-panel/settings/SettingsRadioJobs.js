@@ -6,9 +6,9 @@ import { getRadioJobRoot } from '../chat/rootAppearance';
 import { getPaneTheme } from '../themes';
 import { updateSettings } from './actions';
 import { createLatestEditor } from './colorCommit';
+import { ColorInput } from './ColorInput';
 import { RADIO_JOB_COLOR_MODES, RADIO_JOB_DEFAULTS, RADIO_JOB_GROUPS, RADIO_JOB_HEAD_MARKS, RADIO_JOB_PALETTE } from './radioJobs';
 import { selectSettings } from './selectors';
-import { ColorInput } from './SettingsPanel';
 
 const PALETTE_BY_ID = Object.fromEntries(
   RADIO_JOB_PALETTE.map(entry => [entry.id, entry]));

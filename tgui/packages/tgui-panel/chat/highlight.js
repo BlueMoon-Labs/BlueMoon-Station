@@ -57,10 +57,22 @@ const NOT_SPEECH_CLASSES = ['relayed_emote', 'emote'];
 // Сообщения из истории, пришедшие до класса relayed_emote.
 const RELAYED_EMOTE_PREFIX = 'Relayed Emote';
 
-const SPEECH_TEXT_CLASS = 'message';
+const MESSAGE_CLASS = 'message';
 // В бинарном канале реплика самого ИИ лежит в span.command (robot_talk).
 const BINARY_ROOT_CLASS = 'binarysay';
-const BINARY_TEXT_CLASS = 'command';
+const BINARY_MESSAGE_CLASS = 'command';
+// В span.message кроме реплики лежат глагол речи ("говорит,") и действие
+// через "!" или "*" (say_mod). Саму реплику сервер помечает span.speech
+// (attach_spans, SPAN_SPEECH).
+const SPEECH_CLASS = 'speech';
+
+// Где обход сообщения относительно реплики.
+const OUTSIDE_MESSAGE = 0;
+const IN_MESSAGE = 1;
+// История до класса speech: реплика - span внутри span.message,
+// глагол и действие лежат в нём голым текстом.
+const IN_LEGACY_MESSAGE = 2;
+const IN_SPEECH = 3;
 
 // Не текст сообщения: время слева. Разрывает слово, как перенос строки.
 const SKIP_CLASSES = ['ChatMessage__timestamp', 'Chat__badge'];
@@ -202,8 +214,9 @@ export const collectMessageText = root => {
     pendingBreak = Math.max(pendingBreak, kind);
   };
   // rootClass: '' - корень ещё не найден, NOT_SPEECH_ROOT - внутри эмоции,
-  // иначе класс корня речи; speech - внутри реплики.
-  const walk = (node, rootClass, speech) => {
+  // иначе класс корня речи; place - где обход относительно реплики.
+  const walk = (node, rootClass, place) => {
+    const speech = place === IN_SPEECH;
     for (const child of Array.from(node.childNodes)) {
       if (child.nodeType === Node.TEXT_NODE) {
         const value = child.nodeValue;
@@ -233,7 +246,7 @@ export const collectMessageText = root => {
         : isInline(child) ? NO_BREAK : SOFT_BREAK;
       addBreak(breakKind);
       let childRoot = rootClass;
-      let childSpeech = speech;
+      let childPlace = place;
       if (!rootClass) {
         // Корень решается один раз: внутри эмоции речи нет, вложенное
         // уже не проверяется.
@@ -241,16 +254,24 @@ export const collectMessageText = root => {
           : SPEECH_ROOT_CLASSES
             .find(className => hasClass(child, className)) || '';
       }
-      else if (rootClass !== NOT_SPEECH_ROOT && !speech) {
-        childSpeech = hasClass(child, SPEECH_TEXT_CLASS)
+      // Внутри эмоции (NOT_SPEECH_ROOT) речи нет: place не меняется.
+      else if (rootClass !== NOT_SPEECH_ROOT && place === OUTSIDE_MESSAGE) {
+        if (hasClass(child, MESSAGE_CLASS)
           || (rootClass === BINARY_ROOT_CLASS
-            && hasClass(child, BINARY_TEXT_CLASS));
+            && hasClass(child, BINARY_MESSAGE_CLASS))) {
+          childPlace = child.querySelector('.' + SPEECH_CLASS)
+            ? IN_MESSAGE : IN_LEGACY_MESSAGE;
+        }
       }
-      walk(child, childRoot, childSpeech);
+      else if ((place === IN_MESSAGE && hasClass(child, SPEECH_CLASS))
+        || (place === IN_LEGACY_MESSAGE && child.tagName === 'SPAN')) {
+        childPlace = IN_SPEECH;
+      }
+      walk(child, childRoot, childPlace);
       addBreak(breakKind);
     }
   };
-  walk(root, '', false);
+  walk(root, '', OUTSIDE_MESSAGE);
   return { text, segments };
 };
 

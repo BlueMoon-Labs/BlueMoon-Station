@@ -4,8 +4,8 @@ import { Box, Button, Divider, Flex, Section, TextArea } from 'tgui/components';
 import { rebuildChat } from '../chat/actions';
 import { createHighlightSetting, DEFAULT_HIGHLIGHT_COLOR, HIGHLIGHT_PRESET_COLORS, MAX_HIGHLIGHT_SETTINGS } from '../chat/highlight';
 import { updateSettings } from './actions';
+import { ColorInput } from './ColorInput';
 import { selectSettings } from './selectors';
-import { ColorInput } from './SettingsPanel';
 
 const SPEECH_ONLY_TOOLTIP = 'Подсвечивать только то, что персонажи говорят'
   + ' вслух или по рации. Имя говорящего, эмоции, действия, OOC'

@@ -464,7 +464,9 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	if(customsayverb)
 		input = capitalize(copytext(input, customsayverb + length(input[customsayverb])))
 	if(input)
-		return "[message_spans_start(spans)][input]</span>"
+		// SPAN_SPEECH: копия списка, переданный spans не меняется
+		var/list/speech_spans = spans ? spans | SPAN_SPEECH : list(SPAN_SPEECH)
+		return "[message_spans_start(speech_spans)][input]</span>"
 	else
 		return
 
