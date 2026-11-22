@@ -36,11 +36,10 @@
 	intensity = 10 // защитник, а не угроза: мягкий вклад в гост-пул фонового режима
 	description = "A syndicate specialist arrives to guard the nuclear authentication disk."
 
-/datum/round_event_control/operative/execute_action()
-	// Диск могли переместить между выбором события и началом опроса.
+/datum/round_event_control/operative/pending_cancel_reason()
 	if(!weight)
-		return FALSE
-	return ..()
+		return "вес события обнулился до запуска"
+	return null
 
 /datum/round_event/ghost_role/operative
 	minimum_required = 1

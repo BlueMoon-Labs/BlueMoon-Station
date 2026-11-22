@@ -1798,11 +1798,14 @@ SUBSYSTEM_DEF(director)
 	var/was_guaranteed = pending_guaranteed
 	var/list/retry_candidates = pending_candidates
 	var/detail = selection_detail(fired_action, retry_candidates)
-	var/executed = spend_and_execute(fired_action, was_guaranteed ? "guaranteed" : "beat")
+	var/cancel_reason = fired_action.pending_cancel_reason()
+	var/executed = !cancel_reason && spend_and_execute(fired_action, was_guaranteed ? "guaranteed" : "beat")
 	var/result = was_guaranteed ? DIRECTOR_BEAT_GUARANTEED : DIRECTOR_BEAT_FIRED
+	var/skip_reason
 	if(!executed)
-		result = DIRECTOR_BEAT_FAILED
-		detail = "[execution_failure_detail(fired_action)]; [detail]"
+		result = cancel_reason ? DIRECTOR_BEAT_CANCELLED : DIRECTOR_BEAT_FAILED
+		skip_reason = cancel_reason || execution_failure_detail(fired_action)
+		detail = "[skip_reason]; [detail]"
 	else if(fired_action.director_kind == DIRECTOR_KIND_RULESET)
 		result = DIRECTOR_BEAT_SCHEDULED
 	director_log_beat(fired_signals, fired_action, result, null, detail)
@@ -1810,8 +1813,7 @@ SUBSYSTEM_DEF(director)
 	pending_candidates = null
 	pending_signals = null
 	pending_timer_id = null
-	// Кандидат мог исчезнуть за окно отмены. Не сжигаем весь бит: убираем провалившийся
-	// вариант и даём админам такое же окно отмены для следующего всё ещё готового кандидата.
+	// После отмены или ошибки повторно проверяем остальных кандидатов перед выбором замены.
 	if(!executed && length(retry_candidates))
 		retry_candidates -= fired_action
 		var/datum/director_signals/retry_signals = collect_signals()
@@ -1826,7 +1828,7 @@ SUBSYSTEM_DEF(director)
 			retry_candidates[retry] = current_candidates[retry]
 		if(length(retry_candidates))
 			var/datum/director_action/next_pick = pickweight(retry_candidates)
-			message_admins("DIRECTOR: [fired_action.action_name()] не запустился ([execution_failure_detail(fired_action)]), выбираю замену.")
+			message_admins("DIRECTOR: [fired_action.action_name()] не запустился ([skip_reason]), выбираю замену.")
 			announce_pick(next_pick, retry_candidates, was_guaranteed, retry_signals)
 
 /datum/controller/subsystem/director/Topic(href, href_list)
