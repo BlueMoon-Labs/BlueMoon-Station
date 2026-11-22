@@ -11,6 +11,14 @@
 	TEST_ASSERT(control.enabled != was_enabled, "Ctrl-клик ИИ должен переключить питание турелей")
 	TEST_ASSERT(control.lethal != was_lethal, "Alt-клик ИИ должен переключить летальный режим")
 
+	var/mob/living/silicon/robot/borg = allocate(/mob/living/silicon/robot)
+	var/borg_enabled = control.enabled
+	var/borg_lethal = control.lethal
+	control.BorgCtrlClick(borg)
+	control.BorgAltClick(borg)
+	TEST_ASSERT(control.enabled != borg_enabled, "Ctrl-клик киборга должен переключить питание турелей")
+	TEST_ASSERT(control.lethal != borg_lethal, "Alt-клик киборга должен переключить летальный режим")
+
 /// Турель роя, сломанная уроном, удаляется сама и не трогает свои уже удалённые искры.
 /datum/unit_test/swarmer_turret_break_deletes_cleanly/Run()
 	for(var/i in 1 to 20)

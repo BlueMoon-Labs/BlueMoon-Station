@@ -1207,3 +1207,38 @@
 	TEST_ASSERT_EQUAL(medical.saving_goal_funded, price, "Отмена вернула цели её долив")
 	medical.clear_saving_goal(head)
 	TEST_ASSERT_EQUAL(medical.account.account_balance, 0, "Снятая после отмены цель отдала долитое NT")
+
+/// Отряд ОБР, оплаченный набранной доливом целью, не прилетел: цель возвращается вместе с учётом долива, и без вызова долитое уйдёт NT.
+/datum/unit_test/economy_budget_cap/goal_funding_survives_ert_refund/Run()
+	var/datum/economy_department/cargo/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	var/ert_id
+	for(var/i in 1 to length(GLOB.payed_ert))
+		var/list/candidate = GLOB.payed_ert[i]
+		if(candidate["available"])
+			ert_id = i
+			break
+	TEST_ASSERT(ert_id, "Нет доступного отряда ОБР")
+	var/price = GLOB.payed_ert[ert_id]["price"]
+	econ_test_set_balance(cargo.account, price)
+	cargo.saving_goal_ert = ert_id
+	cargo.saving_goal_set_at = world.time
+	cargo.saving_goal_funded = 500
+	cargo.saving_goal_funding_cap = 500
+	TEST_ASSERT_EQUAL(cargo.saving_goal_amount(), price, "Цель на отряд набрана")
+	TEST_ASSERT(cargo.pay_ert(ert_id), "Отряд не вызван")
+	TEST_ASSERT_EQUAL(cargo.saving_goal_funded, 0, "Вызов отряда закрыл долив")
+	cargo.refund_ert(ert_id, "Тест")
+	TEST_ASSERT_EQUAL(cargo.saving_goal_funded, 500, "Возврат за отряд вернул цели её долив")
+
+/// Долив цели из излишка казны не даёт получателю второй защиты разовых поступлений: её защищает сама цель.
+/datum/unit_test/economy_budget_cap/goal_funding_from_treasury_unshielded/Run()
+	var/datum/economy_department/medical = staff_medical()
+	var/datum/economy_department/command = SSeconomy.get_department(ACCOUNT_CMD)
+	var/datum/supply_pack/pack = cheapest_pack(medical)
+	econ_test_set_balance(medical.account, 0)
+	TEST_ASSERT(medical.set_saving_goal(pack, head_of(ACCESS_CMO)), "Цель не поставлена")
+	var/list/stats = econ_staff_stats()
+	econ_test_set_balance(command.account, command.budget_threshold(stats) + command.owed_to_staff(stats) + round(econ_pack_price(pack)) * 4)
+	command.return_excess(stats)
+	TEST_ASSERT(medical.saving_goal_until, "Излишек казны долил цель")
+	TEST_ASSERT_EQUAL(medical.shielded(), 0, "Долив из казны не защищён второй раз")

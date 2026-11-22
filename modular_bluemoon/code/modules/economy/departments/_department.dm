@@ -167,6 +167,7 @@
 		if(part <= 0 || !SSeconomy.move(account, other.account, part, ECON_BUDGET_TRANSFER, null, "Излишек на цель накопления: [other.name]"))
 			continue
 		restore_shield(account.department_shield_spent)
+		other.drop_shield_entry(part)
 		if(!other.saving_goal_funding_cap)
 			other.saving_goal_funding_cap = other.saving_goal_shortfall() + part
 		other.saving_goal_funded += part
@@ -228,6 +229,15 @@
 /// Разовое поступление не считается излишком budget_cap_grace_ticks тиков.
 /datum/economy_department/proc/add_shield(amount)
 	shield += list(list(amount, SSeconomy.fire_count + SSeconomy.settings.budget_cap_grace_ticks))
+
+/// Снимает последнюю запись защиты на amount: долив цели из казны защищён самой целью, второй защиты ему не нужно.
+/datum/economy_department/proc/drop_shield_entry(amount)
+	var/last = length(shield)
+	if(!last)
+		return
+	var/list/entry = shield[last]
+	if(entry[1] == amount)
+		shield.Cut(last, last + 1)
 
 /// Живая защита, не больше баланса.
 /datum/economy_department/proc/shielded()
@@ -352,6 +362,11 @@
 	saving_goal_cache = null
 	saving_goal_cooldown_until = max(saving_goal_cooldown_until, since + SSeconomy.settings.saving_goal_cooldown_minutes MINUTES)
 
+/// Истёкшая, но ещё не снятая цель снимается до постановки новой: её долив уходит NT, а не переезжает на новую.
+/datum/economy_department/proc/lapse_expired_goal()
+	if(saving_goal_until && world.time >= saving_goal_until)
+		lapse_saving_goal(saving_goal_until)
+
 /datum/economy_department/proc/saving_goal_cooldown_minutes()
 	return max(CEILING((saving_goal_cooldown_until - world.time) / (1 MINUTES), 1), 0)
 
@@ -360,6 +375,7 @@
 	return can_manage(user) && world.time >= saving_goal_cooldown_until && !((saving_goal || saving_goal_ert) && (!saving_goal_until || world.time < saving_goal_until))
 
 /datum/economy_department/proc/set_saving_goal(datum/supply_pack/pack, mob/living/user)
+	lapse_expired_goal()
 	if(!can_start_saving_goal(user) || !can_save_for(pack))
 		return FALSE
 	saving_goal = pack
