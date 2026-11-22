@@ -1922,24 +1922,51 @@ var/mob/living/bipod_signal_user
 /obj/item/ammo_casing/proc/mesa_eject(mob/living/shooter, still_warm = FALSE)
 	update_icon()
 	mesa_spin_dir = pick(-1, 1) * rand(50, 110)
-	var/eject_dir = dir
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+	//Prefer the shooter's right side. If it is walled in, fall back to the
+	//left and then behind so the shell does not pop from under the player.
+	var/base_eject_dir = dir
 	if(shooter)
-		eject_dir = turn(shooter.dir, -90) //right-hand side (turn() is counter-clockwise)
-	eject_dir = turn(eject_dir, rand(-20, 20))
+		base_eject_dir = turn(shooter.dir, -90) //right-hand side (turn() is counter-clockwise)
+	var/list/eject_dirs = list(base_eject_dir)
+	if(shooter)
+		eject_dirs += list(turn(base_eject_dir, 180), turn(shooter.dir, 180))
+	else
+		eject_dirs += turn(base_eject_dir, 180)
+	var/eject_dir = turn(eject_dirs[1], rand(-20, 20))
+	var/list/path = mesa_eject_path(T, eject_dir, rand(1, 2))
+	if(!length(path))
+		for(var/i in 2 to length(eject_dirs))
+			var/candidate_dir = turn(eject_dirs[i], rand(-20, 20))
+			var/list/candidate_path = mesa_eject_path(T, candidate_dir, rand(1, 2))
+			if(length(candidate_path))
+				eject_dir = candidate_dir
+				path = candidate_path
+				break
 	setDir(eject_dir)
 	var/matrix/M = matrix(transform)
 	M.Turn(rand(-170, 170))
 	transform = M
-	pixel_x = rand(-12, 12)
-	var/turf/T = get_turf(src)
-	if(!T)
-		return
-	//March a short path to the right, stopping at walls and dense objects so
-	//the shell drops instead of phasing through them.
+	//Take the first turf step immediately: the pop-up animation must not
+	//happen on the shooter's turf, otherwise the shell visually comes from
+	//directly under the player.
+	var/started_on_side = FALSE
+	if(length(path) && forceMove(path[1]))
+		path.Cut(1, 1)
+		started_on_side = TRUE
+	mesa_edge_offset(eject_dir, started_on_side)
+	mesa_flying = TRUE
+	mesa_fly(path, still_warm)
+
+/// Builds a short ejection path, stopping at walls and dense objects so the
+/// shell drops instead of phasing through them.
+/obj/item/ammo_casing/proc/mesa_eject_path(var/turf/start, var/direction, var/steps)
 	var/list/path = list()
-	var/turf/cur = T
-	for(var/i in 1 to rand(1, 2))
-		var/turf/next = get_step(cur, eject_dir)
+	var/turf/cur = start
+	for(var/i in 1 to steps)
+		var/turf/next = get_step(cur, direction)
 		if(!isturf(next) || next.density)
 			break
 		var/blocked = FALSE
@@ -1951,8 +1978,16 @@ var/mob/living/bipod_signal_user
 			break
 		path += next
 		cur = next
-	mesa_flying = TRUE
-	mesa_fly(path, still_warm)
+	return path
+
+/// Places the casing on the edge of its turf facing `direction`. When the
+/// shell already stepped to the adjacent turf, the offset is flipped so it
+/// appears at the edge it entered from instead of jumping across the tile.
+/obj/item/ammo_casing/proc/mesa_edge_offset(var/direction, var/from_adjacent)
+	var/angle = dir2angle(direction)
+	var/sign = from_adjacent ? -1 : 1
+	pixel_x = round(sign * sin(angle) * 12)
+	pixel_y = round(sign * -cos(angle) * 12)
 
 /// Schedules the pop-off and one timer per turf step. `path` holds the
 /// landing turfs. The shell first kicks straight up off the shooter for

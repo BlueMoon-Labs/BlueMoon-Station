@@ -1521,6 +1521,7 @@
 #include "code\game\objects\effects\temporary_visuals\cult.dm"
 #include "code\game\objects\effects\temporary_visuals\miscellaneous.dm"
 #include "code\game\objects\effects\temporary_visuals\temporary_visual.dm"
+#include "code\game\objects\effects\temporary_visuals\bounce_sparks.dm"
 #include "code\game\objects\effects\temporary_visuals\projectiles\impact.dm"
 #include "code\game\objects\effects\temporary_visuals\projectiles\muzzle.dm"
 #include "code\game\objects\effects\temporary_visuals\projectiles\projectile_effects.dm"

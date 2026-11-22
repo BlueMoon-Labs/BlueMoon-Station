@@ -220,8 +220,6 @@
 		var/obj/effect/temp_visual/flying_limb/L = new(T)
 		L.launch(T, dir_hit ? dir_hit : pick(GLOB.cardinals), "[prefix]_flying_head", gore_dmi)
 
-	spawn_optimized_blood_decal(T)
-
 	// Хедшот = мгновенная смерть
 	icon_dead = "[prefix]_dead_decap"
 	death(FALSE)
@@ -246,7 +244,6 @@
 	melee_damage_lower = max(2, melee_damage_lower * 0.7)
 	melee_damage_upper = max(5, melee_damage_upper * 0.7)
 
-	spawn_optimized_blood_decal(T)
 	assemble_modular_limbs()
 
 // Отстрел левой руки
@@ -269,7 +266,6 @@
 	melee_damage_lower = max(2, melee_damage_lower * 0.7)
 	melee_damage_upper = max(5, melee_damage_upper * 0.7)
 
-	spawn_optimized_blood_decal(T)
 	assemble_modular_limbs()
 
 // Отстрел ноги (Замедление при потере одной, мгновенная смерть при потере обеих или травматическом шоке)
@@ -293,8 +289,6 @@
 		// Струя крови
 		var/obj/effect/temp_visual/blood_spurt/S = new(T)
 		S.spurt(dir_hit ? dir_hit : dir)
-
-	spawn_optimized_blood_decal(T)
 
 	// Логика смерти / замедления:
 	// Если потерял обе ноги ИЛИ включена мгновенная смерть от потери конечности
@@ -328,23 +322,8 @@
 			L.launch(T, d, part, gore_dmi)
 	playsound(T, pick('sound/effects/wounds/blood1.ogg', 'sound/effects/wounds/blood2.ogg', 'sound/effects/wounds/crackandbleed.ogg'), 60, TRUE)
 
-	spawn_optimized_blood_decal(T, TRUE)
-
 	// Оставляем разорванный труп
 	icon_dead = "[prefix]_dead_half"
-
-// Оптимизированный спавн декалей крови с защитой от FPS-просадок и авто-очисткой
-/mob/living/simple_animal/hostile/infected/modular/proc/spawn_optimized_blood_decal(turf/T, forced = FALSE)
-	if(!T)
-		return
-	var/blood_count = 0
-	for(var/obj/effect/decal/cleanable/blood/B in T)
-		blood_count++
-		if(blood_count >= 2 && !forced)
-			return // Больше 2 пятен на тайле не спавним для оптимизации
-
-	var/obj/effect/decal/cleanable/blood/splatter/B = new(T)
-	QDEL_IN(B, 3 MINUTES) // Авто-исчезновение через 3 минуты
 
 // apply_damage получает def_zone от снарядов/ударов - adjustHealth её не видит.
 // Запоминаем хедшот, чтобы adjustHealth мог оторвать голову по факту попадания.

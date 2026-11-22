@@ -22,7 +22,7 @@
 	var/ranged_attack_speed = CLICK_CD_RANGE
 	var/melee_attack_speed = CLICK_CD_MELEE
 
-	var/gun_flags = NONE
+	var/gun_flags = GUN_SMOKE_PARTICLES
 	var/fire_sound = "gunshot"
 	var/suppressed = null					//whether or not a message is displayed when fired
 	var/can_suppress = FALSE
@@ -306,6 +306,17 @@
 				user.visible_message("<span class='danger'>[user] стреляет из [src] в упор по [pbtarget]!</span>", null, null, COMBAT_MESSAGE_RANGE)
 			else
 				user.visible_message("<span class='danger'>[user] стреляет из [src]!</span>", null, null, COMBAT_MESSAGE_RANGE)
+
+	if(gun_flags & GUN_SMOKE_PARTICLES)
+		var/smoke_angle
+		if(pbtarget)
+			smoke_angle = Get_Angle(user || src, pbtarget)
+		else
+			smoke_angle = dir2angle(user?.dir || src.dir)
+		var/turf/smoke_turf = get_turf(src)
+		if(smoke_turf)
+			var/obj/effect/firing_smoke/smoke = new(smoke_turf)
+			smoke.particles.velocity = list(sin(smoke_angle) * 40, cos(smoke_angle) * 40, 0)
 
 /obj/item/gun/emp_act(severity)
 	. = ..()

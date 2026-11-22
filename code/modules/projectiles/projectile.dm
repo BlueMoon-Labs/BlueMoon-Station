@@ -281,7 +281,9 @@
 
 	if(!nodamage && (damage_type == BRUTE || damage_type == BURN) && iswallturf(target_loca) && prob(75))
 		var/turf/closed/wall/W = target_loca
-		if(impact_effect_type && !hitscan)
+		if(is_metal_bullet_spark_surface(W))
+			spawn_metal_wall_bullet_sparks(W, hitx, hity, Angle)
+		else if(impact_effect_type && !hitscan)
 			new impact_effect_type(target_loca, hitx, hity)
 
 		W.add_dent(WALL_DENT_SHOT, hitx, hity)

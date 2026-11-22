@@ -1,7 +1,26 @@
-// Fire smoke: particle emitters that follow a burning atom.
+// Fire smoke: particle emitters that follow a burning atom, plus the
+// directional muzzle-smoke puff ballistic guns emit per shot.
 // The holder lives in the host's vis_contents (same pattern as
 // /obj/effect/abstract/heretic_particle_holder) so particles render at the
 // host's position without the holder having a loc of its own.
+
+#define GUN_SMOKE_PARTICLES (1<<3)
+
+/particles/firing_smoke
+	icon = 'icons/effects/particles/smoke.dmi'
+	icon_state = list("smoke_1" = 1, "smoke_2" = 1, "smoke_3" = 2)
+	width = 500
+	height = 500
+	count = 5
+	spawning = 15
+	lifespan = 0.5 SECONDS
+	fade = 2.4 SECONDS
+	grow = 0.12
+	drift = generator("circle", 8, 8)
+	scale = 0.1
+	spin = generator("num", -20, 20)
+	velocity = list(50, 0, 0)
+	friction = generator("num", 0.3, 0.6)
 
 /particles/smoke
 	icon = 'icons/effects/particles/smoke.dmi'
@@ -81,5 +100,26 @@
 	if(host && !QDELETED(host))
 		UnregisterSignal(host, COMSIG_PARENT_QDELETING)
 		host.vis_contents -= src
+	particles = null
+	return ..()
+
+/// Short-lived directional smoke puff at the shooter's turf. The gun sets
+/// particles.velocity toward the target before the first tick, so the whole
+/// emitter drifts downrange instead of sitting on the player.
+/obj/effect/firing_smoke
+	name = "gun smoke"
+	icon = null
+	layer = FLOAT_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	appearance_flags = RESET_COLOR | RESET_TRANSFORM | PIXEL_SCALE
+	vis_flags = VIS_INHERIT_PLANE
+	anchored = TRUE
+
+/obj/effect/firing_smoke/Initialize(mapload)
+	. = ..()
+	particles = new /particles/firing_smoke
+	QDEL_IN(src, 0.6 SECONDS)
+
+/obj/effect/firing_smoke/Destroy()
 	particles = null
 	return ..()
