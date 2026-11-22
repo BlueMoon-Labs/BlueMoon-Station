@@ -158,7 +158,7 @@
 	GLOB.player_list -= list(hos, ai)
 	TEST_ASSERT(!medical.has_decider_on_shift(), "ИИ без игрока заявки на смене не решает")
 
-/// Заявку без решения дольше request_handoff_minutes может решить начальник снабжения за бюджет отдела: до срока нельзя, о передаче слышат подавший и канал снабжения; заявки СБ не передаются.
+/// Заявку без решения дольше request_handoff_minutes может решить начальник снабжения за бюджет отдела: до срока нельзя, о передаче слышат подавший и канал снабжения; заявки СБ передаются так же.
 /datum/unit_test/economy_catalog/request_handoff/Run()
 	var/obj/item/radio/headset/econ_test_spy/spy = spy_announcer()
 	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
@@ -170,6 +170,7 @@
 	var/datum/supply_pack/expensive = pack_above_auto_limit(medical)
 	var/datum/supply_pack/arms = pack_above_auto_limit(security)
 	econ_test_set_balance(medical.account, round(econ_pack_price(expensive)))
+	econ_test_set_balance(security.account, round(econ_pack_price(arms)))
 	var/datum/econ_request/request = medical.submit_request(expensive, doctor, "Операционная")
 	var/datum/econ_request/guns = security.submit_request(arms, officer, "Арсенал")
 	TEST_ASSERT(request && guns, "Обе заявки поданы")
@@ -183,7 +184,7 @@
 	medical.hand_off_stale_requests()
 	security.hand_off_stale_requests()
 	TEST_ASSERT(request.handed_off, "Зависшая заявка медицины передана снабжению")
-	TEST_ASSERT(!guns.handed_off, "Заявка СБ снабжению не передаётся")
+	TEST_ASSERT(guns.handed_off, "Зависшая заявка СБ передана снабжению")
 	var/datum/bank_account/econ_test_ear/doctor_ear = econ_account_of(doctor)
 	TEST_ASSERT(length(doctor_ear.heard) && findtext(doctor_ear.heard[length(doctor_ear.heard)], "начальник снабжения"), "Подавший узнал о передаче: [jointext(doctor_ear.heard, "; ")]")
 	var/supply_line
@@ -197,17 +198,21 @@
 	TEST_ASSERT(findtext(medical.request_outlook(request), "начальник снабжения"), "Окно называет начальника снабжения: [medical.request_outlook(request)]")
 	var/datum/computer_file/program/department_budget/app = allocate(/datum/computer_file/program/department_budget)
 	var/list/data = app.budget_data(qm)
-	TEST_ASSERT_EQUAL(length(data["handoff_requests"]), 1, "Начальнику снабжения окно показывает одну переданную заявку")
-	var/list/entry = data["handoff_requests"][1]
-	TEST_ASSERT(entry["uid"] == request.uid && entry["department_id"] == ACCOUNT_MED && entry["can_decide"], "Переданная заявка медицины, её можно решить")
+	TEST_ASSERT_EQUAL(length(data["handoff_requests"]), 2, "Начальнику снабжения окно показывает обе переданные заявки")
+	var/list/entry
+	for(var/list/handed as anything in data["handoff_requests"])
+		if(handed["uid"] == request.uid && handed["department_id"] == ACCOUNT_MED)
+			entry = handed
+	TEST_ASSERT(entry && entry["can_decide"], "Переданная заявка медицины, её можно решить")
 	var/answer = budget_press(app, qm, "approve", list("uid" = request.uid, "department" = ACCOUNT_MED))
 	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Начальник снабжения одобрил заявку: [answer]")
 	TEST_ASSERT(findtext(answer, "за бюджет отдела"), "Ответ называет бюджет отдела: [answer]")
 	TEST_ASSERT_EQUAL(medical.account.account_balance, 0, "Оплатил бюджет медицины, не снабжения")
 	TEST_ASSERT(findtext(doctor_ear.heard[length(doctor_ear.heard)], "одобрена снабжением"), "Подавший узнал, кто одобрил: [doctor_ear.heard[length(doctor_ear.heard)]]")
-	var/refusal = budget_press(app, qm, "approve", list("uid" = guns.uid, "department" = ACCOUNT_SEC))
-	TEST_ASSERT_EQUAL(guns.status, ECON_REQUEST_PENDING, "Заявку СБ начальник снабжения не решает")
-	TEST_ASSERT_EQUAL(refusal, "Эту заявку снабжению не передавали.", "Отказ объяснён")
+	TEST_ASSERT(security.can_decide(guns, qm), "Переданную заявку СБ начальник снабжения решает")
+	var/guns_answer = budget_press(app, qm, "approve", list("uid" = guns.uid, "department" = ACCOUNT_SEC))
+	TEST_ASSERT_EQUAL(guns.status, ECON_REQUEST_APPROVED, "Начальник снабжения одобрил заявку СБ: [guns_answer]")
+	TEST_ASSERT_EQUAL(security.account.account_balance, 0, "Оплатил бюджет СБ, не снабжения")
 
 /// Без начальства, ИИ и начальника снабжения окно честно говорит, что решить некому и что будет дальше.
 /datum/unit_test/economy_catalog/request_outlook_nobody/Run()

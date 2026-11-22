@@ -72,9 +72,9 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 /datum/economy_department/proc/ai_decides()
 	return id != ACCOUNT_SEC
 
-/// Зависшие заявки передаются начальнику снабжения: у всех, кроме СБ и самого снабжения.
+/// Зависшие заявки передаются начальнику снабжения: у всех, кроме самого снабжения.
 /datum/economy_department/proc/hands_off_requests()
-	return id != ACCOUNT_SEC && id != ACCOUNT_CAR
+	return id != ACCOUNT_CAR
 
 /// Кто может одобрить или отклонить заявку: начальство отдела; ИИ, кроме СБ; начальник снабжения - переданную ему.
 /datum/economy_department/proc/can_decide(datum/econ_request/request, mob/living/user)
