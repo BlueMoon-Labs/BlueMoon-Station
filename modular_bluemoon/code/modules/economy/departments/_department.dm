@@ -29,6 +29,10 @@
 	var/saving_goal_cooldown_until = 0
 	var/saving_goal_cache
 	var/saving_goal_cache_tick = -1
+	/// Сколько чужого излишка NT долил на текущую цель; без заказа цели он уходит обратно NT
+	var/saving_goal_funded = 0
+	/// Больше этого на текущую цель не дольют: недостача в момент первого долива
+	var/saving_goal_funding_cap = 0
 	COOLDOWN_DECLARE(return_notice_cooldown)
 
 /datum/economy_department/New()
@@ -141,37 +145,78 @@
 	var/amount = budget_return_due(stats)
 	if(amount <= 0)
 		return
-	amount -= fund_saving_goals(amount)
-	if(amount <= 0 || !account.debit(amount, ECON_BUDGET_RETURN, memo = "Возврат излишка сверх [budget_threshold(stats)] кр."))
+	var/to_goals = fund_saving_goals(amount)
+	amount -= to_goals
+	if(amount > 0 && !account.debit(amount, ECON_BUDGET_RETURN, memo = "Возврат излишка сверх [budget_threshold(stats)] кр."))
+		amount = 0
+	if((amount <= 0 && !to_goals) || !COOLDOWN_FINISHED(src, return_notice_cooldown))
 		return
-	if(COOLDOWN_FINISHED(src, return_notice_cooldown))
-		COOLDOWN_START(src, return_notice_cooldown, ECON_BUDGET_RETURN_NOTICE_COOLDOWN)
-		account.bank_card_talk("[capitalize(budget_name)] выше порога [budget_threshold(stats)] кр.: NT забрал [amount] кр. излишка. Потратьте его на закупки или назначьте цель накопления[saving_goal_scope()] в \"Бюджете отдела\".")
+	COOLDOWN_START(src, return_notice_cooldown, ECON_BUDGET_RETURN_NOTICE_COOLDOWN)
+	var/list/where = list()
+	if(to_goals)
+		where += "[to_goals] кр. NT отдал на цели накопления других отделов"
+	if(amount > 0)
+		where += "[amount] кр. забрал NT"
+	account.bank_card_talk("[capitalize(budget_name)] выше порога [budget_threshold(stats)] кр., из излишка [jointext(where, ", ")]. Потратьте его на закупки или назначьте цель накопления[saving_goal_scope()] в \"Бюджете отдела\".")
 
-/// Излишек, который забрал бы NT, сначала доливает ещё не набранные цели накопления других отделов; возвращает, сколько ушло на цели.
+/// Излишек, который забрал бы NT, сначала доливает ещё не набранные цели накопления других отделов, начиная с самой ранней; возвращает, сколько ушло на цели. Защиту разовых поступлений источника долив не тратит.
 /datum/economy_department/proc/fund_saving_goals(amount)
 	. = 0
-	for(var/id in SSeconomy.departments)
-		var/datum/economy_department/other = SSeconomy.departments[id]
-		if(other == src)
-			continue
+	for(var/datum/economy_department/other as anything in econ_saving_goal_queue(src))
 		var/part = min(other.saving_goal_shortfall(), amount - .)
-		if(part <= 0 || !SSeconomy.department_transfer(src, other, part))
+		if(part <= 0 || !SSeconomy.move(account, other.account, part, ECON_BUDGET_TRANSFER, null, "Излишек на цель накопления: [other.name]"))
 			continue
+		restore_shield(account.department_shield_spent)
+		if(!other.saving_goal_funding_cap)
+			other.saving_goal_funding_cap = other.saving_goal_shortfall() + part
+		other.saving_goal_funded += part
 		. += part
 		var/goal_name = other.saving_goal_name()
 		log_econ("Излишек [name]: [part] кр. на цель накопления [other.name] \"[goal_name]\"")
-		other.account.bank_card_talk("На цель накопления \"[goal_name]\" пришло [part] кр.: NT отдал на неё излишек бюджета другого отдела.")
+		other.account.bank_card_talk("На цель накопления \"[goal_name]\" пришло [part] кр. излишка другого отдела. Без заказа цели NT заберёт их обратно.", quiet = TRUE)
 		other.saving_goal_amount()
 		if(. >= amount)
 			return
 
-/// Сколько бюджету не хватает до цены ещё не набранной цели накопления; 0 - цели нет или она уже набрана.
+/// Отделы с ещё не набранной целью накопления, кроме source, от самой ранней цели к поздней.
+/proc/econ_saving_goal_queue(datum/economy_department/source)
+	var/list/queue = list()
+	for(var/id in SSeconomy.departments)
+		var/datum/economy_department/candidate = SSeconomy.departments[id]
+		if(candidate == source || (!candidate.saving_goal && !candidate.saving_goal_ert) || candidate.saving_goal_until)
+			continue
+		var/position = length(queue) + 1
+		for(var/i in 1 to length(queue))
+			var/datum/economy_department/queued = queue[i]
+			if(candidate.saving_goal_set_at < queued.saving_goal_set_at)
+				position = i
+				break
+		queue.Insert(position, candidate)
+	return queue
+
+/// Сколько ещё дольют на ещё не набранную цель накопления: недостача до цены, но не больше остатка потолка долива; 0 - цели нет или она набрана.
 /datum/economy_department/proc/saving_goal_shortfall()
 	var/goal = saving_goal_amount()
 	if(!goal || saving_goal_until)
 		return 0
-	return max(goal - account.account_balance, 0)
+	. = max(goal - account.account_balance, 0)
+	if(saving_goal_funding_cap)
+		. = clamp(saving_goal_funding_cap - saving_goal_funded, 0, .)
+
+/// Цель снята без заказа: долитое на неё уходит NT, а потраченное на другое становится долгом отдела перед NT.
+/datum/economy_department/proc/reclaim_goal_funding()
+	var/funded = saving_goal_funded
+	saving_goal_funded = 0
+	saving_goal_funding_cap = 0
+	if(funded <= 0)
+		return
+	var/back = min(funded, max(account.account_balance, 0))
+	if(back > 0 && !account.debit(back, ECON_BUDGET_RETURN, memo = "Долив на снятую цель накопления"))
+		back = 0
+	if(funded > back)
+		add_owed(funded - back)
+	log_econ("Цель накопления [name] снята без заказа: долив [funded] кр., NT забрал [back] кр., в долг [funded - back] кр.")
+	account.bank_card_talk("Цель накопления снята без заказа: NT забрал [back] кр. излишка, долитого на неё[funded > back ? ", ещё [funded - back] кр. записаны в долг отдела перед NT" : ""].")
 
 /// Отменённая закупка не считается ни закупкой, ни стоком отдела.
 /datum/economy_department/proc/ledger_cancel_purchase(amount)
@@ -229,6 +274,7 @@
 		lapse_saving_goal(saving_goal_until)
 		return 0
 	if(!saving_goal_valid())
+		reclaim_goal_funding()
 		clear_saving_goal(ordered = TRUE)
 		return 0
 	if(saving_goal_cache_tick != SSeconomy.fire_count || isnull(saving_goal_cache))
@@ -299,6 +345,7 @@
 
 /// Цель снята без заказа: новую можно поставить через saving_goal_cooldown_minutes.
 /datum/economy_department/proc/lapse_saving_goal(since = world.time)
+	reclaim_goal_funding()
 	saving_goal = null
 	saving_goal_ert = 0
 	saving_goal_until = 0
@@ -334,6 +381,8 @@
 		saving_goal_ert = 0
 		saving_goal_until = 0
 		saving_goal_cache = null
+		saving_goal_funded = 0
+		saving_goal_funding_cap = 0
 	else
 		lapse_saving_goal()
 	return TRUE
@@ -348,7 +397,9 @@
 		account.department?.goal_bought(pack)
 
 /// Снят заказ, закрывший цель: цель возвращается с прежним сроком; поставленная на её место живёт не дольше него.
-/datum/economy_department/proc/restore_saving_goal(datum/supply_pack/pack, until, ert_id = 0)
+/datum/economy_department/proc/restore_saving_goal(datum/supply_pack/pack, until, ert_id = 0, funded = 0)
+	saving_goal_funded += funded
+	saving_goal_funding_cap = max(saving_goal_funding_cap, saving_goal_funded)
 	if(saving_goal || saving_goal_ert)
 		if(!saving_goal_until || until < saving_goal_until)
 			saving_goal_until = until

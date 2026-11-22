@@ -68,15 +68,25 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		return
 	department.restore_shield(order.shield_entries)
 	department.ledger_cancel_purchase(order.prepaid)
+	var/topup_back = min(order.cargo_topup, order.prepaid)
+	if(topup_back && SSeconomy.department_transfer(department, SSeconomy.get_department(ACCOUNT_CAR), topup_back, user))
+		department.restore_shield(department.account.department_shield_spent)
+		log_econ("Отмена заказа [order.pack.name] отдела [department.name]: доплата [topup_back] кр. вернулась снабжению")
+	order.cargo_topup = 0
 	if(order.saving_goal_until)
-		department.restore_saving_goal(order.pack, order.saving_goal_until)
+		department.restore_saving_goal(order.pack, order.saving_goal_until, funded = order.saving_goal_funded)
 		order.saving_goal_until = 0
+		order.saving_goal_funded = 0
 	log_econ("[key_name(user)] снял заказ [order.pack.name] отдела [department.name], возвращено [order.prepaid] кр.")
 	order.prepaid = 0
 
 /datum/supply_order
 	/// Заказ закрыл цель накопления отдела: до какого world.time она действовала, отмена заказа её возвращает
 	var/saving_goal_until = 0
+	/// Сколько чужого излишка было долито на цель, которую закрыл заказ: отмена возвращает его цели
+	var/saving_goal_funded = 0
+	/// Сколько доплатил бюджет снабжения к заказу по переданной заявке: отмена возвращает это снабжению
+	var/cargo_topup = 0
 	/// Заказ по заявке сотрудника: номер заявки и счёт подавшего, его карта узнает о прибытии
 	var/econ_request_uid
 	var/requester_account_id
@@ -370,7 +380,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		return "Решить заявку №[uid] может только глава отдела, ГП или капитан: нужна их ID-карта."
 	if(!approving)
 		return deny(request, user) ? "Заявка №[uid] отклонена." : "Заявка №[uid] не отклонена."
-	return approve(request, user) ? "Заявка №[uid] одобрена, заказ ушёл в снабжение." : order_refusal(request.pack, request, user)
+	return approve(request, user) ? "Заявка №[uid] одобрена, заказ ушёл в снабжение[request.cargo_topup ? ", недостающие [request.cargo_topup] кр. доплатил бюджет снабжения" : ""]." : order_refusal(request.pack, request, user)
 
 /// Почему заказ пака за бюджет не прошёл.
 /datum/economy_department/proc/order_refusal(datum/supply_pack/pack, datum/econ_request/request, mob/living/user)
@@ -520,17 +530,18 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		return FALSE
 	var/by_manager = !automatic && can_manage(user)
 	var/topup = 0
-	if(!automatic && decides_as_quartermaster(request, user) && !econ_pack_unavailable(request.pack))
+	if(!automatic && decides_as_quartermaster(request, user) && (request.pack in catalog()) && !econ_pack_unavailable(request.pack))
 		topup = cargo_top_up(request, user)
 		if(isnull(topup))
 			return FALSE
 	var/datum/supply_order/order = order_pack(request.pack, user, "Заявка [request.requester]: [request.reason]", automatic || !by_manager)
 	if(!order)
-		if(topup)
-			SSeconomy.department_transfer(src, SSeconomy.get_department(ACCOUNT_CAR), topup, user)
+		if(topup && SSeconomy.department_transfer(src, SSeconomy.get_department(ACCOUNT_CAR), topup, user))
+			restore_shield(account.department_shield_spent)
 		return FALSE
 	if(topup)
 		request.cargo_topup = topup
+		order.cargo_topup = topup
 		log_econ("Снабжение доплатило [topup] кр. к заявке [request.uid] отдела [name]: [key_name(user)]")
 	order.econ_request_uid = request.uid
 	order.requester_account_id = request.requester_account_id
@@ -574,6 +585,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	order.shield_entries = account.department_shield_spent
 	if(pack == saving_goal)
 		order.saving_goal_until = saving_goal_until || (world.time + SSeconomy.settings.saving_goal_minutes MINUTES)
+		order.saving_goal_funded = saving_goal_funded
 		clear_saving_goal(ordered = TRUE)
 	log_econ("[user ? key_name(user) : "Автоодобрение"]: заказ [pack.name] для [name] за [price] кр.")
 	if(id != ACCOUNT_CAR && COOLDOWN_FINISHED(src, supply_notice_cooldown))

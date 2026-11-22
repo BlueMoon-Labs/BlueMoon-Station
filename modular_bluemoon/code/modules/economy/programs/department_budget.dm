@@ -434,7 +434,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 				department.clear_saving_goal(user)
 				messages[user_ref] = "Цель накопления снята. Новую можно поставить через [SSeconomy.settings.saving_goal_cooldown_minutes] мин."
 			else if(ert_id ? cargo.set_saving_goal_ert(ert_id, user) : department.set_saving_goal(pack, user))
-				messages[user_ref] = "Цель накопления: \"[department.saving_goal_name()]\". Пока бюджет не наберёт её цену, NT не забирает излишек и доливает на неё излишки других отделов; набрать её нужно за [SSeconomy.settings.saving_goal_collect_minutes] мин., иначе цель снимется. Набрали - [department.saving_goal_order_hint(SSeconomy.settings.saving_goal_minutes)]"
+				messages[user_ref] = "Цель накопления: \"[department.saving_goal_name()]\". Пока бюджет не наберёт её цену, NT не забирает излишек и доливает на неё излишки других отделов (при красном коде - нет; долитое без заказа цели NT заберёт обратно); набрать её нужно за [SSeconomy.settings.saving_goal_collect_minutes] мин., иначе цель снимется. Набрали - [department.saving_goal_order_hint(SSeconomy.settings.saving_goal_minutes)]"
 			else if(department.saving_goal_amount())
 				messages[user_ref] = "Цель уже выбрана: \"[department.saving_goal_name()]\". Снимите её, чтобы выбрать другую."
 			else if(department.saving_goal_cooldown_minutes())
@@ -502,7 +502,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 				messages[user_ref] = manage_refusal
 			else
 				var/datum/econ_request/treasury/request = isnull(amount) ? null : department.request_treasury(amount, econ_ui_reason(params["reason"]), user)
-				messages[user_ref] = request ? "Запрос №[request.uid] на [request.amount] кр. отправлен капитану и ГП." : "Запрос не отправлен: от 1 до [SSeconomy.settings.treasury_request_max] кр., у отдела ждут решения не больше [SSeconomy.settings.treasury_requests_pending_per_department] запросов."
+				messages[user_ref] = request ? "Запрос №[request.uid] на [request.amount] кр. [request.notified ? "отправлен капитану и ГП" : "ждёт в программе \"Казна\": капитана и ГП на смене нет, им сообщат, когда выйдут"]." : "Запрос не отправлен: от 1 до [SSeconomy.settings.treasury_request_max] кр., у отдела ждут решения не больше [SSeconomy.settings.treasury_requests_pending_per_department] запросов."
 		if("print_manifest")
 			if(!econ_manifest_department_for(user))
 				messages[user_ref] = "Экспортные накладные выдаются сотрудникам отделов станции, кроме снабжения."

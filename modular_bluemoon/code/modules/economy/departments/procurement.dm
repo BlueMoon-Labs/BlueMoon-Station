@@ -319,7 +319,8 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 		var/left = settings.auto_approve_wait_minutes - request.waited_minutes()
 		parts += left > 0 ? "без ответа одобрится сама через [left] мин." : "одобрится сама на ближайшем цикле экономики"
 	else if(request.handed_off)
-		parts += "передана снабжению: решить может и его начальник, недостающее доплатит бюджет снабжения"
+		var/shortfall = request_shortfall(request)
+		parts += "передана снабжению: решить может и его начальник[shortfall ? ", недостающие [shortfall] кр. доплатит бюджет снабжения" : ""]"
 	else if(hands_off_requests() && settings.request_handoff_minutes > 0)
 		parts += "через [max(settings.request_handoff_minutes - request.waited_minutes(), 1)] мин. без решения перейдёт и начальнику снабжения"
 	return capitalize(jointext(parts, "; ")) + "."

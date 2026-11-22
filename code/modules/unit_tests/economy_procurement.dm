@@ -245,7 +245,7 @@
 	TEST_ASSERT_EQUAL(guns?.status, ECON_REQUEST_PENDING, "Заявка СБ ждёт решения")
 	guns.created -= SSeconomy.settings.request_handoff_minutes MINUTES
 	security.hand_off_stale_requests()
-	TEST_ASSERT(findtext(security.request_outlook(guns), "недостающее доплатит бюджет снабжения"), "Окно обещает доплату: [security.request_outlook(guns)]")
+	TEST_ASSERT(findtext(security.request_outlook(guns), "недостающие [shortfall] кр. доплатит бюджет снабжения"), "Окно обещает доплату: [security.request_outlook(guns)]")
 	var/datum/computer_file/program/department_budget/app = allocate(/datum/computer_file/program/department_budget)
 	var/refused = budget_press(app, qm, "approve", list("uid" = guns.uid, "department" = ACCOUNT_SEC))
 	TEST_ASSERT_EQUAL(guns.status, ECON_REQUEST_PENDING, "Без денег у снабжения заявка ждёт: [refused]")
@@ -282,5 +282,58 @@
 	TEST_ASSERT(findtext(ear.heard[length(ear.heard)], "ждёт решения дольше"), "Напоминание говорит, что запрос ждёт: [ear.heard[length(ear.heard)]]")
 	SSeconomy.remind_treasury_requests()
 	TEST_ASSERT_EQUAL(length(ear.heard), heard + 1, "Напоминание одно")
+	QDEL_LIST(SSeconomy.treasury_requests)
+	SSeconomy.treasury_requests = saved_requests
+
+/// Отмена заказа, оплаченного с доплатой снабжения, возвращает доплату снабжению, а остальное - отделу; глава отдела без денег снабжение не трогает.
+/datum/unit_test/economy_catalog/request_handoff_topup_cancel/Run()
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	var/mob/living/carbon/human/officer = make_staff(ACCOUNT_SEC)
+	var/mob/living/carbon/human/qm = make_with_job(/datum/job/qm)
+	var/mob/living/carbon/human/hos = make_with_job(/datum/job/hos)
+	on_shift(qm)
+	var/datum/supply_pack/arms = pack_above_auto_limit(security)
+	var/price = round(econ_pack_price(arms))
+	var/have = round(price / 3)
+	econ_test_set_balance(security.account, have)
+	econ_test_set_balance(cargo.account, price)
+	var/datum/econ_request/guns = security.submit_request(arms, officer, "Арсенал")
+	guns.created -= SSeconomy.settings.request_handoff_minutes MINUTES
+	security.hand_off_stale_requests()
+	TEST_ASSERT(!security.approve(guns, hos), "ГСБ без денег в бюджете заявку не одобряет")
+	TEST_ASSERT_EQUAL(cargo.account.account_balance, price, "Решение главы снабжение не тронуло")
+	var/list/before = SSshuttle.shoppinglist.Copy()
+	TEST_ASSERT(security.approve(guns, qm), "Начальник снабжения одобрил с доплатой")
+	var/list/placed = SSshuttle.shoppinglist - before
+	TEST_ASSERT_EQUAL(length(placed), 1, "Заказ в корзине")
+	var/datum/supply_order/order = placed[1]
+	econ_cancel_order(order, qm)
+	SSshuttle.shoppinglist -= order
+	qdel(order)
+	TEST_ASSERT_EQUAL(security.account.account_balance, have, "Отдел получил назад своё")
+	TEST_ASSERT_EQUAL(cargo.account.account_balance, price, "Снабжение получило назад доплату")
+
+/// Запрос в казну без капитана и ГП на смене дойдёт до них, когда они выйдут; подавшему честно сказано, что он ждёт.
+/datum/unit_test/economy_catalog/treasury_request_waits_for_captain/Run()
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/mob/living/carbon/human/hos = make_with_job(/datum/job/hos)
+	var/mob/living/carbon/human/captain = make_with_job(/datum/job/captain, /datum/bank_account/econ_test_ear)
+	var/datum/bank_account/econ_test_ear/ear = econ_account_of(captain)
+	var/list/saved_requests = SSeconomy.treasury_requests
+	SSeconomy.treasury_requests = list()
+	var/datum/econ_request/treasury/request = security.request_treasury(2000, "Дробовики.", hos)
+	TEST_ASSERT_NOTNULL(request, "ГСБ подал запрос в казну")
+	TEST_ASSERT(!request.notified, "Без капитана и ГП строку некому отдать")
+	request.created -= SSeconomy.settings.treasury_request_remind_minutes MINUTES
+	SSeconomy.remind_treasury_requests()
+	TEST_ASSERT(!request.reminded, "Напоминание в пустоту не сгорает")
+	on_shift(captain)
+	SSeconomy.remind_treasury_requests()
+	TEST_ASSERT(request.notified && length(ear.heard), "Вышедший капитан узнал о запросе")
+	var/line = ear.heard[length(ear.heard)]
+	TEST_ASSERT(!findtext(line, ".."), "В строке нет двойной точки: [line]")
+	SSeconomy.remind_treasury_requests()
+	TEST_ASSERT(request.reminded, "Следующий цикл напомнил о зависшем запросе")
 	QDEL_LIST(SSeconomy.treasury_requests)
 	SSeconomy.treasury_requests = saved_requests
