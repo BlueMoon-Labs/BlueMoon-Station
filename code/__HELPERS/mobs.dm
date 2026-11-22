@@ -47,6 +47,23 @@
 		init_sprite_accessory_subtypes(/datum/sprite_accessory/underwear/socks, GLOB.socks_list)
 	return pick(GLOB.socks_list)
 
+/// Случайный аксессуар без белого списка ckey: случайный облик не выдаёт чужие личные варианты.
+/proc/pick_public_accessory(list/accessories)
+	var/static/list/public_names = list()
+	var/static/list/source_lengths = list()
+	var/cache_key = REF(accessories)
+	var/list/candidates = public_names[cache_key]
+	if(!candidates || source_lengths[cache_key] != length(accessories))
+		candidates = list()
+		for(var/name in accessories)
+			var/datum/sprite_accessory/accessory = accessories[name]
+			if(istype(accessory) && length(accessory.ckeys_allowed))
+				continue
+			candidates += name
+		public_names[cache_key] = candidates
+		source_lengths[cache_key] = length(accessories)
+	return length(candidates) ? pick(candidates) : "None"
+
 /proc/random_features(intendedspecies, intended_gender)
 	if(!GLOB.tails_list_human.len)
 		init_sprite_accessory_subtypes(/datum/sprite_accessory/tails/human, GLOB.tails_list_human)
@@ -161,25 +178,25 @@
 		"mcolor"			= color1,
 		"mcolor2"			= color2,
 		"mcolor3"			= color3,
-		"tail_lizard"		= pick(GLOB.tails_list_lizard),
+		"tail_lizard"		= pick_public_accessory(GLOB.tails_list_lizard),
 		"tail_human"		= "None",
 		"wings"				= "None",
 		"wings_color"		= "FFF",
 		"deco_wings"		= "None",
-		"snout"				= pick(GLOB.snouts_list),
+		"snout"				= pick_public_accessory(GLOB.snouts_list),
 		"horns"				= "None",
 		"horns_color"		= "85615a",
 		"ears"				= "None",
-		"frills"			= pick(GLOB.frills_list),
-		"spines"			= pick(GLOB.spines_list),
+		"frills"			= pick_public_accessory(GLOB.frills_list),
+		"spines"			= pick_public_accessory(GLOB.spines_list),
 		"legs"				= "Plantigrade",
-		"caps"				= pick(GLOB.caps_list),
-		"insect_wings"		= pick(GLOB.insect_wings_list),
+		"caps"				= pick_public_accessory(GLOB.caps_list),
+		"insect_wings"		= pick_public_accessory(GLOB.insect_wings_list),
 		"insect_fluff"		= "None",
-		"insect_markings"	= pick(GLOB.insect_markings_list),
-		"arachnid_legs"		= pick(GLOB.arachnid_legs_list),
-		"arachnid_spinneret"	= pick(GLOB.arachnid_spinneret_list),
-		"arachnid_mandibles"	= pick(GLOB.arachnid_mandibles_list),
+		"insect_markings"	= pick_public_accessory(GLOB.insect_markings_list),
+		"arachnid_legs"		= pick_public_accessory(GLOB.arachnid_legs_list),
+		"arachnid_spinneret"	= pick_public_accessory(GLOB.arachnid_spinneret_list),
+		"arachnid_mandibles"	= pick_public_accessory(GLOB.arachnid_mandibles_list),
 		"taur"				= "None",
 		"mam_body_markings" = list(),
 		"allow_emissives" = FALSE,
@@ -194,7 +211,7 @@
 		"hardsuit_with_tail" = FALSE,
 		"genitals_use_skintone"	= FALSE,
 		"has_cock"			= FALSE,
-		"cock_shape"		= pick(GLOB.cock_shapes_list),
+		"cock_shape"		= pick_public_accessory(GLOB.cock_shapes_list),
 		"cock_length"		= COCK_SIZE_DEF,
 		"cock_diameter_ratio"	= COCK_DIAMETER_RATIO_DEF,
 		"cock_dynamic_size"	= FALSE,
@@ -217,7 +234,7 @@
 		"breasts_shape"		= DEF_BREASTS_SHAPE,
 		"breasts_producing" = FALSE,
 		"has_vag"			= FALSE,
-		"vag_shape"			= pick(GLOB.vagina_shapes_list),
+		"vag_shape"			= pick_public_accessory(GLOB.vagina_shapes_list),
 		"vag_color"			= pick("FFFFFF","7F7F7F", "7FFF7F", "7F7FFF", "FF7F7F", "7FFFFF", "FF7FFF", "FFFF7F"),
 		"has_womb"			= FALSE,
 		"has_butt"			= FALSE,
@@ -675,17 +692,17 @@ GLOBAL_LIST_EMPTY(species_datums)
 	H.dna.features["mcolor"] = sanitize_hexcolor(random_short_color(), 6)
 	H.dna.features["mcolor2"] = sanitize_hexcolor(random_short_color(), 6)
 	H.dna.features["mcolor3"] = sanitize_hexcolor(random_short_color(), 6)
-	H.dna.features["tail_lizard"] = pick(GLOB.tails_list_lizard)
-	H.dna.features["snout"] = pick(GLOB.snouts_list)
-	H.dna.features["horns"] = pick(GLOB.horns_list)
-	H.dna.features["frills"] = pick(GLOB.frills_list)
-	H.dna.features["spines"] = pick(GLOB.spines_list)
-	H.dna.features["insect_wings"] = pick(GLOB.insect_wings_list)
-	H.dna.features["deco_wings"] = pick(GLOB.deco_wings_list)
-	H.dna.features["insect_fluff"] = pick(GLOB.insect_fluffs_list)
-	H.dna.features["arachnid_legs"] = pick(GLOB.arachnid_legs_list)
-	H.dna.features["arachnid_spinneret"] = pick(GLOB.arachnid_spinneret_list)
-	H.dna.features["arachnid_mandibles"] = pick(GLOB.arachnid_mandibles_list)
+	H.dna.features["tail_lizard"] = pick_public_accessory(GLOB.tails_list_lizard)
+	H.dna.features["snout"] = pick_public_accessory(GLOB.snouts_list)
+	H.dna.features["horns"] = pick_public_accessory(GLOB.horns_list)
+	H.dna.features["frills"] = pick_public_accessory(GLOB.frills_list)
+	H.dna.features["spines"] = pick_public_accessory(GLOB.spines_list)
+	H.dna.features["insect_wings"] = pick_public_accessory(GLOB.insect_wings_list)
+	H.dna.features["deco_wings"] = pick_public_accessory(GLOB.deco_wings_list)
+	H.dna.features["insect_fluff"] = pick_public_accessory(GLOB.insect_fluffs_list)
+	H.dna.features["arachnid_legs"] = pick_public_accessory(GLOB.arachnid_legs_list)
+	H.dna.features["arachnid_spinneret"] = pick_public_accessory(GLOB.arachnid_spinneret_list)
+	H.dna.features["arachnid_mandibles"] = pick_public_accessory(GLOB.arachnid_mandibles_list)
 	H.dna.features["flavor_text"] = "" //Oh no.
 	H.dna.features["body_model"] = H.gender
 

@@ -1,3 +1,13 @@
+/// Максимальная глубина вложенности JSON-сейва игрока.
+#define PLAYER_SAVE_JSON_DEPTH 64
+/// Поля анкеты, которые корень сейва хранит по каждому слоту для меню.
+#define PLAYER_SAVE_SLOT_INDEX_FIELDS list("real_name", "character_slot_name")
+/// Очередь переноса старых сейвов в JSON работает раз в этот промежуток...
+#define PLAYER_SAVE_MIGRATION_INTERVAL (2 DECISECONDS)
+/// ...и тратит за раз не больше стольких мс (раздел анкеты переносится целиком, даже если дороже).
+#define PLAYER_SAVE_MIGRATION_BUDGET 20
+/// Метка частичной копии старого .sav, которую нельзя записывать.
+#define PLAYER_SAVE_LEGACY_VIEW_KEY "__legacy_view"
 
 //Preference toggles
 #define SOUND_ADMINHELP		        (1<<0)
@@ -128,6 +138,14 @@
 // Кол-во хедшотов, не ставить меньше 1
 #define MAX_HEADSHOTS 6
 #define MAX_HEADSHOTS_NAKED MAX_HEADSHOTS
+
+/// Ограничивает перебор старых слотов при миграции, включая слоты вне текущего лимита игрока.
+#define SAVEFILE_MIGRATION_MAX_CHARACTER_SLOT 128
+/// Чтение текущего JSON без промежуточного savefile; старые версии и импорт используют адаптер.
+#define PLAYER_SAVE_VALUE(source, document, key) (document ? document.read(key) : source[key])
+#define READ_PLAYER_SAVE(source, document, key, target) if(document) { target = document.read(key); } else { source[key] >> target; }
+/// Запись в текущий JSON-документ; старые версии и экспорт пишут в savefile.
+#define WRITE_PLAYER_SAVE(target, document, key, value) if(document) { document.write(key, value); } else { WRITE_FILE(target[key], value); }
 
 // Максимум вариантов профессий, квирков и экипировки у одного персонажа.
 #define MAX_CHARACTER_PRESETS 20

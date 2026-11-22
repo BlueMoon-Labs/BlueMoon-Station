@@ -62,7 +62,6 @@ interface CharacterSetupData {
   previewModes: string[];
   previewBackground: string;
   previewBackgrounds: string[];
-  localStorageName: string | null;
   offerActive: boolean;
   redemptionCode?: string;
   hasUnsavedChanges: boolean;
@@ -505,73 +504,67 @@ const SlotTools = () => {
   const { act, data } = useBackend<CharacterSetupData>();
   const [open, setOpen] = useState(false);
 
-  const localName = data.localStorageName;
   const offerActive = !!data.offerActive;
 
   return (
     <Box mt={1}>
       <Button
+        fluid
         icon={open ? 'chevron-down' : 'chevron-right'}
         content="Передача слота"
         selected={open}
         onClick={() => setOpen(!open)}
       />
       {open && (
-        <Stack mt={1} align="center" wrap>
-          <Stack.Item>
-            <Box color="label">
-              Локальная копия: {localName ? localName : 'пусто'}
-            </Box>
-          </Stack.Item>
-          <Stack.Item>
-            <Button.Confirm
-              icon="download"
-              content="Экспорт слота"
-              confirmContent="Экспортировать слот?"
-              onClick={() => act('slot_export')}
-            />
-          </Stack.Item>
-          <Stack.Item>
-            <Button.Confirm
-              icon="upload"
-              content="Импорт в слот"
-              confirmContent="Заменить текущий слот?"
-              disabled={!localName}
-              tooltip={localName ? undefined : 'Локальной копии нет'}
-              onClick={() => act('slot_import')}
-            />
-          </Stack.Item>
-          <Stack.Item>
-            <Button.Confirm
-              icon="share-alt"
-              color={offerActive ? 'bad' : undefined}
-              content={offerActive ? 'Отменить передачу' : 'Предложить слот'}
-              confirmContent={
-                offerActive
-                  ? 'Отменить предложение?'
-                  : 'Вывести слот на передачу?'
-              }
-              onClick={() => act('slot_give')}
-            />
-          </Stack.Item>
-          <Stack.Item>
-            <Button
-              icon="key"
-              content="Получить по коду"
-              onClick={() => act('slot_retrieve')}
-            />
-          </Stack.Item>
+        <Box mt={0.5}>
+          <Button
+            fluid
+            icon="download"
+            content="Скачать JSON"
+            tooltip="Сохранить файл персонажа на компьютер для переноса или обмена."
+            onClick={() => act('slot_export')}
+          />
+          <Button
+            fluid
+            icon="upload"
+            content="Загрузить JSON"
+            tooltip="Загрузить персонажа в выбранный слот. Перед заменой появится подтверждение."
+            onClick={() => act('slot_import')}
+          />
+          <Button
+            fluid
+            icon="history"
+            content="Загрузить старую копию"
+            tooltip="Персонаж, экспортированный старым редактором в локальное хранилище BYOND. Загрузится в выбранный слот после подтверждения."
+            onClick={() => act('slot_import_legacy')}
+          />
+          <Button.Confirm
+            fluid
+            icon="share-alt"
+            color={offerActive ? 'bad' : undefined}
+            content={offerActive ? 'Отменить передачу' : 'Предложить слот'}
+            confirmContent={
+              offerActive
+                ? 'Отменить предложение?'
+                : 'Вывести слот на передачу?'
+            }
+            onClick={() => act('slot_give')}
+          />
+          <Button
+            fluid
+            icon="key"
+            content="Получить по коду"
+            onClick={() => act('slot_retrieve')}
+          />
           {offerActive && !!data.redemptionCode && (
-            <Stack.Item>
-              <Box>
-                Код передачи:{' '}
-                <Box inline bold>
-                  {data.redemptionCode}
-                </Box>
+            <Box mt={0.5}>
+              Код передачи:{' '}
+              <Box inline bold>
+                {data.redemptionCode}
               </Box>
-            </Stack.Item>
+            </Box>
           )}
-        </Stack>
+        </Box>
       )}
     </Box>
   );
