@@ -1,6 +1,6 @@
 /datum/nanite_rule
 	var/name = "Generic Condition"
-	var/desc = "When triggered, the program is active"
+	var/desc = "При срабатывании программа активна"
 	var/datum/nanite_program/program
 
 /datum/nanite_rule/New(datum/nanite_program/new_program)
@@ -26,7 +26,7 @@
 
 /datum/nanite_rule/health
 	name = "Health"
-	desc = "Checks the host's health status."
+	desc = "Проверяет состояние здоровья носителя."
 
 	var/threshold = 50
 	var/above = TRUE
@@ -52,7 +52,7 @@
 //TODO allow inversion
 /datum/nanite_rule/crit
 	name = "Crit"
-	desc = "Checks if the host is in critical condition."
+	desc = "Проверяет, находится ли носитель в критическом состоянии."
 
 /datum/nanite_rule/crit/check_rule()
 	if(program.host_mob.InCritical())
@@ -61,7 +61,7 @@
 
 /datum/nanite_rule/death
 	name = "Death"
-	desc = "Checks if the host is dead."
+	desc = "Проверяет, мёртв ли носитель."
 
 /datum/nanite_rule/death/check_rule()
 	if(program.host_mob.stat == DEAD || HAS_TRAIT(program.host_mob, TRAIT_FAKEDEATH))
@@ -70,7 +70,7 @@
 
 /datum/nanite_rule/cloud_sync
 	name = "Cloud Sync"
-	desc = "Checks if the nanites have cloud sync enabled or disabled."
+	desc = "Проверяет, включена или отключена синхронизация нанитов с облаком."
 	var/check_type = "Enabled"
 
 /datum/nanite_rule/cloud_sync/check_rule()
@@ -88,7 +88,7 @@
 
 /datum/nanite_rule/nanites
 	name = "Nanite Volume"
-	desc = "Checks the host's nanite volume."
+	desc = "Проверяет объём нанитов у носителя."
 
 	var/threshold = 50
 	var/above = TRUE
@@ -116,7 +116,7 @@
 
 /datum/nanite_rule/damage
 	name = "Damage"
-	desc = "Checks the host's damage."
+	desc = "Проверяет урон носителя."
 
 	var/threshold = 50
 	var/above = TRUE

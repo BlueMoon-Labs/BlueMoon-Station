@@ -15,6 +15,10 @@
 	var/saved_base_icon
 	var/saved_icon_override
 	var/saved_pixel_offset
+	var/saved_bubble_icon
+	var/obj/item/robot_module/saved_module
+	var/list/startup_filters = list()
+	var/mob/living/silicon/robot/startup_user
 	var/active = FALSE
 	var/activationCost = 300
 	var/activationUpkeep = 50
@@ -42,8 +46,17 @@
 	friendlyName = pick(GLOB.ai_names)
 
 /obj/item/borg_chameleon/Destroy()
-	listeningTo = null
+	clear_startup_filters()
+	deactivate(user, TRUE)
 	return ..()
+
+/obj/item/borg_chameleon/proc/clear_startup_filters()
+	if(!QDELETED(startup_user))
+		for(var/own_filter in startup_filters)
+			animate(own_filter)
+			startup_user.filters -= own_filter
+	startup_filters.Cut()
+	startup_user = null
 
 /obj/item/borg_chameleon/dropped(mob/user)
 	. = ..()
@@ -54,7 +67,10 @@
 	disrupt(user)
 
 /obj/item/borg_chameleon/attack_self(mob/living/silicon/robot/user)
-	if (user && user.cell && user.cell.charge >  activationCost)
+	if(active && user == src.user)
+		toggle(user)
+		return
+	if (user && user.cell && user.cell.charge > activationCost)
 		if (isturf(user.loc))
 			toggle(user)
 		else
@@ -63,6 +79,8 @@
 		to_chat(user, "<span class='warning'>You need at least [activationCost] charge in your cell to use [src]!</span>")
 
 /obj/item/borg_chameleon/proc/toggle(mob/living/silicon/robot/user)
+	if(QDELETED(user) || loc != user || !user.module)
+		return
 	if(active)
 		playsound(src, 'sound/effects/pop.ogg', 100, TRUE, -6)
 		to_chat(user, "<span class='notice'>You deactivate \the [src].</span>")
@@ -72,8 +90,10 @@
 			to_chat(user, "<span class='notice'>\the [src] is recharging.</span>")
 			return
 		var/borg_icon = input(user, "Select an icon!", "Robot Icon", null) as null|anything in engymodels
-		if(!borg_icon)
+		if(!borg_icon || QDELETED(src) || QDELETED(user) || loc != user || !user.module)
 			return FALSE
+		// Previous wide disguises must not leak their offset into regular models.
+		disguise_pixel_offset = 0
 		switch(borg_icon)
 			if("Default")
 				disguise = "engineer"
@@ -113,37 +133,40 @@
 		animation_playing = TRUE
 		to_chat(user, "<span class='notice'>You activate \the [src].</span>")
 		playsound(src, 'sound/effects/seedling_chargeup.ogg', 100, TRUE, -6)
-		var/start = user.filters.len
-		var/X,Y,rsq,i,f
+		startup_user = user
+		var/X,Y,rsq,i
 		for(i=1, i<=7, ++i)
 			do
 				X = 60*rand() - 30
 				Y = 60*rand() - 30
 				rsq = X*X + Y*Y
 			while(rsq<100 || rsq>900)
-			user.filters += filter(type="wave", x=X, y=Y, size=rand()*2.5+0.5, offset=rand())
-		for(i=1, i<=7, ++i)
-			f = user.filters[start+i]
-			animate(f, offset=f:offset, time=0, loop=3, flags=ANIMATION_PARALLEL)
-			animate(offset=f:offset-1, time=rand()*20+10)
-		if (do_after(user, 50, target=user) && user.cell.use(activationCost))
+			var/own_filter = filter(type="wave", x=X, y=Y, size=rand()*2.5+0.5, offset=rand())
+			startup_filters += own_filter
+			user.filters += own_filter
+			animate(own_filter, offset=own_filter:offset, time=0, loop=3, flags=ANIMATION_PARALLEL)
+			animate(offset=own_filter:offset-1, time=rand()*20+10)
+		var/completed = do_after(user, 50, target=user)
+		if(QDELETED(src))
+			return
+		if(completed && !QDELETED(user) && loc == user && user.module && user.cell?.use(activationCost))
 			playsound(src, 'sound/effects/bamf.ogg', 100, TRUE, -6)
 			to_chat(user, "<span class='notice'>You are now disguised as the Nanotrasen engineering borg \"[friendlyName]\".</span>")
 			activate(user)
-		else
+		else if(!QDELETED(user))
 			to_chat(user, "<span class='warning'>The chameleon field fizzles.</span>")
 			do_sparks(3, FALSE, user)
-			for(i=1, i<=min(7, user.filters.len), ++i) // removing filters that are animating does nothing, we gotta stop the animations first
-				f = user.filters[start+i]
-				animate(f)
-		user.filters = null
+		clear_startup_filters()
 		animation_playing = FALSE
 
 /obj/item/borg_chameleon/process()
-	if (user)
-		if (!user.cell || !user.cell.use(activationUpkeep))
-			disrupt(user)
-	else
+	if(!active)
+		return PROCESS_KILL
+	if(QDELETED(user) || !user.module || user.module != saved_module)
+		deactivate(user, TRUE)
+		return PROCESS_KILL
+	if(!user.cell || !user.cell.use(activationUpkeep))
+		disrupt(user)
 		return PROCESS_KILL
 
 /obj/item/borg_chameleon/proc/activate(mob/living/silicon/robot/user)
@@ -153,6 +176,8 @@
 	saved_base_icon = user.module.cyborg_base_icon
 	saved_icon_override = user.module.cyborg_icon_override
 	saved_pixel_offset = user.module.cyborg_pixel_offset
+	saved_bubble_icon = user.bubble_icon
+	saved_module = user.module
 	user.name = friendlyName
 	user.module.cyborg_base_icon = disguise
 	user.module.cyborg_icon_override = disguise_icon_override
@@ -168,23 +193,30 @@
 	RegisterSignal(user, signalCache, PROC_REF(disrupt))
 	listeningTo = user
 
-/obj/item/borg_chameleon/proc/deactivate(mob/living/silicon/robot/user)
+/obj/item/borg_chameleon/proc/deactivate(mob/living/silicon/robot/target, silent = FALSE)
 	STOP_PROCESSING(SSobj, src)
-	if(listeningTo)
+	if(listeningTo && !QDELETED(listeningTo))
 		UnregisterSignal(listeningTo, signalCache)
-		listeningTo = null
-	do_sparks(5, FALSE, user)
-	user.name = savedName
-	user.module.cyborg_base_icon = saved_base_icon || initial(user.module.cyborg_base_icon)
-	user.module.cyborg_icon_override = saved_icon_override
-	user.module.cyborg_pixel_offset = saved_pixel_offset
-	user.bubble_icon = "syndibot"
+	listeningTo = null
+	var/was_active = active
 	active = FALSE
-	user.update_icons()
-	user.pixel_x = 0 //this solely exists because of dogborgs. I want anyone who ever reads this code later on to know this. Don't ask me why it's here, doesn't work above update_icons()
-	src.user = user
+	if(was_active && !QDELETED(target))
+		if(!silent)
+			do_sparks(5, FALSE, target)
+		if(target.name == friendlyName)
+			target.name = savedName
+		if(target.module == saved_module && !QDELETED(saved_module))
+			saved_module.cyborg_base_icon = saved_base_icon
+			saved_module.cyborg_icon_override = saved_icon_override
+			saved_module.cyborg_pixel_offset = saved_pixel_offset
+		if(target.bubble_icon == "robot")
+			target.bubble_icon = saved_bubble_icon
+		target.update_icons()
+	src.user = null
+	saved_module = null
 
-/obj/item/borg_chameleon/proc/disrupt(mob/living/silicon/robot/user)
+/obj/item/borg_chameleon/proc/disrupt(mob/living/silicon/robot/target)
 	if(active)
-		to_chat(user, "<span class='danger'>Your chameleon field deactivates.</span>")
-		deactivate(user)
+		if(!QDELETED(target))
+			to_chat(target, "<span class='danger'>Your chameleon field deactivates.</span>")
+		deactivate(src.user)

@@ -492,7 +492,7 @@
 
 /datum/design/mech_medical_beamgun
 	name = "Exosuit Medical Equipment (Medical Beamgun)"
-	desc = "Equipment for medical exosuits. A mounted medical nanite projector which will treat patients with a focused beam."
+	desc = "Оборудование для медицинских экзокостюмов. Установленный медицинский проектор нанитов, лечащий пациентов сфокусированным лучом."
 	id = "mech_medi_beam"
 	build_type = MECHFAB
 	materials = list(/datum/material/iron = 15000, /datum/material/glass = 8000, /datum/material/plasma = 3000, /datum/material/gold = 8000, /datum/material/diamond = 2000)

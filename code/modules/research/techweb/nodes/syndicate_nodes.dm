@@ -2,7 +2,7 @@
 /datum/techweb_node/syndicate_basic
 	id = "syndicate_basic"
 	display_name = "Illegal Technology"
-	description = "Dangerous research used to create dangerous objects."
+	description = "Опасные исследования для создания опасных предметов."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("adv_engi", "adv_weaponry", "explosive_weapons")
 	design_ids = list("decloner", "borg_syndicate_module", "suppressor", "largecrossbow", "donksofttoyvendor", "donksoft_refill", "syndiesleeper", "inducer_syn", "piercesyringe") // - ci-xray
@@ -31,7 +31,7 @@
 /datum/techweb_node/advanced_illegal_ballistics
 	id = "advanced_illegal_ballistics"
 	display_name = "Advanced Non-Standard Ballistics"
-	description = "Ballistic ammunition for non-standard firearms. Usually the ones you don't have nor want to be involved with."
+	description = "Баллистические боеприпасы для нестандартного огнестрельного оружия. Обычно того, которого у вас нет и с которым лучше не связываться."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	design_ids = list("10mm","10mmap","10mminc","10mmhp", /*"sl357","sl357ap", "sl357dumdum",*/ "m45","bolt_clip","m10apbox","m10firebox","m10hpbox", "10mm_large", "10mm_large_soporific", "combatinducer", "mod_mind_transfer")
 	prereq_ids = list("ballistic_weapons","syndicate_basic","explosive_weapons")
@@ -40,7 +40,7 @@
 /datum/techweb_node/improved_shotgun_ballistics
 	id = "Improved_shotgun_ballistics"
 	display_name = "Improved shotgun ballistics"
-	description = "Improved shotgun shells widly usable by Syndicate PMC forces."
+	description = "Улучшенные дробовые патроны, активно используемые ЧВК Синдиката."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	design_ids = list("flechette_shell", "frangible_slug")
 	prereq_ids = list("ballistic_weapons","syndicate_basic","explosive_weapons")

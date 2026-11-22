@@ -101,6 +101,10 @@
 /datum/director_action/proc/director_preflight()
 	return null
 
+// Причина снять действие с отложенного запуска до списания бюджета.
+/datum/director_action/proc/pending_cancel_reason()
+	return null
+
 /// Запуск действия. Возвращает TRUE при успехе.
 /datum/director_action/proc/execute_action()
 	CRASH("execute_action() не переопределён у [type]")

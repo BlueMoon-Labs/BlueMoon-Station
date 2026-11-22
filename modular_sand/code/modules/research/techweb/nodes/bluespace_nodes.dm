@@ -1,7 +1,7 @@
 /datum/techweb_node/cryptominer
 	id = "cryptominer"
 	display_name = "Cryptocurrency Mining"
-	description = "Harness the power of cryptocurrency to make credits for Cargo-- slowly."
+	description = "Используйте силу криптовалюты, чтобы добывать кредиты для грузовой службы — медленно."
 	informing_radio_channels = list(RADIO_CHANNEL_SUPPLY)
 	prereq_ids = list("bluespace_mining")
 	design_ids = list("cryptominer")
@@ -10,7 +10,7 @@
 /datum/techweb_node/cryptominersyndie
 	id = "cryptominersyndie"
 	display_name = "Illegal Cryptocurrency Mining"
-	description = "Harness the power of bluespace to make credits for Cargo-- slowly."
+	description = "Используйте силу блюспейса, чтобы добывать кредиты для грузовой службы — медленно."
 	informing_radio_channels = list(RADIO_CHANNEL_SUPPLY)
 	prereq_ids = list("cryptominer","syndicate_basic")
 	design_ids = list("cryptominersyndie")
@@ -19,7 +19,7 @@
 /datum/techweb_node/computermath
 	id = "computermath"
 	display_name = "Problem Computer"
-	description = "Solve problems for either cargo credits or research points."
+	description = "Решайте проблемы ради грузовых кредитов или очков исследований."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_SUPPLY)
 	prereq_ids = list("base")
 	design_ids = list("computermath")
@@ -28,7 +28,7 @@
 /datum/techweb_node/bs_mining
 	id = "bluespace_mining"
 	display_name = "Bluespace Mining Technology"
-	description = "Harness the power of bluespace to make materials out of nothing, slowly. Requires a bluespace core to function."
+	description = "Используйте силу блюспейса, чтобы создавать материалы из ничего, медленно. Для работы требуется ядро блюспейса."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("practical_bluespace", "adv_mining", "anomaly_research")
 	design_ids = list("bluespace_miner")

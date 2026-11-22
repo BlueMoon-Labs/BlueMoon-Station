@@ -23,21 +23,21 @@ export const RoboticsControlConsole = (props) => {
             lineHeight="23px"
             selected={tab === 1}
             onClick={() => setTab(1)}>
-            Cyborgs ({cyborgs.length})
+            Киборги ({cyborgs.length})
           </Tabs.Tab>
           <Tabs.Tab
             icon="microchip"
             lineHeight="23px"
             selected={tab === 2}
             onClick={() => setTab(2)}>
-            Drones ({drones.length})
+            Дроны ({drones.length})
           </Tabs.Tab>
           <Tabs.Tab
             icon="user-astronaut"
             lineHeight="23px"
             selected={tab === 3}
             onClick={() => setTab(3)}>
-            Cybernetics ({cybernetics.length})
+            Кибернетика ({cybernetics.length})
           </Tabs.Tab>
         </Tabs>
         {tab === 1 && (
@@ -60,7 +60,7 @@ const Cyborgs = (props) => {
   if (!cyborgs.length) {
     return (
       <NoticeBox>
-        No cyborg units detected within access parameters
+        В зоне доступа не обнаружено блоков киборгов
       </NoticeBox>
     );
   }
@@ -74,7 +74,7 @@ const Cyborgs = (props) => {
             {!!can_hack && !cyborg.emagged && (
               <Button
                 icon="terminal"
-                content="Hack"
+                content="Взломать"
                 color="bad"
                 onClick={() => act('magbot', {
                   ref: cyborg.ref,
@@ -83,13 +83,13 @@ const Cyborgs = (props) => {
             <Button.Confirm
               icon={cyborg.locked_down ? 'unlock' : 'lock'}
               color={cyborg.locked_down ? 'good' : 'default'}
-              content={cyborg.locked_down ? "Release" : "Lockdown"}
+              content={cyborg.locked_down ? "Освободить" : "Блокировка"}
               onClick={() => act('stopbot', {
                 ref: cyborg.ref,
               })} />
             <Button.Confirm
               icon="bomb"
-              content="Detonate"
+              content="Детонировать"
               color="bad"
               onClick={() => act('killbot', {
                 ref: cyborg.ref,
@@ -97,20 +97,20 @@ const Cyborgs = (props) => {
           </>
         )}>
         <LabeledList>
-          <LabeledList.Item label="Status">
+          <LabeledList.Item label="Статус">
             <Box color={cyborg.status
               ? 'bad'
               : cyborg.locked_down
                 ? 'average'
                 : 'good'}>
               {cyborg.status
-                ? "Not Responding"
+                ? "Нет ответа"
                 : cyborg.locked_down
-                  ? "Locked Down"
-                  : "Nominal"}
+                  ? "Заблокирован"
+                  : "Норма"}
             </Box>
           </LabeledList.Item>
-          <LabeledList.Item label="Charge">
+          <LabeledList.Item label="Заряд">
             <Box color={cyborg.charge <= 30
               ? 'bad'
               : cyborg.charge <= 70
@@ -118,15 +118,15 @@ const Cyborgs = (props) => {
                 : 'good'}>
               {typeof cyborg.charge === 'number'
                 ? cyborg.charge + "%"
-                : "Not Found"}
+                : "Не найдено"}
             </Box>
           </LabeledList.Item>
-          <LabeledList.Item label="Model">
+          <LabeledList.Item label="Модель">
             {cyborg.module}
           </LabeledList.Item>
-          <LabeledList.Item label="Master AI">
+          <LabeledList.Item label="Главный ИИ">
             <Box color={cyborg.synchronization ? 'default' : 'average'}>
-              {cyborg.synchronization || "None"}
+              {cyborg.synchronization || "Нет"}
             </Box>
           </LabeledList.Item>
         </LabeledList>
@@ -142,7 +142,7 @@ const Drones = (props) => {
   if (!drones.length) {
     return (
       <NoticeBox>
-        No drone units detected within access parameters
+        В зоне доступа не обнаружено дронов
       </NoticeBox>
     );
   }
@@ -155,20 +155,20 @@ const Drones = (props) => {
         buttons={(
           <Button.Confirm
             icon="bomb"
-            content="Detonate"
+            content="Детонировать"
             color="bad"
             onClick={() => act('killdrone', {
               ref: drone.ref,
             })} />
         )}>
         <LabeledList>
-          <LabeledList.Item label="Status">
+          <LabeledList.Item label="Статус">
             <Box color={drone.status
               ? 'bad'
               : 'good'}>
               {drone.status
-                ? "Not Responding"
-                : 'Nominal'}
+                ? "Нет ответа"
+                : 'Норма'}
             </Box>
           </LabeledList.Item>
         </LabeledList>
@@ -185,7 +185,7 @@ const Cybernetics = (props) => {
   if (!cybernetics.length) {
     return (
       <NoticeBox>
-        No neural-linked bio-assets detected
+        Нейросвязанных биообъектов не обнаружено
       </NoticeBox>
     );
   }
@@ -213,7 +213,7 @@ const Cybernetics = (props) => {
             )}
             <Button.Confirm
               icon="bolt"
-              content={cyber.shock_cooldown > 0 ? `${cyber.shock_cooldown}s` : "Shock"}
+              content={cyber.shock_cooldown > 0 ? `${cyber.shock_cooldown}с` : "Разряд"}
               color="average"
               disabled={cyber.shock_cooldown > 0}
               onClick={() => act('shock_cyber', {
@@ -222,12 +222,12 @@ const Cybernetics = (props) => {
           </>
         )}>
         <LabeledList>
-          <LabeledList.Item label="Status">
+          <LabeledList.Item label="Статус">
             <Box color={cyber.status >= 2 ? 'bad' : 'good'}>
-              {cyber.status >= 2 ? "Unconscious" : "Active"}
+              {cyber.status >= 2 ? "Без сознания" : "Активен"}
             </Box>
           </LabeledList.Item>
-          <LabeledList.Item label="Health">
+          <LabeledList.Item label="Здоровье">
             <ProgressBar
               value={cyber.health}
               minValue={0}
@@ -236,7 +236,7 @@ const Cybernetics = (props) => {
               {cyber.health} / {cyber.max_health}
             </ProgressBar>
           </LabeledList.Item>
-          <LabeledList.Item label="Designation">
+          <LabeledList.Item label="Назначение">
             {cyber.role}
           </LabeledList.Item>
         </LabeledList>

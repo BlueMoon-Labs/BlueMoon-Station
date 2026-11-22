@@ -335,7 +335,7 @@
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/cyberimp_berserker_corp/hack
-	name = "Sandevistan Implant"
+	name = "Berserker Implant"
 	id = "ci-berserker-hack"
 	build_path = /obj/item/organ/cyberimp/brain/berserker
 	hacked_only = TRUE
@@ -647,7 +647,7 @@
 
 /datum/design/nanite_pump_implant
 	name = "Nanite Pump Implant Case"
-	desc = "A glass case containing an nanite pump implant"
+	desc = "Стеклянный футляр с имплантом-насосом для нанитов"
 	id = "implant_nanite_pump"
 	build_type = PROTOLATHE
 	materials = list(

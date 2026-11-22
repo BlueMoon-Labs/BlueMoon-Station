@@ -944,7 +944,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	list("id" = "reinforced_tendons", "label" = "Усиленные сухожилия", "desc" = "Синтетические сухожилия обеих ног с микросерво: позволяют совершить второй прыжок в воздухе.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/tendons, "organ" = TRUE, "group" = "leg_augments"),
 	list("id" = "fortified_ankles", "label" = "Усиленные лодыжки", "desc" = "Гидравлические поршни в лодыжках: рывок вперёд по направлению взгляда.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/ankles, "organ" = TRUE, "group" = "leg_augments"),
 	list("id" = "corp_blood_pump", "label" = "Корпоративная кровяная помпа", "desc" = "Насос перекачивает кровь и ускоряет заживление, а при активации мгновенно восстанавливает синтетическую плоть.", "cost" = 4, "path" = /obj/item/organ/cyberimp/chest/blood_pump/sec_level, "organ" = TRUE),
-	list("id" = "razor_claws", "label" = "Выдвижные когти", "desc" = "Выдвижные когти из лёгкого сплава. Занимают обе руки.", "cost" = 3, "path" = /obj/item/organ/cyberimp/arm/razor_claws, "organ" = TRUE, "group" = "arm_augments"),
+	list("id" = "razor_claws", "label" = "Выдвижные когти", "desc" = "Пара выдвижных когтей из лёгкого сплава: при выборе в редакторе имплант получают обе руки.", "cost" = 3, "path" = /obj/item/organ/cyberimp/arm/razor_claws, "offhand_path" = /obj/item/organ/cyberimp/arm/razor_claws/left, "organ" = TRUE, "group" = "arm_augments"),
 	list("id" = "subdermal_armor", "label" = "Подкожная броня", "desc" = "Композитные пластины под кожей: снижают урон от ближнего боя, пуль и лазеров.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/subdermal_armor, "organ" = TRUE),
 	list("id" = "reinforced_skeleton", "label" = "Усиленный скелет", "desc" = "Углеродный эндоскелет: увеличивает запас здоровья.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/reinforced_skeleton, "organ" = TRUE),
 	list("id" = "nutriment_pump", "label" = "Питательный насос", "desc" = "Синтезирует небольшую порцию питательных веществ в кровь при голоде.", "cost" = 1, "path" = /obj/item/organ/cyberimp/chest/nutriment, "organ" = TRUE),
@@ -1226,11 +1226,18 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 			continue
 		var/new_path = option["path"]
 		if(option["organ"])
-			if(locate(new_path) in character.internal_organs)
-				continue
-			var/obj/item/organ/new_organ = new new_path
-			// drop_if_replaced = FALSE: заменённый орган удаляется, а не падает на пол при спавне.
-			new_organ.Insert(character, FALSE, FALSE)
+			// Некоторые импланты (когти) в редакторе ставятся парой: отдельный однорукий
+			// имплант на каждую руку. Сам тип при этом не занимает оба слота принудительно.
+			var/list/organ_paths = list(new_path)
+			var/offhand_path = option["offhand_path"]
+			if(offhand_path)
+				organ_paths += offhand_path
+			for(var/organ_path in organ_paths)
+				if(locate(organ_path) in character.internal_organs)
+					continue
+				var/obj/item/organ/new_organ = new organ_path
+				// drop_if_replaced = FALSE: заменённый орган удаляется, а не падает на пол при спавне.
+				new_organ.Insert(character, FALSE, FALSE)
 			continue
 		if(locate(new_path) in character.implants)
 			continue
@@ -1505,6 +1512,19 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	if(icon_updates)
 		character.update_body()
 		character.update_hair()
+
+/datum/preferences/proc/copy_appearance_to(mob/living/carbon/human/character, icon_updates = 1)
+	var/list/original_features = features
+	var/list/appearance_features = features.Copy()
+	appearance_features["body_size"] = RESIZE_DEFAULT_SIZE
+	features = appearance_features
+	copy_to(character, icon_updates, roundstart_checks = FALSE)
+	features = original_features
+
+	character.mob_weight = MOB_WEIGHT_NORMAL
+	character.update_weight(MOB_WEIGHT_NORMAL)
+	character.dna.features["body_size"] = RESIZE_DEFAULT_SIZE
+	character.update_size(RESIZE_DEFAULT_SIZE)
 
 /// Применяет к character сохранённые в префах модификации конечностей (протезы/ампутации).
 /// Сбрасывает все робо-конечности до плотских, регенерирует отсутствующие и затем

@@ -48,13 +48,14 @@
 	return TRUE
 
 /datum/computer_file/program/borg_monitor/process_tick()
-	if(!DL_source)
+	if(QDELETED(DL_source))
+		DL_source = null
 		DL_progress = -1
 		return
 
 	var/turf/here = get_turf(computer)
 	var/turf/there = get_turf(DL_source)
-	if(!here.Adjacent(there))//If someone walked away, cancel the download
+	if(!here || !there || !here.Adjacent(there)) // Cancel if either endpoint has gone away.
 		to_chat(DL_source, span_danger("Log upload failed: general connection error."))//Let the borg know the upload stopped
 		DL_source = null
 		DL_progress = -1
@@ -87,7 +88,7 @@
 		if(!evaluate_borg(R))
 			continue
 
-		var/list/upgrade
+		var/list/upgrade = list()
 		for(var/obj/item/borg/upgrade/I in R.upgrades)
 			upgrade += "\[[I.name]\] "
 
@@ -97,7 +98,7 @@
 
 		var/list/cyborg_data = list(
 			name = R.name,
-			integ = round((R.health + 100) / 2), //mob heath is -100 to 100, we want to scale that to 0 - 100
+			integ = R.maxHealth > 0 ? clamp(round(50 + (50 * R.health / R.maxHealth)), 0, 100) : 0,
 			locked_down = R.locked_down,
 			status = R.stat,
 			shell_discon = shell,
@@ -128,10 +129,11 @@
 			var/ID = checkID()
 			if(!ID)
 				return
-			if(R.stat == DEAD) //Dead borgs will listen to you no longer
+			if(R.stat == DEAD) // Dead cyborgs cannot receive remote messages.
 				to_chat(usr, span_warning("Error -- Could not open a connection to unit:[R]"))
+				return
 			var/message = stripped_input(usr, message = "Enter message to be sent to remote cyborg.", title = "Send Message")
-			if(!message)
+			if(!message || QDELETED(R) || R.stat == DEAD || !evaluate_borg(R))
 				return
 			to_chat(R, "<br><br>[span_notice("Message from [ID] -- \"[message]\"")]<br>")
 			to_chat(usr, "Message sent to [R]: [message]")
@@ -144,7 +146,9 @@
 
 ///This proc is used to determin if a borg should be shown in the list (based on the borg's scrambledcodes var). Syndicate version overrides this to show only syndicate borgs.
 /datum/computer_file/program/borg_monitor/proc/evaluate_borg(mob/living/silicon/robot/R)
-	if((get_turf(computer)).z != (get_turf(R)).z)
+	var/turf/source_turf = get_turf(computer)
+	var/turf/borg_turf = get_turf(R)
+	if(!source_turf || !borg_turf || source_turf.z != borg_turf.z)
 		return FALSE
 	if(R.scrambledcodes)
 		return FALSE
@@ -176,7 +180,9 @@
 	return FALSE
 
 /datum/computer_file/program/borg_monitor/syndicate/evaluate_borg(mob/living/silicon/robot/R)
-	if((get_turf(computer)).z != (get_turf(R)).z)
+	var/turf/source_turf = get_turf(computer)
+	var/turf/borg_turf = get_turf(R)
+	if(!source_turf || !borg_turf || source_turf.z != borg_turf.z)
 		return FALSE
 	if(!R.scrambledcodes)
 		return FALSE

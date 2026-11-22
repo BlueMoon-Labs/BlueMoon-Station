@@ -386,6 +386,25 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 		handle_dying()
 	return ..()
 
+//WHITE-STEEL: неоплодотворённые яйца своего тира падают с любого паука ужаса.
+//T1 - 30%, T2 - 20%, T3 - 15%, T4+ - 10%.
+/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/drop_loot()
+	. = ..()
+	var/egg_chance = 10
+	var/egg_type = /obj/item/broken/terror_spider_egg/tier4
+	switch(spider_tier)
+		if(TS_TIER_1)
+			egg_chance = 30
+			egg_type = /obj/item/broken/terror_spider_egg/tier1
+		if(TS_TIER_2)
+			egg_chance = 20
+			egg_type = /obj/item/broken/terror_spider_egg/tier2
+		if(TS_TIER_3)
+			egg_chance = 15
+			egg_type = /obj/item/broken/terror_spider_egg/tier3
+	if(prob(egg_chance))
+		new egg_type(loc)
+
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/spider_special_action()
 	return
 

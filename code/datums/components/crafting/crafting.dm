@@ -218,6 +218,10 @@
 			if(!check_tools(a, R, contents))
 				return ", missing tool."
 			var/list/parts = del_reqs(R, a)
+			// del_reqs returns null when it couldn't actually consume every requirement.
+			// Never spawn the result in that case, otherwise ingredients are duplicated.
+			if(isnull(parts))
+				return ", missing component."
 			var/atom/movable/I = new R.result (get_turf(a.loc))
 			I.CheckParts(parts, R)
 			if(isitem(I) && IS_EDIBLE(I) && ismob(a))
@@ -273,7 +277,7 @@
 				while(amt > 0)
 					var/obj/item/reagent_containers/RC = locate() in surroundings
 					if(!RC)
-						return
+						return null
 					if(!RC.reagents)
 						surroundings -= RC
 						continue
@@ -306,6 +310,8 @@
 				var/obj/item/stack/SD
 				while(amt > 0)
 					S = locate(A) in surroundings
+					if(!S)
+						return null
 					if(S.amount >= amt)
 						if(!locate(S.type) in Deletion)
 							SD = new S.type()
@@ -327,6 +333,8 @@
 				var/atom/movable/I
 				while(amt > 0)
 					I = locate(A) in surroundings
+					if(!I)
+						return null
 					Deletion += I
 					surroundings -= I
 					amt--

@@ -279,6 +279,13 @@
 	icon_state = "cargo_envirohelm"
 	item_state = "cargo_envirohelm"
 
+/obj/item/clothing/head/helmet/space/plasmaman/bitrunner
+	name = "bitrunner's plasma envirosuit helmet"
+	desc = "An envirohelmet with extended blue light filters for bitrunning plasmamen."
+	icon_state = "bitrunner_envirohelm"
+	item_state = "bitrunner_envirohelm"
+	light_overlay = "bitrunner_envirohelm-light"
+
 /obj/item/clothing/head/helmet/space/plasmaman/mining
 	name = "mining plasma envirosuit helmet"
 	desc = "A khaki helmet given to plasmamen miners operating on lavaland."

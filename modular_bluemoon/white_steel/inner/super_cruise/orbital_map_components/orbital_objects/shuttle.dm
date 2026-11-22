@@ -87,8 +87,11 @@
 				if(exploration_port && exploration_port.mode == SHUTTLE_IDLE)
 					if(exploration_port.destination != exploration_home)
 						return
-					if(SSshuttle.moveShuttle("exploration", "exploration_home", 1) == 0)
-						return
+					//WHITE-STEEL FIX: заражённая экспедиция не возвращается на станцию
+					//даже при выходе шаттла за границы карты.
+					if(!SSorbits.current_objective || !SSorbits.current_objective.expedition_has_terror_eggs())
+						if(SSshuttle.moveShuttle("exploration", "exploration_home", 1) == 0)
+							return
 		MOVE_ORBITAL_BODY(src, rand(-2000, 2000), rand(-2000, 2000))
 		velocity.x = 0
 		velocity.y = 0

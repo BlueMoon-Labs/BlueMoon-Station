@@ -1101,3 +1101,34 @@
 #undef ILLEGAL_LOOT_DELAY_MAX
 #undef ILLEGAL_LOOT_DELAY_ROUND
 #undef ILLEGAL_LOOT_DELAY_CHANCE
+
+/obj/effect/spawner/random/armory/laser_gun
+	parent_type = /obj/effect/spawner/lootdrop/armory_contraband
+
+/obj/effect/spawner/random/contraband/grenades/dangerous
+	parent_type = /obj/effect/spawner/lootdrop
+	loot = list(
+		/obj/item/grenade/frag = 3,
+		/obj/item/grenade/smokebomb = 3,
+		/obj/item/grenade/empgrenade = 2,
+	)
+
+/obj/effect/spawner/random/medical/medkit
+	parent_type = /obj/effect/spawner/lootdrop/healing_kits
+	loot = list(
+		/obj/item/storage/firstaid/regular = 4,
+		/obj/item/storage/firstaid/brute = 2,
+		/obj/item/storage/firstaid/fire = 2,
+		/obj/item/storage/firstaid/toxin = 2,
+	)
+
+/obj/effect/spawner/random/medical/minor_healing
+	parent_type = /obj/effect/spawner/lootdrop
+	loot = list(
+		/obj/item/reagent_containers/hypospray/medipen = 3,
+		/obj/item/stack/medical/bruise_pack = 2,
+		/obj/item/stack/medical/ointment = 2,
+	)
+
+/obj/effect/spawner/random/trash/garbage
+	parent_type = /obj/effect/spawner/lootdrop/trashbin

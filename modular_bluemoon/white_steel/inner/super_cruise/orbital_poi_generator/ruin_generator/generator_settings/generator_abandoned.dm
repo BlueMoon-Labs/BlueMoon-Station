@@ -1,3 +1,18 @@
+/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/knight/mission_noghost
+	ai_playercontrol_allowtype = 0
+
+/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/lurker/mission_noghost
+	ai_playercontrol_allowtype = 0
+
+/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/healer/mission_noghost
+	ai_playercontrol_allowtype = 0
+
+/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/builder/mission_noghost
+	ai_playercontrol_allowtype = 0
+
+/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/widow/mission_noghost
+	ai_playercontrol_allowtype = 0
+
 /datum/generator_settings/abandoned
 	probability = 6
 	floor_break_prob = 4
@@ -15,13 +30,19 @@
 		/obj/effect/decal/cleanable/greenglow = 1,
 		/obj/effect/spawner/lootdrop/glowstick = 4,
 		/obj/effect/spawner/lootdrop/maintenance = 3,
-		/mob/living/simple_animal/hostile/poison/giant_spider/hunter = 0.75,
-		/mob/living/simple_animal/hostile/poison/giant_spider/nurse = 0.75,
+		/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/knight/mission_noghost = 0.75,
+		/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/lurker/mission_noghost = 0.75,
+		/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/healer/mission_noghost = 0.75,
+		/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/builder/mission_noghost = 0.75,
 		null = 90,
 	)
 	. += get_broken_stuff()
 	for(var/trash in subtypesof(/obj/item/trash))
 		.[trash] = 0.33
+	var/total_weight = 0
+	for(var/key in .)
+		total_weight += .[key]
+	.[/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/widow/mission_noghost] = total_weight / 99
 
 /datum/generator_settings/abandoned/get_directional_walltrash()
 	return list(

@@ -164,6 +164,15 @@
 			message_say = "FOR RATVAR!"
 		else if(UM.has_antag_datum(/datum/antagonist/rev))
 			message_say = "VIVA LA REVOLUTION!"
+		else
+			var/list/antag_datums = M.mind.antag_datums
+			if(LAZYLEN(antag_datums))
+				for(var/datum/antagonist/antag as anything in shuffle(antag_datums))
+					if(QDELETED(antag))
+						continue
+					if(antag.suicide_cry)
+						message_say = antag.suicide_cry
+						break // фоллбек для работф suicide_cry
 	M.say(message_say, forced="C4 suicide")
 
 /obj/item/grenade/plastic/suicide_act(mob/user)

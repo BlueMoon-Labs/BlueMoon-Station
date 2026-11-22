@@ -115,6 +115,10 @@ GLOBAL_LIST_INIT(bitflags, list(
 #define CULTMAGIC_BYPASS (1<<14)
 /// Запрещает передачу и приём голосовой радиосвязи внутри области.
 #define RADIO_BLACKOUT (1<<15)
+/// Виртуальная зона битраннинга.
+#define VIRTUAL_AREA (1<<16)
+/// Зона внутри виртуального домена, безопасная от виртуальных сущностей.
+#define VIRTUAL_SAFE_AREA (1<<17)
 
 /*
 	These defines are used specifically with the atom/pass_flags bitmask

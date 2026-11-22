@@ -87,7 +87,7 @@
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/suit/armor/inteq = 5,
 		/obj/item/clothing/head/helmet/swat/inteq = 5,
-		null = 40   // ничего не выпадает
+		null = 80   // ничего не выпадает
 	)
 	attack_verb_continuous = "smashes"
 	attack_verb_simple = "smash"
@@ -111,7 +111,7 @@
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/head/helmet/space/syndicate/inteq = 5,
 		/obj/item/clothing/suit/space/syndicate/inteq = 5,
-		null = 40   // ничего не выпадает
+		null = 80   // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/melee/space/Initialize(mapload)
@@ -131,7 +131,7 @@
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 5,
 		/obj/item/broken/inteq_elite = 35,
-		null = 10   // ничего не выпадает
+		null = 110   // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/melee/sword
@@ -154,7 +154,7 @@
 		/obj/item/clothing/mask/gas/inteq = 5,
 		/obj/item/clothing/suit/armor/inteq = 5,
 		/obj/item/clothing/head/helmet/swat/inteq = 5,
-		null = 20   // ничего не выпадает
+		null = 80   // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/melee/sword/Initialize(mapload)
@@ -189,7 +189,7 @@
 		/obj/item/clothing/mask/gas/inteq = 5,
 		/obj/item/clothing/head/helmet/space/syndicate/inteq = 5,
 		/obj/item/clothing/suit/space/syndicate/inteq = 5,
-		null = 20   // ничего не выпадает
+		null = 80   // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/melee/sword/space/Initialize(mapload)
@@ -215,7 +215,7 @@
 		/obj/item/clothing/mask/gas/inteq = 5,
 		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 5,
 		/obj/item/broken/inteq_elite = 35,
-		null = 10   // ничего не выпадает
+		null = 90   // ничего не выпадает
 	)
 
 ///////////////Guns////////////
@@ -239,7 +239,7 @@
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/suit/armor/inteq = 5,
 		/obj/item/clothing/head/helmet/swat/inteq = 5,
-		null = 30 // ничего не выпадает
+		null = 80 // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/infiltrator //shuttle loan event / GateInteQ
@@ -264,7 +264,7 @@
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/head/helmet/space/syndicate/inteq = 5,
 		/obj/item/clothing/suit/space/syndicate/inteq = 5,
-		null = 30 // ничего не выпадает
+		null = 80 // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/space/Initialize(mapload)
@@ -285,7 +285,7 @@
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 5,
 		/obj/item/broken/inteq_elite = 35,
-		null = 10 // ничего не выпадает
+		null = 90 // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/smg
@@ -301,7 +301,7 @@
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/suit/armor/inteq = 5,
 		/obj/item/clothing/head/helmet/swat/inteq = 5,
-		null = 20 // ничего не выпадает
+		null = 80 // ничего не выпадает
 	)
 
 
@@ -326,7 +326,7 @@
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/head/helmet/space/syndicate/inteq = 5,
 		/obj/item/clothing/suit/space/syndicate/inteq = 5,
-		null = 20 // ничего не выпадает
+		null = 80 // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/smg/space/Initialize(mapload)
@@ -346,7 +346,7 @@
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 5,
 		/obj/item/broken/inteq_elite = 35,
-		null = 10 // ничего не выпадает
+		null = 90 // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/shotgun
@@ -363,7 +363,7 @@
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/suit/armor/inteq = 5,
 		/obj/item/clothing/head/helmet/swat/inteq = 5,
-		null = 20 // ничего не выпадает
+		null = 80 // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/shotgun/space
@@ -383,7 +383,7 @@
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/head/helmet/space/syndicate/inteq = 5,
 		/obj/item/clothing/suit/space/syndicate/inteq = 5,
-		null = 20 // ничего не выпадает
+		null = 80 // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/Initialize(mapload)
@@ -403,7 +403,7 @@
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 5,
 		/obj/item/broken/inteq_elite = 35,
-		null = 10 // ничего не выпадает
+		null = 90 // ничего не выпадает
 	)
 
 ///////////////Misc////////////

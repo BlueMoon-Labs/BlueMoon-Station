@@ -120,14 +120,25 @@ const useRemappedBackend = () => {
 // Utility Functions
 
 const abbreviations = {
-  "General Research": "Gen. Res.",
-  "Nanite Research": "Nanite Res.",
-  "Discovery Research": "Disc. Res.",
+  "General Research": "Общ. иссл.",
+  "Nanite Research": "Нанит. иссл.",
+  "Discovery Research": "Откр. иссл.",
+};
+// Внутренние ключи очков остаются английскими, но на экране показываем русские названия
+const POINT_TYPE_NAMES = {
+  "General Research": "Общие исследования",
+  "Nanite Research": "Наноисследования",
+  "Discovery Research": "Исследования открытий",
+};
+const pointTypeName = name => POINT_TYPE_NAMES[name] ?? name;
+const DISK_TYPE_NAMES = {
+  design: "Диск конструкций",
+  tech: "Диск технологий",
 };
 const abbreviateName = name => abbreviations[name] ?? name;
 const TechwebLoading = () => (
   <Section fill>
-    <Box>Loading research data...</Box>
+    <Box>Загрузка данных исследований...</Box>
   </Section>
 );
 
@@ -145,11 +156,11 @@ export const Techweb = (props) => {
       <Window.Content>
         {!!locked && (
           <Modal width="15em" align="center" className="Techweb__LockedModal">
-            <div><b>Console Locked</b></div>
+            <div><b>Консоль заблокирована</b></div>
             <Button
               icon="unlock"
               onClick={() => act("toggleLock")}>
-              Unlock
+              Разблокировать
             </Button>
           </Modal>
         )}
@@ -171,11 +182,11 @@ export const AppTechweb = (props) => {
       <NtosWindow.Content scrollable>
         {!!locked && (
           <Modal width="15em" align="center" className="Techweb__LockedModal">
-            <div><b>Console Locked</b></div>
+            <div><b>Консоль заблокирована</b></div>
             <Button
               icon="unlock"
               onClick={() => act("toggleLock")}>
-              Unlock
+              Разблокировать
             </Button>
           </Modal>
         )}
@@ -213,23 +224,23 @@ export const TechwebContent = (props) => {
         <Flex className="Techweb__HeaderContent">
           <Flex.Item>
             <Box>
-              Available points:
+              Доступные очки:
               <ul className="Techweb__PointSummary">
                 {Object.keys(points).map(k => (
                   <li key={k}>
-                    <b>{k}</b>: {points[k]}
+                    <b>{pointTypeName(k)}</b>: {points[k]}
                     {!!points_last_tick[k] && (
-                      ` (+${points_last_tick[k]}/sec)`
+                      ` (+${points_last_tick[k]}/сек)`
                     )}
                   </li>
                 ))}
               </ul>
             </Box>
             <Box>
-              Security protocols:
+              Протоколы безопасности:
               <span
                 className={`Techweb__SecProtocol ${!!sec_protocols && "engaged"}`}>
-                {sec_protocols ? "Engaged" : "Disengaged"}
+                {sec_protocols ? "Включены" : "Отключены"}
               </span>
             </Box>
             <Box>
@@ -237,18 +248,18 @@ export const TechwebContent = (props) => {
                 color="default"
                 onClick={() => { act("compactify"); }}
                 checked={!compact}>
-                Compactify
+                Компактный вид
               </Button.Checkbox>
               <Button
                 icon="link"
                 onClick={() => { act("linkmachines"); }} >
-                Link
+                Связать
               </Button>
               <Button
                 icon="trash"
                 disabled={!linkedanalyzer}
                 onClick={() => setTechwebRoute({ route: "analyzer" })}>
-                Analyzer
+                Анализатор
               </Button>
             </Box>
           </Flex.Item>
@@ -257,13 +268,13 @@ export const TechwebContent = (props) => {
             <Button fluid
               onClick={() => act("toggleLock")}
               icon="lock">
-              Lock Console
+              Заблокировать консоль
             </Button>
             {d_disk && (
               <Flex.Item>
                 <Button fluid
                   onClick={() => setTechwebRoute({ route: "disk", diskType: "design" })}>
-                  Design Disk Inserted
+                  Диск конструкций вставлен
                 </Button>
               </Flex.Item>
             )}
@@ -271,7 +282,7 @@ export const TechwebContent = (props) => {
               <Flex.Item>
                 <Button fluid
                   onClick={() => setTechwebRoute({ route: "disk", diskType: "tech" })}>
-                  Tech Disk Inserted
+                  Диск технологий вставлен
                 </Button>
               </Flex.Item>
             )}
@@ -364,14 +375,14 @@ const TechwebOverview = (props) => {
       <Flex.Item>
         <Flex justify="space-between" className="Techweb__HeaderSectionTabs">
           <Flex.Item align="center" className="Techweb__HeaderTabTitle">
-            Web View
+            Обзор сети
           </Flex.Item>
           <Flex.Item grow={1}>
             <Tabs>
               {!!searching && (
                 <Tabs.Tab
                   selected>
-                  Search Results
+                  Результаты поиска
                 </Tabs.Tab>
               )}
             </Tabs>
@@ -380,7 +391,7 @@ const TechwebOverview = (props) => {
             <Input
               value={searchText}
               onInput={(e, value) => setSearchText(value)}
-              placeholder={"Search..."} />
+              placeholder={"Поиск..."} />
           </Flex.Item>
         </Flex>
       </Flex.Item>
@@ -459,12 +470,12 @@ const TechwebDiskMenu = (props) => {
       <Flex.Item>
         <Flex justify="space-between" className="Techweb__HeaderSectionTabs">
           <Flex.Item align="center" className="Techweb__HeaderTabTitle">
-            {diskType.charAt(0).toUpperCase() + diskType.slice(1)} Disk
+            {DISK_TYPE_NAMES[diskType]}
           </Flex.Item>
           <Flex.Item grow={1}>
             <Tabs>
               <Tabs.Tab selected>
-                Stored Data
+                Сохранённые данные
               </Tabs.Tab>
             </Tabs>
           </Flex.Item>
@@ -473,18 +484,18 @@ const TechwebDiskMenu = (props) => {
               <Button
                 icon="save"
                 onClick={() => act("loadTech")}>
-                Web &rarr; Disk
+                Сеть &rarr; Диск
               </Button>
             )}
             <Button
               icon="upload"
               onClick={() => act("uploadDisk", { type: diskType })}>
-              Disk &rarr; Web
+              Диск &rarr; Сеть
             </Button>
             <Button
               icon="trash"
               onClick={() => act("eraseDisk", { type: diskType })}>
-              Erase
+              Стереть
             </Button>
             <Button
               icon="eject"
@@ -492,12 +503,12 @@ const TechwebDiskMenu = (props) => {
                 act("ejectDisk", { type: diskType });
                 setTechwebRoute(null);
               }}>
-              Eject
+              Извлечь
             </Button>
             <Button
               icon="home"
               onClick={() => setTechwebRoute(null)}>
-              Home
+              Назад
             </Button>
           </Flex.Item>
         </Flex>
@@ -522,7 +533,7 @@ const Techwebanalyzer = (props) => {
       <Flex.Item>
         <Flex justify="space-between" className="Techweb__HeaderSectionTabs">
           <Flex.Item align="center" className="Techweb__HeaderTabTitle">
-            Destructive Analyzer
+            Деструктивный анализатор
           </Flex.Item>
           <Flex.Item align="center">
             {analyzeritem ? analyzeritem : ""}
@@ -533,18 +544,18 @@ const Techwebanalyzer = (props) => {
               color="red"
               disabled={analyzeritem === null}
               onClick={() => act("destroyitem")}>
-              Destroy item(Material Reclaim)
+              Уничтожить предмет (извлечь материалы)
             </Button>
             <Button
               icon="eject"
               disabled={analyzeritem === null}
               onClick={() => act("ejectitem")}>
-              Eject
+              Извлечь
             </Button>
             <Button
               icon="home"
               onClick={() => setTechwebRoute(null)}>
-              Home
+              Назад
             </Button>
           </Flex.Item>
         </Flex>
@@ -555,7 +566,7 @@ const Techwebanalyzer = (props) => {
             {analyzeritem ? <TechwebItemmaterials /> : ""}
           </Flex.Item>
           <Flex.Item grow={1} className="Techweb__OverviewNodes">
-            {analyzeritem ? (analyzertechs ? <TechwebItemtechs /> : "Item has no new researchable nodes") : "No inserted items!"}
+            {analyzeritem ? (analyzertechs ? <TechwebItemtechs /> : "Предмет не содержит новых исследуемых узлов") : "Нет вставленных предметов!"}
           </Flex.Item>
         </>
       )}
@@ -585,7 +596,7 @@ const TechwebItemmaterials = (props) => {
       )}
       {!!itemmats && (
         <Flex direction="column">
-          Reclaimable materials:
+          Извлекаемые материалы:
           {itemmats.map(mats => {
             return (
               <Flex.Item key={mats}>
@@ -640,7 +651,7 @@ const TechwebDesignDisk = (props) => {
         <Modal width="20em">
           <Flex direction="column" className="Techweb__DesignModal">
             <Flex.Item>
-              Select a design to save...
+              Выберите конструкцию для сохранения...
             </Flex.Item>
             <Flex.Item>
               <Dropdown
@@ -654,7 +665,7 @@ const TechwebDesignDisk = (props) => {
             <Flex.Item align="center">
               <Button
                 onClick={() => setShowModal(-1)}>
-                Cancel
+                Отмена
               </Button>
               <Button
                 disabled={selectedDesign === null}
@@ -666,7 +677,7 @@ const TechwebDesignDisk = (props) => {
                   setShowModal(-1);
                   setSelectedDesign(null);
                 }}>
-                Select
+                Выбрать
               </Button>
             </Flex.Item>
           </Flex>
@@ -675,33 +686,33 @@ const TechwebDesignDisk = (props) => {
       {blueprints.map((x, i) => (
         <Section
           key={i}
-          title={`Slot ${i + 1}`}
+          title={`Слот ${i + 1}`}
           buttons={
             <>
               {x !== null && (
                 <Button
                   icon="upload"
                   onClick={() => act("uploadDesignSlot", { slot: i + 1 })}>
-                  Upload Design to Web
+                  Загрузить конструкцию в сеть
                 </Button>
               )}
               <Button
                 icon="save"
                 onClick={() => setShowModal(i)}>
-                {x !== null ? "Overwrite Slot" : "Load Design to Slot"}
+                {x !== null ? "Перезаписать слот" : "Загрузить в слот"}
               </Button>
               {x !== null && (
                 <Button
                   icon="trash"
                   onClick={() => act("clearDesignSlot", { slot: i + 1 })}>
-                  Clear Slot
+                  Очистить слот
                 </Button>
               )}
             </>
           }>
-          {x === null && 'Empty' || (
+          {x === null && 'Пусто' || (
             <>
-              Contains the design for <b>{design_cache[x].name}</b>:<br />
+              Содержит конструкцию <b>{design_cache[x].name}</b>:<br />
               <span
                 className={`${design_cache[x].class} Techweb__DesignIcon`} />
             </>
@@ -748,13 +759,13 @@ const TechNodeDetail = (props) => {
       <Flex.Item>
         <Flex justify="space-between" className="Techweb__HeaderSectionTabs">
           <Flex.Item align="center" className="Techweb__HeaderTabTitle">
-            Node
+            Узел
           </Flex.Item>
           <Flex.Item align="center">
             <Button
               icon="home"
               onClick={() => setTechwebRoute(null)}>
-              Home
+              Назад
             </Button>
           </Flex.Item>
         </Flex>
@@ -822,7 +833,7 @@ const TechNode = (props) => {
                 setTechwebRoute({ route: "details", selectedNode: id });
                 setTabIndex(0);
               }}>
-              Details
+              Подробнее
             </Button>
           )}
           {((tier > 0) && (!destructive)) && (!!researchable) && (
@@ -830,7 +841,7 @@ const TechNode = (props) => {
               icon="lightbulb"
               disabled={!can_unlock || tier > 1}
               onClick={() => act("researchNode", { node_id: id })}>
-              Research
+              Исследовать
             </Button>
           )}
           {destructive && (
@@ -838,7 +849,7 @@ const TechNode = (props) => {
               icon="trash"
               color="red"
               onClick={() => act("destroyfortech", { node_id: id })}>
-              Destroy item for node
+              Уничтожить предмет ради узла
             </Button>
           )}
         </>)}

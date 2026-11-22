@@ -1,6 +1,6 @@
 /obj/item/radio
 	icon = 'icons/obj/radio.dmi'
-	name = "ретранслятор станции"
+	name = "station bounced radio"
 	icon_state = "walkietalkie"
 	item_state = "walkietalkie"
 	desc = "Простая портативная рация, связывающаяся с локальными телекоммуникационными сетями."

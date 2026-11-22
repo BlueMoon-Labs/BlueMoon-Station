@@ -117,3 +117,32 @@
 	force_threshold = 10
 	AIStatus = AI_ON
 	loot = list(/obj/effect/gibspawner/xeno/bodypartless, /obj/effect/gibspawner/generic, /obj/effect/gibspawner/generic/animal, /obj/effect/gibspawner/human/bodypartless, /obj/effect/gibspawner/human)
+
+/proc/roll_necromorph_biomass(mob/living/simple_animal/hostile/source)
+	var/common_chance = 30
+	var/dense_chance = 0
+	if(istype(source, /mob/living/simple_animal/hostile/brute))
+		common_chance = 55
+		dense_chance = 30
+		if(istype(source, /mob/living/simple_animal/hostile/brute/leaper))
+			common_chance = 45
+			dense_chance = 15
+		else if(istype(source, /mob/living/simple_animal/hostile/brute/uber))
+			common_chance = 60
+			dense_chance = 100
+	if(prob(common_chance))
+		new /obj/item/broken/necromorph_biomass(source.loc)
+	if(prob(dense_chance))
+		new /obj/item/broken/necromorph_biomass/dense(source.loc)
+
+/mob/living/simple_animal/hostile/brute/drop_loot()
+	. = ..()
+	roll_necromorph_biomass(src)
+
+/mob/living/simple_animal/hostile/grunt/drop_loot()
+	. = ..()
+	roll_necromorph_biomass(src)
+
+/mob/living/simple_animal/hostile/spider/drop_loot()
+	. = ..()
+	roll_necromorph_biomass(src)

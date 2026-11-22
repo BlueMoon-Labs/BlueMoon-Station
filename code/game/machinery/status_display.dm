@@ -353,7 +353,7 @@
 	var/friendc = FALSE      // track if Friend Computer mode
 	var/last_picture  // For when Friend Computer mode is undone
 
-// MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/evac, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/evac, 32)
 
 //makes it go on the wall when built
 /obj/machinery/status_display/Initialize(mapload, ndir, building)
@@ -550,7 +550,7 @@
 	)
 
 
-// MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/ai, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/ai, 32)
 
 /obj/machinery/status_display/ai/Initialize(mapload)
 	. = ..()

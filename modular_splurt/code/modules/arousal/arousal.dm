@@ -1,7 +1,8 @@
 /mob/living/carbon/human/mob_climax_partner(obj/item/organ/genital/G, mob/living/L, spillage = TRUE, mb_time = 30, obj/item/organ/genital/Lgen = null, forced = FALSE, anonymous = FALSE, is_hidden = FALSE)
 	. = ..()
-	if(!G.get_urethral_obstruction())
-		L.receive_climax(src, Lgen, G, spillage, forced = forced, is_hidden = is_hidden)
+	if(!.)
+		return
+
 	if(iswendigo(L))
 		var/mob/living/carbon/wendigo/W = L
 		if(W.pulling == src)
@@ -40,7 +41,7 @@
 	var/virility = partner?.client?.prefs?.virility || 0
 	var/fertility = client?.prefs?.fertility || 0
 
-	if(!fertility || is_type_in_typecache(src.type, GLOB.pregnancy_blocked_mob_typecache))
+	if(!fertility || !virility || is_type_in_typecache(src.type, GLOB.pregnancy_blocked_mob_typecache))
 		return
 
 	// Базовый шанс с балансом в пользу женщин.. Почему ? Потому что девочки у нас вынашивают. и если у них фертильность 100 то пусть потом не удивляюьтся что залетели от парня.
@@ -53,8 +54,8 @@
 	if(HAS_TRAIT(src, TRAIT_ESTROUS_ACTIVE))
 		var/datum/quirk/estrous_active/Q = get_quirk(/datum/quirk/estrous_active)
 		if(Q && !QDELETED(Q))
-			// Базовый бонус 5% + накопленный бонус от времени
-			var/estrus_bonus = round((0.05 + Q.time_bonus) * 100)
+			// A lazy timestamp getter includes all completed cycles without polling.
+			var/estrus_bonus = Q.get_estrous_bonus()
 			estrus_total_bonus += estrus_bonus
 
 	// Добавляем итоговый бонус

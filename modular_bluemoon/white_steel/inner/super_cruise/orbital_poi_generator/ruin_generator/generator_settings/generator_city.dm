@@ -15,7 +15,12 @@
 		/obj/effect/decal/cleanable/greenglow = 1,
 		/obj/effect/spawner/lootdrop/glowstick = 4,
 		/obj/effect/spawner/lootdrop/maintenance = 3,
-		/mob/living/simple_animal/hostile/zombie = 3.75,
+		//WHITE-STEEL: зомби заменены некроморфами; суммарный вес оставлен 3.75.
+		/mob/living/simple_animal/hostile/grunt = 2,
+		/mob/living/simple_animal/hostile/spider = 1,
+		/mob/living/simple_animal/hostile/brute/leaper = 0.4,
+		/mob/living/simple_animal/hostile/brute = 0.25,
+		/mob/living/simple_animal/hostile/brute/uber = 0.1,
 		null = 90,
 	)
 	. += get_broken_stuff()

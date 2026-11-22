@@ -183,8 +183,9 @@
 			playsound(src, 'sound/machines/warning-buzzer.ogg', 75, TRUE, TRUE)
 			audible_message("<span class='warning'>[src] sounds an alarm! \"CRITICAL ERROR: ALL modules OFFLINE.\"</span>")
 
-			if(builtInCamera)
-				builtInCamera.status = FALSE
+			if(!QDELETED(builtInCamera))
+				if(builtInCamera.status)
+					builtInCamera.toggle_cam(null, FALSE)
 				to_chat(src, "<span class='userdanger'>CRITICAL ERROR: Built in security camera OFFLINE.</span>")
 
 			to_chat(src, "<span class='userdanger'>CRITICAL ERROR: ALL modules OFFLINE.</span>")
@@ -237,8 +238,10 @@
 
 			inv1.icon_state = initial(inv1.icon_state)
 			disabled_modules &= ~BORG_MODULE_ALL_DISABLED
-			if(builtInCamera)
-				builtInCamera.status = TRUE
+
+			if(!QDELETED(builtInCamera) && (!wires || !wires.is_cut(WIRE_CAMERA)))
+				if(!builtInCamera.status)
+					builtInCamera.toggle_cam(null, FALSE)
 				to_chat(src, "<span class='notice'>You hear your built in security camera focus adjust as it comes back online!</span>")
 		if(2)
 			if(!(disabled_modules & BORG_MODULE_TWO_DISABLED))
@@ -329,20 +332,19 @@
  * * check_all_slots - TRUE = the proc checks all slots | FALSE = the proc only checks un-disabled slots
  */
 /mob/living/silicon/robot/proc/is_invalid_module_number(module_num, check_all_slots = FALSE)
-	if(!module_num)
+	if(!isnum(module_num) || module_num != round(module_num) || module_num < 1 || module_num > 3)
 		return TRUE
-
-	/// The number of module slots we're checking
-	var/max_number = 3
-	if(!check_all_slots)
-		if(disabled_modules & BORG_MODULE_ALL_DISABLED)
-			max_number = 0
-		else if(disabled_modules & BORG_MODULE_TWO_DISABLED)
-			max_number = 1
-		else if(disabled_modules & BORG_MODULE_THREE_DISABLED)
-			max_number = 2
-
-	return module_num < 1 || module_num > max_number
+	if(check_all_slots)
+		return FALSE
+	// A broken second slot must not disable a working third slot.
+	switch(module_num)
+		if(1)
+			return !!(disabled_modules & BORG_MODULE_ALL_DISABLED)
+		if(2)
+			return !!(disabled_modules & (BORG_MODULE_ALL_DISABLED | BORG_MODULE_TWO_DISABLED))
+		if(3)
+			return !!(disabled_modules & (BORG_MODULE_ALL_DISABLED | BORG_MODULE_THREE_DISABLED))
+	return TRUE
 
 /**
  * Returns the slot number of the selected module, or zero if no modules are selected.

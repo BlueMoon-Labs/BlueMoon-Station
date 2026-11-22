@@ -458,7 +458,7 @@
 /datum/techweb_node/xenoarchtools
 	id = "xenoarchtools"
 	display_name = "Xenoarchaeology Tools"
-	description = "Xenoarchaeology tools that are used for xenoarchaeology, who knew."
+	description = "Инструменты ксеноархеологии, которые используются для ксеноархеологии — кто бы мог подумать."
 	prereq_ids = list("base")
 	design_ids = list("hammercm1","hammercm2","hammercm3","hammercm4","hammercm5","hammercm6","hammercm15","hammerbrush","xenoscanner","xenomeasure","xenobelt","xenorockback")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 750)
@@ -466,7 +466,7 @@
 /datum/techweb_node/portxenoarch
 	id = "portxenoarch"
 	display_name = "Portable Xenoarchaeology Tools"
-	description = "Tools for extracting seeds, and for getting some research points."
+	description = "Инструменты для извлечения семян и получения очков исследований."
 	prereq_ids = list("xenoarchtools")
 	design_ids = list("xenoresearch","xenoplant")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
@@ -474,7 +474,7 @@
 /datum/techweb_node/advportcargo
 	id = "advportcargo"
 	display_name = "Advanced Cargo Technology"
-	description = "A tool for selling stuff not through a shuttle. Careful with its use."
+	description = "Инструмент для продажи вещей без шаттла. Осторожно с его использованием."
 	prereq_ids = list("portxenoarch")
 	design_ids = list("advcargoscanner")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
@@ -482,7 +482,7 @@
 /datum/techweb_node/advxenoarch
 	id = "advxenoarch"
 	display_name = "Advanced Xenoarchaeology Tools"
-	description = "Tools that can make your excavation and recovering of artifacts easier."
+	description = "Инструменты, которые облегчат раскопки и извлечение артефактов."
 	prereq_ids = list("xenoarchtools")
 	design_ids = list("advxenoscanner","hammercmadv","hammerbrushadv","xenorockbackadv")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3000)

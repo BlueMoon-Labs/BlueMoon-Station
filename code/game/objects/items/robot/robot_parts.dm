@@ -23,6 +23,7 @@
 	var/aisync = 1
 	var/panel_locked = TRUE
 	var/cyborg_type = /mob/living/silicon/robot
+	var/completion_recorded = FALSE
 
 /obj/item/robot_suit/New()
 	..()
@@ -60,8 +61,9 @@
 	if(src.l_arm && src.r_arm)
 		if(src.l_leg && src.r_leg)
 			if(src.chest && src.head)
-				if(!training_origin)
+				if(!training_origin && !completion_recorded)
 					SSblackbox.record_feedback("amount", "cyborg_frames_built", 1)
+					completion_recorded = TRUE
 				return TRUE
 	return FALSE
 
@@ -304,6 +306,7 @@
 
 			O.job = "Cyborg"
 
+			QDEL_NULL(O.cell)
 			O.cell = chest.cell
 			chest.cell.forceMove(O)
 			chest.cell = null
@@ -350,6 +353,7 @@
 				O.lawupdate = FALSE
 				O.make_laws()
 
+			QDEL_NULL(O.cell)
 			O.cell = chest.cell
 			chest.cell.forceMove(O)
 			chest.cell = null
@@ -407,12 +411,12 @@
 			popup.open()
 
 /obj/item/robot_suit/Topic(href, href_list)
-	if(usr.incapacitated() || !Adjacent(usr))
+	if(!isliving(usr) || usr.incapacitated() || !Adjacent(usr))
 		return
 
 	var/mob/living/living_user = usr
 	var/obj/item/item_in_hand = living_user.get_active_held_item()
-	if(!item_in_hand.tool_behaviour == TOOL_MULTITOOL)
+	if(!item_in_hand || item_in_hand.tool_behaviour != TOOL_MULTITOOL)
 		to_chat(living_user, "<span class='warning'>You need a multitool!</span>")
 		return
 
