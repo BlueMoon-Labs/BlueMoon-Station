@@ -1021,7 +1021,7 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'
 	var/list/poly_colors = list("#FFFFFF")
 
-/obj/item/clothing/under/h_thin_tshirt/ComponentInitialize()
+/obj/item/clothing/underwear/shirt/h_thin_tshirt/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#FFFFFF"), 1)
 
@@ -1037,7 +1037,7 @@
 	body_parts_covered = CHEST|GROIN
 	var/list/poly_colors = list("#FFFFFF")
 
-/obj/item/clothing/under/h_thin_slim_tshirt/ComponentInitialize()
+/obj/item/clothing/underwear/briefs/h_thin_slim_tshirt/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#FFFFFF"), 1)
 
@@ -1053,7 +1053,7 @@
 	body_parts_covered = CHEST|GROIN
 	var/list/poly_colors = list("#FFFFFF")
 
-/obj/item/clothing/under/h_thin_eslim_tshirt/ComponentInitialize()
+/obj/item/clothing/underwear/briefs/h_thin_eslim_tshirt/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#FFFFFF"), 1)
 
