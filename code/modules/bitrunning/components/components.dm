@@ -129,9 +129,13 @@
 		return
 	disconnecting = TRUE
 
+	var/mob/living/avatar = parent
 #ifndef UNIT_TESTS
 	return_to_old_body()
 #endif
+	// Отключение приходит и из урона, Life() или речи самого аватара: тело удаляем на следующем тике, а не посреди его же вызова.
+	if(!QDELETED(avatar))
+		QDEL_IN(avatar, 0)
 
 	var/obj/machinery/netpod/hosting_netpod = netpod_ref?.resolve()
 	if(isnull(hosting_netpod) && istype(source, /obj/machinery/netpod))
@@ -331,9 +335,6 @@
 		ghost.forceMove(get_turf(old_body))
 
 	REMOVE_TRAIT(old_body, TRAIT_MIND_TEMPORARILY_GONE, REF(src))
-
-	if(!QDELETED(avatar))
-		qdel(avatar)
 
 // Снаряжение берётся у верхнего человека, несущего предмет.
 /datum/component/loads_avatar_gear
