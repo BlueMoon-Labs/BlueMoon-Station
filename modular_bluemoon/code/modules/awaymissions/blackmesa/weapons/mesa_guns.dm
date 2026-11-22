@@ -1903,18 +1903,33 @@ var/mob/living/bipod_signal_user
 // Realistic casing ejection - Black Mesa exclusive
 // ============================================================================
 
+/// Casings currently in mesa_eject() flight, driven by one shared ticker
+/// (mesa_casing_tick) instead of a per-casing timer chain.
+GLOBAL_LIST_EMPTY(mesa_casing_flight)
+/// TRUE while the shared mesa_casing_tick timer is scheduled.
+GLOBAL_VAR_INIT(mesa_casing_tick_active, FALSE)
+
 /obj/item/ammo_casing
 	/// TRUE while a mesa_eject() flight is in progress; cleared on landing so
 	/// any stray scheduled steps can't resume the flight afterwards.
 	var/mesa_flying = FALSE
 	/// Degrees of transform rotation applied per flight step - the brass tumble.
 	var/mesa_spin_dir = 0
-// A spent shell kicks straight up off the shooter, then flies right on a
-// short descending arc, clips the floor exactly once and settles with a
-// tumble.
-// The whole flight is a short addtimer chain (one timer per turf step) -
-// no SSobj processing, so tick cost is a handful of one-shot timers per
-// casing and burst fire stays cheap.
+	/// Physics state mirroring white-master's movable_physics: horizontal
+	/// speed (px/step), vertical pixel_z speed, horizontal friction, launch
+	/// angle in dir2angle() convention (0 = north, clockwise) and whether the
+	/// shell is still hot for the landing sizzle.
+	var/mesa_hvel = 0.0
+	var/mesa_vvel = 0.0
+	var/mesa_friction = 0.0
+	var/mesa_angle = 0
+	var/mesa_still_warm = FALSE
+// A spent shell launches off the shooter on a ballistic arc - the same model
+// white-master's movable_physics uses (constant horizontal speed bleeding off
+// via friction, gravity on pixel_z, turf crossing at the tile border, damped
+// floor/wall bounces) - but keeps the Mesa tumble and landing effects.
+// The flight is a self-rescheduling addtimer loop at the world tick rate
+// (~0.05s), so burst fire stays cheap: a handful of one-shot timers.
 
 /// Entry point, called instead of bounce_away() for guns with
 /// `mesa_casing_physics` set. `shooter` provides the facing direction;
@@ -1922,120 +1937,148 @@ var/mob/living/bipod_signal_user
 /obj/item/ammo_casing/proc/mesa_eject(mob/living/shooter, still_warm = FALSE)
 	update_icon()
 	mesa_spin_dir = pick(-1, 1) * rand(50, 110)
+	mesa_still_warm = still_warm
 	var/turf/T = get_turf(src)
 	if(!T)
+		bounce_away(still_warm)
 		return
 	//Prefer the shooter's right side. If it is walled in, fall back to the
-	//left and then behind so the shell does not pop from under the player.
-	var/base_eject_dir = dir
+	//left and then behind (like white-master's backward eject) so the shell
+	//does not pop from under the player.
+	var/base_dirs = list(dir)
 	if(shooter)
-		base_eject_dir = turn(shooter.dir, -90) //right-hand side (turn() is counter-clockwise)
-	var/list/eject_dirs = list(base_eject_dir)
-	if(shooter)
-		eject_dirs += list(turn(base_eject_dir, 180), turn(shooter.dir, 180))
+		base_dirs = list(turn(shooter.dir, -90), turn(base_dirs[1], 180), turn(shooter.dir, 180))
 	else
-		eject_dirs += turn(base_eject_dir, 180)
-	var/eject_dir = turn(eject_dirs[1], rand(-20, 20))
-	var/list/path = mesa_eject_path(T, eject_dir, rand(1, 2))
-	if(!length(path))
-		for(var/i in 2 to length(eject_dirs))
-			var/candidate_dir = turn(eject_dirs[i], rand(-20, 20))
-			var/list/candidate_path = mesa_eject_path(T, candidate_dir, rand(1, 2))
-			if(length(candidate_path))
-				eject_dir = candidate_dir
-				path = candidate_path
-				break
-	setDir(eject_dir)
+		base_dirs += turn(base_dirs[1], 180)
+	var/eject_angle = dir2angle(base_dirs[1]) + rand(-20, 20)
+	for(var/i in 1 to length(base_dirs))
+		var/candidate_angle = dir2angle(base_dirs[i]) + rand(-20, 20)
+		if(mesa_dir_open(T, angle2dir(candidate_angle)))
+			eject_angle = candidate_angle
+			break
+	setDir(angle2dir(eject_angle))
 	var/matrix/M = matrix(transform)
 	M.Turn(rand(-170, 170))
 	transform = M
-	//Take the first turf step immediately: the pop-up animation must not
-	//happen on the shooter's turf, otherwise the shell visually comes from
-	//directly under the player.
-	var/started_on_side = FALSE
-	if(length(path) && forceMove(path[1]))
-		path.Cut(1, 1)
-		started_on_side = TRUE
-	mesa_edge_offset(eject_dir, started_on_side)
+	//Start on the tile edge facing the eject direction so the shell does not
+	//appear from directly under the player, then hand it real velocity.
+	mesa_edge_offset(angle2dir(eject_angle))
+	pixel_x += rand(-4, 4)
+	pixel_y += rand(-4, 4)
+	pixel_z = 8 //launch pop, same as white-master
+	mesa_angle = eject_angle
+	mesa_hvel = rand(450, 550) / 100
+	mesa_vvel = rand(400, 450) / 100
+	mesa_friction = rand(20, 24) / 100
 	mesa_flying = TRUE
-	mesa_fly(path, still_warm)
+	if(!(src in GLOB.mesa_casing_flight))
+		GLOB.mesa_casing_flight += src
+	if(!GLOB.mesa_casing_tick_active)
+	{
+		GLOB.mesa_casing_tick_active = TRUE
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mesa_casing_tick)), 0.05 SECONDS)
+	}
 
-/// Builds a short ejection path, stopping at walls and dense objects so the
-/// shell drops instead of phasing through them.
-/obj/item/ammo_casing/proc/mesa_eject_path(var/turf/start, var/direction, var/steps)
-	var/list/path = list()
-	var/turf/cur = start
-	for(var/i in 1 to steps)
-		var/turf/next = get_step(cur, direction)
-		if(!isturf(next) || next.density)
-			break
-		var/blocked = FALSE
-		for(var/atom/movable/A in next)
-			if(A.density && !ismob(A))
-				blocked = TRUE
-				break
-		if(blocked)
-			break
-		path += next
-		cur = next
-	return path
+/// TRUE if the turf one step in `direction` can accept the shell - not a
+/// wall, not density-flagged, and free of dense non-mob objects.
+/obj/item/ammo_casing/proc/mesa_dir_open(var/turf/T, var/direction)
+	var/turf/next = get_step(T, direction)
+	if(!isturf(next) || next.density)
+		return FALSE
+	for(var/atom/movable/A in next)
+		if(A.density && !ismob(A))
+			return FALSE
+	return TRUE
 
-/// Places the casing on the edge of its turf facing `direction`. When the
-/// shell already stepped to the adjacent turf, the offset is flipped so it
-/// appears at the edge it entered from instead of jumping across the tile.
-/obj/item/ammo_casing/proc/mesa_edge_offset(var/direction, var/from_adjacent)
+/// Places the casing on the edge of its turf facing `direction` so the
+/// launch does not originate from the tile centre under the player.
+/obj/item/ammo_casing/proc/mesa_edge_offset(var/direction)
 	var/angle = dir2angle(direction)
-	var/sign = from_adjacent ? -1 : 1
-	pixel_x = round(sign * sin(angle) * 12)
-	pixel_y = round(sign * -cos(angle) * 12)
+	pixel_x = round(sin(angle) * 10)
+	pixel_y = round(-cos(angle) * 10)
 
-/// Schedules the pop-off and one timer per turf step. `path` holds the
-/// landing turfs. The shell first kicks straight up off the shooter for
-/// two ticks, then travels right while dropping back down.
-/obj/item/ammo_casing/proc/mesa_fly(list/path, still_warm)
-	var/tiles = length(path)
-	addtimer(CALLBACK(src, PROC_REF(mesa_pop_step), 1), 1, TIMER_DELETE_ME)
-	addtimer(CALLBACK(src, PROC_REF(mesa_pop_step), 2), 2, TIMER_DELETE_ME)
-	for(var/i in 1 to tiles)
-		addtimer(CALLBACK(src, PROC_REF(mesa_fly_step), path, i, tiles, still_warm), i + 2, TIMER_DELETE_ME)
-	if(!tiles)
-		addtimer(CALLBACK(src, PROC_REF(mesa_land), still_warm), 3, TIMER_DELETE_ME)
-
-/// Pop phase: the shell jumps straight up off the shooter, still on its turf.
-/obj/item/ammo_casing/proc/mesa_pop_step(var/step)
-	if(QDELETED(src) || !mesa_flying || !isturf(loc))
+/// One physics step, ported from white-master's movable_physics process():
+/// constant horizontal velocity with friction, pixel_z gravity arc, turf
+/// crossing at the tile border, wall ricochet and floor bounce. The brass
+/// tumble and the landing effects stay Mesa-exclusive.
+/obj/item/ammo_casing/proc/mesa_step()
+	if(QDELETED(src) || !mesa_flying)
 		return
-	animate(src, pixel_y = -9 * step, time = 1, flags = ANIMATION_END_NOW)
+	if(!isturf(loc))
+		mesa_flying = FALSE
+		pixel_z = 0
+		return
+	if(mesa_hvel <= 0 && pixel_z <= 0)
+		mesa_land()
+		return
 	var/matrix/rot = matrix(transform)
-	rot.Turn(mesa_spin_dir)
+	rot.Turn(mesa_spin_dir * 0.5)
 	transform = rot
-
-/// i-th flight step: glides one turf along the path while pixel_y drops
-/// from the pop height back to the floor (constant-velocity fall look).
-/obj/item/ammo_casing/proc/mesa_fly_step(list/path, var/i, var/tiles, still_warm)
-	if(QDELETED(src) || !mesa_flying || !isturf(loc))
+	//dir2angle() convention: 0 = north, clockwise; unit vector is (sin, -cos).
+	pixel_x += mesa_hvel * sin(mesa_angle)
+	pixel_y += mesa_hvel * -cos(mesa_angle)
+	mesa_hvel = max(0, mesa_hvel - mesa_friction)
+	pixel_z = max(0, pixel_z + mesa_vvel)
+	if(pixel_z > 0)
+		mesa_vvel -= 9.80665 * 0.05
+	if(pixel_z <= 0 && mesa_vvel != 0)
+		mesa_z_bounce()
+	//Crossing a tile border: glide into the neighbour turf, or ricochet.
+	if(pixel_x > 16)
+		if(Move(get_step(src, EAST)))
+			pixel_x -= 32
+		else
+			pixel_x = 16
+			mesa_wall_bounce(TRUE)
 		return
-	var/turf/next = path[i]
-	if(!next || QDELETED(next))
-		mesa_land(still_warm)
+	if(pixel_x < -16)
+		if(Move(get_step(src, WEST)))
+			pixel_x += 32
+		else
+			pixel_x = -16
+			mesa_wall_bounce(TRUE)
 		return
-	if(!Move(next, get_dir(src, next), DELAY_TO_GLIDE_SIZE(1)))
-		forceMove(next)
-	var/matrix/rot = matrix(transform)
-	rot.Turn(mesa_spin_dir)
-	transform = rot
-	var/height = tiles ? round(18 * (tiles - i) / tiles) : 0
-	animate(src, pixel_y = -height, time = 1, flags = ANIMATION_END_NOW)
-	if(i >= tiles)
-		mesa_land(still_warm)
+	if(pixel_y > 16)
+		if(Move(get_step(src, SOUTH)))
+			pixel_y -= 32
+		else
+			pixel_y = 16
+			mesa_wall_bounce(FALSE)
+		return
+	if(pixel_y < -16)
+		if(Move(get_step(src, NORTH)))
+			pixel_y += 32
+		else
+			pixel_y = -16
+			mesa_wall_bounce(FALSE)
+		return
 
-/// First ground contact: impact sound, then a single small hop (the bounce).
-/obj/item/ammo_casing/proc/mesa_land(still_warm)
+/// Reflects the launch angle off a wall impact. `horizontal` TRUE for
+/// east/west walls, FALSE for north/south; a small scatter keeps it organic.
+/obj/item/ammo_casing/proc/mesa_wall_bounce(var/horizontal)
+	if(horizontal)
+		mesa_angle = -mesa_angle
+	else
+		mesa_angle = 180 - mesa_angle
+	mesa_angle += rand(-15, 15)
+
+/// Floor contact: damped bounce where part of the vertical energy converts
+/// back into horizontal speed, same as white-master's z_floor_bounce().
+/obj/item/ammo_casing/proc/mesa_z_bounce()
+	mesa_angle += rand(-3000, 3000) / 100
+	pixel_z = 0
+	mesa_hvel = max(0, mesa_hvel + mesa_vvel * -0.8)
+	mesa_vvel = max(0, mesa_vvel * -0.8 - 0.2)
+
+/// Final ground contact once the arc dies out: impact sound, one last tumble
+/// and the settle timer.
+/obj/item/ammo_casing/proc/mesa_land()
 	if(QDELETED(src) || !mesa_flying || !isturf(loc))
 		return
 	mesa_flying = FALSE
+	pixel_z = 0
 	var/turf/T = get_turf(src)
-	if(still_warm && T && (T.turf_flags & TURF_BULLET_SIZZLE))
+	if(mesa_still_warm && T && (T.turf_flags & TURF_BULLET_SIZZLE))
 		playsound(src, 'sound/items/welder.ogg', 20, 1)
 	else if(T && T.bullet_bounce_sound)
 		playsound(src, T.bullet_bounce_sound, 60, 1)
@@ -2045,8 +2088,28 @@ var/mob/living/bipod_signal_user
 	animate(src, pixel_y = -5, time = 2)
 	addtimer(CALLBACK(src, PROC_REF(mesa_settle)), 2, TIMER_DELETE_ME)
 
-/// After the single bounce the shell drops flat and stops animating.
+/// After the bounce the shell drops flat and stops animating.
 /obj/item/ammo_casing/proc/mesa_settle()
 	if(QDELETED(src) || !isturf(loc))
 		return
 	animate(src, pixel_y = rand(-2, 2), time = 1)
+
+/// Shared ticker for every Mesa casing in flight. One timer walks the
+/// flight list each world tick instead of each casing chaining its own
+/// addtimer, so burst fire no longer allocates a timer + callback per step.
+/// Iterates backwards so landed/picked-up casings can be cut safely; new
+/// ejects append at the tail and are picked up next tick.
+/proc/mesa_casing_tick()
+	var/list/casings = GLOB.mesa_casing_flight
+	for(var/i = casings.len; i >= 1; i--)
+		var/obj/item/ammo_casing/casing = casings[i]
+		if(QDELETED(casing) || !casing.mesa_flying)
+			casings -= casing
+			continue
+		casing.mesa_step()
+		if(QDELETED(casing) || !casing.mesa_flying)
+			casings -= casing
+	if(length(casings))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mesa_casing_tick)), 0.05 SECONDS)
+	else
+		GLOB.mesa_casing_tick_active = FALSE

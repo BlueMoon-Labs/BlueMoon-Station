@@ -17,7 +17,7 @@
 	fade = 2.4 SECONDS
 	grow = 0.12
 	drift = generator("circle", 8, 8)
-	scale = 0.1
+	scale = generator("num", 0.45, 0.7)
 	spin = generator("num", -20, 20)
 	velocity = list(50, 0, 0)
 	friction = generator("num", 0.3, 0.6)

@@ -176,6 +176,7 @@
 					user.visible_message("<span class='danger'>[user] стреляет из [src] в упор по [pbtarget]!</span>", null, null, COMBAT_MESSAGE_RANGE)
 				else
 					user.visible_message("<span class='danger'>[user] стреляет из [src]!</span>", null, null, COMBAT_MESSAGE_RANGE)
+		muzzle_smoke_fx(user, pbtarget)
 	else
 		..()
 

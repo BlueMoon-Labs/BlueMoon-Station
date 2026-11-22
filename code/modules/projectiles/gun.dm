@@ -307,16 +307,24 @@
 			else
 				user.visible_message("<span class='danger'>[user] стреляет из [src]!</span>", null, null, COMBAT_MESSAGE_RANGE)
 
-	if(gun_flags & GUN_SMOKE_PARTICLES)
-		var/smoke_angle
-		if(pbtarget)
-			smoke_angle = Get_Angle(user || src, pbtarget)
-		else
-			smoke_angle = dir2angle(user?.dir || src.dir)
-		var/turf/smoke_turf = get_turf(src)
-		if(smoke_turf)
-			var/obj/effect/firing_smoke/smoke = new(smoke_turf)
-			smoke.particles.velocity = list(sin(smoke_angle) * 40, cos(smoke_angle) * 40, 0)
+	muzzle_smoke_fx(user, pbtarget)
+
+/obj/item/gun/proc/muzzle_smoke_fx(mob/living/user, mob/pbtarget)
+	if(!(gun_flags & GUN_SMOKE_PARTICLES))
+		return
+	var/smoke_angle
+	if(pbtarget)
+		smoke_angle = Get_Angle(user || src, pbtarget)
+	else
+		smoke_angle = dir2angle(user?.dir || src.dir)
+	var/turf/smoke_turf = get_turf(src)
+	if(smoke_turf)
+		var/obj/effect/firing_smoke/smoke = new(smoke_turf)
+		smoke.particles.velocity = list(sin(smoke_angle) * 40, cos(smoke_angle) * 40, 0)
+		// Visible powder sparks spraying from the muzzle, offset toward the target.
+		var/muzzle_px = clamp(16 + sin(smoke_angle) * 10, 4, BOUNCE_SPARK_TILE_X - 4)
+		var/muzzle_py = clamp(16 - cos(smoke_angle) * 10, 4, BOUNCE_SPARK_TILE_Y - 4)
+		new(smoke_turf, /obj/effect/bullet_spark_burst, smoke_angle, muzzle_px, muzzle_py, TRUE)
 
 /obj/item/gun/emp_act(severity)
 	. = ..()
