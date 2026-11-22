@@ -54,6 +54,8 @@ export const SPEECH_ROOT_CLASSES = [
 
 // Эмоции, которые ИИ видит через камеры (relay_emote), размечены как речь.
 const NOT_SPEECH_CLASSES = ['relayed_emote', 'emote'];
+// Сообщения из истории, пришедшие до класса relayed_emote.
+const RELAYED_EMOTE_PREFIX = 'Relayed Emote';
 
 const SPEECH_TEXT_CLASS = 'message';
 // В бинарном канале реплика самого ИИ лежит в span.command (robot_talk).
@@ -66,6 +68,9 @@ const BREAK_TAGS = ['BR', 'DIV', 'P', 'LI', 'TR', 'TD', 'HR', 'IMG'];
 
 const WORD_CHAR = /[0-9A-Za-z_À-ɏЀ-ӿ]/;
 const BREAK = '\n';
+// Невидимые символы не участвуют в поиске: сервер ставит &#8203; после
+// разметки выделения в речи (say_emphasis), и "<b>Ва</b>&#8203;ня" - это "Ваня".
+const INVISIBLE_CHAR = /[\u00AD\u200B-\u200F\u2060-\u2064\uFEFF]/;
 
 let lastId = 0;
 
@@ -140,9 +145,19 @@ const hasAnyClass = (node, classNames) => (
   classNames.some(className => hasClass(node, className))
 );
 
+const isNotSpeechRoot = node => {
+  if (hasAnyClass(node, NOT_SPEECH_CLASSES)) {
+    return true;
+  }
+  const first = node.firstChild;
+  return !!first && first.nodeType === Node.TEXT_NODE
+    && first.nodeValue.trimStart().startsWith(RELAYED_EMOTE_PREFIX);
+};
+
 /**
- * Сплошной текст сообщения и откуда взялся каждый кусок.
- * speech у куска - он внутри реплики персонажа.
+ * Сплошной текст сообщения без невидимых символов и откуда взялся каждый
+ * кусок. У куска speech - он внутри реплики персонажа; offsets[i] - позиция
+ * i-го символа куска в исходном тексте узла (последний элемент - длина узла).
  */
 export const collectMessageText = root => {
   let text = '';
@@ -157,10 +172,19 @@ export const collectMessageText = root => {
     for (const child of Array.from(node.childNodes)) {
       if (child.nodeType === Node.TEXT_NODE) {
         const value = child.nodeValue;
-        if (value) {
+        let visible = '';
+        const offsets = [];
+        for (let i = 0; i < value.length; i++) {
+          if (!INVISIBLE_CHAR.test(value[i])) {
+            visible += value[i];
+            offsets.push(i);
+          }
+        }
+        offsets.push(value.length);
+        if (visible) {
           segments.push({ node: child, start: text.length,
-            end: text.length + value.length, speech });
-          text += value;
+            end: text.length + visible.length, speech, offsets });
+          text += visible;
         }
         continue;
       }
@@ -177,7 +201,7 @@ export const collectMessageText = root => {
       }
       let childRoot = rootClass;
       let childSpeech = speech;
-      if (hasAnyClass(child, NOT_SPEECH_CLASSES)) {
+      if (isNotSpeechRoot(child)) {
         childRoot = '';
         childSpeech = false;
       }
@@ -224,13 +248,16 @@ const overlaps = (claims, start, end) => claims.some(claim => (
   claim.start < end && start < claim.end));
 
 /**
- * Находит совпадения всех групп в сплошном тексте. Верхняя группа и длинная
- * фраза главнее: занятый кусок текста другие совпадения уже не берут.
+ * Находит совпадения всех групп в сплошном тексте. Верхняя группа главнее:
+ * занятый ею кусок текста нижние группы уже не берут. Внутри группы - как
+ * у обычного поиска: левое совпадение раньше, при общем начале длиннее
+ * ("аб, бвг" в "абвг" подсветит "аб").
  */
 export const findHighlightMatches = (message, compiledSettings) => {
   const { text, segments } = message;
   const claims = [];
   compiledSettings.forEach((compiled, group) => {
+    const candidates = [];
     for (const regex of compiled.regexes) {
       regex.lastIndex = 0;
       let match;
@@ -250,6 +277,14 @@ export const findHighlightMatches = (message, compiledSettings) => {
           || !isCovered(segments, start, end, compiled.speechOnly)) {
           continue;
         }
+        candidates.push({ start, end });
+      }
+    }
+    candidates.sort((a, b) => a.start - b.start || b.end - a.end);
+    const taken = [];
+    for (const { start, end } of candidates) {
+      if (!overlaps(taken, start, end)) {
+        taken.push({ start, end });
         claims.push({ start, end, group, color: compiled.color });
       }
     }
@@ -267,14 +302,18 @@ export const createHighlightNode = (text, color) => {
 
 const wrapSegment = (segment, claims) => {
   const value = segment.node.nodeValue;
+  const { offsets } = segment;
   let fragment = null;
   let pos = 0;
   for (const claim of claims) {
-    const from = Math.max(claim.start, segment.start) - segment.start;
-    const to = Math.min(claim.end, segment.end) - segment.start;
-    if (from >= to) {
+    const visibleFrom = Math.max(claim.start, segment.start) - segment.start;
+    const visibleTo = Math.min(claim.end, segment.end) - segment.start;
+    if (visibleFrom >= visibleTo) {
       continue;
     }
+    // В исходный текст узла: невидимые символы по краям остаются снаружи.
+    const from = offsets[visibleFrom];
+    const to = offsets[visibleTo - 1] + 1;
     if (!fragment) {
       fragment = document.createDocumentFragment();
     }

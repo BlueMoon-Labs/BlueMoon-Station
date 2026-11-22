@@ -117,6 +117,15 @@ describe('highlightMessageNode', () => {
     ]).words).toEqual(['Иван Петров']);
   });
 
+  test('inside one group the leftmost match wins, then the longest', () => {
+    expect(render('<span>абвг</span>', [group({ highlightText: 'аб, бвг' })])
+      .words).toEqual(['аб']);
+    expect(render('<span>абвг</span>', [group({ highlightText: 'бвг, аб' })])
+      .words).toEqual(['аб']);
+    expect(render('<span>абвг</span>', [group({ highlightText: 'аб, абв' })])
+      .words).toEqual(['абв']);
+  });
+
   test('falls back to a shorter phrase when the longer one is not a word', () => {
     expect(render('<span>Иван Петрович</span>', [
       group({ highlightText: 'Иван, Иван Петров', matchWord: true }),
@@ -159,6 +168,24 @@ describe('word boundaries across groups', () => {
     expect(render('<span>Ва<b>ня</b>шка, <i>Ва</i>ня</span>', [
       group({ highlightText: 'Ваня', matchWord: true }),
     ]).words).toEqual(['Ва', 'ня']);
+  });
+
+  test('zero width space after emphasis markup does not split a word', () => {
+    // say_emphasis: "|Ва|ня" -> "<i>Ва</i>&#8203;ня"
+    const html = '<span class="game say"><span class="name">Анна</span>'
+      + ' <span class="message">говорит, "<span><b>Ва</b>&#8203;ня,'
+      + ' <i>Ва</i>&#8203;нюша</span>"</span></span>';
+    const node = document.createElement('div');
+    node.innerHTML = html;
+    const result = highlightMessageNode(node, compileHighlightSettings([
+      group({ highlightText: 'Ваня', matchWord: true, speechOnly: true }),
+    ]));
+    expect(result).not.toBeNull();
+    const marks = [...node.querySelectorAll('.Chat__highlight')]
+      .map(mark => mark.textContent);
+    // Невидимый символ остаётся в тексте, но вне подсветки
+    expect(marks).toEqual(['Ва', 'ня']);
+    expect(node.textContent).toContain('Ва\u200Bня');
   });
 
   test('timestamp is not part of the first word', () => {
@@ -205,6 +232,14 @@ describe('speechOnly for AI messages', () => {
   test('relayed speech counts, relayed emote does not', () => {
     expect(render(RELAYED_SPEECH, settings).words).toEqual(['Ваня']);
     expect(render(RELAYED_EMOTE, settings).result).toBeNull();
+  });
+
+  test('relayed emote from history without the class is not speech', () => {
+    const old = RELAYED_EMOTE.replace(' relayed_emote', '');
+    expect(old).not.toContain('relayed_emote');
+    expect(render(old, settings).result).toBeNull();
+    expect(render(old, [group({ highlightText: 'Ване' })]).words)
+      .toEqual(['Ване']);
   });
 });
 
