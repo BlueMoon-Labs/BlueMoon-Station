@@ -20,14 +20,14 @@
 	blacklisted_movetypes = FLOATING
 
 // =============================================================================
-// FLYING LIMB & GORE TEMP EFFECTS (Matrix-rotated, self-cleaning)
+// FLYING LIMB TEMP EFFECT (Matrix-rotated, self-cleaning)
 // =============================================================================
 
 /obj/effect/temp_visual/flying_limb
 	name = "flying limb"
 	icon = 'modular_bluemoon/icons/mob/gibsnguts/infected.dmi'
 	icon_state = "sci_flying_arm"
-	duration = 8
+	duration = 14
 	randomdir = FALSE
 	layer = ABOVE_MOB_LAYER
 
@@ -51,49 +51,8 @@
 	var/matrix/M = matrix()
 	M.Turn(pick(-180, -90, 90, 180, 270))
 
-	animate(src, transform = M, pixel_x = offset_x, pixel_y = offset_y, time = 6, easing = SINE_EASING | EASE_OUT)
-	animate(alpha = 0, time = 2)
-
-/obj/effect/temp_visual/blood_fountain
-	name = "blood fountain"
-	icon = 'icons/effects/blood.dmi'
-	icon_state = "splatter5"
-	duration = 10
-	layer = ABOVE_MOB_LAYER
-
-/obj/effect/temp_visual/blood_fountain/Initialize(mapload)
-	. = ..()
-	var/matrix/M = matrix()
-	M.Scale(1.2, 1.6)
-	transform = M
-	animate(src, alpha = 0, pixel_y = 12, time = 10, easing = EASE_OUT)
-
-/obj/effect/temp_visual/blood_spurt
-	name = "blood spurt"
-	icon = 'icons/effects/blood.dmi'
-	icon_state = "splatter2"
-	duration = 6
-	layer = ABOVE_MOB_LAYER
-
-/obj/effect/temp_visual/blood_spurt/proc/spurt(target_dir)
-	setDir(target_dir)
-	var/offset_x = (target_dir & EAST ? 24 : (target_dir & WEST ? -24 : 0))
-	var/offset_y = (target_dir & NORTH ? 24 : (target_dir & SOUTH ? -24 : 0))
-	animate(src, pixel_x = offset_x, pixel_y = offset_y, alpha = 0, time = 6, easing = EASE_OUT)
-
-/obj/effect/temp_visual/gore_burst
-	name = "gore burst"
-	icon = 'icons/effects/blood.dmi'
-	icon_state = "splatter6"
-	duration = 8
-	layer = ABOVE_MOB_LAYER
-
-/obj/effect/temp_visual/gore_burst/Initialize(mapload)
-	. = ..()
-	var/matrix/M = matrix()
-	M.Scale(1.8, 1.8)
-	animate(src, transform = M, alpha = 0, time = 8, easing = EASE_OUT)
-
+	animate(src, transform = M, pixel_x = offset_x, pixel_y = offset_y, time = 9, easing = SINE_EASING | EASE_OUT)
+	animate(alpha = 0, time = 4)
 
 // =============================================================================
 // MODULAR SCIENTIST INFECTED MOB (TEST PROTOTYPE)
@@ -124,10 +83,8 @@
 
 	// Состояния
 	var/legs_lost_count = 0
-	var/last_blood_spurt = 0 // Антиспам: троттлинг мелких брызг при частых хитах
 	var/instant_kill_on_single_leg = FALSE // Если TRUE - потеря даже одной ноги убивает на месте
 	var/wound_chest_active = FALSE
-	var/dismemberment_threshold = 20 // Минимальный урон для шанса отстрела конечности
 
 	// Burst-урон за короткое окно (дробовик в упор и т.п.) -> гарантированный гиб
 	var/burst_damage = 0
@@ -203,7 +160,7 @@
 
 // Отстрел головы (Хедшот -> мгновенная смерть)
 /mob/living/simple_animal/hostile/infected/modular/proc/sever_head(atom/attacker, dir_hit = null)
-	if(!(limbs_status & ZOMBIE_LIMB_HEAD))
+	if(stat == DEAD || !(limbs_status & ZOMBIE_LIMB_HEAD))
 		return
 	limbs_status &= ~ZOMBIE_LIMB_HEAD
 
@@ -211,22 +168,19 @@
 	if(T)
 		playsound(T, pick('sound/effects/headgibb.ogg', 'sound/effects/splat.ogg', 'sound/effects/wounds/blood3.ogg'), 75, TRUE)
 
-	// Фонтан крови вверх
-	if(T)
-		new /obj/effect/temp_visual/blood_fountain(T)
-
 	// Вылет головы
 	if(T)
 		var/obj/effect/temp_visual/flying_limb/L = new(T)
 		L.launch(T, dir_hit ? dir_hit : pick(GLOB.cardinals), "[prefix]_flying_head", gore_dmi)
 
-	// Хедшот = мгновенная смерть
+	// Отрыв головы = чистая декапитация, без взрыва тела
+	gib_pending = FALSE
 	icon_dead = "[prefix]_dead_decap"
 	death(FALSE)
 
 // Отстрел правой руки
 /mob/living/simple_animal/hostile/infected/modular/proc/sever_r_arm(atom/attacker, dir_hit = null)
-	if(!(limbs_status & ZOMBIE_LIMB_R_ARM))
+	if(stat == DEAD || !(limbs_status & ZOMBIE_LIMB_R_ARM))
 		return
 	limbs_status &= ~ZOMBIE_LIMB_R_ARM
 
@@ -236,10 +190,6 @@
 		var/obj/effect/temp_visual/flying_limb/L = new(T)
 		L.launch(T, dir_hit ? dir_hit : dir, "[prefix]_flying_arm", gore_dmi)
 
-		// Струя крови
-		var/obj/effect/temp_visual/blood_spurt/S = new(T)
-		S.spurt(dir_hit ? dir_hit : dir)
-
 	// Снижение боевой эффективности
 	melee_damage_lower = max(2, melee_damage_lower * 0.7)
 	melee_damage_upper = max(5, melee_damage_upper * 0.7)
@@ -248,7 +198,7 @@
 
 // Отстрел левой руки
 /mob/living/simple_animal/hostile/infected/modular/proc/sever_l_arm(atom/attacker, dir_hit = null)
-	if(!(limbs_status & ZOMBIE_LIMB_L_ARM))
+	if(stat == DEAD || !(limbs_status & ZOMBIE_LIMB_L_ARM))
 		return
 	limbs_status &= ~ZOMBIE_LIMB_L_ARM
 
@@ -257,10 +207,6 @@
 		playsound(T, pick('sound/effects/blobattack.ogg', 'sound/effects/meatslap.ogg', 'sound/effects/gib_step.ogg'), 60, TRUE)
 		var/obj/effect/temp_visual/flying_limb/L = new(T)
 		L.launch(T, dir_hit ? dir_hit : dir, "[prefix]_flying_arm", gore_dmi)
-
-		// Струя крови
-		var/obj/effect/temp_visual/blood_spurt/S = new(T)
-		S.spurt(dir_hit ? dir_hit : dir)
 
 	// Потеря левой руки отключает захват / замедление
 	melee_damage_lower = max(2, melee_damage_lower * 0.7)
@@ -271,7 +217,7 @@
 // Отстрел ноги (Замедление при потере одной, мгновенная смерть при потере обеих или травматическом шоке)
 /mob/living/simple_animal/hostile/infected/modular/proc/sever_leg(leg_type = "r_leg", atom/attacker = null, dir_hit = null)
 	var/target_bit = (leg_type == "r_leg") ? ZOMBIE_LIMB_R_LEG : ZOMBIE_LIMB_L_LEG
-	if(!(limbs_status & target_bit))
+	if(stat == DEAD || !(limbs_status & target_bit))
 		return
 
 	limbs_status &= ~target_bit
@@ -285,10 +231,6 @@
 	if(T)
 		var/obj/effect/temp_visual/flying_limb/L = new(T)
 		L.launch(T, dir_hit ? dir_hit : dir, "[prefix]_flying_leg", gore_dmi)
-
-		// Струя крови
-		var/obj/effect/temp_visual/blood_spurt/S = new(T)
-		S.spurt(dir_hit ? dir_hit : dir)
 
 	// Логика смерти / замедления:
 	// Если потерял обе ноги ИЛИ включена мгновенная смерть от потери конечности
@@ -312,14 +254,19 @@
 		return
 
 	playsound(T, pick('sound/effects/splat.ogg', 'sound/effects/meatslap.ogg', 'sound/effects/butcher.ogg'), 80, TRUE)
-	new /obj/effect/temp_visual/gore_burst(T)
 
 	// Разлёт конечностей и костей в разные стороны
-	for(var/d in GLOB.cardinals)
-		if(prob(75))
+	for(var/d in GLOB.alldirs)
+		if(prob(80))
 			var/obj/effect/temp_visual/flying_limb/L = new(T)
 			var/part = pick("flying_ribs", "flying_guts", "[prefix]_flying_arm", "[prefix]_flying_head", "[prefix]_flying_leg")
 			L.launch(T, d, part, gore_dmi)
+
+	// Гарантированный минимум кусков, чтобы взрыв всегда выглядел мясным
+	for(var/i in 1 to 3)
+		var/obj/effect/temp_visual/flying_limb/L = new(T)
+		L.launch(T, pick(GLOB.alldirs), pick("flying_ribs", "flying_guts", "[prefix]_flying_arm", "[prefix]_flying_head", "[prefix]_flying_leg"), gore_dmi)
+
 	playsound(T, pick('sound/effects/wounds/blood1.ogg', 'sound/effects/wounds/blood2.ogg', 'sound/effects/wounds/crackandbleed.ogg'), 60, TRUE)
 
 	// Оставляем разорванный труп
@@ -335,40 +282,36 @@
 // Обработка получения урона с проверкой расчленения
 /mob/living/simple_animal/hostile/infected/modular/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	. = ..()
-	if(amount > 0 && stat != DEAD)
-		if(health <= maxHealth * 0.5 && !wound_chest_active)
-			wound_chest_active = TRUE
-			assemble_modular_limbs()
-		// Накапливаем урон за ~1 сек: серия попаданий (дробь в упор) гарантированно gib'ает
-		if(world.time >= burst_damage_expire)
-			burst_damage = 0
-			burst_damage_expire = world.time + 10
-		burst_damage += amount
-		if(burst_damage >= 60)
-			gib_pending = TRUE
+	if(amount <= 0 || stat == DEAD)
+		return
 
-		// Хедшот отрывает голову при любом заметном уроне, без порога расчленения
-		if(last_damage_was_headshot && (limbs_status & ZOMBIE_LIMB_HEAD))
-			sever_head(null, pick(GLOB.cardinals))
-		else if(amount >= dismemberment_threshold)
-			check_random_dismemberment(amount)
-		else if(prob(30) && world.time > last_blood_spurt + 5)
-			var/turf/T = get_turf(src)
-			if(T)
-				last_blood_spurt = world.time
-				var/obj/effect/temp_visual/blood_spurt/S = new(T)
-				S.spurt(pick(GLOB.alldirs))
-				playsound(T, pick('sound/effects/wounds/blood1.ogg', 'sound/effects/wounds/blood2.ogg', 'sound/effects/wounds/blood3.ogg'), 35, FALSE)
+	// Накапливаем урон за ~2 сек: серия попаданий (дробь в упор) гарантированно gib'ает
+	if(world.time >= burst_damage_expire)
+		burst_damage = 0
+		burst_damage_expire = world.time + 20
+	burst_damage += amount
+	if(burst_damage >= 50)
+		gib_pending = TRUE
 
-// Случайная потеря конечности в зависимости от урона
-/mob/living/simple_animal/hostile/infected/modular/proc/check_random_dismemberment(damage_amount)
+	// Рана груди видна уже при 75% HP - при старом пороге в 50% её почти не было видно
+	if(health <= maxHealth * 0.75 && !wound_chest_active)
+		wound_chest_active = TRUE
+		assemble_modular_limbs()
+
+	// Хедшот отрывает голову при любом заметном уроне, без порога расчленения
+	if(last_damage_was_headshot) {
+		sever_head(null, pick(GLOB.cardinals))
+		return
+	}
+
+	// Любой урон (даже самый слабый) гарантированно отрывает конечность,
+	// а голова отлетает часто и без прицеливания - см. check_random_dismemberment
+	check_random_dismemberment(amount)
+
+// Отрыв случайной целой конечности. Возвращает TRUE, если что-то оторвало.
+/mob/living/simple_animal/hostile/infected/modular/proc/sever_random_limb()
 	if(stat == DEAD)
-		return
-
-	// Шанс расчленения растёт с уроном: слабый хит может не оторвать конечность,
-	// но шквальный огонь/взрыв почти гарантированно кромсает зомби
-	if(!prob(clamp(damage_amount, 25, 95)))
-		return
+		return FALSE
 
 	var/list/possible_losses = list()
 	if(limbs_status & ZOMBIE_LIMB_R_ARM)
@@ -379,14 +322,13 @@
 		possible_losses += "r_leg"
 	if(limbs_status & ZOMBIE_LIMB_L_LEG)
 		possible_losses += "l_leg"
-	// Голова исключена из случайного пула: отрывается только реальным хедшотом
-	// (apply_damage с def_zone == BODY_ZONE_HEAD), иначе конечности отлетали чаще головы.
+	// Голова НЕ входит в пул конечностей: у неё свой высокий шанс ниже,
+	// иначе guaranteed-отрыв срабатывал бы на голову так же часто, как на руку.
 
 	if(!possible_losses.len)
-		return
+		return FALSE
 
-	var/chosen = pick(possible_losses)
-	switch(chosen)
+	switch(pick(possible_losses))
 		if("r_arm")
 			sever_r_arm(null, pick(GLOB.cardinals))
 		if("l_arm")
@@ -395,28 +337,52 @@
 			sever_leg("r_leg", null, pick(GLOB.cardinals))
 		if("l_leg")
 			sever_leg("l_leg", null, pick(GLOB.cardinals))
+	return TRUE
 
-// Разлёт крови по соседним тайлам при смерти - как streak у гибов (gibs.dm).
-// Пятно под самим трупом не видно, поэтому брызги кладём вокруг него.
-/mob/living/simple_animal/hostile/infected/modular/proc/scatter_corpse_blood()
+// Потеря конечностей и головы при попадании
+/mob/living/simple_animal/hostile/infected/modular/proc/check_random_dismemberment(damage_amount)
+	if(stat == DEAD)
+		return
+
+	// 1) Гарантированно: каждый удар отрывает одну целую конечность.
+	var/severed_limb = sever_random_limb()
+
+	// Тяжёлые попадания (дробь, тяжёлое оружие) могут оторвать вторую конечность.
+	if(damage_amount >= 30 && severed_limb && prob(clamp(damage_amount * 0.6, 20, 55)))
+		sever_random_limb()
+
+	// Отрыв второй ноги мог убить моба - дальше крутить голову не нужно
+	if(stat == DEAD)
+		return
+
+	// 2) Голова отлетает часто и без прицеливания; шанс растёт с силой удара.
+	// Когда конечности уже все оторваны, голова отлетает почти всегда -
+	// именно поэтому stump_neck/dead_decap теперь реально попадаются.
+	var/intact_limbs = (limbs_status & (ZOMBIE_LIMB_R_ARM | ZOMBIE_LIMB_L_ARM | ZOMBIE_LIMB_R_LEG | ZOMBIE_LIMB_L_LEG)) != 0
+	var/head_chance = intact_limbs ? clamp(30 + damage_amount * 1.2, 30, 90) : 70
+	if((limbs_status & ZOMBIE_LIMB_HEAD) && prob(head_chance))
+		sever_head(null, pick(GLOB.cardinals))
+
+// Разлёт кусков тела при ЛЮБОЙ смерти - даже без гиба труп не уходит чистым.
+/mob/living/simple_animal/hostile/infected/modular/proc/death_gore_scatter()
 	var/turf/T = get_turf(src)
 	if(!T)
 		return
-	for(var/d in GLOB.alldirs)
-		if(!prob(60))
-			continue
-		var/turf/T2 = get_step(T, d)
-		if(!isturf(T2) || T2.density)
-			continue
-		var/obj/effect/decal/cleanable/blood/splatter/B = new(T2)
-		QDEL_IN(B, 3 MINUTES)
+	playsound(T, pick('sound/effects/splat.ogg', 'sound/effects/meatslap.ogg'), 70, TRUE)
+	for(var/i in 1 to 2 + rand(0, 2))
+		var/obj/effect/temp_visual/flying_limb/L = new(T)
+		L.launch(T, pick(GLOB.alldirs), pick("flying_ribs", "flying_guts", "[prefix]_flying_arm", "[prefix]_flying_head", "[prefix]_flying_leg"), gore_dmi)
 
 /mob/living/simple_animal/hostile/infected/modular/death(gibbed)
+	var/exploded = FALSE
 	if(health <= -50 || gibbed || gib_pending)
 		gib_explosion(null)
+		exploded = TRUE
 	else if(!(limbs_status & ZOMBIE_LIMB_HEAD))
 		icon_dead = "[prefix]_dead_decap"
+	if(!exploded)
+		death_gore_scatter()
 	. = ..(gibbed)
 	// Труп чистый: снимаем ВСЕ оверлеи (конечности, культи, ранения)
 	cut_overlays()
-	scatter_corpse_blood()
+	gore_overlay_refs.Cut()

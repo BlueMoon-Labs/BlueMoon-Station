@@ -320,7 +320,7 @@
 	var/turf/smoke_turf = get_turf(src)
 	if(smoke_turf)
 		var/obj/effect/firing_smoke/smoke = new(smoke_turf)
-		smoke.particles.velocity = list(sin(smoke_angle) * 40, -cos(smoke_angle) * 40, 0)
+		smoke.particles.velocity = list(sin(smoke_angle) * 40, cos(smoke_angle) * 40, 0)
 		// Visible powder sparks spraying from the muzzle, offset toward the target.
 		var/muzzle_px = clamp(16 + sin(smoke_angle) * 10, 4, BOUNCE_SPARK_TILE_X - 4)
 		var/muzzle_py = clamp(16 - cos(smoke_angle) * 10, 4, BOUNCE_SPARK_TILE_Y - 4)

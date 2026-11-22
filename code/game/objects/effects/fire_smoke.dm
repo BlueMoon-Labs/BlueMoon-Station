@@ -11,13 +11,13 @@
 	icon_state = list("smoke_1" = 1, "smoke_2" = 1, "smoke_3" = 2)
 	width = 96
 	height = 96
-	count = 5
-	spawning = 15
-	lifespan = 0.5 SECONDS
-	fade = 2.4 SECONDS
-	grow = 0.12
+	count = 8
+	spawning = 30
+	lifespan = 0.75 SECONDS
+	fade = 0.65 SECONDS
+	grow = 0.08
 	drift = generator("circle", 8, 8)
-	scale = generator("num", 0.2, 0.35)
+	scale = generator("num", 0.22, 0.38)
 	spin = generator("num", -20, 20)
 	velocity = list(50, 0, 0)
 	friction = generator("num", 0.3, 0.6)
@@ -118,7 +118,7 @@
 /obj/effect/firing_smoke/Initialize(mapload)
 	. = ..()
 	particles = new /particles/firing_smoke
-	QDEL_IN(src, 0.6 SECONDS)
+	QDEL_IN(src, 0.7 SECONDS)
 
 /obj/effect/firing_smoke/Destroy()
 	particles = null

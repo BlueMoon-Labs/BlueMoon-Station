@@ -11,12 +11,12 @@
 /particles/bullet_sparks
 	icon = 'icons/effects/particles/generic.dmi'
 	icon_state = "dot"
-	count = 12
-	spawning = 12
-	lifespan = 0.45 SECONDS
-	fade = 0.2 SECONDS
+	count = 16
+	spawning = 16
+	lifespan = 0.75 SECONDS
+	fade = 0.3 SECONDS
 	fadein = 0.02 SECONDS
-	scale = generator("num", 0.6, 1.0)
+	scale = generator("num", 0.8, 1.3)
 	position = generator("box", list(-4, -4, 0), list(4, 4, 0))
 	drift = generator("box", list(-0.3, -0.3, 0), list(0.3, 0.3, 0))
 	gravity = list(0, 0.15, 0)
@@ -45,8 +45,9 @@
 	return list(base, 0, clamp(impact_px + BOUNCE_SPARK_CENTER_OFFSET, 4, BOUNCE_SPARK_TILE_X - 4), clamp(impact_py + BOUNCE_SPARK_CENTER_OFFSET, 4, BOUNCE_SPARK_TILE_Y - 4))
 
 /// Pick an open turf next to a wall for the spark spray.
-/proc/pick_bounce_spark_wall_exit(/turf/closed/wall/wall, impact_angle, impact_px, impact_py)
-	if(!wall)
+/proc/pick_bounce_spark_wall_exit(wall_t, impact_angle, impact_px, impact_py)
+	var/turf/closed/wall/W = wall_t
+	if(!W)
 		return null
 
 	var/list/try_dirs = list()
@@ -72,7 +73,7 @@
 		if(seen["[check_dir]"])
 			continue
 		seen["[check_dir]"] = TRUE
-		var/turf/candidate = get_step(wall, check_dir)
+		var/turf/candidate = get_step(W, check_dir)
 		if(bounce_spark_turf_open(candidate))
 			return list(candidate, check_dir)
 
@@ -125,18 +126,19 @@
 /// inside a short window into a single spray.
 GLOBAL_LIST_INIT(bounce_spark_throttle, list())
 
-/proc/spawn_metal_wall_bullet_sparks(/turf/closed/wall/wall, impact_px, impact_py, impact_angle)
-	if(!wall)
+/proc/spawn_metal_wall_bullet_sparks(wall_t, impact_px, impact_py, impact_angle)
+	var/turf/closed/wall/W = wall_t
+	if(!W)
 		return
 
-	var/last_burst = GLOB.bounce_spark_throttle[wall]
+	var/last_burst = GLOB.bounce_spark_throttle[W]
 	if(last_burst && world.realtime - last_burst < 0.15)
 		return
-	GLOB.bounce_spark_throttle[wall] = world.realtime
+	GLOB.bounce_spark_throttle[W] = world.realtime
 	if(length(GLOB.bounce_spark_throttle) > 500)
 		GLOB.bounce_spark_throttle = list()
 
-	var/list/resolved = resolve_bounce_spark_spawn(wall, impact_angle, impact_px, impact_py)
+	var/list/resolved = resolve_bounce_spark_spawn(W, impact_angle, impact_px, impact_py)
 	if(!resolved)
 		return
 
@@ -154,7 +156,7 @@ GLOBAL_LIST_INIT(bounce_spark_throttle, list())
 	spawn_turf.hotspot_expose(1000, 100)
 
 	if(prob(40))
-		playsound(wall, get_sfx(SFX_SPARKS), 22, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+		playsound(W, get_sfx(SFX_SPARKS), 22, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 
 /// Short-lived emitter pinned to the wall-edge pixel; dies on its own, the
 /// particles inside die with their own lifespan.
@@ -176,21 +178,22 @@ GLOBAL_LIST_INIT(bounce_spark_throttle, list())
 	if(power)
 		// Muzzle blast: a short scatter of powder flecks, kept dim so it
 		// doesn't read as a second flash.
-		particles.count = particles.spawning = rand(10, 16)
-		particles.scale = generator("num", 0.4, 0.7)
-		particles.lifespan = 0.35 SECONDS
-		particles.fade = 0.18 SECONDS
-		p_speed = rand(60, 90) / 10
+		particles.count = particles.spawning = rand(12, 18)
+		particles.scale = generator("num", 0.5, 0.9)
+		particles.lifespan = 0.55 SECONDS
+		particles.fade = 0.25 SECONDS
+		p_speed = rand(70, 100) / 10
 	else
-		particles.count = particles.spawning = rand(9, 13)
-		p_speed = rand(70, 110) / 10
-	// dir2angle(): 0 = north, clockwise; screen y grows downward.
+		particles.count = particles.spawning = rand(14, 18)
+		p_speed = rand(80, 120) / 10
+	// dir2angle(): 0 = north, clockwise. Particle space has +y pointing UP
+	// (unlike screen pixels), so vy = +cos(angle) * speed flies forward.
 	var/vx = sin(launch_angle) * p_speed
-	var/vy = -cos(launch_angle) * p_speed
+	var/vy = cos(launch_angle) * p_speed
 	var/spread = p_speed * 0.6
 	particles.velocity = generator("vector", list(vx - spread, vy - spread, 0), list(vx + spread, vy + spread, 0))
-	particles.color = pick("#FFB060", "#E8A050", "#FFD9A0")
-	QDEL_IN(src, power ? 0.45 SECONDS : 0.5 SECONDS)
+	particles.color = pick("#FFD080", "#FFB040", "#FFF0C0")
+	QDEL_IN(src, power ? 0.5 SECONDS : 0.7 SECONDS)
 
 /obj/effect/bullet_spark_burst/Destroy()
 	particles = null
