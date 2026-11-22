@@ -78,6 +78,7 @@
 #include "advanced_locator.dm"
 #include "ai_controller_gc.dm"
 #include "ai_path_savings.dm"
+#include "ambition_objectives.dm"
 #include "anchored_mobs.dm"
 #include "antag_frame_objective.dm"
 #include "antag_hud_double_antag.dm"
