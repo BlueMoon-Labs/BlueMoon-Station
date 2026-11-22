@@ -106,7 +106,7 @@
 /datum/techweb_node/scythe_t1
 	id = "scythe1"
 	display_name = "Scythe (Tier 1)"
-	description = "Culling tools"
+	description = "Инструменты для расчистки зарослей"
 	prereq_ids = list("botany")
 	design_ids = list("scythet1")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3000)
@@ -114,7 +114,7 @@
 /datum/techweb_node/scythe_t2
 	id = "scythe2"
 	display_name = "Scythe (Tier 2)"
-	description = "Culling tools"
+	description = "Инструменты для расчистки зарослей"
 	prereq_ids = list("scythe1")
 	design_ids = list("scythet2")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3000)

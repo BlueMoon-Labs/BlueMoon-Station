@@ -2,7 +2,9 @@
 #define RIDING_PIGGYBACK "piggyback"
 #define RIDING_PRINCESS "princess"
 #define RIDING_BELLY "belly_riding"
+#define RIDING_BELLY_REVERSED "belly_riding_reversed"
 #define RIDING_BELLY_TAUR "belly_riding_taur"
+#define RIDING_BELLY_TAUR_REVERSED "belly_riding_taur_reversed"
 #define RIDING_FACE_TO_FACE "face_to_face"
 
 #define RIDING_ALERT_CATEGORY "ridingalert"

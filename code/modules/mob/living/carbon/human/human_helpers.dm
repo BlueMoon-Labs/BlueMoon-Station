@@ -197,8 +197,12 @@
 /mob/living/carbon/human/proc/examine_shown_name(mob/user)
 	var/shown_name = get_visible_name()
 	if((shown_name in list("Unknown", "Неизвестный")) || (isliving(user) && (HAS_TRAIT(user, TRAIT_PROSOPAGNOSIA) || HAS_TRAIT(user, TRAIT_INVISIBLE_MAN))))
-		shown_name = "Неизвестный"
+		shown_name = examine_unknown_name(user)
 	return shown_name
+
+/// Общее обозначение неизвестной личности с учётом видимости пола для смотрящего.
+/mob/living/carbon/human/proc/examine_unknown_name(mob/user)
+	return gender == FEMALE && !is_gender_obscured(user) ? "Неизвестная" : "Неизвестный"
 
 /// Общая проверка личности для карточки экзамайна и полного профиля.
 /mob/living/carbon/human/proc/examine_identity_hidden(mob/user, check_prosopagnosia = TRUE)

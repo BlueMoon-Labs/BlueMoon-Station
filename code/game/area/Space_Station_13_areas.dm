@@ -1695,6 +1695,13 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	name = "Quartermaster's Office"
 	icon_state = "quart_office"
 
+/area/station/cargo/bitrunning
+	name = "Bitrunning"
+
+/area/station/cargo/bitrunning/den
+	name = "Bitrunning Den"
+	desc = "Офис битраннеров, здесь хранится их снаряжение."
+
 /area/cargo/qm/private
 	name = "Quartermaster's Private Quarters"
 	icon_state = "quart"

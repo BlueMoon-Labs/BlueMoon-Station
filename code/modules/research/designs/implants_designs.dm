@@ -317,6 +317,12 @@
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
+/datum/design/cyberimp_sandevistan_corp/hack
+	name = "Sandevistan Implant"
+	id = "ci-sandevistan-hack"
+	build_path = /obj/item/organ/cyberimp/brain/sandevistan
+	hacked_only = TRUE
+
 /datum/design/cyberimp_berserker_corp
 	name = "Corporate Berserker"
 	desc = "A combat implant that floods the user's system with stimulants, greatly enhancing melee combat at the cost of temporarily disabling ranged weapon use. Mutually exclusive with the sandvistan."
@@ -327,6 +333,12 @@
 	build_path = /obj/item/organ/cyberimp/brain/berserker/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_berserker_corp/hack
+	name = "Berserker Implant"
+	id = "ci-berserker-hack"
+	build_path = /obj/item/organ/cyberimp/brain/berserker
+	hacked_only = TRUE
 
 /datum/design/cyberimp_ballistic_processor
 	name = "Ballistic Processor"
@@ -635,7 +647,7 @@
 
 /datum/design/nanite_pump_implant
 	name = "Nanite Pump Implant Case"
-	desc = "A glass case containing an nanite pump implant"
+	desc = "Стеклянный футляр с имплантом-насосом для нанитов"
 	id = "implant_nanite_pump"
 	build_type = PROTOLATHE
 	materials = list(

@@ -47,3 +47,6 @@
 	if(!istype(T)) //you know this will happen somehow
 		CRASH("Turf decal initialized in an object/nullspace")
 	T.AddElement(/datum/element/decal, icon, icon_state, dir, CLEAN_GOD, color, layer, null, alpha, FALSE, pixel_x, pixel_y)
+
+/obj/effect/decal/cleanable/food/egg_smudge
+	parent_type = /obj/effect/decal/cleanable/egg_smudge

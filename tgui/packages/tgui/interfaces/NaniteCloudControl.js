@@ -14,14 +14,14 @@ export const NaniteDiskBox = (props) => {
   if (!has_disk) {
     return (
       <NoticeBox>
-        No disk inserted
+        Диск не вставлен
       </NoticeBox>
     );
   }
   if (!has_program) {
     return (
       <NoticeBox>
-        Inserted disk has no program
+        На вставленном диске нет программы
       </NoticeBox>
     );
   }
@@ -59,7 +59,7 @@ export const NaniteInfoBox = (props) => {
           inline
           bold
           color={activated ? 'good' : 'bad'}>
-          {activated ? 'Activated' : 'Deactivated'}
+          {activated ? 'Активирована' : 'Деактивирована'}
         </Box>
       )}>
       <Grid>
@@ -68,15 +68,15 @@ export const NaniteInfoBox = (props) => {
         </Grid.Column>
         <Grid.Column size={0.5}>
           <LabeledList>
-            <LabeledList.Item label="Use Rate">
+            <LabeledList.Item label="Расход">
               {use_rate}
             </LabeledList.Item>
             {!!can_trigger && (
               <>
-                <LabeledList.Item label="Trigger Cost">
+                <LabeledList.Item label="Стоимость срабатывания">
                   {trigger_cost}
                 </LabeledList.Item>
-                <LabeledList.Item label="Trigger Cooldown">
+                <LabeledList.Item label="Перезарядка срабатывания">
                   {trigger_cooldown}
                 </LabeledList.Item>
               </>
@@ -87,21 +87,21 @@ export const NaniteInfoBox = (props) => {
       <Grid>
         <Grid.Column>
           <Section
-            title="Codes"
+            title="Коды"
             level={3}
             mr={1}>
             <LabeledList>
-              <LabeledList.Item label="Activation">
+              <LabeledList.Item label="Активация">
                 {activation_code}
               </LabeledList.Item>
-              <LabeledList.Item label="Deactivation">
+              <LabeledList.Item label="Деактивация">
                 {deactivation_code}
               </LabeledList.Item>
-              <LabeledList.Item label="Kill">
+              <LabeledList.Item label="Уничтожение">
                 {kill_code}
               </LabeledList.Item>
               {!!can_trigger && (
-                <LabeledList.Item label="Trigger">
+                <LabeledList.Item label="Срабатывание">
                   {trigger_code}
                 </LabeledList.Item>
               )}
@@ -110,22 +110,22 @@ export const NaniteInfoBox = (props) => {
         </Grid.Column>
         <Grid.Column>
           <Section
-            title="Delays"
+            title="Задержки"
             level={3}
             mr={1}>
             <LabeledList>
-              <LabeledList.Item label="Restart">
+              <LabeledList.Item label="Перезапуск">
                 {timer_restart} s
               </LabeledList.Item>
-              <LabeledList.Item label="Shutdown">
+              <LabeledList.Item label="Отключение">
                 {timer_shutdown} s
               </LabeledList.Item>
               {!!can_trigger && (
                 <>
-                  <LabeledList.Item label="Trigger">
+                  <LabeledList.Item label="Срабатывание">
                     {timer_trigger} s
                   </LabeledList.Item>
-                  <LabeledList.Item label="Trigger Delay">
+                  <LabeledList.Item label="Задержка срабатывания">
                     {timer_trigger_delay} s
                   </LabeledList.Item>
                 </>
@@ -135,7 +135,7 @@ export const NaniteInfoBox = (props) => {
         </Grid.Column>
       </Grid>
       <Section
-        title="Extra Settings"
+        title="Дополнительные настройки"
         level={3}>
         <LabeledList>
           {extra_settings.map(setting => {
@@ -164,7 +164,7 @@ export const NaniteCloudBackupList = (props) => {
     <Button
       fluid
       key={backup.cloud_id}
-      content={"Backup #" + backup.cloud_id}
+      content={"Резервная копия №" + backup.cloud_id}
       textAlign="center"
       onClick={() => act('set_view', {
         view: backup.cloud_id,
@@ -184,20 +184,20 @@ export const NaniteCloudBackupDetails = (props) => {
   if (!cloud_backup) {
     return (
       <NoticeBox>
-        ERROR: Backup not found
+        ОШИБКА: резервная копия не найдена
       </NoticeBox>
     );
   }
   const cloud_programs = data.cloud_programs || [];
   return (
     <Section
-      title={"Backup #" + current_view}
+      title={"Резервная копия №" + current_view}
       level={2}
       buttons={(
         !!has_program && (
           <Button
             icon="upload"
-            content="Upload Program from Disk"
+            content="Загрузить программу с диска"
             color="good"
             onClick={() => act('upload_program')} />
         )
@@ -221,14 +221,14 @@ export const NaniteCloudBackupDetails = (props) => {
               {(!!can_rule || !!program.has_rules) && (
                 <Section
                   mt={-2}
-                  title="Rules"
+                  title="Правила"
                   level={2}
                   buttons={(
                     <>
                       {!!can_rule && (
                         <Button
                           icon="plus"
-                          content="Add Rule from Disk"
+                          content="Добавить правило с диска"
                           color="good"
                           onClick={() => act('add_rule', {
                             program_id: program.id,
@@ -236,7 +236,7 @@ export const NaniteCloudBackupDetails = (props) => {
                       )}
                       <Button
                         icon={program.all_rules_required ? 'check-double' : 'check'}
-                        content={program.all_rules_required ? 'Meet all' : 'Meet any'}
+                        content={program.all_rules_required ? 'Все условия' : 'Любое условие'}
                         onClick={() => act('toggle_rule_logic', {
                           program_id: program.id,
                         })} />
@@ -257,7 +257,7 @@ export const NaniteCloudBackupDetails = (props) => {
                     ))
                   ) : (
                     <Box color="bad">
-                      No Active Rules
+                      Нет активных правил
                     </Box>
                   )}
                 </Section>
@@ -284,29 +284,29 @@ export const NaniteCloudControl = (props) => {
       resizable>
       <Window.Content overflow="auto">
         <Section
-          title="Program Disk"
+          title="Диск с программой"
           buttons={(
             <Button
               icon="eject"
-              content="Eject"
+              content="Извлечь"
               disabled={!has_disk}
               onClick={() => act('eject')} />
           )}>
           <NaniteDiskBox />
         </Section>
         <Section
-          title="Cloud Storage"
+          title="Облачное хранилище"
           buttons={(
             current_view ? (
               <Button
                 icon="arrow-left"
-                content="Return"
+                content="Назад"
                 onClick={() => act('set_view', {
                   view: 0,
                 })} />
             ) : (
               <>
-                {"New Backup: "}
+                {"Новая копия: "}
                 <NumberInput
                   value={new_backup_id}
                   minValue={1}

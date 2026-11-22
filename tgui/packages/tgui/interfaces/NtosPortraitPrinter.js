@@ -1,30 +1,40 @@
+import { useState } from 'react';
+
 import { resolveAsset } from '../assets';
-import { useBackend, useSharedState } from '../backend';
+import { useBackend } from '../backend';
 import { Button, Flex, Input, NoticeBox, PixelArtImage, Section, Stack, Tabs } from '../components';
 import { NtosWindow } from '../layouts';
 
 export const NtosPortraitPrinter = (props) => {
   const { act, data } = useBackend();
-  const [tabIndex, setTabIndex] = useSharedState('tabIndex', 0);
-  const [listIndex, setListIndex] = useSharedState('listIndex', 0);
-  const [query, setQuery] = useSharedState('query', '');
-  const {
-    library,
-    library_secure,
-    library_private,
-    library_large,
-    library_large_private,
-    favorite_paintings_md5 = [],
-    is_admin = false,
-    user_ckey = null,
-  } = data;
+  const [selectedTabIndex, setTabIndex] = useState(null);
+  const [listIndex, setListIndex] = useState(0);
+  const [query, setQuery] = useState('');
+  const { is_admin = false } = data;
+  const library = Array.isArray(data.library) ? data.library : [];
+  const library_secure = Array.isArray(data.library_secure)
+    ? data.library_secure
+    : [];
+  const library_private = Array.isArray(data.library_private)
+    ? data.library_private
+    : [];
+  const library_large = Array.isArray(data.library_large)
+    ? data.library_large
+    : [];
+  const library_large_private = Array.isArray(data.library_large_private)
+    ? data.library_large_private
+    : [];
+  // null из DM не подхватывается дефолтом деструктуризации - приводим явно.
+  const favorite_paintings_md5 = Array.isArray(data.favorite_paintings_md5)
+    ? data.favorite_paintings_md5
+    : [];
 
   const allPortraits = [
-    ...(library || []).map(p => ({ ...p, asset_prefix: 'library' })),
-    ...(library_secure || []).map(p => ({ ...p, asset_prefix: 'library_secure' })),
-    ...(library_private || []).map(p => ({ ...p, asset_prefix: 'library_private' })),
-    ...(library_large || []).map(p => ({ ...p, asset_prefix: 'library_large' })),
-    ...(library_large_private || []).map(p => ({ ...p, asset_prefix: 'library_large_private' })),
+    ...library.map(p => ({ ...p, asset_prefix: 'library' })),
+    ...library_secure.map(p => ({ ...p, asset_prefix: 'library_secure' })),
+    ...library_private.map(p => ({ ...p, asset_prefix: 'library_private' })),
+    ...library_large.map(p => ({ ...p, asset_prefix: 'library_large' })),
+    ...library_large_private.map(p => ({ ...p, asset_prefix: 'library_large_private' })),
   ];
 
   const favoritesList = allPortraits.filter(p => favorite_paintings_md5.includes(p.md5));
@@ -59,29 +69,14 @@ export const NtosPortraitPrinter = (props) => {
       name: 'Favorite',
       asset_prefix: null, // префикс берём из самих портретов
       list: favoritesList,
-      always: true, // показывать вкладку даже если пока пусто
     },
   ];
-  const baseList = TABS[tabIndex].list || [];
-  // Скрытые картины видны только админам (чтобы они могли восстановить)
-  const displayList = is_admin ? baseList : baseList.filter(p => !p.hidden);
-
-  const filteredList = !query
-    ? displayList
-    : displayList.filter(p => {
-        // Админы могут искать по названию ИЛИ сикею
-        if (is_admin) {
-          return String(p.title).toLowerCase().includes(query.toLowerCase()) ||
-                 String(p.ckey).toLowerCase().includes(query.toLowerCase());
-        }
-        // Обычные игроки видят только свои картины при поиске по сикею и должны написать его полностью
-        const isCkeySearch = user_ckey && query.toLowerCase() === user_ckey.toLowerCase();
-        if (isCkeySearch) {
-          return p.ckey === user_ckey;
-        }
-        // По умолчанию поиск только по названию
-        return String(p.title).toLowerCase().includes(query.toLowerCase());
-      });
+  const tabIndex = selectedTabIndex ?? Math.max(0, TABS.findIndex(tab => tab.list.length > 0));
+  const baseList = TABS[tabIndex].list;
+  const normalizedQuery = query.toLowerCase();
+  const filteredList = normalizedQuery
+    ? baseList.filter(portrait => String(portrait.title).toLowerCase().includes(normalizedQuery))
+    : baseList;
 
   const hasPortraits = filteredList.length > 0;
   const safeIndex = hasPortraits
@@ -107,9 +102,6 @@ export const NtosPortraitPrinter = (props) => {
     ? current_portrait_asset_prefix + '_' + currentPortrait.md5
     : '';
 
-  const isAdminOrOwner = !!currentPortrait && (is_admin || user_ckey === currentPortrait.ckey);
-  const isOwner = !!currentPortrait && user_ckey === currentPortrait.ckey;
-
   return (
     <NtosWindow
       title="Art Galaxy"
@@ -120,7 +112,7 @@ export const NtosPortraitPrinter = (props) => {
           <Stack.Item>
             <Section fitted>
               <Tabs fluid textAlign="center">
-                {TABS.map((tabObj, i) => (tabObj.always || !!tabObj.list) && (
+                {TABS.map((tabObj, i) => (
                   <Tabs.Tab
                     key={i}
                     selected={i === tabIndex}
@@ -161,42 +153,16 @@ export const NtosPortraitPrinter = (props) => {
                       })}
                     />
                   )}
-                  {hasPortraits && isAdminOrOwner && !currentPortrait.hidden && (
+                  {hasPortraits && !!is_admin && (
                     <Button.Confirm
                       icon="trash"
                       color="bad"
-                      tooltip={is_admin ? "Скрыть картину из галереи (админ)" : "Скрыть свою картину"}
+                      tooltip="Удалить картину из галереи"
                       tooltipPosition="bottom"
                       confirmContent="Вы уверены?"
-                      onClick={() => act('hide_painting', {
+                      onClick={() => act('delete_painting', {
                         md5: currentPortrait.md5,
                         asset_prefix: current_portrait_asset_prefix,
-                      })}
-                    />
-                  )}
-                  {hasPortraits && is_admin && currentPortrait.hidden && (
-                    <Button.Confirm
-                      icon="undo"
-                      color="good"
-                      tooltip="Восстановить картину в галерее (админ)"
-                      tooltipPosition="bottom"
-                      confirmContent="Вы уверены?"
-                      onClick={() => act('unhide_painting', {
-                        md5: currentPortrait.md5,
-                        asset_prefix: current_portrait_asset_prefix,
-                      })}
-                    />
-                  )}
-                  {hasPortraits && isOwner && (
-                    <Button
-                      icon="pencil"
-                      color="transparent"
-                      tooltip="Переименовать картину"
-                      tooltipPosition="bottom"
-                      onClick={() => act('rename_painting', {
-                        md5: currentPortrait.md5,
-                        asset_prefix: current_portrait_asset_prefix,
-                        current_title: currentPortrait.title,
                       })}
                     />
                   )}
@@ -211,16 +177,18 @@ export const NtosPortraitPrinter = (props) => {
                 align="center"
                 justify="center"
                 direction="column">
-                <Flex.Item>
-                  <PixelArtImage
-                    src={resolveAsset(current_portrait_asset_name)}
-                    fit="contain"
-                    maxHeight={128}
-                    maxWidth={128}
-                    containerStyle={{
-                      width: '128px',
-                    }} />
-                </Flex.Item>
+                {hasPortraits && (
+                  <Flex.Item>
+                    <PixelArtImage
+                      src={resolveAsset(current_portrait_asset_name)}
+                      fit="contain"
+                      maxHeight={128}
+                      maxWidth={128}
+                      containerStyle={{
+                        width: '128px',
+                      }} />
+                  </Flex.Item>
+                )}
                 <Flex.Item className="Section__titleText">
                   {current_portrait_title}
                 </Flex.Item>
@@ -243,7 +211,7 @@ export const NtosPortraitPrinter = (props) => {
                       <Button
                         disabled={!hasPortraits || safeIndex === 0}
                         icon="chevron-left"
-                        onClick={() => setListIndex(listIndex - 1)}
+                        onClick={() => setListIndex(safeIndex - 1)}
                       />
                     </Stack.Item>
                     <Stack.Item grow={3}>
@@ -261,7 +229,7 @@ export const NtosPortraitPrinter = (props) => {
                       <Button
                         icon="chevron-right"
                         disabled={!hasPortraits || safeIndex === filteredList.length - 1}
-                        onClick={() => setListIndex(listIndex + 1)}
+                        onClick={() => setListIndex(safeIndex + 1)}
                       />
                     </Stack.Item>
                     <Stack.Item>

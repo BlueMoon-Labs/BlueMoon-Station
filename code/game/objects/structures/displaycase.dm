@@ -121,7 +121,7 @@
 	if(W.GetID() && !broken && openable)
 		if(allowed(user))
 			// The captain's display case requires at least Amber Code while on the station.
-			if(istype(src, /obj/structure/displaycase/captain) && is_station_level(src.z) && !SSsecurity_level.security_level_is_at_least(SEC_LEVEL_AMBER))
+			if(!open && istype(src, /obj/structure/displaycase/captain) && is_station_level(src.z) && !SSsecurity_level.security_level_is_at_least(SEC_LEVEL_AMBER))
 				to_chat(user, span_alert("Витрина с антикварным лазерным пистолетом недопустима к открытию до Янтарного Кода."))
 				return
 			to_chat(user, span_notice("You [open ? "close":"open"] [src]."))

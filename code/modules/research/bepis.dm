@@ -11,7 +11,7 @@
 
 /obj/machinery/rnd/bepis
 	name = "\improper B.E.P.I.S. Chamber"
-	desc = "A high fidelity testing device which unlocks the secrets of the known universe using the two most powerful substances available to man: excessive amounts of electricity and capital."
+	desc = "Высокоточное испытательное устройство, раскрывающее тайны известной вселенной с помощью двух самых мощных веществ, доступных человеку: избытка электричества и капитала."
 	icon = 'icons/obj/machines/bepis.dmi'
 	icon_state = "chamber"
 	density = TRUE
@@ -173,7 +173,7 @@
 		use_power(MACHINE_OVERLOAD * power_saver) //To prevent gambling at low cost and also prevent spamming for infinite deer.
 		return
 	//Minor Failure
-	error_cause = pick("attempted to sell grey products to American dominated market.","attempted to sell gray products to British dominated market.","placed wild assumption that PDAs would go out of style.","simulated product #76 damaged brand reputation mortally.","simulated business model resembled 'pyramid scheme' by 98.7%.","product accidently granted override access to all station doors.")
+	error_cause = pick("пытался продать «серый» товар на рынке, контролируемом американскими корпорациями.","пытался продать «серый» товар на рынке, контролируемом британскими корпорациями.","исходил из дикого предположения, что КПК скоро выйдут из моды.","симулированный продукт №76 нанёс смертельный удар по репутации бренда.","симулированная бизнес-модель на 98,7% напоминала «финансовую пирамиду».","продукт случайно получил приоритетный доступ ко всем дверям станции.")
 	say("Experiment concluded with zero product viability. Cause of error: [error_cause]")
 	return
 

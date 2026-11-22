@@ -364,6 +364,13 @@
 		/obj/item/clothing/under/syndicate/maid/civil = 0,
 		/obj/item/gun/ballistic/automatic/ak12/r = 0, // ПОШЁЛ НАХУЙ НОКС!!!
 		/obj/item/gun/ballistic/automatic/pistol/sigsauer = 0,
+		//biomass
+		/obj/item/broken/terror_spider_egg/tier1 = 2500,
+		/obj/item/broken/terror_spider_egg/tier2 = 3750,
+		/obj/item/broken/terror_spider_egg/tier3 = 5000,
+		/obj/item/broken/terror_spider_egg/tier4 = 8000,
+		/obj/item/broken/necromorph_biomass = 2500,
+		/obj/item/broken/necromorph_biomass/dense = 4500,
 		//Mechs
 		/obj/vehicle/sealed/mecha/combat/five_stars = 100000,
 		/obj/vehicle/sealed/mecha/combat/durand/zeus = 25000,

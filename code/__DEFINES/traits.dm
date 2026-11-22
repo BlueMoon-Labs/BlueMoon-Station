@@ -216,6 +216,7 @@
 #define TRAIT_ABDUCTOR_SCIENTIST_TRAINING "abductor-scientist-training"
 #define TRAIT_SURGEON           "surgeon"
 #define TRAIT_COLDBLOODED		"coldblooded"	// Your body is literal room temperature. Does not make you immune to the temp.
+#define TRAIT_MONOPHOBIA		"monophobia"
 #define TRAIT_NONATURALHEAL		"nonaturalheal"	// Only Admins can heal you. NOTHING else does it unless it's given the god tag.
 #define TRAIT_NORUNNING			"norunning"		// You walk!
 #define TRAIT_NOMARROW			"nomarrow"		// You don't make blood, with chemicals or nanites.
@@ -252,6 +253,7 @@
 #define TRAIT_POOR_AIM			"poor_aim"
 #define TRAIT_INSANE_AIM		"insane_aim" //they don't miss. they never miss. it was all part of their immaculate plan.
 #define TRAIT_PROSOPAGNOSIA		"prosopagnosia"
+#define TRAIT_INSANITY			"reality_dissociation_syndrome"
 #define TRAIT_DRUNK_HEALING		"drunk_healing"
 #define TRAIT_TAGGER			"tagger"
 #define TRAIT_PHOTOGRAPHER		"photographer"
@@ -716,6 +718,8 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 ///Movement type traits for movables. See elements/movetype_handler.dm
 #define TRAIT_MOVE_GROUND "move_ground"
 #define TRAIT_MOVE_FLYING "move_flying"
+/// Позволяет мобу ходить по обрывам, не падая, пока он жив.
+#define TRAIT_CLIFF_WALKER "cliff_walker"
 #define TRAIT_MOVE_VENTCRAWLING "move_ventcrawling"
 #define TRAIT_MOVE_FLOATING "move_floating"
 #define TRAIT_MOVE_PHASING "move_phasing"
@@ -789,7 +793,6 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define TRAIT_BADTOUCH "bad_touch"
 #define TRAIT_EXTROVERT "extrovert"
 #define TRAIT_INTROVERT "introvert"
-#define TRAIT_INSANITY "insanity"
 
 /// Trait for customizable reagent holder
 #define TRAIT_CUSTOMIZABLE_REAGENT_HOLDER "customizable_reagent_holder"
@@ -1004,3 +1007,15 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 
 /// Трейт для персонажа. Дает +2 к муду.
 #define TRAIT_BIRTHDAY_BOY "birthday_boy"
+
+/// Трейты битраннинга и виртуальных доменов.
+#define TRAIT_ACT_AS_HERETIC "act_as_heretic"
+#define TRAIT_MIND_TEMPORARILY_GONE "mind_temporarily_gone"
+#define TRAIT_NO_AUGMENTS "no_augments"
+#define TRAIT_NO_DNA_COPY "no_dna_copy"
+#define TRAIT_NO_MINDSWAP "no_mindswap"
+#define TRAIT_NOBLOOD "noblood"
+#define TRAIT_STASIS "stasis"
+#define TRAIT_TEMPORARY_BODY "temporary_body"
+/// Хелпер для трейтов статус-эффектов, как в современном /tg/.
+#define TRAIT_STATUS_EFFECT(effect_id) "status_effect_[effect_id]"

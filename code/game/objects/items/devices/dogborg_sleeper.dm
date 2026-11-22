@@ -281,7 +281,7 @@
 
 /obj/item/dogborg/sleeper/ui_act(action, params)
 	. = ..()
-	if(. || !iscyborg(usr))
+	if(. || !iscyborg(usr) || get_host() != usr)
 		return
 
 	switch(action)
@@ -290,11 +290,13 @@
 			. = TRUE
 		if("inject")
 			var/chem = text2path(params["chem"])
-			if(!patient || !chem)
+			if(!patient || !(patient in contents) || !ispath(chem, /datum/reagent) || !(chem in injection_chems))
 				return
 			inject_chem(chem, usr)
 			. = TRUE
 		if("cleaning")
+			if(cleaning)
+				return
 			if(!contents || length(contents) == 0)
 				to_chat(usr, "Your [src.name] is already clean.")
 				return
@@ -373,8 +375,12 @@
 
 //Gurgleborg process
 /obj/item/dogborg/sleeper/proc/clean_cycle(mob/living/silicon/robot/hound)
-	//Sanity
-	if(!hound)
+	// Stop stale timers after ejection, module removal, or power-cell removal.
+	if(!cleaning)
+		return
+	if(QDELETED(hound) || get_host() != hound || !hound.cell)
+		cleaning = FALSE
+		cleaning_cycles = initial(cleaning_cycles)
 		return
 	for(var/I in items_preserved)
 		if(!(I in contents))
@@ -483,16 +489,19 @@
 	return is_type_in_typecache(I, important_items)
 
 /obj/item/dogborg/sleeper/proc/inject_chem(datum/reagent/chem, mob/living/silicon/robot/hound)
-	if(!hound || !patient || !patient.reagents)
+	if(QDELETED(hound) || get_host() != hound || !patient || !(patient in contents) || !patient.reagents)
 		return
-	if(hound.cell.charge <= inject_cost + 50) //This is so borgs don't kill themselves with it. Remember, 750 charge used every injection.
+	if(!ispath(chem, /datum/reagent) || !(chem in injection_chems))
+		return
+	if(!hound.cell || hound.cell.charge <= inject_cost + 50) //This is so borgs don't kill themselves with it. Remember, 750 charge used every injection.
 		to_chat(hound, span_notice("You don't have enough power to synthesize fluids."))
 		return
 	if(!chem_allowed(chem)) //Preventing people from accidentally killing themselves by trying to inject too many chemicals!
 		to_chat(hound, span_notice("Your stomach is currently too full of fluids to secrete more fluids of this kind."))
 		return
+	if(!hound.cell.use(inject_cost))
+		return
 	patient.reagents.add_reagent(chem, inject_amount)
-	hound.cell.use(inject_cost) //-750 charge per injection
 	//var/units = round(patient.reagents.get_reagent_amount(chem))
 	playsound(hound, pick('sound/items/medi/hypospray.ogg','sound/items/medi/hypospray2.ogg'), 35, TRUE, 2)
 	log_combat(hound, patient, "injected [chem] into", addition = "via [src]")

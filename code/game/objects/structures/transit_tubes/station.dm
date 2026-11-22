@@ -207,3 +207,68 @@
 	..()
 	boarding_dir = dir
 
+
+/obj/structure/transit_tube/station/dispenser
+	name = "station tube pod dispenser"
+	desc = "Станция, которая создаёт капсулу для пассажира при входе."
+	icon_state = "open_station0"
+	base_icon = "station0"
+	enter_delay = 1
+	open_status = STATION_TUBE_OPEN
+
+/obj/structure/transit_tube/station/dispenser/close_animation()
+	return
+
+/obj/structure/transit_tube/station/dispenser/launch_pod()
+	for(var/obj/structure/transit_tube_pod/pod in loc)
+		if(!pod.moving)
+			pod_moving = 1
+			pod.follow_tube()
+			pod_moving = 0
+			return TRUE
+	return FALSE
+
+/obj/structure/transit_tube/station/dispenser/Bumped(atom/movable/AM)
+	if(!isliving(AM) || AM.dir != boarding_dir || AM.anchored)
+		return
+
+	var/obj/structure/transit_tube_pod/pod = new(loc)
+	pod.setDir(turn(src.dir, -90))
+	if(!has_exit(pod.dir))
+		pod.setDir(tube_dirs[1])
+	AM.forceMove(pod)
+	pod.update_icon()
+	launch_pod()
+
+/obj/structure/transit_tube/station/dispenser/pod_stopped(obj/structure/transit_tube_pod/pod, from_dir)
+	playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
+	pod.empty_pod(get_turf(src))
+	qdel(pod)
+
+/obj/structure/transit_tube/station/dispenser/flipped
+	icon_state = "open_station1"
+	base_icon = "station1"
+	tube_construction = /obj/structure/c_transit_tube/station/flipped
+
+/obj/structure/transit_tube/station/dispenser/flipped/init_tube_dirs()
+	..()
+	boarding_dir = dir
+
+/obj/structure/transit_tube/station/dispenser/reverse
+	tube_construction = /obj/structure/c_transit_tube/station/reverse
+	reverse_launch = TRUE
+	icon_state = "open_terminus0"
+	base_icon = "terminus0"
+
+/obj/structure/transit_tube/station/dispenser/reverse/init_tube_dirs()
+	switch(dir)
+		if(NORTH)
+			tube_dirs = list(EAST)
+		if(SOUTH)
+			tube_dirs = list(WEST)
+		if(EAST)
+			tube_dirs = list(SOUTH)
+		if(WEST)
+			tube_dirs = list(NORTH)
+	boarding_dir = turn(dir, 180)
+

@@ -59,7 +59,7 @@ export const PowerMonitorContent = (props) => {
         <Flex.Item mx={0.5} width="200px">
           <Section>
             <LabeledList>
-              <LabeledList.Item label="Supply">
+              <LabeledList.Item label="Доступно">
                 <ProgressBar
                   value={supply}
                   minValue={0}
@@ -68,7 +68,7 @@ export const PowerMonitorContent = (props) => {
                   {toFixed(supply / 1000) + ' kW'}
                 </ProgressBar>
               </LabeledList.Item>
-              <LabeledList.Item label="Draw">
+              <LabeledList.Item label="Потребление">
                 <ProgressBar
                   value={demand}
                   minValue={0}
@@ -102,23 +102,23 @@ export const PowerMonitorContent = (props) => {
       <Section>
         <Box mb={1}>
           <Box inline mr={2} color="label">
-            Sort by:
+            Сортировка:
           </Box>
           <Button.Checkbox
             checked={sortByField === 'name'}
-            content="Name"
+            content="Название"
             onClick={() => setSortByField(
               sortByField !== 'name' && 'name'
             )} />
           <Button.Checkbox
             checked={sortByField === 'charge'}
-            content="Charge"
+            content="Заряд"
             onClick={() => setSortByField(
               sortByField !== 'charge' && 'charge'
             )} />
           <Button.Checkbox
             checked={sortByField === 'draw'}
-            content="Draw"
+            content="Потребление"
             onClick={() => setSortByField(
               sortByField !== 'draw' && 'draw'
             )} />
@@ -126,22 +126,22 @@ export const PowerMonitorContent = (props) => {
         <Table>
           <Table.Row header>
             <Table.Cell>
-              Area
+              Зона
             </Table.Cell>
             <Table.Cell collapsing>
-              Charge
+              Заряд
             </Table.Cell>
             <Table.Cell textAlign="right">
-              Draw
+              Потребление
             </Table.Cell>
-            <Table.Cell collapsing title="Equipment">
-              Eqp
+            <Table.Cell collapsing title="Оборудование">
+              Обр
             </Table.Cell>
-            <Table.Cell collapsing title="Lighting">
-              Lgt
+            <Table.Cell collapsing title="Освещение">
+              Осв
             </Table.Cell>
-            <Table.Cell collapsing title="Environment">
-              Env
+            <Table.Cell collapsing title="Окружение">
+              Окр
             </Table.Cell>
           </Table.Row>
           {areas.map((area, i) => (
@@ -215,12 +215,12 @@ const AreaStatusColorBox = props => {
   const { status } = props;
   const power = Boolean(status & 2);
   const mode = Boolean(status & 1);
-  const tooltipText = (power ? 'On' : 'Off')
-    + ` [${mode ? 'auto' : 'manual'}]`;
+  const tooltipText = (power ? 'Вкл' : 'Выкл')
+    + ` [${mode ? 'авто' : 'вручную'}]`;
   return (
     <ColorBox
       color={power ? 'good' : 'bad'}
-      content={mode ? undefined : 'M'}
+      content={mode ? undefined : 'Р'}
       title={tooltipText} />
   );
 };

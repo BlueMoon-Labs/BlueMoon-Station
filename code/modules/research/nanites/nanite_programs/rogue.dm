@@ -4,7 +4,7 @@
 //Last stop of the error train
 /datum/nanite_program/glitch
 	name = "Glitch"
-	desc = "A heavy software corruption that causes nanites to gradually break down."
+	desc = "Тяжёлое программное повреждение, из-за которого наниты постепенно разрушаются."
 	use_rate = 1.5
 	unique = FALSE
 	rogue_types = list()
@@ -12,7 +12,7 @@
 //Generic body-affecting programs will decay into this
 /datum/nanite_program/necrotic
 	name = "Necrosis"
-	desc = "The nanites attack internal tissues indiscriminately, causing widespread damage."
+	desc = "Наниты без разбора атакуют внутренние ткани, вызывая обширные повреждения."
 	use_rate = 0.75
 	unique = FALSE
 	rogue_types = list(/datum/nanite_program/glitch)
@@ -25,7 +25,7 @@
 //Programs that don't directly interact with the body will decay into this
 /datum/nanite_program/toxic
 	name = "Toxin Buildup"
-	desc = "The nanites cause a slow but constant toxin buildup inside the host."
+	desc = "Наниты вызывают медленное, но постоянное накопление токсинов в организме носителя."
 	use_rate = 0.25
 	unique = FALSE
 	rogue_types = list(/datum/nanite_program/glitch)
@@ -38,7 +38,7 @@
 //Generic blood-affecting programs will decay into this
 /datum/nanite_program/suffocating
 	name = "Hypoxemia"
-	desc = "The nanites prevent the host's blood from absorbing oxygen efficiently."
+	desc = "Наниты мешают крови носителя эффективно поглощать кислород."
 	use_rate = 0.75
 	unique = FALSE
 	rogue_types = list(/datum/nanite_program/glitch)
@@ -51,7 +51,7 @@
 //Generic brain-affecting programs will decay into this
 /datum/nanite_program/brain_decay
 	name = "Neuro-Necrosis"
-	desc = "The nanites seek and attack brain cells, causing extensive neural damage to the host."
+	desc = "Наниты ищут и атакуют клетки мозга, нанося обширный ущерб нервной системе носителя."
 	use_rate = 0.75
 	unique = FALSE
 	rogue_types = list(/datum/nanite_program/necrotic)
@@ -64,7 +64,7 @@
 //Generic brain-affecting programs can also decay into this
 /datum/nanite_program/brain_misfire
 	name = "Brain Misfire"
-	desc = "The nanites interfere with neural pathways, causing minor psychological disturbances."
+	desc = "Наниты вмешиваются в работу нейронных путей, вызывая лёгкие психические расстройства."
 	use_rate = 0.50
 	unique = FALSE
 	rogue_types = list(/datum/nanite_program/brain_decay)
@@ -84,7 +84,7 @@
 //Generic skin-affecting programs will decay into this
 /datum/nanite_program/skin_decay
 	name = "Dermalysis"
-	desc = "The nanites attack skin cells, causing irritation, rashes, and minor damage."
+	desc = "Наниты атакуют клетки кожи, вызывая раздражение, сыпь и лёгкие повреждения."
 	use_rate = 0.25
 	unique = FALSE
 	rogue_types = list(/datum/nanite_program/necrotic)
@@ -102,7 +102,7 @@
 //Generic nerve-affecting programs will decay into this
 /datum/nanite_program/nerve_decay
 	name = "Nerve Decay"
-	desc = "The nanites attack the host's nerves, causing lack of coordination and short bursts of paralysis."
+	desc = "Наниты атакуют нервы носителя, вызывая нарушение координации и кратковременные приступы паралича."
 	use_rate = 1
 	unique = FALSE
 	rogue_types = list(/datum/nanite_program/necrotic)

@@ -1106,6 +1106,11 @@
 	w_class = WEIGHT_CLASS_SMALL
 	component_type = null
 	item_flags = NO_UNIFORM_REQUIRED
+	actions_types = list(/datum/action/item_action/belly_riding_pose)
+	var/reversed_pose = FALSE
+
+/obj/item/storage/belt/belly_riding/item_action_slot_check(slot, mob/user, datum/action/A)
+	return slot == ITEM_SLOT_BELT && ishuman(user) && ..()
 
 /obj/item/storage/belt/belly_riding/examine(mob/user)
 	. = ..()
@@ -1120,3 +1125,39 @@
 	item_state = item_state ? null : initial(item_state)
 	balloon_alert(user, item_state ? "Видимые" : "Невидимые")
 	update_slot_icon()
+
+/obj/item/storage/belt/belly_riding/ui_action_click(mob/user, actiontype)
+	if(!istype(actiontype, /datum/action/item_action/belly_riding_pose))
+		return ..()
+	var/mob/living/carbon/human/carrier = user
+	if(!istype(carrier) || carrier.belt != src)
+		return
+
+	var/datum/component/riding/human/ride = carrier.GetComponent(/datum/component/riding/human)
+	var/mob/living/passenger
+	if(ride?.belly_harness == src && RIDING_IS_BELLY(ride.buckle_type) && carrier.has_buckled_mobs())
+		passenger = carrier.buckled_mobs[1]
+		if(!can_refasten(carrier, passenger, ride) || INTERACTING_WITH(carrier, passenger))
+			return
+		carrier.visible_message(span_notice("[carrier] начинает перезакреплять [passenger] в ремнях."),
+			span_notice("Вы начинаете перезакреплять [passenger] в ремнях."))
+		if(!do_after(carrier, RIDING_CARRYDELAY_BELLY, passenger, extra_checks = CALLBACK(src, PROC_REF(can_refasten), carrier, passenger, ride)))
+			return
+		if(!can_refasten(carrier, passenger, ride))
+			return
+
+	reversed_pose = !reversed_pose
+	if(passenger)
+		ride.off_true_belly_riding()
+		ride.handle_vehicle_offsets(ride.move_dir_for_riding_sprite(carrier.dir))
+
+	balloon_alert(carrier, reversed_pose ? "обратная поза" : "стандартная поза")
+
+/obj/item/storage/belt/belly_riding/proc/can_refasten(mob/living/carbon/human/carrier, mob/living/passenger, datum/component/riding/human/ride)
+	return !QDELETED(src) && !QDELETED(carrier) && carrier.client && carrier.belt == src \
+		&& !QDELETED(ride) && ride.belly_harness == src && RIDING_IS_BELLY(ride.buckle_type) \
+		&& !QDELETED(passenger) && passenger.buckled == carrier
+
+/datum/action/item_action/belly_riding_pose
+	name = "Switch Belly Riding Pose"
+	desc = "Меняет положение переносимого, от «основных мест» ко рту."

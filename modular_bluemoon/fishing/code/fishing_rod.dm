@@ -228,7 +228,7 @@
 	for(var/turf/turf in get_line(user, target))
 		if(turf == get_turf(user) || turf == get_turf(target))
 			continue
-		if(isclosedturf(turf))
+		if(isclosedturf(turf) || turf.is_blocked_turf(TRUE, user))
 			balloon_alert(user, "леска заблокирована!")
 			return
 	COOLDOWN_START(src, casting_cd, 1 SECONDS)

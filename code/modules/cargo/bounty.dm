@@ -119,6 +119,9 @@
 				if(4)
 					subtype = pick(subtypesof(/datum/bounty/item/slime))
 			return new subtype
+		if(CIV_JOB_BITRUN)
+			var/subtype = pick(subtypesof(/datum/bounty/item/bitrunning))
+			return new subtype
 	if(guided == CIV_JOB_BASIC)
 		var/list/assistant_bounties = subtypesof(/datum/bounty/item/assistant)
 		if(length(assistant_bounties))

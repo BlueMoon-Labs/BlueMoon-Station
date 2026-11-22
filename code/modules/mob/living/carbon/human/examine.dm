@@ -1,7 +1,7 @@
 /mob/living/carbon/human/examine(mob/user, silent = FALSE)
 //this is very slightly better than it was because you can use it more places. still can't do \his[src] though.
 	var/shown_name = examine_shown_name(user)
-	var/anonymous = shown_name == "Неизвестный" || is_gender_obscured()
+	var/anonymous = is_gender_obscured(user)
 	var/t_on = anonymous ? "Он" : ru_who(TRUE)
 	var/t_ego = anonymous ? "его" : ru_ego()
 	var/t_nego = anonymous ? "него" : ru_nego()
@@ -44,7 +44,11 @@
 		var/species_name = html_encode(dna?.custom_species ? dna.custom_species : dna.species?.name)
 		race_html = "<span class='examine_species' title='[species_name]'>[capitalize(t_ego)] вид – [spec_trait_examine_font()][species_name]</font></span>"
 	if(user?.stat == CONSCIOUS && ishuman(user) && !silent)
-		var/target_name = shown_name == "Неизвестный" ? "Неизвестного" : shown_name
+		var/target_name = shown_name
+		if(shown_name == "Неизвестный")
+			target_name = "Неизвестного"
+		else if(shown_name == "Неизвестная")
+			target_name = "Неизвестную"
 		user.visible_message(span_small("<b>[user]</b> смотрит на <b>[target_name]</b>.") , span_small("Смотрю на <b>[target_name]</b>.") , null, COMBAT_MESSAGE_RANGE)
 	var/list/obscured = check_obscured_slots()
 

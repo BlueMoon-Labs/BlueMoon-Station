@@ -279,6 +279,11 @@
 	desc = "Маленькая бутылочка. Содержит вирусную культуру H13N1 flu в синт-кровяном агаре."
 	spawned_disease = /datum/disease/advance/flu
 
+/obj/item/reagent_containers/glass/bottle/viral_evolutinaty
+	name = "Culture bottle"
+	desc = "Маленькая бутылочка. Содержит вирусную культуру, требующуюся для генетических исследований"
+	spawned_disease = /datum/disease/advance/viral_elolutionary
+
 /obj/item/reagent_containers/glass/bottle/retrovirus
 	name = "Retrovirus culture bottle"
 	desc = "Маленькая бутылочка. Содержит ретровирусную культуру в синт-кровяном агаре."

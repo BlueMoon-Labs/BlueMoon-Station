@@ -3,7 +3,7 @@
 /datum/techweb_node/datatheory //Computer science
 	id = "datatheory"
 	display_name = "Data Theory"
-	description = "Big Data, in space!"
+	description = "Большие данные в космосе!"
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("base")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2000)
@@ -11,7 +11,7 @@
 /datum/techweb_node/adv_datatheory
 	id = "adv_datatheory"
 	display_name = "Advanced Data Theory"
-	description = "Better insight into programming and data."
+	description = "Более глубокое понимание программирования и данных."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("datatheory")
 	design_ids = list("icprinter", "icupgadv", "icupgclo", "bounty_pad","bounty_pad_control", "encryptionkey_sec", "encryptionkey_eng", "encryptionkey_med", "encryptionkey_medsci", "encryptionkey_sci", "encryptionkey_cargo", "encryptionkey_mining", "encryptionkey_service")
@@ -21,7 +21,7 @@
 /datum/techweb_node/basic_plasma
 	id = "basic_plasma"
 	display_name = "Basic Plasma Research"
-	description = "Research into the mysterious and dangerous substance, plasma."
+	description = "Исследования таинственного и опасного вещества — плазмы."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("engineering")
 	design_ids = list("mech_generator")
@@ -30,7 +30,7 @@
 /datum/techweb_node/adv_plasma
 	id = "adv_plasma"
 	display_name = "Advanced Plasma Research"
-	description = "Research on how to fully exploit the power of plasma."
+	description = "Исследования того, как полностью использовать мощь плазмы."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("basic_plasma")
 	design_ids = list("mech_plasma_cutter", "mod_plasmagen")
@@ -40,7 +40,7 @@
 /datum/techweb_node/emp_basic //EMP tech for some reason
 	id = "emp_basic"
 	display_name = "Electromagnetic Theory"
-	description = "Study into usage of frequencies in the electromagnetic spectrum."
+	description = "Изучение использования частот электромагнитного спектра."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("base")
 	design_ids = list("holosign", "holosignsec", "holosignengi", "holosignatmos",/* "holosignfirelock",*/ "inducer", "tray_goggles", "holopad","inducer_sci")
@@ -49,7 +49,7 @@
 /datum/techweb_node/emp_adv
 	id = "emp_adv"
 	display_name = "Advanced Electromagnetic Theory"
-	description = "Determining whether reversing the polarity will actually help in a given situation."
+	description = "Определение, поможет ли в конкретной ситуации переполюсовка."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("emp_basic")
 	design_ids = list("ultra_micro_laser")
@@ -59,7 +59,7 @@
 /datum/techweb_node/clown
 	id = "clown"
 	display_name = "Clown Technology"
-	description = "Honk?!"
+	description = "Хонк?!"
 	informing_radio_channels = list(RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("base")
 	design_ids = list("air_horn", "honker_main", "honker_peri", "honker_targ", "honk_chassis", "honk_head", "honk_torso", "honk_left_arm", "honk_right_arm",
@@ -70,7 +70,7 @@
 /datum/techweb_node/sticky_basic
 	id = "sticky_basic"
 	display_name = "Basic Sticky Technology"
-	description = "The only thing left to do after researching this tech is to start printing out a bunch of 'kick me' signs."
+	description = "Единственное, что остаётся после изучения этой технологии, — начать печатать таблички «Пни меня»."
 	informing_radio_channels = list(RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("base")
 	design_ids = list("sticky_tape")
@@ -81,7 +81,7 @@
 /datum/techweb_node/sticky_advanced
 	id = "sticky_advanced"
 	display_name = "Advanced Sticky Technology"
-	description = "Taking a good joke too far? Nonsense!"
+	description = "Зашли слишком далеко в шутке? Ерунда!"
 	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING)
 	design_ids = list("super_sticky_tape", "pointy_tape")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)

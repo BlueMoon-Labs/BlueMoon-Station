@@ -2,9 +2,11 @@
 // Active knot state in current BlueMoon is stored on /obj/item/organ/genital/penis.
 // This file intentionally does not activate raw knot state or create its own timers.
 
+// Diagnostic flag for one round's test window; no preference or disk persistence.
+GLOBAL_VAR_INIT(knot_debug_ignore_prefs_until, 0)
+GLOBAL_VAR_INIT(knot_debug_ignore_prefs_owner, null)
+
 /client
-	/// Temporary per-admin testing option; never saved to player preferences.
-	var/tmp/knot_debug_ignore_prefs = FALSE
 	/// Temporary per-admin testing option; guarantees the roll, not anatomy validation.
 	var/tmp/knot_debug_force_chance = FALSE
 
@@ -29,7 +31,7 @@
 	if(!P || QDELETED(P))
 		P = H.getorganslot(ORGAN_SLOT_PENIS)
 	to_chat(src, span_notice("=== Knot debug: [H] ==="))
-	to_chat(src, "Оператор: bypass prefs = [knot_debug_ignore_prefs], force chance = [knot_debug_force_chance]")
+	to_chat(src, "Общий TEST bypass prefs = [knotting_debug_prefs_active()] (включил: [GLOB.knot_debug_ignore_prefs_owner]), force chance = [knot_debug_force_chance]")
 	to_chat(src, "Преф sexknotting: [!!H.client?.prefs?.sexknotting], arousable: [!!H.client?.prefs?.arousable].")
 	to_chat(src, "Эструс: [HAS_TRAIT(H, TRAIT_ESTROUS_ACTIVE)].")
 	var/threshold = H.get_climax_threshold()
@@ -107,7 +109,7 @@
 	var/obj/item/organ/genital/penis/P = pen_owner.getorganslot(ORGAN_SLOT_PENIS)
 	var/before_locked = P.knot_locked
 	var/before_zones = islist(P.knot_zones) ? length(P.knot_zones) : 0
-	var/succeeded = try_apply_knot(pen_owner, recipient, zone, force_override = force, force_knot = force)
+	var/succeeded = try_apply_knot(pen_owner, recipient, zone, force_override = force, force_knot = force || knot_debug_force_chance)
 	if(succeeded)
 		to_chat(src, span_notice("УСПЕХ: проверка выполнена реальным try_apply_knot(), эффекты и таймеры созданы стандартным путём."))
 	else
@@ -155,7 +157,7 @@
 	if(!check_rights(R_DEBUG))
 		return
 	var/list/actions = list(
-		"Переключить bypass префов узлирования" = "prefs",
+		"Глобальный TEST bypass префов (админы и тестовые мобы, 15 мин)" = "prefs",
 		"Переключить гарантированный бросок узлирования" = "roll",
 		"Сбросить оба тестовых режима" = "reset"
 	)
@@ -173,22 +175,33 @@
 			"Resist от партнёра" = "resist_partner",
 			"Проверить дистанцию (может нанести урон)" = "distance"
 		)
-	var/choice = input(mob, "Режимы действуют только на действия администратора, включены до отключения/перезахода.", "Knot Debug") as null|anything in actions
+	var/choice = input(mob, "TEST bypass действует глобально только на админов/тестовых мобов, не затрагивая обычных игроков. Автоотключение через 15 минут.", "Knot Debug") as null|anything in actions
 	if(!choice)
 		return
 	if(!check_rights(R_DEBUG))
 		return
 	switch(actions[choice])
 		if("prefs")
-			knot_debug_ignore_prefs = !knot_debug_ignore_prefs
-			to_chat(src, span_notice("Debug bypass sexknotting: [knot_debug_ignore_prefs]."))
+			if(knotting_debug_prefs_active())
+				GLOB.knot_debug_ignore_prefs_until = 0
+				GLOB.knot_debug_ignore_prefs_owner = null
+			else
+				GLOB.knot_debug_ignore_prefs_until = world.time + 15 MINUTES
+				GLOB.knot_debug_ignore_prefs_owner = ckey
+			var/status = knotting_debug_prefs_active() ? "ON" : "OFF"
+			log_admin("[key_name(src)] set global knot preference TEST bypass [status].")
+			message_admins("[key_name(src)] set global knot preference TEST bypass [status] (staff/test dummies only).")
+			to_chat(src, span_notice("Global TEST bypass sexknotting: [status]."))
 		if("roll")
 			knot_debug_force_chance = !knot_debug_force_chance
 			to_chat(src, span_notice("Debug guarantee knot chance: [knot_debug_force_chance]."))
 		if("reset")
-			knot_debug_ignore_prefs = FALSE
+			GLOB.knot_debug_ignore_prefs_until = 0
+			GLOB.knot_debug_ignore_prefs_owner = null
 			knot_debug_force_chance = FALSE
-			to_chat(src, span_notice("Все временные режимы отключены."))
+			log_admin("[key_name(src)] reset global knot preference TEST bypass.")
+			message_admins("[key_name(src)] reset global knot preference TEST bypass.")
+			to_chat(src, span_notice("Тестовый обход префов отключён глобально; локальный принудительный шанс тоже сброшен."))
 		if("state")
 			knot_debug_show_state(H)
 		if("preview")

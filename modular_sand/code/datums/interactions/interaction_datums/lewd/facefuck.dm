@@ -120,7 +120,9 @@ var/static/list/snaped = list(
 				if("penis")
 					genital = user.getorganslot(ORGAN_SLOT_PENIS)
 		user.set_is_fucking(partner, CUM_TARGET_MOUTH, genital)
-		try_apply_knot(user, partner, CUM_TARGET_MOUTH, is_hidden = is_hidden) // Проверка на узлирование.
+
+	if(fucktarget == "penis" && !user.has_strapon())
+		try_apply_knot(user, partner, CUM_TARGET_MOUTH, is_hidden = is_hidden)
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
 						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange, local_only = is_hidden)
@@ -207,7 +209,9 @@ var/static/list/snaped = list(
 		if(check)
 			genital = check
 		user.set_is_fucking(partner, CUM_TARGET_THROAT, genital)
-		try_apply_knot(user, partner, CUM_TARGET_THROAT, is_hidden = is_hidden) // Проверка на узлирование.
+
+	if(!user.has_strapon())
+		try_apply_knot(user, partner, CUM_TARGET_THROAT, is_hidden = is_hidden)
 
 	if(user.a_intent == INTENT_HARM && prob(15))
 		partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
@@ -271,12 +275,13 @@ var/static/list/snaped = list(
 	)
 
 	// Эффекты возбуждения и оргазма
+	try_apply_knot(user, partner, CUM_TARGET_THROAT, is_hidden = is_hidden)
+
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_THROAT, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden)
 
 	partner.handle_post_sex((HAS_TRAIT(partner, TRAIT_KISS_SLUT) ? NORMAL_LUST : LOW_LUST) * 2, null, user, CUM_TARGET_THROAT, is_hidden = is_hidden)
 
-	try_apply_knot(user, partner, CUM_TARGET_THROAT, is_hidden = is_hidden)
 
 	if(prob(10))
 		partner.visible_message(span_love("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> захлёбывается стонами, когда оба члена глубоко в её рту!"), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))

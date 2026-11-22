@@ -1070,3 +1070,12 @@
 		else
 			dat += span_warning("[p_they_ru(TRUE)] в царапинах.")
 	return dat
+
+/mob/living/basic/alien/drone
+	parent_type = /mob/living/simple_animal/hostile/alien/drone
+
+/mob/living/basic/alien/queen/large
+	parent_type = /mob/living/simple_animal/hostile/alien/queen
+
+/mob/living/basic/pet/dog/corgi
+	parent_type = /mob/living/simple_animal/pet/dog/corgi
