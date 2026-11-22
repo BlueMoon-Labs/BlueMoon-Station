@@ -12,7 +12,7 @@ import { createLogger } from 'tgui/logging';
 import highlightSoundUrl from '../assets/chat_notify.ogg';
 import { MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLES } from '../settings/constants';
 import { COMBINE_MAX_MESSAGES, COMBINE_MAX_TIME_WINDOW, IMAGE_RETRY_DELAY, IMAGE_RETRY_LIMIT, IMAGE_RETRY_MAX_DELAY, IMAGE_RETRY_MESSAGE_AGE, MAX_PERSISTED_MESSAGES, MAX_VISIBLE_MESSAGES, MESSAGE_PRUNE_INTERVAL, MESSAGE_TYPE_INTERNAL, MESSAGE_TYPE_UNKNOWN, MESSAGE_TYPES } from './constants';
-import { collectMessageText, compileHighlightSettings, findTextMatches, highlightMessageNode, wrapMessageRanges } from './highlight';
+import { collectMessageText, compileHighlightSettings, findTextMatches, highlightMessageNode, mayContain, prepareTextQuery, wrapMessageRanges } from './highlight';
 import { getBlockFxClasses, settleOldMessages } from './messageFx';
 import { canPageAcceptType, createMessage, isSameMessage } from './model';
 import { linkifyNode } from './replaceInTextNode';
@@ -1204,10 +1204,10 @@ export class ChatRenderer {
 
   searchMessages(query) {
     this.clearSearch();
-    if (!query || query.length < 2) {
+    this._searchQuery = prepareTextQuery(query);
+    if (!this._searchQuery) {
       return { total: 0, current: -1 };
     }
-    this._searchQuery = query;
 
     for (let i = 0; i < this.visibleMessages.length; i++) {
       const msg = this.visibleMessages[i];
@@ -1232,9 +1232,12 @@ export class ChatRenderer {
   // разметкой или невидимым символом, находится целиком, а одно совпадение
   // может состоять из нескольких span - по одному на кусок текста.
   _highlightSearchInNode(node, messageIndex) {
+    if (!mayContain(node, this._searchQuery.test)) {
+      return;
+    }
     const message = collectMessageText(node);
     const ranges = findTextMatches(message, this._searchQuery);
-    if (!ranges.length) {
+    if (!ranges) {
       return;
     }
     const wrapped = wrapMessageRanges(message, ranges, text => {

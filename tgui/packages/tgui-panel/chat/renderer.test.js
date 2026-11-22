@@ -1888,3 +1888,16 @@ describe('ChatRenderer search', () => {
     expect(renderer.searchMessages(time.slice(-1) + 'Ва').total).toBe(0);
   });
 });
+describe('ChatRenderer search across announcement parts', () => {
+  test('title and body of an announcement are not glued together', () => {
+    const renderer = createReadyRenderer();
+    renderer.processBatch([{ html: '<span class="priority_announcement">'
+      + '<span class="priority_announcement__header">'
+      + '<span class="priority_announcement__source">Заголовок</span></span>'
+      + '<span class="priority_announcement__body">Сообщение</span></span>' }]);
+
+    expect(renderer.searchMessages('ЗаголовокСообщение').total).toBe(0);
+    expect(renderer.searchMessages('Сообщение').total).toBe(1);
+    expect(renderer.searchMessages('нет такого').total).toBe(0);
+  });
+});

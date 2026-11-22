@@ -64,9 +64,19 @@ const BINARY_TEXT_CLASS = 'command';
 
 // Не текст сообщения: время слева. Разрывает слово, как перенос строки.
 const SKIP_CLASSES = ['ChatMessage__timestamp', 'Chat__badge'];
-const BREAK_TAGS = ['BR', 'DIV', 'P', 'LI', 'TR', 'TD', 'HR', 'IMG'];
+// Граница элемента разрывает слово: объявления собраны из идущих вплотную
+// span (заголовок, текст), которые CSS ставит отдельными строками. Слово не
+// рвут только оформление внутри текста ("<b>Ва</b>ня"), span без класса и
+// наши метки подсветки и поиска.
+const INLINE_TAGS = ['B', 'I', 'U', 'S', 'EM', 'STRONG', 'SMALL', 'BIG',
+  'SUB', 'SUP', 'MARK', 'FONT', 'A', 'CODE', 'TT', 'STRIKE', 'DEL', 'INS'];
+const INLINE_CLASSES = [HIGHLIGHT_CLASS, 'Chat__searchMatch'];
 
-const WORD_CHAR = /[0-9A-Za-z_À-ɏЀ-ӿ]/;
+const isInline = node => INLINE_TAGS.indexOf(node.tagName) !== -1
+  || (node.tagName === 'SPAN'
+    && (!node.className || hasAnyClass(node, INLINE_CLASSES)));
+
+const WORD_CHAR = /[0-9A-Za-z_\u00C0-\u024F\u0400-\u04FF]/;
 const BREAK = '\n';
 // Невидимые символы не участвуют в поиске: сервер ставит &#8203; после
 // разметки выделения в речи (say_emphasis), и "<b>Ва</b>&#8203;ня" - это "Ваня".
@@ -121,8 +131,11 @@ export const compileHighlightSetting = setting => {
   }
   // Длинные фразы первыми: "Иван Петров" не должен съедаться словом "Иван".
   terms.sort((a, b) => b.length - a.length);
-  const flags = 'g' + (setting.matchCase ? '' : 'i');
+  const caseFlag = setting.matchCase ? '' : 'i';
+  const flags = 'g' + caseFlag;
   return {
+    // Любое слово группы где-то в тексте: отсев до разбора сообщения
+    test: new RegExp(terms.map(escapeRegExp).join('|'), caseFlag),
     color: setting.highlightColor,
     speechOnly: !!setting.speechOnly,
     sound: !!setting.sound,
@@ -159,10 +172,20 @@ const isNotSpeechRoot = node => {
     && first.nodeValue.trimStart().startsWith(RELAYED_EMOTE_PREFIX);
 };
 
+const stripInvisible = value => (INVISIBLE_CHAR.test(value)
+  ? value.replace(INVISIBLE_CHARS, '') : value);
+
+/**
+ * Дешёвая проверка до разбора сообщения: если в его тексте нет совпадения,
+ * не будет и в сплошном тексте (тот отличается только разрывами слов).
+ */
+export const mayContain = (node, test) => test.test(stripInvisible(
+  node.textContent));
+
 /**
  * Сплошной текст сообщения без невидимых символов и откуда взялся каждый
- * кусок. У куска speech - он внутри реплики персонажа; offsets[i] - позиция
- * i-го символа куска в исходном тексте узла (последний элемент - длина узла).
+ * кусок. У куска speech - он внутри реплики персонажа; stripped - в узле
+ * были невидимые символы и позиции надо пересчитать при обёртке.
  */
 export const collectMessageText = root => {
   let text = '';
@@ -178,18 +201,11 @@ export const collectMessageText = root => {
     for (const child of Array.from(node.childNodes)) {
       if (child.nodeType === Node.TEXT_NODE) {
         const value = child.nodeValue;
-        let visible = '';
-        const offsets = [];
-        for (let i = 0; i < value.length; i++) {
-          if (!INVISIBLE_CHAR.test(value[i])) {
-            visible += value[i];
-            offsets.push(i);
-          }
-        }
-        offsets.push(value.length);
+        const visible = stripInvisible(value);
         if (visible) {
           segments.push({ node: child, start: text.length,
-            end: text.length + visible.length, speech, offsets });
+            end: text.length + visible.length, speech,
+            stripped: visible !== value });
           text += visible;
         }
         continue;
@@ -201,7 +217,7 @@ export const collectMessageText = root => {
         addBreak();
         continue;
       }
-      const isBreak = BREAK_TAGS.indexOf(child.tagName) !== -1;
+      const isBreak = !isInline(child);
       if (isBreak) {
         addBreak();
       }
@@ -305,9 +321,22 @@ export const createHighlightNode = (text, color) => {
   return node;
 };
 
+// Позиция каждого видимого символа в исходном тексте узла (последний
+// элемент - длина узла). Нужна только узлам с невидимыми символами.
+const visibleOffsets = value => {
+  const offsets = [];
+  for (let i = 0; i < value.length; i++) {
+    if (!INVISIBLE_CHAR.test(value[i])) {
+      offsets.push(i);
+    }
+  }
+  offsets.push(value.length);
+  return offsets;
+};
+
 const wrapSegment = (segment, claims, createNode, wrapped) => {
   const value = segment.node.nodeValue;
-  const { offsets } = segment;
+  let offsets = null;
   let fragment = null;
   let pos = 0;
   for (const claim of claims) {
@@ -320,8 +349,13 @@ const wrapSegment = (segment, claims, createNode, wrapped) => {
       continue;
     }
     // В исходный текст узла: невидимые символы по краям остаются снаружи.
-    const from = offsets[visibleFrom];
-    const to = offsets[visibleTo - 1] + 1;
+    let from = visibleFrom;
+    let to = visibleTo;
+    if (segment.stripped) {
+      offsets = offsets || visibleOffsets(value);
+      from = offsets[visibleFrom];
+      to = offsets[visibleTo - 1] + 1;
+    }
     if (!fragment) {
       fragment = document.createDocumentFragment();
     }
@@ -356,22 +390,35 @@ export const wrapMessageRanges = (message, ranges, createNode) => {
 };
 
 /**
- * Совпадения строки поиска по чату в сплошном тексте сообщения: без учёта
- * регистра и невидимых символов, в том числе через разметку.
+ * Строка поиска по чату, готовая один раз на весь поиск, или null, если
+ * искать нечего. Без учёта регистра и невидимых символов.
  */
-export const findTextMatches = (message, query) => {
-  const needle = String(query || '').replace(INVISIBLE_CHARS, '');
+export const prepareTextQuery = query => {
+  const needle = stripInvisible(String(query || ''));
   if (needle.length < 2) {
-    return [];
+    return null;
   }
-  const regex = new RegExp(escapeRegExp(needle), 'gi');
-  const ranges = [];
+  const pattern = escapeRegExp(needle);
+  return {
+    test: new RegExp(pattern, 'i'),
+    regex: new RegExp(pattern, 'gi'),
+  };
+};
+
+/**
+ * Совпадения подготовленного запроса в сплошном тексте сообщения, в том
+ * числе через разметку, или null, если их нет.
+ */
+export const findTextMatches = (message, prepared) => {
+  const { regex } = prepared;
+  regex.lastIndex = 0;
+  let ranges = null;
   let match;
   while ((match = regex.exec(message.text))) {
     const start = match.index;
     const end = start + match[0].length;
     if (isCovered(message.segments, start, end, false)) {
-      ranges.push({ start, end });
+      (ranges = ranges || []).push({ start, end });
     }
     else {
       regex.lastIndex = start + 1;
@@ -387,6 +434,10 @@ export const findTextMatches = (message, query) => {
  */
 export const highlightMessageNode = (node, compiledSettings) => {
   if (!compiledSettings.length) {
+    return null;
+  }
+  const plain = stripInvisible(node.textContent);
+  if (!compiledSettings.some(compiled => compiled.test.test(plain))) {
     return null;
   }
   const message = collectMessageText(node);

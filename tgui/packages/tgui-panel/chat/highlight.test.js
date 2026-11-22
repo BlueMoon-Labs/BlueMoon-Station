@@ -1,4 +1,4 @@
-import { compileHighlightSettings, createHighlightSetting, DEFAULT_HIGHLIGHT_COLOR, highlightMessageNode, MAX_HIGHLIGHT_SETTINGS, migrateHighlightSettings, parseHighlightTerms } from './highlight';
+import { compileHighlightSettings, createHighlightSetting, DEFAULT_HIGHLIGHT_COLOR, highlightMessageNode, MAX_HIGHLIGHT_SETTINGS, migrateHighlightSettings, parseHighlightTerms, prepareTextQuery } from './highlight';
 
 // Разметка как у compose_message в code/game/say.dm
 const SAY = '<span class="game say"><span class="name">Ваня Петров</span>'
@@ -314,5 +314,46 @@ describe('invisible characters and nested emote markers', () => {
       + '<span class="say">Ваня</span> машет</span></span></i>';
     expect(render(html, [group({ highlightText: 'Ваня', speechOnly: true })])
       .result).toBeNull();
+  });
+});
+describe('word breaks between elements', () => {
+  // build_priority_announcement в code/__HELPERS/priority_announce.dm
+  const ANNOUNCE = '<span class="priority_announcement">'
+    + '<span class="priority_announcement__badge">PRIORITY</span>'
+    + '<span class="priority_announcement__header">'
+    + '<span class="priority_announcement__source">Заголовок</span></span>'
+    + '<span class="priority_announcement__body">Сообщение</span></span>';
+
+  test('announcement title and body are separate words', () => {
+    expect(render(ANNOUNCE, [group({ highlightText: 'Сообщение',
+      matchWord: true })]).words).toEqual(['Сообщение']);
+    expect(render(ANNOUNCE, [group({ highlightText: 'Заголовок',
+      matchWord: true })]).words).toEqual(['Заголовок']);
+    expect(render(ANNOUNCE, [group({ highlightText: 'ЗаголовокСообщение' })])
+      .result).toBeNull();
+    expect(render(ANNOUNCE, [group({ highlightText: 'PRIORITYЗаголовок' })])
+      .result).toBeNull();
+  });
+
+  test('inline formatting and plain spans keep the word whole', () => {
+    expect(render('<span>Ва<span>ня</span> <font color="red">Ва</font>ня'
+      + ' <u>Ва</u><s>ня</s></span>', [group({ highlightText: 'Ваня',
+      matchWord: true })]).words).toEqual(['Ва', 'ня', 'Ва', 'ня', 'Ва', 'ня']);
+  });
+
+  test('a classed span breaks the word', () => {
+    expect(render('<span><span class="a">Ва</span><span class="b">ня</span>'
+      + '</span>', [group({ highlightText: 'Ваня' })]).result).toBeNull();
+  });
+});
+
+describe('prepareTextQuery', () => {
+  test('null for too short queries, invisible chars ignored', () => {
+    expect(prepareTextQuery('')).toBeNull();
+    expect(prepareTextQuery('а')).toBeNull();
+    expect(prepareTextQuery('а\u200B')).toBeNull();
+    const prepared = prepareTextQuery('В\u200Bа.');
+    expect(prepared.test.test('ва.')).toBe(true);
+    expect(prepared.test.test('вах')).toBe(false);
   });
 });
