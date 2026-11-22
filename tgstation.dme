@@ -4869,6 +4869,7 @@
 #include "modular_bluemoon\code\game\objects\items\suicide_belt.dm"
 #include "modular_bluemoon\code\game\objects\items\summon_chalk.dm"
 #include "modular_bluemoon\code\game\objects\items\trash.dm"
+#include "modular_bluemoon\code\game\objects\items\voucher.dm"
 #include "modular_bluemoon\code\game\objects\items\circuitboards\machine_circuitboards.dm"
 #include "modular_bluemoon\code\game\objects\items\clothing\collectable_hat_random.dm"
 #include "modular_bluemoon\code\game\objects\items\devices\broadcast_camera.dm"
