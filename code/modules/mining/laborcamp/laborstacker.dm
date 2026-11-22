@@ -176,11 +176,51 @@ GLOBAL_LIST(labor_sheet_values)
 /obj/machinery/mineral/stacking_machine/laborstacker
 	force_connect = TRUE
 	var/points = 0
+	var/datum/component/remote_materials/materials
 
+/obj/machinery/mineral/stacking_machine/laborstacker/Initialize(mapload)
+	. = ..()
+	materials = AddComponent(/datum/component/remote_materials, "orm", mapload)
+
+/obj/machinery/mineral/stacking_machine/laborstacker/Destroy()
+	materials = null
+	return ..()
+
+/obj/machinery/mineral/stacking_machine/laborstacker/proc/try_silo_insert(obj/item/stack/sheet/inp)
+	if(QDELETED(inp))
+		return FALSE
+
+	if(!materials || !materials.silo)
+		return FALSE
+
+	var/datum/component/material_container/mat_container = materials.mat_container
+	if(!mat_container)
+		return FALSE
+
+	var/material_amount = mat_container.get_item_material_amount(inp)
+	if(!material_amount)
+		return FALSE
+
+	if(!mat_container.has_space(material_amount * inp.amount))
+		return FALSE
+
+	var/mats = inp.custom_materials & mat_container.materials
+	var/amount = inp.amount
+
+	mat_container.insert_item(inp)
+	materials.silo_log(src, "inserted", amount, "sheets", mats)
+
+	if(!QDELETED(inp))
+		qdel(inp)
+
+	return TRUE
 
 /obj/machinery/mineral/stacking_machine/laborstacker/process_sheet(obj/item/stack/sheet/inp)
+	if(try_silo_insert(inp))
+		return
 	points += inp.point_value * inp.amount
 	..()
+
 
 /obj/machinery/mineral/stacking_machine/laborstacker/attackby(obj/item/I, mob/living/user, params)
 	if(istype(I, /obj/item/stack/ore))
@@ -193,6 +233,10 @@ GLOBAL_LIST(labor_sheet_values)
 
 		if(added_points <= 0)
 			to_chat(user, "<span class='warning'>[src] не принимает эти материалы.</span>")
+			return
+
+		if(try_silo_insert(inp))
+			to_chat(user, span_notice("Вы загрузили [inp.name] в машину. Материалы отправлены в хранилище."))
 			return
 
 		points += added_points
