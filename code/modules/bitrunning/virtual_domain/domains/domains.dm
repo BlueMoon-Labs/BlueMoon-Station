@@ -551,7 +551,7 @@
 	cost = BITRUNNER_COST_LOW
 	desc = "Предайте своих товарищей, чтобы достичь высшей силы."
 	difficulty = BITRUNNER_DIFFICULTY_LOW
-	help_text = "Убивайте экипаж, чтобы набрать очки для ритуала. Когда ритуал завершится, у руны появится зашифрованный ящик — затащите его в сейфхаус и положите на цельную площадку."
+	help_text = "Убивайте экипаж и тащите трупы на руну, чтобы набрать очки для ритуала. Чем выше ранг убитого, тем больше очков. Когда ритуал завершится, у руны появится зашифрованный ящик — затащите его в сейфхаус и положите на цельную площадку."
 	forced_outfit = /datum/outfit/virtual_domain_heretic
 	key = "heretic_hunt"
 	map_name = "heretic_hunt"
@@ -584,14 +584,29 @@
 	SIGNAL_HANDLER
 
 	var/mob/living/simple_animal/hostile/dead_crewman = source
-	var/points = 1
 	if(istype(dead_crewman, /mob/living/simple_animal/hostile/fake_crewman))
 		var/mob/living/simple_animal/hostile/fake_crewman/fake = dead_crewman
-		points = fake.points_value
-	else if(istype(dead_crewman, /mob/living/simple_animal/hostile/nanotrasen/ranged/smg) || \
+		spawn_sacrifice_body(fake)
+		return
+
+	var/points = 1
+	if(istype(dead_crewman, /mob/living/simple_animal/hostile/nanotrasen/ranged/smg) || \
 		istype(dead_crewman, /mob/living/simple_animal/hostile/syndicate/ranged/smg))
 		points = 2
 	add_points(points)
+
+/datum/lazy_template/virtual_domain/heretic_hunt/proc/spawn_sacrifice_body(mob/living/simple_animal/hostile/fake_crewman/fake)
+	var/turf/death_turf = get_turf(fake)
+	if(isnull(death_turf))
+		return
+
+	var/mob/living/carbon/human/body = new /mob/living/carbon/human(death_turf)
+	body.real_name = fake.body_name
+	body.name = body.real_name
+	body.death(FALSE)
+	if(fake.body_outfit)
+		body.equipOutfit(new fake.body_outfit())
+	body.AddComponent(/datum/component/heretic_sacrifice, src, fake.points_value)
 
 /datum/outfit/virtual_domain_heretic
 	name = "Virtual Domain Heretic"
@@ -636,11 +651,15 @@
 	loot = list(/obj/item/storage/toolbox)
 	del_on_death = TRUE
 	var/points_value = 1
+	var/body_name = "crewmember"
+	var/datum/outfit/body_outfit = /datum/outfit/job/assistant
 
 /mob/living/simple_animal/hostile/fake_crewman/md
 	name = "medical doctor"
 	loot = list(/obj/item/circular_saw)
 	points_value = 1
+	body_name = "medical doctor"
+	body_outfit = /datum/outfit/job/doctor
 
 /mob/living/simple_animal/hostile/fake_crewman/sec
 	name = "security officer"
@@ -652,19 +671,26 @@
 	melee_damage_upper = 10
 	loot = list(/obj/item/melee/baton)
 	points_value = 2
+	body_name = "security officer"
+	body_outfit = /datum/outfit/job/security
 
 /mob/living/simple_animal/hostile/fake_crewman/engi
 	name = "engineer"
 	loot = list(/obj/item/weldingtool)
 	points_value = 1
+	body_name = "engineer"
+	body_outfit = /datum/outfit/job/engineer
 
 /mob/living/simple_animal/hostile/fake_crewman/engi/mod
 	points_value = 2
+	body_name = "engineer"
 
 /mob/living/simple_animal/hostile/fake_crewman/assistant
 	name = "assistant"
 	loot = list(/obj/item/kitchen/knife)
 	points_value = 1
+	body_name = "assistant"
+	body_outfit = /datum/outfit/job/assistant
 
 /mob/living/simple_animal/hostile/fake_crewman/assistant/alt
 	loot = list(/obj/item/storage/toolbox/mechanical)
@@ -676,17 +702,24 @@
 	melee_damage_lower = 8
 	melee_damage_upper = 12
 	points_value = 3
+	body_name = "senior crewmember"
 
 /mob/living/simple_animal/hostile/fake_crewman/boss/cmo
 	name = "chief medical officer"
 	loot = list(/obj/item/surgicaldrill)
+	body_name = "chief medical officer"
+	body_outfit = /datum/outfit/job/cmo
 
 /mob/living/simple_animal/hostile/fake_crewman/boss/ce
 	name = "chief engineer"
 	loot = list(/obj/item/gun/energy/e_gun)
+	body_name = "chief engineer"
+	body_outfit = /datum/outfit/job/ce
 
 /mob/living/simple_animal/hostile/fake_crewman/boss/hos
 	name = "head of security"
+	body_name = "head of security"
+	body_outfit = /datum/outfit/job/hos
 	icon_state = "nanotrasenrangedsmg"
 	icon_living = "nanotrasenrangedsmg"
 	maxHealth = 90

@@ -29,6 +29,9 @@
 		var/mob/living/carbon/carbon_mob = owner.current
 		carbon_mob.make_virtual_mob()
 
+	if(ishuman(owner.current))
+		grant_virtual_domain_access(owner.current)
+
 /datum/objective/bitrunning_glitch_fluff
 
 /datum/objective/bitrunning_glitch_fluff/New()
@@ -79,6 +82,7 @@
 	outfit_id.registered_account = new /datum/bank_account(player.name)
 	outfit_id.registered_name = player.name
 	outfit_id.update_label()
+	grant_virtual_domain_access(player)
 
 /datum/antagonist/bitrunning_glitch/cyber_police
 	name = ROLE_CYBER_POLICE
@@ -112,6 +116,14 @@
 	user.hair_color = "#4B3D28"
 	user.hair_style = "Business Hair"
 	user.update_hair()
+
+/datum/outfit/cyber_police/post_equip(mob/living/carbon/human/user, visuals_only)
+	. = ..()
+	var/obj/item/clothing/under/officer_uniform = user.w_uniform
+	if(istype(officer_uniform))
+		officer_uniform.has_sensor = NO_SENSORS
+		officer_uniform.sensor_mode = SENSOR_OFF
+		officer_uniform.sensor_mode_intended = SENSOR_OFF
 
 /datum/antagonist/bitrunning_glitch/cyber_tac
 	name = ROLE_CYBER_TAC
@@ -147,6 +159,8 @@
 /datum/antagonist/domain_ghost_actor/on_gain()
 	. = ..()
 	owner.current.AddComponent(/datum/component/npc_friendly)
+	if(ishuman(owner.current))
+		grant_virtual_domain_access(owner.current)
 	forge_objectives()
 
 /datum/antagonist/domain_ghost_actor/proc/forge_objectives()

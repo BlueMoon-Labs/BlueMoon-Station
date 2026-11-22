@@ -235,7 +235,8 @@
 	if(kinetic_gun)
 		var/list/mods = kinetic_gun.modkits
 		for(var/obj/item/borg/upgrade/modkit/modkit in mods)
-			modkit.projectile_prehit(src, target, kinetic_gun)
+			if(modkit.projectile_prehit(src, target, kinetic_gun) == PROJECTILE_PIERCE_PHASE)
+				return PROJECTILE_PIERCE_PHASE
 	if(ignores_pressure_penalty)
 		return
 	var/hit_turf = get_turf(target)
@@ -363,6 +364,17 @@
 
 //use this one for effects you want to trigger before any damage is done at all and before damage is decreased by pressure
 /obj/item/borg/upgrade/modkit/proc/projectile_prehit(obj/item/projectile/kinetic/K, atom/target, obj/item/gun/energy/kinetic_accelerator/KA)
+// Позволяет пробивать союзников, не нанося им урон.
+/obj/item/borg/upgrade/modkit/human_passthrough
+	name = "human passthrough"
+	desc = "Causes kinetic accelerator shots to pass through humans, good for preventing friendly fire."
+	denied_type = /obj/item/borg/upgrade/modkit/minebot_passthrough
+	cost = 0
+
+/obj/item/borg/upgrade/modkit/human_passthrough/projectile_prehit(obj/item/projectile/kinetic/K, atom/target, obj/item/gun/energy/kinetic_accelerator/KA)
+	if(ishuman(target))
+		return PROJECTILE_PIERCE_PHASE
+
 //use this one for effects you want to trigger before mods that do damage
 /obj/item/borg/upgrade/modkit/proc/projectile_strike_predamage(obj/item/projectile/kinetic/K, turf/target_turf, atom/target, obj/item/gun/energy/kinetic_accelerator/KA)
 //and this one for things that don't need to trigger before other damage-dealing mods

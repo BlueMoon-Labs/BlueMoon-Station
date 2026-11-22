@@ -171,6 +171,15 @@
 		istype(thing, /obj/item/card/id) || \
 		istype(thing, /obj/item/key)
 
+/proc/is_protected_bitrunning_objective(atom/movable/thing, mob/living/user)
+	if(!is_bitrunning_objective(thing))
+		return FALSE
+	if(istype(thing, /obj/item/card/id))
+		var/obj/item/card/id/card = thing
+		if(card.virtual_ghost_owned && (!user || card.registered_name == user.real_name))
+			return FALSE
+	return TRUE
+
 /mob/living/simple_animal/hostile/megafauna/proc/make_virtual_megafauna()
 	true_spawn = FALSE
 

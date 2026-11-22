@@ -53,6 +53,8 @@ GLOBAL_LIST_INIT(netpod_outfit_sets, list(
 	var/list/cached_outfits = list()
 	var/copy_body = FALSE
 	var/scanning_can_toggle = 0
+	var/stored_sensor_mode
+	var/stored_has_sensor
 
 /obj/machinery/netpod/Initialize()
 	. = ..()
@@ -197,6 +199,17 @@ GLOBAL_LIST_INIT(netpod_outfit_sets, list(
 	open_machine()
 
 /obj/machinery/netpod/open_machine(drop = TRUE, density_to_set = FALSE)
+	if(!isnull(stored_has_sensor))
+		var/obj/item/clothing/under/leaving_uniform
+		if(ishuman(occupant))
+			var/mob/living/carbon/human/leaving_human = occupant
+			leaving_uniform = leaving_human.w_uniform
+			if(istype(leaving_uniform) && leaving_human.stat == CONSCIOUS)
+				leaving_uniform.has_sensor = stored_has_sensor
+				leaving_uniform.sensor_mode = stored_sensor_mode
+		stored_has_sensor = null
+		stored_sensor_mode = null
+
 	if(!state_open)
 		playsound(src, 'sound/machines/AirlockOpen.ogg', 60, TRUE, frequency = 65000)
 		flick("[base_icon_state]_opening", src)
@@ -501,6 +514,13 @@ GLOBAL_LIST_INIT(netpod_outfit_sets, list(
 	)
 
 	server.stock_gear(current_avatar, neo, generated_domain)
+
+	var/obj/item/clothing/under/host_uniform = neo.w_uniform
+	if(istype(host_uniform))
+		stored_sensor_mode = host_uniform.sensor_mode
+		stored_has_sensor = host_uniform.has_sensor
+		host_uniform.sensor_mode = SENSOR_OFF
+		host_uniform.has_sensor = NO_SENSORS
 
 	connected = TRUE
 

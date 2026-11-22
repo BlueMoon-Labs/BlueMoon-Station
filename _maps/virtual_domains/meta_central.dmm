@@ -66,7 +66,7 @@
 /obj/structure/table/reinforced,
 /obj/machinery/door/window/brigdoor/right/directional/north{
 	name = "Head of Personnel's Desk";
-	req_access = list("hop")
+	req_access = list(57)
 	},
 /obj/machinery/door/firedoor,
 /obj/machinery/door/poddoor/preopen{
@@ -5497,7 +5497,7 @@
 /area/virtual_domain)
 "Ur" = (
 /obj/machinery/vending/cart{
-	req_access = list("hop")
+	req_access = list(57)
 	},
 /obj/item/radio/intercom/directional/north,
 /turf/open/floor/wood,

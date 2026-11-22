@@ -39,6 +39,8 @@
 	name = "Emergency Disconnect"
 	icon_icon = 'icons/mob/actions/actions.dmi'
 	button_icon_state = "mech_eject"
+	required_mobility_flags = NONE
+	check_flags = AB_CHECK_ALIVE
 
 /datum/action/bitrunning_emergency_disconnect/Trigger(mob/clicker, trigger_flags)
 	. = ..()
@@ -82,6 +84,7 @@
 	name = "Virtual Domain Ruins"
 	area_flags = VIRTUAL_AREA | HIDDEN_AREA | RADIO_BLACKOUT | NO_ALERTS
 	requires_power = FALSE
+	dynamic_lighting = DYNAMIC_LIGHTING_FORCED
 	has_gravity = STANDARD_GRAVITY
 
 /area/virtual_domain/fullbright
@@ -91,6 +94,7 @@
 	name = "Virtual Domain Safehouse"
 	area_flags = UNIQUE_AREA | VIRTUAL_AREA | VIRTUAL_SAFE_AREA | RADIO_BLACKOUT | NO_ALERTS
 	requires_power = FALSE
+	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
 	sound_environment = SOUND_ENVIRONMENT_ROOM
 
 // Домены загружаются на отдельный z-уровень и не наследуют погоду Лаваленда.
@@ -120,11 +124,73 @@
 /area/virtual_domain/protected_space
 	name = "Virtual Domain Safe Zone"
 	area_flags = UNIQUE_AREA | VIRTUAL_AREA | VIRTUAL_SAFE_AREA | RADIO_BLACKOUT | NO_ALERTS
+	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
 
 /area/virtual_domain/protected_space/fullbright
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
 
+GLOBAL_LIST_EMPTY(virtual_domain_z_levels)
+
+/proc/is_virtual_domain(atom/A)
+	var/turf/T = get_turf(A)
+	return T && ("[T.z]" in GLOB.virtual_domain_z_levels)
+
 GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
+
+/proc/get_nearest_non_safe_turf(turf/start, max_distance = 12)
+	if(isnull(start))
+		return null
+
+	var/list/turf/queue = list(start)
+	var/list/turf/seen = list(start)
+	while(length(queue))
+		var/turf/current = queue[1]
+		queue.Cut(1, 2)
+		var/area/current_area = get_area(current)
+		if(isnull(current_area) || !(current_area.area_flags & VIRTUAL_SAFE_AREA))
+			if(current_area && (current_area.area_flags & VIRTUAL_AREA))
+				return current
+			continue
+		if(get_dist(start, current) >= max_distance)
+			continue
+		for(var/direction in GLOB.alldirs)
+			var/turf/next = get_step(current, direction)
+			if(isnull(next) || (next in seen))
+				continue
+			seen += next
+			queue += next
+	return null
+
+/proc/eject_virtual_intruder(atom/movable/intruder, atom/old_loc)
+	if(!isliving(intruder))
+		return
+	var/mob/living/living_intruder = intruder
+	if(isobserver(living_intruder) || HAS_TRAIT(living_intruder, TRAIT_TEMPORARY_BODY) || living_intruder.GetComponent(/datum/component/avatar_connection))
+		return
+
+	var/turf/destination
+	var/area/old_area = old_loc ? get_area(old_loc) : null
+	if(old_loc && (!old_area || !(old_area.area_flags & VIRTUAL_SAFE_AREA)))
+		destination = get_turf(old_loc)
+	else
+		destination = get_nearest_non_safe_turf(get_turf(living_intruder))
+	if(destination)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(finish_eject_virtual_intruder), living_intruder, destination), 0)
+
+/proc/finish_eject_virtual_intruder(mob/living/intruder, turf/destination)
+	if(QDELETED(intruder) || QDELETED(destination))
+		return
+	var/area/current_area = get_area(intruder)
+	if(current_area && (current_area.area_flags & VIRTUAL_SAFE_AREA))
+		intruder.forceMove(destination)
+
+/area/virtual_domain/safehouse/Entered(atom/movable/AM, atom/old_loc)
+	. = ..()
+	eject_virtual_intruder(AM, old_loc)
+
+/area/virtual_domain/protected_space/Entered(atom/movable/AM, atom/old_loc)
+	. = ..()
+	eject_virtual_intruder(AM, old_loc)
 
 /proc/populate_virtual_areas()
 	var/list/virtual_areas = list()
@@ -360,6 +426,24 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 	if(prob(50))
 		bum.equip_to_slot_if_possible(new /obj/item/clothing/glasses/sunglasses, ITEM_SLOT_EYES)
 
+/proc/grant_virtual_domain_access(mob/living/carbon/human/player)
+	if(!ishuman(player))
+		return
+
+	var/obj/item/card/id/id_card = player.wear_id
+	if(isnull(id_card))
+		id_card = new /obj/item/card/id/advanced(player)
+		// Обходим проверку "нужен комбинезон": у части виртуальных ролей его может не быть.
+		player.equip_to_slot(id_card, ITEM_SLOT_ID)
+
+	if(isnull(id_card))
+		return
+
+	id_card.access = get_all_accesses() + get_all_centcom_access() + get_all_ghost_access() + list(ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
+	id_card.registered_name = player.real_name
+	id_card.virtual_ghost_owned = TRUE
+	id_card.update_label()
+
 // Ghost-роли виртуальных доменов на старой базе используют mob_spawn.
 /obj/effect/mob_spawn/human/virtual_domain
 	name = "virtual domain debug entity"
@@ -378,8 +462,8 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 	ghost_usable = TRUE
 	invisibility = INVISIBILITY_ABSTRACT
 	density = FALSE
-	permanent = TRUE
-	uses = -1
+	permanent = FALSE
+	uses = 1
 	can_load_appearance = FALSE
 	var/antag = TRUE
 
@@ -394,6 +478,20 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 	if(antag && spawned_mob.mind)
 		spawned_mob.mind.add_antag_datum(/datum/antagonist/domain_ghost_actor)
 		spawned_mob.mind.assigned_role = ROLE_GLITCH
+
+	if(ishuman(spawned_mob))
+		var/mob/living/carbon/human/spawned_human = spawned_mob
+		var/obj/item/clothing/under/ghost_uniform = spawned_human.w_uniform
+		if(istype(ghost_uniform))
+			ghost_uniform.has_sensor = NO_SENSORS
+			ghost_uniform.sensor_mode = SENSOR_OFF
+			ghost_uniform.sensor_mode_intended = SENSOR_OFF
+
+		grant_virtual_domain_access(spawned_human)
+		var/obj/item/card/id/id_card = spawned_human.wear_id
+		if(id_card)
+			id_card.assignment = assignedrole
+			id_card.update_label()
 
 	SEND_SIGNAL(src, COMSIG_GHOSTROLE_SPAWNED, spawned_mob)
 
@@ -454,7 +552,8 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 	glasses = /obj/item/clothing/glasses/sunglasses
 
 /obj/effect/mob_spawn/human/virtual_domain/pirate
-	name = "Virtual Pirate Remains"
+	name = "Virtual Pirate"
+	job_description = "Virtual Pirate"
 	desc = "Какие-то неодушевлённые кости. Кажется, они вот-вот оживут!"
 	density = FALSE
 	icon = 'icons/effects/blood.dmi'
@@ -479,9 +578,17 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 /obj/effect/mob_spawn/human/virtual_domain/pirate/special(mob/living/spawned_mob)
 	. = ..()
 	spawned_mob.fully_replace_character_name(spawned_mob.real_name, "[pick(strings(PIRATE_NAMES_FILE, "beginnings"))][pick(strings(PIRATE_NAMES_FILE, "endings"))]")
+	var/obj/item/card/id/id_card
+	if(ishuman(spawned_mob))
+		var/mob/living/carbon/human/spawned_human = spawned_mob
+		id_card = spawned_human.wear_id
+	if(id_card)
+		id_card.registered_name = spawned_mob.real_name
+		id_card.update_label()
 
 /obj/effect/mob_spawn/human/virtual_domain/syndie
 	name = "Virtual Syndicate Sleeper"
+	job_description = "Virtual Syndicate Operative"
 	icon = 'icons/obj/machines/sleeper.dmi'
 	icon_state = "sleeper_s"
 	mob_name = "a virtual syndicate operative"
@@ -565,8 +672,6 @@ SUBSYSTEM_DEF(bitrunning)
 #undef REDACTED
 
 /turf/open/indestructible/bitrunning_transport
-	name = "схемный пол"
-	desc = "Выглядит сложно. Сквозь пол видны бегущие схемы."
 	icon = 'icons/turf/floors.dmi'
 	icon_state = "floor"
 

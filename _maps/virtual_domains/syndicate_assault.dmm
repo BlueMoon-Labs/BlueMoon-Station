@@ -14,7 +14,7 @@
 /area/virtual_domain)
 "aN" = (
 /obj/structure/closet/crate/secure/gear{
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /obj/item/stack/sheet/iron/fifty,
 /obj/item/stack/sheet/iron/fifty,
@@ -47,7 +47,7 @@
 /area/virtual_domain/protected_space)
 "cc" = (
 /obj/structure/closet/crate/secure/gear{
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /obj/effect/spawner/lootdrop/costume,
 /turf/open/floor/mineral/plastitanium,
@@ -62,7 +62,7 @@
 	desc = "A basic closet for all your villainous needs.";
 	locked = 1;
 	name = "Closet";
-	req_access = list("syndicate");
+	req_access = list(150);
 	secure = 1
 	},
 /obj/item/gun/ballistic/automatic/pistol,
@@ -74,7 +74,7 @@
 	desc = "A basic closet for all your villainous needs.";
 	locked = 1;
 	name = "Closet";
-	req_access = list("syndicate");
+	req_access = list(150);
 	secure = 1
 	},
 /obj/item/clothing/under/syndicate/combat,
@@ -225,7 +225,7 @@
 /area/virtual_domain)
 "iU" = (
 /obj/structure/closet/crate/secure/gear{
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /obj/item/melee,
 /obj/machinery/light/small/directional/north,
@@ -236,7 +236,7 @@
 /obj/machinery/button/door{
 	id = "fslockdown";
 	name = "Window shutters";
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/virtual_domain)
@@ -252,7 +252,7 @@
 "ja" = (
 /obj/machinery/door/window/left/directional/north{
 	name = "Spare Equipment";
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/virtual_domain)
@@ -312,7 +312,7 @@
 	lethal = 1;
 	name = "Ship turret control panel";
 	pixel_y = 32;
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/virtual_domain)
@@ -455,7 +455,7 @@
 	desc = "A basic closet for all your villainous needs.";
 	locked = 1;
 	name = "Closet";
-	req_access = list("syndicate");
+	req_access = list(150);
 	secure = 1
 	},
 /obj/effect/spawner/lootdrop/armory_contraband,
@@ -473,7 +473,7 @@
 "sq" = (
 /obj/machinery/door/window/left/directional/south{
 	name = "Control Room";
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/virtual_domain)
@@ -489,7 +489,7 @@
 	desc = "A basic closet for all your villainous needs.";
 	locked = 1;
 	name = "Closet";
-	req_access = list("syndicate");
+	req_access = list(150);
 	secure = 1
 	},
 /obj/item/ammo_box/c9mm,
@@ -498,7 +498,7 @@
 /area/virtual_domain)
 "sK" = (
 /obj/structure/closet/crate/secure/gear{
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /obj/item/stack/sheet/mineral/titanium{
 	amount = 40
@@ -520,7 +520,7 @@
 /obj/machinery/button/door{
 	id = "fscaproom";
 	name = "Room shutters control";
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/virtual_domain)
@@ -583,7 +583,7 @@
 	desc = "A basic closet for all your villainous needs.";
 	locked = 1;
 	name = "Closet";
-	req_access = list("syndicate");
+	req_access = list(150);
 	secure = 1
 	},
 /obj/item/ammo_box/c9mm,
@@ -671,7 +671,7 @@
 	desc = "A basic closet for all your villainous needs.";
 	locked = 1;
 	name = "Closet";
-	req_access = list("syndicate");
+	req_access = list(150);
 	secure = 1
 	},
 /obj/item/crowbar/red,
@@ -701,7 +701,7 @@
 	desc = "A basic closet for all your villainous needs.";
 	locked = 1;
 	name = "Closet";
-	req_access = list("syndicate");
+	req_access = list(150);
 	secure = 1
 	},
 /obj/item/coin/antagtoken,
@@ -727,7 +727,7 @@
 /area/virtual_domain/protected_space)
 "DA" = (
 /obj/structure/closet/crate/secure/gear{
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /obj/effect/spawner/lootdrop/maintenance,
 /obj/effect/spawner/lootdrop/maintenance,
@@ -895,7 +895,7 @@
 /obj/structure/filingcabinet,
 /obj/machinery/door/window/left/directional/west{
 	name = "Syndicate Interior Door";
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/virtual_domain)
@@ -909,7 +909,7 @@
 	desc = "A basic closet for all your villainous needs.";
 	locked = 1;
 	name = "Closet";
-	req_access = list("syndicate");
+	req_access = list(150);
 	secure = 1
 	},
 /obj/item/crowbar/red,
@@ -924,7 +924,7 @@
 	desc = "A basic closet for all your villainous needs.";
 	locked = 1;
 	name = "Closet";
-	req_access = list("syndicate");
+	req_access = list(150);
 	secure = 1
 	},
 /obj/item/clothing/head/that,
@@ -945,13 +945,13 @@
 /area/virtual_domain)
 "Nm" = (
 /obj/structure/closet/crate/secure/gear{
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /turf/open/floor/pod/dark,
 /area/virtual_domain/protected_space)
 "Nr" = (
 /obj/structure/closet/crate/secure/gear{
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /obj/item/stack/sheet/mineral/gold{
 	amount = 30
@@ -964,7 +964,7 @@
 /area/virtual_domain/protected_space)
 "Of" = (
 /obj/structure/closet/crate/secure/gear{
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /obj/item/disk/surgery/forgottenship,
 /turf/open/floor/pod/dark,
@@ -1062,7 +1062,7 @@
 	desc = "A basic closet for all your villainous needs.";
 	locked = 1;
 	name = "Closet";
-	req_access = list("syndicate");
+	req_access = list(150);
 	secure = 1
 	},
 /obj/item/crowbar/red,
@@ -1079,7 +1079,7 @@
 /area/virtual_domain)
 "Sv" = (
 /obj/structure/closet/crate/secure/gear{
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /obj/effect/spawner/lootdrop/three_course_meal,
 /turf/open/floor/mineral/plastitanium,
@@ -1122,7 +1122,7 @@
 /area/virtual_domain/protected_space)
 "Wy" = (
 /obj/structure/closet/crate/secure/gear{
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /obj/item/stack/ore/plasma{
 	amount = 19
@@ -1145,7 +1145,7 @@
 /area/virtual_domain)
 "Yb" = (
 /obj/structure/closet/crate/secure/gear{
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /obj/item/clothing/head/helmet/space/syndicate/black/engie,
 /obj/item/clothing/suit/space/syndicate/black/engie,
@@ -1157,7 +1157,7 @@
 /area/virtual_domain)
 "Yj" = (
 /obj/structure/closet/crate/secure/gear{
-	req_access = list("syndicate")
+	req_access = list(150)
 	},
 /obj/item/stack/ore/diamond{
 	amount = 3

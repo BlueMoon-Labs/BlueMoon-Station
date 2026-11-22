@@ -479,7 +479,7 @@
 /atom/movable/proc/start_pulling(atom/movable/AM, state, force = move_force, supress_message = FALSE)
 	if(QDELETED(AM))
 		return FALSE
-	if(ismob(src) && src.GetComponent(/datum/component/virtual_entity) && is_bitrunning_objective(AM))
+	if(ismob(src) && src.GetComponent(/datum/component/virtual_entity) && is_protected_bitrunning_objective(AM, src))
 		return FALSE
 	if(!(AM.can_be_pulled(src, state, force)))
 		return FALSE
