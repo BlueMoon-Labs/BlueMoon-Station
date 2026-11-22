@@ -2060,11 +2060,7 @@
 				break
 		TEST_ASSERT(is_allowed, "[control.action_name()]: автоматический гост-антаг не разрешён политикой Dynamic Light")
 
-/// Лежащий диск поднимает вес оперативных событий - ровно тех, что доступны текущему профилю:
-/// в Dynamic это боевой одиночка, в Extended - защитник диска. Оба стартуют с нулевого веса,
-/// поэтому неподвижность диска остаётся единственной причиной оперативника в раунде, а
-/// переноска обязана вес гасить (жалоба прода "оперативник прилетает спустя полчаса, когда
-/// диск давно унесли"). Мёртвый вес недоступного профилю контрола в панели только сбивает.
+// Неподвижный диск повышает вес события текущего профиля, а смена клетки обнуляет оба веса.
 /datum/unit_test/director_disk_operative_weights
 
 /datum/unit_test/director_disk_operative_weights/Run()
@@ -2099,12 +2095,11 @@
 		TEST_ASSERT_EQUAL(keeper_control.weight, 1, "Лежащий диск обязан поднять вес защитника в Extended")
 		TEST_ASSERT_EQUAL(operative_control.weight, 0, "Весу контрола, недоступного профилю, расти не на чем")
 
-		// Диск понесли: вес гаснет (prob от веса, при 100 срабатывает всегда).
+		// Второй вес мог сохраниться после смены режима посреди раунда.
 		operative_control.weight = 100
-		keeper_control.weight = 100
-		disk.decay_operative_weights(run_loc_floor_bottom_left)
-		TEST_ASSERT_EQUAL(keeper_control.weight, 99, "Перенесённый диск обязан снять вес оперативника")
-		TEST_ASSERT_EQUAL(operative_control.weight, 100, "Гасить вес контрола, недоступного профилю, незачем")
+		disk.reset_operative_weights(run_loc_floor_bottom_left)
+		TEST_ASSERT_EQUAL(keeper_control.weight, 0, "Перенос диска должен полностью сбросить вес защитника")
+		TEST_ASSERT_EQUAL(operative_control.weight, 0, "Перенос диска должен сбросить вес и у события другого режима")
 	catch(var/exception/e)
 		operative_control.weight = saved_operative_weight
 		keeper_control.weight = saved_keeper_weight
@@ -2914,10 +2909,7 @@
 		throw e
 	SSdirector.restore_simulation_state(saved)
 
-/// Копилка обязана отражать живое условие веса. Вес Lone Operative растёт, пока диск лежит
-/// без движения, и затухает при переноске (nuclearbomb.dm): план, нацеленный при лежащем
-/// диске, обязан сниматься, как только вес затух до нуля, - иначе оперативник приходит
-/// спустя полчаса после того, как диск давно носят (жалоба прода "спавнится рандомно").
+// Копилка должна снять цель Lone Operative, как только движение диска обнулит её вес.
 /datum/unit_test/director_pool_target_weight_staleness
 
 /datum/unit_test/director_pool_target_weight_staleness/Run()
@@ -2942,10 +2934,10 @@
 		SSdirector.ensure_pool_targets(signals)
 		TEST_ASSERT_EQUAL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], lone, "Действие с живым весом обязано становиться целью копилки")
 
-		// Диск унесли: вес затух до нуля. План обязан сняться, а не висеть до исполнения.
+		// Перенос диска сбросил вес события.
 		lone.weight = 0
 		SSdirector.ensure_pool_targets(signals)
-		TEST_ASSERT_NULL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], "Цель с затухшим до нуля весом обязана сниматься с копилки")
+		TEST_ASSERT_NULL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], "Копилка должна снять цель с обнулённым весом")
 
 		// Диск снова лежит: вес вернулся - действие снова может стать планом.
 		lone.weight = 1
