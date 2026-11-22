@@ -1,4 +1,4 @@
-import { compileHighlightSettings, createHighlightSetting, highlightMessageNode, MAX_HIGHLIGHT_SETTINGS, migrateHighlightSettings, parseHighlightTerms } from './highlight';
+import { compileHighlightSettings, createHighlightSetting, DEFAULT_HIGHLIGHT_COLOR, highlightMessageNode, MAX_HIGHLIGHT_SETTINGS, migrateHighlightSettings, parseHighlightTerms } from './highlight';
 
 // Разметка как у compose_message в code/game/say.dm
 const SAY = '<span class="game say"><span class="name">Ваня Петров</span>'
@@ -116,6 +116,96 @@ describe('highlightMessageNode', () => {
       group({ highlightText: 'Иван, Иван Петров' }),
     ]).words).toEqual(['Иван Петров']);
   });
+
+  test('falls back to a shorter phrase when the longer one is not a word', () => {
+    expect(render('<span>Иван Петрович</span>', [
+      group({ highlightText: 'Иван, Иван Петров', matchWord: true }),
+    ]).words).toEqual(['Иван']);
+  });
+});
+
+describe('word boundaries across groups', () => {
+  test('a word cut by an upper group is not a separate word below', () => {
+    const { marks } = render('<span>Роботех и тех</span>', [
+      group({ highlightText: 'робо', highlightColor: '#ff0000' }),
+      group({ highlightText: 'тех', highlightColor: '#00ff00',
+        matchWord: true }),
+    ]);
+    expect(marks).toEqual([
+      ['Робо', 'rgb(255, 0, 0)'],
+      ['тех', 'rgb(0, 255, 0)'],
+    ]);
+  });
+
+  test('word start and word end', () => {
+    const text = '<span>роботех киборобот техник тех</span>';
+    expect(render(text, [group({ highlightText: 'робо', matchStart: true })])
+      .words).toEqual(['робо']);
+    expect(render(text, [group({ highlightText: 'тех', matchEnd: true })])
+      .words).toEqual(['тех', 'тех']);
+    expect(render(text, [group({ highlightText: 'тех', matchStart: true })])
+      .words).toEqual(['тех', 'тех']);
+    expect(render(text, [group({ highlightText: 'тех', matchWord: true })])
+      .words).toEqual(['тех']);
+  });
+
+  test('matchWord overrides word start/end flags', () => {
+    expect(render('<span>техник</span>', [
+      group({ highlightText: 'тех', matchWord: true, matchStart: true }),
+    ]).result).toBeNull();
+  });
+
+  test('a word split by markup is still one word', () => {
+    expect(render('<span>Ва<b>ня</b>шка, <i>Ва</i>ня</span>', [
+      group({ highlightText: 'Ваня', matchWord: true }),
+    ]).words).toEqual(['Ва', 'ня']);
+  });
+
+  test('timestamp is not part of the first word', () => {
+    const node = document.createElement('div');
+    node.innerHTML = '<span class="ChatMessage__timestamp">12:30</span>'
+      + '<span>Ваня тут</span>';
+    const result = highlightMessageNode(node, compileHighlightSettings([
+      group({ highlightText: 'Ваня', matchWord: true }),
+      group({ highlightText: '30Ва' }),
+    ]));
+    expect(result).toEqual({ color: DEFAULT_HIGHLIGHT_COLOR, sound: false });
+    expect([...node.querySelectorAll('.Chat__highlight')]
+      .map(mark => mark.textContent)).toEqual(['Ваня']);
+    expect(node.querySelector('.ChatMessage__timestamp').textContent)
+      .toBe('12:30');
+  });
+});
+
+describe('speechOnly for AI messages', () => {
+  // robot_talk в code/modules/mob/living/silicon/say.dm, говорит ИИ
+  const BINARY_AI = '<span class="binarysay"><span class="binarysay">Robotic'
+    + ' Talk,</span> <font size="3"><b>ИИ Ваня</b></font> <font size="3">'
+    + '<span class="command"><b>states, "Ваня на связи"</b></span></font>'
+    + '</span>';
+  // То же, говорит киборг
+  const BINARY_BORG = '<span class="binarysay"><span class="binarysay">Robotic'
+    + ' Talk,</span> <span class="name">Ваня</span>'
+    + ' <span class="message">states, "Ваня тут"</span></span>';
+  // relay_speech и relay_emote в code/modules/mob/living/silicon/ai/ai.dm
+  const RELAYED_SPEECH = '<i><span class="game say">Relayed Speech: '
+    + '<span class="name"><a href="#">Ваня (Инженер)</a> </span>'
+    + '<span class="message">говорит, "Ваня тут"</span></span></i>';
+  const RELAYED_EMOTE = '<i><span class="game say relayed_emote">Relayed'
+    + ' Emote: <span class="name"><a href="#">Ваня (Инженер)</a> </span>'
+    + '<span class="message">машет Ване.</span></span></i>';
+
+  const settings = [group({ highlightText: 'Ваня, Ване', speechOnly: true })];
+
+  test('AI speech in binary chat is speech, its name is not', () => {
+    expect(render(BINARY_AI, settings).words).toEqual(['Ваня']);
+    expect(render(BINARY_BORG, settings).words).toEqual(['Ваня']);
+  });
+
+  test('relayed speech counts, relayed emote does not', () => {
+    expect(render(RELAYED_SPEECH, settings).words).toEqual(['Ваня']);
+    expect(render(RELAYED_EMOTE, settings).result).toBeNull();
+  });
 });
 
 describe('migrateHighlightSettings', () => {
@@ -137,6 +227,12 @@ describe('migrateHighlightSettings', () => {
       enabled: true,
     });
     expect(list[0].id).toBeTruthy();
+  });
+
+  test('returns null when settings carry no highlight at all', () => {
+    expect(migrateHighlightSettings({ version: 1, theme: 'dark' })).toBeNull();
+    expect(migrateHighlightSettings(undefined)).toBeNull();
+    expect(migrateHighlightSettings({ matchCase: false })).toHaveLength(1);
   });
 
   test('keeps groups, fills missing fields, fixes ids and limit', () => {

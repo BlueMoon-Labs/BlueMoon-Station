@@ -3,6 +3,11 @@
  * Группы подсветки чата: у каждой свои слова, цвет, звук и флаги.
  * "Только речь" ищет совпадения лишь в репликах персонажей (голос и рация),
  * не трогая имя говорящего, эмоции, действия, OOC и системные сообщения.
+ *
+ * Поиск идёт по сплошному тексту сообщения, а не по кускам, которые уже
+ * порезала другая группа: границы слова проверяются по исходным соседним
+ * символам, поэтому "тех" внутри "роботех" не считается отдельным словом,
+ * даже если "робо" уже подсвечено.
  * @license MIT
  */
 
@@ -22,8 +27,9 @@ export const HIGHLIGHT_PRESET_COLORS = [
 
 /**
  * Корни, которыми сервер помечает речь (compose_message в code/game/say.dm):
- * "game say" для голоса, остальные - каналы рации (GLOB.freqtospan).
- * Внутри корня имя говорящего лежит в span.name, сама реплика - в span.message.
+ * "game say" для голоса, остальные - каналы рации (GLOB.freqtospan) и
+ * бинарный канал синтетиков. Имя говорящего лежит в span.name,
+ * сама реплика - в span.message.
  */
 export const SPEECH_ROOT_CLASSES = [
   'say',
@@ -46,11 +52,20 @@ export const SPEECH_ROOT_CLASSES = [
   'binarysay',
 ];
 
-const SPEECH_TEXT_CLASS = 'message';
+// Эмоции, которые ИИ видит через камеры (relay_emote), размечены как речь.
+const NOT_SPEECH_CLASSES = ['relayed_emote', 'emote'];
 
-// \b в JS видит только латиницу: границы слова задаются вручную,
-// чтобы "Целое слово" работало и с кириллицей.
-const WORD_CHARS = '0-9A-Za-z_\\u00C0-\\u024F\\u0400-\\u04FF';
+const SPEECH_TEXT_CLASS = 'message';
+// В бинарном канале реплика самого ИИ лежит в span.command (robot_talk).
+const BINARY_ROOT_CLASS = 'binarysay';
+const BINARY_TEXT_CLASS = 'command';
+
+// Не текст сообщения: время слева. Разрывает слово, как перенос строки.
+const SKIP_CLASSES = ['ChatMessage__timestamp', 'Chat__badge'];
+const BREAK_TAGS = ['BR', 'DIV', 'P', 'LI', 'TR', 'TD', 'HR', 'IMG'];
+
+const WORD_CHAR = /[0-9A-Za-z_À-ɏЀ-ӿ]/;
+const BREAK = '\n';
 
 let lastId = 0;
 
@@ -65,6 +80,8 @@ export const createHighlightSetting = (fields = {}) => ({
   highlightText: '',
   highlightColor: DEFAULT_HIGHLIGHT_COLOR,
   matchWord: false,
+  matchStart: false,
+  matchEnd: false,
   matchCase: false,
   speechOnly: false,
   sound: false,
@@ -83,8 +100,8 @@ export const parseHighlightTerms = text => String(text || '')
   .filter(str => str.length > 1);
 
 /**
- * Регулярка группы или null, если подсвечивать нечего.
- * Группа 1 - левая граница слова (пустая без matchWord), группа 2 - совпадение.
+ * Готовая к поиску группа или null, если подсвечивать нечего.
+ * "Целое слово" = граница и в начале, и в конце.
  */
 export const compileHighlightSetting = setting => {
   if (!setting || setting.enabled === false || !setting.highlightColor) {
@@ -96,15 +113,14 @@ export const compileHighlightSetting = setting => {
   }
   // Длинные фразы первыми: "Иван Петров" не должен съедаться словом "Иван".
   terms.sort((a, b) => b.length - a.length);
-  const body = terms.map(escapeRegExp).join('|');
-  const pattern = setting.matchWord
-    ? `(^|[^${WORD_CHARS}])(${body})(?![${WORD_CHARS}])`
-    : `()(${body})`;
+  const flags = 'g' + (setting.matchCase ? '' : 'i');
   return {
     color: setting.highlightColor,
     speechOnly: !!setting.speechOnly,
     sound: !!setting.sound,
-    regex: new RegExp(pattern, 'g' + (setting.matchCase ? '' : 'i')),
+    wordStart: !!(setting.matchWord || setting.matchStart),
+    wordEnd: !!(setting.matchWord || setting.matchEnd),
+    regexes: terms.map(term => new RegExp(escapeRegExp(term), flags)),
   };
 };
 
@@ -125,32 +141,120 @@ const hasAnyClass = (node, classNames) => (
 );
 
 /**
- * Текстовые узлы для поиска. Уже подсвеченное пропускается:
- * группа выше по списку главнее.
+ * Сплошной текст сообщения и откуда взялся каждый кусок.
+ * speech у куска - он внутри реплики персонажа.
  */
-export const collectHighlightTextNodes = (root, speechOnly) => {
-  const result = [];
-  const walk = (node, inSpeechRoot, inSpeechText) => {
+export const collectMessageText = root => {
+  let text = '';
+  const segments = [];
+  const addBreak = () => {
+    if (text && text[text.length - 1] !== BREAK) {
+      text += BREAK;
+    }
+  };
+  // root: '' - вне речи, иначе класс корня речи; speech - внутри реплики.
+  const walk = (node, rootClass, speech) => {
     for (const child of Array.from(node.childNodes)) {
       if (child.nodeType === Node.TEXT_NODE) {
-        if (!speechOnly || inSpeechText) {
-          result.push(child);
+        const value = child.nodeValue;
+        if (value) {
+          segments.push({ node: child, start: text.length,
+            end: text.length + value.length, speech });
+          text += value;
         }
         continue;
       }
-      if (child.nodeType !== Node.ELEMENT_NODE
-        || hasClass(child, HIGHLIGHT_CLASS)) {
+      if (child.nodeType !== Node.ELEMENT_NODE) {
         continue;
       }
-      const childInRoot = inSpeechRoot
-        || hasAnyClass(child, SPEECH_ROOT_CLASSES);
-      const childInText = inSpeechText
-        || (childInRoot && hasClass(child, SPEECH_TEXT_CLASS));
-      walk(child, childInRoot, childInText);
+      if (hasAnyClass(child, SKIP_CLASSES)) {
+        addBreak();
+        continue;
+      }
+      const isBreak = BREAK_TAGS.indexOf(child.tagName) !== -1;
+      if (isBreak) {
+        addBreak();
+      }
+      let childRoot = rootClass;
+      let childSpeech = speech;
+      if (hasAnyClass(child, NOT_SPEECH_CLASSES)) {
+        childRoot = '';
+        childSpeech = false;
+      }
+      else if (!rootClass) {
+        childRoot = SPEECH_ROOT_CLASSES
+          .find(className => hasClass(child, className)) || '';
+      }
+      else if (!speech) {
+        childSpeech = hasClass(child, SPEECH_TEXT_CLASS)
+          || (rootClass === BINARY_ROOT_CLASS
+            && hasClass(child, BINARY_TEXT_CLASS));
+      }
+      walk(child, childRoot, childSpeech);
+      if (isBreak) {
+        addBreak();
+      }
     }
   };
-  walk(root, false, false);
-  return result;
+  walk(root, '', false);
+  return { text, segments };
+};
+
+const isWordChar = ch => !!ch && WORD_CHAR.test(ch);
+
+// Весь диапазон [start, end) покрыт подходящими кусками без разрывов.
+const isCovered = (segments, start, end, speechOnly) => {
+  let pos = start;
+  for (const segment of segments) {
+    if (segment.end <= pos) {
+      continue;
+    }
+    if (segment.start > pos || (speechOnly && !segment.speech)) {
+      return false;
+    }
+    pos = segment.end;
+    if (pos >= end) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const overlaps = (claims, start, end) => claims.some(claim => (
+  claim.start < end && start < claim.end));
+
+/**
+ * Находит совпадения всех групп в сплошном тексте. Верхняя группа и длинная
+ * фраза главнее: занятый кусок текста другие совпадения уже не берут.
+ */
+export const findHighlightMatches = (message, compiledSettings) => {
+  const { text, segments } = message;
+  const claims = [];
+  compiledSettings.forEach((compiled, group) => {
+    for (const regex of compiled.regexes) {
+      regex.lastIndex = 0;
+      let match;
+      while ((match = regex.exec(text))) {
+        const start = match.index;
+        const end = start + match[0].length;
+        // Следующий поиск со следующего символа: совпадения могут
+        // перекрываться, а это могло не подойти по границам.
+        regex.lastIndex = start + 1;
+        if (compiled.wordStart && isWordChar(text[start - 1])) {
+          continue;
+        }
+        if (compiled.wordEnd && isWordChar(text[end])) {
+          continue;
+        }
+        if (overlaps(claims, start, end)
+          || !isCovered(segments, start, end, compiled.speechOnly)) {
+          continue;
+        }
+        claims.push({ start, end, group, color: compiled.color });
+      }
+    }
+  });
+  return claims.sort((a, b) => a.start - b.start);
 };
 
 export const createHighlightNode = (text, color) => {
@@ -161,70 +265,74 @@ export const createHighlightNode = (text, color) => {
   return node;
 };
 
-const highlightTextNode = (textNode, compiled) => {
-  const text = textNode.textContent;
-  const regex = compiled.regex;
-  regex.lastIndex = 0;
+const wrapSegment = (segment, claims) => {
+  const value = segment.node.nodeValue;
   let fragment = null;
-  let lastIndex = 0;
-  let count = 0;
-  let match;
-  while ((match = regex.exec(text))) {
-    const start = match.index + match[1].length;
-    const matchText = match[2];
+  let pos = 0;
+  for (const claim of claims) {
+    const from = Math.max(claim.start, segment.start) - segment.start;
+    const to = Math.min(claim.end, segment.end) - segment.start;
+    if (from >= to) {
+      continue;
+    }
     if (!fragment) {
       fragment = document.createDocumentFragment();
     }
-    if (lastIndex < start) {
-      fragment.appendChild(document.createTextNode(
-        text.substring(lastIndex, start)));
+    if (pos < from) {
+      fragment.appendChild(document.createTextNode(value.slice(pos, from)));
     }
-    fragment.appendChild(createHighlightNode(matchText, compiled.color));
-    lastIndex = start + matchText.length;
-    // Левая граница уже съедена: следующий поиск сразу после слова.
-    regex.lastIndex = lastIndex;
-    count += 1;
+    fragment.appendChild(createHighlightNode(value.slice(from, to),
+      claim.color));
+    pos = to;
   }
   if (fragment) {
-    if (lastIndex < text.length) {
-      fragment.appendChild(document.createTextNode(
-        text.substring(lastIndex)));
+    if (pos < value.length) {
+      fragment.appendChild(document.createTextNode(value.slice(pos)));
     }
-    textNode.parentNode.replaceChild(fragment, textNode);
+    segment.node.parentNode.replaceChild(fragment, segment.node);
   }
-  return count;
 };
 
 /**
- * Подсвечивает узел сообщения всеми группами по порядку.
- * Возвращает null, если ничего не нашлось, иначе цвет первой сработавшей
- * группы и нужен ли звук (его просит любая сработавшая группа).
+ * Подсвечивает узел сообщения всеми группами.
+ * Возвращает null, если ничего не нашлось, иначе цвет самой верхней
+ * сработавшей группы и нужен ли звук (его просит любая сработавшая группа).
  */
 export const highlightMessageNode = (node, compiledSettings) => {
-  let result = null;
-  for (const compiled of compiledSettings) {
-    let count = 0;
-    for (const textNode of collectHighlightTextNodes(
-      node, compiled.speechOnly)) {
-      count += highlightTextNode(textNode, compiled);
-    }
-    if (count > 0) {
-      if (!result) {
-        result = { color: compiled.color, sound: false };
-      }
-      result.sound = result.sound || compiled.sound;
-    }
+  if (!compiledSettings.length) {
+    return null;
   }
-  return result;
+  const message = collectMessageText(node);
+  const claims = findHighlightMatches(message, compiledSettings);
+  if (!claims.length) {
+    return null;
+  }
+  for (const segment of message.segments) {
+    wrapSegment(segment, claims.filter(claim => (
+      claim.start < segment.end && segment.start < claim.end)));
+  }
+  let top = claims[0];
+  let sound = false;
+  for (const claim of claims) {
+    if (claim.group < top.group) {
+      top = claim;
+    }
+    sound = sound || compiledSettings[claim.group].sound;
+  }
+  return { color: top.color, sound };
 };
 
 const isObject = value => !!value
   && typeof value === 'object' && !Array.isArray(value);
 
+// Поля одиночной подсветки до v8 настроек.
+export const LEGACY_HIGHLIGHT_KEYS = ['highlightText', 'highlightColor',
+  'highlightSoundEnabled', 'matchWord', 'matchCase'];
+
 /**
- * Список групп из сохранённых настроек. Старая одиночная подсветка
- * (highlightText, highlightColor, matchWord, matchCase, highlightSoundEnabled)
- * становится первой группой.
+ * Список групп из загруженных настроек или null, если в них нет ни групп,
+ * ни старой одиночной подсветки (частичная загрузка: оставить как есть).
+ * Старая подсветка становится первой группой.
  */
 export const migrateHighlightSettings = settings => {
   const list = settings?.highlightSettings;
@@ -242,11 +350,15 @@ export const migrateHighlightSettings = settings => {
         return createHighlightSetting({ ...item, id });
       });
   }
+  if (!isObject(settings)
+    || !LEGACY_HIGHLIGHT_KEYS.some(key => settings[key] !== undefined)) {
+    return null;
+  }
   return [createHighlightSetting({
-    highlightText: settings?.highlightText || '',
-    highlightColor: settings?.highlightColor || DEFAULT_HIGHLIGHT_COLOR,
-    matchWord: !!settings?.matchWord,
-    matchCase: !!settings?.matchCase,
-    sound: !!settings?.highlightSoundEnabled,
+    highlightText: settings.highlightText || '',
+    highlightColor: settings.highlightColor || DEFAULT_HIGHLIGHT_COLOR,
+    matchWord: !!settings.matchWord,
+    matchCase: !!settings.matchCase,
+    sound: !!settings.highlightSoundEnabled,
   })];
 };

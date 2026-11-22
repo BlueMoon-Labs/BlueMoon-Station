@@ -162,13 +162,29 @@ describe('settingsReducer', () => {
     }
   });
 
+  test('partial load without highlight keeps current groups', () => {
+    const state = settingsReducer(undefined, loadSettings({
+      version: 8,
+      highlightSettings: [{ id: 'a', highlightText: 'Ваня' }],
+    }));
+    // Так приходит panel/theme и поздняя частичная загрузка
+    const next = settingsReducer(state, loadSettings({
+      version: 1,
+      theme: 'light',
+    }));
+    expect(next.theme).toBe('light');
+    expect(next.highlightSettings).toBe(state.highlightSettings);
+  });
+
   test('v8 groups load as saved, the same content keeps the reference', () => {
     const highlightSettings = [
       { id: 'a', enabled: true, highlightText: 'Ваня',
-        highlightColor: '#ff0000', matchWord: true, matchCase: false,
+        highlightColor: '#ff0000', matchWord: true, matchStart: false,
+        matchEnd: false, matchCase: false,
         speechOnly: true, sound: true },
       { id: 'b', enabled: false, highlightText: 'медбей',
-        highlightColor: '#00ff00', matchWord: false, matchCase: false,
+        highlightColor: '#00ff00', matchWord: false, matchStart: false,
+        matchEnd: false, matchCase: false,
         speechOnly: false, sound: false },
     ];
     const state = settingsReducer(undefined, loadSettings({

@@ -76,9 +76,28 @@ const HighlightGroup = (props) => {
       <Button.Checkbox
         checked={item.matchWord}
         tooltipPosition="bottom-start"
-        tooltip="Не подсвечивать слово внутри другого слова."
+        tooltip={'Только отдельное слово: "тех" не найдётся'
+          + ' в "роботех" и в "техник".'}
         onClick={() => onUpdate({ matchWord: !item.matchWord })}>
         Целое слово
+      </Button.Checkbox>
+      <Button.Checkbox
+        checked={item.matchWord || item.matchStart}
+        disabled={item.matchWord}
+        tooltipPosition="bottom-start"
+        tooltip={'Слово начинается с этого текста: "робо" найдётся'
+          + ' в "роботех", но не в "киборобот".'}
+        onClick={() => onUpdate({ matchStart: !item.matchStart })}>
+        Начало слова
+      </Button.Checkbox>
+      <Button.Checkbox
+        checked={item.matchWord || item.matchEnd}
+        disabled={item.matchWord}
+        tooltipPosition="bottom-start"
+        tooltip={'Слово заканчивается этим текстом: "тех" найдётся'
+          + ' в "роботех", но не в "техник".'}
+        onClick={() => onUpdate({ matchEnd: !item.matchEnd })}>
+        Конец слова
       </Button.Checkbox>
       <Button.Checkbox
         checked={item.matchCase}

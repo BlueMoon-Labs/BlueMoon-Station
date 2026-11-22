@@ -170,6 +170,48 @@ describe('settingsMiddleware', () => {
     expect(setClientTheme).toHaveBeenCalledWith('dark');
   });
 
+  test('late legacy highlight from storage does not replace server groups', async () => {
+    let resolveGet;
+    storage.get.mockReturnValue(new Promise(resolve => {
+      resolveGet = resolve;
+    }));
+
+    const store = createSettingsStore();
+    const groups = [{ id: 'srv', highlightText: 'Ваня', speechOnly: true }];
+    store.dispatch({
+      type: 'panel/state',
+      payload: {
+        state: JSON.stringify({ v: 1, settings: { highlightSettings: groups } }),
+      },
+    });
+
+    // Старый формат в браузере: одиночная подсветка без групп
+    resolveGet({
+      version: 7,
+      highlightText: 'старое',
+      highlightSoundEnabled: true,
+      fontSize: 16,
+    });
+    await flushPromises();
+
+    const settings = store.getState().settings;
+    expect(settings.fontSize).toBe(16);
+    expect(settings.highlightSettings).toEqual([
+      expect.objectContaining({ id: 'srv', highlightText: 'Ваня',
+        speechOnly: true }),
+    ]);
+  });
+
+  test('server theme push keeps highlight groups', async () => {
+    const store = createSettingsStore();
+    const groups = [{ id: 'a', highlightText: 'Ваня' }];
+    store.dispatch(updateSettings({ highlightSettings: groups }));
+    store.dispatch({ type: 'panel/theme', payload: { theme: 'dark' } });
+    await flushPromises();
+
+    expect(store.getState().settings.highlightSettings).toBe(groups);
+  });
+
   // ---- Global font diffing ----
   // Setting font-size / font-family on <html> and <body> invalidates
   // the entire document's computed styles. We must skip these calls

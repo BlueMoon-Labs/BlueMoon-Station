@@ -6,11 +6,14 @@
 
 import { storage } from 'common/storage';
 
+import { LEGACY_HIGHLIGHT_KEYS } from '../chat/highlight';
 import { forgetSentState, scheduleSaveToServer } from '../serverState';
 import { setClientTheme, THEMES } from '../themes';
 import { loadSettings, updateSettings } from './actions';
 import { FONTS_DISABLED } from './constants';
 import { selectSettings } from './selectors';
+
+const HIGHLIGHT_KEYS = ['highlightSettings', ...LEGACY_HIGHLIGHT_KEYS];
 
 const setGlobalFontSize = fontSize => {
   document.documentElement.style
@@ -49,6 +52,13 @@ export const settingsMiddleware = store => {
     }
     for (let key of Object.keys(payload)) {
       dirtyKeys.add(key);
+    }
+    // Группы подсветки и старая одиночная подсветка - одна настройка:
+    // иначе поздние старые поля из хранилища перетрут группы с сервера.
+    if (HIGHLIGHT_KEYS.some(key => dirtyKeys.has(key))) {
+      for (const key of HIGHLIGHT_KEYS) {
+        dirtyKeys.add(key);
+      }
     }
   };
 

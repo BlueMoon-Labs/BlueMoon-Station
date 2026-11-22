@@ -87,14 +87,17 @@ export const settingsReducer = (state = initialState, action) => {
       matchCase,
       ...settings
     } = payload;
-    const highlightSettings = migrateHighlightSettings(payload);
+    // null: в загрузке нет подсветки вовсе (частичная или поздняя загрузка),
+    // текущие группы остаются.
+    const loaded = migrateHighlightSettings(payload);
+    // Та же ссылка при том же содержимом: чат не пересобирает подсветку.
+    const highlightSettings = !loaded || JSON.stringify(loaded)
+      === JSON.stringify(state.highlightSettings)
+      ? state.highlightSettings : loaded;
     return {
       ...state,
       ...settings,
-      // Та же ссылка при том же содержимом: чат не пересобирает подсветку.
-      highlightSettings: JSON.stringify(highlightSettings)
-        === JSON.stringify(state.highlightSettings)
-        ? state.highlightSettings : highlightSettings,
+      highlightSettings,
       version: state.version,
     };
   }
