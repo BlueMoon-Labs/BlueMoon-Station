@@ -4,22 +4,21 @@
  * @license MIT
  */
 
+import { createHighlightSetting, migrateHighlightSettings } from '../chat/highlight';
 import { changeSettingsTab, loadSettings, openChatSettings, toggleSettings, updateSettings } from './actions';
 import { FONTS, SETTINGS_TABS } from './constants';
 import { RADIO_JOB_DEFAULTS } from './radioJobs';
 
 const initialState = {
-  version: 7,
+  version: 8,
   fontSize: 13,
   fontFamily: FONTS[0],
   lineHeight: 1.2,
   theme: 'default',
   adminMusicVolume: 0.5,
-  highlightText: '',
-  highlightColor: '#ffdd44',
-  highlightSoundEnabled: false,
-  matchWord: false,
-  matchCase: false,
+  // Группы подсветки: [{ id, enabled, highlightText, highlightColor,
+  // matchWord, matchCase, speechOnly, sound }], верхняя главнее.
+  highlightSettings: [createHighlightSetting()],
   chatStyle: 'classic',
   chatAnimation: 'none',
   chatBgColor: '',
@@ -78,10 +77,24 @@ export const settingsReducer = (state = initialState, action) => {
     if (!payload?.version) {
       return state;
     }
-    const { view, ...settings } = payload;
+    const {
+      view,
+      // До v8 подсветка была одной: эти поля переезжают в первую группу.
+      highlightText,
+      highlightColor,
+      highlightSoundEnabled,
+      matchWord,
+      matchCase,
+      ...settings
+    } = payload;
+    const highlightSettings = migrateHighlightSettings(payload);
     return {
       ...state,
       ...settings,
+      // Та же ссылка при том же содержимом: чат не пересобирает подсветку.
+      highlightSettings: JSON.stringify(highlightSettings)
+        === JSON.stringify(state.highlightSettings)
+        ? state.highlightSettings : highlightSettings,
       version: state.version,
     };
   }

@@ -12,9 +12,10 @@ import { createLogger } from 'tgui/logging';
 import highlightSoundUrl from '../assets/chat_notify.ogg';
 import { MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLES } from '../settings/constants';
 import { COMBINE_MAX_MESSAGES, COMBINE_MAX_TIME_WINDOW, IMAGE_RETRY_DELAY, IMAGE_RETRY_LIMIT, IMAGE_RETRY_MAX_DELAY, IMAGE_RETRY_MESSAGE_AGE, MAX_PERSISTED_MESSAGES, MAX_VISIBLE_MESSAGES, MESSAGE_PRUNE_INTERVAL, MESSAGE_TYPE_INTERNAL, MESSAGE_TYPE_UNKNOWN, MESSAGE_TYPES } from './constants';
+import { compileHighlightSettings, highlightMessageNode } from './highlight';
 import { getBlockFxClasses, settleOldMessages } from './messageFx';
 import { canPageAcceptType, createMessage, isSameMessage } from './model';
-import { highlightNode, linkifyNode } from './replaceInTextNode';
+import { linkifyNode } from './replaceInTextNode';
 import { getChatColorProps, getGameFxRootClasses, getRadioJobRoot, getSettleRootClasses, getStyleOverrideRoot, isGameFxRootClass, isRadioJobRootClass, isStyleOverrideClass, SETTLE_OFF_CLASS } from './rootAppearance';
 import { buildTypeOverrideCss } from './typeOverrides';
 
@@ -152,14 +153,6 @@ const setRootProps = (root, props) => {
       root.style.removeProperty(key);
     }
   }
-};
-
-const createHighlightNode = (text, color) => {
-  const node = document.createElement('span');
-  node.className = 'Chat__highlight';
-  node.setAttribute('style', 'background-color:' + color);
-  node.textContent = text;
-  return node;
 };
 
 const createHighlightProbeNode = (message) => {
@@ -394,9 +387,8 @@ export class ChatRenderer {
     this.bgNode = null;
     this._bgResizeObserver = null;
     // Highlight state
-    this.highlightRegex = null;
-    this.highlightColor = null;
-    this.highlightSoundEnabled = false;
+    // Скомпилированные группы подсветки (см. ./highlight.js)
+    this.highlightSettings = [];
     this.highlightSoundNode = null;
     // Timestamps & time dividers
     this.enableTimestamps = false;
@@ -475,53 +467,32 @@ export class ChatRenderer {
     }
   }
 
-  setHighlight(text, color, matchWord, matchCase) {
-    if (!text || !color) {
-      this.highlightRegex = null;
-      this.highlightColor = null;
-      return;
-    }
-    const lines = String(text)
-      .split(',')
-      // eslint-disable-next-line no-useless-escape
-      .map(str => str.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'))
-      .filter(str => (
-        // Must be longer than one character
-        str && str.length > 1
-      ));
-    // Nothing to match, reset highlighting
-    if (lines.length === 0) {
-      this.highlightRegex = null;
-      this.highlightColor = null;
-      return;
-    }
-    const pattern = `${(matchWord ? '\\b' : '')}(${lines.join('|')})${(matchWord ? '\\b' : '')}`;
-    const flags = 'g' + (matchCase ? '' : 'i');
-    this.highlightRegex = new RegExp(pattern, flags);
-    this.highlightColor = color;
+  /**
+   * Группы подсветки из настроек: [{ highlightText, highlightColor,
+   * matchWord, matchCase, speechOnly, sound, enabled }].
+   */
+  setHighlightSettings(highlightSettings) {
+    this.highlightSettings = compileHighlightSettings(highlightSettings);
   }
 
-  setHighlightSound(enabled) {
-    this.highlightSoundEnabled = !!enabled;
+  hasHighlightSound() {
+    return this.highlightSettings.some(setting => setting.sound);
   }
 
-  messageWouldHighlight(message) {
-    if (!this.highlightRegex || message.avoidHighlighting) {
+  /** Сработала бы на сообщении группа со звуком. */
+  messageWouldPlayHighlightSound(message) {
+    if (!this.hasHighlightSound() || message.avoidHighlighting) {
       return false;
     }
     const node = createHighlightProbeNode(message);
     if (!node) {
       return false;
     }
-    return highlightNode(
-      node,
-      this.highlightRegex,
-      text => document.createTextNode(text),
-    ) > 0;
+    return !!highlightMessageNode(node, this.highlightSettings)?.sound;
   }
 
   playHighlightSound() {
-    if (!this.highlightSoundEnabled || typeof Audio !== 'function') {
+    if (typeof Audio !== 'function') {
       return;
     }
     if (!this.highlightSoundNode) {
@@ -780,7 +751,7 @@ export class ChatRenderer {
       prepend,
       notifyListeners = true,
     } = options;
-    const canPlayHighlightSound = this.highlightSoundEnabled
+    const canPlayHighlightSound = this.hasHighlightSound()
       && !prepend
       && notifyListeners;
     const shouldAutoScroll = this.scrollTracking || (
@@ -815,7 +786,8 @@ export class ChatRenderer {
       // Combine messages
       const combinable = !prepend && this.getCombinableMessage(message);
       if (combinable) {
-        if (canPlayHighlightSound && this.messageWouldHighlight(message)) {
+        if (canPlayHighlightSound
+          && this.messageWouldPlayHighlightSound(message)) {
           shouldPlayBatchHighlightSound = true;
         }
         combinable.times = (combinable.times || 1) + 1;
@@ -852,15 +824,12 @@ export class ChatRenderer {
           logger.error('Error: message is missing text payload', message);
         }
         // Highlight text
-        if (!message.avoidHighlighting && this.highlightRegex) {
-          const highlighted = highlightNode(node,
-            this.highlightRegex,
-            text => (
-              createHighlightNode(text, this.highlightColor)
-            ));
+        if (!message.avoidHighlighting && this.highlightSettings.length) {
+          const highlighted = highlightMessageNode(node,
+            this.highlightSettings);
           if (highlighted) {
             node.className += ' ChatMessage--highlighted';
-            if (canPlayHighlightSound) {
+            if (canPlayHighlightSound && highlighted.sound) {
               shouldPlayBatchHighlightSound = true;
             }
           }

@@ -227,16 +227,8 @@ const createApplySettings = () => {
   return (settings) => {
     const prev = lastAppliedSettings;
 
-    if (anyChanged(prev, settings,
-      ['highlightText', 'highlightColor', 'matchWord', 'matchCase'])) {
-      chatRenderer.setHighlight(
-        settings.highlightText,
-        settings.highlightColor,
-        settings.matchWord,
-        settings.matchCase);
-    }
-    if (anyChanged(prev, settings, ['highlightSoundEnabled'])) {
-      chatRenderer.setHighlightSound(settings.highlightSoundEnabled);
+    if (anyChanged(prev, settings, ['highlightSettings'])) {
+      chatRenderer.setHighlightSettings(settings.highlightSettings);
     }
 
     if (anyChanged(prev, settings,

@@ -19,6 +19,7 @@ import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FON
 import { selectActiveTab, selectSettings } from './selectors';
 import { SettingsChannels } from './SettingsChannels';
 import { SettingsEffects } from './SettingsEffects';
+import { SettingsHighlights } from './SettingsHighlights';
 import { SettingsRadioJobs } from './SettingsRadioJobs';
 
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
@@ -162,6 +163,9 @@ export const SettingsPanel = (props) => {
         {activeTab === 'general' && (
           <SettingsGeneral />
         )}
+        {activeTab === 'highlights' && (
+          <SettingsHighlights />
+        )}
         {activeTab === 'appearance' && (
           <SettingsAppearance />
         )}
@@ -188,11 +192,7 @@ export const SettingsGeneral = (props) => {
     fontFamily,
     fontSize,
     lineHeight,
-    highlightText,
-    highlightColor,
-    highlightSoundEnabled,
-    matchWord,
-    matchCase,
+    highlightSettings = [],
     enableTimestamps,
     timestampFormat,
     enableTimeDividers,
@@ -293,53 +293,22 @@ export const SettingsGeneral = (props) => {
         </LabeledList.Item>
       </LabeledList>
       <Divider />
-      <Box>
-        <Flex mb={1} color="label" align="baseline">
-          <Flex.Item grow={1}>
-            Подсветка текста (через запятую):
-          </Flex.Item>
-          <Flex.Item shrink={0}>
-            <ColorInput
-              value={highlightColor}
-              defaultColor="#ffdd44"
-              placeholder="#ffdd44"
-              onChange={v => dispatch(updateSettings({
-                highlightColor: v,
-              }))}
-            />
-          </Flex.Item>
-        </Flex>
-        <TextArea
-          height="3em"
-          scrollbar
-          value={highlightText}
-          onInput={(e, value) => dispatch(updateSettings({
-            highlightText: value,
-          }))} />
-        <Button.Checkbox
-          checked={highlightSoundEnabled}
-          onClick={() => dispatch(updateSettings({
-            highlightSoundEnabled: !highlightSoundEnabled,
-          }))}>
-          Звук при подсветке
-        </Button.Checkbox>
-        <Button.Checkbox
-          checked={matchWord}
-          tooltipPosition="bottom-start"
-          tooltip="Не совместимо с пунктуацией."
-          onClick={() => dispatch(updateSettings({
-            matchWord: !matchWord,
-          }))}>
-          Целое слово
-        </Button.Checkbox>
-        <Button.Checkbox
-          checked={matchCase}
-          onClick={() => dispatch(updateSettings({
-            matchCase: !matchCase,
-          }))}>
-          Учитывать регистр
-        </Button.Checkbox>
-      </Box>
+      <Flex align="baseline">
+        <Flex.Item grow={1} color="label">
+          {'Подсветка текста: групп - '
+            + highlightSettings.filter(item => item.enabled !== false
+              && item.highlightText?.trim()).length}
+        </Flex.Item>
+        <Flex.Item shrink={0}>
+          <Button
+            icon="highlighter"
+            onClick={() => dispatch(changeSettingsTab({
+              tabId: 'highlights',
+            }))}>
+            Настроить
+          </Button>
+        </Flex.Item>
+      </Flex>
       <Divider />
       <Button.Checkbox
         checked={enableTimestamps}

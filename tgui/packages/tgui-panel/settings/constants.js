@@ -10,6 +10,10 @@ export const SETTINGS_TABS = [
     name: 'Основные',
   },
   {
+    id: 'highlights',
+    name: 'Подсветка',
+  },
+  {
     id: 'appearance',
     name: 'Оформление',
   },

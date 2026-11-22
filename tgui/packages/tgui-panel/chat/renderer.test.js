@@ -458,96 +458,38 @@ describe('ChatRenderer', () => {
     });
   });
 
-  // ---- setHighlight ----
+  // ---- Highlight groups ----
 
-  describe('setHighlight', () => {
-    test('builds regex from comma-separated patterns', () => {
+  const group = (highlightText, fields = {}) => ({
+    highlightText,
+    highlightColor: '#ff0000',
+    ...fields,
+  });
+
+  const SAY = (name, text) => '<span class="game say"><span class="name">'
+    + name + '</span> <span class="message">говорит, "<span>'
+    + text + '</span>"</span></span>';
+
+  describe('setHighlightSettings', () => {
+    test('compiles only usable groups', () => {
       const renderer = createReadyRenderer();
-      renderer.setHighlight('hello, world', '#ff0');
+      renderer.setHighlightSettings([
+        group('hello, world'),
+        group('a, b'),
+        group('hello', { highlightColor: '' }),
+        group('hello', { enabled: false }),
+      ]);
 
-      expect(renderer.highlightRegex).not.toBeNull();
-      expect(renderer.highlightRegex.test('hello')).toBe(true);
-      // Reset lastIndex — global flag regex persists state between test() calls
-      renderer.highlightRegex.lastIndex = 0;
-      expect(renderer.highlightRegex.test('world')).toBe(true);
-    });
-
-    test('filters patterns shorter than 2 characters', () => {
-      const renderer = createReadyRenderer();
-      renderer.setHighlight('a, hi, b', '#ff0');
-
-      expect(renderer.highlightRegex).not.toBeNull();
-      expect(renderer.highlightRegex.test('hi')).toBe(true);
-      // Single char patterns should be filtered out
-      // Reset lastIndex between tests
-      renderer.highlightRegex.lastIndex = 0;
-      expect(renderer.highlightRegex.test('a')).toBe(false);
-    });
-
-    test('escapes regex special characters', () => {
-      const renderer = createReadyRenderer();
-      renderer.setHighlight('hello.world', '#ff0');
-
-      // The dot should be escaped — should not match 'helloXworld'
-      expect(renderer.highlightRegex.test('hello.world')).toBe(true);
-      renderer.highlightRegex.lastIndex = 0;
-      expect(renderer.highlightRegex.test('helloXworld')).toBe(false);
-    });
-
-    test('supports word boundary matching', () => {
-      const renderer = createReadyRenderer();
-      renderer.setHighlight('test', '#ff0', true, false);
-
-      expect(renderer.highlightRegex.test('test')).toBe(true);
-      renderer.highlightRegex.lastIndex = 0;
-      expect(renderer.highlightRegex.test('testing')).toBe(false);
-    });
-
-    test('default is case insensitive', () => {
-      const renderer = createReadyRenderer();
-      renderer.setHighlight('Test', '#ff0', false, false);
-
-      expect(renderer.highlightRegex.test('test')).toBe(true);
-      renderer.highlightRegex.lastIndex = 0;
-      expect(renderer.highlightRegex.test('TEST')).toBe(true);
-    });
-
-    test('supports case sensitivity', () => {
-      const renderer = createReadyRenderer();
-      renderer.setHighlight('Test', '#ff0', false, true);
-
-      expect(renderer.highlightRegex.test('Test')).toBe(true);
-      renderer.highlightRegex.lastIndex = 0;
-      expect(renderer.highlightRegex.test('test')).toBe(false);
-    });
-
-    test('resets highlight when text is empty', () => {
-      const renderer = createReadyRenderer();
-      renderer.setHighlight('hello', '#ff0');
-      expect(renderer.highlightRegex).not.toBeNull();
-
-      renderer.setHighlight('', '#ff0');
-      expect(renderer.highlightRegex).toBeNull();
-    });
-
-    test('resets highlight when color is empty', () => {
-      const renderer = createReadyRenderer();
-      renderer.setHighlight('hello', '#ff0');
-      expect(renderer.highlightRegex).not.toBeNull();
-
-      renderer.setHighlight('hello', '');
-      expect(renderer.highlightRegex).toBeNull();
-    });
-
-    test('resets when all patterns are too short', () => {
-      const renderer = createReadyRenderer();
-      renderer.setHighlight('a, b, c', '#ff0');
-      expect(renderer.highlightRegex).toBeNull();
+      expect(renderer.highlightSettings).toHaveLength(1);
+      renderer.setHighlightSettings([]);
+      expect(renderer.highlightSettings).toEqual([]);
+      renderer.setHighlightSettings(undefined);
+      expect(renderer.highlightSettings).toEqual([]);
     });
 
     test('highlight is applied to processed messages', () => {
       const renderer = createReadyRenderer();
-      renderer.setHighlight('important', '#ff0000');
+      renderer.setHighlightSettings([group('important')]);
 
       renderer.processBatch([{
         html: '<span class="say">This is important news</span>',
@@ -562,7 +504,7 @@ describe('ChatRenderer', () => {
 
     test('highlighted messages get ChatMessage--highlighted class', () => {
       const renderer = createReadyRenderer();
-      renderer.setHighlight('match', '#ff0000');
+      renderer.setHighlightSettings([group('match')]);
 
       renderer.processBatch([{
         html: '<span class="say">match this</span>',
@@ -572,6 +514,39 @@ describe('ChatRenderer', () => {
         renderer.visibleMessages[0].node.className,
       ).toContain('ChatMessage--highlighted');
     });
+
+    test('each group paints its own color', () => {
+      const renderer = createReadyRenderer();
+      renderer.setHighlightSettings([
+        group('Ваня', { highlightColor: '#ff0000' }),
+        group('медбей', { highlightColor: '#00ff00' }),
+      ]);
+
+      renderer.processBatch([{ html: SAY('Анна', 'Ваня, беги в медбей') }]);
+
+      const marks = [...renderer.visibleMessages[0].node
+        .querySelectorAll('.Chat__highlight')]
+        .map(mark => [mark.textContent, mark.style.backgroundColor]);
+      expect(marks).toEqual([
+        ['Ваня', 'rgb(255, 0, 0)'],
+        ['медбей', 'rgb(0, 255, 0)'],
+      ]);
+    });
+
+    test('speechOnly skips own name and emotes', () => {
+      const renderer = createReadyRenderer();
+      renderer.setHighlightSettings([group('Ваня', { speechOnly: true })]);
+
+      renderer.processBatch([
+        { html: SAY('Ваня', 'привет всем') },
+        { html: '<span class="emote"><b>Ваня</b> кивает.</span>' },
+        { html: SAY('Анна', 'Ваня, привет') },
+      ]);
+
+      const highlighted = renderer.visibleMessages.map(message => (
+        message.node.className.includes('ChatMessage--highlighted')));
+      expect(highlighted).toEqual([false, false, true]);
+    });
   });
 
   describe('highlight sound', () => {
@@ -580,8 +555,7 @@ describe('ChatRenderer', () => {
       const playSpy = jest.spyOn(renderer, 'playHighlightSound')
         .mockImplementation(() => {});
 
-      renderer.setHighlight('important', '#ff0000');
-      renderer.setHighlightSound(true);
+      renderer.setHighlightSettings([group('important', { sound: true })]);
       renderer.processBatch([{
         html: '<span class="say">important notice</span>',
       }]);
@@ -594,8 +568,7 @@ describe('ChatRenderer', () => {
       const playSpy = jest.spyOn(renderer, 'playHighlightSound')
         .mockImplementation(() => {});
 
-      renderer.setHighlight('important', '#ff0000');
-      renderer.setHighlightSound(false);
+      renderer.setHighlightSettings([group('important', { sound: false })]);
       renderer.processBatch([{
         html: '<span class="say">important notice</span>',
       }]);
@@ -603,13 +576,28 @@ describe('ChatRenderer', () => {
       expect(playSpy).not.toHaveBeenCalled();
     });
 
+    test('plays sound only for groups that ask for it', () => {
+      const renderer = createReadyRenderer();
+      const playSpy = jest.spyOn(renderer, 'playHighlightSound')
+        .mockImplementation(() => {});
+
+      renderer.setHighlightSettings([
+        group('quiet'),
+        group('loud', { sound: true }),
+      ]);
+      renderer.processBatch([{ text: 'quiet words' }]);
+      expect(playSpy).not.toHaveBeenCalled();
+
+      renderer.processBatch([{ text: 'loud words' }]);
+      expect(playSpy).toHaveBeenCalledTimes(1);
+    });
+
     test('does not play sound for prepended messages', () => {
       const renderer = createReadyRenderer();
       const playSpy = jest.spyOn(renderer, 'playHighlightSound')
         .mockImplementation(() => {});
 
-      renderer.setHighlight('important', '#ff0000');
-      renderer.setHighlightSound(true);
+      renderer.setHighlightSettings([group('important', { sound: true })]);
       renderer.processBatch([{
         html: '<span class="say">important notice</span>',
       }], {
@@ -624,8 +612,7 @@ describe('ChatRenderer', () => {
       const playSpy = jest.spyOn(renderer, 'playHighlightSound')
         .mockImplementation(() => {});
 
-      renderer.setHighlight('important', '#ff0000');
-      renderer.setHighlightSound(true);
+      renderer.setHighlightSettings([group('important', { sound: true })]);
       renderer.processBatch([{
         html: '<span class="say">important notice</span>',
       }]);
@@ -643,8 +630,7 @@ describe('ChatRenderer', () => {
       const now = 1000000;
 
       jest.spyOn(Date, 'now').mockReturnValue(now);
-      renderer.setHighlight('hello', '#ff0000');
-      renderer.setHighlightSound(true);
+      renderer.setHighlightSettings([group('hello', { sound: true })]);
 
       renderer.processBatch([{ text: 'hello' }]);
       playSpy.mockClear();
