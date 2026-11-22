@@ -71,6 +71,7 @@ const BREAK = '\n';
 // Невидимые символы не участвуют в поиске: сервер ставит &#8203; после
 // разметки выделения в речи (say_emphasis), и "<b>Ва</b>&#8203;ня" - это "Ваня".
 const INVISIBLE_CHAR = /[\u00AD\u200B-\u200F\u2060-\u2064\uFEFF]/;
+const INVISIBLE_CHARS = /[\u00AD\u200B-\u200F\u2060-\u2064\uFEFF]/g;
 
 let lastId = 0;
 
@@ -97,11 +98,13 @@ const escapeRegExp = str => str.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 
 /**
  * Слова и фразы группы: через запятую или с новой строки.
- * Короче двух символов не подсвечиваются.
+ * Короче двух символов не подсвечиваются. Невидимые символы вырезаются:
+ * текст, скопированный из чата, несёт &#8203; после разметки выделения,
+ * а в тексте сообщения при поиске их нет.
  */
 export const parseHighlightTerms = text => String(text || '')
   .split(/[,\n]/)
-  .map(str => str.trim())
+  .map(str => str.replace(INVISIBLE_CHARS, '').trim())
   .filter(str => str.length > 1);
 
 /**
@@ -145,6 +148,8 @@ const hasAnyClass = (node, classNames) => (
   classNames.some(className => hasClass(node, className))
 );
 
+const NOT_SPEECH_ROOT = '!';
+
 const isNotSpeechRoot = node => {
   if (hasAnyClass(node, NOT_SPEECH_CLASSES)) {
     return true;
@@ -167,7 +172,8 @@ export const collectMessageText = root => {
       text += BREAK;
     }
   };
-  // root: '' - вне речи, иначе класс корня речи; speech - внутри реплики.
+  // rootClass: '' - корень ещё не найден, NOT_SPEECH_ROOT - внутри эмоции,
+  // иначе класс корня речи; speech - внутри реплики.
   const walk = (node, rootClass, speech) => {
     for (const child of Array.from(node.childNodes)) {
       if (child.nodeType === Node.TEXT_NODE) {
@@ -201,15 +207,14 @@ export const collectMessageText = root => {
       }
       let childRoot = rootClass;
       let childSpeech = speech;
-      if (isNotSpeechRoot(child)) {
-        childRoot = '';
-        childSpeech = false;
+      if (!rootClass) {
+        // Корень решается один раз: внутри эмоции речи нет, вложенное
+        // уже не проверяется.
+        childRoot = isNotSpeechRoot(child) ? NOT_SPEECH_ROOT
+          : SPEECH_ROOT_CLASSES
+            .find(className => hasClass(child, className)) || '';
       }
-      else if (!rootClass) {
-        childRoot = SPEECH_ROOT_CLASSES
-          .find(className => hasClass(child, className)) || '';
-      }
-      else if (!speech) {
+      else if (rootClass !== NOT_SPEECH_ROOT && !speech) {
         childSpeech = hasClass(child, SPEECH_TEXT_CLASS)
           || (rootClass === BINARY_ROOT_CLASS
             && hasClass(child, BINARY_TEXT_CLASS));

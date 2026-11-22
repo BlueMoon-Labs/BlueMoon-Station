@@ -288,3 +288,31 @@ describe('migrateHighlightSettings', () => {
     expect(new Set(list.map(item => item.id)).size).toBe(list.length);
   });
 });
+
+describe('invisible characters and nested emote markers', () => {
+  test('a term copied from chat with a zero width space still matches', () => {
+    expect(parseHighlightTerms('Ва\u200Bня, \u200B\u200B, ко\u00ADт'))
+      .toEqual(['Ваня', 'кот']);
+    const html = '<span class="game say"><span class="name">Анна</span>'
+      + ' <span class="message">говорит, "<span><b>Ва</b>&#8203;ня</span>"'
+      + '</span></span>';
+    expect(render(html, [group({ highlightText: 'Ва\u200Bня',
+      matchWord: true, speechOnly: true })]).words).toEqual(['Ва', 'ня']);
+  });
+
+  test('"Relayed Emote" inside a speech reply is still speech', () => {
+    const html = '<span class="game say"><span class="name">Анна</span>'
+      + ' <span class="message"><span>Relayed Emote: Ваня машет</span>'
+      + '</span></span>';
+    expect(render(html, [group({ highlightText: 'Ваня', speechOnly: true })])
+      .words).toEqual(['Ваня']);
+  });
+
+  test('nothing inside a relayed emote becomes speech', () => {
+    const html = '<i><span class="game say relayed_emote">Relayed Emote: '
+      + '<span class="name">Ваня (Инженер)</span> <span class="message">'
+      + '<span class="say">Ваня</span> машет</span></span></i>';
+    expect(render(html, [group({ highlightText: 'Ваня', speechOnly: true })])
+      .result).toBeNull();
+  });
+});
