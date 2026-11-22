@@ -112,6 +112,8 @@
 	var/treasury_requests_pending_per_department = 2
 	/// Наибольшая сумма одного запроса в казну
 	var/treasury_request_max = 5000
+	/// Через сколько минут без решения капитану и ГП напоминают о запросе в казну; 0 - не напоминать
+	var/treasury_request_remind_minutes = 10
 	/// Сколько счетов без владельца в экипаже казна может держать открытыми
 	var/treasury_unowned_accounts_max = 30
 	var/work_personal_share = 10

@@ -1,5 +1,7 @@
 /datum/econ_request/treasury
 	var/amount
+	/// Капитану и ГП уже напомнили о запросе без решения
+	var/reminded = FALSE
 
 /datum/econ_request/treasury/New(department_id, amount, reason, requester, requester_account_id)
 	..(department_id, null, requester, requester_account_id, reason)
@@ -94,7 +96,27 @@
 	SSeconomy.treasury_requests += request
 	econ_trim_resolved(SSeconomy.treasury_requests)
 	log_econ("[key_name(user)] запросил из казны [amount] кр. для [name] (запрос [request.uid]), причина: [reason]")
+	SSeconomy.notify_treasury_request(request)
 	return request
+
+/// Капитану и ГП на смене - строка на карту о запросе из казны.
+/datum/controller/subsystem/economy/proc/notify_treasury_request(datum/econ_request/treasury/request, reminder = FALSE)
+	var/datum/economy_department/command = get_department(ACCOUNT_CMD)
+	var/datum/economy_department/target = get_department(request.department_id)
+	var/message = "[reminder ? "Запрос" : "Новый запрос"] №[request.uid] из казны: [request.amount] кр. для отдела \"[target?.name]\" от [request.requester][request.reason ? ", причина: [request.reason]" : ""][reminder ? ", ждёт решения дольше [settings.treasury_request_remind_minutes] мин." : ""]. Решить - в программе \"Казна\" на КПК."
+	for(var/datum/bank_account/manager_account as anything in command?.managers_on_shift())
+		manager_account.bank_card_talk(message)
+
+/// Один раз напоминает капитану и ГП о запросах из казны, ждущих дольше treasury_request_remind_minutes.
+/datum/controller/subsystem/economy/proc/remind_treasury_requests()
+	var/minutes = settings.treasury_request_remind_minutes
+	if(minutes <= 0)
+		return
+	for(var/datum/econ_request/treasury/request as anything in treasury_requests)
+		if(request.status != ECON_REQUEST_PENDING || request.reminded || world.time - request.created < minutes MINUTES)
+			continue
+		request.reminded = TRUE
+		notify_treasury_request(request, TRUE)
 
 /datum/controller/subsystem/economy/proc/resolve_treasury_request(uid, approve, mob/living/user)
 	var/datum/economy_department/command = get_department(ACCOUNT_CMD)

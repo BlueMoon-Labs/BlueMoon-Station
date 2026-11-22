@@ -239,7 +239,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	var/price = round(econ_pack_price(pack))
 	var/balance = account.account_balance
 	if(balance < price)
-		return "В бюджете сейчас [balance] кр., пак стоит [price] кр."
+		return "В бюджете сейчас [balance] кр., пак стоит [price] кр.[can_save_for(pack) ? " Глава может поставить его целью накопления в \"Бюджете отдела\": NT дольёт её излишками других отделов." : ""]"
 	var/reserve = owed_to_staff()
 	if(balance - price < reserve)
 		return "В бюджете сейчас [balance] кр., пак стоит [price] кр., но [reserve] кр. отложено на зарплату сотрудникам: без одобрения такой заказ не пройдёт."
@@ -370,13 +370,15 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		return "Решить заявку №[uid] может только глава отдела, ГП или капитан: нужна их ID-карта."
 	if(!approving)
 		return deny(request, user) ? "Заявка №[uid] отклонена." : "Заявка №[uid] не отклонена."
-	return approve(request, user) ? "Заявка №[uid] одобрена, заказ ушёл в снабжение." : order_refusal(request.pack)
+	return approve(request, user) ? "Заявка №[uid] одобрена, заказ ушёл в снабжение." : order_refusal(request.pack, request, user)
 
 /// Почему заказ пака за бюджет не прошёл.
-/datum/economy_department/proc/order_refusal(datum/supply_pack/pack)
+/datum/economy_department/proc/order_refusal(datum/supply_pack/pack, datum/econ_request/request, mob/living/user)
 	if(econ_pack_unavailable(pack))
 		return "\"[pack.name]\" нет в наличии у партнёров снабжения."
 	var/price = round(econ_pack_price(pack))
+	if(account.account_balance < price && request && decides_as_quartermaster(request, user))
+		return "В бюджете отдела [account.account_balance] кр. из [price], а в бюджете снабжения нет недостающих [request_shortfall(request)] кр."
 	if(account.account_balance < price)
 		return "В бюджете не хватает денег: \"[pack.name]\" стоит [price] кр."
 	return "Заказ не оформлен."
@@ -517,15 +519,27 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	if(automatic && !keeps_wage_reserve(request.pack))
 		return FALSE
 	var/by_manager = !automatic && can_manage(user)
+	var/topup = 0
+	if(!automatic && decides_as_quartermaster(request, user) && !econ_pack_unavailable(request.pack))
+		topup = cargo_top_up(request, user)
+		if(isnull(topup))
+			return FALSE
 	var/datum/supply_order/order = order_pack(request.pack, user, "Заявка [request.requester]: [request.reason]", automatic || !by_manager)
 	if(!order)
+		if(topup)
+			SSeconomy.department_transfer(src, SSeconomy.get_department(ACCOUNT_CAR), topup, user)
 		return FALSE
+	if(topup)
+		request.cargo_topup = topup
+		log_econ("Снабжение доплатило [topup] кр. к заявке [request.uid] отдела [name]: [key_name(user)]")
 	order.econ_request_uid = request.uid
 	order.requester_account_id = request.requester_account_id
 	request.status = ECON_REQUEST_APPROVED
 	var/by_whom = automatic || by_manager ? "" : (isAI(user) ? " ИИ" : " снабжением")
 	log_econ("Заявка [request.uid] отдела [name] одобрена[by_whom]: [automatic ? "автоматически" : key_name(user)]")
-	request.notify_requester("Заявка на \"[request.pack.name]\" одобрена[by_whom] и ушла в снабжение.")
+	request.notify_requester("Заявка на \"[request.pack.name]\" одобрена[by_whom] и ушла в снабжение[topup ? ", недостающие [topup] кр. доплатил бюджет снабжения" : ""].")
+	if(topup)
+		account.bank_card_talk("Начальник снабжения одобрил заявку №[request.uid] на \"[request.pack.name]\": бюджет снабжения доплатил недостающие [topup] кр.")
 	if(automatic)
 		notify_auto_order(request, order)
 	econ_trim_resolved(requests)

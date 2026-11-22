@@ -423,7 +423,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			else if(action == "deny")
 				messages[user_ref] = owner.deny(request, user) ? "Заявка №[request.uid] отклонена." : "Заявка не отклонена."
 			else
-				messages[user_ref] = owner.approve(request, user) ? "Заявка №[request.uid] одобрена, заказ ушёл в снабжение[owner == department ? "" : " за бюджет отдела \"[owner.name]\""]." : owner.order_refusal(request.pack)
+				messages[user_ref] = owner.approve(request, user) ? "Заявка №[request.uid] одобрена, заказ ушёл в снабжение[owner == department ? "" : " за бюджет отдела \"[owner.name]\""][request.cargo_topup ? ", недостающие [request.cargo_topup] кр. доплатил бюджет снабжения" : ""]." : owner.order_refusal(request.pack, request, user)
 		if("set_goal", "clear_goal")
 			var/datum/supply_pack/pack = goal_pack(department, params["pack"])
 			var/datum/economy_department/cargo/cargo = department
@@ -434,7 +434,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 				department.clear_saving_goal(user)
 				messages[user_ref] = "Цель накопления снята. Новую можно поставить через [SSeconomy.settings.saving_goal_cooldown_minutes] мин."
 			else if(ert_id ? cargo.set_saving_goal_ert(ert_id, user) : department.set_saving_goal(pack, user))
-				messages[user_ref] = "Цель накопления: \"[department.saving_goal_name()]\". Пока бюджет не наберёт её цену, NT не забирает излишек; набрать её нужно за [SSeconomy.settings.saving_goal_collect_minutes] мин., иначе цель снимется. Набрали - [department.saving_goal_order_hint(SSeconomy.settings.saving_goal_minutes)]"
+				messages[user_ref] = "Цель накопления: \"[department.saving_goal_name()]\". Пока бюджет не наберёт её цену, NT не забирает излишек и доливает на неё излишки других отделов; набрать её нужно за [SSeconomy.settings.saving_goal_collect_minutes] мин., иначе цель снимется. Набрали - [department.saving_goal_order_hint(SSeconomy.settings.saving_goal_minutes)]"
 			else if(department.saving_goal_amount())
 				messages[user_ref] = "Цель уже выбрана: \"[department.saving_goal_name()]\". Снимите её, чтобы выбрать другую."
 			else if(department.saving_goal_cooldown_minutes())

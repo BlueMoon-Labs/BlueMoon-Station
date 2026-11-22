@@ -139,11 +139,39 @@
 	if(!stats)
 		stats = econ_staff_stats(id)
 	var/amount = budget_return_due(stats)
+	if(amount <= 0)
+		return
+	amount -= fund_saving_goals(amount)
 	if(amount <= 0 || !account.debit(amount, ECON_BUDGET_RETURN, memo = "Возврат излишка сверх [budget_threshold(stats)] кр."))
 		return
 	if(COOLDOWN_FINISHED(src, return_notice_cooldown))
 		COOLDOWN_START(src, return_notice_cooldown, ECON_BUDGET_RETURN_NOTICE_COOLDOWN)
 		account.bank_card_talk("[capitalize(budget_name)] выше порога [budget_threshold(stats)] кр.: NT забрал [amount] кр. излишка. Потратьте его на закупки или назначьте цель накопления[saving_goal_scope()] в \"Бюджете отдела\".")
+
+/// Излишек, который забрал бы NT, сначала доливает ещё не набранные цели накопления других отделов; возвращает, сколько ушло на цели.
+/datum/economy_department/proc/fund_saving_goals(amount)
+	. = 0
+	for(var/id in SSeconomy.departments)
+		var/datum/economy_department/other = SSeconomy.departments[id]
+		if(other == src)
+			continue
+		var/part = min(other.saving_goal_shortfall(), amount - .)
+		if(part <= 0 || !SSeconomy.department_transfer(src, other, part))
+			continue
+		. += part
+		var/goal_name = other.saving_goal_name()
+		log_econ("Излишек [name]: [part] кр. на цель накопления [other.name] \"[goal_name]\"")
+		other.account.bank_card_talk("На цель накопления \"[goal_name]\" пришло [part] кр.: NT отдал на неё излишек бюджета другого отдела.")
+		other.saving_goal_amount()
+		if(. >= amount)
+			return
+
+/// Сколько бюджету не хватает до цены ещё не набранной цели накопления; 0 - цели нет или она уже набрана.
+/datum/economy_department/proc/saving_goal_shortfall()
+	var/goal = saving_goal_amount()
+	if(!goal || saving_goal_until)
+		return 0
+	return max(goal - account.account_balance, 0)
 
 /// Отменённая закупка не считается ни закупкой, ни стоком отдела.
 /datum/economy_department/proc/ledger_cancel_purchase(amount)

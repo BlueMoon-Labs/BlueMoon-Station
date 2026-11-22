@@ -59,6 +59,8 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 /datum/econ_request
 	/// Заявка ждала дольше request_handoff_minutes: решить её может и начальник снабжения
 	var/handed_off = FALSE
+	/// Сколько доплатил бюджет снабжения, когда начальник снабжения одобрил заявку отделу без денег
+	var/cargo_topup = 0
 
 /datum/econ_request/proc/waited_minutes()
 	return round((world.time - created) / (1 MINUTES))
@@ -67,6 +69,27 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 	/// "номер счёта" -> list(начало часа, сколько заказано расходников без одобрения)
 	var/list/staple_spent = list()
 	COOLDOWN_DECLARE(handoff_announce_cooldown)
+
+/// Начальник снабжения решает переданную ему заявку, а не начальство отдела.
+/datum/economy_department/proc/decides_as_quartermaster(datum/econ_request/request, mob/living/user)
+	if(!request?.handed_off || !user || can_manage(user) || isAI(user))
+		return FALSE
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	return cargo != src && cargo?.can_manage(user)
+
+/// Сколько бюджету отдела не хватает на пак заявки.
+/datum/economy_department/proc/request_shortfall(datum/econ_request/request)
+	return max(round(econ_pack_price(request.pack)) - account.account_balance, 0)
+
+/// Начальник снабжения одобряет заявку отделу без денег: недостающее переводится из бюджета снабжения. Возвращает доплату или null, если снабжению не на что.
+/datum/economy_department/proc/cargo_top_up(datum/econ_request/request, mob/living/user)
+	var/shortfall = request_shortfall(request)
+	if(!shortfall)
+		return 0
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	if(cargo.account.account_balance < shortfall || !SSeconomy.department_transfer(cargo, src, shortfall, user))
+		return null
+	return shortfall
 
 /// Заявки отдела решает ИИ: у всех, кроме СБ.
 /datum/economy_department/proc/ai_decides()
@@ -236,13 +259,13 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 		request.handed_off = TRUE
 		fresh += request
 		log_econ("Заявка [request.uid] отдела [name] ([request.pack.name]) ждёт дольше [minutes] мин. и передана снабжению")
-		request.notify_requester("Заявка №[request.uid] на \"[request.pack.name]\" ждёт решения дольше [minutes] мин.: решить её теперь может и начальник снабжения, оплатит бюджет отдела.")
+		request.notify_requester("Заявка №[request.uid] на \"[request.pack.name]\" ждёт решения дольше [minutes] мин.: решить её теперь может и начальник снабжения, оплатит бюджет отдела, а недостающее доплатит бюджет снабжения.")
 	if(!length(fresh) || !COOLDOWN_FINISHED(src, handoff_announce_cooldown))
 		return
 	COOLDOWN_START(src, handoff_announce_cooldown, ECON_CARGO_REQUEST_RADIO_COOLDOWN)
 	var/datum/econ_request/first = fresh[1]
 	var/what = "[first.pack.name][length(fresh) > 1 ? " и ещё [length(fresh) - 1]" : ""]"
-	var/message = "Отдел \"[name]\": заявка №[first.uid] ([what]) ждёт решения дольше [minutes] мин. Решить за бюджет отдела можно в \"Бюджете отдела\" снабжения."
+	var/message = "Отдел \"[name]\": заявка №[first.uid] ([what]) ждёт решения дольше [minutes] мин. Решить за бюджет отдела, доплатив недостающее из бюджета снабжения, можно в \"Бюджете отдела\" снабжения."
 	paperwork_radio(message, RADIO_CHANNEL_SUPPLY)
 	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
 	var/list/told = list()
@@ -296,7 +319,7 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 		var/left = settings.auto_approve_wait_minutes - request.waited_minutes()
 		parts += left > 0 ? "без ответа одобрится сама через [left] мин." : "одобрится сама на ближайшем цикле экономики"
 	else if(request.handed_off)
-		parts += "передана снабжению: решить может и его начальник"
+		parts += "передана снабжению: решить может и его начальник, недостающее доплатит бюджет снабжения"
 	else if(hands_off_requests() && settings.request_handoff_minutes > 0)
 		parts += "через [max(settings.request_handoff_minutes - request.waited_minutes(), 1)] мин. без решения перейдёт и начальнику снабжения"
 	return capitalize(jointext(parts, "; ")) + "."
