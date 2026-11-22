@@ -7888,7 +7888,6 @@
 	},
 /area/maintenance/starboard)
 "aZK" = (
-/obj/structure/lattice,
 /obj/structure/lattice/catwalk,
 /turf/open/space/basic,
 /area/space/nearstation)
@@ -35620,23 +35619,6 @@
 /obj/structure/cable/white,
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
-"efg" = (
-/obj/item/storage/box/handcuffs{
-	pixel_x = -6;
-	pixel_y = 10
-	},
-/obj/item/storage/box/prisoner,
-/obj/structure/table,
-/obj/item/storage/box/bodybags{
-	pixel_x = 4;
-	pixel_y = 2
-	},
-/obj/machinery/light{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/red/full,
-/turf/open/floor/plasteel,
-/area/security/processing)
 "efn" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable/white{
@@ -37180,6 +37162,15 @@
 	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain)
+"euz" = (
+/obj/machinery/door/airlock/external{
+	name = "Labor Camp Shuttle Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/access/all/security/brig,
+/turf/open/floor/plasteel,
+/area/security/processing)
 "euO" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -68157,9 +68148,11 @@
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "lfm" = (
-/obj/machinery/vending/sustenance,
 /obj/machinery/light{
 	dir = 4
+	},
+/obj/machinery/vending/sustenance{
+	onstation = 0
 	},
 /turf/open/floor/plasteel/cafeteria,
 /area/security/prison/upper)
@@ -71862,6 +71855,9 @@
 "lTf" = (
 /obj/machinery/light,
 /obj/effect/turf_decal/tile/red/half,
+/obj/machinery/gulag_item_reclaimer{
+	pixel_y = -32
+	},
 /turf/open/floor/plasteel,
 /area/security/processing)
 "lTi" = (
@@ -107566,7 +107562,9 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
 "txq" = (
-/obj/machinery/vending/cola/red,
+/obj/machinery/vending/cola/red{
+	onstation = 0
+	},
 /turf/open/floor/plasteel/cafeteria,
 /area/security/prison/upper)
 "txJ" = (
@@ -115200,6 +115198,7 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 1
 	},
+/obj/effect/mapping_helpers/airlock/access/all/security/brig,
 /turf/open/floor/plasteel,
 /area/security/processing)
 "uYi" = (
@@ -118372,17 +118371,26 @@
 /turf/open/floor/plating,
 /area/command/bridge)
 "vIV" = (
+/obj/item/storage/box/handcuffs{
+	pixel_x = -6;
+	pixel_y = 10
+	},
+/obj/item/storage/box/prisoner,
+/obj/structure/table,
+/obj/item/storage/box/bodybags{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/obj/effect/turf_decal/tile/neutral/fourcorners,
+/obj/machinery/camera{
+	c_tag = "Security - Transfer Centre"
+	},
 /obj/structure/cable/white{
 	icon_state = "4-8"
 	},
 /obj/structure/cable/white{
 	icon_state = "1-8"
 	},
-/obj/machinery/camera{
-	c_tag = "Security - Transfer Centre"
-	},
-/obj/effect/turf_decal/delivery,
-/obj/machinery/gulag_teleporter,
 /turf/open/floor/plasteel,
 /area/security/processing)
 "vIY" = (
@@ -119038,6 +119046,17 @@
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
+"vPs" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/gulag_teleporter,
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/cable/white{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/security/processing)
 "vPx" = (
 /obj/structure/cable/white{
 	icon_state = "4-8"
@@ -188926,9 +188945,9 @@ aaa
 aaa
 aaa
 aaa
+aaa
 rYC
-efg
-npU
+vPs
 kmQ
 uOL
 lTf
@@ -189439,7 +189458,7 @@ aaa
 aaa
 aaa
 aaa
-tVK
+euz
 mWK
 uYg
 npU

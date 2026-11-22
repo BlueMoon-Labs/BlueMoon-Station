@@ -12,7 +12,7 @@
 	if(blocked != 100 && iscarbon(target))
 		var/mob/living/carbon/M = target
 		var/armor = M.run_armor_check(def_zone, flag, null, null, armour_penetration, null)
-		if(!HAS_TRAIT(M, TRAIT_PIERCEIMMUNE) && prob(max(1, max_armor - armor * 2)))
+		if(!HAS_TRAIT(M, TRAIT_PIERCEIMMUNE) && prob(max(1, max_armor - armor)))
 			if(injector.inject(M, firer))
 				QDEL_NULL(injector)
 				return BULLET_ACT_HIT

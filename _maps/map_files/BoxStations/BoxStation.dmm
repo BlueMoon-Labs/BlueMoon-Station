@@ -2912,13 +2912,13 @@
 /area/maintenance/department/electrical)
 "avp" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/machinery/door/poddoor/shutters{
-	id = "contr_area_shutters";
-	name = "Auxillary Base Shutters"
-	},
 /obj/effect/turf_decal/delivery,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/yellow/full,
+/obj/machinery/door/poddoor/shutters{
+	id = "aux_base_shutters";
+	name = "Auxillary Base Shutters"
+	},
 /turf/open/floor/plasteel/textured/large,
 /area/construction/mining/aux_base)
 "avr" = (
@@ -4029,7 +4029,7 @@
 /area/space)
 "aAl" = (
 /obj/structure/reagent_dispensers/peppertank{
-	pixel_y = -32
+	pixel_y = -28
 	},
 /obj/machinery/vending/wardrobe/sec_wardrobe,
 /obj/effect/turf_decal/tile/red/anticorner,
@@ -39606,12 +39606,6 @@
 /obj/effect/turf_decal/trimline/dark_blue/filled/mid_joiner,
 /turf/open/floor/plasteel/dark/textured/half,
 /area/command/gateway)
-"eFK" = (
-/obj/machinery/light_switch{
-	pixel_y = 26
-	},
-/turf/closed/wall/r_wall,
-/area/command/heads_quarters/captain)
 "eGr" = (
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 4
@@ -56906,7 +56900,7 @@
 /area/security/detectives_office/private_investigators_office/investigators_room)
 "luG" = (
 /obj/machinery/newscaster{
-	pixel_y = -32
+	pixel_y = -28
 	},
 /obj/machinery/camera{
 	c_tag = "Security Post - Cargo";
@@ -62941,7 +62935,7 @@
 /obj/item/radio/intercom{
 	dir = 4;
 	name = "Station Intercom (General)";
-	pixel_y = -32
+	pixel_y = -24
 	},
 /obj/machinery/light_switch{
 	pixel_y = -29;
@@ -62951,15 +62945,10 @@
 	dir = 8
 	},
 /obj/structure/filingcabinet,
-/obj/machinery/power/apc{
-	areastring = "/area/security/checkpoint/supply";
-	dir = 1;
-	name = "Cargo Security APC";
-	pixel_x = -24
-	},
 /obj/structure/cable{
 	dir = 1
 	},
+/obj/machinery/power/apc/auto_name/west,
 /turf/open/floor/plasteel/textured/corner{
 	dir = 4
 	},
@@ -66570,7 +66559,7 @@
 	},
 /obj/effect/turf_decal/tile/brown,
 /turf/open/floor/plasteel/textured/corner,
-/area/station/cargo/bitrunning/den)
+/area/cargo/storage)
 "poA" = (
 /obj/machinery/light/small{
 	dir = 8
@@ -118916,7 +118905,7 @@ sfq
 iBb
 aPU
 aZV
-eFK
+aZV
 bXd
 awm
 aIX
