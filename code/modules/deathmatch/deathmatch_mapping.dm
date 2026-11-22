@@ -41,17 +41,16 @@
 //
 // de_dust2 TDM areas.
 //
-// Only used by _maps/TDM/de_dust2/de_dust2.dmm. They exist as separate types so
-// that an admin can point at a part of the map and the map itself shows which
-// callout it is, and so the map does not have to fall back on one giant area.
+// Only used by _maps/TDM/de_dust2/de_dust2.dmm. The base area is what an
+// unmarked tile is painted with; plant_a/plant_b gate C4, and the rest are the
+// callout zones read by the team radio implant. Painting one over a region is
+// all it takes for a message sent from there to name that region.
 // All of them inherit has_gravity, requires_power and the area flags from
 // /area/deathmatch above.
 /area/deathmatch/tdm
 	name = "Team Deathmatch"
 
-/// The whole de_dust2 arena. The current map paints every non-plant tile with
-/// this one area, so the per-callout subtypes below are only used by older
-/// revisions of the .dmm and are kept as convenient landing spots.
+/// The whole de_dust2 arena.
 /area/deathmatch/tdm/de_dust2
 	name = "de_dust2"
 
@@ -63,50 +62,127 @@
 /area/deathmatch/tdm/plant_b
 	name = "Bomb Plant Zone B"
 
-/area/deathmatch/tdm/de_dust2/t_spawn
-	name = "de_dust2 - T Spawn"
-
-/area/deathmatch/tdm/de_dust2/ct_spawn
-	name = "de_dust2 - CT Spawn"
-
-/area/deathmatch/tdm/de_dust2/a_site
-	name = "de_dust2 - Bombsite A"
-
-/area/deathmatch/tdm/de_dust2/b_site
-	name = "de_dust2 - Bombsite B"
-
+// Radio callout zones. `name` is what goes into the radio message, so these are
+// written with spaces instead of underscores. The paths are what a mapper
+// paints on the .dmm.
 /area/deathmatch/tdm/de_dust2/mid
-	name = "de_dust2 - Mid"
+	name = "mid"
 
-/area/deathmatch/tdm/de_dust2/long_a
-	name = "de_dust2 - Long A"
+/area/deathmatch/tdm/de_dust2/mid_short
+	name = "mid short"
 
-/area/deathmatch/tdm/de_dust2/outside_long
-	name = "de_dust2 - Outside Long"
+/area/deathmatch/tdm/de_dust2/ct
+	name = "CT"
 
-/area/deathmatch/tdm/de_dust2/pit
-	name = "de_dust2 - Pit"
+/area/deathmatch/tdm/de_dust2/t
+	name = "T"
 
-/area/deathmatch/tdm/de_dust2/a_short
-	name = "de_dust2 - A Short"
+/area/deathmatch/tdm/de_dust2/window
+	name = "window"
 
-/area/deathmatch/tdm/de_dust2/catwalk
-	name = "de_dust2 - Catwalk"
+/area/deathmatch/tdm/de_dust2/dance_stage
+	name = "dance stage"
 
-/area/deathmatch/tdm/de_dust2/tunnels
-	name = "de_dust2 - Lower Tunnels"
-
-/area/deathmatch/tdm/de_dust2/upper_tunnels
-	name = "de_dust2 - Upper Tunnels"
+/area/deathmatch/tdm/de_dust2/hideout
+	name = "hideout"
 
 /area/deathmatch/tdm/de_dust2/b_doors
-	name = "de_dust2 - B Doors"
+	name = "B doors"
 
-/area/deathmatch/tdm/de_dust2/catacombs
-	name = "de_dust2 - Catacombs"
+/area/deathmatch/tdm/de_dust2/tunnel
+	name = "tunnel"
 
-/area/deathmatch/tdm/de_dust2/underground
-	name = "de_dust2 - Underground"
+/area/deathmatch/tdm/de_dust2/a_short
+	name = "A short"
+
+/area/deathmatch/tdm/de_dust2/mid_doors
+	name = "mid doors"
+
+/area/deathmatch/tdm/de_dust2/square
+	name = "Square"
+
+/area/deathmatch/tdm/de_dust2/dust
+	name = "Dust"
+
+/area/deathmatch/tdm/de_dust2/palace
+	name = "Palace"
+
+/area/deathmatch/tdm/de_dust2/down_palace
+	name = "Down palace"
+
+/area/deathmatch/tdm/de_dust2/bridge
+	name = "bridge"
+
+/area/deathmatch/tdm/de_dust2/ct_mid
+	name = "CT mid"
+
+/area/deathmatch/tdm/de_dust2/block
+	name = "block"
+
+/area/deathmatch/tdm/de_dust2/sands
+	name = "sands"
+
+/area/deathmatch/tdm/de_dust2/trap
+	name = "trap"
+
+/area/deathmatch/tdm/de_dust2/titanic
+	name = "titanic"
+
+/area/deathmatch/tdm/de_dust2/can
+	name = "can"
+
+/area/deathmatch/tdm/de_dust2/pit
+	name = "pit"
+
+/area/deathmatch/tdm/de_dust2/corner
+	name = "corner"
+
+/area/deathmatch/tdm/de_dust2/platform
+	name = "platform"
+
+/area/deathmatch/tdm/de_dust2/adds
+	name = "adds"
+
+/area/deathmatch/tdm/de_dust2/look_throug
+	name = "look throug"
+
+/area/deathmatch/tdm/de_dust2/goose
+	name = "goose"
+
+/area/deathmatch/tdm/de_dust2/upping
+	name = "upping"
+
+// Numeric callouts need a `zone_` prefix in the type path: a path segment
+// cannot start with a digit. `name` is still the bare number used in chat.
+/area/deathmatch/tdm/de_dust2/zone_20
+	name = "20"
+
+/area/deathmatch/tdm/de_dust2/zone_8
+	name = "8"
+
+/area/deathmatch/tdm/de_dust2/zone_0
+	name = "0"
+
+/area/deathmatch/tdm/de_dust2/zone_9
+	name = "9"
+
+/area/deathmatch/tdm/de_dust2/zone_11
+	name = "11"
+
+/area/deathmatch/tdm/de_dust2/zone_90
+	name = "90"
+
+/area/deathmatch/tdm/de_dust2/zone_7
+	name = "7"
+
+/area/deathmatch/tdm/de_dust2/zone_1
+	name = "1"
+
+/area/deathmatch/tdm/de_dust2/zone_3
+	name = "3"
+
+/area/deathmatch/tdm/de_dust2/long
+	name = "long"
 
 /obj/effect/landmark/deathmatch_player_spawn
 	name = "Deathmatch Player Spawner"

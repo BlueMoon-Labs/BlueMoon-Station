@@ -2522,6 +2522,7 @@
 #include "code\modules\deathmatch\deathmatch_lobby.dm"
 #include "code\modules\deathmatch\deathmatch_team.dm"
 #include "code\modules\deathmatch\deathmatch_bomb.dm"
+#include "code\modules\deathmatch\deathmatch_radio.dm"
 #include "code\modules\deathmatch\deathmatch_perks.dm"
 #include "code\modules\deathmatch\deathmatch_browser.dm"
 #include "code\modules\awaymissions\corpse.dm"

@@ -119,6 +119,18 @@
 	// Only now do we own the blocks, so a failed load must not leave them behind.
 	reservations = blocks
 	z = arena_levels[1]
+
+	// Multi-level maps rely on SSmapping's vertical stack caches. template.load()
+	// initializes ladders in LateInitialize(), so the arena levels have to be
+	// linked BEFORE the map is placed or every ladder stays unconnected.
+	if(map_depth > 1)
+		var/list/pairs = list()
+		for(var/level_index in 1 to map_depth - 1)
+			var/datum/space_level/lower = SSmapping.get_level(arena_levels[level_index])
+			var/datum/space_level/upper = SSmapping.get_level(arena_levels[level_index + 1])
+			pairs += list(list(lower, upper))
+		SSmapping.link_z_level_pairs(pairs)
+
 	var/list/loaded_bounds = template.load(placement, FALSE, SOUTH, FALSE)
 	if(isnull(loaded_bounds))
 		log_game("Deathmatch: [template] failed to load, releasing the reservation.")
@@ -273,8 +285,13 @@
  */
 /proc/get_deathmatch_z()
 	for(var/reserved_z in SSmapping.levels_by_trait(ZTRAIT_RESERVED))
-		if(SSmapping.level_trait(reserved_z, ZTRAIT_VIRTUAL_REALITY))
-			return reserved_z
+		if(!SSmapping.level_trait(reserved_z, ZTRAIT_VIRTUAL_REALITY))
+			continue
+		// Multi-level arenas stay linked so their levels can be reused. A
+		// one-level map must not inherit another arena's vertical stack.
+		if(SSmapping.level_trait(reserved_z, ZTRAIT_UP) || SSmapping.level_trait(reserved_z, ZTRAIT_DOWN))
+			continue
+		return reserved_z
 
 	var/datum/space_level/arena_level = SSmapping.add_new_zlevel("Deathmatch Arenas", \
 		list(ZTRAIT_RESERVED = TRUE, ZTRAIT_VIRTUAL_REALITY = TRUE, ZTRAIT_AWAY = TRUE))

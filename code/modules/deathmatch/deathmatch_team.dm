@@ -21,6 +21,11 @@
 /// and the standard sniper rifle, on the bravo landmarks.
 #define TDM_TEAM_BRAVO 2
 
+// Team radios use two private frequencies per lobby from a band nobody else
+// tunes to. A global counter is enough: lobbies are rare, and the band is far
+// larger than the number of games a server can run at once.
+GLOBAL_VAR_INIT(tdm_radio_next_frequency, 1501)
+
 /datum/deathmatch_lobby/team_deathmatch
 	// Round state.
 	var/round_number = 0
@@ -84,9 +89,26 @@
 	var/bomb_planted = FALSE
 	var/bomb_site
 
+	/// Private radio frequencies for this match only. Allocated at lobby creation
+	/// so simultaneous games cannot listen in on each other.
+	var/radio_frequency_alpha = 0
+	var/radio_frequency_bravo = 0
+
 /datum/deathmatch_lobby/team_deathmatch/New(...)
 	. = ..()
 	reset_loadout_presets()
+	allocate_radio_frequencies()
+
+/// Hands this match two distinct odd frequencies in the unused 1501+ band.
+/datum/deathmatch_lobby/team_deathmatch/proc/allocate_radio_frequencies()
+	radio_frequency_alpha = GLOB.tdm_radio_next_frequency
+	GLOB.tdm_radio_next_frequency += 2
+	if(GLOB.tdm_radio_next_frequency > 1597)
+		GLOB.tdm_radio_next_frequency = 1501
+	radio_frequency_bravo = GLOB.tdm_radio_next_frequency
+	GLOB.tdm_radio_next_frequency += 2
+	if(GLOB.tdm_radio_next_frequency > 1597)
+		GLOB.tdm_radio_next_frequency = 1501
 
 /// Clears the match history and draws the first round's preset.
 /datum/deathmatch_lobby/team_deathmatch/proc/reset_loadout_presets()
@@ -268,6 +290,19 @@
 		var/datum/martial_art/deathmatch_reflex/reflexes = new
 		reflexes.teach(body)
 	body.apply_status_effect(/datum/status_effect/deathmatch_stamina)
+
+	// One radio implant per round body, on this match's frequency for its team.
+	// The loadout cannot carry it: the Desert Eagle preset is shared by both
+	// sides, so the team has to decide which implant the fighter gets.
+	var/implant_type = /obj/item/implant/radio/deathmatch/terror
+	var/frequency = radio_frequency_alpha
+	if(player.team == TDM_TEAM_BRAVO)
+		implant_type = /obj/item/implant/radio/deathmatch/counter_terror
+		frequency = radio_frequency_bravo
+	if(!locate(implant_type) in body.implants)
+		var/obj/item/implant/radio/deathmatch/implant = new implant_type(body)
+		implant.frequency = frequency
+		implant.implant(body, null, TRUE)
 	return TRUE
 
 /**
