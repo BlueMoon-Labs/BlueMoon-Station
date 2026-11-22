@@ -71,6 +71,13 @@ const SKIP_CLASSES = ['ChatMessage__timestamp', 'Chat__badge'];
 const INLINE_TAGS = ['B', 'I', 'U', 'S', 'EM', 'STRONG', 'SMALL', 'BIG',
   'SUB', 'SUP', 'MARK', 'FONT', 'A', 'CODE', 'TT', 'STRIKE', 'DEL', 'INS'];
 const INLINE_CLASSES = [HIGHLIGHT_CLASS];
+// Новая строка: разрыв ставится всегда, пробел у границы его не отменяет.
+const LINE_TAGS = ['BR', 'HR', 'DIV', 'P', 'LI', 'UL', 'OL', 'DL', 'DT', 'DD',
+  'TABLE', 'TR', 'TD', 'TH', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+  'BLOCKQUOTE', 'PRE', 'SECTION', 'ARTICLE', 'HEADER', 'FOOTER'];
+const NO_BREAK = 0;
+const SOFT_BREAK = 1;
+const LINE_BREAK = 2;
 
 const isInline = node => INLINE_TAGS.indexOf(node.tagName) !== -1
   || (node.tagName === 'SPAN'
@@ -185,13 +192,14 @@ const stripInvisible = value => (INVISIBLE_CHAR.test(value)
 export const collectMessageText = root => {
   let text = '';
   const segments = [];
-  // Разрыв на границе элемента ставится, только если без него слова бы
-  // слиплись: в рации должность "[Medical Doctor] " и имя - соседние span,
-  // пробел между ними уже есть, и скопированное "[Medical Doctor] Чертила"
-  // должно находиться как на экране.
-  let pendingBreak = false;
-  const addBreak = () => {
-    pendingBreak = true;
+  // Разрыв строки (br, блочные теги) ставится всегда: фраза не переходит
+  // на другую строку, даже если перед br пробел. Мягкий разрыв на границе
+  // span с классом - только если без него слова бы слиплись: в рации
+  // должность "[Medical Doctor] " и имя - соседние span, пробел между ними
+  // уже есть, и скопированное "[Medical Doctor] Чертила" должно находиться.
+  let pendingBreak = NO_BREAK;
+  const addBreak = kind => {
+    pendingBreak = Math.max(pendingBreak, kind);
   };
   // rootClass: '' - корень ещё не найден, NOT_SPEECH_ROOT - внутри эмоции,
   // иначе класс корня речи; speech - внутри реплики.
@@ -201,11 +209,12 @@ export const collectMessageText = root => {
         const value = child.nodeValue;
         const visible = stripInvisible(value);
         if (visible) {
-          if (pendingBreak && text && !SPACE_END.test(text)
-            && !SPACE_START.test(visible)) {
+          if (text && (pendingBreak === LINE_BREAK
+            || (pendingBreak === SOFT_BREAK && !SPACE_END.test(text)
+              && !SPACE_START.test(visible)))) {
             text += BREAK;
           }
-          pendingBreak = false;
+          pendingBreak = NO_BREAK;
           segments.push({ node: child, start: text.length,
             end: text.length + visible.length, speech,
             stripped: visible !== value });
@@ -217,13 +226,12 @@ export const collectMessageText = root => {
         continue;
       }
       if (hasAnyClass(child, SKIP_CLASSES)) {
-        addBreak();
+        addBreak(SOFT_BREAK);
         continue;
       }
-      const isBreak = !isInline(child);
-      if (isBreak) {
-        addBreak();
-      }
+      const breakKind = LINE_TAGS.indexOf(child.tagName) !== -1 ? LINE_BREAK
+        : isInline(child) ? NO_BREAK : SOFT_BREAK;
+      addBreak(breakKind);
       let childRoot = rootClass;
       let childSpeech = speech;
       if (!rootClass) {
@@ -239,9 +247,7 @@ export const collectMessageText = root => {
             && hasClass(child, BINARY_TEXT_CLASS));
       }
       walk(child, childRoot, childSpeech);
-      if (isBreak) {
-        addBreak();
-      }
+      addBreak(breakKind);
     }
   };
   walk(root, '', false);

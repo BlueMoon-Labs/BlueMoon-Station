@@ -375,3 +375,28 @@ describe('radio job and speaker name', () => {
       .result).toBeNull();
   });
 });
+describe('line breaks', () => {
+  test('a phrase never crosses <br>, with or without a space before it', () => {
+    for (const html of [
+      '<span>Первая строка <br>Вторая строка</span>',
+      '<span>Первая строка<br>Вторая строка</span>',
+      '<span>Первая строка<br> Вторая строка</span>',
+      '<span><div>Первая строка </div><div>Вторая строка</div></span>',
+    ]) {
+      expect(render(html, [group({ highlightText: 'строка Вторая' })]).result)
+        .toBeNull();
+      expect(render(html, [group({ highlightText: 'строка',
+        matchWord: true })]).words).toEqual(['строка', 'строка']);
+      expect(render(html, [group({ highlightText: 'Вторая строка' })]).words)
+        .toEqual(['Вторая строка']);
+    }
+  });
+
+  test('minor_announce title and text are different lines', () => {
+    // minor_announce: span_minorannounce("<font color = red>[title]</font><BR>[message]")
+    const html = '<span class="minorannounce"><font color="red">Внимание! '
+      + '</font><br>Шаттл прибыл</span>';
+    expect(render(html, [group({ highlightText: 'Внимание! Шаттл' })]).result)
+      .toBeNull();
+  });
+});
