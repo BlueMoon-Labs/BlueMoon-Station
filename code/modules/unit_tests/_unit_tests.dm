@@ -314,6 +314,7 @@
 #include "emissive_offset.dm"
 // #include "emoting.dm"
 #include "event_ports.dm"
+#include "estrous_quirk_heat_tick.dm"
 #include "eye_blur_filters.dm"
 #include "eye_blur_ticks.dm"
 #include "families.dm"
