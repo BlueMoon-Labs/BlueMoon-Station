@@ -1823,3 +1823,68 @@ describe('ChatRenderer smooth scroll to bottom', () => {
     expect(frames).toHaveLength(0);
   });
 });
+
+describe('ChatRenderer search', () => {
+  const SAY = text => '<span class="game say"><span class="name">Анна</span>'
+    + ' <span class="message">говорит, "<span>' + text + '</span>"</span>'
+    + '</span>';
+
+  const marksOf = renderer => [...renderer.rootNode
+    .querySelectorAll('.Chat__searchMatch')].map(mark => mark.textContent);
+
+  test('finds a word split by emphasis markup and a zero width space', () => {
+    const renderer = createReadyRenderer();
+    renderer.processBatch([
+      { html: SAY('<b>Ва</b>&#8203;ня, иди сюда') },
+      { html: SAY('где Ваня?') },
+    ]);
+
+    // Запрос, скопированный из чата вместе с невидимым символом
+    const result = renderer.searchMessages('Ва\u200Bня');
+
+    expect(result).toEqual({ total: 2, current: 1 });
+    expect(marksOf(renderer)).toEqual(['Ва', 'ня', 'Ваня']);
+    expect(renderer.searchMessages('ваня').total).toBe(2);
+  });
+
+  test('every piece of a split match becomes active together', () => {
+    const renderer = createReadyRenderer();
+    renderer.processBatch([
+      { html: SAY('<b>Ва</b>&#8203;ня') },
+      { html: SAY('Ваня') },
+    ]);
+    renderer.searchMessages('Ваня');
+    renderer.searchNext();
+
+    const active = [...renderer.rootNode
+      .querySelectorAll('.Chat__searchMatch--active')]
+      .map(mark => mark.textContent);
+    expect(active).toEqual(['Ва', 'ня']);
+  });
+
+  test('clearing restores the original text including the invisible char', () => {
+    const renderer = createReadyRenderer();
+    renderer.processBatch([{ html: SAY('<b>Ва</b>&#8203;ня тут') }]);
+    const node = renderer.visibleMessages[0].node;
+    const before = node.innerHTML;
+
+    renderer.searchMessages('Ваня');
+    expect(node.querySelectorAll('.Chat__searchMatch')).toHaveLength(2);
+    renderer.clearSearch();
+
+    expect(node.querySelectorAll('.Chat__searchMatch')).toHaveLength(0);
+    expect(node.innerHTML).toBe(before);
+  });
+
+  test('does not match across the timestamp or too short queries', () => {
+    const renderer = createReadyRenderer();
+    renderer.setTimestamps(true, 'hm');
+    renderer.processBatch([{ text: 'Ваня тут' }]);
+
+    expect(renderer.searchMessages('\u200Bа').total).toBe(0);
+    expect(renderer.searchMessages('тут').total).toBe(1);
+    const time = renderer.rootNode
+      .querySelector('.ChatMessage__timestamp').textContent;
+    expect(renderer.searchMessages(time.slice(-1) + 'Ва').total).toBe(0);
+  });
+});

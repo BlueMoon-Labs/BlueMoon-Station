@@ -305,12 +305,15 @@ export const createHighlightNode = (text, color) => {
   return node;
 };
 
-const wrapSegment = (segment, claims) => {
+const wrapSegment = (segment, claims, createNode, wrapped) => {
   const value = segment.node.nodeValue;
   const { offsets } = segment;
   let fragment = null;
   let pos = 0;
   for (const claim of claims) {
+    if (claim.end <= segment.start || segment.end <= claim.start) {
+      continue;
+    }
     const visibleFrom = Math.max(claim.start, segment.start) - segment.start;
     const visibleTo = Math.min(claim.end, segment.end) - segment.start;
     if (visibleFrom >= visibleTo) {
@@ -325,8 +328,9 @@ const wrapSegment = (segment, claims) => {
     if (pos < from) {
       fragment.appendChild(document.createTextNode(value.slice(pos, from)));
     }
-    fragment.appendChild(createHighlightNode(value.slice(from, to),
-      claim.color));
+    const node = createNode(value.slice(from, to), claim);
+    fragment.appendChild(node);
+    wrapped.get(claim).push(node);
     pos = to;
   }
   if (fragment) {
@@ -335,6 +339,45 @@ const wrapSegment = (segment, claims) => {
     }
     segment.node.parentNode.replaceChild(fragment, segment.node);
   }
+};
+
+/**
+ * Оборачивает диапазоны [start, end) сплошного текста сообщения узлами
+ * createNode(text, range). Диапазон через несколько текстовых узлов
+ * (слово, разбитое разметкой) даёт по узлу на каждый кусок.
+ * Возвращает для каждого диапазона список созданных узлов.
+ */
+export const wrapMessageRanges = (message, ranges, createNode) => {
+  const wrapped = new Map(ranges.map(range => [range, []]));
+  for (const segment of message.segments) {
+    wrapSegment(segment, ranges, createNode, wrapped);
+  }
+  return ranges.map(range => wrapped.get(range));
+};
+
+/**
+ * Совпадения строки поиска по чату в сплошном тексте сообщения: без учёта
+ * регистра и невидимых символов, в том числе через разметку.
+ */
+export const findTextMatches = (message, query) => {
+  const needle = String(query || '').replace(INVISIBLE_CHARS, '');
+  if (needle.length < 2) {
+    return [];
+  }
+  const regex = new RegExp(escapeRegExp(needle), 'gi');
+  const ranges = [];
+  let match;
+  while ((match = regex.exec(message.text))) {
+    const start = match.index;
+    const end = start + match[0].length;
+    if (isCovered(message.segments, start, end, false)) {
+      ranges.push({ start, end });
+    }
+    else {
+      regex.lastIndex = start + 1;
+    }
+  }
+  return ranges;
 };
 
 /**
@@ -351,10 +394,8 @@ export const highlightMessageNode = (node, compiledSettings) => {
   if (!claims.length) {
     return null;
   }
-  for (const segment of message.segments) {
-    wrapSegment(segment, claims.filter(claim => (
-      claim.start < segment.end && segment.start < claim.end)));
-  }
+  wrapMessageRanges(message, claims,
+    (text, claim) => createHighlightNode(text, claim.color));
   let top = claims[0];
   let sound = false;
   for (const claim of claims) {

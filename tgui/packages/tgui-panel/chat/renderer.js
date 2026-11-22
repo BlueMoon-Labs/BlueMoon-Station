@@ -12,7 +12,7 @@ import { createLogger } from 'tgui/logging';
 import highlightSoundUrl from '../assets/chat_notify.ogg';
 import { MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLES } from '../settings/constants';
 import { COMBINE_MAX_MESSAGES, COMBINE_MAX_TIME_WINDOW, IMAGE_RETRY_DELAY, IMAGE_RETRY_LIMIT, IMAGE_RETRY_MAX_DELAY, IMAGE_RETRY_MESSAGE_AGE, MAX_PERSISTED_MESSAGES, MAX_VISIBLE_MESSAGES, MESSAGE_PRUNE_INTERVAL, MESSAGE_TYPE_INTERNAL, MESSAGE_TYPE_UNKNOWN, MESSAGE_TYPES } from './constants';
-import { compileHighlightSettings, highlightMessageNode } from './highlight';
+import { collectMessageText, compileHighlightSettings, findTextMatches, highlightMessageNode, wrapMessageRanges } from './highlight';
 import { getBlockFxClasses, settleOldMessages } from './messageFx';
 import { canPageAcceptType, createMessage, isSameMessage } from './model';
 import { linkifyNode } from './replaceInTextNode';
@@ -404,7 +404,7 @@ export class ChatRenderer {
     // Search state
     this._searchMatches = [];
     this._searchCurrentIndex = -1;
-    this._searchRegex = null;
+    this._searchQuery = null;
     // Periodic message pruning
     setInterval(() => this.pruneMessages(), MESSAGE_PRUNE_INTERVAL);
   }
@@ -1207,8 +1207,7 @@ export class ChatRenderer {
     if (!query || query.length < 2) {
       return { total: 0, current: -1 };
     }
-    const escaped = query.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-    this._searchRegex = new RegExp('(' + escaped + ')', 'gi');
+    this._searchQuery = query;
 
     for (let i = 0; i < this.visibleMessages.length; i++) {
       const msg = this.visibleMessages[i];
@@ -1229,46 +1228,25 @@ export class ChatRenderer {
     };
   }
 
+  // Ищет по сплошному тексту сообщения (см. ./highlight.js): слово, разбитое
+  // разметкой или невидимым символом, находится целиком, а одно совпадение
+  // может состоять из нескольких span - по одному на кусок текста.
   _highlightSearchInNode(node, messageIndex) {
-    const walker = document.createTreeWalker(
-      node, NodeFilter.SHOW_TEXT);
-    const textNodes = [];
-    while (walker.nextNode()) {
-      // Skip timestamp spans
-      if (walker.currentNode.parentNode.className
-        === 'ChatMessage__timestamp') {
-        continue;
-      }
-      textNodes.push(walker.currentNode);
+    const message = collectMessageText(node);
+    const ranges = findTextMatches(message, this._searchQuery);
+    if (!ranges.length) {
+      return;
     }
-
-    for (const textNode of textNodes) {
-      const text = textNode.textContent;
-      this._searchRegex.lastIndex = 0;
-      if (!this._searchRegex.test(text)) {
-        continue;
+    const wrapped = wrapMessageRanges(message, ranges, text => {
+      const span = document.createElement('span');
+      span.className = 'Chat__searchMatch';
+      span.textContent = text;
+      return span;
+    });
+    for (const nodes of wrapped) {
+      if (nodes.length) {
+        this._searchMatches.push({ node: nodes[0], nodes, messageIndex });
       }
-      this._searchRegex.lastIndex = 0;
-      const frag = document.createDocumentFragment();
-      let lastIdx = 0;
-      let match;
-      while ((match = this._searchRegex.exec(text)) !== null) {
-        if (match.index > lastIdx) {
-          frag.appendChild(
-            document.createTextNode(text.substring(lastIdx, match.index)));
-        }
-        const span = document.createElement('span');
-        span.className = 'Chat__searchMatch';
-        span.textContent = match[0];
-        frag.appendChild(span);
-        this._searchMatches.push({ node: span, messageIndex });
-        lastIdx = match.index + match[0].length;
-      }
-      if (lastIdx < text.length) {
-        frag.appendChild(
-          document.createTextNode(text.substring(lastIdx)));
-      }
-      textNode.parentNode.replaceChild(frag, textNode);
     }
   }
 
@@ -1276,16 +1254,17 @@ export class ChatRenderer {
     // Remove active class from previous
     if (this._searchCurrentIndex >= 0
       && this._searchCurrentIndex < this._searchMatches.length) {
-      const prev = this._searchMatches[this._searchCurrentIndex]?.node;
-      if (prev) {
+      for (const prev of this._searchMatches[this._searchCurrentIndex].nodes) {
         prev.classList.remove('Chat__searchMatch--active');
       }
     }
     // Set new
-    const current = this._searchMatches[index]?.node;
+    const current = this._searchMatches[index];
     if (current) {
-      current.classList.add('Chat__searchMatch--active');
-      current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      for (const node of current.nodes) {
+        node.classList.add('Chat__searchMatch--active');
+      }
+      current.node.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
     this._searchCurrentIndex = index;
   }
@@ -1312,10 +1291,11 @@ export class ChatRenderer {
 
   clearSearch() {
     for (const match of this._searchMatches) {
-      const span = match.node;
-      if (span.parentNode) {
-        span.parentNode.replaceChild(
-          document.createTextNode(span.textContent), span);
+      for (const span of match.nodes) {
+        if (span.parentNode) {
+          span.parentNode.replaceChild(
+            document.createTextNode(span.textContent), span);
+        }
       }
     }
     if (this.rootNode) {
@@ -1323,7 +1303,7 @@ export class ChatRenderer {
     }
     this._searchMatches = [];
     this._searchCurrentIndex = -1;
-    this._searchRegex = null;
+    this._searchQuery = null;
   }
 
   // ============================================================
@@ -1411,7 +1391,7 @@ export class ChatRenderer {
     this.dropNewMarker();
     this._searchMatches = [];
     this._searchCurrentIndex = -1;
-    this._searchRegex = null;
+    this._searchQuery = null;
     if (this.rootNode) {
       this.rootNode.textContent = '';
       this.restoreBgNode();
