@@ -2074,9 +2074,8 @@
 	// capture_simulation_state снимает occurrences, но не вес - а вес мы здесь и крутим.
 	var/saved_operative_weight = operative_control.weight
 	var/saved_keeper_weight = keeper_control.weight
-	// Настоящий диск встаёт в SSobj.process() и в GLOB.poi_list, а тесту нужен только весовой
-	// счётчик - фейковый диск не трогает ни того, ни другого, а счётчики зовутся напрямую.
-	var/obj/item/disk/nuclear/disk = allocate(/obj/item/disk/nuclear/fake)
+	// Тестовый настоящий диск не регистрируется в SSobj и списке целей.
+	var/obj/item/disk/nuclear/disk = allocate(/obj/item/disk/nuclear/unit_test_authentic, run_loc_floor_bottom_left)
 	try
 		GLOB.round_type = ROUNDTYPE_DYNAMIC_MEDIUM
 		var/list/controls = disk.operative_controls()
@@ -2088,18 +2087,35 @@
 		TEST_ASSERT_EQUAL(length(controls), 1, "В Extended диск кормит ровно один контрол")
 		TEST_ASSERT_EQUAL(controls[1], keeper_control, "В Extended диск кормит защитника диска")
 
-		// Диск лежит: вес растёт у профильного контрола и больше ни у кого.
+		// Проверяем границы через process(), подставляя сроки без ожидания игрового времени.
 		operative_control.weight = 0
 		keeper_control.weight = 0
-		disk.grow_operative_weights(run_loc_floor_bottom_left)
-		TEST_ASSERT_EQUAL(keeper_control.weight, 1, "Лежащий диск обязан поднять вес защитника в Extended")
+		keeper_control.occurrences = 0
+		TEST_ASSERT_EQUAL(disk.next_operative_weight_at, world.time + (2 MINUTES), "Первое начисление должно быть через две минуты после появления диска")
+		disk.next_operative_weight_at = world.time + 1
+		disk.process()
+		TEST_ASSERT_EQUAL(keeper_control.weight, 0, "До границы интервала вес не должен расти")
+		disk.next_operative_weight_at = world.time
+		disk.process()
+		TEST_ASSERT_EQUAL(keeper_control.weight, 1, "На границе интервала вес защитника должен вырасти на единицу")
 		TEST_ASSERT_EQUAL(operative_control.weight, 0, "Весу контрола, недоступного профилю, расти не на чем")
+		TEST_ASSERT_EQUAL(disk.next_operative_weight_at, world.time + (2 MINUTES), "После начисления должен начаться новый двухминутный интервал")
+		disk.process()
+		TEST_ASSERT_EQUAL(keeper_control.weight, 1, "Повторная обработка до следующего срока не должна начислять вес")
+		disk.next_operative_weight_at = world.time
+		disk.process()
+		TEST_ASSERT_EQUAL(keeper_control.weight, 2, "На границе второго интервала должна начислиться ещё одна единица веса")
 
 		// Второй вес мог сохраниться после смены режима посреди раунда.
 		operative_control.weight = 100
-		disk.reset_operative_weights(run_loc_floor_bottom_left)
+		disk.next_operative_weight_at = world.time
+		disk.forceMove(run_loc_floor_top_right)
+		disk.process()
 		TEST_ASSERT_EQUAL(keeper_control.weight, 0, "Перенос диска должен полностью сбросить вес защитника")
 		TEST_ASSERT_EQUAL(operative_control.weight, 0, "Перенос диска должен сбросить вес и у события другого режима")
+		TEST_ASSERT_EQUAL(disk.next_operative_weight_at, world.time + (2 MINUTES), "После переноса должен начаться новый двухминутный интервал")
+		disk.process()
+		TEST_ASSERT_EQUAL(keeper_control.weight, 0, "Обработка сразу после переноса не должна начислять вес")
 	catch(var/exception/e)
 		operative_control.weight = saved_operative_weight
 		keeper_control.weight = saved_keeper_weight

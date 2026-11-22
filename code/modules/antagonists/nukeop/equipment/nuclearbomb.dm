@@ -666,6 +666,8 @@ This is here to make the tiles around the station mininuke change when it's arme
 	drop_sound = 'sound/items/handling/disk_drop.ogg'
 	pickup_sound = 'sound/items/handling/disk_pickup.ogg'
 
+#define NUKE_DISK_OPERATIVE_WEIGHT_INTERVAL (2 MINUTES)
+
 /obj/item/disk/nuclear
 	name = "nuclear authentication disk"
 	desc = "Better keep this safe."
@@ -677,8 +679,8 @@ This is here to make the tiles around the station mininuke change when it's arme
 	var/fake = FALSE
 	var/stationloving = TRUE
 	var/turf/lastlocation
-	var/last_disk_move
 	var/process_tick = 0
+	var/next_operative_weight_at
 
 /obj/item/disk/nuclear/Initialize(mapload)
 	. = ..()
@@ -686,7 +688,8 @@ This is here to make the tiles around the station mininuke change when it's arme
 
 	if(!fake)
 		GLOB.poi_list |= src
-		last_disk_move = world.time
+		lastlocation = get_turf(src)
+		next_operative_weight_at = world.time + NUKE_DISK_OPERATIVE_WEIGHT_INTERVAL
 		START_PROCESSING(SSobj, src)
 
 /obj/item/disk/nuclear/ComponentInitialize()
@@ -700,28 +703,30 @@ This is here to make the tiles around the station mininuke change when it's arme
 		STOP_PROCESSING(SSobj, src)
 		CRASH("A fake nuke disk tried to call process(). Who the fuck and how the fuck")
 	var/turf/newturf = get_turf(src)
+	var/current_time = world.time
 
-	if(newturf && lastlocation == newturf)
+	if(newturf != lastlocation)
+		lastlocation = newturf
+		next_operative_weight_at = current_time + NUKE_DISK_OPERATIVE_WEIGHT_INTERVAL
+		reset_operative_weights(newturf)
+		return
+	if(!newturf)
+		return
 
-	// How comfy is disky?
+	if(current_time >= next_operative_weight_at)
+		grow_operative_weights(newturf)
+		next_operative_weight_at = current_time + NUKE_DISK_OPERATIVE_WEIGHT_INTERVAL
+
+	if(!(process_tick % 30))
+		// Кровать и одеяло нужны только для сообщения о спящем диске.
 		var/disk_comfort_level = 0
-
-		// Checking for items that make disky comfy
 		for(var/obj/comfort_item in loc)
 			if(istype(comfort_item, /obj/item/bedsheet) || istype(comfort_item, /obj/structure/bed))
 				disk_comfort_level++
+		if(disk_comfort_level >= 2)
+			visible_message(span_notice("[src] крепко спит."))
 
-		if(disk_comfort_level >= 2) //Sleep tight, disky.
-			if(!(process_tick % 30))
-				visible_message("<span class='notice'>[src] sleeps soundly. Sleep tight, disky.</span>")
-		var/time_past_threshold = world.time - last_disk_move - (2 MINUTES)
-		if(time_past_threshold > 0 && prob(time_past_threshold * 0.0001 / max(disk_comfort_level, 1)))
-			grow_operative_weights(newturf)
-
-	else
-		lastlocation = newturf
-		last_disk_move = world.time
-		reset_operative_weights(newturf)
+#undef NUKE_DISK_OPERATIVE_WEIGHT_INTERVAL
 
 // Вес растёт только у события текущего режима: боевого одиночки или защитника диска.
 /obj/item/disk/nuclear/proc/operative_controls()
