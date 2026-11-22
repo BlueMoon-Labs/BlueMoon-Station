@@ -78,6 +78,8 @@ const isInline = node => INLINE_TAGS.indexOf(node.tagName) !== -1
 
 const WORD_CHAR = /[0-9A-Za-z_\u00C0-\u024F\u0400-\u04FF]/;
 const BREAK = '\n';
+const SPACE_END = /\s$/;
+const SPACE_START = /^\s/;
 // Невидимые символы не участвуют в поиске: сервер ставит &#8203; после
 // разметки выделения в речи (say_emphasis), и "<b>Ва</b>&#8203;ня" - это "Ваня".
 const INVISIBLE_CHAR = /[\u00AD\u200B-\u200F\u2060-\u2064\uFEFF]/;
@@ -190,10 +192,13 @@ export const mayContain = (node, test) => test.test(stripInvisible(
 export const collectMessageText = root => {
   let text = '';
   const segments = [];
+  // Разрыв на границе элемента ставится, только если без него слова бы
+  // слиплись: в рации должность "[Medical Doctor] " и имя - соседние span,
+  // пробел между ними уже есть, и скопированное "[Medical Doctor] Чертила"
+  // должно находиться как на экране.
+  let pendingBreak = false;
   const addBreak = () => {
-    if (text && text[text.length - 1] !== BREAK) {
-      text += BREAK;
-    }
+    pendingBreak = true;
   };
   // rootClass: '' - корень ещё не найден, NOT_SPEECH_ROOT - внутри эмоции,
   // иначе класс корня речи; speech - внутри реплики.
@@ -203,6 +208,11 @@ export const collectMessageText = root => {
         const value = child.nodeValue;
         const visible = stripInvisible(value);
         if (visible) {
+          if (pendingBreak && text && !SPACE_END.test(text)
+            && !SPACE_START.test(visible)) {
+            text += BREAK;
+          }
+          pendingBreak = false;
           segments.push({ node: child, start: text.length,
             end: text.length + visible.length, speech,
             stripped: visible !== value });

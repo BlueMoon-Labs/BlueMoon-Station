@@ -1901,3 +1901,16 @@ describe('ChatRenderer search across announcement parts', () => {
     expect(renderer.searchMessages('нет такого').total).toBe(0);
   });
 });
+describe('ChatRenderer search in radio messages', () => {
+  test('finds job and name copied together', () => {
+    const renderer = createReadyRenderer();
+    renderer.processBatch([{ html: '<span class="medradio"><span class="name">'
+      + '[Медицинский] <span class="radiojob med">[Medical Doctor] </span>'
+      + '<span class="radiojob-name med">Чертила</span></span>'
+      + ' <span class="message">говорит, "<span>Приём</span>"</span></span>' }]);
+
+    expect(renderer.searchMessages('[Medical Doctor] Чертила').total).toBe(1);
+    expect(renderer.searchMessages('Чертила говорит').total).toBe(1);
+    expect(renderer.searchMessages('[Медицинский] [Medical').total).toBe(1);
+  });
+});

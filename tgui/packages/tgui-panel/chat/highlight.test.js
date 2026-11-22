@@ -357,3 +357,31 @@ describe('prepareTextQuery', () => {
     expect(prepared.test.test('вах')).toBe(false);
   });
 });
+describe('radio job and speaker name', () => {
+  // compose_message в code/game/say.dm с тегом должности
+  const RADIO_JOB = '<span class="medradio"><span class="name">[Медицинский] '
+    + '<span class="radiojob-icon med"></span>'
+    + '<span class="radiojob-legacy-med radiojob med">[Medical Doctor] </span>'
+    + '<span class="radiojob-name med">Чертила</span></span>'
+    + ' <span class="message">говорит, "<span>Приём</span>"</span></span>';
+
+  test('job and name copied together are found as on screen', () => {
+    expect(render(RADIO_JOB, [group({
+      highlightText: '[Medical Doctor] Чертила' })]).words)
+      .toEqual(['[Medical Doctor] ', 'Чертила']);
+    expect(render(RADIO_JOB, [group({ highlightText: 'Чертила',
+      matchWord: true })]).words).toEqual(['Чертила']);
+    expect(render(RADIO_JOB, [group({ highlightText: 'Medical Doctor',
+      matchWord: true })]).words).toEqual(['Medical Doctor']);
+  });
+
+  test('announcement parts without spaces still do not glue', () => {
+    const html = '<span class="system_notice"><span class="system_notice__title">'
+      + 'Заголовок</span><span class="system_notice__body">Сообщение</span>'
+      + '</span>';
+    expect(render(html, [group({ highlightText: 'ЗаголовокСообщение' })])
+      .result).toBeNull();
+    expect(render(html, [group({ highlightText: 'Заголовок Сообщение' })])
+      .result).toBeNull();
+  });
+});
