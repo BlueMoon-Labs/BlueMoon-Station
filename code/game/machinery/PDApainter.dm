@@ -199,6 +199,8 @@
 
 	storedpda.desc = data["desc"]
 
+	storedpda.icon_state_menu = data["icon_state_menu"]
+
 	var/has_custom_skin = FALSE
 	for(var/skin in GLOB.pda_reskins)
 		var/list/skin_data = GLOB.pda_reskins[skin]
@@ -209,7 +211,6 @@
 	if(!has_custom_skin)
 		storedpda.icon = data["icon"]
 		storedpda.overlays_icon = data["overlays_icon"]
-		storedpda.icon_state_menu = data["icon_state_menu"]
 
 	storedpda.update_appearance()
 

@@ -109,6 +109,24 @@ GLOBAL_LIST(labor_sheet_values)
 				to_chat(M, "<span class='alert'>Заключенным разрешено вызывать шаттл только находясь в одиночестве.</span>")
 				return
 
+			var/can_go_home = FALSE
+			if(obj_flags & EMAGGED)
+				can_go_home = TRUE
+			else
+				var/obj/item/card/id/I
+				if(isliving(M))
+					var/mob/living/L = M
+					I = L.get_idcard(TRUE)
+
+				if(istype(I, /obj/item/card/id/prisoner))
+					var/obj/item/card/id/prisoner/P = I
+					if(P.points >= P.goal)
+						can_go_home = TRUE
+
+			if(!can_go_home)
+				to_chat(M, "<span class='alert'>Вы не выполнили свою квоту по добыче руды и не можете вызвать шаттл!</span>")
+				return
+
 			switch(SSshuttle.moveShuttle("laborcamp", "laborcamp_home", TRUE))
 				if(1)
 					to_chat(M, "<span class='alert'>Шаттл не найден.</span>")
@@ -117,12 +135,15 @@ GLOBAL_LIST(labor_sheet_values)
 				if(3)
 					to_chat(M, "<span class='alert'>Не удалось получить разрешение на стыковку.</span>")
 				else
-
 					if(!(obj_flags & EMAGGED))
 						Radio.set_frequency(FREQ_SECURITY)
-						var/loud_msg = "<b><span class='alert'>ВНИМАНИЕ! Заключенный возвращается на станцию! Минералы и ID-карта готовы к изъятию!</span></b>"
-						Radio.talk_into(src, loud_msg, FREQ_SECURITY)
 
+						for(var/mob/Mob in GLOB.player_list)
+							if(Mob.client)
+								SEND_SOUND(Mob, sound('sound/misc/notice2.ogg'))
+
+						var/loud_msg = "<h2><span class='alert'>ВНИМАНИЕ! Заключенный возвращается на станцию! Минералы и ID-карта готовы к изъятию!</span></h2>"
+						Radio.talk_into(src, loud_msg, FREQ_SECURITY)
 					if(ishuman(M))
 						var/mob/living/carbon/human/H = M
 						if(!isnull(GLOB.data_core.security))
