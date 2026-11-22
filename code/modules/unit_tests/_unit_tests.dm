@@ -634,6 +634,7 @@
 #include "tick_spike_sched_probe.dm"
 #include "timer_sanity.dm"
 #include "timestop_hud_restore.dm"
+#include "turf_change_before_init.dm"
 #include "turf_flags.dm"
 #include "turf_reservation_flag.dm"
 #include "ui_numeric_exploits.dm"
