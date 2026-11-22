@@ -70,7 +70,10 @@
 /obj/item/gun/ballistic/shotgun/proc/pump_unload(mob/M)
 	if(chambered)//We have a shell in the chamber
 		chambered.forceMove(drop_location())//Eject casing
-		chambered.bounce_away()
+		if(mesa_casing_physics)
+			chambered.mesa_eject(M)
+		else
+			chambered.bounce_away()
 		chambered = null
 
 /obj/item/gun/ballistic/shotgun/proc/pump_reload(mob/M)

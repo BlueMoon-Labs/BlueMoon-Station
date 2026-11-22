@@ -221,6 +221,7 @@ GLOBAL_DATUM_INIT(acid_overlay, /mutable_appearance, mutable_appearance('icons/e
 	if(!(resistance_flags & ON_FIRE) && (resistance_flags & FLAMMABLE))
 		resistance_flags |= ON_FIRE
 		SSfire_burning.processing[src] = src
+		attach_fire_smoke()
 		update_icon()
 		return TRUE
 
@@ -228,11 +229,13 @@ GLOBAL_DATUM_INIT(acid_overlay, /mutable_appearance, mutable_appearance('icons/e
 /obj/proc/burn()
 	if(resistance_flags & ON_FIRE)
 		SSfire_burning.processing -= src
+		remove_fire_smoke()
 	deconstruct(FALSE)
 
 /obj/proc/extinguish()
 	if(resistance_flags & ON_FIRE)
 		resistance_flags &= ~ON_FIRE
+		remove_fire_smoke()
 		update_icon()
 		SSfire_burning.processing -= src
 

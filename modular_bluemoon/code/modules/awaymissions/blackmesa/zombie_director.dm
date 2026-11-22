@@ -389,9 +389,9 @@
 		if(can_spawn_specials && prob(tank_chance))
 			mob_type = pick_wave_special_type(list(/mob/living/simple_animal/hostile/infected/tank), already_specials)
 			if(!mob_type)
-				mob_type = /mob/living/simple_animal/hostile/infected
+				mob_type = /mob/living/simple_animal/hostile/infected/modular
 		else if(spawn_roll <= 55)
-			mob_type = /mob/living/simple_animal/hostile/infected
+			mob_type = /mob/living/simple_animal/hostile/infected/modular
 		else if(spawn_roll <= 75)
 			mob_type = /mob/living/simple_animal/hostile/infected/bruiser
 		else if(spawn_roll <= 85)
@@ -403,13 +403,13 @@
 				/mob/living/simple_animal/hostile/infected/hunter
 			), already_specials)
 			if(!mob_type)
-				mob_type = /mob/living/simple_animal/hostile/infected
+				mob_type = /mob/living/simple_animal/hostile/infected/modular
 		else
-			mob_type = /mob/living/simple_animal/hostile/infected
+			mob_type = /mob/living/simple_animal/hostile/infected/modular
 	else if(difficulty_level >= 4)
 		// After trigger4, include acid spitter and charger in rotation
 		if(spawn_roll <= 40)
-			mob_type = /mob/living/simple_animal/hostile/infected
+			mob_type = /mob/living/simple_animal/hostile/infected/modular
 		else if(spawn_roll <= 65)
 			mob_type = /mob/living/simple_animal/hostile/infected/bruiser
 		else if(spawn_roll <= 80)
@@ -420,13 +420,13 @@
 				/mob/living/simple_animal/hostile/infected/charger
 			), already_specials)
 			if(!mob_type)
-				mob_type = /mob/living/simple_animal/hostile/infected
+				mob_type = /mob/living/simple_animal/hostile/infected/modular
 		else
-			mob_type = /mob/living/simple_animal/hostile/infected
+			mob_type = /mob/living/simple_animal/hostile/infected/modular
 	else
 		// Before trigger4, only normal zombies and bruisers
 		if(prob(70))
-			mob_type = /mob/living/simple_animal/hostile/infected
+			mob_type = /mob/living/simple_animal/hostile/infected/modular
 		else
 			mob_type = prob(50) ? /mob/living/simple_animal/hostile/infected/bruiser : /mob/living/simple_animal/hostile/infected/bruiser/alt
 	return mob_type

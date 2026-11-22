@@ -252,7 +252,7 @@
 	return ..()
 
 /mob/living/simple_animal/hostile/infected/AttackingTarget()
-	var/is_horde_mob = (type == /mob/living/simple_animal/hostile/infected) || istype(src, /mob/living/simple_animal/hostile/infected/runner) || istype(src, /mob/living/simple_animal/hostile/infected/bruiser)
+	var/is_horde_mob = (type == /mob/living/simple_animal/hostile/infected) || type == /mob/living/simple_animal/hostile/infected/modular || istype(src, /mob/living/simple_animal/hostile/infected/runner) || istype(src, /mob/living/simple_animal/hostile/infected/bruiser)
 	if(!is_horde_mob)
 		return ..()
 	if(!isliving(target))

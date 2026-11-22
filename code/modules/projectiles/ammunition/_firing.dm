@@ -16,6 +16,9 @@
 		AddComponent(/datum/component/pellet_cloud, projectile_type, pellets)
 		SEND_SIGNAL(src, COMSIG_PELLET_CLOUD_INIT, target, user, fired_from, randomspread, spread, zone_override, params, distro)
 
+	if(istype(projectile_type, /obj/item/projectile/bullet))
+		do_sparks(1, TRUE, fired_from || user)
+
 	user.DelayNextAction(considered_action = TRUE, immediate = FALSE)
 	user.newtonian_move(get_dir(target, user))
 	update_icon()

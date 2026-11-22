@@ -67,7 +67,18 @@
 	if(istype(AC)) //there's a chambered round
 		if(casing_ejector)
 			AC.forceMove(drop_location()) //Eject casing onto ground.
-			AC.bounce_away(TRUE)
+			if(mesa_casing_physics)
+				AC.mesa_eject(user, TRUE)
+			else
+				AC.bounce_away(TRUE)
+			chambered = null
+		else if(mesa_casing_physics && !AC.BB && istype(magazine, /obj/item/ammo_box/magazine/internal/cylinder))
+			//Spent revolver shell: pull it out of the cylinder and kick it out.
+			var/cyl_index = magazine.stored_ammo.Find(AC)
+			if(cyl_index)
+				magazine.stored_ammo[cyl_index] = null
+				AC.forceMove(drop_location())
+				AC.mesa_eject(user, FALSE)
 			chambered = null
 		else if(empty_chamber)
 			chambered = null

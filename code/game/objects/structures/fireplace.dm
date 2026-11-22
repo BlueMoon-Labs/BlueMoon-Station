@@ -150,11 +150,13 @@
 	desc = "A large stone brick fireplace, warm and cozy."
 	flame_expiry_timer = world.time + fuel_added
 	fuel_added = 0
+	attach_fire_smoke()
 	update_icon()
 	adjust_light()
 
 /obj/structure/fireplace/proc/put_out()
 	lit = FALSE
+	remove_fire_smoke()
 	update_icon()
 	adjust_light()
 	desc = initial(desc)

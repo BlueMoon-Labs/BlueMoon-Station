@@ -928,7 +928,7 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	var/list/horde_mob_types = mob_types
 	if(!horde_mob_types || !horde_mob_types.len)
 		horde_mob_types = list(
-			/mob/living/simple_animal/hostile/infected,
+			/mob/living/simple_animal/hostile/infected/modular,
 			/mob/living/simple_animal/hostile/infected/bruiser
 		)
 
@@ -1023,7 +1023,7 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	reward_type = /obj/item/storage/firstaid/regular
 	spawn_mobs = TRUE
 	mob_types = list(
-		/mob/living/simple_animal/hostile/infected,
+		/mob/living/simple_animal/hostile/infected/modular,
 		/mob/living/simple_animal/hostile/infected/bruiser
 	)
 
@@ -1043,7 +1043,7 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	reward_type = null
 	spawn_mobs = TRUE
 	mob_types = list(
-		/mob/living/simple_animal/hostile/infected,
+		/mob/living/simple_animal/hostile/infected/modular,
 		/mob/living/simple_animal/hostile/infected/bruiser
 	)
 	mob_spawn_interval = 10 SECONDS
@@ -1055,7 +1055,7 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	blastdoor_id = "urbanism_door_2"
 	spawn_mobs = TRUE
 	mob_types = list(
-		/mob/living/simple_animal/hostile/infected,
+		/mob/living/simple_animal/hostile/infected/modular,
 		/mob/living/simple_animal/hostile/infected/bruiser
 	)
 	mob_spawn_interval = 10 SECONDS
@@ -1076,7 +1076,7 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	reward_type = null
 	spawn_mobs = TRUE
 	mob_types = list(
-		/mob/living/simple_animal/hostile/infected,
+		/mob/living/simple_animal/hostile/infected/modular,
 		/mob/living/simple_animal/hostile/infected/bruiser
 	)
 	mob_spawn_interval = 10 SECONDS
@@ -1410,7 +1410,7 @@ GLOBAL_VAR_INIT(urbanism_generators, list())
 	var/next_director_horde_time = 0
 	spawn_mobs = TRUE
 	mob_types = list(
-		/mob/living/simple_animal/hostile/infected,
+		/mob/living/simple_animal/hostile/infected/modular,
 		/mob/living/simple_animal/hostile/infected/bruiser
 	)
 	mob_spawn_interval = 10 SECONDS

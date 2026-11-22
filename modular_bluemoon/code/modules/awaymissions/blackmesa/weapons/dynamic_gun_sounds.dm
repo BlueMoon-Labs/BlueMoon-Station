@@ -94,6 +94,9 @@
 	var/mesa_shotgun_bonus = FALSE
 	var/mesa_melee_knockback = FALSE
 	var/mesa_damage_bonus = 1
+	/// Ejected casings lob to the shooter's right, bounce off the floor once
+	/// and settle with a tumble instead of the default bounce_away() pop.
+	var/mesa_casing_physics = FALSE
 
 /obj/item/gun/Initialize(mapload)
 	. = ..()
