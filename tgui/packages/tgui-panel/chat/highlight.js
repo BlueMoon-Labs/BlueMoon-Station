@@ -67,10 +67,10 @@ const SKIP_CLASSES = ['ChatMessage__timestamp', 'Chat__badge'];
 // Граница элемента разрывает слово: объявления собраны из идущих вплотную
 // span (заголовок, текст), которые CSS ставит отдельными строками. Слово не
 // рвут только оформление внутри текста ("<b>Ва</b>ня"), span без класса и
-// наши метки подсветки и поиска.
+// метки подсветки.
 const INLINE_TAGS = ['B', 'I', 'U', 'S', 'EM', 'STRONG', 'SMALL', 'BIG',
   'SUB', 'SUP', 'MARK', 'FONT', 'A', 'CODE', 'TT', 'STRIKE', 'DEL', 'INS'];
-const INLINE_CLASSES = [HIGHLIGHT_CLASS, 'Chat__searchMatch'];
+const INLINE_CLASSES = [HIGHLIGHT_CLASS];
 
 const isInline = node => INLINE_TAGS.indexOf(node.tagName) !== -1
   || (node.tagName === 'SPAN'
@@ -176,13 +176,6 @@ const isNotSpeechRoot = node => {
 
 const stripInvisible = value => (INVISIBLE_CHAR.test(value)
   ? value.replace(INVISIBLE_CHARS, '') : value);
-
-/**
- * Дешёвая проверка до разбора сообщения: если в его тексте нет совпадения,
- * не будет и в сплошном тексте (тот отличается только разрывами слов).
- */
-export const mayContain = (node, test) => test.test(stripInvisible(
-  node.textContent));
 
 /**
  * Сплошной текст сообщения без невидимых символов и откуда взялся каждый
@@ -344,7 +337,7 @@ const visibleOffsets = value => {
   return offsets;
 };
 
-const wrapSegment = (segment, claims, createNode, wrapped) => {
+const wrapSegment = (segment, claims) => {
   const value = segment.node.nodeValue;
   let offsets = null;
   let fragment = null;
@@ -372,9 +365,8 @@ const wrapSegment = (segment, claims, createNode, wrapped) => {
     if (pos < from) {
       fragment.appendChild(document.createTextNode(value.slice(pos, from)));
     }
-    const node = createNode(value.slice(from, to), claim);
-    fragment.appendChild(node);
-    wrapped.get(claim).push(node);
+    fragment.appendChild(createHighlightNode(value.slice(from, to),
+      claim.color));
     pos = to;
   }
   if (fragment) {
@@ -383,58 +375,6 @@ const wrapSegment = (segment, claims, createNode, wrapped) => {
     }
     segment.node.parentNode.replaceChild(fragment, segment.node);
   }
-};
-
-/**
- * Оборачивает диапазоны [start, end) сплошного текста сообщения узлами
- * createNode(text, range). Диапазон через несколько текстовых узлов
- * (слово, разбитое разметкой) даёт по узлу на каждый кусок.
- * Возвращает для каждого диапазона список созданных узлов.
- */
-export const wrapMessageRanges = (message, ranges, createNode) => {
-  const wrapped = new Map(ranges.map(range => [range, []]));
-  for (const segment of message.segments) {
-    wrapSegment(segment, ranges, createNode, wrapped);
-  }
-  return ranges.map(range => wrapped.get(range));
-};
-
-/**
- * Строка поиска по чату, готовая один раз на весь поиск, или null, если
- * искать нечего. Без учёта регистра и невидимых символов.
- */
-export const prepareTextQuery = query => {
-  const needle = stripInvisible(String(query || ''));
-  if (needle.length < 2) {
-    return null;
-  }
-  const pattern = escapeRegExp(needle);
-  return {
-    test: new RegExp(pattern, 'i'),
-    regex: new RegExp(pattern, 'gi'),
-  };
-};
-
-/**
- * Совпадения подготовленного запроса в сплошном тексте сообщения, в том
- * числе через разметку, или null, если их нет.
- */
-export const findTextMatches = (message, prepared) => {
-  const { regex } = prepared;
-  regex.lastIndex = 0;
-  let ranges = null;
-  let match;
-  while ((match = regex.exec(message.text))) {
-    const start = match.index;
-    const end = start + match[0].length;
-    if (isCovered(message.segments, start, end, false)) {
-      (ranges = ranges || []).push({ start, end });
-    }
-    else {
-      regex.lastIndex = start + 1;
-    }
-  }
-  return ranges;
 };
 
 /**
@@ -455,8 +395,9 @@ export const highlightMessageNode = (node, compiledSettings) => {
   if (!claims.length) {
     return null;
   }
-  wrapMessageRanges(message, claims,
-    (text, claim) => createHighlightNode(text, claim.color));
+  for (const segment of message.segments) {
+    wrapSegment(segment, claims);
+  }
   let top = claims[0];
   let sound = false;
   for (const claim of claims) {

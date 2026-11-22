@@ -1,4 +1,4 @@
-import { compileHighlightSettings, createHighlightSetting, DEFAULT_HIGHLIGHT_COLOR, highlightMessageNode, MAX_HIGHLIGHT_SETTINGS, migrateHighlightSettings, parseHighlightTerms, prepareTextQuery } from './highlight';
+import { compileHighlightSettings, createHighlightSetting, DEFAULT_HIGHLIGHT_COLOR, highlightMessageNode, MAX_HIGHLIGHT_SETTINGS, migrateHighlightSettings, parseHighlightTerms } from './highlight';
 
 // Разметка как у compose_message в code/game/say.dm
 const SAY = '<span class="game say"><span class="name">Ваня Петров</span>'
@@ -347,16 +347,6 @@ describe('word breaks between elements', () => {
   });
 });
 
-describe('prepareTextQuery', () => {
-  test('null for too short queries, invisible chars ignored', () => {
-    expect(prepareTextQuery('')).toBeNull();
-    expect(prepareTextQuery('а')).toBeNull();
-    expect(prepareTextQuery('а\u200B')).toBeNull();
-    const prepared = prepareTextQuery('В\u200Bа.');
-    expect(prepared.test.test('ва.')).toBe(true);
-    expect(prepared.test.test('вах')).toBe(false);
-  });
-});
 describe('radio job and speaker name', () => {
   // compose_message в code/game/say.dm с тегом должности
   const RADIO_JOB = '<span class="medradio"><span class="name">[Медицинский] '
