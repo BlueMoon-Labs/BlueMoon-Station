@@ -53,6 +53,10 @@
 	if(GLOB.chat_emote_panel_enabled)
 		return emotes_handle_action(type, payload)
 
+	if(type == "emotes/showHint")
+		to_chat(client, span_notice("Быстрые эмоции переехали во вкладку «[STATPANEL_EMOTES_TAB]». В настройках статпанели (⚙ → Эмоции) можно изменить сортировку, размер и цвет кнопок. <a href='?src=[REF(client)];open_statpanel_emotes=1'>Открыть эмоции</a>"))
+		return TRUE
+
 /datum/tgui_panel/proc/emotes_handle_action(type, payload, from_statpanel = FALSE)
 	var/list/panel = client.prefs.custom_emote_panel
 
@@ -70,6 +74,11 @@
 			prefs.custom_emote_chat_order = clean_order
 			prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
 			emotes_send_chat_panel()
+			return TRUE
+
+		if("act/emotes/resetOrder")
+			if(islist(payload) && payload["slot"] == client.prefs.default_slot && payload["revision"] == emotes_chat_revision)
+				emotes_reset_order(FALSE)
 			return TRUE
 
 		if ("emotes/execute")
@@ -278,6 +287,36 @@
 /datum/tgui_panel/proc/emotes_panel_is_current(list/panel, mob/user)
 	return user && client?.mob == user && client.prefs?.custom_emote_panel == panel
 
+/datum/tgui_panel/proc/emotes_reset_order(from_statpanel)
+	var/datum/preferences/prefs = client.prefs
+	var/list/panel = prefs.custom_emote_panel
+	var/list/chat_order = prefs.custom_emote_chat_order
+	var/slot = prefs.default_slot
+	var/mob/user = client.mob
+	var/panel_location = from_statpanel ? "во вкладке «[STATPANEL_EMOTES_TAB]»" : "в панели под звёздочкой"
+	var/confirmation = tgui_alert(user, "Сбросить ручной порядок эмоций [panel_location] для персонажа «[prefs.real_name]»? Кнопки будут расположены по алфавиту.", "Сброс порядка эмоций", list("Сбросить", "Отмена"))
+	if(confirmation != "Сбросить" || !emotes_panel_is_current(panel, user) || prefs.default_slot != slot)
+		return
+
+	if(from_statpanel)
+		var/list/sorted_names = sortTim(assoc_list_strip_value(panel), GLOBAL_PROC_REF(cmp_text_asc))
+		if(compare_list(panel, sorted_names))
+			return
+		var/list/sorted_emotes = list()
+		for(var/emote_name in sorted_names)
+			sorted_emotes[emote_name] = panel[emote_name]
+		prefs.custom_emote_panel = sorted_emotes
+	else
+		if(prefs.custom_emote_chat_order != chat_order || !length(chat_order))
+			return
+		prefs.custom_emote_chat_order = list()
+
+	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
+	if(from_statpanel)
+		emotes_send_statpanel()
+	else
+		emotes_send_chat_panel()
+
 /datum/tgui_panel/proc/emotes_rename(emote_name)
 	var/mob/user = client.mob
 	var/list/panel = client.prefs.custom_emote_panel
@@ -402,6 +441,8 @@
 	switch(action)
 		if("emotes/execute", "emotes/create", "emotes/contextAction")
 			return emotes_handle_action(action, params, from_statpanel = TRUE)
+		if("emotes/resetOrder")
+			return emotes_reset_order(TRUE)
 		if("emotes/move")
 			changed = emotes_move(params["name"], params["group"] || "", params["anchor"], params["after"] == "1")
 		if("emotes/moveGroup")

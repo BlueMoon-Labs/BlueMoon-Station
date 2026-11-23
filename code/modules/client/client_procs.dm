@@ -240,8 +240,14 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 	last_activity = world.time
 
-	if(href_list["statpanel_emotes"])
-		if(statbrowser_ready && stat_tab == STATPANEL_EMOTES_TAB && prefs && text2num(href_list["slot"]) == prefs.default_slot)
+	if(href_list["open_statpanel_emotes"])
+		if(statbrowser_ready)
+			src << output("", "statbrowser:open_emote_tab")
+		return
+
+	var/emote_action = href_list["statpanel_emotes"]
+	if(emote_action)
+		if(statbrowser_ready && prefs && (emote_action == "emotes/resetOrder" || (stat_tab == STATPANEL_EMOTES_TAB && text2num(href_list["slot"]) == prefs.default_slot)))
 			tgui_panel?.emotes_handle_stat_action(href_list)
 		return
 

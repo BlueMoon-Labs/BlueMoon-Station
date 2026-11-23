@@ -168,9 +168,13 @@ export const EmotePanel = () => {
             role="button"
             aria-label="Сортировать по алфавиту"
             aria-pressed={!!emoteSortAlphabetical}
-            tooltip="Сортировать по алфавиту"
+            tooltip="ЛКМ — переключить сортировку по алфавиту. ПКМ — сбросить ручной порядок до алфавитного."
             selected={!!emoteSortAlphabetical}
             onClick={() => update({ emoteSortAlphabetical: !emoteSortAlphabetical })}
+            onContextMenu={event => {
+              event.preventDefault();
+              sendAct('emotes/resetOrder', { slot, revision });
+            }}
           />
         </Flex.Item>
       </Flex>

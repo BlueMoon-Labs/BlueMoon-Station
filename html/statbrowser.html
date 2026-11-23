@@ -1827,6 +1827,15 @@ function set_byond_tab(tab) {
 	send_byond_command("Set-Tab " + tab);
 }
 
+function open_emote_tab() {
+	if (State.currentTab === STATPANEL_EMOTES_TAB && _settingsActive) {
+		_settingsActive = false;
+		renderCurrentTab();
+		return;
+	}
+	tab_change(STATPANEL_EMOTES_TAB);
+}
+
 function SendTabsToByond() {
 	var tabs = [].concat(State.permanentTabs, State.verbTabs);
 	for (var i = 0; i < tabs.length; i++) SendTabToByond(tabs[i]);
@@ -5927,6 +5936,14 @@ function draw_settings() {
 	emoteSortRow.appendChild(el("span", "settings-label", "Сортировать по алфавиту"));
 	emoteSortRow.appendChild(emoteSortCheckbox);
 	emoteSection.appendChild(emoteSortRow);
+	var resetEmoteOrderRow = el("div", "settings-row");
+	var resetEmoteOrderButton = el("button", "settings-toggle-btn", "Сбросить ручной порядок до алфавитного");
+	resetEmoteOrderButton.type = "button";
+	resetEmoteOrderButton.onclick = function() {
+		byond_bridge_call("", { statpanel_emotes: "emotes/resetOrder" });
+	};
+	resetEmoteOrderRow.appendChild(resetEmoteOrderButton);
+	emoteSection.appendChild(resetEmoteOrderRow);
 	addGridRow(emoteSection, themeState, {
 		colLabel: "Расположение кнопок",
 		colKey: "emoteGridColumns",
