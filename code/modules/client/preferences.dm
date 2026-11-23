@@ -598,6 +598,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/podlauncher_presets = list()
 	// Формат отчётов всех медицинских анализаторов пользователя; по умолчанию TGUI.
 	var/health_analyzer_chat = FALSE
+	var/list/custom_emote_groups = list()
+	var/list/custom_emote_chat_order = list()
 
 /datum/preferences/proc/get_vending_layout(machine_type)
 	return vending_layouts["[machine_type]"] || "grid"

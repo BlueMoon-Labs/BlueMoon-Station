@@ -43,6 +43,7 @@ var State = {
 	turfContentsRaw: "",
 	// Favorites
 	favorites: {},
+	emotePanel: null,
 	// Images
 	storedImages: {},
 	imageRetryDelay: 500,

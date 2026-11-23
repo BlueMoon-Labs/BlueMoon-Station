@@ -17,6 +17,8 @@ function renderCurrentTab() {
 		draw_mc();
 	} else if (tab === "Избранное") {
 		draw_favorites();
+	} else if (tab === STATPANEL_EMOTES_TAB) {
+		draw_emotes();
 	} else if (isSpell) {
 		draw_spells(tab);
 	} else if (tab === "Tickets") {

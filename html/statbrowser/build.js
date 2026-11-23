@@ -42,6 +42,7 @@ const JS_FILES = [
 	'src/renderers/mc.js',
 	'src/renderers/verbs.js',
 	'src/renderers/favorites.js',
+	'src/renderers/emotes.js',
 	'src/renderers/spells.js',
 	'src/renderers/tickets.js',
 	'src/renderers/sdql2.js',

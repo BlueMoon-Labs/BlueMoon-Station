@@ -217,7 +217,10 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		nuke_chat()
 	if(href_list["statbrowser_pick_color"])
 		var/color_key = href_list["statbrowser_pick_color"]
-		var/static/list/color_keys = list("--bg-primary", "--bg-secondary", "--text-primary", "--text-secondary", "--text-muted", "--accent", "--border", "--health-good", "--health-warn", "--health-bad")
+		var/static/list/color_keys = list(
+			"--bg-primary", "--bg-secondary", "--text-primary", "--text-secondary", "--text-muted", "--accent", "--border", "--health-good", "--health-warn", "--health-bad",
+			"--emote-button-bg", "--emote-button-hover", "--emote-button-text", "--emote-button-border", "--emote-button-custom-bg", "--emote-accent",
+		)
 		if(!(color_key in color_keys))
 			return
 		var/new_color = tgui_input_color(src, "Выберите цвет оформления панели.", "Цвет панели", href_list["color"])
@@ -236,6 +239,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	log_href("[src] (usr:[usr]\[[COORD(usr)]\]) : [hsrc ? "[hsrc] " : ""][href]")
 
 	last_activity = world.time
+
+	if(href_list["statpanel_emotes"])
+		if(statbrowser_ready && stat_tab == STATPANEL_EMOTES_TAB && prefs && text2num(href_list["slot"]) == prefs.default_slot)
+			tgui_panel?.emotes_handle_stat_action(href_list)
+		return
 
 	//byond bug ID:2256651
 	if (asset_cache_job && (asset_cache_job in completed_asset_jobs))

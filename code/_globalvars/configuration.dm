@@ -21,6 +21,9 @@ GLOBAL_VAR_INIT(tinted_weldhelh, TRUE)
 // Временное ограничение переключения формата медицинских отчётов; кнопка «Текстом» в окне остаётся доступна.
 GLOBAL_VAR_INIT(health_analyzer_allow_chat_mode, FALSE)
 
+// Временно скрывает панель эмоций в чате на время тестирования.
+GLOBAL_VAR_INIT(chat_emote_panel_enabled, FALSE)
+
 
 // Debug is used exactly once (in living.dm) but is commented out in a lot of places.  It is not set anywhere and only checked.
 // Debug2 is used in conjunction with a lot of admin verbs and therefore is actually legit.
