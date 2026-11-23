@@ -195,7 +195,8 @@
 }
 .verb-search:focus { border-color: var(--accent); }
 
-.verb-grid {
+.verb-grid,
+.emote-group-list {
 	display: inline-flex;
 	flex-wrap: wrap;
 	padding: 4px 6px;
@@ -265,25 +266,34 @@
 .emote-group-toggle {
 	flex: 1;
 	min-width: 0;
+	background: var(--emote-group-color, var(--bg-secondary));
+	color: var(--emote-group-text, var(--text-primary));
 	text-align: left;
 	overflow-wrap: anywhere;
 	font-weight: bold;
+}
+.emote-group-toggle:hover {
+	background: var(--emote-group-color, var(--bg-hover));
+}
+.emote-grid-fixed .emote-group-list:not([hidden]) {
+	display: grid;
+	grid-template-columns: repeat(var(--emote-grid-cols), minmax(0, 1fr));
+}
+.emote-grid-fixed .emote-group-list .emote-button {
+	width: 100%;
+	text-align: center;
 }
 .emote-group-list[hidden] {
 	display: none;
 }
 .emote-group-empty {
+	grid-column: 1 / -1;
 	padding: 6px 8px;
 	color: var(--text-secondary);
 }
-.emote-item {
-	position: relative;
-	display: inline-flex;
-	max-width: 100%;
-	border-radius: 4px;
-}
 .emote-button {
 	min-width: 0;
+	max-width: 100%;
 	text-align: left;
 	font-family: inherit;
 	white-space: normal;
@@ -296,29 +306,12 @@
 .emote-button.emote-custom:hover {
 	background: rgba(230, 90, 147, 0.34);
 }
-.emote-sortable .emote-button {
-	padding-inline-end: max(var(--verb-padding-h, 10px), 23px);
-}
-.emote-drag-handle {
-	position: absolute;
-	inset-block: 0;
-	inset-inline-end: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 22px;
-	color: var(--text-secondary);
-	cursor: grab;
+.emote-sortable {
 	touch-action: none;
 	user-select: none;
 }
-.emote-drag-handle:hover {
-	color: var(--text-primary);
-}
 .emote-dragging {
 	opacity: 0.5;
-}
-.emote-dragging .emote-drag-handle {
 	cursor: grabbing;
 }
 .emote-drop-before {

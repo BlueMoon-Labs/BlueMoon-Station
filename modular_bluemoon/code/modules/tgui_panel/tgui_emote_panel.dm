@@ -343,10 +343,14 @@
 	for(var/emote_name in prefs.custom_emote_panel)
 		emotes += list(list("name" = emote_name, "entry" = prefs.custom_emote_panel[emote_name]))
 	var/list/groups = list()
-	for(var/group_id in prefs.custom_emote_groups)
-		var/list/group = prefs.custom_emote_groups[group_id]
-		groups += list(list("id" = group_id, "name" = html_decode(group["name"])))
-	var/list/payload = list("slot" = prefs.default_slot, "emotes" = emotes, "groups" = groups)
+	var/list/saved_groups = prefs.custom_emote_groups
+	var/list/ungrouped = saved_groups[EMOTE_PANEL_UNGROUPED_COLOR_KEY]
+	for(var/group_id in saved_groups)
+		if(group_id == EMOTE_PANEL_UNGROUPED_COLOR_KEY)
+			continue
+		var/list/group = saved_groups[group_id]
+		groups += list(list("id" = group_id, "name" = html_decode(group["name"]), "color" = group["color"]))
+	var/list/payload = list("slot" = prefs.default_slot, "emotes" = emotes, "groups" = groups, "ungroupedColor" = ungrouped?["color"])
 	client << output(url_encode(json_encode(payload)), "statbrowser:update_emotes")
 
 /datum/tgui_panel/proc/emotes_handle_stat_action(list/params)
@@ -359,9 +363,11 @@
 			changed = emotes_move(params["name"], params["group"] || "", params["anchor"], params["after"] == "1")
 		if("emotes/createGroup")
 			changed = emotes_edit_group()
+		if("emotes/colorGroup")
+			changed = emotes_color_group(params["group"] || EMOTE_PANEL_UNGROUPED_COLOR_KEY, params["defaultColor"], params["reset"] == "1")
 		if("emotes/editGroup")
 			var/group_id = params["group"]
-			if(!length(group_id) || !(group_id in client.prefs.custom_emote_groups))
+			if(!length(group_id) || group_id == EMOTE_PANEL_UNGROUPED_COLOR_KEY || !(group_id in client.prefs.custom_emote_groups))
 				return
 			changed = emotes_edit_group(group_id)
 	if(changed)
@@ -373,7 +379,7 @@
 	if(!length(emote_name) || !(emote_name in panel))
 		return FALSE
 	var/list/entry = panel[emote_name]
-	if(!islist(entry) || (length(group_id) && !(group_id in client.prefs.custom_emote_groups)))
+	if(!islist(entry) || group_id == EMOTE_PANEL_UNGROUPED_COLOR_KEY || (length(group_id) && !(group_id in client.prefs.custom_emote_groups)))
 		return FALSE
 
 	var/current_group = entry["group"] || ""
@@ -423,7 +429,7 @@
 			return groups.Remove(group_id)
 		if(action != "Переименовать")
 			return FALSE
-	else if(length(groups) >= TGUI_PANEL_MAX_EMOTE_GROUPS)
+	else if(length(groups) - (EMOTE_PANEL_UNGROUPED_COLOR_KEY in groups) >= TGUI_PANEL_MAX_EMOTE_GROUPS)
 		to_chat(client, span_warning("Добавлен максимум групп: [TGUI_PANEL_MAX_EMOTE_GROUPS]."))
 		return FALSE
 
@@ -444,6 +450,33 @@
 	to_chat(client, span_warning("Добавлен максимум групп: [TGUI_PANEL_MAX_EMOTE_GROUPS]."))
 	return FALSE
 
+/datum/tgui_panel/proc/emotes_color_group(group_id, default_color, reset_color)
+	var/list/groups = client.prefs.custom_emote_groups
+	var/list/group = groups[group_id]
+	var/is_ungrouped = group_id == EMOTE_PANEL_UNGROUPED_COLOR_KEY
+	if(!group && !is_ungrouped)
+		return FALSE
+
+	if(reset_color)
+		if(!group?["color"])
+			return FALSE
+		if(is_ungrouped)
+			return groups.Remove(group_id)
+		group -= "color"
+		return TRUE
+
+	var/list/panel = client.prefs.custom_emote_panel
+	var/mob/user = client.mob
+	var/current_color = group?["color"]
+	var/new_color = tgui_input_color(user, "Выберите цвет заголовка группы эмоций.", "Цвет группы", current_color || default_color)
+	if(!new_color || new_color == current_color || !emotes_panel_is_current(panel, user) || groups[group_id] != group || group?["color"] != current_color)
+		return FALSE
+	if(is_ungrouped && !group)
+		groups[group_id] = list("color" = new_color)
+	else
+		group["color"] = new_color
+	return TRUE
+
 /proc/sanitize_custom_emote_groups(list/groups)
 	var/list/cleaned = list()
 	if(!islist(groups))
@@ -452,14 +485,26 @@
 		if(!istext(group_id))
 			continue
 		var/index = text2num(group_id)
-		if(index < 1 || index > TGUI_PANEL_MAX_EMOTE_GROUPS || index != round(index) || group_id != "[index]")
+		if(isnull(index) || index < 0 || index > TGUI_PANEL_MAX_EMOTE_GROUPS || index != round(index) || group_id != "[index]")
 			continue
 		var/list/group = groups[group_id]
-		if(!islist(group) || !istext(group["name"]))
+		if(!islist(group))
+			continue
+		var/group_color = group["color"]
+		if(!istext(group_color) || !GLOB.is_color.Find(group_color))
+			group_color = null
+		if(group_id == EMOTE_PANEL_UNGROUPED_COLOR_KEY)
+			if(group_color)
+				cleaned[group_id] = list("color" = uppertext(group_color))
+			continue
+		if(!istext(group["name"]))
 			continue
 		var/group_name = trim(copytext_char(strip_control_chars(group["name"]), 1, TGUI_PANEL_MAX_EMOTE_NAME_LENGTH + 1))
 		if(length(group_name))
-			cleaned[group_id] = list("name" = group_name)
+			var/list/clean_group = list("name" = group_name)
+			if(group_color)
+				clean_group["color"] = uppertext(group_color)
+			cleaned[group_id] = clean_group
 	return cleaned
 
 /// Rebuilds a custom_emote_panel list with control characters stripped from every

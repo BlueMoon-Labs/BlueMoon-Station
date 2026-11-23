@@ -232,6 +232,7 @@ function getDefaultThemeState() {
 		turfFontSize: 12,
 		verbGridColumns: "auto",
 		verbGridMinWidth: 135,
+		emoteGridColumns: "auto",
 		turfGridColumns: "auto",
 		mcGridColumns: "auto",
 		mcGridMinWidth: 200
@@ -240,7 +241,7 @@ function getDefaultThemeState() {
 
 var _SETTINGS_KEYS = ["verbLayout", "verbStyle", "hideVerbSearch", "verbPadding", "tabPadding", "compactMode",
 	"turfLayout", "turfIconSize", "turfHideIcons", "turfFontSize",
-	"verbGridColumns", "verbGridMinWidth", "turfGridColumns", "mcGridColumns", "mcGridMinWidth",
+	"verbGridColumns", "verbGridMinWidth", "emoteGridColumns", "turfGridColumns", "mcGridColumns", "mcGridMinWidth",
 	"fontFamily", "fontSize", "borderRadius", "customCSS"];
 
 function getPresetDefaults(presetKey) {
@@ -358,6 +359,7 @@ function applyTheme(themeState) {
 	document.body.classList.toggle("turf-layout-compact", themeState.turfLayout === "compact");
 	document.body.classList.toggle("turf-hide-icons", !!themeState.turfHideIcons);
 	applyGridLayout("verb", themeState.verbGridColumns, themeState.verbGridMinWidth, 135);
+	applyGridLayout("emote", /^[1-6]$/.test(themeState.emoteGridColumns) ? themeState.emoteGridColumns : "auto", null, null);
 	applyGridLayout("turf", themeState.turfGridColumns, null, null); // no min-width var for turf — icon-size slider controls density
 	applyGridLayout("mc", themeState.mcGridColumns, themeState.mcGridMinWidth, 200);
 	if (!_customStyleEl) {

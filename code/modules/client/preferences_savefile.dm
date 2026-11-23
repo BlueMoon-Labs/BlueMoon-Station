@@ -2388,7 +2388,7 @@ GLOBAL_VAR(player_save_migration_timer)
 	custom_emote_groups = sanitize_custom_emote_groups(custom_emote_groups)
 	for(var/emote_name in custom_emote_panel)
 		var/list/entry = custom_emote_panel[emote_name]
-		if(islist(entry) && !(entry["group"] in custom_emote_groups))
+		if(islist(entry) && (entry["group"] == EMOTE_PANEL_UNGROUPED_COLOR_KEY || !(entry["group"] in custom_emote_groups)))
 			entry -= "group"
 
 	all_quirks = SANITIZE_LIST(all_quirks)

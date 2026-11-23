@@ -55,7 +55,7 @@ function draw_emotes() {
 	}));
 	root.appendChild(toolbar);
 
-	var groups = [{ id: "", name: "Без группы" }].concat(panel.groups);
+	var groups = [{ id: "", name: "Без группы", color: panel.ungroupedColor }].concat(panel.groups);
 	var emotesByGroup = Object.create(null);
 	for (var i = 0; i < groups.length; i++) emotesByGroup[groups[i].id] = [];
 	for (var j = 0; j < panel.emotes.length; j++) {
@@ -80,7 +80,7 @@ function drawEmoteGroup(group, emotes, collapsed) {
 	var section = el("section", "emote-group");
 	var header = el("div", "emote-group-header");
 	header.dataset.group = group.id;
-	var list = el("div", "verb-grid emote-group-list");
+	var list = el("div", "emote-group-list");
 	list.id = "emote-group-" + group.id;
 	list.dataset.group = group.id;
 	var label = group.name + " (" + emotes.length + ")";
@@ -89,8 +89,29 @@ function drawEmoteGroup(group, emotes, collapsed) {
 		updateGroupVisibility();
 	});
 	toggle.setAttribute("aria-controls", list.id);
+	if (/^#[0-9a-f]{6}$/i.test(group.color)) {
+		toggle.style.setProperty("--emote-group-color", group.color);
+		toggle.style.setProperty("--emote-group-text", contrastRatio("#000000", group.color) >= 4.5 ? "#000000" : "#FFFFFF");
+	}
 	header.appendChild(toggle);
 	updateGroupVisibility();
+	var colorButton = emoteButton("Цвет", "emote-control", function() {
+		sendEmoteAction("colorGroup", {
+			group: group.id,
+			defaultColor: normalizeToHex(getComputedStyle(toggle).backgroundColor)
+		});
+	});
+	var colorLabel = "Изменить цвет группы «" + group.name + "»";
+	colorButton.setAttribute("aria-label", colorLabel);
+	colorButton.title = colorLabel;
+	if (group.color) {
+		colorButton.title += " · ПКМ — вернуть цвет темы";
+		colorButton.oncontextmenu = function(event) {
+			event.preventDefault();
+			sendEmoteAction("colorGroup", { group: group.id, reset: 1 });
+		};
+	}
+	header.appendChild(colorButton);
 	if (group.id) {
 		var edit = emoteButton("⋯", "emote-control", function() {
 			sendEmoteAction("editGroup", { group: group.id });
@@ -116,12 +137,15 @@ function drawEmoteGroup(group, emotes, collapsed) {
 
 function drawEmoteItem(emote, group) {
 	var entry = emote.entry;
-	var item = el("div", entry ? "emote-item emote-sortable" : "emote-item");
-	item.dataset.group = group;
-	item.dataset.emote = emote.name;
-	var button = emoteButton(emote.name, "emote-button", function() {
+	var button = emoteButton(emote.name, entry ? "emote-button emote-sortable" : "emote-button", function(event) {
+		if (event.detail && button._skipEmoteClick) {
+			button._skipEmoteClick = false;
+			return;
+		}
 		sendEmoteAction("execute", { name: emote.name });
 	});
+	button.dataset.group = group;
+	button.dataset.emote = emote.name;
 	if (entry && entry.type === 1) {
 		button.title = "*" + entry.key;
 	} else if (entry && entry.type === 2) {
@@ -131,56 +155,56 @@ function drawEmoteItem(emote, group) {
 		button.classList.add("emote-custom");
 		button.title = entry.message;
 	}
-	item.oncontextmenu = function(event) {
+	button.oncontextmenu = function(event) {
 		event.preventDefault();
-		if (!emoteDrag) sendEmoteAction("contextAction", { name: emote.name });
+		if (!emoteDrag || !emoteDrag.active) sendEmoteAction("contextAction", { name: emote.name });
 	};
-	item.appendChild(button);
-	if (entry) {
-		var handle = el("span", "emote-drag-handle", "⠿");
-		handle.title = "Перетащить эмоцию";
-		handle.setAttribute("aria-hidden", "true");
-		item.appendChild(handle);
-	}
-	return item;
+	return button;
 }
 
 function startEmoteDrag(event) {
-	var handle = event.target;
-	if (event.button !== 0 || emoteDrag || !handle.classList.contains("emote-drag-handle")) return;
-	if (!handle.setPointerCapture) return;
-	handle.setPointerCapture(event.pointerId);
+	var button = event.target;
+	if (event.button !== 0 || emoteDrag || !button.classList.contains("emote-sortable")) return;
+	if (!button.setPointerCapture) return;
+	button._skipEmoteClick = false;
+	button.setPointerCapture(event.pointerId);
 	emoteDrag = {
-		handle: handle,
-		item: handle.parentNode,
+		button: button,
 		root: event.currentTarget,
 		pointerId: event.pointerId,
-		x: event.clientX,
-		y: event.clientY,
+		startX: event.clientX,
+		startY: event.clientY,
+		active: false,
 		target: null,
 		marker: "",
 		frame: null
 	};
-	emoteDrag.item.classList.add("emote-dragging");
-	event.preventDefault();
 }
 
 function updateEmoteDrag(event) {
-	if (!emoteDrag || emoteDrag.pointerId !== event.pointerId) return;
-	emoteDrag.x = event.clientX;
-	emoteDrag.y = event.clientY;
+	var drag = emoteDrag;
+	if (!drag || drag.pointerId !== event.pointerId) return;
+	if (!drag.active) {
+		var dx = event.clientX - drag.startX;
+		var dy = event.clientY - drag.startY;
+		if (dx * dx + dy * dy < 25) return;
+		drag.active = true;
+		drag.button.classList.add("emote-dragging");
+	}
+	drag.x = event.clientX;
+	drag.y = event.clientY;
 	updateEmoteDropTarget();
-	queueEmoteDragScroll();
+	if (event.type === "pointermove") queueEmoteDragScroll();
 }
 
 function updateEmoteDropTarget() {
 	var drag = emoteDrag;
 	// Обе координаты и прямоугольники уже учитывают масштаб статпанели.
 	var hit = document.elementFromPoint(drag.x, drag.y);
-	var target = hit && hit.closest(".emote-item, .emote-group-header, .emote-group-list");
-	if (target === drag.item || !drag.root.contains(target)) target = null;
+	var target = hit && hit.closest(".emote-button, .emote-group-header, .emote-group-list");
+	if (target === drag.button || !drag.root.contains(target)) target = null;
 	var marker = "emote-drop-group";
-	if (target && target.classList.contains("emote-item")) {
+	if (target && target.classList.contains("emote-button")) {
 		var rect = target.getBoundingClientRect();
 		marker = drag.x < (rect.left + rect.right) / 2 ? "emote-drop-before" : "emote-drop-after";
 	}
@@ -216,13 +240,11 @@ function queueEmoteDragScroll() {
 function dropEmote(event) {
 	var drag = emoteDrag;
 	if (!drag || drag.pointerId !== event.pointerId) return;
-	drag.x = event.clientX;
-	drag.y = event.clientY;
-	updateEmoteDropTarget();
+	updateEmoteDrag(event);
 	finishEmoteDrag();
 	if (!drag.target) return;
 	sendEmoteAction("move", {
-		name: drag.item.dataset.emote,
+		name: drag.button.dataset.emote,
 		group: drag.target.dataset.group,
 		anchor: drag.target.dataset.emote,
 		after: drag.marker === "emote-drop-after" ? 1 : 0
@@ -239,8 +261,12 @@ function finishEmoteDrag() {
 	emoteDrag = null;
 	if (drag.frame !== null) cancelAnimationFrame(drag.frame);
 	if (drag.target) drag.target.classList.remove(drag.marker);
-	drag.item.classList.remove("emote-dragging");
-	if (drag.handle.hasPointerCapture(drag.pointerId)) drag.handle.releasePointerCapture(drag.pointerId);
+	if (drag.active) {
+		// После отпускания браузер может прислать клик по захваченной кнопке.
+		drag.button._skipEmoteClick = true;
+		drag.button.classList.remove("emote-dragging");
+	}
+	if (drag.button.hasPointerCapture(drag.pointerId)) drag.button.releasePointerCapture(drag.pointerId);
 }
 
 window.addEventListener("blur", finishEmoteDrag);

@@ -7,3 +7,4 @@
 /// Broken type
 #define TGUI_PANEL_EMOTE_TYPE_UNKNOWN 4
 #define STATPANEL_EMOTES_TAB "Эмоции"
+#define EMOTE_PANEL_UNGROUPED_COLOR_KEY "0"

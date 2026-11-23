@@ -22,7 +22,7 @@ function addGridRow(parent, themeState, opts) {
 	colRow.appendChild(el("span", "settings-label", opts.colLabel));
 	var sel = document.createElement("select");
 	sel.className = "settings-select";
-	var COL_OPTS = [["auto", "Авто"], ["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"]];
+	var COL_OPTS = [["auto", opts.autoLabel || "Авто"], ["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"]];
 	for (var i = 0; i < COL_OPTS.length; i++) {
 		var o = document.createElement("option");
 		o.value = COL_OPTS[i][0];
@@ -30,6 +30,7 @@ function addGridRow(parent, themeState, opts) {
 		sel.appendChild(o);
 	}
 	sel.value = themeState[opts.colKey] || "auto";
+	if (!sel.value) sel.value = "auto";
 	colRow.appendChild(sel);
 	parent.appendChild(colRow);
 
@@ -435,6 +436,15 @@ function draw_settings() {
 	layoutSection.appendChild(compactRow);
 
 	panel.appendChild(layoutSection);
+
+	var emoteSection = el("div", "settings-section");
+	emoteSection.appendChild(el("div", "settings-section-title", "Эмоции"));
+	addGridRow(emoteSection, themeState, {
+		colLabel: "Расположение кнопок",
+		colKey: "emoteGridColumns",
+		autoLabel: "Плотно по ширине"
+	});
+	panel.appendChild(emoteSection);
 
 	// ===== Turf (floor) section =====
 	var turfSection = el("div", "settings-section");
