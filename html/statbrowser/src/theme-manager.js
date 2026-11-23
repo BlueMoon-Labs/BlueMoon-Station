@@ -235,6 +235,7 @@ function getDefaultThemeState() {
 		emoteGridColumns: "auto",
 		emoteButtonPadding: 5,
 		emoteFontSize: 12,
+		emoteSortAlphabetical: false,
 		turfGridColumns: "auto",
 		mcGridColumns: "auto",
 		mcGridMinWidth: 200
@@ -244,6 +245,7 @@ function getDefaultThemeState() {
 var _SETTINGS_KEYS = ["verbLayout", "verbStyle", "hideVerbSearch", "verbPadding", "tabPadding", "compactMode",
 	"turfLayout", "turfIconSize", "turfHideIcons", "turfFontSize",
 	"verbGridColumns", "verbGridMinWidth", "emoteGridColumns", "emoteButtonPadding", "emoteFontSize", "turfGridColumns", "mcGridColumns", "mcGridMinWidth",
+	"emoteSortAlphabetical",
 	"fontFamily", "fontSize", "borderRadius", "customCSS"];
 
 var EMOTE_BUTTON_PALETTE = [
@@ -252,6 +254,7 @@ var EMOTE_BUTTON_PALETTE = [
 	["--emote-button-text", "Текст кнопок", "--emote-default-text"],
 	["--emote-button-border", "Граница кнопок", "--emote-default-border"],
 	["--emote-button-custom-bg", "Цвет кастомных эмоций", "--emote-default-custom-bg"],
+	["--emote-button-me-bg", "Цвет кнопок *me", "--emote-default-me-bg"],
 	["--emote-accent", "Акцент", "--emote-default-hover"]
 ];
 
@@ -350,6 +353,9 @@ function applyTheme(themeState) {
 	for (var key in themeState.overrides) {
 		root.style.setProperty(key, themeState.overrides[key]);
 	}
+	var meColor = themeState.overrides["--emote-button-me-bg"];
+	var lightMeText = /^#[0-9a-f]{6}$/i.test(meColor) && contrastRatio("#000000", meColor) < 4.5;
+	root.style.setProperty("--emote-button-me-text", lightMeText ? "#ffffff" : "#000000");
 	if (themeState.fontFamily) {
 		root.style.setProperty("--font-sans", themeState.fontFamily);
 	}
@@ -377,6 +383,7 @@ function applyTheme(themeState) {
 	document.body.classList.toggle("turf-layout-grid", themeState.turfLayout === "grid");
 	document.body.classList.toggle("turf-layout-compact", themeState.turfLayout === "compact");
 	document.body.classList.toggle("turf-hide-icons", !!themeState.turfHideIcons);
+	document.body.classList.toggle("emote-sort-alphabetical", !!themeState.emoteSortAlphabetical);
 	applyGridLayout("verb", themeState.verbGridColumns, themeState.verbGridMinWidth, 135);
 	applyGridLayout("emote", /^[1-6]$/.test(themeState.emoteGridColumns) ? themeState.emoteGridColumns : "auto", null, null);
 	applyGridLayout("turf", themeState.turfGridColumns, null, null); // no min-width var for turf — icon-size slider controls density

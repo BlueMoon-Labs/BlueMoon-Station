@@ -465,6 +465,21 @@ function draw_settings() {
 
 	var emoteSection = el("div", "settings-section");
 	emoteSection.appendChild(el("div", "settings-section-title", "Эмоции"));
+	var emoteSortRow = el("label", "settings-row");
+	var emoteSortCheckbox = el("input", "settings-checkbox");
+	emoteSortCheckbox.type = "checkbox";
+	emoteSortCheckbox.checked = !!themeState.emoteSortAlphabetical;
+	emoteSortCheckbox.onchange = function() {
+		themeState.emoteSortAlphabetical = emoteSortCheckbox.checked;
+		var wasPreset = themeState.preset;
+		markCustomIfModified(themeState);
+		saveTheme(themeState);
+		applyTheme(themeState);
+		if (themeState.preset !== wasPreset) draw_settings();
+	};
+	emoteSortRow.appendChild(el("span", "settings-label", "Сортировать по алфавиту"));
+	emoteSortRow.appendChild(emoteSortCheckbox);
+	emoteSection.appendChild(emoteSortRow);
 	addGridRow(emoteSection, themeState, {
 		colLabel: "Расположение кнопок",
 		colKey: "emoteGridColumns",

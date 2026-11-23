@@ -445,6 +445,7 @@ img { image-rendering: pixelated; }
 	--emote-default-text: #ffffff;
 	--emote-default-border: var(--emote-button-bg, var(--emote-default-bg));
 	--emote-default-custom-bg: #8b2baa;
+	--emote-default-me-bg: #f2711c;
 }
 
 .emote-panel {
@@ -538,6 +539,16 @@ img { image-rendering: pixelated; }
 .emote-button.emote-custom:hover {
 	--emote-custom-hover: color-mix(in srgb, var(--emote-button-custom-bg) 88%, white);
 	--emote-custom-fill: var(--emote-custom-hover, #ad4fcd);
+}
+.emote-button.emote-me {
+	--emote-me-fill: var(--emote-button-me-bg, var(--emote-default-me-bg));
+	background: var(--emote-me-fill);
+	border-color: var(--emote-me-fill);
+	color: var(--emote-button-me-text);
+}
+.emote-button.emote-me:hover {
+	background: color-mix(in srgb, var(--emote-me-fill) 90%, var(--emote-button-me-text));
+	border-color: var(--emote-me-fill);
 }
 .emote-button.emote-colored {
 	background: var(--emote-color);
@@ -2201,6 +2212,7 @@ function getDefaultThemeState() {
 		emoteGridColumns: "auto",
 		emoteButtonPadding: 5,
 		emoteFontSize: 12,
+		emoteSortAlphabetical: false,
 		turfGridColumns: "auto",
 		mcGridColumns: "auto",
 		mcGridMinWidth: 200
@@ -2210,6 +2222,7 @@ function getDefaultThemeState() {
 var _SETTINGS_KEYS = ["verbLayout", "verbStyle", "hideVerbSearch", "verbPadding", "tabPadding", "compactMode",
 	"turfLayout", "turfIconSize", "turfHideIcons", "turfFontSize",
 	"verbGridColumns", "verbGridMinWidth", "emoteGridColumns", "emoteButtonPadding", "emoteFontSize", "turfGridColumns", "mcGridColumns", "mcGridMinWidth",
+	"emoteSortAlphabetical",
 	"fontFamily", "fontSize", "borderRadius", "customCSS"];
 
 var EMOTE_BUTTON_PALETTE = [
@@ -2218,6 +2231,7 @@ var EMOTE_BUTTON_PALETTE = [
 	["--emote-button-text", "Текст кнопок", "--emote-default-text"],
 	["--emote-button-border", "Граница кнопок", "--emote-default-border"],
 	["--emote-button-custom-bg", "Цвет кастомных эмоций", "--emote-default-custom-bg"],
+	["--emote-button-me-bg", "Цвет кнопок *me", "--emote-default-me-bg"],
 	["--emote-accent", "Акцент", "--emote-default-hover"]
 ];
 
@@ -2316,6 +2330,9 @@ function applyTheme(themeState) {
 	for (var key in themeState.overrides) {
 		root.style.setProperty(key, themeState.overrides[key]);
 	}
+	var meColor = themeState.overrides["--emote-button-me-bg"];
+	var lightMeText = /^#[0-9a-f]{6}$/i.test(meColor) && contrastRatio("#000000", meColor) < 4.5;
+	root.style.setProperty("--emote-button-me-text", lightMeText ? "#ffffff" : "#000000");
 	if (themeState.fontFamily) {
 		root.style.setProperty("--font-sans", themeState.fontFamily);
 	}
@@ -2343,6 +2360,7 @@ function applyTheme(themeState) {
 	document.body.classList.toggle("turf-layout-grid", themeState.turfLayout === "grid");
 	document.body.classList.toggle("turf-layout-compact", themeState.turfLayout === "compact");
 	document.body.classList.toggle("turf-hide-icons", !!themeState.turfHideIcons);
+	document.body.classList.toggle("emote-sort-alphabetical", !!themeState.emoteSortAlphabetical);
 	applyGridLayout("verb", themeState.verbGridColumns, themeState.verbGridMinWidth, 135);
 	applyGridLayout("emote", /^[1-6]$/.test(themeState.emoteGridColumns) ? themeState.emoteGridColumns : "auto", null, null);
 	applyGridLayout("turf", themeState.turfGridColumns, null, null); // no min-width var for turf — icon-size slider controls density
@@ -4024,9 +4042,17 @@ function draw_emotes() {
 	for (var id in collapsed) {
 		if (!emotesByGroup[id]) delete collapsed[id];
 	}
+	var alphabetical = document.body.classList.contains("emote-sort-alphabetical");
+	var collator = alphabetical && new Intl.Collator("en");
 	for (var k = 0; k < groups.length; k++) {
 		var currentGroup = groups[k];
-		root.appendChild(drawEmoteGroup(currentGroup, emotesByGroup[currentGroup.id], collapsed));
+		var groupEmotes = emotesByGroup[currentGroup.id];
+		if (alphabetical) {
+			groupEmotes.sort(function(a, b) {
+				return collator.compare(a.name, b.name);
+			});
+		}
+		root.appendChild(drawEmoteGroup(currentGroup, groupEmotes, collapsed));
 	}
 	statcontent.appendChild(root);
 }
@@ -4109,7 +4135,7 @@ function drawEmoteItem(emote, group) {
 		button.style.setProperty("--emote-color", entry.color);
 		button.style.setProperty("--emote-color-text", contrastRatio("#000000", entry.color) >= 4.5 ? "#000000" : "#FFFFFF");
 	} else if (entry && (entry.type === 2 || entry.type === 3)) {
-		button.classList.add("emote-custom");
+		button.classList.add(entry.type === 3 ? "emote-me" : "emote-custom");
 	}
 	if (entry && entry.type === 1) {
 		button.title = "*" + entry.key;
@@ -4141,6 +4167,7 @@ function startEmoteDrag(event) {
 		button: button,
 		source: group || button,
 		isGroup: !!group,
+		onlyChangeGroup: !group && document.body.classList.contains("emote-sort-alphabetical"),
 		root: event.currentTarget,
 		pointerId: event.pointerId,
 		startX: event.clientX,
@@ -4172,9 +4199,11 @@ function updateEmoteDropTarget() {
 	var drag = emoteDrag;
 	// Обе координаты и прямоугольники уже учитывают масштаб статпанели.
 	var hit = document.elementFromPoint(drag.x, drag.y);
-	var selector = drag.isGroup ? ".emote-group" : ".emote-button, .emote-group-header, .emote-group-list";
+	var selector = drag.isGroup ? ".emote-group" : ".emote-group-header, .emote-group-list";
+	if (!drag.isGroup && !drag.onlyChangeGroup) selector = ".emote-button, " + selector;
 	var target = hit && hit.closest(selector);
 	if (target === drag.source || !drag.root.contains(target) || (drag.isGroup && !target.dataset.group)) target = null;
+	if (target && drag.onlyChangeGroup && target.dataset.group === drag.button.dataset.group) target = null;
 	var marker = "emote-drop-group";
 	if (target && drag.isGroup) {
 		var header = target.firstElementChild.getBoundingClientRect();
@@ -5883,6 +5912,21 @@ function draw_settings() {
 
 	var emoteSection = el("div", "settings-section");
 	emoteSection.appendChild(el("div", "settings-section-title", "Эмоции"));
+	var emoteSortRow = el("label", "settings-row");
+	var emoteSortCheckbox = el("input", "settings-checkbox");
+	emoteSortCheckbox.type = "checkbox";
+	emoteSortCheckbox.checked = !!themeState.emoteSortAlphabetical;
+	emoteSortCheckbox.onchange = function() {
+		themeState.emoteSortAlphabetical = emoteSortCheckbox.checked;
+		var wasPreset = themeState.preset;
+		markCustomIfModified(themeState);
+		saveTheme(themeState);
+		applyTheme(themeState);
+		if (themeState.preset !== wasPreset) draw_settings();
+	};
+	emoteSortRow.appendChild(el("span", "settings-label", "Сортировать по алфавиту"));
+	emoteSortRow.appendChild(emoteSortCheckbox);
+	emoteSection.appendChild(emoteSortRow);
 	addGridRow(emoteSection, themeState, {
 		colLabel: "Расположение кнопок",
 		colKey: "emoteGridColumns",

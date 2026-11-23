@@ -2,20 +2,26 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { sendAct, sendMessage } from 'tgui/backend';
 import { Button, Flex, Section } from 'tgui/components';
 
+import { useSettings } from '../settings/hooks';
 import { useEmotes } from './hooks';
 
 const emoteColors = { 1: 'blue', 2: 'purple', 3: 'orange' };
 
 export const EmotePanel = () => {
   const { list, order, revision, slot } = useEmotes();
+  const { emoteSortAlphabetical, update } = useSettings();
   const activeDrag = useRef(null);
   const skipClick = useRef(null);
   const names = useMemo(() => {
-    const available = new Set(Object.keys(list || {})
-      .filter(name => Object.hasOwn(emoteColors, list[name]?.type)));
-    const ordered = (Array.isArray(order) ? order : []).filter(name => available.delete(name));
-    return ordered.concat([...available].sort((a, b) => a.localeCompare(b, 'en')));
-  }, [list, order]);
+    const alphabetical = Object.keys(list || {})
+      .filter(name => Object.hasOwn(emoteColors, list[name]?.type))
+      .sort((a, b) => a.localeCompare(b, 'en'));
+    if (emoteSortAlphabetical || !Array.isArray(order) || !order.length) {
+      return alphabetical;
+    }
+    const available = new Set(alphabetical);
+    return order.filter(name => available.delete(name)).concat([...available]);
+  }, [list, order, emoteSortAlphabetical]);
 
   const finishDrag = useCallback(() => {
     const drag = activeDrag.current;
@@ -41,9 +47,10 @@ export const EmotePanel = () => {
 
   useEffect(() => {
     finishDrag();
-  }, [finishDrag, revision]);
+  }, [finishDrag, revision, emoteSortAlphabetical]);
 
   const startDrag = event => {
+    if (emoteSortAlphabetical) return;
     const button = event.target.closest('.ChatEmoteButton');
     if (event.button !== 0 || activeDrag.current || !button?.setPointerCapture) return;
     skipClick.current = null;
@@ -94,7 +101,7 @@ export const EmotePanel = () => {
     if (!drag || drag.pointerId !== event.pointerId) return;
     updateDrag(event);
     finishDrag();
-    if (!drag.target || drag.revision !== revision || slot === null || slot === undefined) return;
+    if (emoteSortAlphabetical || !drag.target || drag.revision !== revision || slot === null || slot === undefined) return;
     const from = names.indexOf(drag.button.dataset.emote);
     let to = names.indexOf(drag.target.dataset.emote);
     if (from < 0 || to < 0) return;
@@ -155,6 +162,15 @@ export const EmotePanel = () => {
             icon="plus"
             color="green"
             onClick={() => sendMessage({ type: 'emotes/create' })}
+          />
+          <Button
+            content="A"
+            role="button"
+            aria-label="Сортировать по алфавиту"
+            aria-pressed={!!emoteSortAlphabetical}
+            tooltip="Сортировать по алфавиту"
+            selected={!!emoteSortAlphabetical}
+            onClick={() => update({ emoteSortAlphabetical: !emoteSortAlphabetical })}
           />
         </Flex.Item>
       </Flex>
