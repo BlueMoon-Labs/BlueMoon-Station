@@ -1041,6 +1041,13 @@ GLOBAL_VAR_INIT(unit_test_legacy_probe_loaded, FALSE)
 	TEST_ASSERT(prefs.import_character_json(donor_loadout), "донатный предмет отклонил весь файл: [prefs.player_transfer_error]")
 	TEST_ASSERT_EQUAL(length(prefs.loadout_data["SAVE_1"]), 0, "импорт открыл донатный предмет")
 	TEST_ASSERT(length(prefs.player_transfer_notices), "игроку не сказали об убранном предмете")
+	// Старые сейвы хранят пути переименованных и удалённых вещей.
+	var/list/stale_loadout = list("SAVE_1" = list(list(LOADOUT_ITEM = "/datum/gear/removed_test_item"), list(LOADOUT_ITEM = "[/datum/gear/accessory/necklace]")))
+	var/stale_json = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("loadout" = json_encode(stale_loadout))))
+	TEST_ASSERT(prefs.import_character_json(stale_json), "удалённый предмет отклонил весь файл: [prefs.player_transfer_error]")
+	var/list/stale_kept = prefs.loadout_data["SAVE_1"]
+	TEST_ASSERT_EQUAL(length(stale_kept), 1, "импорт не убрал удалённый предмет или потерял существующий")
+	TEST_ASSERT(length(prefs.player_transfer_notices), "игроку не сказали об удалённом предмете")
 	TEST_ASSERT_EQUAL(prefs.real_name, "Protected Character", "импорт экипировки изменил персонажа")
 	prefs.path = null
 
