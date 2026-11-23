@@ -87,6 +87,16 @@
 	. = ..()
 	addtimer(CALLBACK(src, PROC_REF(minion_tick)), 30 SECONDS)
 
+// Босс - стационарная турель: ИИ-лупы, увороты, сайдстепы и блуждание
+// ходят через Move()/step(), поэтому вето здесь глушит всё добровольное
+// движение разом. forceMove()/doMove() (броски, телепорты, админка) этот
+// прок не проходит - физику не трогаем. Пока loc пуст (спавн через new),
+// решение остаётся за родителем.
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/Move(atom/newloc, direct = 0, glide_size_override = 0)
+	if(loc && !QDELETED(src))
+		return FALSE
+	return ..()
+
 /obj/item/stack/sheet/bluespace_crystal/fifty
 	amount = 50
 
@@ -144,12 +154,13 @@
 		return
 
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/start_trial()
-	var/turf/home = get_turf(src)
-	// Босс летающий: его турф может оказаться стеной/плотным - портал
-	// встал бы в недостижимую точку, а босс остался бы неуязвимым.
-	if(!istype(home) || !isopenturf(home))
+	// Портал встаёт в небольшом радиусе вокруг босса, но не ровно под ним:
+	// get_turf(src) у летающего моба - турф прямо под спрайтом.
+	var/turf/home = rift_turf_near(src, 4)
+	// Свободных турфов в радиусе может не оказаться - тогда обычный поиск.
+	if(!istype(home))
 		home = free_turf_near(src, 4)
-	if(!istype(home) || !isopenturf(home))
+	if(!istype(home) || !isopenturf(home) || home.density)
 		return FALSE
 	// Сначала ищем площадку - без неё испытание не начинаем,
 	// иначе босс застрял бы в неуязвимости навсегда.
@@ -407,6 +418,24 @@
 		if(istype(AM, /obj/effect/portal) && !QDELETED(AM))
 			return TRUE
 	return FALSE
+
+// Тот же фильтр, что у free_turf_near, но исключает турф под самим мобом
+// и турфы с уже стоящим порталом: разлом не должен вставать под боссом
+// или накладываться на чужой.
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/rift_turf_near(atom/center, range = 4)
+	if(!center || QDELETED(center))
+		return null
+	var/turf/CT = get_turf(center)
+	if(!istype(CT))
+		return null
+	var/list/turfs = list()
+	for(var/turf/T in view(range, CT))
+		if(T == CT || T.z != CT.z)
+			continue
+		if(!valid_rift_turf(T) || turf_has_portal(T))
+			continue
+		turfs += T
+	return pick(turfs)
 
 // Свободный открытый турф рядом с мобом (не космос/бездна, не сквозь стену).
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/free_turf_near(atom/center, range = 4)
