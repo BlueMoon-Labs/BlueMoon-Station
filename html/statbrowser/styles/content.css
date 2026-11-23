@@ -234,6 +234,7 @@
 	--emote-default-hover: #3a94d8;
 	--emote-default-text: #ffffff;
 	--emote-default-border: var(--emote-button-bg, var(--emote-default-bg));
+	--emote-default-custom-bg: #8b2baa;
 }
 
 .emote-panel {
@@ -316,13 +317,14 @@
 	border-color: var(--emote-button-border, var(--emote-button-hover, var(--emote-default-hover)));
 }
 .emote-button.emote-custom {
-	background: #8b2baa;
-	border-color: #8b2baa;
+	--emote-custom-fill: var(--emote-button-custom-bg, var(--emote-default-custom-bg));
+	background: var(--emote-custom-fill);
+	border-color: var(--emote-custom-fill);
 	color: var(--emote-default-text);
 }
 .emote-button.emote-custom:hover {
-	background: #ad4fcd;
-	border-color: #ad4fcd;
+	--emote-custom-hover: color-mix(in srgb, var(--emote-button-custom-bg) 88%, white);
+	--emote-custom-fill: var(--emote-custom-hover, #ad4fcd);
 }
 .emote-button.emote-colored {
 	background: var(--emote-color);

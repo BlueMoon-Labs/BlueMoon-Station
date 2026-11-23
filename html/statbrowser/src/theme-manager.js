@@ -251,6 +251,7 @@ var EMOTE_BUTTON_PALETTE = [
 	["--emote-button-hover", "Фон при наведении", "--emote-default-hover"],
 	["--emote-button-text", "Текст кнопок", "--emote-default-text"],
 	["--emote-button-border", "Граница кнопок", "--emote-default-border"],
+	["--emote-button-custom-bg", "Цвет кастомных эмоций", "--emote-default-custom-bg"],
 	["--emote-accent", "Акцент", "--emote-default-hover"]
 ];
 
