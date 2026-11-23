@@ -94,7 +94,7 @@ export const EmotePanel = () => {
     if (!drag || drag.pointerId !== event.pointerId) return;
     updateDrag(event);
     finishDrag();
-    if (!drag.target || drag.revision !== revision || slot == null) return;
+    if (!drag.target || drag.revision !== revision || slot === null || slot === undefined) return;
     const from = names.indexOf(drag.button.dataset.emote);
     let to = names.indexOf(drag.target.dataset.emote);
     if (from < 0 || to < 0) return;

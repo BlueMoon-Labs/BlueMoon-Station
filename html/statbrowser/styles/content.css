@@ -324,7 +324,6 @@
 	--emote-custom-fill: var(--emote-button-custom-bg, var(--emote-default-custom-bg));
 	background: var(--emote-custom-fill);
 	border-color: var(--emote-custom-fill);
-	color: var(--emote-default-text);
 }
 .emote-button.emote-custom:hover {
 	--emote-custom-hover: color-mix(in srgb, var(--emote-button-custom-bg) 88%, white);
