@@ -442,6 +442,20 @@ describe('speechOnly: only the reply itself', () => {
       speechOnly: true })]).words).toEqual(['Ваня']);
   });
 
+  test('dead chat and hivemind replies are speech too', () => {
+    // deadchat_broadcast (mob/say.dm) и alien_talk: реплика через say_quote
+    const dead = '<span class="game"><span class="prefix">DEAD:</span>'
+      + ' <span class="name">Петя</span> <span class="message">говорит,'
+      + ' "<span class="speech">Ваня тут</span>"</span></span>';
+    const hive = '<i><span class="alien">Hivemind, <span class="name">Ваня'
+      + '</span> <span class="message">шипит, "<span class="speech">Ваня'
+      + ' тут</span>"</span></span></i>';
+    for (const html of [dead, hive]) {
+      expect(render(html, [group({ highlightText: 'Ваня, Петя',
+        speechOnly: true })]).words).toEqual(['Ваня']);
+    }
+  });
+
   test('without speechOnly the verb and action are highlighted too', () => {
     expect(render(say('машет рукой Ване'), [group({
       highlightText: 'машет, Ване', matchWord: true })]).words)
