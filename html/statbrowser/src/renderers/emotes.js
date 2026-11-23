@@ -146,18 +146,28 @@ function drawEmoteItem(emote, group) {
 	});
 	button.dataset.group = group;
 	button.dataset.emote = emote.name;
+	if (entry && /^#[0-9a-f]{6}$/i.test(entry.color)) {
+		button.classList.add("emote-colored");
+		button.style.setProperty("--emote-color", entry.color);
+		button.style.setProperty("--emote-color-text", contrastRatio("#000000", entry.color) >= 4.5 ? "#000000" : "#FFFFFF");
+	} else if (entry && (entry.type === 2 || entry.type === 3)) {
+		button.classList.add("emote-custom");
+	}
 	if (entry && entry.type === 1) {
 		button.title = "*" + entry.key;
 	} else if (entry && entry.type === 2) {
-		button.classList.add("emote-custom");
 		button.title = "*" + entry.key + " | " + entry.message_override;
 	} else if (entry && entry.type === 3) {
-		button.classList.add("emote-custom");
 		button.title = entry.message;
 	}
 	button.oncontextmenu = function(event) {
 		event.preventDefault();
-		if (!emoteDrag || !emoteDrag.active) sendEmoteAction("contextAction", { name: emote.name });
+		if (!emoteDrag || !emoteDrag.active) {
+			sendEmoteAction("contextAction", {
+				name: emote.name,
+				defaultColor: normalizeToHex(getComputedStyle(button).backgroundColor)
+			});
+		}
 	};
 	return button;
 }

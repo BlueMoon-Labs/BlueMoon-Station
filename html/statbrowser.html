@@ -441,6 +441,7 @@ img { image-rendering: pixelated; }
 
 .emote-panel {
 	padding: 6px;
+	font-size: var(--emote-font-size, 12px);
 }
 .emote-toolbar,
 .emote-group-header {
@@ -504,17 +505,36 @@ img { image-rendering: pixelated; }
 .emote-button {
 	min-width: 0;
 	max-width: 100%;
+	padding: var(--emote-padding-v, 5px) var(--emote-padding-h, 10px);
+	background: var(--emote-button-bg, var(--bg-tertiary));
+	border-color: var(--emote-button-border, var(--border));
+	color: var(--emote-button-text, var(--text-primary));
 	text-align: left;
-	font-family: inherit;
+	font: inherit;
 	white-space: normal;
 	overflow-wrap: anywhere;
+}
+.emote-button:hover {
+	background: var(--emote-button-hover, var(--bg-hover));
 }
 .emote-button.emote-custom {
 	background: rgba(230, 90, 147, 0.22);
 	border-color: rgba(230, 90, 147, 0.65);
+	color: var(--text-primary);
 }
 .emote-button.emote-custom:hover {
 	background: rgba(230, 90, 147, 0.34);
+}
+.emote-button.emote-colored {
+	background: var(--emote-color);
+	border-color: var(--emote-color);
+	color: var(--emote-color-text);
+}
+.emote-button.emote-colored:hover {
+	background: color-mix(in srgb, var(--emote-color) 90%, var(--emote-color-text));
+}
+.emote-panel button:focus-visible {
+	outline-color: var(--emote-accent, var(--accent));
 }
 .emote-sortable {
 	touch-action: none;
@@ -525,13 +545,13 @@ img { image-rendering: pixelated; }
 	cursor: grabbing;
 }
 .emote-drop-before {
-	box-shadow: -2px 0 var(--accent);
+	box-shadow: -2px 0 var(--emote-accent, var(--accent));
 }
 .emote-drop-after {
-	box-shadow: 2px 0 var(--accent);
+	box-shadow: 2px 0 var(--emote-accent, var(--accent));
 }
 .emote-drop-group {
-	outline: 2px solid var(--accent);
+	outline: 2px solid var(--emote-accent, var(--accent));
 	outline-offset: -2px;
 }
 /* ===== Verb Links Style ===== */
@@ -1486,7 +1506,7 @@ var MC_KEY_SUBSYSTEMS = ["Atmospherics", "Garbage", "Machines", "Lighting", "Cli
 var SEARCH_ICON_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6.5" cy="6.5" r="5"/><line x1="10" y1="10" x2="15" y2="15"/></svg>';
 // Bridge protocol: must match STATBROWSER_PROTOCOL_VERSION in code/controllers/subsystem/statpanel.dm.
 // Bumped when the DM->JS payload shape changes incompatibly. Mismatch logs a warning and asks DM to reload.
-var EXPECTED_PROTOCOL_VERSION = 6;
+var EXPECTED_PROTOCOL_VERSION = 7;
 var STATPANEL_EMOTES_TAB = "Эмоции";
 
 ;
@@ -2155,6 +2175,8 @@ function getDefaultThemeState() {
 		verbGridColumns: "auto",
 		verbGridMinWidth: 135,
 		emoteGridColumns: "auto",
+		emoteButtonPadding: 5,
+		emoteFontSize: 12,
 		turfGridColumns: "auto",
 		mcGridColumns: "auto",
 		mcGridMinWidth: 200
@@ -2163,8 +2185,16 @@ function getDefaultThemeState() {
 
 var _SETTINGS_KEYS = ["verbLayout", "verbStyle", "hideVerbSearch", "verbPadding", "tabPadding", "compactMode",
 	"turfLayout", "turfIconSize", "turfHideIcons", "turfFontSize",
-	"verbGridColumns", "verbGridMinWidth", "emoteGridColumns", "turfGridColumns", "mcGridColumns", "mcGridMinWidth",
+	"verbGridColumns", "verbGridMinWidth", "emoteGridColumns", "emoteButtonPadding", "emoteFontSize", "turfGridColumns", "mcGridColumns", "mcGridMinWidth",
 	"fontFamily", "fontSize", "borderRadius", "customCSS"];
+
+var EMOTE_BUTTON_PALETTE = [
+	["--emote-button-bg", "Фон кнопок", "--bg-tertiary"],
+	["--emote-button-hover", "Фон при наведении", "--bg-hover"],
+	["--emote-button-text", "Текст кнопок", "--text-primary"],
+	["--emote-button-border", "Граница кнопок", "--border"],
+	["--emote-accent", "Акцент", "--accent"]
+];
 
 function getPresetDefaults(presetKey) {
 	var defaults = getDefaultThemeState();
@@ -2250,6 +2280,9 @@ function applyTheme(themeState) {
 	var root = document.documentElement;
 	var preset = _resolvePreset(themeState);
 	root.style.removeProperty("--font-sans");
+	for (var i = 0; i < EMOTE_BUTTON_PALETTE.length; i++) {
+		root.style.removeProperty(EMOTE_BUTTON_PALETTE[i][0]);
+	}
 	if (preset) {
 		for (var key in preset.vars) {
 			root.style.setProperty(key, preset.vars[key]);
@@ -2266,6 +2299,11 @@ function applyTheme(themeState) {
 	var vp = themeState.verbPadding != null ? themeState.verbPadding : 5;
 	root.style.setProperty("--verb-padding-v", vp + "px");
 	root.style.setProperty("--verb-padding-h", (vp * 2) + "px");
+	var emotePadding = Math.min(12, Math.max(1, Number(themeState.emoteButtonPadding) || 5));
+	var emoteFontSize = Math.min(24, Math.max(8, Number(themeState.emoteFontSize) || 12));
+	root.style.setProperty("--emote-padding-v", emotePadding + "px");
+	root.style.setProperty("--emote-padding-h", (emotePadding * 2) + "px");
+	root.style.setProperty("--emote-font-size", emoteFontSize + "px");
 	var tp = themeState.tabPadding != null ? themeState.tabPadding : 6;
 	root.style.setProperty("--tab-padding-v", tp + "px");
 	root.style.setProperty("--tab-padding-h", (tp * 2) + "px");
@@ -4032,18 +4070,28 @@ function drawEmoteItem(emote, group) {
 	});
 	button.dataset.group = group;
 	button.dataset.emote = emote.name;
+	if (entry && /^#[0-9a-f]{6}$/i.test(entry.color)) {
+		button.classList.add("emote-colored");
+		button.style.setProperty("--emote-color", entry.color);
+		button.style.setProperty("--emote-color-text", contrastRatio("#000000", entry.color) >= 4.5 ? "#000000" : "#FFFFFF");
+	} else if (entry && (entry.type === 2 || entry.type === 3)) {
+		button.classList.add("emote-custom");
+	}
 	if (entry && entry.type === 1) {
 		button.title = "*" + entry.key;
 	} else if (entry && entry.type === 2) {
-		button.classList.add("emote-custom");
 		button.title = "*" + entry.key + " | " + entry.message_override;
 	} else if (entry && entry.type === 3) {
-		button.classList.add("emote-custom");
 		button.title = entry.message;
 	}
 	button.oncontextmenu = function(event) {
 		event.preventDefault();
-		if (!emoteDrag || !emoteDrag.active) sendEmoteAction("contextAction", { name: emote.name });
+		if (!emoteDrag || !emoteDrag.active) {
+			sendEmoteAction("contextAction", {
+				name: emote.name,
+				defaultColor: normalizeToHex(getComputedStyle(button).backgroundColor)
+			});
+		}
 	};
 	return button;
 }
@@ -5333,6 +5381,42 @@ function set_settings_color(varName, color) {
 	if (_settingsActive) draw_settings();
 }
 
+function makeThemeColorInput(varName, label, color) {
+	var input = el("button", "settings-color-input");
+	input.type = "button";
+	var currentColor = normalizeToHex(color);
+	input.style.backgroundColor = currentColor;
+	input.title = label + ": " + currentColor;
+	input.setAttribute("aria-label", "Выбрать цвет: " + label);
+	input.onclick = function() {
+		byond_topic("?statbrowser_pick_color=" + encodeURIComponent(varName) + "&color=" + encodeURIComponent(currentColor));
+	};
+	return input;
+}
+
+function addEmoteSizeRow(parent, themeState, key, text, min, max) {
+	var row = el("label", "settings-row");
+	row.appendChild(el("span", "settings-label", text));
+	var slider = el("input", "settings-slider");
+	slider.type = "range";
+	slider.min = min;
+	slider.max = max;
+	slider.value = themeState[key];
+	var value = el("span", "settings-slider-value", slider.value + "px");
+	slider.oninput = function() {
+		themeState[key] = Number(slider.value);
+		value.textContent = slider.value + "px";
+		var wasPreset = themeState.preset;
+		markCustomIfModified(themeState);
+		saveTheme(themeState);
+		applyTheme(themeState);
+		if (themeState.preset !== wasPreset) draw_settings();
+	};
+	row.appendChild(slider);
+	row.appendChild(value);
+	parent.appendChild(row);
+}
+
 // Renders a "columns: Авто / 1..6" select row and (optionally) a "min cell width" slider row
 // for one grid surface. opts: { colLabel, colKey } [ + minLabel, minKey, minDefault, minMin, minMax, minStep ].
 // The min-width slider is greyed out when a fixed column count is chosen (it only affects "Авто" mode).
@@ -5490,17 +5574,7 @@ function draw_settings() {
 		(function(varName, label) {
 			var row = el("div", "settings-row");
 			row.appendChild(el("span", "settings-label", label));
-			var input = document.createElement("button");
-			input.type = "button";
-			input.className = "settings-color-input";
-			var currentColor = normalizeToHex(effective[varName] || "#000000");
-			input.style.backgroundColor = currentColor;
-			input.title = label + ": " + currentColor;
-			input.setAttribute("aria-label", "Выбрать цвет: " + label);
-			input.onclick = function() {
-				byond_topic("?statbrowser_pick_color=" + encodeURIComponent(varName) + "&color=" + encodeURIComponent(currentColor));
-			};
-			row.appendChild(input);
+			row.appendChild(makeThemeColorInput(varName, label, effective[varName]));
 			if (varName in COLOR_CONTRAST_PAIRS) {
 				var badge = el("span", "settings-contrast-badge", "");
 				row.appendChild(badge);
@@ -5764,6 +5838,27 @@ function draw_settings() {
 		colLabel: "Расположение кнопок",
 		colKey: "emoteGridColumns",
 		autoLabel: "Плотно по ширине"
+	});
+	addEmoteSizeRow(emoteSection, themeState, "emoteButtonPadding", "Размер кнопок", 1, 12);
+	addEmoteSizeRow(emoteSection, themeState, "emoteFontSize", "Размер шрифта", 8, 24);
+	EMOTE_BUTTON_PALETTE.forEach(function(option) {
+		var key = option[0];
+		var label = option[1];
+		var row = el("div", "settings-row");
+		row.appendChild(el("span", "settings-label", label));
+		row.appendChild(makeThemeColorInput(key, label, effective[key] || effective[option[2]]));
+		if (key in themeState.overrides) {
+			var reset = el("button", "settings-toggle-btn", "Сбросить");
+			reset.type = "button";
+			reset.onclick = function() {
+				delete themeState.overrides[key];
+				saveTheme(themeState);
+				applyTheme(themeState);
+				draw_settings();
+			};
+			row.appendChild(reset);
+		}
+		emoteSection.appendChild(row);
 	});
 	panel.appendChild(emoteSection);
 

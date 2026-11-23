@@ -231,6 +231,7 @@
 
 .emote-panel {
 	padding: 6px;
+	font-size: var(--emote-font-size, 12px);
 }
 .emote-toolbar,
 .emote-group-header {
@@ -294,17 +295,36 @@
 .emote-button {
 	min-width: 0;
 	max-width: 100%;
+	padding: var(--emote-padding-v, 5px) var(--emote-padding-h, 10px);
+	background: var(--emote-button-bg, var(--bg-tertiary));
+	border-color: var(--emote-button-border, var(--border));
+	color: var(--emote-button-text, var(--text-primary));
 	text-align: left;
-	font-family: inherit;
+	font: inherit;
 	white-space: normal;
 	overflow-wrap: anywhere;
+}
+.emote-button:hover {
+	background: var(--emote-button-hover, var(--bg-hover));
 }
 .emote-button.emote-custom {
 	background: rgba(230, 90, 147, 0.22);
 	border-color: rgba(230, 90, 147, 0.65);
+	color: var(--text-primary);
 }
 .emote-button.emote-custom:hover {
 	background: rgba(230, 90, 147, 0.34);
+}
+.emote-button.emote-colored {
+	background: var(--emote-color);
+	border-color: var(--emote-color);
+	color: var(--emote-color-text);
+}
+.emote-button.emote-colored:hover {
+	background: color-mix(in srgb, var(--emote-color) 90%, var(--emote-color-text));
+}
+.emote-panel button:focus-visible {
+	outline-color: var(--emote-accent, var(--accent));
 }
 .emote-sortable {
 	touch-action: none;
@@ -315,13 +335,13 @@
 	cursor: grabbing;
 }
 .emote-drop-before {
-	box-shadow: -2px 0 var(--accent);
+	box-shadow: -2px 0 var(--emote-accent, var(--accent));
 }
 .emote-drop-after {
-	box-shadow: 2px 0 var(--accent);
+	box-shadow: 2px 0 var(--emote-accent, var(--accent));
 }
 .emote-drop-group {
-	outline: 2px solid var(--accent);
+	outline: 2px solid var(--emote-accent, var(--accent));
 	outline-offset: -2px;
 }
 /* ===== Verb Links Style ===== */

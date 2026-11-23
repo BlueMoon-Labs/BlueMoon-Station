@@ -51,7 +51,7 @@
 
 	return emotes_handle_action(type, payload)
 
-/datum/tgui_panel/proc/emotes_handle_action(type, payload)
+/datum/tgui_panel/proc/emotes_handle_action(type, payload, from_statpanel = FALSE)
 	var/list/panel = client.prefs.custom_emote_panel
 
 	switch (type)
@@ -221,20 +221,19 @@
 
 			var/list/actions = list()
 			switch (emote_type)
-				if (TGUI_PANEL_EMOTE_TYPE_DEFAULT)
-					actions.Add(list("Переименовать", "Кастомизировать", "Удалить"))
-
-				if (TGUI_PANEL_EMOTE_TYPE_CUSTOM)
-					actions.Add(list("Переименовать", "Изменить текст", "Удалить"))
-
-				if (TGUI_PANEL_EMOTE_TYPE_ME)
-					actions.Add(list("Переименовать", "Изменить текст", "Удалить"))
+				if (TGUI_PANEL_EMOTE_TYPE_DEFAULT, TGUI_PANEL_EMOTE_TYPE_CUSTOM, TGUI_PANEL_EMOTE_TYPE_ME)
+					actions.Add("Переименовать", emote_type == TGUI_PANEL_EMOTE_TYPE_DEFAULT ? "Кастомизировать" : "Изменить текст")
+					if(from_statpanel)
+						actions += "Цвет кнопки"
+						if(entry["color"])
+							actions += "Сбросить цвет кнопки"
 				else
 					to_chat(client, span_warning("Эмоция не имеет типа, поэтому её можно только удалить."))
-					actions.Add(list("Удалить"))
+			actions += "Удалить"
 
 			var/mob/user = client.mob
-			var/action = tgui_alert(user, "Что вы хотите сделать с эмоцией \"[emote_name]\"?", "Выбор действия", actions)
+			var/prompt = "Что вы хотите сделать с эмоцией «[emote_name]»?"
+			var/action = from_statpanel ? tgui_input_list(user, prompt, "Выбор действия", actions) : tgui_alert(user, prompt, "Выбор действия", actions)
 			if(!emotes_panel_is_current(panel, user) || !(emote_name in panel) || panel[emote_name] != entry)
 				return TRUE
 
@@ -244,10 +243,13 @@
 					changed = emotes_remove(emote_name)
 				if ("Переименовать")
 					changed = emotes_rename(emote_name)
-				if ("Кастомизировать")
-					changed = emotes_add_custom_text(emote_name)
-				if ("Изменить текст")
+				if ("Кастомизировать", "Изменить текст")
 					changed = emotes_change_custom_text(emote_name)
+				if ("Цвет кнопки")
+					changed = emotes_change_button_color(emote_name, payload["defaultColor"])
+				if ("Сбросить цвет кнопки")
+					entry -= "color"
+					changed = TRUE
 
 			if(changed)
 				client.prefs.save_character(TRUE)
@@ -282,27 +284,6 @@
 		return FALSE
 	return panel.Remove(emote_name)
 
-/datum/tgui_panel/proc/emotes_add_custom_text(emote_name)
-	var/mob/user = client.mob
-	var/list/panel = client.prefs.custom_emote_panel
-	var/list/entry = panel[emote_name]
-	if (!islist(entry))
-		to_chat(client, span_warning("Эмоции [emote_name] нет в вашей панели!"))
-		return FALSE
-
-	var/emote_type = entry["type"]
-	if (emote_type != TGUI_PANEL_EMOTE_TYPE_DEFAULT)
-		to_chat(client, span_warning("Вы можете добавить текст только обычным эмоциям!"))
-		return FALSE
-
-	var/message_override = strip_control_chars(tgui_input_text(user, "Выберите новый кастомный текст для эмоции [emote_name]:", "Кастомный текст", "", TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE))
-	if (!message_override || !emotes_panel_is_current(panel, user) || panel[emote_name] != entry || entry["type"] != emote_type)
-		return FALSE
-	entry["type"] = TGUI_PANEL_EMOTE_TYPE_CUSTOM
-	entry["message_override"] = message_override
-
-	return TRUE
-
 /datum/tgui_panel/proc/emotes_change_custom_text(emote_name)
 	var/mob/user = client.mob
 	var/list/panel = client.prefs.custom_emote_panel
@@ -312,21 +293,37 @@
 		return FALSE
 
 	var/emote_type = entry["type"]
-	var/message_field
-	if (emote_type == TGUI_PANEL_EMOTE_TYPE_CUSTOM)
-		message_field = "message_override"
-	else if (emote_type == TGUI_PANEL_EMOTE_TYPE_ME)
-		message_field = "message"
-	else
-		to_chat(client, span_warning("У этой эмоции ещё нет кастомного текста!"))
-		return FALSE
-
+	var/is_me = emote_type == TGUI_PANEL_EMOTE_TYPE_ME
+	var/message_field = is_me ? "message" : "message_override"
 	var/old_message = entry[message_field]
-	var/message_override = strip_control_chars(tgui_input_text(user, "Выберите новый кастомный текст для эмоции [emote_name]:", "Кастомный текст", old_message, TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE))
-	if (!message_override || !emotes_panel_is_current(panel, user) || panel[emote_name] != entry || entry[message_field] != old_message)
+	var/prompt = is_me ? "Введите текст эмоции «[emote_name]»." : "Введите текст эмоции «[emote_name]». Подтвердите пустое поле, чтобы вернуть стандартный текст."
+	var/new_message = tgui_input_text(user, prompt, "Текст эмоции", html_decode(old_message || ""), TGUI_PANEL_MAX_EMOTE_LENGTH, multiline = TRUE, encode = TRUE)
+	if(isnull(new_message) || !emotes_panel_is_current(panel, user) || panel[emote_name] != entry || entry["type"] != emote_type || entry[message_field] != old_message)
 		return FALSE
-	entry[message_field] = message_override
+	if(!length(new_message))
+		if(is_me)
+			to_chat(client, span_warning("Для эмоции *me нужен текст."))
+			return FALSE
+		if(emote_type == TGUI_PANEL_EMOTE_TYPE_DEFAULT)
+			return FALSE
+		entry["type"] = TGUI_PANEL_EMOTE_TYPE_DEFAULT
+		entry -= "message_override"
+		return TRUE
 
+	entry[message_field] = new_message
+	if(!is_me)
+		entry["type"] = TGUI_PANEL_EMOTE_TYPE_CUSTOM
+	return TRUE
+
+/datum/tgui_panel/proc/emotes_change_button_color(emote_name, default_color)
+	var/mob/user = client.mob
+	var/list/panel = client.prefs.custom_emote_panel
+	var/list/entry = panel[emote_name]
+	var/current_color = entry["color"]
+	var/new_color = tgui_input_color(user, "Выберите цвет кнопки «[emote_name]».", "Цвет кнопки эмоции", current_color || default_color)
+	if(!new_color || new_color == current_color || !emotes_panel_is_current(panel, user) || panel[emote_name] != entry || entry["color"] != current_color)
+		return FALSE
+	entry["color"] = new_color
 	return TRUE
 
 /datum/tgui_panel/proc/emotes_send_list()
@@ -358,7 +355,7 @@
 	var/changed = FALSE
 	switch(action)
 		if("emotes/execute", "emotes/create", "emotes/contextAction")
-			return emotes_handle_action(action, params)
+			return emotes_handle_action(action, params, from_statpanel = TRUE)
 		if("emotes/move")
 			changed = emotes_move(params["name"], params["group"] || "", params["anchor"], params["after"] == "1")
 		if("emotes/createGroup")
@@ -527,8 +524,14 @@
 		if(islist(emote))
 			if(emote["message"])
 				emote["message"] = strip_control_chars(emote["message"])
-			if(emote["message_override"])
+			if(istext(emote["message_override"]) && length(emote["message_override"]))
 				emote["message_override"] = strip_control_chars(emote["message_override"])
+			if(emote["type"] == TGUI_PANEL_EMOTE_TYPE_CUSTOM && (!istext(emote["message_override"]) || !length(trim(emote["message_override"]))))
+				emote["type"] = TGUI_PANEL_EMOTE_TYPE_DEFAULT
+				emote -= "message_override"
+			var/color = emote["color"]
+			if(!istext(color) || !GLOB.is_color.Find(color))
+				emote -= "color"
 		cleaned[clean_name] = emote
 	return cleaned
 

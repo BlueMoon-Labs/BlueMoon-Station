@@ -233,6 +233,8 @@ function getDefaultThemeState() {
 		verbGridColumns: "auto",
 		verbGridMinWidth: 135,
 		emoteGridColumns: "auto",
+		emoteButtonPadding: 5,
+		emoteFontSize: 12,
 		turfGridColumns: "auto",
 		mcGridColumns: "auto",
 		mcGridMinWidth: 200
@@ -241,8 +243,16 @@ function getDefaultThemeState() {
 
 var _SETTINGS_KEYS = ["verbLayout", "verbStyle", "hideVerbSearch", "verbPadding", "tabPadding", "compactMode",
 	"turfLayout", "turfIconSize", "turfHideIcons", "turfFontSize",
-	"verbGridColumns", "verbGridMinWidth", "emoteGridColumns", "turfGridColumns", "mcGridColumns", "mcGridMinWidth",
+	"verbGridColumns", "verbGridMinWidth", "emoteGridColumns", "emoteButtonPadding", "emoteFontSize", "turfGridColumns", "mcGridColumns", "mcGridMinWidth",
 	"fontFamily", "fontSize", "borderRadius", "customCSS"];
+
+var EMOTE_BUTTON_PALETTE = [
+	["--emote-button-bg", "Фон кнопок", "--bg-tertiary"],
+	["--emote-button-hover", "Фон при наведении", "--bg-hover"],
+	["--emote-button-text", "Текст кнопок", "--text-primary"],
+	["--emote-button-border", "Граница кнопок", "--border"],
+	["--emote-accent", "Акцент", "--accent"]
+];
 
 function getPresetDefaults(presetKey) {
 	var defaults = getDefaultThemeState();
@@ -328,6 +338,9 @@ function applyTheme(themeState) {
 	var root = document.documentElement;
 	var preset = _resolvePreset(themeState);
 	root.style.removeProperty("--font-sans");
+	for (var i = 0; i < EMOTE_BUTTON_PALETTE.length; i++) {
+		root.style.removeProperty(EMOTE_BUTTON_PALETTE[i][0]);
+	}
 	if (preset) {
 		for (var key in preset.vars) {
 			root.style.setProperty(key, preset.vars[key]);
@@ -344,6 +357,11 @@ function applyTheme(themeState) {
 	var vp = themeState.verbPadding != null ? themeState.verbPadding : 5;
 	root.style.setProperty("--verb-padding-v", vp + "px");
 	root.style.setProperty("--verb-padding-h", (vp * 2) + "px");
+	var emotePadding = Math.min(12, Math.max(1, Number(themeState.emoteButtonPadding) || 5));
+	var emoteFontSize = Math.min(24, Math.max(8, Number(themeState.emoteFontSize) || 12));
+	root.style.setProperty("--emote-padding-v", emotePadding + "px");
+	root.style.setProperty("--emote-padding-h", (emotePadding * 2) + "px");
+	root.style.setProperty("--emote-font-size", emoteFontSize + "px");
 	var tp = themeState.tabPadding != null ? themeState.tabPadding : 6;
 	root.style.setProperty("--tab-padding-v", tp + "px");
 	root.style.setProperty("--tab-padding-h", (tp * 2) + "px");
