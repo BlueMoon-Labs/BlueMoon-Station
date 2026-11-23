@@ -1,33 +1,33 @@
-/datum/preferences/proc/bluemoon_character_pref_load(savefile/S) //TODO: modularize our other savefile edits... maybe?
-	S["pda_style"] >> pda_style
-	S["pda_color"] >> pda_color
-	S["pda_skin"] >> pda_skin
-	S["pda_ringtone"] >> pda_ringtone
-	S["pda_theme"] >> pda_theme
+/datum/preferences/proc/bluemoon_character_pref_load(savefile/S, datum/player_save_document/document) //TODO: modularize our other savefile edits... maybe?
+	READ_PLAYER_SAVE(S, document, "pda_style", pda_style)
+	READ_PLAYER_SAVE(S, document, "pda_color", pda_color)
+	READ_PLAYER_SAVE(S, document, "pda_skin", pda_skin)
+	READ_PLAYER_SAVE(S, document, "pda_ringtone", pda_ringtone)
+	READ_PLAYER_SAVE(S, document, "pda_theme", pda_theme)
 
-	S["silicon_lawset"] >> silicon_lawset
-	S["body_weight"] >> body_weight
-	S["normalized_size"] >> features["normalized_size"]
-	S["custom_laugh"] >> custom_laugh
-	S["antag_opt_in_level"] >> antag_opt_in_level
-
+	READ_PLAYER_SAVE(S, document, "silicon_lawset", silicon_lawset)
+	READ_PLAYER_SAVE(S, document, "body_weight", body_weight)
+	READ_PLAYER_SAVE(S, document, "normalized_size", features["normalized_size"])
+	READ_PLAYER_SAVE(S, document, "custom_laugh", custom_laugh)
+	READ_PLAYER_SAVE(S, document, "antag_opt_in_level", antag_opt_in_level)
 
 	var/list/loaded_moan_sounds
-	S["custom_moan_sounds"] >> loaded_moan_sounds
+	READ_PLAYER_SAVE(S, document, "custom_moan_sounds", loaded_moan_sounds)
 	var/loaded_moan_toggle
-	S["use_custom_moan_sounds"] >> loaded_moan_toggle
+	READ_PLAYER_SAVE(S, document, "use_custom_moan_sounds", loaded_moan_toggle)
+	// Старые стоны лежат в корне аккаунта; в слот они попадут со следующей записью персонажа.
 	if(isnull(loaded_moan_sounds) || isnull(loaded_moan_toggle))
-		var/current_dir = S.cd
-		S.cd = "/"
-		if(isnull(loaded_moan_sounds))
-			S["custom_moan_sounds"] >> loaded_moan_sounds
-		if(isnull(loaded_moan_toggle))
-			S["use_custom_moan_sounds"] >> loaded_moan_toggle
-		S.cd = current_dir
-		if(!isnull(loaded_moan_sounds))
-			WRITE_FILE(S["custom_moan_sounds"], loaded_moan_sounds)
-		if(!isnull(loaded_moan_toggle))
-			WRITE_FILE(S["use_custom_moan_sounds"], loaded_moan_toggle)
+		var/datum/player_save_document/root = document ? open_player_document() : null
+		if(S || root)
+			var/current_dir = S?.cd
+			if(S)
+				S.cd = "/"
+			if(isnull(loaded_moan_sounds))
+				READ_PLAYER_SAVE(S, root, "custom_moan_sounds", loaded_moan_sounds)
+			if(isnull(loaded_moan_toggle))
+				READ_PLAYER_SAVE(S, root, "use_custom_moan_sounds", loaded_moan_toggle)
+			if(S)
+				S.cd = current_dir
 	custom_moan_sounds = sanitize_custom_moan_sounds(loaded_moan_sounds)
 	use_custom_moan_sounds = sanitize_integer(loaded_moan_toggle, 0, 1, initial(use_custom_moan_sounds))
 
@@ -46,27 +46,45 @@
 	custom_laugh = sanitize_inlist(custom_laugh, GLOB.mob_laughs, "Default")
 	antag_opt_in_level = sanitize_antag_opt_in_level(antag_opt_in_level)
 
-/datum/preferences/proc/bluemoon_character_pref_save(savefile/S) //TODO: modularize our other savefile edits... maybe?
-	WRITE_FILE(S["pda_style"], pda_style)
-	WRITE_FILE(S["pda_color"], pda_color)
-	WRITE_FILE(S["pda_skin"], pda_skin)
-	WRITE_FILE(S["pda_ringtone"], pda_ringtone)
-	WRITE_FILE(S["pda_theme"], pda_theme)
+/datum/preferences/proc/bluemoon_character_pref_save(savefile/S, datum/player_save_document/document) //TODO: modularize our other savefile edits... maybe?
+	WRITE_PLAYER_SAVE(S, document, "pda_style", pda_style)
+	WRITE_PLAYER_SAVE(S, document, "pda_color", pda_color)
+	WRITE_PLAYER_SAVE(S, document, "pda_skin", pda_skin)
+	WRITE_PLAYER_SAVE(S, document, "pda_ringtone", pda_ringtone)
+	WRITE_PLAYER_SAVE(S, document, "pda_theme", pda_theme)
 
-	WRITE_FILE(S["silicon_lawset"], silicon_lawset)
-	WRITE_FILE(S["body_weight"], body_weight)
-	WRITE_FILE(S["normalized_size"], features["normalized_size"])
-	WRITE_FILE(S["custom_laugh"], custom_laugh)
-	WRITE_FILE(S["antag_opt_in_level"], antag_opt_in_level)
+	WRITE_PLAYER_SAVE(S, document, "silicon_lawset", silicon_lawset)
+	WRITE_PLAYER_SAVE(S, document, "body_weight", body_weight)
+	WRITE_PLAYER_SAVE(S, document, "normalized_size", features["normalized_size"])
+	WRITE_PLAYER_SAVE(S, document, "custom_laugh", custom_laugh)
+	WRITE_PLAYER_SAVE(S, document, "antag_opt_in_level", antag_opt_in_level)
 
-	WRITE_FILE(S["use_custom_moan_sounds"], use_custom_moan_sounds)
-	WRITE_FILE(S["custom_moan_sounds"], custom_moan_sounds)
+	WRITE_PLAYER_SAVE(S, document, "use_custom_moan_sounds", use_custom_moan_sounds)
+	// Пишем пути текстом: файл-ресурс вшивал бы в сейв весь .ogg и не проходил экспорт персонажа.
+	var/list/moan_keys = list()
+	for(var/moan in SANITIZE_LIST(custom_moan_sounds))
+		moan_keys += "[moan]"
+	WRITE_PLAYER_SAVE(S, document, "custom_moan_sounds", moan_keys)
+
+/// Звук по его пути; старые сейвы хранят файл, новые - текст.
+/proc/custom_moan_sound_catalog()
+	var/static/list/catalog
+	if(!catalog)
+		catalog = list()
+		for(var/moan in GLOB.lewd_moans_male + GLOB.lewd_moans_female + GLOB.lewd_softmoans_female + GLOB.lewd_purr_sounds + GLOB.lewd_meow_sounds + GLOB.lewd_fox_sounds + GLOB.lewd_dog_sounds + GLOB.lewd_bird_sounds + GLOB.lewd_robot_sounds + GLOB.lewd_insect_sounds + GLOB.lewd_scream_female + GLOB.lewd_scream_male + GLOB.lewd_scream_gachi)
+			catalog["[moan]"] = moan
+		for(var/name in GLOB.lewd_other_animal_sounds)
+			var/moan = GLOB.lewd_other_animal_sounds[name]
+			catalog["[moan]"] = moan
+	return catalog
 
 /datum/preferences/proc/sanitize_custom_moan_sounds(list/moan_sounds)
-	var/list/valid_moan_paths = GLOB.lewd_moans_male + GLOB.lewd_moans_female + GLOB.lewd_softmoans_female + GLOB.lewd_purr_sounds + GLOB.lewd_meow_sounds + GLOB.lewd_fox_sounds + GLOB.lewd_dog_sounds + GLOB.lewd_bird_sounds + GLOB.lewd_robot_sounds + GLOB.lewd_insect_sounds + GLOB.lewd_scream_female + GLOB.lewd_scream_male + GLOB.lewd_scream_gachi
-	for(var/name in GLOB.lewd_other_animal_sounds)
-		valid_moan_paths += GLOB.lewd_other_animal_sounds[name]
-	return SANITIZE_LIST(moan_sounds) & valid_moan_paths
+	var/list/catalog = custom_moan_sound_catalog()
+	. = list()
+	for(var/moan in SANITIZE_LIST(moan_sounds))
+		var/resolved = isnull(moan) ? null : catalog["[moan]"]
+		if(resolved)
+			. += resolved
 
 /obj/item/modular_computer/pda/proc/update_style(client/C)
 	// pda_color, update_ringtone(), skin_data, pda_style, device_theme все передаются через update_pda_prefs()
@@ -92,7 +110,7 @@
 	if(current_version < 71)
 		if(path && SSmetadollars)
 			var/legacy_md = bm_read_metadollars_from_savefile_path(path)
-			if(!legacy_md)
+			if(!legacy_md && !fexists("[path].json") && !fexists("[path].json.recovery"))
 				legacy_md = bm_read_metadollars_from_savefile_path("[path].updatebac")
 			if(legacy_md > 0)
 				var/ck = bm_ckey_from_prefs_path(path)

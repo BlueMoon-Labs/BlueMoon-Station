@@ -24,27 +24,13 @@
 	var/list/data = list()
 	// BLUEMOON EDIT START
 	var/static/list/categorys = list("library", "library_secure", "library_private", "library_large", "library_large_private")
-	var/is_admin = check_rights_for(user?.client, R_DEBUG)
-	if(!islist(SSpersistence.paintings) || !length(SSpersistence.paintings))
-		SSpersistence.LoadPaintings()
 	var/list/paintings_store = islist(SSpersistence.paintings) ? SSpersistence.paintings : null
 	for(var/category_name in categorys)
 		var/list/paintings = paintings_store?[category_name]
-		if(islist(paintings))
-			var/list/filtered = list()
-			for(var/list/entry in paintings)
-				var/hidden = entry["hidden"]
-				var/is_hidden = hidden && hidden != 0 && hidden != "0" && hidden != "false"
-				// Скрытые картины видны только админам (чтобы они могли восстановить)
-				if(!is_hidden || is_admin)
-					filtered += entry
-			data[category_name] = filtered
-		else
-			data[category_name] = list()
+		data[category_name] = islist(paintings) ? paintings : list()
 	var/list/favorites = user?.client?.prefs?.favorite_paintings_md5
 	data["favorite_paintings_md5"] = islist(favorites) ? favorites : list()
-	data["is_admin"] = is_admin
-	data["user_ckey"] = user?.ckey
+	data["is_admin"] = check_rights_for(user?.client, R_DEBUG)
 	// BLUEMOON EDIT END
 	return data
 
@@ -82,36 +68,13 @@
 			L.client.prefs.save_preferences()
 
 			return TRUE
-		if("rename_painting")
+		if("delete_painting")
 			var/mob/user = usr
-			var/asset_prefix = params["asset_prefix"]
-			var/md5 = params["md5"]
-			var/current_title = params["current_title"]
-			if(!asset_prefix || !md5)
+			if(!check_rights_for(user?.client, R_DEBUG))
 				return
-			var/list/current_list = SSpersistence.paintings[asset_prefix]
-			if(!current_list)
+			var/choice = tgui_alert(user, "Вы уверены, что хотите удалить картину? Действие необратимо!", "Удаление картины из БД", list("Нет", "Да"))
+			if(choice != "Да")
 				return
-			var/new_title = stripped_input(user, "Введите новое название для картины:")
-			if(!new_title || new_title == current_title)
-				return
-			var/portrait_to_rename
-			for(var/i in 1 to length(current_list))
-				if(current_list[i]["md5"] == md5)
-					portrait_to_rename = current_list[i]
-					break
-			if(!portrait_to_rename)
-				return
-			var/author_ckey = portrait_to_rename["ckey"]
-			var/is_owner = author_ckey == user?.ckey
-			if(!is_owner)
-				return
-			portrait_to_rename["title"] = new_title
-			to_chat(usr, span_notice("Картина переименована в [new_title]."))
-			return TRUE
-
-		if("hide_painting")
-			var/mob/user = usr
 			var/asset_prefix = params["asset_prefix"]
 			var/md5 = params["md5"]
 			if(!asset_prefix || !md5)
@@ -120,62 +83,23 @@
 			if(!current_list)
 				return
 			var/list/chosen_portrait
-			var/chosen_idx
 			for(var/i in 1 to length(current_list))
 				var/list/entry = current_list[i]
 				if(entry["md5"] == md5)
 					chosen_portrait = entry
-					chosen_idx = i
+					current_list.Cut(i, i + 1)
 					break
 			if(!chosen_portrait)
 				return
-			var/author_ckey = chosen_portrait["ckey"]
-			var/is_owner = author_ckey == user?.ckey
-			if(!check_rights_for(user?.client, R_DEBUG) && !is_owner)
-				return
-			if(chosen_portrait["hidden"])
-				return
-			var/choice = tgui_alert(user, "Вы УВЕРЕНЫ, что хотите скрыть картину? Её можно будет восстановить позже.", "Скрытие картины", list("Нет", "Да"))
-			if(choice != "Да")
-				return
-			// Race condition safecheck: Перепроверка портрета на индексе, если не совпало, мы не трогаем ничего
-			if(!current_list[chosen_idx] || current_list[chosen_idx]["md5"] != chosen_portrait["md5"] || current_list[chosen_idx]["ckey"] != chosen_portrait["ckey"])
-				return
-			chosen_portrait["hidden"] = TRUE
-			// Убираем картину из всех рамок в мире, где она отображается
+			var/author = chosen_portrait["ckey"] || chosen_portrait["author"] || "unknown"
+			var/png = "data/paintings/[asset_prefix]/[md5].png"
+			fdel(png)
 			for(var/obj/structure/sign/painting/P in SSpersistence.painting_frames)
 				if(P.current_canvas && md5(P.current_canvas.get_data_string()) == md5)
 					QDEL_NULL(P.current_canvas)
 					P.update_icon()
-			var/author = chosen_portrait["ckey"] || chosen_portrait["author"] || "unknown"
-			log_admin("[key_name(user)] hid a persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author].")
-			message_admins(span_notice("[key_name_admin(user)] hid persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author]."))
-			return TRUE
-
-		if("unhide_painting")
-			var/mob/user = usr
-			if(!check_rights_for(user?.client, R_DEBUG))
-				return
-			var/asset_prefix = params["asset_prefix"]
-			var/md5 = params["md5"]
-			if(!asset_prefix || !md5)
-				return
-			var/list/current_list = SSpersistence.paintings[asset_prefix]
-			if(!current_list)
-				return
-			var/list/chosen_portrait
-			for(var/list/entry as anything in current_list)
-				if(entry["md5"] == md5)
-					chosen_portrait = entry
-					break
-			if(!chosen_portrait)
-				return
-			if(!chosen_portrait["hidden"])
-				return
-			chosen_portrait["hidden"] = FALSE
-			var/author = chosen_portrait["ckey"] || chosen_portrait["author"] || "unknown"
-			log_admin("[key_name(user)] unhid a persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author].")
-			message_admins(span_notice("[key_name_admin(user)] unhid persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author]."))
+			log_admin("[key_name(user)] deleted a persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author].")
+			message_admins(span_notice("[key_name_admin(user)] удалил сохранённую картину «[chosen_portrait["title"]]» автора [author] из категории [asset_prefix]."))
 			return TRUE
 		if("select")
 			//printer check!

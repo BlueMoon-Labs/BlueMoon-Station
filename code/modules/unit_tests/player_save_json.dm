@@ -1,0 +1,2699 @@
+/datum/unit_test/player_save_json
+	var/test_path
+	var/datum/player_save_json/storage
+	var/datum/preferences/owned_preferences
+	var/list/saved_roundstart_race_names
+	var/transfer_species_prepared = FALSE
+
+/datum/unit_test/player_save_json/Run()
+	var/savefile/empty = prepare()
+	TEST_ASSERT_NOTNULL(empty, "не удалось открыть новое хранилище")
+	TEST_ASSERT(!storage.exists(), "чтение нового хранилища создало файл на диске")
+	TEST_ASSERT_EQUAL(length(empty.dir), 0, "новое хранилище содержит посторонние поля")
+
+/datum/unit_test/player_save_json/proc/prepare()
+	test_path = "data/player_save_tests/[md5("[type]")].sav"
+	for(var/suffix in list("", ".json", ".json.recovery", ".json.import", ".json.legacy", ".journal"))
+		fdel("[test_path][suffix]")
+	fdel("[test_path].json.d/")
+	storage = new(test_path)
+	return storage.open()
+
+/datum/unit_test/player_save_json/Destroy()
+	if(transfer_species_prepared)
+		GLOB.roundstart_race_names = saved_roundstart_race_names
+	if(owned_preferences)
+		owned_preferences.path = null
+	for(var/suffix in list("", ".json", ".json.recovery", ".json.import", ".json.legacy", ".journal"))
+		fdel("[test_path][suffix]")
+	fdel("[test_path].json.d/")
+	storage = null
+	return ..()
+
+/datum/unit_test/player_save_json/proc/new_preferences()
+	owned_preferences = new
+	allocated += owned_preferences
+	owned_preferences.path = test_path
+	return owned_preferences
+
+/// Минимальный конфиг CI не задаёт доступные виды для редактора персонажа.
+/datum/unit_test/player_save_json/proc/prepare_transfer_species()
+	saved_roundstart_race_names = GLOB.roundstart_race_names
+	transfer_species_prepared = TRUE
+	GLOB.roundstart_race_names = list("Human" = SPECIES_HUMAN)
+
+/// Сравниваем содержимое узлов, не завися от порядка полей JSON-объекта.
+/datum/unit_test/player_save_json/proc/patch_difference(list/expected, list/actual)
+	for(var/key in expected)
+		var/list/wanted = expected[key]
+		var/list/found = actual[key]
+		if(!found || json_encode(wanted["value"]) != json_encode(found["value"]))
+			return key
+		var/nested = patch_difference(wanted["children"], found["children"])
+		if(nested)
+			return "[key]/[nested]"
+	return null
+/// Диагностика должна читать даже повреждённые файлы и не затрагивать оригиналы.
+/datum/unit_test/player_save_json/debug_inspection
+	var/debug_directory
+
+/datum/unit_test/player_save_json/debug_inspection/Destroy()
+	if(debug_directory)
+		fdel(debug_directory)
+	return ..()
+
+/datum/unit_test/player_save_json/debug_inspection/Run()
+	prepare()
+	debug_directory = "[test_path].debug/"
+	TEST_ASSERT_NULL(player_save_debug_directory("../"), "пустой ckey превратился в путь")
+	TEST_ASSERT_EQUAL(player_save_debug_directory("Some_Player"), "data/player_saves/s/someplayer/", "ckey не нормализован")
+	TEST_ASSERT_EQUAL(player_save_debug_directory("../../Other"), "data/player_saves/o/other/", "ckey позволил выйти из каталога игрока")
+	var/list/expected = list("preferences.sav", "preferences.sav.updatebac", "preferences.sav.json", "preferences.sav.json.recovery", "preferences.sav.json.d/orphan.sav.json", "preferences.sav.json.d/orphan.sav.json.recovery", "vore/character_1_v2.json")
+	for(var/relative_path in expected)
+		text2file("{broken JSON <script>alert(1)</script>", "[debug_directory][relative_path]")
+	text2file("не сейв", "[debug_directory]unrelated.txt")
+	var/list/found = player_save_debug_files(debug_directory)
+	TEST_ASSERT_EQUAL(found.len, expected.len, "список файлов потерял сейв или включил посторонний файл")
+	for(var/relative_path in expected)
+		TEST_ASSERT(relative_path in found, "не найден [relative_path]")
+	var/json_path = "[debug_directory]preferences.sav.json"
+	var/before = rustg_hash_file(RUSTG_HASH_MD5, json_path)
+	TEST_ASSERT_EQUAL(player_save_debug_text(json_path), file2text(json_path), "повреждённый JSON нельзя прочитать дословно")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, json_path), before, "просмотр изменил JSON")
+	var/legacy_path = "[debug_directory]preferences.sav"
+	fdel(legacy_path)
+	var/savefile/legacy = new(legacy_path)
+	legacy["version"] << 79
+	legacy.cd = "/character1"
+	legacy["real_name"] << "Debug Character"
+	legacy.Flush()
+	legacy = null
+	before = rustg_hash_file(RUSTG_HASH_MD5, legacy_path)
+	var/preview = player_save_debug_text(legacy_path)
+	TEST_ASSERT(findtext(preview, "Debug Character"), "в просмотре старого сейва нет персонажа")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, legacy_path), before, "просмотр изменил исходный SAV")
+	found = player_save_debug_files(debug_directory)
+	TEST_ASSERT_EQUAL(found.len, expected.len, "просмотр создал лишние файлы рядом с сейвом")
+
+/datum/unit_test/player_save_json/roundtrip/Run()
+	var/savefile/source = prepare()
+	var/list/mixed = list("повтор", "ключ" = 0, "повтор", null, 0, 1.23456789, /obj/item)
+	mixed += list(list("вложенный" = list(1, null, 3)))
+	source["version"] << 80
+	source["mixed"] << mixed
+	source["empty"] << list()
+	source["null"] << null
+	source["formatted"] << "\proper Тест %ff %15 %25"
+	source.cd = "/character128/retired_module"
+	source["текст"] << "Кириллица\n\"кавычки\" \\ слеш"
+	TEST_ASSERT(storage.commit(source), "JSON не записан: [storage.error]")
+	TEST_ASSERT_EQUAL(source.cd, "/character128/retired_module", "запись изменила текущую директорию загрузчика")
+	var/datum/player_save_json/reopened = new(test_path)
+	var/savefile/restored = reopened.open()
+	TEST_ASSERT_NOTNULL(restored, "JSON не открылся повторно")
+	var/list/read_mixed
+	restored["mixed"] >> read_mixed
+	TEST_ASSERT_EQUAL(read_mixed.len, mixed.len, "изменилось число элементов смешанного списка")
+	TEST_ASSERT_EQUAL(read_mixed[1], read_mixed[3], "потерян повтор элемента")
+	TEST_ASSERT_EQUAL(read_mixed["ключ"], 0, "нулевое ассоциативное значение потеряно")
+	TEST_ASSERT_NULL(read_mixed[4], "null превратился в ноль")
+	TEST_ASSERT_EQUAL(read_mixed[6], mixed[6], "JSON округлил дробное число")
+	TEST_ASSERT_EQUAL(read_mixed[7], /obj/item, "путь типа превратился в строку")
+	var/list/empty
+	restored["empty"] >> empty
+	TEST_ASSERT(islist(empty) && !empty.len, "пустой список превратился в null")
+	var/formatted
+	restored["formatted"] >> formatted
+	TEST_ASSERT_EQUAL(formatted, "\proper Тест %ff %15 %25", "изменились служебные маркеры или знак процента")
+	restored.cd = "/character128/retired_module"
+	var/read_text
+	restored["текст"] >> read_text
+	TEST_ASSERT_EQUAL(read_text, "Кириллица\n\"кавычки\" \\ слеш", "потеряно неизвестное вложенное поле")
+
+/datum/unit_test/player_save_json/legacy_untouched/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 79
+	legacy["unknown"] << "старое поле"
+	legacy.cd = "/character99"
+	legacy["version"] << 71
+	legacy["real_name"] << "Legacy Character"
+	legacy.Flush()
+	legacy = null
+	var/before = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	var/savefile/source = storage.open()
+	TEST_ASSERT_NOTNULL(source, "старый сейв не открылся")
+	source["new"] << 42
+	TEST_ASSERT(storage.commit(source), "миграция не записалась")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), before, "миграция изменила исходный .sav")
+	var/savefile/restored = storage.open()
+	var/unknown
+	restored["unknown"] >> unknown
+	TEST_ASSERT_EQUAL(unknown, "старое поле", "миграция отбросила неизвестный ключ")
+	restored.cd = "/character99"
+	var/name
+	restored["real_name"] >> name
+	TEST_ASSERT_EQUAL(name, "Legacy Character", "миграция потеряла слот вне текущего лимита")
+
+/datum/unit_test/player_save_json/legacy_import_failure_cleanup/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	for(var/depth in 1 to PLAYER_SAVE_JSON_DEPTH + 1)
+		legacy.cd = "nested"
+	legacy["value"] << 1
+	legacy.Flush()
+	legacy = null
+	var/before = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	TEST_ASSERT_NULL(storage.open(), "слишком глубокий старый сейв принят")
+	TEST_ASSERT(findtext(storage.error, "Слишком глубокое дерево"), "исходная причина ошибки потеряна")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), before, "неудачный импорт изменил оригинал")
+	var/prefix = "[md5("[type]")].sav.json."
+	for(var/name as anything in flist("data/player_save_tests/"))
+		TEST_ASSERT(!findtext(name, prefix) || !findtext(name, ".import"), "после ошибки осталась временная копия: [name]")
+
+/datum/unit_test/player_save_json/removed_type_path/Run()
+	prepare()
+	var/list/removed = list("type" = "path", "value" = "/datum/removed_player_save_type")
+	TEST_ASSERT_NULL(player_save_decode_value(removed), "удалённый тип не превратился в null")
+	var/list/tree = list("removed" = list("value" = removed, "children" = list()))
+	TEST_ASSERT(storage.commit_tree(tree), "не записана фикстура удалённого типа")
+	var/datum/player_save_document/document = storage.snapshot(null, FALSE)
+	TEST_ASSERT_NOTNULL(document, "сейв с удалённым типом не прошёл проверку")
+	TEST_ASSERT_NULL(document.read("removed"), "удалённый тип не прочитан как null")
+	for(var/invalid in list(null, 1, list()))
+		var/rejected = FALSE
+		try
+			player_save_decode_value(list("type" = "path", "value" = invalid))
+		catch(var/exception/failure)
+			rejected = !!failure
+		TEST_ASSERT(rejected, "нестроковое значение пути принято")
+
+/datum/unit_test/player_save_json/recovery/Run()
+	var/savefile/source = prepare()
+	source["version"] << 80
+	source["marker"] << "первое"
+	TEST_ASSERT(storage.commit(source), "не записано первое поколение")
+	source["marker"] << "второе"
+	TEST_ASSERT(storage.commit(source), "не записано второе поколение")
+	fdel(storage.active_path)
+	text2file("{оборванный JSON", storage.active_path)
+	var/savefile/restored = storage.open()
+	TEST_ASSERT_NOTNULL(restored, "исправное поколение не восстановлено")
+	TEST_ASSERT(storage.recovered, "ошибка поколения не отмечена")
+	var/marker
+	restored["marker"] >> marker
+	TEST_ASSERT_EQUAL(marker, "первое", "восстановлено неверное поколение")
+	restored["marker"] << "после восстановления"
+	TEST_ASSERT(storage.commit(restored), "запись после восстановления не работает")
+	var/datum/player_save_json/reopened = new(test_path)
+	restored = reopened.open()
+	restored["marker"] >> marker
+	TEST_ASSERT_EQUAL(marker, "после восстановления", "после перезапуска выбран старый JSON")
+
+/datum/unit_test/player_save_json/corrupt_blocks_legacy_fallback/Run()
+	var/savefile/source = prepare()
+	source["version"] << 80
+	TEST_ASSERT(storage.commit(source), "не записан JSON")
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 80
+	legacy.Flush()
+	legacy = null
+	fdel(storage.json_path)
+	text2file("{", storage.json_path)
+	TEST_ASSERT_NULL(storage.open(), "повреждённый JSON незаметно откатился к устаревшему .sav")
+	TEST_ASSERT(!storage.commit(source), "повреждённый JSON перезаписан настройками по умолчанию")
+	TEST_ASSERT_EQUAL(file2text(storage.json_path), "{\n", "повреждённый файл изменён")
+
+/datum/unit_test/player_save_json/future_version_blocks/Run()
+	var/savefile/source = prepare()
+	source["version"] << 80
+	TEST_ASSERT(storage.commit(source), "не записано первое поколение")
+	TEST_ASSERT(storage.commit(source), "не записано второе поколение")
+	var/list/document = json_decode(file2text(storage.active_path))
+	document["version"] = 999
+	fdel(storage.active_path)
+	text2file(json_encode(document), storage.active_path)
+	TEST_ASSERT_NULL(storage.open(), "будущий формат заменён предыдущим поколением")
+	TEST_ASSERT(!storage.commit(source), "будущий формат разрешено перезаписать")
+
+/datum/unit_test/player_save_json/sound_toggles_roundtrip/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 80
+	legacy["sound_toggles"] << SOUND_BUTTONS
+	legacy.Flush()
+	legacy = null
+	var/legacy_hash = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитаны настройки SAV")
+	TEST_ASSERT_EQUAL(prefs.sound_toggles, SOUND_BUTTONS, "из SAV не загружен звук кнопок")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "настройки не перенесены в JSON")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), legacy_hash, "перенос изменил исходный SAV")
+	prefs.player_save_storage = null
+	prefs.sound_toggles = NONE
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитаны настройки JSON")
+	TEST_ASSERT_EQUAL(prefs.sound_toggles, SOUND_BUTTONS, "полная запись JSON потеряла звук кнопок")
+	prefs.sound_toggles = NONE
+	prefs.save_pref_var("sound_toggles")
+	TEST_ASSERT(prefs.flush_single_prefs(), "не записано отключение звука кнопок")
+	prefs.player_save_storage = null
+	prefs.sound_toggles = SOUND_BUTTONS
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитан JSON после одиночной записи")
+	TEST_ASSERT_EQUAL(prefs.sound_toggles, NONE, "одиночная запись не сохранила отключение звука кнопок")
+
+/// Громкости звуков еретиков переносятся из SAV и переживают полную и одиночную запись JSON.
+/datum/unit_test/player_save_json/heretic_volumes_roundtrip/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 80
+	legacy["sound_volume_heretic_dance"] << 40
+	legacy["sound_volume_heretic_sky"] << 60
+	legacy.Flush()
+	legacy = null
+	var/legacy_hash = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитаны настройки SAV")
+	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_dance, 40, "из SAV не загружена громкость Пляски")
+	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_sky, 60, "из SAV не загружена громкость неба")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "настройки не перенесены в JSON")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), legacy_hash, "перенос изменил исходный SAV")
+	prefs.player_save_storage = null
+	prefs.sound_volume_heretic_dance = 100
+	prefs.sound_volume_heretic_sky = 100
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитаны настройки JSON")
+	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_dance, 40, "полная запись JSON потеряла громкость Пляски")
+	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_sky, 60, "полная запись JSON потеряла громкость неба")
+	prefs.sound_volume_heretic_dance = 15
+	prefs.sound_volume_heretic_sky = 25
+	prefs.save_pref_var("sound_volume_heretic_dance")
+	prefs.save_pref_var("sound_volume_heretic_sky")
+	TEST_ASSERT(prefs.flush_single_prefs(), "не записаны громкости еретиков")
+	prefs.player_save_storage = null
+	prefs.sound_volume_heretic_dance = 100
+	prefs.sound_volume_heretic_sky = 100
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитан JSON после одиночной записи")
+	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_dance, 15, "одиночная запись не сохранила громкость Пляски")
+	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_sky, 25, "одиночная запись не сохранила громкость неба")
+
+/// Поля мульти-Z, русских глаголов, фото и семенников из master переживают запись и чтение JSON.
+/datum/unit_test/player_save_json/master_fields_roundtrip/Run()
+	prepare()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.multiz_performance = 1
+	prefs.multiz_parallax = FALSE
+	prefs.right_click_choice = RIGHT_CLICK_MODE_MENU
+	prefs.shift_right_click_choice = RIGHT_CLICK_MODE_NATIVE
+	prefs.right_click_notice_seen = TRUE
+	prefs.context_menu_style = list("theme" = "terminal")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не записаны настройки")
+	prefs.custom_speech_verb_ru = TRUE
+	prefs.features["ass_photo"] = "photo"
+	prefs.features["balls_cum_rate"] = 5
+	prefs.features["balls_cum_max"] = 50
+	prefs.features["normalized_size"] = 1.1
+	prefs.innate_features = list(INNATE_NAGA_TAIL)
+	prefs.loadout_data = list("SAVE_[LOADOUT_PRESET_SLOT]" = list())
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не записан персонаж")
+	prefs.player_save_storage = null
+	prefs.multiz_performance = MULTIZ_PERFORMANCE_DISABLE
+	prefs.multiz_parallax = TRUE
+	prefs.right_click_choice = null
+	prefs.shift_right_click_choice = null
+	prefs.right_click_notice_seen = FALSE
+	prefs.context_menu_style = null
+	prefs.custom_speech_verb_ru = FALSE
+	prefs.features["ass_photo"] = ""
+	prefs.features["balls_cum_rate"] = CUM_RATE
+	prefs.features["balls_cum_max"] = 0
+	prefs.features["normalized_size"] = RESIZE_NORMAL
+	prefs.innate_features = list()
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитаны настройки JSON")
+	TEST_ASSERT_EQUAL(prefs.multiz_performance, 1, "JSON потерял multiz_performance")
+	TEST_ASSERT_EQUAL(prefs.multiz_parallax, FALSE, "JSON потерял multiz_parallax")
+	TEST_ASSERT_EQUAL(prefs.right_click_choice, RIGHT_CLICK_MODE_MENU, "JSON потерял right_click_mode")
+	TEST_ASSERT_EQUAL(prefs.shift_right_click_choice, RIGHT_CLICK_MODE_NATIVE, "JSON потерял shift_right_click_mode")
+	TEST_ASSERT(prefs.right_click_notice_seen, "JSON потерял right_click_notice_seen")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("theme"), "terminal", "JSON потерял context_menu_style")
+	TEST_ASSERT(prefs.load_character(1, TRUE), "не прочитан персонаж JSON")
+	TEST_ASSERT_EQUAL(prefs.custom_speech_verb_ru, TRUE, "JSON потерял custom_speech_verb_ru")
+	TEST_ASSERT_EQUAL(prefs.features["ass_photo"], "photo", "JSON потерял ass_photo")
+	TEST_ASSERT_EQUAL(prefs.features["balls_cum_rate"], 5, "JSON потерял balls_cum_rate")
+	TEST_ASSERT_EQUAL(prefs.features["balls_cum_max"], 50, "JSON потерял balls_cum_max")
+	TEST_ASSERT_EQUAL(prefs.features["normalized_size"], 1.1, "JSON потерял normalized_size")
+	TEST_ASSERT(INNATE_NAGA_TAIL in prefs.innate_features, "JSON потерял innate_features")
+	var/savefile/readback = prefs.open_player_save()
+	readback.cd = "/character1"
+	var/preset_initialized
+	readback["preset_loadout_initialized"] >> preset_initialized
+	TEST_ASSERT(preset_initialized, "JSON потерял preset_loadout_initialized")
+
+/datum/unit_test/player_save_json/preferences_modules_and_delete/Run()
+	prepare()
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.path = test_path
+	prefs.bm_disclaimer_accepted = TRUE
+	prefs.favorite_tracks = list("проверочный трек")
+	prefs.interaction_effect = FALSE
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не записаны настройки")
+	prefs.real_name = "First Character"
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не записан первый персонаж")
+	prefs.default_slot = 2
+	prefs.real_name = "Second Character"
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не записан второй персонаж")
+	TEST_ASSERT(prefs.delete_character(1), "не удалён первый слот")
+	var/savefile/readback = prefs.open_player_save()
+	TEST_ASSERT(!("character1" in readback.dir), "удалённый слот вернулся при следующей записи")
+	var/disclaimer
+	var/list/tracks
+	readback["bm_disclaimer_accepted"] >> disclaimer
+	readback["favorite_tracks"] >> tracks
+	TEST_ASSERT_EQUAL(disclaimer, TRUE, "потеряно поле лобби после модульного ..()")
+	TEST_ASSERT_EQUAL(tracks[1], "проверочный трек", "потеряно поле Sand после модульного ..()")
+	readback.cd = "/character2"
+	var/name
+	readback["real_name"] >> name
+	TEST_ASSERT_EQUAL(name, "Second Character", "удаление первого слота затронуло второй")
+	TEST_ASSERT(!fexists(test_path), "новому игроку создан двоичный .sav")
+	prefs.path = null
+
+/datum/unit_test/player_save_json/migration_after_modules/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 79
+	legacy["default_slot"] << 1
+	legacy["favorite_tracks"] << list("сохранённый трек")
+	legacy["bm_disclaimer_accepted"] << TRUE
+	legacy["custom_verb_consent"] << FALSE
+	legacy.Flush()
+	legacy = null
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.path = test_path
+	TEST_ASSERT(prefs.load_preferences(TRUE), "миграция настроек не завершилась")
+	var/savefile/readback = prefs.open_player_save()
+	var/list/tracks
+	var/disclaimer
+	var/consent
+	readback["favorite_tracks"] >> tracks
+	readback["bm_disclaimer_accepted"] >> disclaimer
+	readback["custom_verb_consent"] >> consent
+	TEST_ASSERT_EQUAL(tracks[1], "сохранённый трек", "миграция записала пустое значение до загрузки модуля")
+	TEST_ASSERT_EQUAL(disclaimer, TRUE, "миграция стёрла настройку лобби")
+	TEST_ASSERT_EQUAL(consent, FALSE, "миграция стёрла дополнительную настройку Sand")
+	prefs.path = null
+
+/datum/unit_test/player_save_json/partial_write_preserves_hidden_slots/Run()
+	var/savefile/source = prepare()
+	source["version"] << 80
+	source["unknown_root"] << "неизвестное поле"
+	source.cd = "/character128/retired"
+	source["value"] << 1.23456789
+	TEST_ASSERT(storage.commit(source), "не записано начальное состояние")
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.path = test_path
+	prefs.buffer_single_pref("tgui_panel_state", "новое состояние")
+	TEST_ASSERT(prefs.flush_single_prefs(), "одиночная запись не завершилась")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "полная запись настроек не завершилась")
+	prefs.real_name = "New Character"
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не записан новый персонаж")
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/readback = account.open()
+	var/unknown
+	readback["unknown_root"] >> unknown
+	TEST_ASSERT_EQUAL(unknown, "неизвестное поле", "частичная запись потеряла неизвестный ключ корня")
+	readback.cd = "/character128/retired"
+	var/value
+	readback["value"] >> value
+	TEST_ASSERT_EQUAL(value, 1.23456789, "запись другого слота затронула скрытый слот")
+	prefs.path = null
+
+/datum/unit_test/player_save_json/unsupported_legacy_blocks/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 17
+	legacy["real_name"] << "Do Not Erase"
+	legacy.Flush()
+	legacy = null
+	var/before = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.path = test_path
+	TEST_ASSERT(!prefs.load_preferences(TRUE), "неподдерживаемое сохранение принято")
+	TEST_ASSERT(!prefs.save_preferences(TRUE, TRUE), "старое сохранение заменено настройками по умолчанию")
+	TEST_ASSERT(!prefs.save_character(TRUE, TRUE), "старое сохранение заменено случайным персонажем")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), before, "неподдерживаемый .sav изменён")
+	TEST_ASSERT(!fexists("[test_path].json"), "для неподдерживаемого .sav создан JSON с пустыми настройками")
+	prefs.path = null
+
+/datum/player_save_json/account/reject_root
+	var/reject_write = FALSE
+
+/datum/player_save_json/account/reject_root/write_document(destination, encoded)
+	if(reject_write)
+		return FALSE
+	return ..()
+
+/datum/unit_test/player_save_json/unpublished_character_is_invisible/Run()
+	prepare()
+	var/datum/player_save_json/account/reject_root/account = new(test_path)
+	var/savefile/source = account.open()
+	source["version"] << 80
+	source.cd = "/character1"
+	source["real_name"] << "Before Failure"
+	TEST_ASSERT(account.commit(source), "не записано начальное состояние аккаунта")
+	source = account.open("/character1")
+	source.cd = "/character1"
+	source["real_name"] << "Unpublished"
+	account.reject_write = TRUE
+	TEST_ASSERT(!account.commit(source, "/character1"), "запись корня не была отклонена")
+	var/datum/player_save_json/account/reopened = new(test_path)
+	var/savefile/restored = reopened.open()
+	TEST_ASSERT_NOTNULL(restored, "сбой публикации сделал старое поколение нечитаемым")
+	restored.cd = "/character1"
+	var/name
+	restored["real_name"] >> name
+	TEST_ASSERT_EQUAL(name, "Before Failure", "неопубликованный раздел стал виден игроку")
+	// Повторная попытка обязана перезаписать сиротское поколение, сохранив опубликованное.
+	restored["real_name"] << "After Retry"
+	TEST_ASSERT(reopened.commit(restored, "/character1"), "не удалось повторить запись после сбоя")
+	restored = reopened.open()
+	restored.cd = "/character1"
+	restored["real_name"] >> name
+	TEST_ASSERT_EQUAL(name, "After Retry", "повторная запись не опубликована")
+
+/datum/unit_test/player_save_json/account_root_recovery/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source["version"] << 80
+	source.cd = "/character1"
+	source["real_name"] << "First Generation"
+	TEST_ASSERT(account.commit(source), "не записано первое поколение")
+	source = account.open("/character1")
+	source.cd = "/character1"
+	source["real_name"] << "Second Generation"
+	TEST_ASSERT(account.commit(source, "/character1"), "не записано второе поколение")
+	fdel(account.active_path)
+	text2file("{", account.active_path)
+	var/datum/player_save_json/account/reopened = new(test_path)
+	source = reopened.open()
+	TEST_ASSERT_NOTNULL(source, "не восстановлен предыдущий каталог")
+	source.cd = "/character1"
+	var/name
+	source["real_name"] >> name
+	TEST_ASSERT_EQUAL(name, "First Generation", "старый корень прочитал новое поколение персонажа")
+
+/datum/unit_test/player_save_json/root_cache_invalidation/Run()
+	prepare()
+	var/datum/player_save_json/account/first = new(test_path)
+	var/savefile/source = first.open()
+	source["version"] << 80
+	source["marker"] << "initial"
+	TEST_ASSERT(first.commit(source), "не создан корень")
+	var/datum/player_save_json/account/second = new(test_path)
+	second.open("/")
+	source = first.open("/")
+	source["marker"] << "changed"
+	TEST_ASSERT(first.commit(source, "/"), "не изменён корень")
+	source = second.open("/")
+	var/marker
+	source["marker"] >> marker
+	TEST_ASSERT_EQUAL(marker, "changed", "второй датум прочитал устаревший кэш")
+	source["another"] << TRUE
+	TEST_ASSERT(second.commit(source, "/"), "не записана настройка второго датума")
+	source = first.open("/")
+	source["another"] >> marker
+	TEST_ASSERT_EQUAL(marker, TRUE, "первый датум не увидел запись второго")
+
+/datum/unit_test/player_save_json/custom_interactions_marker/Run()
+	prepare()
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.path = test_path
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан аккаунт")
+	var/savefile/source = prefs.open_player_save()
+	var/datum/interaction/custom/custom = new
+	custom.name = "Test Interaction"
+	custom.message = "Test message."
+	source["custom_interactions"] << list(custom)
+	TEST_ASSERT(prefs.commit_player_save(source), "не записаны старые взаимодействия")
+	source = prefs.open_player_save()
+	source.cd = "/character1"
+	TEST_ASSERT(prefs.sand_character_pref_load(source), "не перенесены старые взаимодействия")
+	TEST_ASSERT_EQUAL(length(prefs.custom_interactions), 1, "старый список не загружен")
+	source = prefs.open_player_save()
+	var/migrated
+	source["custom_interactions_migrated"] >> migrated
+	TEST_ASSERT_EQUAL(migrated, TRUE, "маркер миграции не зафиксирован вместе со слотом")
+	source.cd = "/character2"
+	TEST_ASSERT(prefs.sand_character_pref_load(source), "не загружен новый слот")
+	TEST_ASSERT_EQUAL(length(prefs.custom_interactions), 0, "старые взаимодействия повторно скопированы в другой слот")
+	prefs.path = null
+
+/// Перенос старых взаимодействий при загрузке слота разделённого аккаунта не убирает остальные слоты из каталога.
+/datum/unit_test/player_save_json/custom_interactions_split_account/Run()
+	prepare()
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан аккаунт")
+	prefs.real_name = "First Character"
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не записан первый персонаж")
+	prefs.default_slot = 2
+	prefs.real_name = "Second Character"
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не записан второй персонаж")
+	var/savefile/source = prefs.open_player_save("/character2")
+	source.cd = "/character2"
+	source.dir.Remove("custom_interactions")
+	source.cd = "/"
+	var/datum/interaction/custom/custom = new
+	custom.name = "Test Interaction"
+	custom.message = "Test message."
+	source["custom_interactions"] << list(custom)
+	TEST_ASSERT(prefs.commit_player_save(source, "/character2"), "не записаны старые взаимодействия")
+	var/datum/player_save_json/account/account = prefs.get_player_save_storage()
+	TEST_ASSERT(!isnull(account.directories), "фикстура не разделила аккаунт")
+	TEST_ASSERT(prefs.load_character(2, TRUE), "не загружен слот с переносом взаимодействий")
+	TEST_ASSERT_EQUAL(length(prefs.custom_interactions), 1, "старые взаимодействия не перенесены")
+	TEST_ASSERT(account.directories["character1"], "перенос убрал первый слот из каталога")
+	prefs.player_save_storage = null
+	TEST_ASSERT(prefs.load_character(1, TRUE), "первый слот не загружен после переноса")
+	TEST_ASSERT_EQUAL(prefs.real_name, "First Character", "первый слот подменён после переноса")
+
+/datum/unit_test/player_save_json/portable_character/Run()
+	prepare()
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.path = test_path
+	prefs.real_name = "Portable Character"
+	prefs.belly_prefs = list(list("name" = "Portable setting"))
+	var/savefile/exported = prefs.save_character(TRUE, TRUE, TRUE)
+	TEST_ASSERT_NOTNULL(exported, "персонаж не экспортирован")
+	TEST_ASSERT(!storage.exists(), "экспорт записал данные аккаунта")
+	var/datum/preferences/imported = new
+	allocated += imported
+	TEST_ASSERT(imported.load_character(null, TRUE, exported), "импорт потребовал существующий сейв аккаунта")
+	TEST_ASSERT_EQUAL(imported.real_name, "Portable Character", "импорт изменил имя")
+	var/list/belly = imported.belly_prefs[1]
+	TEST_ASSERT_EQUAL(belly["name"], "Portable setting", "экспорт потерял настройку из бывшего отдельного JSON")
+	prefs.path = null
+
+
+/datum/unit_test/player_save_json/public_transfer/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.path = test_path
+	prefs.real_name = "Public Character"
+	prefs.modified_limbs = list(BODY_ZONE_L_ARM = list(LOADOUT_LIMB_PROSTHETIC, "prosthetic"))
+	prefs.features["ooc_notes"] = "PRIVATE_OOC"
+	prefs.features["headshot_links"] = list("https://private.invalid/image")
+	prefs.tcg_cards = list("protected card" = 4)
+	prefs.unlockable_loadout_data = list("protected entitlement" = 8)
+	prefs.metadollar_minute_pool = 123
+	var/datum/interaction/custom/custom = new
+	custom.name = "Public Action"
+	custom.message = "Public message."
+	prefs.custom_interactions = list(custom)
+	prefs.queue_save_char(1000, TRUE)
+	var/queued = prefs.char_queue
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_EQUAL(prefs.char_queue, queued, "экспорт отменил отложенное сохранение")
+	TEST_ASSERT_NOTNULL(exported, "экспорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(!findtext(exported, "PRIVATE_OOC") && !findtext(exported, "private.invalid") && !findtext(exported, "protected card") && !findtext(exported, "protected entitlement"), "экспорт раскрыл закрытые данные")
+	TEST_ASSERT(!storage.exists(), "экспорт изменил диск")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	var/savefile/root = prefs.open_player_save("/")
+	root["metadollars"] << 9876
+	root["future_private"] << "preserve"
+	TEST_ASSERT(prefs.commit_player_save(root, "/"), "не записаны защищённые поля")
+	prefs.tcg_cards["protected card"] = 5 // ещё не записанная награда тоже должна сохраниться
+	var/list/document = json_decode(exported)
+	var/list/fields = document["fields"]
+	fields["real_name"] = "Imported Character"
+	TEST_ASSERT(prefs.import_character_json(json_encode(document)), "импорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(prefs.real_name, "Imported Character", "имя не перенесено")
+	TEST_ASSERT_EQUAL(prefs.modified_limbs[BODY_ZONE_L_ARM][1], LOADOUT_LIMB_PROSTHETIC, "не перенесён протез")
+	TEST_ASSERT_EQUAL(prefs.tcg_cards["protected card"], 5, "импорт изменил коллекцию")
+	TEST_ASSERT_EQUAL(prefs.metadollar_minute_pool, 123, "импорт изменил выплату")
+	TEST_ASSERT_EQUAL(prefs.features["ooc_notes"], "PRIVATE_OOC", "импорт изменил закрытые заметки")
+	TEST_ASSERT_EQUAL(length(prefs.custom_interactions), 1, "не перенесено пользовательское действие")
+	root = prefs.open_player_save("/")
+	var/balance
+	root["metadollars"] >> balance
+	TEST_ASSERT_EQUAL(balance, 9876, "импорт изменил серверный баланс")
+	root["future_private"] >> balance
+	TEST_ASSERT_EQUAL(balance, "preserve", "импорт потерял неизвестное закрытое поле")
+	prefs.path = null
+
+/// Перенос хранит текст в виде редактора: имена и описания без кодирования, записи и вкус закодированными.
+/datum/unit_test/player_save_json/public_transfer_text_fields/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "O'Brien Smith"
+	prefs.features["flavor_text"] = "It's \"Tom & Jerry\" <3"
+	prefs.security_records = html_encode_readable("Record's <b>")
+	prefs.vore_taste = html_encode_readable("berries & cream's")
+	var/list/gear = list(LOADOUT_ITEM = /datum/gear/accessory/necklace, LOADOUT_CUSTOM_NAME = html_encode_readable("Bob's coat"))
+	prefs.loadout_data = list("SAVE_1" = list(gear))
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(exported, "экспорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	TEST_ASSERT(prefs.import_character_json(exported), "импорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(prefs.real_name, "O'Brien Smith", "перенос испортил апостроф в имени")
+	TEST_ASSERT_EQUAL(prefs.features["flavor_text"], "It's \"Tom & Jerry\" <3", "перенос закодировал описание")
+	TEST_ASSERT_EQUAL(prefs.security_records, html_encode_readable("Record's <b>"), "перенос изменил запись СБ")
+	TEST_ASSERT_EQUAL(prefs.vore_taste, html_encode_readable("berries & cream's"), "перенос изменил вкус")
+	var/list/imported_gear = prefs.loadout_data["SAVE_1"][1]
+	TEST_ASSERT_EQUAL(imported_gear[LOADOUT_CUSTOM_NAME], html_encode_readable("Bob's coat"), "перенос изменил имя вещи")
+	var/list/document = json_decode(exported)
+	var/list/fields = document["fields"]
+	fields["medical_records"] = "<i>x</i>"
+	fields["summon_nickname"] = "<b>Nick</b>"
+	TEST_ASSERT(prefs.import_character_json(json_encode(document)), "импорт разметки не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(prefs.medical_records, html_encode_readable("<i>x</i>"), "разметка в медзаписи не закодирована")
+	TEST_ASSERT(!findtext(prefs.summon_nickname, "<"), "прозвище обошло фильтр имён")
+
+/// Редактор хранит набор пресета SAVE_0 рядом с общими слотами, экспорт с ним импортируется обратно.
+/datum/unit_test/player_save_json/public_transfer_preset_loadout/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Preset Loadout"
+	prefs.loadout_data = list()
+	for(var/i in LOADOUT_PRESET_SLOT to MAXIMUM_LOADOUT_SAVES)
+		prefs.loadout_data["SAVE_[i]"] = list()
+	prefs.loadout_data["SAVE_[LOADOUT_PRESET_SLOT]"] = list(list(LOADOUT_ITEM = /datum/gear/accessory/necklace))
+	prefs.loadout_data["SAVE_[MAXIMUM_LOADOUT_SAVES]"] = list(list(LOADOUT_ITEM = /datum/gear/accessory/necklace))
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(exported, "экспорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	prefs.loadout_data = list()
+	TEST_ASSERT(prefs.import_character_json(exported), "импорт со слотом пресета отклонён: [prefs.player_transfer_error]")
+	var/list/preset_gear = prefs.loadout_data["SAVE_[LOADOUT_PRESET_SLOT]"]
+	TEST_ASSERT_EQUAL(length(preset_gear), 1, "потерян набор пресета")
+	TEST_ASSERT_EQUAL(length(prefs.loadout_data["SAVE_[MAXIMUM_LOADOUT_SAVES]"]), 1, "потерян последний общий набор")
+	var/list/document = json_decode(exported)
+	var/list/fields = document["fields"]
+	var/list/overflow = json_decode(fields["loadout"])
+	overflow["SAVE_[MAXIMUM_LOADOUT_SAVES + 1]"] = list()
+	fields["loadout"] = json_encode(overflow)
+	var/rejected = FALSE
+	try
+		player_transfer_parse(json_encode(document))
+	catch
+		rejected = TRUE
+	TEST_ASSERT(rejected, "принят набор за пределами слотов")
+
+/// Баланс квирков при импорте совпадает с редактором: базовые очки BASE_QUIRK_BALANCE тоже тратятся.
+/datum/unit_test/player_save_json/public_transfer_quirk_balance/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Quirk Balance"
+	var/picked
+	for(var/quirk_name in SSquirks.quirk_points)
+		var/value = SSquirks.quirk_points[quirk_name]
+		if(value < 1 || value > BASE_QUIRK_BALANCE)
+			continue
+		var/blacklisted = FALSE
+		for(var/list/pair in SSquirks.quirk_blacklist)
+			if(quirk_name in pair)
+				blacklisted = TRUE
+				break
+		if(!blacklisted)
+			picked = quirk_name
+			break
+	TEST_ASSERT_NOTNULL(picked, "нет положительного квирка в пределах базового баланса")
+	prefs.all_quirks = list(picked)
+	TEST_ASSERT(prefs.quirk_balance() >= 0, "фикстура не проходит редактор")
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(exported, "экспорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	prefs.all_quirks = list()
+	TEST_ASSERT(prefs.import_character_json(exported), "импорт отклонил набор квирков редактора: [prefs.player_transfer_error]")
+	TEST_ASSERT((picked in prefs.all_quirks), "импорт потерял квирк [picked]")
+	TEST_ASSERT(!length(prefs.player_transfer_notices), "импорт поправил допустимый набор: [jointext(prefs.player_transfer_notices, "; ")]")
+
+/// Экипировка дороже бюджета аккаунта не отклоняет файл: лишнее убирается, игроку сообщается.
+/datum/unit_test/player_save_json/public_transfer_loadout_over_budget/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Over Budget"
+	var/points = CONFIG_GET(number/initial_gear_points)
+	var/list/picked = list()
+	var/total = 0
+	for(var/category in GLOB.loadout_items)
+		var/list/subcategories = GLOB.loadout_items[category]
+		for(var/subcategory in subcategories)
+			var/list/items = subcategories[subcategory]
+			for(var/name in items)
+				var/datum/gear/gear = items[name]
+				if(total > points || gear.donoritem || istype(gear, /datum/gear/unlockable) || gear.cost < 1)
+					continue
+				picked += list(list(LOADOUT_ITEM = gear.type))
+				total += gear.cost
+	TEST_ASSERT(total > points, "в фикстуре не набрать экипировку дороже [points] очков")
+	prefs.loadout_data = list("SAVE_1" = picked)
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(exported, "экспорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	TEST_ASSERT(prefs.import_character_json(exported), "экипировка сверх бюджета отклонила файл: [prefs.player_transfer_error]")
+	var/list/kept = prefs.loadout_data["SAVE_1"]
+	TEST_ASSERT(length(kept) && length(kept) < length(picked), "импорт не срезал лишнее: [length(kept)] из [length(picked)]")
+	var/spent = 0
+	for(var/list/entry as anything in kept)
+		var/datum/gear/gear_type = istext(entry[LOADOUT_ITEM]) ? text2path(entry[LOADOUT_ITEM]) : entry[LOADOUT_ITEM]
+		spent += initial(gear_type.cost)
+	TEST_ASSERT(spent <= points, "после импорта экипировка дороже бюджета: [spent] из [points]")
+	TEST_ASSERT(length(prefs.player_transfer_notices), "игроку не сказали об убранных вещах")
+
+/// Имя и текст действия хранятся закодированными один раз: загрузка и перенос не множат &amp;.
+/datum/unit_test/player_save_json/custom_interaction_ampersand/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/interaction/custom/custom = new
+	custom.name = "Tom &amp; Jerry"
+	custom.message = "hugs &amp;amp;amp; kisses"
+	custom.sanitize_values()
+	TEST_ASSERT_EQUAL(custom.name, "Tom &amp; Jerry", "повторная проверка закодировала имя ещё раз")
+	TEST_ASSERT_EQUAL(custom.message, "hugs &amp; kisses", "накопленное кодирование не снято")
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Ampersand"
+	prefs.custom_interactions = list(custom)
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(exported, "экспорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	TEST_ASSERT(prefs.import_character_json(exported), "импорт не выполнен: [prefs.player_transfer_error]")
+	var/datum/interaction/custom/imported = prefs.custom_interactions[1]
+	TEST_ASSERT_EQUAL(imported.name, "Tom &amp; Jerry", "перенос испортил & в имени действия")
+	TEST_ASSERT_EQUAL(imported.message, "hugs &amp; kisses", "перенос испортил & в тексте действия")
+
+/// OOC-заметки и картинки уходят в файл игрока, но не в передачу персонажа по коду.
+/datum/unit_test/player_save_json/public_transfer_private_fields/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Private Fields"
+	prefs.features["ooc_notes"] = "OOC & notes"
+	prefs.features["headshot_links"] = list(sanitize_headshot_link("https://example.com/a.png?x=1&y=2"))
+	prefs.features["headshot_naked_links"] = list("https://example.com/naked.jpg")
+	prefs.features["ass_photo"] = "https://example.com/photo.gif"
+	var/offered = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(offered, "экспорт передачи не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(!findtext(offered, "OOC & notes") && !findtext(offered, "example.com"), "передача по коду раскрыла OOC или картинки")
+	var/exported = prefs.export_character_json(TRUE)
+	TEST_ASSERT_NOTNULL(exported, "экспорт в файл не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	var/list/stored_headshots = prefs.features["headshot_links"]
+	var/stored_link = stored_headshots[1]
+	prefs.features["ooc_notes"] = ""
+	prefs.features["headshot_links"] = list()
+	prefs.features["headshot_naked_links"] = list()
+	prefs.features["ass_photo"] = ""
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не очищен слот")
+	TEST_ASSERT(prefs.import_character_json(exported), "импорт файла не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(prefs.features["ooc_notes"], "OOC & notes", "файл не перенёс OOC-заметки")
+	var/list/headshots = prefs.features["headshot_links"]
+	TEST_ASSERT_EQUAL(headshots[1], stored_link, "файл не перенёс картинку или изменил её ссылку")
+	var/list/naked = prefs.features["headshot_naked_links"]
+	TEST_ASSERT_EQUAL(naked[1], "https://example.com/naked.jpg", "файл не перенёс вторую картинку")
+	TEST_ASSERT_EQUAL(prefs.features["ass_photo"], "https://example.com/photo.gif", "файл не перенёс фото")
+	var/list/document = json_decode(exported)
+	var/list/fields = document["fields"]
+	fields["headshot"] = "javascript:alert(1)"
+	TEST_ASSERT(prefs.import_character_json(json_encode(document)), "неверная ссылка отклонила весь файл: [prefs.player_transfer_error]")
+	headshots = prefs.features["headshot_links"]
+	TEST_ASSERT(!headshots[1], "импорт принял ссылку, которую не принял бы редактор")
+
+/// Старая копия из локального хранилища BYOND загружается через ту же проверку, чужие объекты в ней отвергаются.
+/datum/unit_test/player_save_json/legacy_client_copy/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Legacy Copy"
+	var/datum/interaction/custom/custom = new
+	custom.name = "Old Action"
+	custom.message = "Old message."
+	prefs.custom_interactions = list(custom)
+	var/savefile/exported = prefs.write_character(TRUE, TRUE, TRUE)
+	TEST_ASSERT(istype(exported), "не подготовлена старая копия")
+	var/legacy_path = "[test_path].legacy_copy"
+	fdel(legacy_path)
+	var/savefile/legacy = new(legacy_path)
+	player_save_copy_tree(exported, legacy)
+	legacy["custom_interactions"] << list(custom)
+	legacy = null
+	sleep(1) // savefile пишется на диск только после сна мира
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	prefs.real_name = "Current Character"
+	prefs.custom_interactions = list()
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	var/text = prefs.legacy_character_json(file(legacy_path))
+	TEST_ASSERT_NOTNULL(text, "старая копия не прочитана: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.import_character_json(text), "старая копия не импортирована: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(prefs.real_name, "Legacy Copy", "старая копия не перенесла имя")
+	TEST_ASSERT_EQUAL(length(prefs.custom_interactions), 1, "старая копия потеряла действие")
+	legacy = new(legacy_path)
+	legacy["evil"] << new /datum/unit_test_legacy_probe
+	legacy = null
+	sleep(1)
+	GLOB.unit_test_legacy_probe_loaded = FALSE
+	TEST_ASSERT_NULL(prefs.legacy_character_json(file(legacy_path)), "старая копия приняла объект чужого типа")
+	TEST_ASSERT(!GLOB.unit_test_legacy_probe_loaded, "объект чужого типа создан до проверки")
+	fdel(legacy_path)
+	TEST_ASSERT_NULL(prefs.legacy_character_json(null), "пустой клиент дал персонажа")
+
+GLOBAL_VAR_INIT(unit_test_legacy_probe_loaded, FALSE)
+
+/datum/unit_test_legacy_probe
+	var/payload = "probe"
+
+/datum/unit_test_legacy_probe/Read(savefile/F)
+	GLOB.unit_test_legacy_probe_loaded = TRUE
+	return ..()
+
+/datum/unit_test/player_save_json/public_transfer_rejects/Run()
+	var/list/forbidden = list("metadollars", "metadollar_pending_items", "tcg_cards", "unlockable_loadout", "default_slot", "version", "../character2", "headshot", "belly_prefs", "new_unreviewed_field")
+	for(var/key in forbidden)
+		var/rejected = FALSE
+		var/list/fields = list("real_name" = "Bad")
+		fields[key] = 999
+		try
+			player_transfer_parse(json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = fields)))
+		catch
+			rejected = TRUE
+		TEST_ASSERT(rejected, "разрешено защищённое поле [key]")
+	for(var/tag in list("byond", "path", "matrix"))
+		var/rejected = FALSE
+		var/list/injected = list("type" = tag, "value" = "/obj/item", "text" = "malicious")
+		var/list/nested = list("type" = "list", "items" = list(injected), "associations" = list(null))
+		try
+			player_transfer_parse(json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("custom_emote_panel" = nested))))
+		catch
+			rejected = TRUE
+		TEST_ASSERT(rejected, "разрешён вложенный тип [tag]")
+
+/datum/unit_test/player_save_json/public_transfer_failure/Run()
+	prepare()
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.path = test_path
+	prefs.real_name = "Before Import"
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	var/datum/player_save_json/account/reject_root/rejecting = new(test_path)
+	prefs.player_save_storage = rejecting
+	TEST_ASSERT_NOTNULL(rejecting.open(), "не прочитан исходный слот")
+	var/document = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("real_name" = "After Import")))
+	rejecting.reject_write = TRUE
+	TEST_ASSERT(!prefs.import_character_json(document), "ошибка диска показана как успех")
+	TEST_ASSERT_EQUAL(prefs.real_name, "Before Import", "ошибка записи изменила живые настройки")
+	var/datum/player_save_json/account/reopened = new(test_path)
+	var/savefile/source = reopened.open()
+	source.cd = "/character1"
+	var/name
+	source["real_name"] >> name
+	TEST_ASSERT_EQUAL(name, "Before Import", "ошибка импорта изменила опубликованный слот")
+	prefs.path = null
+
+/datum/unit_test/player_save_json/public_transfer_invalid_unchanged/Run()
+	prepare()
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.path = test_path
+	prefs.real_name = "Unchanged Character"
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	var/generation = prefs.player_save_storage.generation
+	for(var/bad in list("{", "[]", json_encode(list("format" = "bluemoon-character", "version" = 99, "fields" = list("real_name" = "Bad"))), json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("real_name" = list("type" = "list", "items" = list(), "associations" = list()))))))
+		TEST_ASSERT(!prefs.import_character_json(bad), "принят неверный файл")
+		TEST_ASSERT_EQUAL(prefs.real_name, "Unchanged Character", "неверный файл изменил имя")
+		TEST_ASSERT_EQUAL(prefs.player_save_storage.generation, generation, "неверный файл записал поколение")
+	TEST_ASSERT(!prefs.player_save_blocked, "неверный файл заблокировал обычное сохранение")
+	prefs.path = null
+
+/datum/unit_test/player_save_json/name_cache/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source["version"] << 80
+	source.cd = "/character1"
+	source["real_name"] << "First Name"
+	source.cd = "/character128"
+	source["real_name"] << "Hidden Name"
+	TEST_ASSERT(account.commit(source), "не созданы слоты")
+	var/list/names = account.character_names(2)
+	TEST_ASSERT_EQUAL(names["character1"], "First Name", "нет имени первого слота")
+	TEST_ASSERT(!("character128" in names), "меню прочитало скрытый слот")
+	source = account.open("/character1")
+	source.cd = "/character1"
+	source["real_name"] << "Renamed Character"
+	TEST_ASSERT(account.commit(source, "/character1"), "не переименован слот")
+	names = account.character_names(2)
+	TEST_ASSERT_EQUAL(names["character1"], "Renamed Character", "кэш не обновил имя")
+	source = account.open("/")
+	source["ui_setting"] << 1
+	TEST_ASSERT(account.commit(source, "/"), "не записана настройка корня")
+	names = account.character_names(2)
+	TEST_ASSERT_EQUAL(names["character1"], "Renamed Character", "настройка корня испортила кэш")
+
+
+/datum/unit_test/player_save_json/unchanged_save/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source["version"] << 80
+	source.cd = "/character1"
+	source["real_name"] << "Unchanged"
+	TEST_ASSERT(account.commit(source), "не записан исходный аккаунт")
+	var/root_generation = account.generation
+	var/character_generation = account.directories["character1"]
+	source = account.open("/character1")
+	TEST_ASSERT(account.commit(source, "/character1"), "повторная запись завершилась ошибкой")
+	TEST_ASSERT_EQUAL(account.generation, root_generation, "неизменившийся корень записан повторно")
+	TEST_ASSERT_EQUAL(account.directories["character1"], character_generation, "неизменившийся слот записан повторно")
+	source.cd = "/character1"
+	source["real_name"] << "Changed"
+	TEST_ASSERT(account.commit(source, "/character1"), "изменение не записано")
+	TEST_ASSERT_EQUAL(account.generation, root_generation + 1, "изменённый корень не записан")
+	TEST_ASSERT_EQUAL(account.directories["character1"], character_generation + 1, "изменённый слот не записан")
+
+/datum/unit_test/player_save_json/public_transfer_limits/Run()
+	var/list/deep = list("end")
+	for(var/i in 1 to 20)
+		deep = list(deep)
+	var/rejected = FALSE
+	try
+		player_transfer_parse(json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("custom_emote_panel" = player_save_encode_value(deep)))))
+	catch
+		rejected = TRUE
+	TEST_ASSERT(rejected, "не ограничена глубина вложенности")
+	rejected = FALSE
+	try
+		player_transfer_parse(json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("loadout" = json_encode(list("SAVE_1" = list(list(LOADOUT_ITEM = "/obj/item"))))))))
+	catch
+		rejected = TRUE
+	TEST_ASSERT(rejected, "в экипировке принят произвольный тип объекта")
+	var/list/safe = player_transfer_parse(json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("medical_records" = "<script>bad</script> &amp; text"))))
+	TEST_ASSERT(!findtext(safe["medical_records"], "<"), "импорт оставил активный HTML")
+	TEST_ASSERT(!findtext(safe["medical_records"], "&amp;amp;"), "импорт повторно экранировал существующие сущности")
+
+/datum/unit_test/player_save_json/public_transfer_access/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.path = test_path
+	prefs.real_name = "Protected Character"
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан аккаунт")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	var/rejected = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("species" = SPECIES_LIZARD)))
+	TEST_ASSERT(!prefs.import_character_json(rejected), "импорт открыл недоступный в редакторе вид")
+	TEST_ASSERT_EQUAL(prefs.player_transfer_error, "Этот вид недоступен в редакторе персонажа", "импорт отклонён не из-за ограничения вида")
+	TEST_ASSERT_EQUAL(prefs.pref_species.id, SPECIES_HUMAN, "отказ изменил вид персонажа")
+	var/unknown_quirk = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("all_quirks" = player_save_encode_value(list("Nonexistent Quirk")))))
+	TEST_ASSERT(prefs.import_character_json(unknown_quirk), "неизвестный квирк отклонил весь файл: [prefs.player_transfer_error]")
+	TEST_ASSERT(!("Nonexistent Quirk" in prefs.all_quirks), "принят несуществующий квирк")
+	var/datum/gear/locked
+	for(var/category in GLOB.loadout_items)
+		var/list/subcategories = GLOB.loadout_items[category]
+		for(var/subcategory in subcategories)
+			var/list/items = subcategories[subcategory]
+			for(var/name in items)
+				var/datum/gear/gear = items[name]
+				if(gear.donoritem)
+					locked = gear
+					break
+	TEST_ASSERT_NOTNULL(locked, "в фикстуре нет закрытого предмета")
+	var/list/loadout = list("SAVE_1" = list(list(LOADOUT_ITEM = "[locked.type]")))
+	var/donor_loadout = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("loadout" = json_encode(loadout))))
+	TEST_ASSERT(prefs.import_character_json(donor_loadout), "донатный предмет отклонил весь файл: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(length(prefs.loadout_data["SAVE_1"]), 0, "импорт открыл донатный предмет")
+	TEST_ASSERT(length(prefs.player_transfer_notices), "игроку не сказали об убранном предмете")
+	// Старые сейвы хранят пути переименованных и удалённых вещей.
+	var/list/stale_loadout = list("SAVE_1" = list(list(LOADOUT_ITEM = "/datum/gear/removed_test_item"), list(LOADOUT_ITEM = "[/datum/gear/accessory/necklace]")))
+	var/stale_json = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("loadout" = json_encode(stale_loadout))))
+	TEST_ASSERT(prefs.import_character_json(stale_json), "удалённый предмет отклонил весь файл: [prefs.player_transfer_error]")
+	var/list/stale_kept = prefs.loadout_data["SAVE_1"]
+	TEST_ASSERT_EQUAL(length(stale_kept), 1, "импорт не убрал удалённый предмет или потерял существующий")
+	TEST_ASSERT(length(prefs.player_transfer_notices), "игроку не сказали об удалённом предмете")
+	TEST_ASSERT_EQUAL(prefs.real_name, "Protected Character", "импорт экипировки изменил персонажа")
+	prefs.path = null
+
+
+/datum/unit_test/player_save_json/name_cache_recovery/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source["version"] << 80
+	source.cd = "/character1"
+	source["real_name"] << "Previous Name"
+	TEST_ASSERT(account.commit(source), "не создан первый слот")
+	source = account.open("/character1")
+	source.cd = "/character1"
+	source["real_name"] << "Current Name"
+	TEST_ASSERT(account.commit(source, "/character1"), "не создан второй слот")
+	var/datum/player_save_json/child = account.branch("character1")
+	fdel(child.active_path)
+	text2file("{", child.active_path)
+	var/datum/player_save_json/account/reopened = new(test_path)
+	var/list/names = reopened.character_names(2)
+	TEST_ASSERT(islist(names), "меню заблокировало доступное предыдущее поколение")
+	TEST_ASSERT_EQUAL(names["character1"], "Current Name", "меню не использовало опубликованное имя")
+	TEST_ASSERT_NOTNULL(reopened.open("/character1"), "загрузка слота не восстановила предыдущий снимок")
+	names = reopened.character_names(2)
+	TEST_ASSERT_EQUAL(names["character1"], "Previous Name", "меню не восстановило согласованный снимок")
+
+
+/datum/unit_test/player_save_json/public_transfer_account_limit/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/transfer_staging/prefs = new
+	allocated += prefs
+	var/base_limit = prefs.get_custom_interaction_limit()
+	prefs.interaction_limit = base_limit + 5
+	prefs.path = test_path
+	prefs.real_name = "Account Limit"
+	prefs.custom_interactions = list()
+	for(var/i in 1 to base_limit + 1)
+		var/datum/interaction/custom/custom = new
+		custom.name = "Action [i]"
+		custom.message = "Test action."
+		prefs.custom_interactions += custom
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан аккаунт")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(exported, "не экспортированы действия подписчика")
+	TEST_ASSERT(prefs.import_character_json(exported), "не учтён лимит принимающего аккаунта: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(length(prefs.custom_interactions), base_limit + 1, "пробный объект обрезал действия до бесплатного лимита")
+	prefs.interaction_limit = base_limit
+	TEST_ASSERT(!prefs.import_character_json(exported), "файл обошёл лимит принимающего аккаунта")
+	prefs.path = null
+
+/datum/unit_test/player_save_json/scalar_precision/Run()
+	var/savefile/source = prepare()
+	var/list/values = list(0, -1, 999999, -999999, 1000001, -1000001, 16777216, 0.1, -0.1, 1.23456789, 1e-20, 1e20, "", "Кириллица, emoji 😀, ÿ, %ff, %25, кавычки \" и \\", "\proper Имя", "\improper Имя")
+	for(var/code in 1 to 31)
+		values += "начало[ascii2text(code)]конец %ff %25"
+	for(var/index in 1 to values.len)
+		source["value_[index]"] << values[index]
+	TEST_ASSERT(storage.commit(source), "не записаны скаляры: [storage.error]")
+	var/savefile/restored = storage.open()
+	TEST_ASSERT_NOTNULL(restored, "не прочитаны скаляры: [storage.error]")
+	for(var/index in 1 to values.len)
+		var/value
+		restored["value_[index]"] >> value
+		TEST_ASSERT_EQUAL(value, values[index], "изменилось значение скаляра [index]")
+
+/datum/unit_test/player_save_json/v1_checksum/Run()
+	prepare()
+	// Старый писатель кодировал список целиком. Читатель должен принимать его файлы.
+	var/list/tree = list("value" = list("value" = "Текст \" \\ \n", "children" = list()))
+	var/list/document = list("format" = "bluemoon-player-save", "version" = 1, "generation" = 1, "tree" = tree, "directories" = null, "checksum" = md5(json_encode(list(1, tree, null))))
+	text2file(json_encode(document), storage.json_path)
+	var/savefile/source = storage.open()
+	TEST_ASSERT_NOTNULL(source, "не прочитан старый формат v1")
+	source["value"] << "Изменено"
+	TEST_ASSERT(storage.commit(source), "не записан новый JSON")
+	document = json_decode(file2text(storage.active_path))
+	TEST_ASSERT_EQUAL(document["checksum"], md5(json_encode(list(document["generation"], document["tree"], document["directories"]))), "новая контрольная сумма несовместима с v1")
+	// Повреждение остаётся валидным JSON, поэтому его должна заметить именно сумма.
+	tree = document["tree"]
+	var/list/node = tree["value"]
+	node["value"] = "Повреждено"
+	fdel(storage.active_path)
+	text2file(json_encode(document), storage.active_path)
+	source = storage.open()
+	TEST_ASSERT_NOTNULL(source, "не восстановлено поколение после ошибки суммы")
+	TEST_ASSERT(storage.recovered, "повреждение не замечено")
+	var/value
+	source["value"] >> value
+	TEST_ASSERT_EQUAL(value, "Текст \" \\ \n", "прочитаны повреждённые данные")
+
+/datum/unit_test/player_save_json/root_cache_isolation/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source["marker"] << "Сохранено"
+	TEST_ASSERT(account.commit(source), "не создан корень")
+	for(var/iteration in 1 to 3)
+		source = account.open("/")
+		var/marker
+		source["marker"] >> marker
+		TEST_ASSERT_EQUAL(marker, "Сохранено", "несохранённые изменения попали в кэш")
+		source["marker"] << "Не сохранено"
+		source.cd = "/temporary"
+		source["value"] << iteration
+
+/datum/unit_test/player_save_json/document_isolation/Run()
+	var/savefile/source = prepare()
+	source["settings"] << list("nested" = list("value" = 1))
+	TEST_ASSERT(storage.commit(source), "не создан снимок")
+	var/datum/player_save_document/first = storage.snapshot()
+	var/datum/player_save_document/second = storage.snapshot()
+	var/list/values = first.read("settings")
+	var/list/nested = values["nested"]
+	nested["value"] = 2
+	var/list/unchanged = second.read("settings")
+	TEST_ASSERT_EQUAL(unchanged["nested"]["value"], 1, "чтение отдало общий изменяемый список")
+	first.write("settings", values)
+	nested["value"] = 3
+	unchanged = second.read("settings")
+	TEST_ASSERT_EQUAL(unchanged["nested"]["value"], 1, "подготовка записи изменила другой снимок")
+	TEST_ASSERT(first.commit(), "не записан документ")
+	var/datum/player_save_document/current = storage.snapshot()
+	values = current.read("settings")
+	TEST_ASSERT_EQUAL(values["nested"]["value"], 2, "запись сохранила ссылку на список вызывающего")
+	var/generation = storage.generation
+	TEST_ASSERT(!current.write("settings", values), "одинаковые данные отмечены изменёнными")
+	TEST_ASSERT(current.commit(), "неизменённый документ не принят")
+	TEST_ASSERT_EQUAL(storage.generation, generation, "повторный commit записал новое поколение")
+
+/datum/unit_test/player_save_json/document_stale_writer/Run()
+	var/savefile/source = prepare()
+	source["marker"] << 1
+	TEST_ASSERT(storage.commit(source), "не создан снимок")
+	var/datum/player_save_document/stale = storage.snapshot()
+	var/datum/player_save_json/other = new(test_path)
+	var/datum/player_save_document/current = other.snapshot()
+	current.write("marker", 2)
+	TEST_ASSERT(current.commit(), "не записана конкурирующая правка")
+	stale.write("marker", 3)
+	TEST_ASSERT(!stale.commit(), "устаревший снимок затёр чужую запись")
+	current = storage.snapshot()
+	TEST_ASSERT_EQUAL(current.read("marker"), 2, "не прочитана актуальная ревизия")
+
+/datum/unit_test/player_save_json/savefile_stale_writer/Run()
+	var/savefile/source = prepare()
+	source["marker"] << 1
+	TEST_ASSERT(storage.commit(source), "не создан снимок")
+	var/datum/player_save_json/other = new(test_path)
+	var/datum/player_save_document/current = other.snapshot()
+	current.write("marker", 2)
+	TEST_ASSERT(current.commit(), "не записана конкурирующая правка")
+	source["marker"] << 3
+	TEST_ASSERT(!storage.commit(source), "устаревший savefile затёр чужую запись")
+	current = storage.snapshot()
+	TEST_ASSERT_EQUAL(current.read("marker"), 2, "не прочитана актуальная ревизия")
+
+/datum/unit_test/player_save_json/account_savefile_stale_writer/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source["marker"] << 1
+	source.cd = "/character1"
+	source["real_name"] << "Published"
+	TEST_ASSERT(account.commit(source), "не создан аккаунт")
+	source = account.open("/character1")
+	var/datum/player_save_json/account/other = new(test_path)
+	var/datum/player_save_document/current = other.snapshot()
+	current.write("marker", 2)
+	TEST_ASSERT(current.commit(), "не записана конкурирующая правка корня")
+	var/datum/player_save_json/child = account.branch("character1")
+	var/child_revision = player_save_revision(child.json_path)
+	source.cd = "/character1"
+	source["real_name"] << "Stale"
+	TEST_ASSERT(!account.commit(source, "/character1"), "устаревшая анкета затёрла чужой корень")
+	TEST_ASSERT_EQUAL(source.cd, "/character1", "ошибка записи изменила директорию источника")
+	TEST_ASSERT_EQUAL(player_save_revision(child.json_path), child_revision, "устаревшая транзакция успела записать раздел")
+	current = account.snapshot()
+	TEST_ASSERT_EQUAL(current.read("marker"), 2, "потеряна чужая настройка корня")
+	var/list/names = account.character_names(1)
+	TEST_ASSERT_EQUAL(names["character1"], "Published", "неопубликованная анкета стала видимой")
+
+/datum/unit_test/player_save_json/character_patch_preserves_unknown/Run()
+	prepare()
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.path = test_path
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан персонаж")
+	var/savefile/source = prefs.open_player_save("/character1")
+	source["unknown_root"] << "Root"
+	source.cd = "/character1/unknown_module"
+	source["value"] << list("future" = 1.23456789)
+	source.cd = "/character1/real_name/unknown_child"
+	source["value"] << "Nested"
+	TEST_ASSERT(prefs.commit_player_save(source, "/character1"), "не записаны неизвестные поля")
+	prefs.real_name = "Patched Character"
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не записана правка персонажа")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не записана правка корня")
+	source = prefs.open_player_save("/character1")
+	var/value
+	source["unknown_root"] >> value
+	TEST_ASSERT_EQUAL(value, "Root", "потеряно неизвестное поле корня")
+	source.cd = "/character1"
+	source["real_name"] >> value
+	TEST_ASSERT_EQUAL(value, "Patched Character", "не изменено имя")
+	source.cd = "/character1/real_name/unknown_child"
+	source["value"] >> value
+	TEST_ASSERT_EQUAL(value, "Nested", "правка значения удалила дочерний узел")
+	source.cd = "/character1/unknown_module"
+	var/list/numbers
+	source["value"] >> numbers
+	TEST_ASSERT_EQUAL(numbers["future"], 1.23456789, "потерян неизвестный раздел")
+	prefs.path = null
+
+/datum/unit_test/player_save_json/character_patch_publication_failure/Run()
+	prepare()
+	var/datum/player_save_json/account/reject_root/account = new(test_path)
+	var/savefile/source = account.open()
+	source["version"] << 80
+	source.cd = "/character1"
+	source["real_name"] << "Published"
+	TEST_ASSERT(account.commit(source), "не создан аккаунт")
+	var/datum/player_save_character_transaction/transaction = account.character_transaction("character1")
+	source["real_name"] << "Unpublished"
+	account.reject_write = TRUE
+	TEST_ASSERT(!transaction.commit(source), "ошибка публикации проигнорирована")
+	var/datum/player_save_json/account/reopened = new(test_path)
+	var/list/names = reopened.character_names(1)
+	TEST_ASSERT_EQUAL(names["character1"], "Published", "меню показало неопубликованное имя")
+	transaction = reopened.character_transaction("character1")
+	source["real_name"] << "Retried"
+	TEST_ASSERT(transaction.commit(source), "не удалась повторная запись")
+	names = reopened.character_names(1)
+	TEST_ASSERT_EQUAL(names["character1"], "Retried", "повторная запись не опубликована")
+
+/datum/unit_test/player_save_json/single_document_write_failure/Run()
+	prepare()
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.path = test_path
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	var/datum/player_save_json/account/reject_root/rejecting = new(test_path)
+	prefs.player_save_storage = rejecting
+	rejecting.reject_write = TRUE
+	prefs.buffer_single_pref("tgui_panel_state", "pending")
+	TEST_ASSERT(!prefs.flush_single_prefs(), "не замечена ошибка записи")
+	TEST_ASSERT_EQUAL(prefs.pending_single_prefs["tgui_panel_state"], "pending", "ошибка записи потеряла буфер")
+	prefs.path = null
+
+/datum/unit_test/player_save_json/character_patch_recovery/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source["version"] << 80
+	source.cd = "/character1"
+	source["real_name"] << "Previous"
+	TEST_ASSERT(account.commit(source), "не создано предыдущее поколение")
+	var/datum/player_save_character_transaction/transaction = account.character_transaction("character1")
+	source["real_name"] << "Current"
+	TEST_ASSERT(transaction.commit(source), "не создано текущее поколение")
+	var/datum/player_save_json/child = account.branch("character1")
+	fdel(child.active_path)
+	text2file("{", child.active_path)
+	var/datum/player_save_json/account/reopened = new(test_path)
+	transaction = reopened.character_transaction("character1")
+	TEST_ASSERT_NOTNULL(transaction, "правка не смогла восстановить предыдущий снимок")
+	TEST_ASSERT_EQUAL(transaction.character.read("real_name"), "Previous", "выбрано несогласованное поколение")
+	source["real_name"] << "Recovered"
+	TEST_ASSERT(transaction.commit(source), "не записано восстановленное состояние")
+	var/list/names = reopened.character_names(1)
+	TEST_ASSERT_EQUAL(names["character1"], "Recovered", "не опубликовано восстановление")
+
+/datum/unit_test/player_save_json/character_patch_deleted_slot/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source["version"] << 80
+	source.cd = "/character1"
+	source["old_private"] << "Old"
+	TEST_ASSERT(account.commit(source), "не создан старый слот")
+	var/savefile/without_character = new
+	without_character["version"] << 80
+	TEST_ASSERT(account.commit(without_character), "не удалён слот")
+	var/datum/player_save_character_transaction/transaction = account.character_transaction("character1")
+	TEST_ASSERT_NULL(transaction.character.read("old_private"), "новый слот унаследовал удалённые поля")
+	var/savefile/patch = new
+	patch.cd = "/character1"
+	patch["real_name"] << "New"
+	TEST_ASSERT(transaction.commit(patch), "не создан новый слот")
+	var/datum/player_save_json/account/reopened = new(test_path)
+	transaction = reopened.character_transaction("character1")
+	TEST_ASSERT_NULL(transaction.character.read("old_private"), "удалённое поле вернулось с диска")
+	TEST_ASSERT_EQUAL(transaction.character.read("real_name"), "New", "новое имя не записано")
+
+/// Незавершённая правка нового слота не должна менять кэш оставшегося старого раздела.
+/datum/unit_test/player_save_json/deleted_slot_snapshot_isolation/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source.cd = "/character1"
+	source["real_name"] << "Old"
+	TEST_ASSERT(account.commit(source), "не создан старый слот")
+	var/datum/player_save_json/child = account.branch("character1")
+	var/datum/player_save_document/previous = child.snapshot()
+	var/old_json = previous.node_json["real_name"]
+	var/datum/player_save_document/root = account.snapshot()
+	root.remove("character1")
+	TEST_ASSERT(root.commit(), "не удалён слот")
+	var/datum/player_save_character_transaction/transaction = account.character_transaction("character1")
+	transaction.character.write("real_name", "Unpublished")
+	TEST_ASSERT_EQUAL(previous.read("real_name"), "Old", "правка затронула старое дерево")
+	TEST_ASSERT_EQUAL(previous.node_json["real_name"], old_json, "правка затронула старый кэш JSON")
+	transaction.character.remove("real_name")
+	TEST_ASSERT_EQUAL(previous.node_json["real_name"], old_json, "удаление затронуло старый кэш JSON")
+	var/savefile/patch = new
+	patch["real_name"] << "Merged"
+	transaction.character.merge(patch)
+	TEST_ASSERT_EQUAL(previous.node_json["real_name"], old_json, "слияние затронуло старый кэш JSON")
+	TEST_ASSERT_EQUAL(child.node_json["real_name"], old_json, "незавершённая транзакция изменила хранилище")
+
+/datum/unit_test/player_save_json/account_recovery_error_details/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source.cd = "/character1"
+	source["real_name"] << "Published"
+	TEST_ASSERT(account.commit(source), "не создан первый корень")
+	var/previous_path = account.active_path
+	var/datum/player_save_document/root = account.snapshot()
+	root.write("marker", 2)
+	TEST_ASSERT(root.commit(), "не создан второй корень")
+	var/list/corrupted = json_decode(file2text(account.active_path))
+	var/list/tree = corrupted["tree"]
+	tree -= "character1"
+	corrupted["checksum"] = md5(json_encode(list(corrupted["generation"], tree, corrupted["directories"])))
+	fdel(account.active_path)
+	text2file(json_encode(corrupted), account.active_path)
+	fdel(previous_path)
+	text2file("{", previous_path)
+	var/datum/player_save_json/account/reopened = new(test_path)
+	TEST_ASSERT_NULL(reopened.open(), "восстановление повреждённых поколений завершилось успешно")
+	TEST_ASSERT(findtext(reopened.error, "Раздел отсутствует в корне"), "потеряна исходная причина ошибки")
+	TEST_ASSERT(findtext(reopened.error, "Оба поколения JSON сохранения повреждены"), "потеряна причина отказа восстановления")
+
+/datum/unit_test/player_save_json/branch_cache_revision_and_limit/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source["version"] << 80
+	for(var/slot in 1 to 5)
+		source.cd = "/character[slot]"
+		source["real_name"] << "Character [slot]"
+	TEST_ASSERT(account.commit(source), "не созданы слоты")
+	for(var/slot in 1 to 5)
+		TEST_ASSERT_NOTNULL(account.open("/character[slot]"), "не прочитан слот")
+		TEST_ASSERT(length(account.branches) <= 2, "кэш удерживает все посещённые слоты")
+	var/datum/player_save_json/account/other = new(test_path)
+	var/datum/player_save_character_transaction/transaction = other.character_transaction("character5")
+	var/savefile/patch = new
+	patch.cd = "/character5"
+	patch["real_name"] << "Changed elsewhere"
+	TEST_ASSERT(transaction.commit(patch), "не записано изменение другим датумом")
+	source = account.open("/character5")
+	source.cd = "/character5"
+	var/name
+	source["real_name"] >> name
+	TEST_ASSERT_EQUAL(name, "Changed elsewhere", "кэш раздела проигнорировал чужую запись")
+
+/datum/unit_test/player_save_json/document_directory_recovery/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source["marker"] << 1
+	source.cd = "/character1"
+	source["real_name"] << "Published"
+	TEST_ASSERT(account.commit(source), "не создан аккаунт")
+	var/datum/player_save_document/document = account.snapshot()
+	document.write("marker", 2)
+	TEST_ASSERT(document.commit(), "не создан второй корень")
+	var/list/corrupted = json_decode(file2text(account.active_path))
+	var/list/tree = corrupted["tree"]
+	tree -= "character1"
+	corrupted["checksum"] = md5(json_encode(list(corrupted["generation"], tree, corrupted["directories"])))
+	fdel(account.active_path)
+	text2file(json_encode(corrupted), account.active_path)
+	var/datum/player_save_json/account/reopened = new(test_path)
+	document = reopened.snapshot()
+	TEST_ASSERT_NOTNULL(document, "прямое чтение не восстановило каталог")
+	TEST_ASSERT(reopened.recovered, "ошибка каталога не отмечена")
+	TEST_ASSERT_EQUAL(document.read("marker"), 1, "прочитан корень с отсутствующим разделом")
+	TEST_ASSERT(document.commit(), "не записан исправленный каталог")
+	var/list/names = reopened.character_names(1)
+	TEST_ASSERT_EQUAL(names["character1"], "Published", "исправление каталога потеряло слот")
+
+/// Счётчики обнаруживают повторное чтение без нестабильных порогов времени.
+/datum/player_save_json/read_counted
+	var/reads = 0
+
+/datum/player_save_json/read_counted/read_document(source_path, source_text)
+	reads++
+	return ..()
+
+/datum/player_save_json/account/read_counted/branch(key)
+	if(!branches[key])
+		branches[key] = new /datum/player_save_json/read_counted("[json_path].d/[md5(key)].sav")
+	return ..()
+
+/datum/unit_test/player_save_json/names_reuse_published_document/Run()
+	prepare()
+	var/datum/player_save_json/account/read_counted/account = new(test_path)
+	var/savefile/source = account.open()
+	for(var/slot in 1 to 5)
+		source.cd = "/character[slot]"
+		source["real_name"] << "Character [slot]"
+	TEST_ASSERT(account.commit(source), "не созданы слоты")
+	account.character_names(5)
+	var/datum/player_save_character_transaction/transaction = account.character_transaction("character5")
+	transaction.character.write("real_name", "Changed")
+	var/savefile/patch = new
+	TEST_ASSERT(transaction.commit(patch), "не сохранено новое имя")
+	var/datum/player_save_json/read_counted/child = account.branch("character5")
+	var/reads = child.reads
+	var/list/names = account.character_names(5)
+	TEST_ASSERT_EQUAL(names["character5"], "Changed", "меню вернуло старое имя")
+	TEST_ASSERT_EQUAL(child.reads, reads, "меню перечитало только что сохранённый документ")
+	var/datum/player_save_json/account/other = new(test_path)
+	transaction = other.character_transaction("character5")
+	transaction.character.write("real_name", "Foreign")
+	TEST_ASSERT(transaction.commit(patch), "не записано чужое изменение")
+	names = account.character_names(5)
+	TEST_ASSERT_EQUAL(names["character5"], "Foreign", "кэш скрыл чужую запись")
+	TEST_ASSERT_EQUAL(child.reads, reads, "меню прочитало анкету вместо обновлённого имени в корне")
+	account.open("/character1")
+	account.open("/character2")
+	TEST_ASSERT(!("character5" in account.branches), "старый раздел не вытеснен")
+	transaction = other.character_transaction("character5")
+	transaction.character.write("real_name", "After eviction")
+	TEST_ASSERT(transaction.commit(patch), "не записано изменение вытесненного раздела")
+	names = account.character_names(5)
+	TEST_ASSERT_EQUAL(names["character5"], "After eviction", "вытеснение оставило устаревшее имя")
+
+/proc/player_save_test_branch_reads(datum/player_save_json/account/account)
+	. = 0
+	for(var/key in account.branches)
+		var/datum/player_save_json/read_counted/child = account.branches[key]
+		. += child.reads
+
+/// Первое открытие меню на большом аккаунте читало каждую анкету ради названия слота (430 мс на проде).
+/datum/unit_test/player_save_json/slot_names_from_root_index/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	for(var/slot in 1 to 3)
+		source.cd = "/character[slot]"
+		source["real_name"] << "Character [slot]"
+		source["character_slot_name"] << (slot == 2 ? null : "Slot [slot]")
+	TEST_ASSERT(account.commit(source), "не созданы слоты")
+	var/datum/player_save_json/account/read_counted/reopened = new(test_path)
+	var/list/slot_names = reopened.character_slot_names(3)
+	TEST_ASSERT_EQUAL(slot_names["character1"], "Slot 1", "нет названия первого слота")
+	TEST_ASSERT_NULL(slot_names["character2"], "у слота без названия появилось название")
+	TEST_ASSERT_EQUAL(reopened.character_names(3)["character3"], "Character 3", "индекс потерял имя персонажа")
+	TEST_ASSERT_EQUAL(player_save_test_branch_reads(reopened), 0, "названия слотов прочитаны из анкет")
+
+	var/datum/player_save_character_transaction/transaction = account.character_transaction("character2")
+	transaction.character.write("character_slot_name", "Renamed")
+	TEST_ASSERT(transaction.commit(new /savefile), "не сохранено название слота")
+	reopened = new(test_path)
+	TEST_ASSERT_EQUAL(reopened.character_slot_names(3)["character2"], "Renamed", "запись слота не обновила индекс")
+	TEST_ASSERT_EQUAL(player_save_test_branch_reads(reopened), 0, "после записи слота название прочитано из анкеты")
+
+	// Корень прежней сборки хранит только имя: анкеты читаются один раз, дальше индекс в корне.
+	var/datum/player_save_document/root = account.snapshot()
+	for(var/slot in 1 to 3)
+		root.write("character[slot]", "Character [slot]")
+	TEST_ASSERT(root.commit(), "не записан корень прежнего вида")
+	reopened = new(test_path)
+	TEST_ASSERT_EQUAL(reopened.character_slot_names(3)["character1"], "Slot 1", "прежний корень потерял название слота")
+	TEST_ASSERT(player_save_test_branch_reads(reopened) > 0, "прежний корень не прочитал анкеты")
+	reopened = new(test_path)
+	TEST_ASSERT_EQUAL(reopened.character_slot_names(3)["character2"], "Renamed", "индекс прежнего корня не дописан")
+	TEST_ASSERT_EQUAL(player_save_test_branch_reads(reopened), 0, "индекс прежнего корня не сохранён")
+
+/datum/unit_test/player_save_json/unchanged_patch_keeps_snapshot/Run()
+	var/savefile/source = prepare()
+	source["number"] << 1.23456789
+	source["mixed"] << list(null, "key" = list(1, 2), /obj/item)
+	source.cd = "/unknown/nested"
+	source["marker"] << "retained"
+	source.cd = "/"
+	TEST_ASSERT(storage.commit(source), "не создан снимок")
+	var/datum/player_save_document/document = storage.snapshot()
+	var/list/original = document.tree
+	var/generation = document.generation
+	document.merge(source)
+	TEST_ASSERT(!document.dirty, "равные значения пометили документ изменённым")
+	TEST_ASSERT(document.tree == original, "равный patch скопировал дерево")
+	TEST_ASSERT(document.commit(), "не принят неизменённый снимок")
+	TEST_ASSERT_EQUAL(document.generation, generation, "неизменённый patch сменил поколение")
+	var/savefile/patch = new
+	patch.cd = "/unknown"
+	patch["new"] << 42
+	patch.cd = "/"
+	document.merge(patch)
+	TEST_ASSERT(document.dirty, "вложенная правка не отмечена")
+	TEST_ASSERT(document.tree != original, "вложенная правка изменила общий снимок")
+	TEST_ASSERT(document.commit(), "не записана вложенная правка")
+	var/savefile/readback = storage.open()
+	readback.cd = "/unknown/nested"
+	var/marker
+	readback["marker"] >> marker
+	TEST_ASSERT_EQUAL(marker, "retained", "patch потерял неизвестную ветвь")
+	readback.cd = "/unknown"
+	readback["new"] >> marker
+	TEST_ASSERT_EQUAL(marker, 42, "вложенная правка не сохранена")
+
+/datum/unit_test/player_save_json/direct_writers_match_compatibility/Run()
+	prepare()
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	prefs.real_name = "Direct Character"
+	prefs.features["body_size"] = 1.23456789
+	prefs.tgui_panel_state = "new"
+	prefs.favorite_tracks = list("первый", "второй")
+	prefs.menuoptions = list(/datum/verbs/menu/Settings = TRUE)
+	prefs.buffer_single_pref("tgui_panel_state", "obsolete")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не записаны настройки напрямую")
+	var/datum/player_save_document/document = prefs.open_player_document()
+	TEST_ASSERT_EQUAL(document.read("tgui_panel_state"), "new", "буфер перекрыл актуальную переменную")
+	var/savefile/compatibility = prefs.write_preferences(TRUE, TRUE)
+	TEST_ASSERT_NULL(patch_difference(player_save_encode_tree(compatibility), document.tree), "прямой писатель настроек отличается от savefile")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не записан персонаж напрямую")
+	var/datum/player_save_json/account/account = prefs.get_player_save_storage()
+	var/datum/player_save_character_transaction/transaction = account.character_transaction("character1")
+	compatibility = prefs.write_character(TRUE, TRUE, TRUE)
+	TEST_ASSERT_NULL(patch_difference(player_save_encode_tree(compatibility), transaction.character.tree), "прямой писатель персонажа отличается от экспорта")
+	var/root_generation = account.generation
+	var/character_generation = transaction.character.generation
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не приняты неизменённые настройки")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не принят неизменённый персонаж")
+	TEST_ASSERT_EQUAL(account.generation, root_generation, "неизменённые префы сменили корневое поколение")
+	transaction = account.character_transaction("character1")
+	TEST_ASSERT_EQUAL(transaction.character.generation, character_generation, "неизменённый персонаж сменил поколение")
+
+/datum/unit_test/player_save_json/direct_writer_failure_preserves_cache/Run()
+	prepare()
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	var/datum/player_save_document/before = prefs.open_player_document()
+	var/old_theme = before.read("tgui_panel_theme")
+	var/datum/player_save_json/account/reject_root/rejecting = new(test_path)
+	prefs.player_save_storage = rejecting
+	rejecting.reject_write = TRUE
+	prefs.tgui_panel_theme = "must not persist"
+	prefs.buffer_single_pref("tgui_panel_state", "pending")
+	TEST_ASSERT(!prefs.save_preferences(TRUE, TRUE), "проигнорирован отказ записи")
+	TEST_ASSERT_EQUAL(prefs.pending_single_prefs["tgui_panel_state"], "pending", "отказ полной записи потерял буфер")
+	TEST_ASSERT_EQUAL(before.read("tgui_panel_theme"), old_theme, "подготовка изменила выданный снимок")
+	var/datum/player_save_json/account/reopened = new(test_path)
+	var/datum/player_save_document/after = reopened.snapshot()
+	TEST_ASSERT_EQUAL(after.read("tgui_panel_theme"), old_theme, "неопубликованная настройка попала на диск")
+	// Ошибка кодирования должна отбрасывать уже подготовленные поля и сохранять буфер.
+	prefs.player_save_storage = reopened
+	prefs.player_save_blocked = FALSE
+	var/list/cycle = list()
+	cycle += list(cycle)
+	prefs.custom_colors = cycle
+	var/saved_cycle = prefs.save_preferences(TRUE, TRUE)
+	prefs.custom_colors = list()
+	cycle.Cut()
+	TEST_ASSERT(!saved_cycle, "циклический список не отклонил запись")
+	TEST_ASSERT_EQUAL(prefs.pending_single_prefs["tgui_panel_state"], "pending", "ошибка кодирования потеряла буфер")
+	after = reopened.snapshot()
+	TEST_ASSERT_EQUAL(after.read("tgui_panel_theme"), old_theme, "ошибка кодирования изменила сохранённый кэш")
+
+/datum/unit_test/player_save_json/delete_preserves_other_branches/Run()
+	prepare()
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	prefs.real_name = "First"
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан первый слот")
+	prefs.default_slot = 2
+	prefs.real_name = "Second"
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан второй слот")
+	var/datum/player_save_json/account/account = prefs.get_player_save_storage()
+	var/datum/player_save_document/before = account.snapshot()
+	var/datum/player_save_json/child = account.branch("character2")
+	var/child_generation = child.generation
+	var/before_hash = rustg_hash_file(RUSTG_HASH_MD5, child.active_path)
+	prefs.default_slot = 1
+	TEST_ASSERT(prefs.delete_character(1), "не удалён первый слот")
+	TEST_ASSERT_EQUAL(prefs.default_slot, 2, "удаление активного слота не выбрало оставшегося персонажа")
+	TEST_ASSERT("character1" in before.tree, "удаление изменило старый снимок")
+	TEST_ASSERT("character1" in before.directories, "удаление изменило старый каталог")
+	TEST_ASSERT_EQUAL(child.generation, child_generation, "удаление перезаписало другую анкету")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, child.active_path), before_hash, "изменён файл другой анкеты")
+	var/datum/player_save_document/after = account.snapshot()
+	TEST_ASSERT(!("character1" in after.tree), "узел не удалён из корня")
+	TEST_ASSERT(!("character1" in after.directories), "раздел не удалён из каталога")
+	TEST_ASSERT(prefs.delete_character(2), "не удалён последний активный слот")
+	TEST_ASSERT_EQUAL(prefs.default_slot, 1, "удаление последнего слота не выбрало слот 1")
+	TEST_ASSERT(!prefs.delete_character(2), "повторно удалён отсутствующий слот")
+
+/datum/unit_test/player_save_json/deleted_document_recovery/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source.cd = "/character1"
+	source["real_name"] << "Recoverable"
+	TEST_ASSERT(account.commit(source), "не создан слот")
+	var/datum/player_save_document/root = account.snapshot()
+	TEST_ASSERT(root.remove("character1"), "не удалён раздел")
+	TEST_ASSERT(root.commit(), "удаление не опубликовано")
+	fdel(account.active_path)
+	text2file("{", account.active_path)
+	var/datum/player_save_json/account/reopened = new(test_path)
+	var/list/names = reopened.character_names(1)
+	TEST_ASSERT_EQUAL(names["character1"], "Recoverable", "удаление уничтожило файлы для восстановления")
+
+/datum/unit_test/player_save_json/cyrillic_text/Run()
+	prepare()
+	var/datum/player_save_document/document = storage.snapshot()
+	var/text = "Я и я: юф, маяк, семья %ff %25"
+	TEST_ASSERT_EQUAL(player_save_encode_value(text), text, "обычная кириллица записана объектом вместо строки")
+	document.write("text", text)
+	TEST_ASSERT(document.commit(), "не записана кириллица")
+	var/generation = storage.generation
+	TEST_ASSERT(!document.write("text", text), "неизменённая кириллица пометила документ изменённым")
+	TEST_ASSERT(document.commit(), "не принят неизменённый документ")
+	TEST_ASSERT_EQUAL(storage.generation, generation, "кириллица вызвала лишнюю запись")
+	for(var/value in list("\proper Я %ff %25", "я\nю\tф", list("я" = "\proper Я")))
+		TEST_ASSERT_EQUAL(json_encode(player_save_encode_value(player_save_decode_value(player_save_encode_value(value)))), json_encode(player_save_encode_value(value)), "служебные маркеры не прошли повторное кодирование")
+	TEST_ASSERT_EQUAL(player_save_decode_value(list("type" = "text", "value" = "семья")), "семья", "старое экранирование кириллицы больше не читается")
+
+/datum/unit_test/player_save_json/generation_selection/Run()
+	var/savefile/source = prepare()
+	source["marker"] << 1
+	TEST_ASSERT(storage.commit(source), "не создано первое поколение")
+	source["marker"] << 2
+	TEST_ASSERT(storage.commit(source), "не создано второе поколение")
+	var/datum/player_save_json/read_counted/reopened = new(test_path)
+	var/datum/player_save_document/document = reopened.snapshot()
+	TEST_ASSERT_EQUAL(document.read("marker"), 2, "не выбрано новое поколение")
+	TEST_ASSERT_EQUAL(reopened.reads, 1, "разобраны оба исправных поколения")
+	reopened.reads = 0
+	document = reopened.snapshot(1, FALSE)
+	TEST_ASSERT_EQUAL(document.read("marker"), 1, "не выбрано опубликованное поколение раздела")
+	TEST_ASSERT_EQUAL(reopened.reads, 1, "разобрано лишнее поколение раздела")
+	var/newest_path = storage.active_path
+	var/corrupted = replacetext(file2text(newest_path), "\"checksum\":\"", "\"checksum\":\"broken")
+	fdel(newest_path)
+	text2file(corrupted, newest_path)
+	reopened.reads = 0
+	document = reopened.snapshot(null, FALSE)
+	TEST_ASSERT_NOTNULL(document, "не восстановлен файл с повреждённой контрольной суммой")
+	TEST_ASSERT_EQUAL(document.read("marker"), 1, "не выбран исправный снимок")
+	TEST_ASSERT_EQUAL(reopened.reads, 2, "после сбоя не проверено второе поколение")
+	TEST_ASSERT(reopened.recovered, "восстановление не отмечено")
+
+/datum/unit_test/player_save_json/cold_names_use_root/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	for(var/slot in 1 to 9)
+		source.cd = "/character[slot]"
+		source["real_name"] << "Character [slot]"
+	TEST_ASSERT(account.commit(source), "не созданы слоты")
+	var/datum/player_save_json/account/read_counted/reopened = new(test_path)
+	var/list/names = reopened.character_names(9)
+	TEST_ASSERT_EQUAL(length(names), 9, "меню потеряло слоты")
+	TEST_ASSERT_EQUAL(names["character9"], "Character 9", "не прочитано имя из корня")
+	TEST_ASSERT_EQUAL(length(reopened.branches), 0, "первое открытие меню загрузило анкеты")
+	// В старом разделённом формате узел слота не содержал имя.
+	var/datum/player_save_document/root = reopened.snapshot()
+	for(var/slot in 2 to 9)
+		root.write("character[slot]", null)
+	TEST_ASSERT(root.commit(), "не создана фикстура старого индекса")
+	var/root_generation = reopened.generation
+	var/published_directories = json_encode(reopened.directories)
+	var/datum/player_save_json/child = reopened.branch("character9")
+	var/branch_hash = rustg_hash_file(RUSTG_HASH_MD5, "[child.json_path]")
+	reopened = new(test_path)
+	names = reopened.character_names(9)
+	TEST_ASSERT_EQUAL(names["character9"], "Character 9", "старый формат потерял имя")
+	TEST_ASSERT_EQUAL(reopened.generation, root_generation + 1, "имена не опубликованы одной записью корня")
+	TEST_ASSERT_EQUAL(json_encode(reopened.directories), published_directories, "индекс изменил поколения анкет")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, "[child.json_path]"), branch_hash, "индекс переписал файл анкеты")
+	reopened = new(test_path)
+	names = reopened.character_names(9)
+	for(var/slot in 1 to 9)
+		TEST_ASSERT_EQUAL(names["character[slot]"], "Character [slot]", "индекс потерял имя слота [slot]")
+	TEST_ASSERT_EQUAL(length(reopened.branches), 0, "повторный вход снова загрузил анкеты")
+	TEST_ASSERT_EQUAL(reopened.generation, root_generation + 1, "повторный вход снова записал корень")
+
+/datum/unit_test/player_save_json/field_read_keeps_full_validation/Run()
+	var/savefile/source = prepare()
+	source["real_name"] << "Readable Name"
+	source["unrelated"] << 1
+	TEST_ASSERT(storage.commit(source), "не создан файл")
+	var/list/document = json_decode(file2text(storage.active_path))
+	var/list/tree = document["tree"]
+	var/list/node = tree["unrelated"]
+	node["value"] = list("type" = "unknown")
+	document["checksum"] = md5(json_encode(list(document["generation"], tree, document["directories"])))
+	fdel(storage.active_path)
+	text2file(json_encode(document), storage.active_path)
+	var/datum/player_save_json/reopened = new(test_path)
+	TEST_ASSERT_EQUAL(reopened.read_field("real_name", 1), "Readable Name", "чтение одного поля декодировало посторонние значения")
+	TEST_ASSERT_NULL(reopened.error, "корректное поле вызвало ошибку")
+	TEST_ASSERT_NULL(reopened.snapshot(1), "непроверенная анкета попала в кэш полных снимков")
+	TEST_ASSERT_NOTNULL(reopened.error, "полная проверка не обнаружила повреждённое поле")
+	reopened = new(test_path)
+	TEST_ASSERT_NULL(reopened.read_field("unrelated", 1), "повреждённое поле принято")
+	TEST_ASSERT_NOTNULL(reopened.error, "ошибка нужного поля не отмечена")
+
+/datum/unit_test/player_save_json/name_backfill_write_failure/Run()
+	prepare()
+	var/datum/player_save_json/account/reject_root/account = new(test_path)
+	var/savefile/source = account.open()
+	source.cd = "/character1"
+	source["real_name"] << "Preserved Name"
+	TEST_ASSERT(account.commit(source), "не создан слот")
+	var/datum/player_save_document/root = account.snapshot()
+	root.write("character1", null)
+	TEST_ASSERT(root.commit(), "не создан старый индекс")
+	var/published_generation = account.generation
+	account.reject_write = TRUE
+	TEST_ASSERT_NULL(account.character_names(1), "ошибка записи индекса проигнорирована")
+	TEST_ASSERT_NOTNULL(account.error, "не передана ошибка записи")
+	var/datum/player_save_json/account/reopened = new(test_path)
+	root = reopened.snapshot()
+	TEST_ASSERT_EQUAL(reopened.generation, published_generation, "ошибка записи изменила поколение")
+	TEST_ASSERT_NULL(root.read("character1"), "неопубликованное имя попало на диск")
+	var/list/names = reopened.character_names(1)
+	TEST_ASSERT_EQUAL(names["character1"], "Preserved Name", "повторная попытка потеряла имя")
+	TEST_ASSERT_EQUAL(reopened.generation, published_generation + 1, "повторная попытка не обновила индекс")
+
+/datum/unit_test/player_save_json/future_version_in_pair/Run()
+	var/savefile/source = prepare()
+	source["marker"] << 1
+	TEST_ASSERT(storage.commit(source), "не создано первое поколение")
+	source["marker"] << 2
+	TEST_ASSERT(storage.commit(source), "не создано второе поколение")
+	var/list/future = json_decode(file2text(storage.json_path))
+	future["version"] = 999
+	fdel(storage.json_path)
+	text2file(json_encode(future), storage.json_path)
+	var/datum/player_save_json/reopened = new(test_path)
+	TEST_ASSERT_NULL(reopened.snapshot(), "быстрый выбор поколения скрыл неизвестную версию формата")
+	TEST_ASSERT(!reopened.commit(source), "неизвестная версия разрешила запись")
+
+/datum/preferences/player_save_read_counted
+	var/compatibility_reads = 0
+
+/datum/preferences/player_save_read_counted/open_player_save(scope)
+	compatibility_reads++
+	return ..()
+
+/datum/unit_test/player_save_json/direct_readers/Run()
+	prepare()
+	var/datum/preferences/player_save_read_counted/prefs = new
+	owned_preferences = prefs
+	allocated += prefs
+	prefs.path = test_path
+	prefs.real_name = "Direct Reader"
+	prefs.bm_lobby_show_nsfw = TRUE
+	prefs.metadollar_minute_pool = 37
+	prefs.directory_ad = "Моя анкета"
+	prefs.tattoos_string = "1^head^Моя татуировка"
+	prefs.pda_color = "#abcdef"
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	prefs.compatibility_reads = 0
+	prefs.bm_lobby_show_nsfw = FALSE
+	prefs.metadollar_minute_pool = 0
+	prefs.real_name = "Reset"
+	prefs.directory_ad = ""
+	prefs.tattoos_string = ""
+	prefs.pda_color = "#000000"
+	TEST_ASSERT(istype(prefs.load_preferences(TRUE), /datum/player_save_document), "настройки загружены через savefile")
+	TEST_ASSERT(istype(prefs.load_character(1, TRUE), /datum/player_save_document), "персонаж загружен через savefile")
+	TEST_ASSERT_EQUAL(prefs.compatibility_reads, 0, "обычная загрузка собрала промежуточный savefile")
+	TEST_ASSERT_EQUAL(prefs.real_name, "Direct Reader", "потеряно основное поле персонажа")
+	TEST_ASSERT(prefs.bm_lobby_show_nsfw, "потеряно поле лобби")
+	TEST_ASSERT_EQUAL(prefs.metadollar_minute_pool, 37, "потеряно модульное поле корня")
+	TEST_ASSERT_EQUAL(prefs.directory_ad, "Моя анкета", "потеряно поле SPLURT")
+	TEST_ASSERT_EQUAL(prefs.tattoos_string, "1^head^Моя татуировка", "потеряна татуировка")
+	TEST_ASSERT_EQUAL(prefs.pda_color, "#abcdef", "потеряно поле BlueMoon")
+	// Остатки удалённого слота не должны блокировать чтение свободного слота.
+	var/datum/player_save_json/account/account = prefs.get_player_save_storage()
+	var/datum/player_save_json/orphan = account.branch("character2")
+	text2file("{", orphan.json_path)
+	TEST_ASSERT(!prefs.load_character(2, TRUE), "свободный слот принят за сохранённого персонажа")
+	TEST_ASSERT(!prefs.player_save_blocked, "повреждённый остаток удалённого слота заблокировал аккаунт")
+	TEST_ASSERT_EQUAL(prefs.default_slot, 2, "выбор свободного слота не обновил default_slot")
+	text2file("{", "[orphan.json_path].recovery")
+	prefs.real_name = "Fresh Character"
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "новый персонаж не записан поверх повреждённого остатка")
+	TEST_ASSERT(!prefs.player_save_blocked, "запись поверх повреждённого остатка заблокировала аккаунт")
+	prefs.player_save_storage = null
+	prefs.real_name = "Reset"
+	TEST_ASSERT(prefs.load_character(2, TRUE), "новый персонаж не читается после записи")
+	TEST_ASSERT_EQUAL(prefs.real_name, "Fresh Character", "прочитан не тот персонаж")
+
+/datum/unit_test/player_save_json/metadollar_migration
+	var/balance_ckey = "unittestplayersavebalances"
+	var/balance_directory
+
+/datum/unit_test/player_save_json/metadollar_migration/Destroy()
+	if(balance_directory)
+		fdel(balance_directory)
+		SSmetadollars.metadollar_amount_cache -= balance_ckey
+	return ..()
+
+/datum/unit_test/player_save_json/metadollar_migration/Run()
+	prepare()
+	balance_directory = "data/player_saves/u/[balance_ckey]/"
+	fdel(balance_directory)
+	SSmetadollars.metadollar_amount_cache -= balance_ckey
+	var/prefs_path = "[balance_directory]preferences.sav"
+	var/savefile/backup = new("[prefs_path].updatebac")
+	backup["metadollars"] << 999
+	backup.Flush()
+	backup = null
+	var/backup_hash = rustg_hash_file(RUSTG_HASH_MD5, "[prefs_path].updatebac")
+	var/datum/player_save_json/account/account = new(prefs_path)
+	var/savefile/source = new
+	source["version"] << 80
+	source["metadollars"] << 0
+	TEST_ASSERT(account.commit(source), "не создан JSON с нулевым балансом")
+	TEST_ASSERT_EQUAL(bm_read_legacy_metadollars_from_prefs_sav(balance_ckey), 0, "старый backup повысил баланс из JSON")
+	TEST_ASSERT_EQUAL(SSmetadollars.read_metadollar_balance_from_save(balance_ckey, TRUE), 0, "нулевой баланс изменился при переносе")
+	var/balance_path = bm_metadollar_json_path(balance_ckey)
+	TEST_ASSERT(fexists(balance_path), "нулевой баланс не завершил перенос")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, "[prefs_path].updatebac"), backup_hash, "чтение изменило backup")
+	TEST_ASSERT(!fexists("[prefs_path].updatebac.json"), "backup импортирован в JSON")
+	SSmetadollars.metadollar_amount_cache -= balance_ckey
+	fdel(account.active_path)
+	text2file("{", account.active_path)
+	TEST_ASSERT_EQUAL(SSmetadollars.read_metadollar_balance_from_save(balance_ckey, TRUE), 0, "завершённый перенос снова читает preferences")
+	fdel(balance_path)
+	TEST_ASSERT_EQUAL(SSmetadollars.read_metadollar_balance_from_save(balance_ckey, TRUE), 0, "ошибка чтения вернула ненулевой баланс")
+	TEST_ASSERT(!fexists(balance_path), "ошибка чтения закреплена как нулевой баланс")
+	SSmetadollars.metadollar_adjust(5, balance_ckey)
+	TEST_ASSERT(!fexists(balance_path), "начисление при нечитаемом сейве заменило старый баланс")
+
+/// Блок журнала одиночных ключей в формате, который писал прежний сброс префов.
+/datum/unit_test/player_save_json/proc/journal_block(base, list/values)
+	var/savefile/block = new /savefile()
+	block.cd = "/"
+	for(var/key in values)
+		var/value = values[key]
+		WRITE_FILE(block[key], value)
+	WRITE_FILE(block[PREF_JOURNAL_BASE_KEY], base)
+	return "[PREF_JOURNAL_BLOCK_BEGIN]\n[block.ExportText("/")]\n[PREF_JOURNAL_BLOCK_END]\n"
+
+/// Незалитый журнал старого сейва доезжает в JSON при переносе; .sav и журнал не меняются.
+/datum/unit_test/player_save_json/legacy_journal_migration/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 80
+	legacy["tgui_panel_state"] << "до журнала"
+	legacy["marker"] << 1
+	legacy.Flush()
+	legacy = null
+	var/journal = "[test_path].journal"
+	fdel(journal)
+	var/fingerprint = rustg_hash_file(RUSTG_HASH_XXH64, test_path)
+	var/list/layouts = list("/obj/machinery/vending/cola" = "list")
+	var/journal_text = journal_block(fingerprint, list("tgui_panel_state" = "Чат «главный» с \"кавычками\"", "vending_layouts" = layouts, "ticket_nickname" = null))
+	journal_text += journal_block("устаревший", list("marker" = 2))
+	journal_text += journal_block(fingerprint, list("tgui_panel_state" = "последнее"))
+	journal_text += "[PREF_JOURNAL_BLOCK_BEGIN]\ntorn = 1\n"
+	text2file(journal_text, journal)
+	var/legacy_hash = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	var/journal_hash = rustg_hash_file(RUSTG_HASH_MD5, journal)
+
+	var/datum/player_save_document/document = storage.snapshot(null, FALSE)
+	TEST_ASSERT_NOTNULL(document, "старый сейв с журналом не прочитан: [storage.error]")
+	TEST_ASSERT_EQUAL(document.read("tgui_panel_state"), "последнее", "поздний блок журнала не перекрыл ранний")
+	TEST_ASSERT_EQUAL(json_encode(document.read("vending_layouts")), json_encode(layouts), "список из журнала изменился")
+	TEST_ASSERT_EQUAL(document.read("marker"), 1, "устаревший блок журнала перезаписал savefile")
+	TEST_ASSERT_NULL(document.read("torn"), "оборванный блок журнала прочитан")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), legacy_hash, "перенос изменил старый .sav")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, journal), journal_hash, "перенос изменил журнал")
+	fdel(journal)
+
+/// Слияние журнала, оборванное падением, доводится по метке в savefile, а сама метка в JSON не попадает.
+/datum/unit_test/player_save_json/legacy_journal_torn_merge/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 80
+	legacy["tgui_panel_theme"] << "light"
+	legacy[PREF_JOURNAL_MERGING_SAVE_KEY] << "отпечаток до слияния"
+	legacy.Flush()
+	legacy = null
+	var/journal = "[test_path].journal"
+	fdel(journal)
+	text2file(journal_block("отпечаток до слияния", list("tgui_panel_theme" = "dark")), journal)
+
+	var/datum/player_save_document/document = storage.snapshot(null, FALSE)
+	TEST_ASSERT_NOTNULL(document, "старый сейв с оборванным слиянием не прочитан: [storage.error]")
+	TEST_ASSERT_EQUAL(document.read("tgui_panel_theme"), "dark", "блок оборванного слияния не применён")
+	TEST_ASSERT(!(PREF_JOURNAL_MERGING_SAVE_KEY in document.tree), "метка слияния журнала попала в JSON")
+	fdel(journal)
+
+/// Действия переносятся с раздельными требованиями себе и партнёру; файл старой схемы отправляет действие на проверку.
+/datum/unit_test/player_save_json/transfer_interaction_fields/Run()
+	prepare()
+	var/datum/interaction/custom/custom = new
+	custom.name = "Раздельное действие"
+	custom.message = "Сообщение."
+	custom.self_required_body_parts = INTERACTION_REQUIRE_HANDS
+	custom.partner_requires_tail = TRUE
+	var/encoded = player_transfer_encode_field("interactions", list(custom))
+	var/list/decoded = player_transfer_decode_field("custom_interactions", "interactions", encoded, list(10000))
+	var/datum/interaction/custom/restored = decoded[1]
+	TEST_ASSERT_EQUAL(restored.self_required_body_parts, INTERACTION_REQUIRE_HANDS, "не перенесены требования к себе")
+	TEST_ASSERT(restored.partner_requires_tail, "не перенесено требование хвоста у партнёра")
+	TEST_ASSERT(!restored.requires_review, "проверенное действие ушло на проверку")
+
+	var/list/legacy_entry = list("name" = "Старое действие", "message" = "Сообщение.", "required_body_parts" = INTERACTION_REQUIRE_HANDS, "requires_tail" = TRUE)
+	decoded = player_transfer_decode_field("custom_interactions", "interactions", player_save_encode_value(list(legacy_entry)), list(10000))
+	restored = decoded[1]
+	TEST_ASSERT_EQUAL(restored.name, "Старое действие", "действие старой схемы не принято")
+	TEST_ASSERT(restored.requires_review, "действие старой схемы не отправлено на проверку")
+
+/// JSON, после переноса которого старая сборка снова писала .sav, откладывается, и сейв переносится заново.
+/datum/unit_test/player_save_json/stale_json_after_legacy_write/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 80
+	legacy["marker"] << "до переноса"
+	legacy.Flush()
+	legacy = null
+	// Закрытый savefile доезжает на диск только после сна мира.
+	sleep(1)
+	var/datum/player_save_json/account/account = new(test_path)
+	var/datum/player_save_document/document = account.snapshot(null, FALSE)
+	TEST_ASSERT_NOTNULL(document, "старый сейв не прочитан: [account.error]")
+	document.write("marker", "в JSON")
+	TEST_ASSERT(document.commit(), "перенос не записан: [account.error]")
+	TEST_ASSERT(fexists("[test_path].json.legacy"), "перенос не запомнил отпечаток старого сейва")
+
+	account = new(test_path)
+	document = account.snapshot(null, FALSE)
+	TEST_ASSERT_EQUAL(document?.read("marker"), "в JSON", "JSON отложен без изменения старого сейва")
+
+	legacy = new(test_path)
+	legacy["marker"] << "после отката"
+	legacy.Flush()
+	legacy = null
+	// Закрытый savefile доезжает на диск только после сна мира.
+	sleep(1)
+	account = new(test_path)
+	document = account.snapshot(null, FALSE)
+	TEST_ASSERT_EQUAL(document?.read("marker"), "после отката", "устаревший JSON перекрыл свежий старый сейв")
+	TEST_ASSERT(!fexists("[test_path].json"), "устаревший JSON остался на месте")
+	var/archive
+	var/prefix = "[md5("[type]")].sav.json.stale-"
+	for(var/name as anything in flist("data/player_save_tests/"))
+		if(findtext(name, prefix) == 1)
+			archive = "data/player_save_tests/[name]"
+	TEST_ASSERT_NOTNULL(archive, "устаревший JSON не сохранён в архив")
+	var/list/archived = json_decode(file2text("[archive][md5("[type]")].sav.json"))
+	fdel(archive)
+	TEST_ASSERT_EQUAL(archived?["format"], "bluemoon-player-save", "в архиве нет устаревшего JSON")
+	TEST_ASSERT(document.commit(), "повторный перенос не записан: [account.error]")
+	account = new(test_path)
+	document = account.snapshot(null, FALSE)
+	TEST_ASSERT_EQUAL(document?.read("marker"), "после отката", "повторный перенос не запомнил новый отпечаток")
+
+/datum/client_interface/player_save_json_test
+	var/ckey = "playersavejsontest"
+
+/// Временные префы клиента (голоформа ИИ) читают чужой слот, не перезаписывая выбранный игроком.
+/datum/unit_test/player_save_json/temporary_prefs_keep_default_slot/Run()
+	prepare()
+	var/list/names = list("Хозяин Слота", "Голоформа Слота")
+	var/datum/preferences/owner = new_preferences()
+	TEST_ASSERT(owner.save_preferences(TRUE, TRUE), "не создан корень")
+	for(var/slot in 1 to length(names))
+		owner.default_slot = slot
+		owner.real_name = names[slot]
+		TEST_ASSERT(owner.save_character(TRUE, TRUE, update_active_preset = FALSE), "не записан слот [slot]")
+	owner.default_slot = 1
+	TEST_ASSERT(owner.save_preferences(TRUE, TRUE), "не записан выбранный слот")
+
+	var/datum/client_interface/player_save_json_test/fake_client = new
+	fake_client.prefs = owner
+	var/datum/preferences/borrowed = new
+	allocated += borrowed
+	borrowed.path = test_path
+	borrowed.parent = fake_client
+	TEST_ASSERT(borrowed.load_character(2, TRUE), "временные префы не прочитали слот")
+	var/borrowed_name = borrowed.real_name
+	borrowed.flush_single_prefs()
+	var/datum/player_save_json/account/reader = new(test_path)
+	var/datum/player_save_document/after_borrow = reader.snapshot(null, FALSE)
+	var/slot_after_borrow = after_borrow?.read("default_slot")
+	borrowed.parent = null
+	borrowed.path = null
+	fake_client.prefs = null
+	qdel(fake_client)
+
+	TEST_ASSERT(owner.load_character(2, TRUE), "префы игрока не прочитали слот")
+	TEST_ASSERT(owner.flush_single_prefs(), "выбор слота не записан")
+	reader = new(test_path)
+	var/datum/player_save_document/after_owner = reader.snapshot(null, FALSE)
+
+	TEST_ASSERT_EQUAL(borrowed_name, names[2], "временные префы прочитали не тот слот")
+	TEST_ASSERT_EQUAL(slot_after_borrow, 1, "временные префы перезаписали выбранный игроком слот")
+	TEST_ASSERT_EQUAL(after_owner?.read("default_slot"), 2, "префы игрока не запомнили выбранный слот")
+
+/// Перенос старого сейва из сброса одиночных ключей идёт очередью, а не в том же тике.
+/datum/unit_test/player_save_json/deferred_migration/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 80
+	legacy.cd = "/character1"
+	legacy["version"] << 80
+	legacy["real_name"] << "Старый Персонаж"
+	legacy.Flush()
+	legacy = null
+	// Закрытый savefile доезжает на диск только после сна мира.
+	sleep(1)
+	var/list/queue_before = GLOB.player_save_migration_queue.Copy()
+	GLOB.player_save_migration_queue.Cut()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.buffer_single_pref("default_slot", 1, TRUE)
+
+	prefs.flush_single_prefs(TRUE)
+	var/deferred_json = fexists("[test_path].json")
+	var/queued = (prefs in GLOB.player_save_migration_queue)
+	var/kept = ("default_slot" in prefs.pending_single_prefs)
+
+	process_player_save_migration_queue()
+	var/migrated_json = fexists("[test_path].json")
+	var/left_in_queue = (prefs in GLOB.player_save_migration_queue)
+	var/datum/player_save_json/account/reader = new(test_path)
+	var/datum/player_save_document/document = reader.snapshot(null, FALSE)
+	var/list/names = reader.character_names(1)
+
+	prefs.buffer_single_pref("default_slot", 2, TRUE)
+	prefs.queue_player_save_migration()
+	qdel(prefs)
+	owned_preferences = null
+	var/dropped = !(prefs in GLOB.player_save_migration_queue)
+	GLOB.player_save_migration_queue = queue_before
+
+	TEST_ASSERT(!deferred_json, "перенос выполнен в тике сброса")
+	TEST_ASSERT(queued, "перенос не поставлен в очередь")
+	TEST_ASSERT(kept, "ключ потерян до переноса")
+	TEST_ASSERT(migrated_json, "очередь не перенесла сейв")
+	TEST_ASSERT(!left_in_queue, "перенесённые префы остались в очереди")
+	TEST_ASSERT_EQUAL(document?.read("default_slot"), 1, "ключ из буфера не доехал с переносом")
+	TEST_ASSERT_EQUAL(names?["character1"], "Старый Персонаж", "перенос потерял слот")
+	TEST_ASSERT(dropped, "удалённые префы остались в очереди")
+
+/// Текущая версия содержимого: SAVEFILE_VERSION_MAX снят #undef в файле загрузчика.
+/datum/unit_test/player_save_json/proc/current_save_version()
+	for(var/version in 1 to 1000)
+		if(player_save_version_status(version) == -1)
+			return version
+
+/// Старый .sav на три анкеты, скрытый слот с вложенным каталогом и неизвестное поле корня.
+/datum/unit_test/player_save_json/proc/write_legacy_account()
+	var/version = current_save_version()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << version
+	legacy["default_slot"] << 2
+	legacy["tgui_panel_state"] << "из файла"
+	legacy["unknown_root"] << "неизвестное поле"
+	for(var/slot in 1 to 3)
+		legacy.cd = "/character[slot]"
+		legacy["version"] << version
+		legacy["real_name"] << "Анкета [slot]"
+		legacy["character_slot_name"] << "Слот [slot]"
+	legacy.cd = "/character128/retired"
+	legacy["value"] << 1.23456789
+	legacy.cd = "/"
+	legacy.Flush()
+	legacy = null
+	// Закрытый savefile доезжает на диск только после сна мира.
+	sleep(1)
+
+/datum/unit_test/player_save_json/proc/import_copies_left()
+	var/prefix = "[md5("[type]")].sav.json."
+	var/list/found = list()
+	for(var/name as anything in flist("data/player_save_tests/"))
+		if(findtext(name, prefix) && findtext(name, ".import"))
+			found += name
+	return found
+
+/// Вход до переноса читает корень и выбранный слот из копии .sav и ничего не пишет.
+/datum/unit_test/player_save_json/legacy_login_reads_without_migration/Run()
+	prepare()
+	write_legacy_account()
+	var/journal = "[test_path].journal"
+	fdel(journal)
+	text2file(journal_block(rustg_hash_file(RUSTG_HASH_XXH64, test_path), list("tgui_panel_state" = "из журнала")), journal)
+	var/before = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.load_preferences(TRUE), "настройки старого сейва не прочитаны")
+	TEST_ASSERT_EQUAL(prefs.tgui_panel_state, "из журнала", "журнал одиночных настроек не применён при входе")
+	TEST_ASSERT(prefs.load_character(2, TRUE), "слот старого сейва не прочитан")
+	TEST_ASSERT_EQUAL(prefs.real_name, "Анкета 2", "прочитан не тот слот")
+	var/list/names = prefs.player_character_names()
+	TEST_ASSERT_EQUAL(names?["character3"], "Анкета 3", "имена слотов старого сейва не прочитаны")
+	var/list/custom_names = prefs.get_slot_custom_names()
+	TEST_ASSERT_EQUAL(custom_names?[1], "Слот 1", "названия слотов старого сейва не прочитаны")
+	TEST_ASSERT_EQUAL(bm_read_metadollars_from_savefile_path(test_path), 0, "баланс старого сейва не прочитан")
+	TEST_ASSERT(!prefs.player_save_blocked, "чтение старого сейва заблокировало запись")
+	TEST_ASSERT_NULL(prefs.player_save_storage.loaded_tree, "вход разобрал старый сейв целиком")
+	TEST_ASSERT(!fexists("[test_path].json"), "вход перенёс сейв синхронно")
+	TEST_ASSERT(!fexists("[test_path].json.d/"), "вход записал разделы")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), before, "вход изменил старый .sav")
+	TEST_ASSERT_EQUAL(length(import_copies_left()), 0, "после входа остались копии .sav")
+	fdel(journal)
+
+/// Очередь переносит аккаунт по разделу за шаг; корень публикуется последним и ничего не теряет.
+/datum/unit_test/player_save_json/legacy_migration_in_steps/Run()
+	prepare()
+	write_legacy_account()
+	var/before = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.load_preferences(TRUE), "настройки старого сейва не прочитаны")
+	var/list/queue_before = GLOB.player_save_migration_queue.Copy()
+	GLOB.player_save_migration_queue.Cut()
+	prefs.buffer_single_pref("tgui_panel_state", "из буфера", TRUE)
+	prefs.flush_single_prefs(TRUE)
+	var/queued = (prefs in GLOB.player_save_migration_queue)
+	GLOB.player_save_migration_queue = queue_before
+	TEST_ASSERT(queued, "перенос не поставлен в очередь")
+	var/calls = 0
+	var/published_early = FALSE
+	// Нулевой бюджет - ровно один шаг за вызов.
+	while(!prefs.run_player_save_migration(0) && calls < 20)
+		calls++
+		if(fexists("[test_path].json"))
+			published_early = TRUE
+		TEST_ASSERT(!prefs.player_save_blocked, "перенос заблокировал запись")
+	TEST_ASSERT(calls >= 5, "перенос прошёл не по шагам: [calls]")
+	TEST_ASSERT(!published_early, "корень опубликован до записи всех разделов")
+	TEST_ASSERT(prefs.flush_single_prefs(), "буфер не записан после переноса")
+	var/datum/player_save_json/account/reader = new(test_path)
+	var/savefile/readback = reader.open()
+	TEST_ASSERT_NOTNULL(readback, "перенесённый сейв не читается: [reader.error]")
+	var/value
+	readback["unknown_root"] >> value
+	TEST_ASSERT_EQUAL(value, "неизвестное поле", "перенос потерял неизвестный ключ корня")
+	readback["tgui_panel_state"] >> value
+	TEST_ASSERT_EQUAL(value, "из буфера", "буфер не дошёл до JSON")
+	readback.cd = "/character128/retired"
+	readback["value"] >> value
+	TEST_ASSERT_EQUAL(value, 1.23456789, "перенос потерял вложенный скрытый слот")
+	var/list/names = reader.character_names(3)
+	TEST_ASSERT_EQUAL(names?["character2"], "Анкета 2", "перенос потерял анкету")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), before, "перенос изменил старый .sav")
+	TEST_ASSERT_EQUAL(length(import_copies_left()), 0, "после переноса остались копии .sav")
+
+/// Чужая полная запись посреди переноса выигрывает; перенос тихо закрывается.
+/datum/unit_test/player_save_json/legacy_migration_yields_to_writer/Run()
+	prepare()
+	write_legacy_account()
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(!prefs.run_player_save_migration(0), "перенос закончился за один шаг")
+	TEST_ASSERT(!prefs.run_player_save_migration(0), "перенос закончился за два шага")
+	var/datum/player_save_json/account/writer = new(test_path)
+	var/savefile/source = writer.open()
+	source["writer_marker"] << "запись другого датума"
+	TEST_ASSERT(writer.commit(source), "полная запись не прошла")
+	TEST_ASSERT(prefs.run_player_save_migration(0), "перенос не уступил записи")
+	TEST_ASSERT(!prefs.player_save_blocked, "уступивший перенос заблокировал запись")
+	var/datum/player_save_json/account/reader = new(test_path)
+	var/datum/player_save_document/document = reader.snapshot()
+	TEST_ASSERT_EQUAL(document?.read("writer_marker"), "запись другого датума", "перенос затёр чужую запись")
+	TEST_ASSERT_EQUAL(length(import_copies_left()), 0, "после прерванного переноса остались копии .sav")
+
+/// Частичную копию .sav нельзя записать, а удалённые префы закрывают незаконченный перенос.
+/datum/unit_test/player_save_json/legacy_view_is_read_only/Run()
+	prepare()
+	write_legacy_account()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/view = account.legacy_view("/character1")
+	TEST_ASSERT_NOTNULL(view, "частичная копия не прочитана: [account.error]")
+	TEST_ASSERT(!account.commit(view, "/character1"), "частичная копия записана")
+	TEST_ASSERT(!fexists("[test_path].json"), "запись частичной копии опубликовала корень")
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(!prefs.run_player_save_migration(0), "перенос закончился за один шаг")
+	qdel(prefs)
+	owned_preferences = null
+	TEST_ASSERT_EQUAL(length(import_copies_left()), 0, "удалённые префы оставили копию .sav")
+	TEST_ASSERT(!fexists("[test_path].json"), "удалённые префы опубликовали незаконченный перенос")
+
+/// Старые взаимодействия корня переносятся в слот уже по JSON: частичная копия этого не может.
+/datum/unit_test/player_save_json/legacy_custom_interactions_migrate_first/Run()
+	prepare()
+	write_legacy_account()
+	var/savefile/legacy = new(test_path)
+	var/datum/interaction/custom/custom = new
+	custom.name = "Test Interaction"
+	custom.message = "Test message."
+	legacy["custom_interactions"] << list(custom)
+	legacy.Flush()
+	legacy = null
+	sleep(1)
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.load_character(1, TRUE), "слот со старыми взаимодействиями не загружен")
+	TEST_ASSERT_EQUAL(length(prefs.custom_interactions), 1, "старые взаимодействия не перенесены")
+	TEST_ASSERT(fexists("[test_path].json"), "перенос взаимодействий прошёл мимо JSON")
+	var/list/names = prefs.player_character_names()
+	TEST_ASSERT_EQUAL(names?["character3"], "Анкета 3", "перенос взаимодействий потерял другой слот")
+
+/// Импорт старой копии затёр игроку персонажа без следа (раунд 10796): перед заменой пишется копия.
+/datum/unit_test/player_save_json/import_backup_keeps_replaced_character
+	var/backup_directory
+
+/datum/unit_test/player_save_json/import_backup_keeps_replaced_character/Run()
+	prepare()
+	prepare_transfer_species()
+	backup_directory = "[copytext(test_path, 1, findlasttext(test_path, "/") + 1)]import_backups/"
+	fdel(backup_directory)
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "Old Character"
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	var/backup_path = prefs.backup_character_before_import(1)
+	TEST_ASSERT(backup_path && fexists(backup_path), "копия заменяемого персонажа не записана")
+	var/list/fields = player_transfer_parse(file2text(backup_path))
+	TEST_ASSERT_EQUAL(fields["real_name"], "Old Character", "копия не открывается импортом")
+	for(var/i in 1 to PLAYER_TRANSFER_BACKUPS_KEPT + 2)
+		prefs.backup_character_before_import(1)
+	TEST_ASSERT_EQUAL(length(flist(backup_directory)), PLAYER_TRANSFER_BACKUPS_KEPT, "старые копии не удаляются")
+
+/datum/unit_test/player_save_json/import_backup_keeps_replaced_character/Destroy()
+	if(backup_directory)
+		fdel(backup_directory)
+	return ..()
+
+/// Случайный облик выдавал личные аксессуары из белых списков ckey, и перенос такого персонажа отклонялся (флак public_transfer_private_fields).
+/datum/unit_test/player_save_json/random_features_skip_private_accessories/Run()
+	var/datum/sprite_accessory/private_accessory = new
+	private_accessory.ckeys_allowed = list("someoneelse")
+	var/list/accessories = list("Public" = new /datum/sprite_accessory, "Private" = private_accessory)
+	for(var/i in 1 to 30)
+		TEST_ASSERT_EQUAL(pick_public_accessory(accessories), "Public", "выбран личный аксессуар")
+	accessories["Other"] = new /datum/sprite_accessory
+	var/list/seen = list()
+	for(var/i in 1 to 60)
+		seen[pick_public_accessory(accessories)] = TRUE
+	TEST_ASSERT(seen["Other"], "кэш не увидел добавленный аксессуар")
+	TEST_ASSERT(!seen["Private"], "после обновления кэша выбран личный аксессуар")
+	for(var/i in 1 to 100)
+		var/list/features = random_features()
+		for(var/feature in GLOB.mutant_reference_list)
+			var/list/references = GLOB.mutant_reference_list[feature]
+			var/selected = features[feature]
+			if(!istext(selected))
+				continue
+			var/datum/sprite_accessory/accessory = references[selected]
+			TEST_ASSERT(!(istype(accessory) && length(accessory.ckeys_allowed)), "случайный облик выдал личный аксессуар [feature]: [selected]")
+
+/// Кнопка случайного персонажа оставляла пустой список хедшотов, и правка картинки падала (раунд 10798).
+/datum/unit_test/player_save_json/random_character_headshots/Run()
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	var/datum/character_setup/setup = new(prefs)
+	prefs.random_character()
+	setup.set_headshot("regular", 2, "")
+	setup.set_headshot("naked", MAX_HEADSHOTS_NAKED, "")
+	TEST_ASSERT_EQUAL(length(prefs.features["headshot_links"]), MAX_HEADSHOTS, "список хедшотов не добит до мест под картинки")
+	TEST_ASSERT_EQUAL(length(prefs.features["headshot_naked_links"]), MAX_HEADSHOTS_NAKED, "список откровенных хедшотов не добит")
+	qdel(setup)
+
+#ifdef PLAYER_SAVE_BENCHMARK
+/// Одинаковая фикстура для сравнения реализаций; время выводится без порога PASS/FAIL.
+/datum/unit_test/player_save_json/benchmark/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	for(var/index in 1 to 75)
+		legacy["root_[index]"] << list("настройка", index, "enabled" = TRUE)
+	for(var/slot in 1 to 5)
+		legacy.cd = "/character[slot]"
+		legacy["real_name"] << "Character [slot]"
+		for(var/index in 1 to 239)
+			legacy["field_[index]"] << list("Описание персонажа [index]", index / 7, "цвет" = "#aabbcc")
+	legacy.cd = "/"
+	legacy.Flush()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	TEST_ASSERT(account.commit(source), "не создана фикстура замера")
+	var/list/timings = list()
+	var/repeats = 20
+	var/started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		var/savefile/opened = new(test_path)
+		opened.cd = "/character1"
+		for(var/key in opened.dir)
+			var/value
+			opened[key] >> value
+	timings["binary_load"] = TICK_USAGE_TO_MS(started) / repeats
+	timings["json_load_cold"] = 0
+	timings["json_load_cold_with_root_copy"] = 0
+	for(var/iteration in 1 to repeats)
+		for(var/copy_root in (iteration % 2 ? list(TRUE, FALSE) : list(FALSE, TRUE)))
+			account = new(test_path)
+			started = TICK_USAGE_REAL
+			source = account.open("/character1")
+			TEST_ASSERT_NOTNULL(source, "не прочитан слот")
+			if(copy_root)
+				// Контрольный путь воспроизводит прежнее упреждающее копирование корня.
+				account.root_snapshot(source)
+				timings["json_load_cold_with_root_copy"] += TICK_USAGE_TO_MS(started) / repeats
+			else
+				timings["json_load_cold"] += TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		source = account.open("/character1")
+		TEST_ASSERT(account.commit(source, "/character1"), "не сохранён неизменённый слот")
+	timings["json_load_and_unchanged"] = TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		legacy.cd = "/character1"
+		for(var/index in 1 to 239)
+			legacy["field_[index]"] << list("Описание персонажа [index]", (index + iteration) / 7, "цвет" = "#aabbcc")
+		legacy.Flush()
+	timings["binary_save"] = TICK_USAGE_TO_MS(started) / repeats
+	source = account.open("/character1")
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		source.cd = "/character1"
+		for(var/index in 1 to 239)
+			source["field_[index]"] << list("Описание персонажа [index]", (index + iteration) / 7, "цвет" = "#aabbcc")
+		TEST_ASSERT(account.commit(source, "/character1"), "не сохранён изменённый слот")
+	timings["json_save"] = TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		TEST_ASSERT(account.commit(source, "/character1"), "не выполнен повторный commit")
+	timings["json_unchanged"] = TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		source = account.open("/")
+		source["root_1"] << iteration
+		TEST_ASSERT(account.commit(source, "/"), "не сохранена настройка")
+	timings["json_setting"] = TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		var/datum/player_save_document/document = account.snapshot()
+		document.write("root_1", iteration)
+		TEST_ASSERT(document.commit(), "не сохранена настройка через документ")
+	timings["document_setting"] = TICK_USAGE_TO_MS(started) / repeats
+	var/datum/player_save_document/unchanged_document = account.snapshot()
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		TEST_ASSERT(unchanged_document.commit(), "не выполнен пустой commit документа")
+	timings["document_unchanged"] = TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		var/datum/player_save_character_transaction/transaction = account.character_transaction("character1")
+		var/savefile/patch = new
+		patch.cd = "/character1"
+		for(var/index in 1 to 239)
+			patch["field_[index]"] << list("Описание персонажа [index]", (index + iteration) / 7, "цвет" = "#aabbcc")
+		TEST_ASSERT(transaction.commit(patch), "не сохранена правка слота")
+	timings["document_character_patch"] = TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		account = new(test_path)
+		TEST_ASSERT_EQUAL(length(account.character_names(5)), 5, "не прочитаны имена")
+	timings["json_names_cold"] = TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		account.character_names(5)
+	timings["json_names_cached"] = TICK_USAGE_TO_MS(started) / repeats
+	var/datum/preferences/prefs = new
+	benchmark_prefs = prefs
+	allocated += prefs
+	prefs.path = "[test_path].prefs"
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень префов")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан первый слот префов")
+	// Чередуем порядок в каждой паре, чтобы колебания нагрузки не давали преимущество одному пути.
+	timings["json_save_character_e2e"] = 0
+	timings["json_save_character_compat_e2e"] = 0
+	timings["json_save_preferences_e2e"] = 0
+	timings["json_save_preferences_compat_e2e"] = 0
+	for(var/iteration in 1 to repeats)
+		for(var/use_document in (iteration % 2 ? list(TRUE, FALSE) : list(FALSE, TRUE)))
+			prefs.real_name = "Benchmark Character [iteration] [use_document]"
+			started = TICK_USAGE_REAL
+			if(use_document)
+				TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не сохранены префы")
+				timings["json_save_character_e2e"] += TICK_USAGE_TO_MS(started) / repeats
+			else
+				var/savefile/compatibility = prefs.write_character(TRUE, TRUE)
+				TEST_ASSERT(compatibility && prefs.commit_player_save(compatibility, "/character1"), "не сохранён персонаж через совместимый путь")
+				timings["json_save_character_compat_e2e"] += TICK_USAGE_TO_MS(started) / repeats
+	for(var/iteration in 1 to repeats)
+		for(var/use_document in (iteration % 2 ? list(TRUE, FALSE) : list(FALSE, TRUE)))
+			prefs.tgui_panel_state = "[iteration] [use_document]"
+			started = TICK_USAGE_REAL
+			if(use_document)
+				TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не сохранены настройки целиком")
+				timings["json_save_preferences_e2e"] += TICK_USAGE_TO_MS(started) / repeats
+			else
+				var/savefile/compatibility = prefs.write_preferences(TRUE, TRUE)
+				TEST_ASSERT(compatibility && prefs.commit_player_save(compatibility, "/"), "не сохранены префы через совместимый путь")
+				timings["json_save_preferences_compat_e2e"] += TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		prefs.buffer_single_pref("tgui_panel_state", "[iteration]")
+		TEST_ASSERT(prefs.flush_single_prefs(), "не сброшена одиночная настройка")
+	timings["json_single_pref_e2e"] = TICK_USAGE_TO_MS(started) / repeats
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не подготовлены настройки для повторного сохранения")
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не приняты неизменённые настройки")
+	timings["json_preferences_unchanged_e2e"] = TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не принят неизменённый персонаж")
+	timings["json_character_unchanged_e2e"] = TICK_USAGE_TO_MS(started) / repeats
+	timings["json_names_after_save"] = 0
+	for(var/iteration in 1 to repeats)
+		prefs.real_name = "Menu Character [iteration]"
+		TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не сохранено имя перед открытием меню")
+		started = TICK_USAGE_REAL
+		var/list/names = prefs.player_character_names()
+		timings["json_names_after_save"] += TICK_USAGE_TO_MS(started) / repeats
+		TEST_ASSERT_EQUAL(names["character1"], prefs.real_name, "меню показало старое имя")
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитаны настройки")
+	timings["json_read_preferences_warm"] = TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		TEST_ASSERT(prefs.load_character(1, TRUE), "не прочитан персонаж")
+	timings["json_load_character_warm"] = TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		prefs.player_save_storage = null
+		TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитаны настройки без кэша")
+	timings["json_read_preferences_cold"] = TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		prefs.player_save_storage = null
+		TEST_ASSERT(prefs.load_character(1, TRUE), "не прочитан персонаж без кэша")
+	timings["json_load_character_cold"] = TICK_USAGE_TO_MS(started) / repeats
+	started = TICK_USAGE_REAL
+	for(var/iteration in 1 to repeats)
+		bm_read_metadollars_from_savefile_path(prefs.path)
+	timings["json_metadollars_cold"] = TICK_USAGE_TO_MS(started) / repeats
+	prefs.path = null
+	legacy = null
+	log_world("PLAYER_SAVE_BENCHMARK [json_encode(timings)]")
+
+/// Первое открытие меню: названия 40 слотов из индекса корня против прежнего чтения каждой анкеты.
+/datum/unit_test/player_save_json/slot_index_benchmark/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	for(var/slot in 1 to 40)
+		source.cd = "/character[slot]"
+		source["real_name"] << "Character [slot]"
+		source["character_slot_name"] << "Slot [slot]"
+		for(var/index in 1 to 239)
+			source["field_[index]"] << list("Описание персонажа [index]", index / 7, "цвет" = "#aabbcc")
+	source.cd = "/"
+	TEST_ASSERT(account.commit(source), "не создана фикстура замера")
+	var/list/timings = list("root_index" = 0, "per_slot_read" = 0)
+	var/repeats = 10
+	for(var/iteration in 1 to repeats)
+		for(var/use_index in (iteration % 2 ? list(TRUE, FALSE) : list(FALSE, TRUE)))
+			account = new(test_path)
+			var/started = TICK_USAGE_REAL
+			if(use_index)
+				TEST_ASSERT_EQUAL(account.character_slot_names(40)["character40"], "Slot 40", "индекс не прочитан")
+				timings["root_index"] += TICK_USAGE_TO_MS(started) / repeats
+				continue
+			// Прежний путь: корень и одно поле из каждой опубликованной анкеты.
+			var/datum/player_save_document/root = account.snapshot()
+			for(var/slot in 1 to 40)
+				var/key = "character[slot]"
+				var/datum/player_save_json/child = account.branch(key)
+				child.read_fields(list("character_slot_name"), root.directories[key])
+			timings["per_slot_read"] += TICK_USAGE_TO_MS(started) / repeats
+	log_world("PLAYER_SAVE_BENCHMARK slot_index [json_encode(timings)]")
+
+/// Смена слота на тяжёлых анкетах: многострочные описания декодировались 33 проходами replacetext (до 380 мс на загрузку).
+/datum/unit_test/player_save_json/switch_slot_benchmark/Run()
+	prepare()
+	var/list/lines = list()
+	// Описание у предела редактора MAX_FLAVOR_LEN, с переводом строки в каждой строке.
+	for(var/i in 1 to 45)
+		lines += "Строка описания персонажа номер [i]: внешность, привычки, манеры."
+	var/flavor = jointext(lines, "\n")
+	TEST_ASSERT(length_char(flavor) <= MAX_FLAVOR_LEN, "фикстура длиннее предела описания")
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	for(var/slot in 1 to 10)
+		prefs.default_slot = slot
+		prefs.random_character()
+		prefs.real_name = "Bench [slot]"
+		for(var/key in list("flavor_text", "naked_flavor_text", "ooc_notes", "silicon_flavor_text", "custom_species_lore"))
+			prefs.features[key] = flavor
+		prefs.custom_interactions = list()
+		for(var/i in 1 to 10)
+			var/datum/interaction/custom/custom = new
+			custom.name = "Действие [i]"
+			custom.message = "%USER% делает что-то очень подробное с %TARGET%, вариант [i]."
+			prefs.custom_interactions += custom
+		TEST_ASSERT(prefs.save_character(TRUE, TRUE, update_active_preset = FALSE), "не создан слот [slot]")
+	var/list/timings = list("save" = 0, "load" = 0)
+	var/repeats = 12
+	for(var/iteration in 1 to repeats)
+		var/started = TICK_USAGE_REAL
+		prefs.save_character(TRUE, TRUE, update_active_preset = FALSE)
+		timings["save"] += TICK_USAGE_TO_MS(started) / repeats
+		started = TICK_USAGE_REAL
+		TEST_ASSERT(prefs.load_character((iteration % 9) + 2, TRUE), "не загружен слот")
+		timings["load"] += TICK_USAGE_TO_MS(started) / repeats
+	TEST_ASSERT_EQUAL(prefs.features["flavor_text"], flavor, "описание изменилось при переносе")
+	log_world("PLAYER_SAVE_BENCHMARK switch_slot [json_encode(timings)]")
+
+/datum/unit_test/player_save_json/benchmark
+	var/datum/preferences/benchmark_prefs
+
+/datum/unit_test/player_save_json/benchmark/Destroy()
+	if(benchmark_prefs)
+		benchmark_prefs.path = null
+	for(var/suffix in list(".json", ".json.recovery", ".json.d/"))
+		fdel("[test_path].prefs[suffix]")
+	return ..()
+
+#endif
+
+/// Стоны хранятся текстом: файл-ресурс вшивал .ogg в сейв и ронял экспорт персонажа.
+/datum/unit_test/player_save_json/custom_moan_sounds/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	var/moan = GLOB.lewd_purr_sounds[1]
+	prefs.custom_moan_sounds = list(moan)
+	prefs.use_custom_moan_sounds = TRUE
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	var/slot_path = "/character[prefs.default_slot]"
+	var/savefile/slot = prefs.open_player_save(slot_path)
+	slot.cd = slot_path
+	var/list/stored
+	slot["custom_moan_sounds"] >> stored
+	TEST_ASSERT(islist(stored) && length(stored) == 1 && istext(stored[1]), "стон сохранён не текстом")
+	// Сейвы до правки хранят сам файл-ресурс.
+	slot["custom_moan_sounds"] << list(moan)
+	TEST_ASSERT(prefs.commit_player_save(slot, slot_path), "не записан стон старого формата")
+	prefs.custom_moan_sounds = list()
+	TEST_ASSERT(prefs.load_character(prefs.default_slot, TRUE), "слот со старым стоном не загрузился")
+	TEST_ASSERT_EQUAL(length(prefs.custom_moan_sounds), 1, "стон старого формата потерян")
+	TEST_ASSERT_EQUAL("[prefs.custom_moan_sounds[1]]", "[moan]", "стон старого формата подменён")
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(exported, "экспорт со своими стонами не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(!findtext(exported, "filedata"), "экспорт вшил звуковой файл")
+	prefs.custom_moan_sounds = list()
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не сброшены стоны перед импортом")
+	TEST_ASSERT(prefs.import_character_json(exported), "импорт со стонами не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(length(prefs.custom_moan_sounds), 1, "импорт потерял стон")
+	TEST_ASSERT_EQUAL("[prefs.custom_moan_sounds[1]]", "[moan]", "импорт подменил стон")
+	prefs.path = null
+
+/// Игрок видит, какое поле мешает экспорту.
+/datum/unit_test/player_save_json/export_error_names_field/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.job_preferences = list("Assistant" = /obj/item)
+	TEST_ASSERT_NULL(prefs.export_character_json(), "экспорт пропустил путь типа")
+	TEST_ASSERT(findtext(prefs.player_transfer_error, "job_preferences"), "ошибка экспорта не называет поле: [prefs.player_transfer_error]")
+	prefs.path = null
+
+/// Окно сейвов раскладывает файлы по слотам и выгружает всё одним JSON, который восстанавливается.
+/datum/unit_test/player_save_json/save_inspector
+	var/inspector_directory
+
+/datum/unit_test/player_save_json/save_inspector/Destroy()
+	if(inspector_directory)
+		fdel(inspector_directory)
+	return ..()
+
+/datum/unit_test/player_save_json/save_inspector/Run()
+	prepare()
+	inspector_directory = player_save_debug_directory("UT_Save_Inspector")
+	fdel(inspector_directory)
+	var/list/tree = list(
+		"default_slot" = list("value" = 31, "children" = list()),
+		"character31" = list("value" = list("type" = "list", "items" = list("Anahit", ""), "associations" = list(null, null)), "children" = list()),
+		"character6" = list("value" = "Норика", "children" = list()),
+	)
+	text2file(json_encode(list("format" = "bluemoon-player-save", "version" = 1, "tree" = tree)), "[inspector_directory]preferences.sav.json")
+	var/slot31 = "preferences.sav.json.d/[md5("character31")].sav.json"
+	text2file("{\"slot\":31}", "[inspector_directory][slot31]")
+	text2file("{\"slot\":31}", "[inspector_directory][slot31].recovery")
+	text2file("{\"slot\":6}", "[inspector_directory]preferences.sav.json.d/[md5("character6")].sav.json")
+	text2file("{}", "[inspector_directory]metadollars.json")
+	var/savefile/legacy = new("[inspector_directory]preferences.sav")
+	legacy.cd = "/character1"
+	legacy["real_name"] << "Legacy Name"
+	legacy.Flush()
+	legacy = null
+
+	var/datum/player_save_inspector/inspector = new
+	allocated += inspector
+	inspector.set_target("UT_Save_Inspector")
+	TEST_ASSERT_EQUAL(inspector.default_slot, 31, "не найден активный слот")
+	TEST_ASSERT_EQUAL(length(inspector.file_rows), 6, "список файлов неполон")
+	var/list/kinds = list()
+	var/slot31_rows = 0
+	for(var/list/row as anything in inspector.file_rows)
+		kinds[row["path"]] = row["kind"]
+		if(row["slot"] == 31)
+			slot31_rows++
+			TEST_ASSERT_EQUAL(row["character"], "Anahit", "у слота нет имени персонажа")
+		if(row["slot"] == 6)
+			TEST_ASSERT_EQUAL(row["character"], "Норика", "не прочитано имя из текстового индекса")
+	TEST_ASSERT_EQUAL(slot31_rows, 2, "раздел слота и его откат не распознаны")
+	TEST_ASSERT_EQUAL(kinds["preferences.sav.json"], "root", "корень не распознан")
+	TEST_ASSERT_EQUAL(kinds["preferences.sav"], "legacy", "старый сейв не распознан")
+	TEST_ASSERT_EQUAL(kinds["metadollars.json"], "other", "посторонний файл попал в аккаунт")
+	TEST_ASSERT(!inspector.has_file("../preferences.sav.json"), "путь вне списка принят")
+
+	var/list/paths = list()
+	for(var/list/row as anything in inspector.file_rows)
+		paths += row["path"]
+	var/list/bundle = json_decode(player_save_debug_bundle(inspector.player_ckey, inspector_directory, paths))
+	TEST_ASSERT_EQUAL(bundle["format"], "bluemoon-player-save-bundle", "неверный формат выгрузки")
+	var/list/files = bundle["files"]
+	TEST_ASSERT_EQUAL(length(files), 6, "выгрузка потеряла файлы")
+	var/list/root_entry = files["preferences.sav.json"]
+	TEST_ASSERT_EQUAL(root_entry["content"], file2text("[inspector_directory]preferences.sav.json"), "корень выгружен не дословно")
+	var/list/legacy_entry = files["preferences.sav"]
+	TEST_ASSERT_EQUAL(legacy_entry["encoding"], "savefile_export_text", "старый сейв выгружен не текстом")
+	var/savefile/restored = new
+	restored.ImportText("/", legacy_entry["content"])
+	restored.cd = "/character1"
+	var/restored_name
+	restored["real_name"] >> restored_name
+	TEST_ASSERT_EQUAL(restored_name, "Legacy Name", "старый сейв из выгрузки не восстанавливается")

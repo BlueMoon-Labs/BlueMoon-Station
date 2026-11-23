@@ -184,6 +184,7 @@
 /obj/structure/closet/crate/freezer
 	desc = "A freezer."
 	name = "freezer"
+	icon = 'icons/obj/storage/freezer.dmi'
 	icon_state = "freezer"
 
 //Snowflake organ freezer code

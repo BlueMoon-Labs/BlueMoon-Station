@@ -1230,14 +1230,7 @@
 /datum/component/interaction_menu_granter/proc/resolve_moan_sound_key(moan_key)
 	if(!istext(moan_key))
 		return null
-	for(var/candidate in (GLOB.lewd_moans_male + GLOB.lewd_moans_female + GLOB.lewd_softmoans_female + GLOB.lewd_purr_sounds + GLOB.lewd_meow_sounds + GLOB.lewd_fox_sounds + GLOB.lewd_dog_sounds + GLOB.lewd_bird_sounds + GLOB.lewd_robot_sounds + GLOB.lewd_insect_sounds + GLOB.lewd_scream_female + GLOB.lewd_scream_male + GLOB.lewd_scream_gachi))
-		if("[candidate]" == moan_key)
-			return candidate
-	for(var/name in GLOB.lewd_other_animal_sounds)
-		var/candidate = GLOB.lewd_other_animal_sounds[name]
-		if("[candidate]" == moan_key)
-			return candidate
-	return null
+	return custom_moan_sound_catalog()[moan_key]
 
 //BLUEMOON ADD START
 /datum/component/interaction_menu_granter/proc/play_pixel_shift_animation(mob/living/mob)

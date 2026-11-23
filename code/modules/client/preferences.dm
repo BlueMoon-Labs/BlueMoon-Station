@@ -545,9 +545,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/single_pref_queue
 	/// world.time, позже которого сброс буфера одиночных записей больше не переносят.
 	var/single_pref_queue_deadline = 0
-	/// Префы живой сессии: savefile держится открытым на время пачки обращений, одиночные ключи
-	/// уходят в журнал (см. open_savefile). null - решать по наличию клиента.
-	var/tmp/session_savefile = null
 
 	var/silicon_lawset
 
@@ -601,6 +598,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/podlauncher_presets = list()
 	// Формат отчётов всех медицинских анализаторов пользователя; по умолчанию TGUI.
 	var/health_analyzer_chat = FALSE
+	var/list/custom_emote_groups = list()
+	var/list/custom_emote_chat_order = list()
 
 /datum/preferences/proc/get_vending_layout(machine_type)
 	return vending_layouts["[machine_type]"] || "grid"
@@ -662,7 +661,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	// в буфере что-то есть. Полную запись (pref_queue/char_queue) НЕ форсируем -
 	// она стоит сотню WRITE_FILE, а её данные и так лежат в переменных датума.
 	flush_single_prefs()
-	release_savefile()
+	GLOB.player_save_migration_queue -= src
+	// Перенос без буфера никому не нужен до следующей правки; копия .sav закрывается.
+	player_save_storage?.abort_migration()
 	if(pref_queue)
 		deltimer(pref_queue)
 		pref_queue = null
@@ -1513,6 +1514,19 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		character.update_body()
 		character.update_hair()
 
+/datum/preferences/proc/copy_appearance_to(mob/living/carbon/human/character, icon_updates = 1)
+	var/list/original_features = features
+	var/list/appearance_features = features.Copy()
+	appearance_features["body_size"] = RESIZE_DEFAULT_SIZE
+	features = appearance_features
+	copy_to(character, icon_updates, roundstart_checks = FALSE)
+	features = original_features
+
+	character.mob_weight = MOB_WEIGHT_NORMAL
+	character.update_weight(MOB_WEIGHT_NORMAL)
+	character.dna.features["body_size"] = RESIZE_DEFAULT_SIZE
+	character.update_size(RESIZE_DEFAULT_SIZE)
+
 /// Применяет к character сохранённые в префах модификации конечностей (протезы/ампутации).
 /// Сбрасывает все робо-конечности до плотских, регенерирует отсутствующие и затем
 /// накатывает modified_limbs из префов. Вызывается из copy_to() при initial_spawn,
@@ -1723,18 +1737,23 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
  * здесь остаётся только проверка формата и длины.
  */
 /datum/preferences/proc/validate_headshot_link(user, usr_input)
-	var/static/link_regex = regex("^https?://.*\\.(jpg|png|jpeg|gif|webm|mp4)(\[?#].*)?$", "i")
-
 	if (length(usr_input) > HEADSHOT_LINK_MAX_LENGTH)
 		to_chat(user, span_warning("The link is too long! Max length: [HEADSHOT_LINK_MAX_LENGTH] characters!"))
 		return ACTION_HEADSHOT_LINK_NOOP
 
-	if(!findtext(usr_input, link_regex))
+	var/link = sanitize_headshot_link(usr_input)
+	if(!link)
 		to_chat(user, span_warning("The link must be a direct http(s):// image/video URL ending with .png, .jpg, .jpeg, .gif, .webm, or .mp4!"))
 		return ACTION_HEADSHOT_LINK_NOOP
+	return link
 
+/// Ссылка в том виде, в каком её сохраняет редактор, или null, если редактор бы её не принял.
+/proc/sanitize_headshot_link(link)
+	var/static/link_regex = regex("^https?://.*\\.(jpg|png|jpeg|gif|webm|mp4)(\[?#].*)?$", "i")
+	if(!istext(link) || length(link) > HEADSHOT_LINK_MAX_LENGTH || !findtext(link, link_regex))
+		return null
 	var/static/list/repl_chars = list("\n"="#","\t"="#","'"="","\""=""," "="")
-	return sanitize(usr_input, repl_chars)
+	return sanitize(link, repl_chars)
 
 /proc/headshot_preview_html(link, width = 140, height = 140)
 	if(!link)

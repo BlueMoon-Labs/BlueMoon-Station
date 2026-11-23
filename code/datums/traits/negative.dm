@@ -368,7 +368,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	name = "Диссоциативное расстройство"
 	desc = "Вы страдаете от тяжелого расстройства и видите яркие галлюцинации. ЛСД подавляет болезнь, к побочному эффекту этого вещества у вас невосприимчивость. <b>Это не даёт разрешение на гриферство.</b>"
 	value = -2
-	//no mob trait because it's handled uniquely
+	mob_trait = TRAIT_INSANITY
 	gain_text = "<span class='userdanger'>...</span>"
 	lose_text = "<span class='notice'>Вы чувствуете себя в гармонии с миром.</span>"
 	medical_record_text = "Пациент страдает от острого диссоциативного расстройства и испытывает яркие галлюцинации."
@@ -509,6 +509,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 /datum/quirk/monophobia
 	name = "Монофобия"
 	desc = "Вы испытываете стресс, когда не находитесь в компании других, вызывающий реакции от болезненного состояния до инфарктов."
+	mob_trait = TRAIT_MONOPHOBIA
 	value = -3 // Might change it to 4.
 	gain_text = "<span class='danger'>Вы чувствуете себя одиноко...</span>"
 	lose_text = "<span class='notice'>Вы чувствуете, что одному быть не так уж и плохо.</span>"

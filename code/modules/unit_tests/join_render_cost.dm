@@ -98,7 +98,7 @@
 	release_examine_screen(viewer, in_use)
 	TEST_ASSERT(QDELETED(in_use), "экран удалённого пула вернулся в пул")
 
-/// Смена слота: запись прежнего слота не сбрасывает кэш имён, номер нового слота уже на диске, полной записи префов нет.
+/// Смена слота: запись прежнего слота не сбрасывает кэш имён, номер нового слота уходит одиночным ключом, полной записи префов нет.
 /datum/unit_test/character_switch_slot_skips_full_save
 	var/datum/preferences/prefs
 	var/datum/character_setup/setup
@@ -110,15 +110,15 @@
 			deltimer(prefs.pref_queue)
 			prefs.pref_queue = null
 		if(prefs.path)
-			fdel(prefs.path)
+			fdel(copytext(prefs.path, 1, findlasttext(prefs.path, "/") + 1))
+			prefs.path = null
 		QDEL_NULL(prefs)
 	return ..()
 
 /datum/unit_test/character_switch_slot_skips_full_save/Run()
 	prefs = new
 	prefs.load_path("unit_test_switch_slot_defer")
-	if(fexists(prefs.path))
-		fdel(prefs.path)
+	fdel(copytext(prefs.path, 1, findlasttext(prefs.path, "/") + 1))
 	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	prefs.pref_species = new /datum/species/human
 	prefs.random_character(MALE)
@@ -132,6 +132,7 @@
 	var/list/names = prefs.get_slot_names()
 	TEST_ASSERT_EQUAL(names[1], "Слот Один", "не прочитано имя первого слота")
 	TEST_ASSERT_EQUAL(names[2], "Слот Два", "не прочитано имя второго слота")
+	TEST_ASSERT_NOTNULL(prefs.get_slot_custom_names(), "не прочитаны названия слотов")
 
 	prefs.real_name = "Слот Один Новый"
 	prefs.character_slot_name = " Новый "
@@ -157,10 +158,9 @@
 	qdel(setup_ui)
 	TEST_ASSERT_EQUAL(prefs.default_slot, 2, "слот не сменился")
 	TEST_ASSERT_EQUAL(prefs.real_name, "Слот Два", "загружен не тот персонаж")
-	TEST_ASSERT_NULL(prefs.pref_queue, "смена слота поставила полную запись префов, хотя номер слота уже записал load_character")
-	var/savefile/stored_file = new(prefs.path)
-	stored_file.cd = "/"
-	var/stored_slot
-	stored_file["default_slot"] >> stored_slot
-	stored_file = null
+	TEST_ASSERT_NULL(prefs.pref_queue, "смена слота поставила полную запись префов, хотя номер слота уже положил в буфер load_character")
+	prefs.flush_single_prefs()
+	var/datum/player_save_json/account/reader = new(prefs.path)
+	var/datum/player_save_document/stored = reader.snapshot(null, FALSE)
+	var/stored_slot = stored?.read("default_slot")
 	TEST_ASSERT_EQUAL(stored_slot, 2, "номер слота не дошёл до файла")

@@ -1,6 +1,10 @@
 const initialState = {
+  enabled: false,
   visible: false,
   list: {},
+  order: [],
+  slot: null,
+  revision: null,
 };
 
 export const emotesReducer = (state = initialState, action) => {
@@ -14,7 +18,12 @@ export const emotesReducer = (state = initialState, action) => {
   if (type === 'emotes/setList') {
     return {
       ...state,
-      list: payload,
+      enabled: !!payload.enabled,
+      visible: !!payload.enabled && state.visible,
+      list: payload.list,
+      order: payload.order,
+      slot: payload.slot,
+      revision: payload.revision,
     };
   }
   return state;

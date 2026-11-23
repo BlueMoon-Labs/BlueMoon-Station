@@ -1,5 +1,3 @@
-#define COMSIG_QDELETING "parent_qdeleting"
-
 /obj/structure/shockplant
 	name = "Strange xen plant"
 	desc = "Невероятно искрит! Не рекомендую подходить к нему слишком близко"

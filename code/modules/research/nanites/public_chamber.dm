@@ -1,6 +1,6 @@
 /obj/machinery/public_nanite_chamber
 	name = "public nanite chamber"
-	desc = "A device that can rapidly implant cloud-synced nanites without an external operator."
+	desc = "Устройство, способное быстро внедрить синхронизированные с облаком наниты без внешнего оператора."
 	circuit = /obj/item/circuitboard/machine/public_nanite_chamber
 	icon = 'icons/obj/machines/nanite_chamber.dmi'
 	icon_state = "nanite_chamber"

@@ -2,6 +2,7 @@ function getTabOrder(name) {
 	if (name === "Status") return 1;
 	if (name === "MC") return 2;
 	if (name === "Избранное") return 3;
+	if (name === STATPANEL_EMOTES_TAB) return 4;
 	return 100 + name.charCodeAt(0);
 }
 
@@ -83,6 +84,10 @@ var _tabScrollPositions = {};
 function tab_change(tab) {
 	_settingsActive = false;
 	if (tab === State.currentTab) return;
+	if (State.currentTab === STATPANEL_EMOTES_TAB) {
+		finishEmoteDrag();
+		State.emotePanel = null;
+	}
 	if (State.currentTab && statcontent) {
 		_tabScrollPositions[State.currentTab] = statcontent.scrollTop;
 	}

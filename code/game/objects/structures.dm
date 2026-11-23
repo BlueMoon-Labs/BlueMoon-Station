@@ -144,3 +144,18 @@
 
 /obj/structure/rust_heretic_act()
 	take_damage(500, BRUTE, MELEE, 1)
+
+// Направленные подтипы для карт: смещения задаются здесь, а не в каждом объекте.
+MAPPING_DIRECTIONAL_HELPERS(/obj/structure/fireaxecabinet, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/structure/reagent_dispensers/wall/virusfood, 30)
+MAPPING_DIRECTIONAL_HELPERS(/obj/structure/secure_safe, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/structure/urinal, 32)
+
+// В шаблонах воздух появляется позже, поэтому розжиг откладывается до LateInitialize.
+/obj/structure/bonfire/prelit/Initialize(mapload)
+	. = ..()
+	return INITIALIZE_HINT_LATELOAD
+
+/obj/structure/bonfire/prelit/LateInitialize()
+	StartBurning()
+

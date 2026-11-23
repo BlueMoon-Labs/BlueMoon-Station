@@ -53,15 +53,17 @@ export const Panel = (props) => {
                   tooltipPosition="bottom-start"
                   onClick={() => setSearchOpen(!searchOpen)} />
               </Stack.Item>
-              <Stack.Item>
-                <Button
-                  color="grey"
-                  selected={emotes.visible}
-                  icon="asterisk"
-                  tooltip="Панель эмоций"
-                  tooltipPosition="bottom-start"
-                  onClick={() => emotes.toggle()} />
-              </Stack.Item>
+              {emotes.enabled && (
+                <Stack.Item>
+                  <Button
+                    color="grey"
+                    selected={emotes.visible}
+                    icon="asterisk"
+                    tooltip="Панель эмоций"
+                    tooltipPosition="bottom-start"
+                    onClick={() => emotes.toggle()} />
+                </Stack.Item>
+              )}
               <Stack.Item shrink={0}>
                 <Button
                   color="grey"
@@ -84,7 +86,7 @@ export const Panel = (props) => {
             </Stack>
           </Section>
         </Stack.Item>
-        {emotes.visible && (
+        {emotes.enabled && emotes.visible && (
           <Stack.Item>
             <Section>
               <EmotePanel />

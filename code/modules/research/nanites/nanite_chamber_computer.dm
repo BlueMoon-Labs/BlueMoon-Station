@@ -1,6 +1,6 @@
 /obj/machinery/computer/nanite_chamber_control
 	name = "nanite chamber control console"
-	desc = "Controls a connected nanite chamber. Can inoculate nanites, load programs, and analyze existing nanite swarms."
+	desc = "Управляет подключённой камерой нанитов. Позволяет внедрять наниты, загружать программы и анализировать существующие скопления нанитов."
 	var/obj/machinery/nanite_chamber/chamber
 	var/obj/item/disk/nanite_program/disk
 	icon_screen = "nanite_chamber_control"
@@ -33,17 +33,17 @@
 	var/list/data = list()
 
 	if(!chamber)
-		data["status_msg"] = "No chamber detected."
+		data["status_msg"] = "Камера не обнаружена."
 		return data
 
 	if(!chamber.occupant)
-		data["status_msg"] = "No occupant detected."
+		data["status_msg"] = "Пациент не обнаружен."
 		return data
 
 	var/mob/living/L = chamber.occupant
 
 	if(HAS_TRAIT(L, TRAIT_NANITES_IMMUNITY) || (!(L.mob_biotypes & (MOB_ORGANIC|MOB_UNDEAD)) && !HAS_TRAIT(L, TRAIT_COMPATIBLE_WITH_NANITES)))
-		data["status_msg"] = "Occupant not compatible with nanites."
+		data["status_msg"] = "Пациент несовместим с нанитами."
 		return data
 
 	if(chamber.busy)
@@ -51,7 +51,7 @@
 		return data
 
 	if(SEND_SIGNAL(L, COMSIG_NANITE_CHECK_CONSOLE_LOCK))
-		data["status_msg"] = "Error: Nanite keycodes scrambled. Unable to operate."
+		data["status_msg"] = "Ошибка: коды доступа нанитов повреждены. Работа невозможна."
 		return data
 
 	data["status_msg"] = null

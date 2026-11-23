@@ -2,21 +2,24 @@
 	name = "\improper DNA injector"
 	icon_state = "syringeproj"
 	var/obj/item/dnainjector/injector
-	damage = 5
+	armour_penetration = 10
+	damage = 1
+	flag = BIO
 	hitsound_wall = "shatter"
+	var/max_armor = 100
 
-/obj/item/projectile/bullet/dnainjector/on_hit(atom/target, blocked = FALSE)
-	if(iscarbon(target))
+/obj/item/projectile/bullet/dnainjector/on_hit(atom/target, blocked = FALSE, def_zone)
+	if(blocked != 100 && iscarbon(target))
 		var/mob/living/carbon/M = target
-		if(blocked != 100)
-			if(M.can_inject(null, FALSE, def_zone, FALSE))
-				if(injector.inject(M, firer))
-					QDEL_NULL(injector)
-					return BULLET_ACT_HIT
-			else
-				blocked = 100
-				target.visible_message("<span class='danger'>\The [src] was deflected!</span>", \
-									   "<span class='userdanger'>You were protected against \the [src]!</span>")
+		var/armor = M.run_armor_check(def_zone, flag, null, null, armour_penetration, null)
+		if(!HAS_TRAIT(M, TRAIT_PIERCEIMMUNE) && prob(max(1, max_armor - armor)))
+			if(injector.inject(M, firer))
+				QDEL_NULL(injector)
+				return BULLET_ACT_HIT
+		else
+			target.visible_message("<span class='danger'>[src] отскочил!</span>", \
+								   "<span class='userdanger'>Вы были защищены от [src]!</span>")
+			blocked = 100
 	return ..()
 
 /obj/item/projectile/bullet/dnainjector/Destroy()

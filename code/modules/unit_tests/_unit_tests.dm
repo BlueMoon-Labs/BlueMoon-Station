@@ -71,7 +71,7 @@
 /// A trait source when adding traits through unit tests
 #define TRAIT_SOURCE_UNIT_TESTS "unit_tests"
 
-/// Карты, перенесённые из tg и его форков: на них идут проверки снаряжения BlueMoon
+/// РљР°СЂС‚С‹, РїРµСЂРµРЅРµСЃС‘РЅРЅС‹Рµ РёР· tg Рё РµРіРѕ С„РѕСЂРєРѕРІ: РЅР° РЅРёС… РёРґСѓС‚ РїСЂРѕРІРµСЂРєРё СЃРЅР°СЂСЏР¶РµРЅРёСЏ BlueMoon
 #define PORTED_STATION_MAPS list("Tramstation", "NorthStar", "Void Raptor", "Ice Box Station", "Blueshift", "NebulaStation", "Catwalk Station", "Wawastation", "Biodome", "Ouroboros", "Kilo Station")
 
 #include "action_button_positions.dm"
@@ -186,6 +186,7 @@
 #include "window_airbag.dm"
 #include "bespoke_id.dm"
 #include "binary_insert.dm"
+#include "bitrunning.dm"
 #include "blob_multiz.dm"
 #include "blood_brothers.dm"
 #include "blood_brothers_bond.dm"
@@ -312,6 +313,7 @@
 #include "eye_blur_filters.dm"
 #include "eye_blur_ticks.dm"
 #include "families.dm"
+#include "fishing_throwbonus_windup.dm"
 #include "flamethrower_fuel.dm"
 #include "flat_icon_static.dm"
 #include "foam_performance.dm"
@@ -531,9 +533,9 @@
 #include "pool_tile_placement.dm"
 #include "pool_water_hazards.dm"
 #include "portal_toys_cleanup.dm"
+#include "preferences_persistent_scars.dm"
 #include "preferences_preview_yield.dm"
 #include "preferences_savefile_cost.dm"
-#include "preferences_savefile_session.dm"
 #include "process_memory.dm"
 #include "progressbar_deleted_target.dm"
 #include "projectiles.dm"
@@ -764,6 +766,7 @@
 #include "sound_echo_cache.dm"
 #include "phobia_preference.dm"
 #include "psychosis_pools.dm"
+#include "player_save_json.dm"
 #include "preferences_preview_performance.dm"
 #include "preferences_render_caches.dm"
 #include "preferences_test_fixture.dm"
@@ -891,6 +894,36 @@ TEST_FOCUS(/datum/unit_test/cleanbot_failed_path_search_has_cooldown)
 TEST_FOCUS(/datum/unit_test/floorbot_failed_path_search_has_cooldown)
 #endif
 
+#ifdef PLAYER_SAVE_TESTS
+TEST_FOCUS(/datum/unit_test/preferences_save_deferral)
+TEST_FOCUS(/datum/unit_test/species_prefs_load_reuses_matching_datum)
+TEST_FOCUS(/datum/unit_test/player_save_json)
+TEST_FOCUS(/datum/unit_test/preferences_save_character_flushes_single_prefs)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_lazy_waits_for_flush)
+TEST_FOCUS(/datum/unit_test/preferences_persistent_scars_save_only_on_change)
+TEST_FOCUS(/datum/unit_test/character_saving)
+TEST_FOCUS(/datum/unit_test/metadollar_refresh_recovers_legacy_balance)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_absorb)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_defer_decision)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_deferral)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_reuses_full_save_queue)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_flush)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_var_matches_full_save)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_flush_migrates_stale_file)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_var_reads_variable)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_keys_match_full_save)
+TEST_FOCUS(/datum/unit_test/preferences_slot_names_cache)
+TEST_FOCUS(/datum/unit_test/shift_invites_pref_round_trip)
+TEST_FOCUS(/datum/unit_test/antag_opt_in_pref_saving)
+TEST_FOCUS(/datum/unit_test/echolocation_saved_name_migration)
+TEST_FOCUS(/datum/unit_test/hk47_savefile_migration_enables_role)
+TEST_FOCUS(/datum/unit_test/blood_brothers_savefile_migration_enables_role)
+TEST_FOCUS(/datum/unit_test/insect_accessory_colors)
+TEST_FOCUS(/datum/unit_test/preferences_version_migration_preserves_modular_settings)
+TEST_FOCUS(/datum/unit_test/context_menu_mode_saving)
+TEST_FOCUS(/datum/unit_test/context_menu_style_saving)
+TEST_FOCUS(/datum/unit_test/supporting_tail/preferences_save)
+#endif
 
 #undef PORTED_STATION_MAPS
 #undef TEST_ASSERT
