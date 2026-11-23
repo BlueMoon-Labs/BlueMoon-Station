@@ -135,6 +135,8 @@
 		return
 	zooming = TRUE
 	current_user.client.view_size.setTo(zoom_target_view_increase)
+	var/datum/component/scope/scope = GetComponent(/datum/component/scope)
+	scope?.zoom(current_user)
 	zoom_current_view_increase = zoom_target_view_increase
 
 /obj/item/gun/energy/beam_rifle/proc/stop_zooming(mob/user)
@@ -148,6 +150,8 @@
 	if(!user || !user.client)
 		return FALSE
 	user.client.view_size.zoomIn()
+	var/datum/component/scope/scope = GetComponent(/datum/component/scope)
+	scope?.stop_zooming(user)
 	zoom_current_view_increase = 0
 	zooming_angle = 0
 	current_zoom_x = 0
@@ -173,6 +177,7 @@
 	. = ..()
 	fire_delay = delay
 	current_tracers = list()
+	AddComponent(/datum/component/scope, range_modifier = 2, category = "scope_gun", severity = 1)
 	START_PROCESSING(SSfastprocess, src)
 	zoom_lock_action = new(src)
 

@@ -82,12 +82,6 @@
 		/mob/living/simple_animal/hostile/syndicate/melee,
 	)
 
-/datum/modular_mob_segment/abductor_agents
-	mobs = list(
-		/mob/living/simple_animal/hostile/syndicate/melee,
-		/mob/living/simple_animal/hostile/syndicate/ranged,
-	)
-
 /datum/modular_mob_segment/syndicate_elite
 	mobs = list(
 		/mob/living/simple_animal/hostile/syndicate/melee,

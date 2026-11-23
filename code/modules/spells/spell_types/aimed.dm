@@ -94,6 +94,7 @@
 	name = "Lightning Bolt"
 	desc = "Fire a high powered lightning bolt at your foes!"
 	school = "evocation"
+	clothes_req = NONE
 	charge_max = 150
 	invocation = "ZAP MUTHA'FUCKA"
 	invocation_type = "shout"

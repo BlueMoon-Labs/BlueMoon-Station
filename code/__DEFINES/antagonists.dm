@@ -83,7 +83,7 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 /// Checks if the given mob is a changeling
 #define IS_CHANGELING(mob) (mob?.mind?.has_antag_datum(/datum/antagonist/changeling))
 
-#define IS_HERETIC(mob) (mob?.mind?.has_antag_datum(/datum/antagonist/heretic))
+#define IS_HERETIC(mob) (mob?.mind?.has_antag_datum(/datum/antagonist/heretic) || (mob && HAS_TRAIT(mob, TRAIT_ACT_AS_HERETIC)))
 #define IS_HERETIC_MONSTER(mob) (mob.mind?.has_antag_datum(/datum/antagonist/heretic_monster))
 
 /// Checks if the given mob is a malf ai.

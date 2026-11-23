@@ -1183,7 +1183,6 @@
 /turf/open/floor/grass,
 /area/virtual_domain/ancient_milsim/loot_camp)
 "Dw" = (
-/obj/item/beacon,
 /turf/open/floor/plasteel,
 /area/virtual_domain/ancient_milsim/snpc_garage)
 "Dy" = (

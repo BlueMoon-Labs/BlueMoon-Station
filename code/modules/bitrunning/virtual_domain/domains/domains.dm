@@ -8,7 +8,6 @@
 	is_modular = TRUE
 	key = "abductor_ship"
 	map_name = "abductor_ship"
-	mob_modules = list(/datum/modular_mob_segment/abductor_agents)
 	reward_points = BITRUNNER_REWARD_MEDIUM
 	forced_outfit = /datum/outfit/bitductor
 

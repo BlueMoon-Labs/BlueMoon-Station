@@ -1028,8 +1028,7 @@
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/dies_irae
 	fire_delay = 10
 	zoomable = TRUE
-	zoom_amt = 10
-	zoom_out_amt = 5
+	scope_range = 2
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
 	recoil = 5
