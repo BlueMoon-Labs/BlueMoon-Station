@@ -15,6 +15,40 @@ type AnalysisResult = {
   sequence: string;
 };
 
+/**
+ * Каждая пара нуклеотидов — это две цепочки ДНК: первая буква пары
+ * относится к верхнему ряду, вторая — к нижнему.
+ */
+const ROW_COLORS = ['green', 'blue'] as const;
+
+/** Последовательность с подсветкой рядов, чтобы было видно верхнюю и нижнюю цепочки. */
+const SequenceLetters = ({ sequence }: { sequence: string }) => {
+  let position = 0;
+  return (
+    <Box
+      bold
+      preserveWhitespace
+      style={{ fontFamily: 'monospace', fontSize: '13px', letterSpacing: '1px' }}>
+      {Array.from(sequence).map((letter, index) => {
+        if (letter === '-') {
+          return (
+            <Box as="span" key={index} color="label">
+              {letter}
+            </Box>
+          );
+        }
+        const row = position % 2;
+        position += 1;
+        return (
+          <Box as="span" key={index} color={ROW_COLORS[row]}>
+            {letter}
+          </Box>
+        );
+      })}
+    </Box>
+  );
+};
+
 type SequenceAnalyzerData = {
   /** Последний просканированный субъект. */
   subject: string;
@@ -83,12 +117,11 @@ export const SequenceAnalyzer = () => {
               </Button>
             )}>
             <Box mb={0.5} color="label">{result.name}</Box>
-            <Box
-              bold
-              color="good"
-              preserveWhitespace
-              style={{ fontFamily: 'monospace', fontSize: '13px', letterSpacing: '1px' }}>
-              {result.sequence}
+            <SequenceLetters sequence={result.sequence} />
+            <Box mt={0.5} color="label" style={{ fontSize: '11px' }}>
+              <Box as="span" color="green">Верхний ряд</Box>
+              {' · '}
+              <Box as="span" color="blue">Нижний ряд</Box>
             </Box>
           </Section>
         )}
