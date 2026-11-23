@@ -50,7 +50,8 @@
 			emotes_send_chat_panel()
 		return
 
-	return emotes_handle_action(type, payload)
+	if(GLOB.chat_emote_panel_enabled)
+		return emotes_handle_action(type, payload)
 
 /datum/tgui_panel/proc/emotes_handle_action(type, payload, from_statpanel = FALSE)
 	var/list/panel = client.prefs.custom_emote_panel
@@ -360,6 +361,7 @@
 /datum/tgui_panel/proc/emotes_send_chat_panel()
 	var/datum/preferences/prefs = client.prefs
 	window.send_message("emotes/setList", list(
+		"enabled" = GLOB.chat_emote_panel_enabled,
 		"list" = prefs.custom_emote_panel,
 		"order" = prefs.custom_emote_chat_order,
 		"slot" = prefs.default_slot,
