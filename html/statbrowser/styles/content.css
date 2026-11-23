@@ -261,6 +261,10 @@
 	font: inherit;
 	cursor: pointer;
 }
+.emote-toolbar .emote-control {
+	padding: 2px 5px;
+	font-size: 0.85em;
+}
 .emote-control:hover,
 .emote-group-toggle:hover {
 	background: var(--bg-hover);
