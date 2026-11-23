@@ -247,11 +247,11 @@ var _SETTINGS_KEYS = ["verbLayout", "verbStyle", "hideVerbSearch", "verbPadding"
 	"fontFamily", "fontSize", "borderRadius", "customCSS"];
 
 var EMOTE_BUTTON_PALETTE = [
-	["--emote-button-bg", "Фон кнопок", "--bg-tertiary"],
-	["--emote-button-hover", "Фон при наведении", "--bg-hover"],
-	["--emote-button-text", "Текст кнопок", "--text-primary"],
-	["--emote-button-border", "Граница кнопок", "--border"],
-	["--emote-accent", "Акцент", "--accent"]
+	["--emote-button-bg", "Фон кнопок", "--emote-default-bg"],
+	["--emote-button-hover", "Фон при наведении", "--emote-default-hover"],
+	["--emote-button-text", "Текст кнопок", "--emote-default-text"],
+	["--emote-button-border", "Граница кнопок", "--emote-default-border"],
+	["--emote-accent", "Акцент", "--emote-default-hover"]
 ];
 
 function getPresetDefaults(presetKey) {

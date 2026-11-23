@@ -439,6 +439,13 @@ img { image-rendering: pixelated; }
 	background: rgba(232, 168, 32, 0.25);
 }
 
+:root {
+	--emote-default-bg: #1c71b1;
+	--emote-default-hover: #3a94d8;
+	--emote-default-text: #ffffff;
+	--emote-default-border: var(--emote-button-bg, var(--emote-default-bg));
+}
+
 .emote-panel {
 	padding: 6px;
 	font-size: var(--emote-font-size, 12px);
@@ -506,24 +513,26 @@ img { image-rendering: pixelated; }
 	min-width: 0;
 	max-width: 100%;
 	padding: var(--emote-padding-v, 5px) var(--emote-padding-h, 10px);
-	background: var(--emote-button-bg, var(--bg-tertiary));
-	border-color: var(--emote-button-border, var(--border));
-	color: var(--emote-button-text, var(--text-primary));
+	background: var(--emote-button-bg, var(--emote-default-bg));
+	border-color: var(--emote-button-border, var(--emote-default-border));
+	color: var(--emote-button-text, var(--emote-default-text));
 	text-align: left;
 	font: inherit;
 	white-space: normal;
 	overflow-wrap: anywhere;
 }
 .emote-button:hover {
-	background: var(--emote-button-hover, var(--bg-hover));
+	background: var(--emote-button-hover, var(--emote-default-hover));
+	border-color: var(--emote-button-border, var(--emote-button-hover, var(--emote-default-hover)));
 }
 .emote-button.emote-custom {
-	background: rgba(230, 90, 147, 0.22);
-	border-color: rgba(230, 90, 147, 0.65);
-	color: var(--text-primary);
+	background: #8b2baa;
+	border-color: #8b2baa;
+	color: var(--emote-default-text);
 }
 .emote-button.emote-custom:hover {
-	background: rgba(230, 90, 147, 0.34);
+	background: #ad4fcd;
+	border-color: #ad4fcd;
 }
 .emote-button.emote-colored {
 	background: var(--emote-color);
@@ -532,9 +541,10 @@ img { image-rendering: pixelated; }
 }
 .emote-button.emote-colored:hover {
 	background: color-mix(in srgb, var(--emote-color) 90%, var(--emote-color-text));
+	border-color: var(--emote-color);
 }
 .emote-panel button:focus-visible {
-	outline-color: var(--emote-accent, var(--accent));
+	outline-color: var(--emote-accent, var(--emote-default-hover));
 }
 .emote-sortable {
 	touch-action: none;
@@ -545,13 +555,13 @@ img { image-rendering: pixelated; }
 	cursor: grabbing;
 }
 .emote-drop-before {
-	box-shadow: -2px 0 var(--emote-accent, var(--accent));
+	box-shadow: -2px 0 var(--emote-accent, var(--emote-default-hover));
 }
 .emote-drop-after {
-	box-shadow: 2px 0 var(--emote-accent, var(--accent));
+	box-shadow: 2px 0 var(--emote-accent, var(--emote-default-hover));
 }
 .emote-drop-group {
-	outline: 2px solid var(--emote-accent, var(--accent));
+	outline: 2px solid var(--emote-accent, var(--emote-default-hover));
 	outline-offset: -2px;
 }
 /* ===== Verb Links Style ===== */
@@ -2189,11 +2199,11 @@ var _SETTINGS_KEYS = ["verbLayout", "verbStyle", "hideVerbSearch", "verbPadding"
 	"fontFamily", "fontSize", "borderRadius", "customCSS"];
 
 var EMOTE_BUTTON_PALETTE = [
-	["--emote-button-bg", "Фон кнопок", "--bg-tertiary"],
-	["--emote-button-hover", "Фон при наведении", "--bg-hover"],
-	["--emote-button-text", "Текст кнопок", "--text-primary"],
-	["--emote-button-border", "Граница кнопок", "--border"],
-	["--emote-accent", "Акцент", "--accent"]
+	["--emote-button-bg", "Фон кнопок", "--emote-default-bg"],
+	["--emote-button-hover", "Фон при наведении", "--emote-default-hover"],
+	["--emote-button-text", "Текст кнопок", "--emote-default-text"],
+	["--emote-button-border", "Граница кнопок", "--emote-default-border"],
+	["--emote-accent", "Акцент", "--emote-default-hover"]
 ];
 
 function getPresetDefaults(presetKey) {
@@ -5841,12 +5851,14 @@ function draw_settings() {
 	});
 	addEmoteSizeRow(emoteSection, themeState, "emoteButtonPadding", "Размер кнопок", 1, 12);
 	addEmoteSizeRow(emoteSection, themeState, "emoteFontSize", "Размер шрифта", 8, 24);
+	var emotePalette = getComputedStyle(document.documentElement);
 	EMOTE_BUTTON_PALETTE.forEach(function(option) {
 		var key = option[0];
 		var label = option[1];
 		var row = el("div", "settings-row");
 		row.appendChild(el("span", "settings-label", label));
-		row.appendChild(makeThemeColorInput(key, label, effective[key] || effective[option[2]]));
+		var color = emotePalette.getPropertyValue(key).trim() || emotePalette.getPropertyValue(option[2]).trim();
+		row.appendChild(makeThemeColorInput(key, label, color));
 		if (key in themeState.overrides) {
 			var reset = el("button", "settings-toggle-btn", "Сбросить");
 			reset.type = "button";

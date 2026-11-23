@@ -229,6 +229,13 @@
 	background: rgba(232, 168, 32, 0.25);
 }
 
+:root {
+	--emote-default-bg: #1c71b1;
+	--emote-default-hover: #3a94d8;
+	--emote-default-text: #ffffff;
+	--emote-default-border: var(--emote-button-bg, var(--emote-default-bg));
+}
+
 .emote-panel {
 	padding: 6px;
 	font-size: var(--emote-font-size, 12px);
@@ -296,24 +303,26 @@
 	min-width: 0;
 	max-width: 100%;
 	padding: var(--emote-padding-v, 5px) var(--emote-padding-h, 10px);
-	background: var(--emote-button-bg, var(--bg-tertiary));
-	border-color: var(--emote-button-border, var(--border));
-	color: var(--emote-button-text, var(--text-primary));
+	background: var(--emote-button-bg, var(--emote-default-bg));
+	border-color: var(--emote-button-border, var(--emote-default-border));
+	color: var(--emote-button-text, var(--emote-default-text));
 	text-align: left;
 	font: inherit;
 	white-space: normal;
 	overflow-wrap: anywhere;
 }
 .emote-button:hover {
-	background: var(--emote-button-hover, var(--bg-hover));
+	background: var(--emote-button-hover, var(--emote-default-hover));
+	border-color: var(--emote-button-border, var(--emote-button-hover, var(--emote-default-hover)));
 }
 .emote-button.emote-custom {
-	background: rgba(230, 90, 147, 0.22);
-	border-color: rgba(230, 90, 147, 0.65);
-	color: var(--text-primary);
+	background: #8b2baa;
+	border-color: #8b2baa;
+	color: var(--emote-default-text);
 }
 .emote-button.emote-custom:hover {
-	background: rgba(230, 90, 147, 0.34);
+	background: #ad4fcd;
+	border-color: #ad4fcd;
 }
 .emote-button.emote-colored {
 	background: var(--emote-color);
@@ -322,9 +331,10 @@
 }
 .emote-button.emote-colored:hover {
 	background: color-mix(in srgb, var(--emote-color) 90%, var(--emote-color-text));
+	border-color: var(--emote-color);
 }
 .emote-panel button:focus-visible {
-	outline-color: var(--emote-accent, var(--accent));
+	outline-color: var(--emote-accent, var(--emote-default-hover));
 }
 .emote-sortable {
 	touch-action: none;
@@ -335,13 +345,13 @@
 	cursor: grabbing;
 }
 .emote-drop-before {
-	box-shadow: -2px 0 var(--emote-accent, var(--accent));
+	box-shadow: -2px 0 var(--emote-accent, var(--emote-default-hover));
 }
 .emote-drop-after {
-	box-shadow: 2px 0 var(--emote-accent, var(--accent));
+	box-shadow: 2px 0 var(--emote-accent, var(--emote-default-hover));
 }
 .emote-drop-group {
-	outline: 2px solid var(--emote-accent, var(--accent));
+	outline: 2px solid var(--emote-accent, var(--emote-default-hover));
 	outline-offset: -2px;
 }
 /* ===== Verb Links Style ===== */

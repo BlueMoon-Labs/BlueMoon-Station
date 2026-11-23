@@ -472,12 +472,14 @@ function draw_settings() {
 	});
 	addEmoteSizeRow(emoteSection, themeState, "emoteButtonPadding", "Размер кнопок", 1, 12);
 	addEmoteSizeRow(emoteSection, themeState, "emoteFontSize", "Размер шрифта", 8, 24);
+	var emotePalette = getComputedStyle(document.documentElement);
 	EMOTE_BUTTON_PALETTE.forEach(function(option) {
 		var key = option[0];
 		var label = option[1];
 		var row = el("div", "settings-row");
 		row.appendChild(el("span", "settings-label", label));
-		row.appendChild(makeThemeColorInput(key, label, effective[key] || effective[option[2]]));
+		var color = emotePalette.getPropertyValue(key).trim() || emotePalette.getPropertyValue(option[2]).trim();
+		row.appendChild(makeThemeColorInput(key, label, color));
 		if (key in themeState.overrides) {
 			var reset = el("button", "settings-toggle-btn", "Сбросить");
 			reset.type = "button";
