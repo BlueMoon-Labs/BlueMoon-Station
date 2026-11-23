@@ -558,7 +558,7 @@ GLOBAL_LIST_INIT(fish_compatible_fluid_types, list(
 /obj/item/fish/proc/flopping_sound_loop()
 	if(QDELETED(src) || !HAS_TRAIT(src, TRAIT_FISH_FLOPPING))
 		return
-	if(drop_sound)
+	if(drop_sound && isturf(loc))
 		playsound(src, drop_sound, 30, TRUE, -1)
 	flopping_sound_timer = addtimer(CALLBACK(src, PROC_REF(flopping_sound_loop)), rand(20, 35), TIMER_STOPPABLE)
 

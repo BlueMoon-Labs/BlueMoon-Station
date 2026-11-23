@@ -446,7 +446,7 @@ GLOBAL_LIST_EMPTY(fishing_challenges_by_user)
 	SEND_SIGNAL(src, COMSIG_FISHING_CHALLENGE_ROLL_REWARD, used_rod, user, location, rewards)
 	if(length(rewards))
 		reward_path = pick(rewards)
-	playsound(location, 'modular_bluemoon/fishing/sound/effects/fish_splash.ogg', 100)
+	SEND_SOUND(user, 'modular_bluemoon/fishing/sound/effects/fish_splash.ogg')
 
 	if(HAS_MIND_TRAIT(user, TRAIT_REVEAL_FISH))
 		var/possible_icon
