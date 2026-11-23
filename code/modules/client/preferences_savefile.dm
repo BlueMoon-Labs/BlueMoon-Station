@@ -1854,6 +1854,7 @@ GLOBAL_VAR(player_save_migration_timer)
 	// Панель эмоций
 	READ_PLAYER_SAVE(S, document, "custom_emote_panel", custom_emote_panel)
 	READ_PLAYER_SAVE(S, document, "custom_emote_groups", custom_emote_groups)
+	READ_PLAYER_SAVE(S, document, "custom_emote_chat_order", custom_emote_chat_order)
 
 	//Quirks
 	READ_PLAYER_SAVE(S, document, "all_quirks", all_quirks)
@@ -2386,6 +2387,7 @@ GLOBAL_VAR(player_save_migration_timer)
 	// Очищаем старые названия эмоций, чтобы их снова можно было переименовать и удалить.
 	custom_emote_panel = sanitize_custom_emote_panel(custom_emote_panel)
 	custom_emote_groups = sanitize_custom_emote_groups(custom_emote_groups)
+	custom_emote_chat_order = sanitize_custom_emote_chat_order(custom_emote_chat_order, custom_emote_panel)
 	for(var/emote_name in custom_emote_panel)
 		var/list/entry = custom_emote_panel[emote_name]
 		if(islist(entry) && (entry["group"] == EMOTE_PANEL_UNGROUPED_COLOR_KEY || !(entry["group"] in custom_emote_groups)))
@@ -2867,6 +2869,7 @@ GLOBAL_VAR(player_save_migration_timer)
 	// Панель эмоций
 	WRITE_PLAYER_SAVE(S, document, "custom_emote_panel"	, custom_emote_panel)
 	WRITE_PLAYER_SAVE(S, document, "custom_emote_groups"	, custom_emote_groups)
+	WRITE_PLAYER_SAVE(S, document, "custom_emote_chat_order"	, custom_emote_chat_order)
 
 	//Quirks
 	WRITE_PLAYER_SAVE(S, document, "all_quirks"			, all_quirks)

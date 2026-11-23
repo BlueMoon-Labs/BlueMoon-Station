@@ -24,6 +24,7 @@
 
 /datum/tgui_panel
 	var/static/list/all_emotes = list()
+	var/emotes_chat_revision = 0
 
 //to include only "key" property into the list
 /datum/tgui_panel/proc/populate_all_emotes_list()
@@ -46,7 +47,7 @@
 
 	if(.)
 		if(type == "ready")
-			window.send_message("emotes/setList", client.prefs.custom_emote_panel)
+			emotes_send_chat_panel()
 		return
 
 	return emotes_handle_action(type, payload)
@@ -55,6 +56,21 @@
 	var/list/panel = client.prefs.custom_emote_panel
 
 	switch (type)
+		if("act/emotes/setOrder")
+			var/datum/preferences/prefs = client.prefs
+			if(!islist(payload) || payload["slot"] != prefs.default_slot || payload["revision"] != emotes_chat_revision)
+				return TRUE
+			var/list/order = payload["order"]
+			if(!islist(order) || length(order) > length(panel))
+				return TRUE
+			var/list/clean_order = sanitize_custom_emote_chat_order(order, panel)
+			if(length(clean_order) != length(order) || compare_list(clean_order, prefs.custom_emote_chat_order))
+				return TRUE
+			prefs.custom_emote_chat_order = clean_order
+			prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
+			emotes_send_chat_panel()
+			return TRUE
+
 		if ("emotes/execute")
 			if (!islist(payload))
 				return
@@ -200,6 +216,8 @@
 				return
 
 			panel[emote_name] = emote
+			if(length(client.prefs.custom_emote_chat_order))
+				client.prefs.custom_emote_chat_order += emote_name
 			client.prefs.save_character(TRUE)
 			emotes_send_list()
 
@@ -273,7 +291,13 @@
 		to_chat(client, span_warning("Эмоция \"[new_emote_name]\" уже существует!"))
 		return
 
-	return change_assoc_key_preserve_index(panel, new_emote_name, emote_name)
+	if(!change_assoc_key_preserve_index(panel, new_emote_name, emote_name))
+		return FALSE
+	var/list/order = client.prefs.custom_emote_chat_order
+	var/index = order.Find(emote_name)
+	if(index)
+		order[index] = new_emote_name
+	return TRUE
 
 /datum/tgui_panel/proc/emotes_remove(emote_name)
 	var/mob/user = client.mob
@@ -282,7 +306,10 @@
 	var/confirmation = tgui_alert(user, "Удалить эмоцию «[emote_name]» из панели?", "Подтверждение", list("Удалить", "Отмена"))
 	if (confirmation != "Удалить" || !emotes_panel_is_current(panel, user) || panel[emote_name] != entry)
 		return FALSE
-	return panel.Remove(emote_name)
+	if(!panel.Remove(emote_name))
+		return FALSE
+	client.prefs.custom_emote_chat_order -= emote_name
+	return TRUE
 
 /datum/tgui_panel/proc/emotes_change_custom_text(emote_name)
 	var/mob/user = client.mob
@@ -327,8 +354,25 @@
 	return TRUE
 
 /datum/tgui_panel/proc/emotes_send_list()
-	window.send_message("emotes/setList", client.prefs.custom_emote_panel)
+	emotes_send_chat_panel()
 	emotes_send_statpanel()
+
+/datum/tgui_panel/proc/emotes_send_chat_panel()
+	var/datum/preferences/prefs = client.prefs
+	window.send_message("emotes/setList", list(
+		"list" = prefs.custom_emote_panel,
+		"order" = prefs.custom_emote_chat_order,
+		"slot" = prefs.default_slot,
+		"revision" = ++emotes_chat_revision,
+	))
+
+/proc/sanitize_custom_emote_chat_order(list/order, list/panel)
+	var/list/cleaned = list()
+	if(islist(order))
+		for(var/emote_name in order)
+			if(istext(emote_name) && (emote_name in panel))
+				cleaned |= emote_name
+	return cleaned
 
 /datum/tgui_panel/proc/emotes_send_statpanel()
 	var/datum/preferences/prefs = client?.prefs
