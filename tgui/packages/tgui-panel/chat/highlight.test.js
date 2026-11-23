@@ -434,6 +434,14 @@ describe('speechOnly: only the reply itself', () => {
     expect(render(say('машет рукой Ване'), settings).result).toBeNull();
   });
 
+  test('a radio channel missing from SPEECH_ROOT_CLASSES still works', () => {
+    const html = '<span class="xenoradio"><span class="name">Анна</span>'
+      + ' <span class="message">сообщает, "<span class="speech">Ваня тут'
+      + '</span>"</span></span>';
+    expect(render(html, [group({ highlightText: 'Анна, Ваня',
+      speechOnly: true })]).words).toEqual(['Ваня']);
+  });
+
   test('without speechOnly the verb and action are highlighted too', () => {
     expect(render(say('машет рукой Ване'), [group({
       highlightText: 'машет, Ване', matchWord: true })]).words)

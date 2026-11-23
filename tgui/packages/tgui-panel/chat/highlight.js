@@ -30,6 +30,9 @@ export const HIGHLIGHT_PRESET_COLORS = [
  * "game say" для голоса, остальные - каналы рации (GLOB.freqtospan) и
  * бинарный канал синтетиков. Имя говорящего лежит в span.name,
  * сама реплика - в span.message.
+ * Нужны только истории без класса speech и бинарному каналу: span.speech
+ * считается речью под любым корнем, кроме эмоции, так что новый канал рации
+ * без правки этого списка работает.
  */
 export const SPEECH_ROOT_CLASSES = [
   'say',
@@ -248,7 +251,10 @@ export const collectMessageText = root => {
       addBreak(breakKind);
       let childRoot = rootClass;
       let childPlace = place;
-      if (!rootClass) {
+      if (rootClass !== NOT_SPEECH_ROOT && hasClass(child, SPEECH_CLASS)) {
+        childPlace = IN_SPEECH;
+      }
+      else if (!rootClass) {
         // Корень решается один раз: внутри эмоции речи нет, вложенное
         // уже не проверяется.
         childRoot = isNotSpeechRoot(child) ? NOT_SPEECH_ROOT
@@ -264,8 +270,7 @@ export const collectMessageText = root => {
             ? IN_MESSAGE : IN_LEGACY_MESSAGE;
         }
       }
-      else if ((place === IN_MESSAGE && hasClass(child, SPEECH_CLASS))
-        || (place === IN_LEGACY_MESSAGE && child.tagName === 'SPAN')) {
+      else if (place === IN_LEGACY_MESSAGE && child.tagName === 'SPAN') {
         childPlace = IN_SPEECH;
       }
       walk(child, childRoot, childPlace);
