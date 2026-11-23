@@ -35,7 +35,8 @@ GLOBAL_LIST(labor_sheet_values)
 
 /obj/machinery/mineral/labor_claim_console/Destroy()
 	if(stacking_machine)
-		stacking_machine.CONSOLE = null
+		if(stacking_machine.CONSOLE == src)
+			stacking_machine.CONSOLE = null
 		stacking_machine = null
 	QDEL_NULL(Radio)
 	return ..()
@@ -71,7 +72,6 @@ GLOBAL_LIST(labor_sheet_values)
 
 		if(P.goal <= 0)
 			data["status_info"] = "У вас нет установленной цели."
-			can_go_home = FALSE
 		else if(P.points >= P.goal)
 			can_go_home = TRUE
 			data["status_info"] = "Цель достигнута!"
@@ -140,14 +140,15 @@ GLOBAL_LIST(labor_sheet_values)
 				to_chat(M, "<span class='alert'>Вы не выполнили свою квоту по добыче руды и не можете вызвать шаттл!</span>")
 				return
 
-			switch(SSshuttle.moveShuttle("laborcamp", "laborcamp_home", TRUE))
+			var/call_result = SSshuttle.moveShuttle("laborcamp", "laborcamp_home", TRUE)
+			switch(call_result)
 				if(1)
 					to_chat(M, "<span class='alert'>Шаттл не найден.</span>")
 				if(2)
 					to_chat(M, "<span class='alert'>Шаттл уже находится на станции.</span>")
 				if(3)
 					to_chat(M, "<span class='alert'>Не удалось получить разрешение на стыковку.</span>")
-				else
+				if(TRUE)
 					if(!(obj_flags & EMAGGED))
 						Radio.set_frequency(FREQ_SECURITY)
 
@@ -156,15 +157,10 @@ GLOBAL_LIST(labor_sheet_values)
 						var/obj/item/card/id/I = H.get_idcard(TRUE)
 						if(istype(I, /obj/item/card/id/prisoner))
 							var/obj/item/card/id/prisoner/P = I
+							P.GetAccess()
 							P.points = 0
 							P.goal = 0
 
-						if(!isnull(GLOB.data_core.security))
-							for(var/r in GLOB.data_core.security)
-								var/datum/data/record/R = r
-								if(R.fields["name"] == H.real_name)
-									R.set_security_status(SEC_RECORD_STATUS_RELEASED)
-									break
 
 					to_chat(M, "<span class='notice'>Сообщение получено. Шаттл будет отправлен в ближайшее время.</span>")
 					return TRUE

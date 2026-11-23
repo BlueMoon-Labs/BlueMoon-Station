@@ -95,9 +95,11 @@
 	proximity_monitor = new(src, 1)
 	materials = AddComponent(/datum/component/remote_materials, "stacking", mapload, FALSE, mapload && force_connect)
 
-/obj/machinery/mineral/stacking_machine/Destroy()
-	CONSOLE = null
-	materials = null
+/obj/machinery/mineral/stacking_unit_console/Destroy()
+	if(machine)
+		if(machine.CONSOLE == src)
+			machine.CONSOLE = null
+		machine = null
 	return ..()
 
 /obj/machinery/mineral/stacking_machine/HasProximity(atom/movable/AM)
