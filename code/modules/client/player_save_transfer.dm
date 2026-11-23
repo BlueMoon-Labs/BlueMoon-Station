@@ -443,7 +443,11 @@
 			var/value
 			source[key] >> value
 			var/encoded = player_transfer_encode_field(mode, value)
-			player_transfer_validate_value(encoded, budget)
+			// Без имени поля игрок не поймёт, какую настройку поправить.
+			try
+				player_transfer_validate_value(encoded, budget)
+			catch(var/exception/field_failure)
+				throw EXCEPTION("[field_failure.name] (поле [key])")
 			fields[key] = encoded
 		var/text = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = fields))
 		if(length(text) > PLAYER_TRANSFER_MAX_BYTES)

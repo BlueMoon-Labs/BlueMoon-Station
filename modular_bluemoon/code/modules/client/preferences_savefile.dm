@@ -60,13 +60,31 @@
 	WRITE_PLAYER_SAVE(S, document, "antag_opt_in_level", antag_opt_in_level)
 
 	WRITE_PLAYER_SAVE(S, document, "use_custom_moan_sounds", use_custom_moan_sounds)
-	WRITE_PLAYER_SAVE(S, document, "custom_moan_sounds", custom_moan_sounds)
+	// Пишем пути текстом: файл-ресурс вшивал бы в сейв весь .ogg и не проходил экспорт персонажа.
+	var/list/moan_keys = list()
+	for(var/moan in SANITIZE_LIST(custom_moan_sounds))
+		moan_keys += "[moan]"
+	WRITE_PLAYER_SAVE(S, document, "custom_moan_sounds", moan_keys)
+
+/// Звук по его пути; старые сейвы хранят файл, новые - текст.
+/proc/custom_moan_sound_catalog()
+	var/static/list/catalog
+	if(!catalog)
+		catalog = list()
+		for(var/moan in GLOB.lewd_moans_male + GLOB.lewd_moans_female + GLOB.lewd_softmoans_female + GLOB.lewd_purr_sounds + GLOB.lewd_meow_sounds + GLOB.lewd_fox_sounds + GLOB.lewd_dog_sounds + GLOB.lewd_bird_sounds + GLOB.lewd_robot_sounds + GLOB.lewd_insect_sounds + GLOB.lewd_scream_female + GLOB.lewd_scream_male + GLOB.lewd_scream_gachi)
+			catalog["[moan]"] = moan
+		for(var/name in GLOB.lewd_other_animal_sounds)
+			var/moan = GLOB.lewd_other_animal_sounds[name]
+			catalog["[moan]"] = moan
+	return catalog
 
 /datum/preferences/proc/sanitize_custom_moan_sounds(list/moan_sounds)
-	var/list/valid_moan_paths = GLOB.lewd_moans_male + GLOB.lewd_moans_female + GLOB.lewd_softmoans_female + GLOB.lewd_purr_sounds + GLOB.lewd_meow_sounds + GLOB.lewd_fox_sounds + GLOB.lewd_dog_sounds + GLOB.lewd_bird_sounds + GLOB.lewd_robot_sounds + GLOB.lewd_insect_sounds + GLOB.lewd_scream_female + GLOB.lewd_scream_male + GLOB.lewd_scream_gachi
-	for(var/name in GLOB.lewd_other_animal_sounds)
-		valid_moan_paths += GLOB.lewd_other_animal_sounds[name]
-	return SANITIZE_LIST(moan_sounds) & valid_moan_paths
+	var/list/catalog = custom_moan_sound_catalog()
+	. = list()
+	for(var/moan in SANITIZE_LIST(moan_sounds))
+		var/resolved = isnull(moan) ? null : catalog["[moan]"]
+		if(resolved)
+			. += resolved
 
 /obj/item/modular_computer/pda/proc/update_style(client/C)
 	// pda_color, update_ringtone(), skin_data, pda_style, device_theme все передаются через update_pda_prefs()
