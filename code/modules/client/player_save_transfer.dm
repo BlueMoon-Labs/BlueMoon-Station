@@ -24,6 +24,7 @@
 		"body_weight" = "scalar",
 		"chosen_limb_id" = "scalar",
 		"custom_blood_color" = "scalar",
+		"custom_emote_groups" = "list",
 		"custom_emote_panel" = "list",
 		"custom_interactions" = "interactions",
 		"custom_laugh" = "scalar",
@@ -344,7 +345,7 @@
 		if("list", "interactions")
 			if(!islist(value))
 				throw EXCEPTION("Поле [key] должно быть списком")
-			if(key == "custom_emote_panel")
+			if(key == "custom_emote_panel" || key == "custom_emote_groups")
 				value = player_transfer_escape_list(value)
 		if("json", "loadout", "limbs")
 			if(!istext(value))

@@ -1,6 +1,7 @@
 #define TGUI_PANEL_MAX_EMOTES 120
 #define TGUI_PANEL_MAX_EMOTE_LENGTH 128
 #define TGUI_PANEL_MAX_EMOTE_NAME_LENGTH 32
+#define TGUI_PANEL_MAX_EMOTE_GROUPS 24
 #define SHORT_EMOTE_MAX_LENGTH 40
 #define CUSTOM_SHORT_EMOTE_COOLDOWN 0.4 SECONDS
 #define CUSTOM_EMOTE_COOLDOWN 1 SECONDS
@@ -37,18 +38,21 @@
 	. = ..()
 	populate_all_emotes_list()
 
-/datum/tgui_panel/on_message(type, payload)
+/datum/tgui_panel/on_message(type, payload, href_list)
 	. = ..()
 
 	if (!client?.prefs)
 		return
 
-	if (. && type == "ready") // Добавляем прикол сверху, дап
-		emotes_send_list()
-
-	if (.)
+	if(.)
+		if(type == "ready")
+			window.send_message("emotes/setList", client.prefs.custom_emote_panel)
 		return
 
+	return emotes_handle_action(type, payload)
+
+/datum/tgui_panel/proc/emotes_handle_action(type, payload)
+	var/list/panel = client.prefs.custom_emote_panel
 
 	switch (type)
 		if ("emotes/execute")
@@ -63,13 +67,14 @@
 			// но те кто знают JavaScript, смогут спамить эмоциями
 			// даже теми, которых в панели нет, если не будет этой
 			// проверки здесь
-			if (isnull(client.prefs.custom_emote_panel[emote_name]))
+			if (!(emote_name in panel))
 				to_chat(client, span_warning("Эмоции [emote_name] нет в вашей панели!"))
 				return FALSE
-			if (isnull(client.prefs.custom_emote_panel[emote_name]["type"]))
+			var/list/entry = panel[emote_name]
+			if (!islist(entry) || isnull(entry["type"]))
 				to_chat(client, span_warning("Эмоция [emote_name] не имеет типа!"))
 				return FALSE
-			var/emote_type = client.prefs.custom_emote_panel[emote_name]["type"]
+			var/emote_type = entry["type"]
 
 			if (!isliving(client.mob))
 				return TRUE
@@ -77,7 +82,7 @@
 
 			switch (emote_type)
 				if (TGUI_PANEL_EMOTE_TYPE_DEFAULT)
-					var/emote_key = client.prefs.custom_emote_panel[emote_name]["key"]
+					var/emote_key = entry["key"]
 					L.emote(emote_key, intentional = TRUE)
 
 				// Чтобы люди не спамили пастами из 128 символов со скоростью света
@@ -85,8 +90,8 @@
 					if(L.nextsoundemote >= world.time)
 						to_chat(L, span_warning("Не так быстро!"))
 						return TRUE
-					var/emote_key = client.prefs.custom_emote_panel[emote_name]["key"]
-					var/message_override = client.prefs.custom_emote_panel[emote_name]["message_override"]
+					var/emote_key = entry["key"]
+					var/message_override = entry["message_override"]
 					L.emote(emote_key, intentional = TRUE, message_override = message_override)
 					if (length_char(message_override) > SHORT_EMOTE_MAX_LENGTH)
 						L.nextsoundemote = max(L.nextsoundemote, world.time + CUSTOM_EMOTE_COOLDOWN)
@@ -97,7 +102,7 @@
 					if(L.nextsoundemote >= world.time)
 						to_chat(L, span_warning("Не так быстро!"))
 						return TRUE
-					var/message = client.prefs.custom_emote_panel[emote_name]["message"]
+					var/message = entry["message"]
 					L.emote("me", intentional = TRUE, message = message)
 					if (length_char(message) > SHORT_EMOTE_MAX_LENGTH)
 						L.nextsoundemote = max(L.nextsoundemote, world.time + CUSTOM_EMOTE_COOLDOWN)
@@ -107,13 +112,16 @@
 			return TRUE
 
 		if ("emotes/create")
-			if (length(client.prefs.custom_emote_panel) > TGUI_PANEL_MAX_EMOTES)
+			if (length(panel) >= TGUI_PANEL_MAX_EMOTES)
 				to_chat(client, span_warning("Добавлен максимум эмоций: [TGUI_PANEL_MAX_EMOTES]."))
 				return
 
+			var/mob/user = client.mob
 			var/list/emote = list()
 
 			var/emote_type_string = tgui_alert(client.mob, "Какую эмоцию добавить в панель?", "Выбор типа эмоции", list("Обычная", "С кастомным текстом", "*me"))
+			if(!emotes_panel_is_current(panel, user))
+				return
 			if (!emote_type_string)
 				to_chat(client, span_warning("Добавление эмоции отменено."))
 				return
@@ -122,6 +130,8 @@
 			switch (emote_type_string)
 				if ("Обычная")
 					var/emote_key = tgui_input_list(client.mob, "Какую эмоцию добавить в панель?", "Выбор эмоции", all_emotes)
+					if(!emotes_panel_is_current(panel, user))
+						return
 					if (!emote_key)
 						to_chat(client, span_warning("Добавление эмоции отменено."))
 						return
@@ -138,6 +148,8 @@
 
 				if ("С кастомным текстом")
 					var/emote_key = tgui_input_list(client.mob, "Какую эмоцию добавить в панель?", "Выбор эмоции", all_emotes)
+					if(!emotes_panel_is_current(panel, user))
+						return
 					if (!emote_key)
 						to_chat(client, span_warning("Добавление эмоции отменено."))
 						return
@@ -147,6 +159,8 @@
 						return
 
 					var/message_override = strip_control_chars(tgui_input_text(client.mob, "Какой кастомный текст будет у эмоции? (максимум - [TGUI_PANEL_MAX_EMOTE_LENGTH] символов)", "Кастомный текст", emote_key, TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE))
+					if(!emotes_panel_is_current(panel, user))
+						return
 					if (!message_override)
 						to_chat(client, span_warning("Текст \"[message_override]\" не подходит!"))
 						return
@@ -160,6 +174,8 @@
 
 				if ("*me")
 					var/message = strip_control_chars(tgui_input_text(client.mob, "Какой текст будет у эмоции? (максимум - [TGUI_PANEL_MAX_EMOTE_LENGTH] символов)", "Кастомный текст", "", TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE))
+					if(!emotes_panel_is_current(panel, user))
+						return
 					if (!message)
 						to_chat(client, span_warning("Текст \"[message]\" не подходит!"))
 						return
@@ -171,15 +187,20 @@
 					)
 
 			var/emote_name = strip_control_chars(tgui_input_text(client.mob, "Какое название эмоции будет в панели?", "Название эмоции", suggested_name, TGUI_PANEL_MAX_EMOTE_NAME_LENGTH, FALSE, TRUE))
+			if(!emotes_panel_is_current(panel, user))
+				return
 			if (!emote_name)
 				to_chat(client, span_warning("Название \"[emote_name]\" не подходит!"))
 				return
-			if (emote_name in client.prefs.custom_emote_panel)
+			if (length(panel) >= TGUI_PANEL_MAX_EMOTES)
+				to_chat(client, span_warning("Добавлен максимум эмоций: [TGUI_PANEL_MAX_EMOTES]."))
+				return
+			if (emote_name in panel)
 				to_chat(client, span_warning("Эмоция \"[emote_name]\" уже существует!"))
 				return
 
-			client.prefs.custom_emote_panel[emote_name] = emote
-			client.prefs.save_character(TRUE) //custom emote panel is attached to the character
+			panel[emote_name] = emote
+			client.prefs.save_character(TRUE)
 			emotes_send_list()
 
 			return TRUE
@@ -192,10 +213,11 @@
 			if (!emote_name || !istext(emote_name) || !length(emote_name))
 				return
 
-			if (isnull(client.prefs.custom_emote_panel[emote_name]))
+			if (!(emote_name in panel))
 				to_chat(client, span_warning("Эмоции [emote_name] нет в вашей панели!"))
 				return FALSE
-			var/emote_type = client.prefs.custom_emote_panel[emote_name]["type"] ? client.prefs.custom_emote_panel[emote_name]["type"] : TGUI_PANEL_EMOTE_TYPE_UNKNOWN
+			var/list/entry = panel[emote_name]
+			var/emote_type = islist(entry) ? entry["type"] : null
 
 			var/list/actions = list()
 			switch (emote_type)
@@ -207,105 +229,238 @@
 
 				if (TGUI_PANEL_EMOTE_TYPE_ME)
 					actions.Add(list("Переименовать", "Изменить текст", "Удалить"))
-				if (TGUI_PANEL_EMOTE_TYPE_UNKNOWN)
+				else
 					to_chat(client, span_warning("Эмоция не имеет типа, поэтому её можно только удалить."))
 					actions.Add(list("Удалить"))
 
-			var/action = tgui_alert(client.mob, "Что вы хотите сделать с эмоцией \"[emote_name]\"?", "Выбор действия", actions)
+			var/mob/user = client.mob
+			var/action = tgui_alert(user, "Что вы хотите сделать с эмоцией \"[emote_name]\"?", "Выбор действия", actions)
+			if(!emotes_panel_is_current(panel, user) || !(emote_name in panel) || panel[emote_name] != entry)
+				return TRUE
 
+			var/changed = FALSE
 			switch (action)
 				if ("Удалить")
-					if (emotes_remove(emote_name))
-						client.prefs.save_character(TRUE)
-						emotes_send_list()
+					changed = emotes_remove(emote_name)
 				if ("Переименовать")
-					if (emotes_rename(emote_name))
-						client.prefs.save_character(TRUE)
-						emotes_send_list()
+					changed = emotes_rename(emote_name)
 				if ("Кастомизировать")
-					if (emotes_add_custom_text(emote_name))
-						client.prefs.save_character(TRUE)
-						emotes_send_list()
+					changed = emotes_add_custom_text(emote_name)
 				if ("Изменить текст")
-					if (emotes_change_custom_text(emote_name))
-						client.prefs.save_character(TRUE)
-						emotes_send_list()
+					changed = emotes_change_custom_text(emote_name)
 
+			if(changed)
+				client.prefs.save_character(TRUE)
+				emotes_send_list()
 			return TRUE
 
+/datum/tgui_panel/proc/emotes_panel_is_current(list/panel, mob/user)
+	return user && client?.mob == user && client.prefs?.custom_emote_panel == panel
 
 /datum/tgui_panel/proc/emotes_rename(emote_name)
-	var/new_emote_name = strip_control_chars(tgui_input_text(client.mob, "Выберите новое название эмоции [emote_name]:", "Название эмоции", emote_name, TGUI_PANEL_MAX_EMOTE_NAME_LENGTH, FALSE, TRUE))
-	if (!new_emote_name)
+	var/mob/user = client.mob
+	var/list/panel = client.prefs.custom_emote_panel
+	var/entry = panel[emote_name]
+	var/new_emote_name = strip_control_chars(tgui_input_text(user, "Выберите новое название эмоции [emote_name]:", "Название эмоции", emote_name, TGUI_PANEL_MAX_EMOTE_NAME_LENGTH, FALSE, TRUE))
+	if (!new_emote_name || !emotes_panel_is_current(panel, user) || panel[emote_name] != entry)
 		return FALSE
 	if (new_emote_name == emote_name)
 		to_chat(client, span_notice("Переименование отменено"))
 		return
-	if (new_emote_name in client.prefs.custom_emote_panel)
+	if (new_emote_name in panel)
 		to_chat(client, span_warning("Эмоция \"[new_emote_name]\" уже существует!"))
 		return
 
-	var/list/emote = client.prefs.custom_emote_panel[emote_name]
-	client.prefs.custom_emote_panel[new_emote_name] = emote
-	client.prefs.custom_emote_panel.Remove(emote_name)
-
-	return TRUE
+	return change_assoc_key_preserve_index(panel, new_emote_name, emote_name)
 
 /datum/tgui_panel/proc/emotes_remove(emote_name)
-	var/confirmation = tgui_alert(client.mob, "Вы уверены что хотите удалить эмоцию \"[emote_name]\" из панели?", "Подтверждение", list("Удалить", "Отмена"))
-	if (confirmation != "Удалить")
-		return
-
-	client.prefs.custom_emote_panel.Remove(emote_name)
-
-	return TRUE
+	var/mob/user = client.mob
+	var/list/panel = client.prefs.custom_emote_panel
+	var/entry = panel[emote_name]
+	var/confirmation = tgui_alert(user, "Удалить эмоцию «[emote_name]» из панели?", "Подтверждение", list("Удалить", "Отмена"))
+	if (confirmation != "Удалить" || !emotes_panel_is_current(panel, user) || panel[emote_name] != entry)
+		return FALSE
+	return panel.Remove(emote_name)
 
 /datum/tgui_panel/proc/emotes_add_custom_text(emote_name)
-	if (isnull(client.prefs.custom_emote_panel[emote_name]))
+	var/mob/user = client.mob
+	var/list/panel = client.prefs.custom_emote_panel
+	var/list/entry = panel[emote_name]
+	if (!islist(entry))
 		to_chat(client, span_warning("Эмоции [emote_name] нет в вашей панели!"))
 		return FALSE
 
-	var/emote_type = client.prefs.custom_emote_panel[emote_name]["type"]
+	var/emote_type = entry["type"]
 	if (emote_type != TGUI_PANEL_EMOTE_TYPE_DEFAULT)
 		to_chat(client, span_warning("Вы можете добавить текст только обычным эмоциям!"))
 		return FALSE
 
-	var/message_override = strip_control_chars(tgui_input_text(client.mob, "Выберите новый кастомный текст для эмоции [emote_name]:", "Кастомный текст", "", TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE))
-	if (!message_override)
+	var/message_override = strip_control_chars(tgui_input_text(user, "Выберите новый кастомный текст для эмоции [emote_name]:", "Кастомный текст", "", TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE))
+	if (!message_override || !emotes_panel_is_current(panel, user) || panel[emote_name] != entry || entry["type"] != emote_type)
 		return FALSE
-	client.prefs.custom_emote_panel[emote_name]["type"] = TGUI_PANEL_EMOTE_TYPE_CUSTOM
-	client.prefs.custom_emote_panel[emote_name]["message_override"] = message_override
+	entry["type"] = TGUI_PANEL_EMOTE_TYPE_CUSTOM
+	entry["message_override"] = message_override
 
 	return TRUE
 
 /datum/tgui_panel/proc/emotes_change_custom_text(emote_name)
-	if (isnull(client.prefs.custom_emote_panel[emote_name]))
+	var/mob/user = client.mob
+	var/list/panel = client.prefs.custom_emote_panel
+	var/list/entry = panel[emote_name]
+	if (!islist(entry))
 		to_chat(client, span_warning("Эмоции [emote_name] нет в вашей панели!"))
 		return FALSE
 
-	var/emote_type = client.prefs.custom_emote_panel[emote_name]["type"]
-	var/old_message = "???"
+	var/emote_type = entry["type"]
+	var/message_field
 	if (emote_type == TGUI_PANEL_EMOTE_TYPE_CUSTOM)
-		old_message = client.prefs.custom_emote_panel[emote_name]["message_override"]
+		message_field = "message_override"
 	else if (emote_type == TGUI_PANEL_EMOTE_TYPE_ME)
-		old_message = client.prefs.custom_emote_panel[emote_name]["message"]
+		message_field = "message"
 	else
 		to_chat(client, span_warning("У этой эмоции ещё нет кастомного текста!"))
 		return FALSE
 
-	var/message_override = strip_control_chars(tgui_input_text(client.mob, "Выберите новый кастомный текст для эмоции [emote_name]:", "Кастомный текст", old_message, TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE))
-	if (!message_override) // отмена или текст из одних управляющих символов - ничего не меняем
+	var/old_message = entry[message_field]
+	var/message_override = strip_control_chars(tgui_input_text(user, "Выберите новый кастомный текст для эмоции [emote_name]:", "Кастомный текст", old_message, TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE))
+	if (!message_override || !emotes_panel_is_current(panel, user) || panel[emote_name] != entry || entry[message_field] != old_message)
 		return FALSE
-	if (emote_type == TGUI_PANEL_EMOTE_TYPE_CUSTOM)
-		client.prefs.custom_emote_panel[emote_name]["message_override"] = message_override
-	else
-		client.prefs.custom_emote_panel[emote_name]["message"] = message_override
+	entry[message_field] = message_override
 
 	return TRUE
 
 /datum/tgui_panel/proc/emotes_send_list()
-	var/list/payload = client.prefs.custom_emote_panel
-	window.send_message("emotes/setList", payload)
+	window.send_message("emotes/setList", client.prefs.custom_emote_panel)
+	emotes_send_statpanel()
+
+/datum/tgui_panel/proc/emotes_send_statpanel()
+	var/datum/preferences/prefs = client?.prefs
+	if(!prefs || !client.statbrowser_ready || client.stat_tab != STATPANEL_EMOTES_TAB)
+		return
+
+	// Массивы сохраняют порядок сейва, в том числе для эмоций с числовыми названиями.
+	var/list/emotes = list()
+	for(var/emote_name in prefs.custom_emote_panel)
+		emotes += list(list("name" = emote_name, "entry" = prefs.custom_emote_panel[emote_name]))
+	var/list/groups = list()
+	for(var/group_id in prefs.custom_emote_groups)
+		var/list/group = prefs.custom_emote_groups[group_id]
+		groups += list(list("id" = group_id, "name" = html_decode(group["name"])))
+	var/list/payload = list("slot" = prefs.default_slot, "emotes" = emotes, "groups" = groups)
+	client << output(url_encode(json_encode(payload)), "statbrowser:update_emotes")
+
+/datum/tgui_panel/proc/emotes_handle_stat_action(list/params)
+	var/action = params["statpanel_emotes"]
+	var/changed = FALSE
+	switch(action)
+		if("emotes/execute", "emotes/create", "emotes/contextAction")
+			return emotes_handle_action(action, params)
+		if("emotes/move")
+			changed = emotes_move(params["name"], params["group"] || "", params["anchor"], params["after"] == "1")
+		if("emotes/createGroup")
+			changed = emotes_edit_group()
+		if("emotes/editGroup")
+			var/group_id = params["group"]
+			if(!length(group_id) || !(group_id in client.prefs.custom_emote_groups))
+				return
+			changed = emotes_edit_group(group_id)
+	if(changed)
+		client.prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
+		emotes_send_statpanel()
+
+/datum/tgui_panel/proc/emotes_move(emote_name, group_id, anchor, insert_after)
+	var/list/panel = client.prefs.custom_emote_panel
+	if(!length(emote_name) || !(emote_name in panel))
+		return FALSE
+	var/list/entry = panel[emote_name]
+	if(!islist(entry) || (length(group_id) && !(group_id in client.prefs.custom_emote_groups)))
+		return FALSE
+
+	var/current_group = entry["group"] || ""
+	var/from_index = panel.Find(emote_name)
+	var/to_index = length(panel) + 1
+	if(length(anchor))
+		if(anchor == emote_name || !(anchor in panel))
+			return FALSE
+		var/list/anchor_entry = panel[anchor]
+		if(!islist(anchor_entry) || (anchor_entry["group"] || "") != group_id)
+			return FALSE
+		to_index = panel.Find(anchor) + insert_after
+	else if(current_group == group_id)
+		for(var/index in length(panel) to 1 step -1)
+			var/list/candidate = panel[panel[index]]
+			if(islist(candidate) && (candidate["group"] || "") == group_id)
+				to_index = index + 1
+				break
+
+	var/moved = moveElement(panel, from_index, to_index)
+	if(current_group == group_id)
+		return moved
+	if(length(group_id))
+		entry["group"] = group_id
+	else
+		entry -= "group"
+	return TRUE
+
+/datum/tgui_panel/proc/emotes_edit_group(group_id)
+	var/list/groups = client.prefs.custom_emote_groups
+	var/list/panel = client.prefs.custom_emote_panel
+	var/mob/user = client.mob
+	var/list/group = group_id ? groups[group_id] : null
+	var/current_name = group?["name"]
+	if(group)
+		var/action = tgui_alert(user, "Группа «[current_name]»", "Действие с группой", list("Переименовать", "Удалить", "Отмена"))
+		if(!emotes_panel_is_current(panel, user) || groups[group_id] != group || group["name"] != current_name)
+			return FALSE
+		if(action == "Удалить")
+			var/confirmation = tgui_alert(user, "Удалить группу «[current_name]»? Её эмоции переместятся в раздел «Без группы».", "Удаление группы", list("Удалить", "Отмена"))
+			if(confirmation != "Удалить" || !emotes_panel_is_current(panel, user) || groups[group_id] != group || group["name"] != current_name)
+				return FALSE
+			for(var/emote_name in panel)
+				var/list/entry = panel[emote_name]
+				if(islist(entry) && entry["group"] == group_id)
+					entry -= "group"
+			return groups.Remove(group_id)
+		if(action != "Переименовать")
+			return FALSE
+	else if(length(groups) >= TGUI_PANEL_MAX_EMOTE_GROUPS)
+		to_chat(client, span_warning("Добавлен максимум групп: [TGUI_PANEL_MAX_EMOTE_GROUPS]."))
+		return FALSE
+
+	var/new_name = trim(tgui_input_text(user, "Введите название группы эмоций.", "Название группы", html_decode(current_name || ""), TGUI_PANEL_MAX_EMOTE_NAME_LENGTH, encode = TRUE))
+	if(!length(new_name) || new_name == current_name || !emotes_panel_is_current(panel, user))
+		return FALSE
+	if(group)
+		if(groups[group_id] != group || group["name"] != current_name)
+			return FALSE
+		group["name"] = new_name
+		return TRUE
+
+	for(var/index in 1 to TGUI_PANEL_MAX_EMOTE_GROUPS)
+		var/new_id = "[index]"
+		if(!(new_id in groups))
+			groups[new_id] = list("name" = new_name)
+			return TRUE
+	to_chat(client, span_warning("Добавлен максимум групп: [TGUI_PANEL_MAX_EMOTE_GROUPS]."))
+	return FALSE
+
+/proc/sanitize_custom_emote_groups(list/groups)
+	var/list/cleaned = list()
+	if(!islist(groups))
+		return cleaned
+	for(var/group_id in groups)
+		if(!istext(group_id))
+			continue
+		var/index = text2num(group_id)
+		if(index < 1 || index > TGUI_PANEL_MAX_EMOTE_GROUPS || index != round(index) || group_id != "[index]")
+			continue
+		var/list/group = groups[group_id]
+		if(!islist(group) || !istext(group["name"]))
+			continue
+		var/group_name = trim(copytext_char(strip_control_chars(group["name"]), 1, TGUI_PANEL_MAX_EMOTE_NAME_LENGTH + 1))
+		if(length(group_name))
+			cleaned[group_id] = list("name" = group_name)
+	return cleaned
 
 /// Rebuilds a custom_emote_panel list with control characters stripped from every
 /// emote name (the assoc key) and stored message. Entries whose name becomes empty
@@ -335,6 +490,7 @@
 #undef TGUI_PANEL_MAX_EMOTES
 #undef TGUI_PANEL_MAX_EMOTE_LENGTH
 #undef TGUI_PANEL_MAX_EMOTE_NAME_LENGTH
+#undef TGUI_PANEL_MAX_EMOTE_GROUPS
 #undef SHORT_EMOTE_MAX_LENGTH
 #undef CUSTOM_SHORT_EMOTE_COOLDOWN
 #undef CUSTOM_EMOTE_COOLDOWN

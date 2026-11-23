@@ -237,6 +237,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 	last_activity = world.time
 
+	if(href_list["statpanel_emotes"])
+		if(statbrowser_ready && stat_tab == STATPANEL_EMOTES_TAB && prefs && text2num(href_list["slot"]) == prefs.default_slot)
+			tgui_panel?.emotes_handle_stat_action(href_list)
+		return
+
 	//byond bug ID:2256651
 	if (asset_cache_job && (asset_cache_job in completed_asset_jobs))
 		to_chat(src, "<span class='danger'>An error has been detected in how your client is receiving resources. Attempting to correct.... (If you keep seeing these messages you might want to close byond and reconnect)</span>")

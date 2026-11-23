@@ -45,6 +45,7 @@ loadFavorites();
 
 if (!State.currentTab) {
 	addPermanentTab("Status");
+	addPermanentTab(STATPANEL_EMOTES_TAB);
 	tab_change("Status");
 }
 

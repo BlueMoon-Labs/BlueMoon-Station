@@ -80,6 +80,7 @@ function addGridRow(parent, themeState, opts) {
 }
 
 function draw_settings() {
+	finishEmoteDrag();
 	_settingsActive = true;
 	clearTimeout(_fontApplyTimer);
 	statcontent.textContent = "";
