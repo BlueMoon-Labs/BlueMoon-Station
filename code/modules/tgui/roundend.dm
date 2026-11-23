@@ -181,3 +181,23 @@
 	if(!data)
 		return
 	WRITE_FILE(path, json_encode(data))
+
+/**
+ * Данные для tgui, когда структурированный снимок отчёта отсутствует
+ * (отчёт остался от версии до появления tgui).
+ *
+ * Кнопки "Your Last Round" и "Server's Last Round" должны открывать современный
+ * интерфейс так же, как обычная кнопка в конце раунда. Собираем обычные данные
+ * tgui, а старый HTML подкладываем во вкладку "Подробный отчёт", чтобы не потерять
+ * содержимое сохранённого отчёта.
+ */
+/proc/build_legacy_roundend_tgui_data(client/C, report_type = null)
+	var/server_report = (report_type == SERVER_LAST_ROUND)
+	var/filename = server_report ? "data/server_last_roundend_report.html" : C?.roundend_report_file()
+	// После рестарта сервера счётчики могут быть пустыми — подстраховываемся.
+	var/list/popcount = islist(GLOB.roundend_popcount) ? GLOB.roundend_popcount : list()
+	var/list/data = build_roundend_tgui_data(server_report ? null : C, popcount)
+
+	if(filename && fexists(filename))
+		data["common_report_html"] = file2text(filename)
+	return data
