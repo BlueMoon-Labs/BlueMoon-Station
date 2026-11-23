@@ -166,7 +166,7 @@
 
 	var/turf/T = get_turf(src)
 	if(T)
-		playsound(T, pick('sound/effects/headgibb.ogg', 'sound/effects/splat.ogg', 'sound/effects/wounds/blood3.ogg'), 75, TRUE)
+		playsound(T, pick( 'sound/effects/wounds/pierce2.ogg', 'sound/effects/splat.ogg', 'sound/effects/wounds/blood3.ogg'), 75, TRUE)
 
 	// Вылет головы
 	if(T)

@@ -179,7 +179,7 @@
 		user.visible_message("<span class='notice'>[user] начинает использовать [src] на [C]...</span>", "<span class='notice'>Вы начинаете использовать [src] на [C]...</span>")
 		to_chat(C, "<span class='warning'>[user] начинает использовать [src] на вас!</span>")
 
-	if(!do_after(user, healing_use_time, target = C))
+	if(!do_after(user, healing_use_time, target = C, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE))
 		return
 
 	if(!reagents.total_volume)
@@ -417,7 +417,7 @@
 		user.visible_message("<span class='notice'>[user] начинает использовать [src] на [R]...</span>", "<span class='notice'>Вы начинаете использовать [src] на [R]...</span>")
 		to_chat(R, "<span class='warning'>[user] начинает использовать [src] на вас!</span>")
 
-	if(!do_after(user, robot_use_time, target = R))
+	if(!do_after(user, robot_use_time, target = R, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE))
 		return
 
 	if(!reagents.total_volume)
