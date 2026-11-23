@@ -18,14 +18,17 @@
 			counterfeit = FALSE
 			break
 
+	var/used_loc = loc
+	if(ishuman(loc))
+		used_loc = get_turf(loc)
 	if(!counterfeit && prob(base_fortune_delivery))
 		say("Благодарим за оформление подписки на мгновенную доставку товаров, производится процесс телепортации.")
-		new received_product(loc)
+		new received_product(used_loc)
 		qdel(src)
 		return
 
 	var/used_price = counterfeit ? NVD_price : base_price
-	new /obj/item/card/voucher(loc, received_product, used_price, NVD_suspicious)
+	new /obj/item/card/voucher(used_loc, received_product, used_price, counterfeit ? NVD_suspicious : FALSE)
 	qdel(src)
 
 /obj/item/card/voucher
