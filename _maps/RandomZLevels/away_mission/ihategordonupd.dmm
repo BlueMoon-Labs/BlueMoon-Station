@@ -12188,6 +12188,10 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/rocks)
+"dEA" = (
+/obj/machinery/gateway/away,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/outsideofmesa)
 "dET" = (
 /turf/open/water/jungle/default_atmos{
 	density = 1;
@@ -192350,7 +192354,7 @@ fZe
 fZe
 fZe
 fZe
-fZe
+wxf
 fZe
 fZe
 fZe
@@ -192607,7 +192611,7 @@ fZe
 fZe
 fZe
 fZe
-fZe
+wxf
 fZe
 fZe
 fZe
@@ -192864,10 +192868,10 @@ fZe
 fZe
 fZe
 fZe
+wxf
 fZe
 fZe
-fZe
-fZe
+dEA
 fZe
 fZe
 fZe
@@ -193121,7 +193125,7 @@ fZe
 fZe
 fZe
 fZe
-fZe
+wxf
 fZe
 fZe
 fZe
@@ -193378,7 +193382,7 @@ fZe
 fZe
 fZe
 fZe
-fZe
+wxf
 fZe
 fZe
 fZe
@@ -193635,13 +193639,13 @@ fZe
 fZe
 fZe
 fZe
-fZe
-fZe
-fZe
-fZe
-fZe
-fZe
-fZe
+wxf
+wxf
+wxf
+wxf
+wxf
+wxf
+wxf
 wxf
 qBF
 nPz
