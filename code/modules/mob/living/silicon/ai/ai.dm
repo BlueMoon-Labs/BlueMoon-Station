@@ -1055,7 +1055,7 @@
             jobpart = "[S.job]"
 
     // relayed_emote: чат tgui не считает это речью при подсветке "Только речь"
-    var/rendered = "<i><span class='game say relayed_emote'>Relayed Emote: <span class='name'>[hrefpart][namepart] ([jobpart])</a> </span><span class='message'>[emote_message]</span></span></i>"
+    var/rendered = "<i><span class='game say relayed_emote'>Переданная эмоция: <span class='name'>[hrefpart][namepart] ([jobpart])</a> </span><span class='message'>[emote_message]</span></span></i>"
     show_message(rendered, MSG_VISUAL)
 // --
 /mob/living/silicon/ai/fully_replace_character_name(oldname,newname)

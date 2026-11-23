@@ -385,6 +385,7 @@ describe('line breaks', () => {
       '<span>Первая строка<br>Вторая строка</span>',
       '<span>Первая строка<br> Вторая строка</span>',
       '<span><div>Первая строка </div><div>Вторая строка</div></span>',
+      '<span><center>Первая строка </center>Вторая строка</span>',
     ]) {
       expect(render(html, [group({ highlightText: 'строка Вторая' })]).result)
         .toBeNull();

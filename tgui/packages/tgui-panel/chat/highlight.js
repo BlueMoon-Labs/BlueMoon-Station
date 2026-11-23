@@ -54,7 +54,8 @@ export const SPEECH_ROOT_CLASSES = [
 
 // Эмоции, которые ИИ видит через камеры (relay_emote), размечены как речь.
 const NOT_SPEECH_CLASSES = ['relayed_emote', 'emote'];
-// Сообщения из истории, пришедшие до класса relayed_emote.
+// Сообщения из истории, пришедшие до класса relayed_emote (тогда подпись
+// была английской).
 const RELAYED_EMOTE_PREFIX = 'Relayed Emote';
 
 const MESSAGE_CLASS = 'message';
@@ -86,7 +87,7 @@ const INLINE_CLASSES = [HIGHLIGHT_CLASS];
 // Новая строка: разрыв ставится всегда, пробел у границы его не отменяет.
 const LINE_TAGS = ['BR', 'HR', 'DIV', 'P', 'LI', 'UL', 'OL', 'DL', 'DT', 'DD',
   'TABLE', 'TR', 'TD', 'TH', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
-  'BLOCKQUOTE', 'PRE', 'SECTION', 'ARTICLE', 'HEADER', 'FOOTER'];
+  'BLOCKQUOTE', 'PRE', 'CENTER', 'SECTION', 'ARTICLE', 'HEADER', 'FOOTER'];
 const NO_BREAK = 0;
 const SOFT_BREAK = 1;
 const LINE_BREAK = 2;
