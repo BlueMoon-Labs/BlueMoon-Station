@@ -133,20 +133,34 @@
 		/area/awaymission/ihategordon/tram_tunnel,
 		/area/awaymission/ihategordon/entrance
 	)
+	// Состав ihategordon-area статичен на раунд. get_areas() сканирует все
+	// area станции и вызывался на каждый ивент - давал ~50мс на старте.
+	var/static/list/cached_source_areas = null
+	var/static/list/cached_valid_areas = null
+
+/datum/round_event/blackmesa/proc/get_source_areas() as /list
+	if(isnull(cached_source_areas) || !cached_source_areas.len) {
+		var/list/fresh = get_areas(/area/awaymission/ihategordon, TRUE)
+		if(fresh.len)
+			cached_source_areas = fresh
+		else
+			return list()
+	}
+	return cached_source_areas
 
 /datum/round_event/blackmesa/setup()
 	. = ..()
 	// Check if ihategordon is even loaded
-	var/list/mission_areas = get_areas(/area/awaymission/ihategordon, TRUE)
-	if(!mission_areas.len)
+	if(!get_source_areas().len)
 		return EVENT_CANCELLED
 
 /datum/round_event/blackmesa/proc/get_mesa_areas()
-	var/list/source_areas = get_areas(/area/awaymission/ihategordon, TRUE)
+	if(cached_valid_areas)
+		return cached_valid_areas.Copy()
 	var/list/areas = list()
 
-	for(var/area/A in source_areas)
-		if(!A || !A.contents.len)
+	for(var/area/A in get_source_areas())
+		if(!A || QDELETED(A) || !A.contents.len)
 			continue
 		var/valid = TRUE
 		for(var/EA in excluded_areas)
@@ -155,7 +169,9 @@
 				break
 		if(valid)
 			areas += A
-	return areas
+	if(areas.len)
+		cached_valid_areas = areas
+	return areas.Copy()
 
 /datum/round_event/blackmesa/proc/get_random_mesa_turf()
 	var/list/areas = get_mesa_areas()
@@ -299,8 +315,12 @@
 	var/lookup = alist()
 	for(var/area/A in areas)
 		lookup[A] = TRUE
+	// Дешёвый отсев по z до get_area(): свет station-wide, а миссия на своих z.
+	var/zones = SSblackmesa_events ? SSblackmesa_events.mesa_mission_zset() : null
 	for(var/obj/machinery/light/L in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/light))
 		if(QDELETED(L) || !L.cell || !L.cell.maxcharge)
+			continue
+		if(zones && !(L.cell.z in zones))
 			continue
 		var/area/LA = get_area(L)
 		if(LA && lookup[LA])
@@ -311,22 +331,6 @@
 		if(!QDELETED(L) && L.cell && L.cell.maxcharge)
 			L.cell.charge = L.cell.maxcharge
 	outage_lights.Cut()
-
-// Event 2: Sandstorm (Cosmetic)
-/datum/round_event_control/blackmesa/sandstorm
-	name = "Black Mesa: Sandstorm"
-	typepath = /datum/round_event/blackmesa/sandstorm
-	weight = 3
-	max_occurrences = 2
-	category = EVENT_CATEGORY_INVASION
-	min_difficulty_level = 0
-
-/datum/round_event/blackmesa/sandstorm/start()
-	var/turf/T = get_random_mesa_turf()
-	if(!T)
-		return
-
-	SSweather.run_weather(/datum/weather/ash_storm/mesa_sandstorm, list(T.z))
 
 // Event 9: Lockdown
 /datum/round_event_control/blackmesa/lockdown
@@ -359,8 +363,12 @@
 	var/lookup = alist()
 	for(var/area/A in areas)
 		lookup[A] = TRUE
+	var/zones = SSblackmesa_events ? SSblackmesa_events.mesa_mission_zset() : null
 	for(var/obj/machinery/door/airlock/D in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/door/airlock))
 		if(QDELETED(D) || D.locked)
+			continue
+		var/turf/DT = get_turf(D)
+		if(zones && DT && !(DT.z in zones))
 			continue
 		var/area/A = get_area(D)
 		if(A && lookup[A])

@@ -30,7 +30,6 @@ SUBSYSTEM_DEF(blackmesa_events)
 		/obj/effect/landmark/awaymission/blackmesa/hecu_role_spawn/leader,
 	)
 	var/list/cached_mission_areas = null
-	var/list/cached_mission_zlevels = null
 	// ckey -> world.time последней смерти игрока (в любой роли). Нужен для
 	// кулдауна входа в гост-роли HECU: недавно погибший не может сразу
 	// переродиться sleeper'ом.
@@ -111,37 +110,41 @@ SUBSYSTEM_DEF(blackmesa_events)
 	if(selected)
 		selected.runEvent(random = TRUE)
 
-// Z-levels that contain any ihategordon area. Players standing on
-// /area/space turfs (airlock exteriors, open void) are not inside an
-// ihategordon area, so area checks alone would skip them - the mission
-// z-levels catch everyone physically on the Black Mesa map.
-/datum/controller/subsystem/blackmesa_events/proc/mesa_mission_zlevels()
-	if(isnull(cached_mission_zlevels))
-		cached_mission_zlevels = list()
-		for(var/V in GLOB.sortedAreas)
-			var/area/A = V
-			if(!istype(A, /area/awaymission/ihategordon))
-				continue
-			for(var/turf/T in A)
-				if(T.z && !(T.z in cached_mission_zlevels))
-					cached_mission_zlevels += T.z
-	return cached_mission_zlevels
+// z-фолбэк для тайлов вне ihategordon-area (внешние плиты гейта/шлюза):
+// достаточно было совпадения z с миссией, и игрок на любом другом контенте
+// с тем же номером z (главная дека!) считался "на миссии" - ивенты и анонсы
+// крутились весь раунд без людей в гейте. Теперь z-фолбэк требует ещё и
+// попадания в прямоугольник карты миссии с запасом на плиты шлюза/шаттла
+// за краем карты. Границы кладёт on_map_loaded в GLOB.ihategordon_zlevels.
+var/ihategordon_zone_pad = 8
+
+/datum/controller/subsystem/blackmesa_events/proc/mesa_turf_in_mission(turf/T)
+	if(!T)
+		return FALSE
+	var/bounds = GLOB.ihategordon_zlevels[T.z]
+	if(!bounds)
+		return FALSE
+	return T.x >= bounds[MAP_MINX] - ihategordon_zone_pad && T.x <= bounds[MAP_MAXX] + ihategordon_zone_pad && T.y >= bounds[MAP_MINY] - ihategordon_zone_pad && T.y <= bounds[MAP_MAXY] + ihategordon_zone_pad
+
+/// Множество z-уровней миссии - для дешёвого отсева объектов на чужих z
+/// до вызова get_area() в циклах по machines_by_type.
+/datum/controller/subsystem/blackmesa_events/proc/mesa_mission_zset()
+	var/zones = alist()
+	for(var/z in GLOB.ihategordon_zlevels)
+		zones[z] = TRUE
+	return zones
 
 // Есть ли живой игрок на месе: внутри area/awaymission/ihategordon или на
-// любом z-уровне миссии (на /area/space турфах - тамбур, скалы - ивентовые
-// area не покрывают, поэтому z-фолбэк как в mesa_announce).
+// тайле миссии вне area (тамбур, скалы - ивентовые area их не покрывают).
 /datum/controller/subsystem/blackmesa_events/proc/mesa_has_living_players()
-	var/list/mission_zs = mesa_mission_zlevels()
 	for(var/mob/M in GLOB.player_list)
 		if(!M || isnewplayer(M) || !isliving(M) || M.stat == DEAD)
 			continue
 		var/area/A = get_area(M)
-		if(!A)
-			continue
 		var/turf/MT = get_turf(M)
-		if(!MT)
+		if(!A || !MT)
 			continue
-		if(istype(A, /area/awaymission/ihategordon) || (MT.z in mission_zs))
+		if(istype(A, /area/awaymission/ihategordon) || mesa_turf_in_mission(MT))
 			return TRUE
 	return FALSE
 
@@ -154,7 +157,6 @@ SUBSYSTEM_DEF(blackmesa_events)
 	announcement += "<br>[span_alert("[html_encode(text)]")]<br>"
 
 	var/s = sound ? sound(sound) : null
-	var/list/mission_zs = mesa_mission_zlevels()
 	var/players_notified = 0
 	for(var/mob/M in GLOB.player_list)
 		if(!M)
@@ -167,7 +169,7 @@ SUBSYSTEM_DEF(blackmesa_events)
 		var/turf/MT = get_turf(M)
 		if(!MT)
 			continue
-		if(!istype(A, /area/awaymission/ihategordon) && !(MT.z in mission_zs))
+		if(!istype(A, /area/awaymission/ihategordon) && !mesa_turf_in_mission(MT))
 			continue
 		if(excluded_faction && isliving(M))
 			var/mob/living/living_mob = M
@@ -181,15 +183,14 @@ SUBSYSTEM_DEF(blackmesa_events)
 	log_world("mesa_announce: '[title]' - notified [players_notified] players in Black Mesa area")
 
 // Единая проверка "игрок в зоне Сектора H" для трансивера и declare_hecu_conflict:
-// area/ihategordon ИЛИ z-уровень миссии (турфы /area/space - тамбур, скалы).
+// area/ihategordon ИЛИ тайл миссии вне area (турфы /area/space - тамбур, скалы).
 /datum/controller/subsystem/blackmesa_events/proc/mesa_actor_in_zone(mob/L)
 	var/turf/UT = get_turf(L)
 	if(!UT)
 		return FALSE
 	if(istype(get_area(L), /area/awaymission/ihategordon))
 		return TRUE
-	var/list/mission_zs = mesa_mission_zlevels()
-	return mission_zs && (UT.z in mission_zs)
+	return mesa_turf_in_mission(UT)
 
 /datum/controller/subsystem/blackmesa_events/proc/declare_hecu_conflict(mob/living/user, conflict_mode, custom_announcement)
 	if(SSticker && hecu_conflict_round_start_time != SSticker.round_start_time)
@@ -253,14 +254,13 @@ SUBSYSTEM_DEF(blackmesa_events)
 	return TRUE
 
 /datum/controller/subsystem/blackmesa_events/proc/issue_hecu_orders(message, objective_text)
-	var/list/mission_zs = mesa_mission_zlevels()
 	for(var/mob/living/hecu in GLOB.player_list)
 		if(!hecu.client || hecu.stat == DEAD || !(FACTION_HECU in hecu.faction))
 			continue
 		var/turf/HT = get_turf(hecu)
 		if(!HT)
 			continue
-		if(!istype(get_area(hecu), /area/awaymission/ihategordon) && !(HT.z in mission_zs))
+		if(!istype(get_area(hecu), /area/awaymission/ihategordon) && !mesa_turf_in_mission(HT))
 			continue
 		to_chat(hecu, span_warning(message))
 		add_scenario_objective(hecu, objective_text)

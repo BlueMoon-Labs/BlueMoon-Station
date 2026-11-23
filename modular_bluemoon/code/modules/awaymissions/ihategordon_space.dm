@@ -17,13 +17,15 @@ GLOBAL_VAR_INIT(ihategordon_zlevels, alist())
 /proc/ihategordon_void_z(z)
 	if(!GLOB.ihategordon_zlevels)
 		return FALSE
-	return GLOB.ihategordon_zlevels["[z]"]
+	return GLOB.ihategordon_zlevels[z]
 
 /datum/map_template/on_map_loaded(z, list/bounds)
 	. = ..()
 	if(findtext(src.mappath || "", "ihategordon"))
 		for(var/zz in z to z + max(src.zdepth, 1) - 1)
-			GLOB.ihategordon_zlevels["[zz]"] = TRUE
+			// Храним границы карты, а не TRUE: по ним менеджер ивентов отличает
+			// тайлы миссии от чужого контента на том же z-уровне (главная дека).
+			GLOB.ihategordon_zlevels[zz] = bounds.Copy()
 
 /atom/movable/screen/parallax_layer/ihategordon
 	icon = 'modular_bluemoon/icons/effects/mesaparallax.dmi'

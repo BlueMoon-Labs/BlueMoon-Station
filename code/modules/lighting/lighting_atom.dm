@@ -245,12 +245,34 @@
 	set_light(_range, _power, _color)
 	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, set_light), _reset_lighting ? initial(light_range) : temp_range, _reset_lighting ? initial(light_power) : temp_power, _reset_lighting ? initial(light_color) : temp_color), _duration, TIMER_OVERRIDE|TIMER_UNIQUE)
 
-/mob/living/flash_lighting_fx(_range = FLASH_LIGHT_RANGE, _power = FLASH_LIGHT_POWER, _color = LIGHT_COLOR_WHITE, _duration = FLASH_LIGHT_DURATION, _reset_lighting = TRUE)
-	mob_light(_color, _range, _power, _duration)
+/mob/living/flash_lighting_fx(_range = FLASH_LIGHT_RANGE, _power = FLASH_LIGHT_POWER, _color = LIGHT_COLOR_WHITE, _duration = FLASH_LIGHT_DURATION, _reset_lighting = TRUE, _persistent = FALSE)
+	mob_light(_color, _range, _power, _duration, _persistent)
 
-/mob/living/proc/mob_light(_color, _range, _power, _duration)
-	var/obj/effect/dummy/lighting_obj/moblight/mob_light_obj = new (src, _color, _range, _power, _duration)
-	return mob_light_obj
+/mob/living/proc/mob_light(_color, _range, _power, _duration, _persistent = FALSE)
+	// Переиспользуем живой moblight вместо new+qdel на каждый вызов: вспышки
+	// создают атом с overlay_lighting-компонентом, ~15 сигналов и view() по
+	// турфам - на автоматике это цена каждого патрона.
+	// * persistent: объект живёт на мобе и гаснет анимацией альфы маски
+	//   (pulse_flash), параметрам делается sync - для частых коротких вспышек.
+	// * обычный: совпавшие параметры перевзводят таймер жизни (refresh_lifetime).
+	for(var/obj/effect/dummy/lighting_obj/moblight/L in src)
+		if(QDELETED(L) || L.persistent != _persistent)
+			continue
+		if(_persistent)
+			L.sync_light_params(_color, _range, _power)
+			L.pulse_flash(_duration)
+			return L
+		if(L.light_params_match(_color, _range, _power))
+			L.refresh_lifetime(_duration)
+			return L
+	if(_persistent)
+		var/obj/effect/dummy/lighting_obj/moblight/L = new /obj/effect/dummy/lighting_obj/moblight(src, _color, _range, _power, _duration)
+		if(L && !QDELETED(L))
+			L.make_persistent(src)
+			L.pulse_flash(_duration)
+			return L
+		return L
+	return new /obj/effect/dummy/lighting_obj/moblight(src, _color, _range, _power, _duration)
 
 // Setter for the light power of this atom.
 /atom/proc/set_light_power(new_power)

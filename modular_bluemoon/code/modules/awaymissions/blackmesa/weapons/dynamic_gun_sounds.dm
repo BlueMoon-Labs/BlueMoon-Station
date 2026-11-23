@@ -115,7 +115,7 @@
 
 /obj/item/gun/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
 	if(mesa_muzzle_flash && user)
-		user.flash_lighting_fx(4, 5, LIGHT_COLOR_ORANGE, 1)
+		user.flash_lighting_fx(4, 5, LIGHT_COLOR_ORANGE, 1, _persistent = TRUE)
 	if(mesa_shotgun_bonus && pointblank && pbtarget)
 		var/mob/living/victim
 		if(istype(pbtarget, /mob/living))

@@ -85,6 +85,10 @@
 	var/legs_lost_count = 0
 	var/instant_kill_on_single_leg = FALSE // Если TRUE - потеря даже одной ноги убивает на месте
 	var/wound_chest_active = FALSE
+	// Кэш последней сборки: assemble пересоздаёт все mutable_appearance и
+	// appearance моба, поэтому без изменения маски/раны его дёргать нельзя.
+	var/last_assemble_limbs = -1
+	var/last_assemble_wound = null
 
 	// Burst-урон за короткое окно (дробовик в упор и т.п.) -> гарантированный гиб
 	var/burst_damage = 0
@@ -99,6 +103,10 @@
 /mob/living/simple_animal/hostile/infected/modular/proc/assemble_modular_limbs()
 	if(stat == DEAD)
 		return
+	if(limbs_status == last_assemble_limbs && wound_chest_active == last_assemble_wound)
+		return
+	last_assemble_limbs = limbs_status
+	last_assemble_wound = wound_chest_active
 
 	icon_state = "[prefix]_body"
 	icon_living = "[prefix]_body"
@@ -255,17 +263,25 @@
 
 	playsound(T, pick('sound/effects/splat.ogg', 'sound/effects/meatslap.ogg', 'sound/effects/butcher.ogg'), 80, TRUE)
 
-	// Разлёт конечностей и костей в разные стороны
+	// Разлёт конечностей и костей в разные стороны. Кап на 8 атомов: при
+	// волнах гибы идут пачками, а каждый flying_limb - свой atom + 2 animate.
+	var/gib_count = 0
 	for(var/d in GLOB.alldirs)
+		if(gib_count >= 8)
+			break
 		if(prob(80))
 			var/obj/effect/temp_visual/flying_limb/L = new(T)
 			var/part = pick("flying_ribs", "flying_guts", "[prefix]_flying_arm", "[prefix]_flying_head", "[prefix]_flying_leg")
 			L.launch(T, d, part, gore_dmi)
+			gib_count++
 
 	// Гарантированный минимум кусков, чтобы взрыв всегда выглядел мясным
 	for(var/i in 1 to 3)
+		if(gib_count >= 8)
+			break
 		var/obj/effect/temp_visual/flying_limb/L = new(T)
 		L.launch(T, pick(GLOB.alldirs), pick("flying_ribs", "flying_guts", "[prefix]_flying_arm", "[prefix]_flying_head", "[prefix]_flying_leg"), gore_dmi)
+		gib_count++
 
 	playsound(T, pick('sound/effects/wounds/blood1.ogg', 'sound/effects/wounds/blood2.ogg', 'sound/effects/wounds/crackandbleed.ogg'), 60, TRUE)
 
@@ -386,3 +402,5 @@
 	// Труп чистый: снимаем ВСЕ оверлеи (конечности, культи, ранения)
 	cut_overlays()
 	gore_overlay_refs.Cut()
+	last_assemble_limbs = -1
+	last_assemble_wound = null
