@@ -90,8 +90,6 @@
 	//Zooming
 	var/zoomable = FALSE //whether the gun generates a Zoom action on creation
 	var/zoomed = FALSE //Zoom toggle
-	var/zoom_amt = 3 //Distance in TURFs to move the user's screen forward (the "zoom" effect)
-	var/zoom_out_amt = 0
 	var/scope_range = 2
 	var/datum/action/item_action/toggle_scope_zoom/azoom
 
@@ -1071,7 +1069,8 @@
 		return
 
 	if(zoomed)
-		scope.zoom(user)
+		if(!scope.zoom(user))
+			zoomed = FALSE
 	else
 		scope.stop_zooming(user)
 

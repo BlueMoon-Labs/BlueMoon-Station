@@ -135,8 +135,9 @@
 		return
 	zooming = TRUE
 	current_user.client.view_size.setTo(zoom_target_view_increase)
-	var/datum/component/scope/scope = GetComponent(/datum/component/scope)
-	scope?.zoom(current_user)
+	if(zoom_lock == ZOOM_LOCK_AUTOZOOM_FREEMOVE)
+		var/datum/component/scope/scope = GetComponent(/datum/component/scope)
+		scope?.zoom(current_user)
 	zoom_current_view_increase = zoom_target_view_increase
 
 /obj/item/gun/energy/beam_rifle/proc/stop_zooming(mob/user)

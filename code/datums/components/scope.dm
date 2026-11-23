@@ -8,6 +8,8 @@
 	var/given_y = 0
 	var/last_x
 	var/last_y
+	var/first_pan = TRUE
+	var/activation_mouse_params
 
 /datum/component/scope/Initialize(range_modifier = 1, category = "scope", severity = 1)
 	if(!isitem(parent))
@@ -51,6 +53,10 @@
 /datum/component/scope/proc/zoom(mob/user)
 	if(!user?.client || tracker)
 		return FALSE
+	var/area/user_area = get_area(user)
+	if(user_area && is_hilbert_hotel_area(user_area))
+		to_chat(user, span_warning("Отель Гилберта, запрещает смотреть за свои границы."))
+		return FALSE
 	tracker = user.overlay_fullscreen(category, /atom/movable/screen/fullscreen/scaled/scope, severity)
 	if(!tracker)
 		return FALSE
@@ -60,6 +66,8 @@
 	RegisterSignal(user, COMSIG_MOB_SWAP_HANDS, PROC_REF(on_user_swap_hands))
 	RegisterSignal(user, COMSIG_ATOM_ENTERING, PROC_REF(on_user_entered))
 	START_PROCESSING(SSprojectiles, src)
+	first_pan = TRUE
+	activation_mouse_params = user.client.mouseParams
 	process()
 	return TRUE
 
@@ -71,12 +79,14 @@
 		UnregisterSignal(owner, list(COMSIG_MOB_CLIENT_LOGOUT, COMSIG_LIVING_DEATH, COMSIG_MOB_SWAP_HANDS, COMSIG_ATOM_ENTERING))
 		if(owner.client)
 			animate(owner.client, 0.2 SECONDS, pixel_x = 0, pixel_y = 0)
-			if(owner.fullscreens[category] == tracker)
-				owner.clear_fullscreen(category, 0)
+		if(owner.fullscreens[category] == tracker)
+			owner.clear_fullscreen(category, 0)
 	tracker = null
 	owner = null
 	last_x = null
 	last_y = null
+	first_pan = TRUE
+	activation_mouse_params = null
 	if(isgun(parent))
 		var/obj/item/gun/gun = parent
 		gun.zoomed = FALSE
@@ -86,8 +96,16 @@
 	if(!owner?.client || QDELETED(tracker))
 		stop_zooming()
 		return
+	var/area/user_area = get_area(owner)
+	if(user_area && is_hilbert_hotel_area(user_area))
+		stop_zooming()
+		return
 	if(tracker.view_current != owner.client.view)
 		tracker.SetView(owner.client.view)
+	if(first_pan)
+		if(owner.client.mouseParams == activation_mouse_params)
+			return
+		activation_mouse_params = null
 	var/list/modifiers = params2list(owner.client.mouseParams)
 	var/screen_loc = modifiers["screen-loc"]
 	if(!screen_loc)
@@ -114,7 +132,11 @@
 		return
 	last_x = given_x
 	last_y = given_y
-	animate(owner.client, world.tick_lag, pixel_x = given_x, pixel_y = given_y)
+	if(first_pan)
+		first_pan = FALSE
+		animate(owner.client, 0.25 SECONDS, pixel_x = given_x, pixel_y = given_y, easing = SINE_EASING | EASE_OUT)
+	else
+		animate(owner.client, world.tick_lag, pixel_x = given_x, pixel_y = given_y)
 
 /datum/component/scope/proc/get_target_turf()
 	if(!owner || !isturf(owner.loc))

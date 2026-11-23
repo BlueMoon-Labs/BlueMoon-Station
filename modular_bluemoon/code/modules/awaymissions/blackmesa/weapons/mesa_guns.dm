@@ -42,8 +42,7 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	inaccuracy_modifier = 0.5
 	zoomable = TRUE
-	zoom_amt = 7
-	zoom_out_amt = 5
+	scope_range = 3
 	slot_flags = ITEM_SLOT_BACK
 	automatic_burst_overlay = FALSE
 	actions_types = list()
