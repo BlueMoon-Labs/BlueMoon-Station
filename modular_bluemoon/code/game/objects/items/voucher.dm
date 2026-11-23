@@ -1,4 +1,33 @@
 // если кто-то захочет - да это было сделано с мыслью возможности перенести и шахтёрские воучеры на это
+/obj/item/card/voucher_blank
+	name = "Prescription voucher"
+	desc = "Токен для получения специализированных вещей. Впрочем конкретно этот производит процесс самозаписи и его скоро можно будет использовать."
+	icon_state = "data_2"
+
+/obj/item/card/voucher_blank/proc/handle_registration(mob/living/carbon/human/user, base_price, base_valid_traits, base_fortune_delivery, received_product, NVD_price, NVD_suspicious)
+	if(isnull(src))
+		return
+	if(isnull(user))
+		playsound(src, 'sound/machines/terminal_error.ogg', 30)
+	else
+		playsound(src, 'sound/machines/ping.ogg', 30)
+
+	var/counterfeit = TRUE
+	for(var/quirk in base_valid_traits)
+		if(HAS_TRAIT(user, quirk))
+			counterfeit = FALSE
+			break
+
+	if(!counterfeit && prob(base_fortune_delivery))
+		say("Благодарим за оформление подписки на мгновенную доставку товаров, производится процесс телепортации.")
+		new received_product(loc)
+		qdel(src)
+		return
+
+	var/used_price = counterfeit ? NVD_price : base_price
+	new /obj/item/card/voucher(loc, received_product, used_price, NVD_suspicious)
+	qdel(src)
+
 /obj/item/card/voucher
 	name = "Prescription voucher"
 	desc = "Токен для получения THING. Используйте в VENDOR. Стоимость приобретения составит PRICE кредитов."
