@@ -358,6 +358,17 @@
 			return emotes_handle_action(action, params, from_statpanel = TRUE)
 		if("emotes/move")
 			changed = emotes_move(params["name"], params["group"] || "", params["anchor"], params["after"] == "1")
+		if("emotes/moveGroup")
+			var/group_id = params["group"]
+			var/anchor = params["anchor"]
+			if(!length(group_id) || !length(anchor) || group_id == EMOTE_PANEL_UNGROUPED_COLOR_KEY || anchor == EMOTE_PANEL_UNGROUPED_COLOR_KEY)
+				return
+			var/list/groups = client.prefs.custom_emote_groups
+			var/from_index = groups.Find(group_id)
+			var/anchor_index = groups.Find(anchor)
+			if(!from_index || !anchor_index || from_index == anchor_index)
+				return
+			changed = moveElement(groups, from_index, anchor_index + (params["after"] == "1"))
 		if("emotes/createGroup")
 			changed = emotes_edit_group()
 		if("emotes/colorGroup")

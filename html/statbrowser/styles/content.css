@@ -342,6 +342,9 @@
 }
 .emote-dragging {
 	opacity: 0.5;
+}
+.emote-dragging,
+.emote-dragging .emote-group-toggle {
 	cursor: grabbing;
 }
 .emote-drop-before {
@@ -353,6 +356,12 @@
 .emote-drop-group {
 	outline: 2px solid var(--emote-accent, var(--emote-default-hover));
 	outline-offset: -2px;
+}
+.emote-drop-group-before {
+	box-shadow: 0 -2px var(--emote-accent, var(--emote-default-hover));
+}
+.emote-drop-group-after {
+	box-shadow: 0 2px var(--emote-accent, var(--emote-default-hover));
 }
 /* ===== Verb Links Style ===== */
 body.verb-style-links .verb-pill {

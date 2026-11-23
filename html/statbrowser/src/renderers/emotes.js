@@ -31,6 +31,12 @@ function emoteButton(label, cls, action) {
 	return button;
 }
 
+function skipEmoteDragClick(event) {
+	if (!event.detail || !event.currentTarget._skipEmoteClick) return false;
+	event.currentTarget._skipEmoteClick = false;
+	return true;
+}
+
 function draw_emotes() {
 	finishEmoteDrag();
 	statcontent.textContent = "";
@@ -78,17 +84,23 @@ function draw_emotes() {
 
 function drawEmoteGroup(group, emotes, collapsed) {
 	var section = el("section", "emote-group");
+	section.dataset.group = group.id;
 	var header = el("div", "emote-group-header");
 	header.dataset.group = group.id;
 	var list = el("div", "emote-group-list");
 	list.id = "emote-group-" + group.id;
 	list.dataset.group = group.id;
 	var label = group.name + " (" + emotes.length + ")";
-	var toggle = emoteButton("", "emote-group-toggle", function() {
+	var toggle = emoteButton("", "emote-group-toggle", function(event) {
+		if (skipEmoteDragClick(event)) return;
 		collapsed[group.id] = !collapsed[group.id];
 		updateGroupVisibility();
 	});
 	toggle.setAttribute("aria-controls", list.id);
+	if (group.id) {
+		toggle.classList.add("emote-sortable");
+		toggle.title = "Перетащите, чтобы изменить порядок групп";
+	}
 	if (/^#[0-9a-f]{6}$/i.test(group.color)) {
 		toggle.style.setProperty("--emote-group-color", group.color);
 		toggle.style.setProperty("--emote-group-text", contrastRatio("#000000", group.color) >= 4.5 ? "#000000" : "#FFFFFF");
@@ -138,10 +150,7 @@ function drawEmoteGroup(group, emotes, collapsed) {
 function drawEmoteItem(emote, group) {
 	var entry = emote.entry;
 	var button = emoteButton(emote.name, entry ? "emote-button emote-sortable" : "emote-button", function(event) {
-		if (event.detail && button._skipEmoteClick) {
-			button._skipEmoteClick = false;
-			return;
-		}
+		if (skipEmoteDragClick(event)) return;
 		sendEmoteAction("execute", { name: emote.name });
 	});
 	button.dataset.group = group;
@@ -176,10 +185,13 @@ function startEmoteDrag(event) {
 	var button = event.target;
 	if (event.button !== 0 || emoteDrag || !button.classList.contains("emote-sortable")) return;
 	if (!button.setPointerCapture) return;
+	var group = button.classList.contains("emote-group-toggle") && button.closest(".emote-group");
 	button._skipEmoteClick = false;
 	button.setPointerCapture(event.pointerId);
 	emoteDrag = {
 		button: button,
+		source: group || button,
+		isGroup: !!group,
 		root: event.currentTarget,
 		pointerId: event.pointerId,
 		startX: event.clientX,
@@ -199,7 +211,7 @@ function updateEmoteDrag(event) {
 		var dy = event.clientY - drag.startY;
 		if (dx * dx + dy * dy < 25) return;
 		drag.active = true;
-		drag.button.classList.add("emote-dragging");
+		drag.source.classList.add("emote-dragging");
 	}
 	drag.x = event.clientX;
 	drag.y = event.clientY;
@@ -211,10 +223,14 @@ function updateEmoteDropTarget() {
 	var drag = emoteDrag;
 	// Обе координаты и прямоугольники уже учитывают масштаб статпанели.
 	var hit = document.elementFromPoint(drag.x, drag.y);
-	var target = hit && hit.closest(".emote-button, .emote-group-header, .emote-group-list");
-	if (target === drag.button || !drag.root.contains(target)) target = null;
+	var selector = drag.isGroup ? ".emote-group" : ".emote-button, .emote-group-header, .emote-group-list";
+	var target = hit && hit.closest(selector);
+	if (target === drag.source || !drag.root.contains(target) || (drag.isGroup && !target.dataset.group)) target = null;
 	var marker = "emote-drop-group";
-	if (target && target.classList.contains("emote-button")) {
+	if (target && drag.isGroup) {
+		var header = target.firstElementChild.getBoundingClientRect();
+		marker = drag.y < (header.top + header.bottom) / 2 ? "emote-drop-group-before" : "emote-drop-group-after";
+	} else if (target && target.classList.contains("emote-button")) {
 		var rect = target.getBoundingClientRect();
 		marker = drag.x < (rect.left + rect.right) / 2 ? "emote-drop-before" : "emote-drop-after";
 	}
@@ -253,6 +269,14 @@ function dropEmote(event) {
 	updateEmoteDrag(event);
 	finishEmoteDrag();
 	if (!drag.target) return;
+	if (drag.isGroup) {
+		sendEmoteAction("moveGroup", {
+			group: drag.source.dataset.group,
+			anchor: drag.target.dataset.group,
+			after: drag.marker === "emote-drop-group-after" ? 1 : 0
+		});
+		return;
+	}
 	sendEmoteAction("move", {
 		name: drag.button.dataset.emote,
 		group: drag.target.dataset.group,
@@ -274,7 +298,7 @@ function finishEmoteDrag() {
 	if (drag.active) {
 		// После отпускания браузер может прислать клик по захваченной кнопке.
 		drag.button._skipEmoteClick = true;
-		drag.button.classList.remove("emote-dragging");
+		drag.source.classList.remove("emote-dragging");
 	}
 	if (drag.button.hasPointerCapture(drag.pointerId)) drag.button.releasePointerCapture(drag.pointerId);
 }
