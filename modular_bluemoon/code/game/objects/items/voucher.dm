@@ -7,16 +7,16 @@
 /obj/item/card/voucher_blank/proc/handle_registration(mob/living/carbon/human/user, base_price, base_valid_traits, base_fortune_delivery, received_product, NVD_price, NVD_suspicious)
 	if(isnull(src))
 		return
+
+	var/counterfeit = TRUE
 	if(isnull(user))
 		playsound(src, 'sound/machines/terminal_error.ogg', 30)
 	else
+		for(var/quirk in base_valid_traits)
+			if(HAS_TRAIT(user, quirk))
+				counterfeit = FALSE
+				break
 		playsound(src, 'sound/machines/ping.ogg', 30)
-
-	var/counterfeit = TRUE
-	for(var/quirk in base_valid_traits)
-		if(HAS_TRAIT(user, quirk))
-			counterfeit = FALSE
-			break
 
 	var/used_loc = loc
 	if(ishuman(loc))
