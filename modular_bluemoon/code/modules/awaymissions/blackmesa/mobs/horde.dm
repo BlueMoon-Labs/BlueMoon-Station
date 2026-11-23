@@ -921,6 +921,9 @@
 	var/tank_idle_channel
 	var/tank_theme_playing = FALSE
 	var/list/tank_theme_listeners = list()
+	// Все живые танки: тему у слушателя ведёт ближайший агрившийся танк,
+	// иначе два танка в радиусе наслаивали одинаковый трек на разные каналы.
+	var/static/list/tank_mobs = list()
 	ranged_message = "hurls a stone shard"
 	ranged_cooldown_time = 5 SECONDS
 	ranged_telegraph_duration = 2 SECONDS
@@ -929,6 +932,7 @@
 
 /mob/living/simple_animal/hostile/infected/tank/Initialize(mapload)
 	. = ..()
+	tank_mobs += src
 	tank_theme_channel = SSsounds.reserve_sound_channel(src)
 	tank_idle_channel = SSsounds.reserve_sound_channel(src)
 
@@ -1019,9 +1023,17 @@
 	// до смерти/удаления танка.
 	for(var/mob/listener in tank_theme_listeners.Copy())
 		var/listener_valid = listener && !QDELETED(listener) && listener.stat != DEAD && listener.client && listener.client.prefs && (listener.client.prefs.toggles & SOUND_AMBIENCE) && istype(get_area(listener), /area/awaymission/ihategordon)
-		if(!listener_valid)
+		// Тему слушателя ведёт ближайший агрившийся танк: если нас обошёл
+		// более близкий танк (или мы потеряли цель) - отдаём ему канал.
+		if(listener_valid && closest_theme_tank_for(listener) != src) {
 			stop_theme_listener_sound(listener)
 			unregister_theme_listener(listener)
+			continue
+		}
+		if(!listener_valid) {
+			stop_theme_listener_sound(listener)
+			unregister_theme_listener(listener)
+		}
 
 	if(!isliving(target))
 		return
@@ -1037,8 +1049,32 @@
 			continue
 		if(!istype(get_area(player), /area/awaymission/ihategordon))
 			continue
+		// Тему слушателя ведёт ближайший к нему агрировавшийся танк -
+		// дальние танки не должны накладывать свой трек поверх.
+		if(closest_theme_tank_for(player) != src)
+			continue
 		SEND_SOUND(player, sound('modular_bluemoon/sound/creatures/mesa/tank/tanktheme.ogg', repeat = TRUE, volume = 50, channel = tank_theme_channel))
 		register_theme_listener(player)
+
+// Ближайший к слушателю агрировавшийся живой танк - владелец его темы.
+/mob/living/simple_animal/hostile/infected/tank/proc/closest_theme_tank_for(mob/listener)
+	var/best = null
+	var/best_dist = 0
+	var/listener_turf = get_turf(listener)
+	if(!listener_turf)
+		return null
+	for(var/mob/living/simple_animal/hostile/infected/tank/T in tank_mobs)
+		if(!T || QDELETED(T) || T.stat == DEAD || !isliving(T.target))
+			continue
+		var/tank_turf = get_turf(T)
+		if(!tank_turf)
+			continue
+		var/dist = get_dist(tank_turf, listener_turf)
+		if(!best || dist < best_dist) {
+			best = T
+			best_dist = dist
+		}
+	return best
 
 /mob/living/simple_animal/hostile/infected/tank/proc/register_theme_listener(mob/listener)
 	if(!listener || !istype(listener))
@@ -1108,6 +1144,7 @@
 	return ..(gibbed)
 
 /mob/living/simple_animal/hostile/infected/tank/Destroy()
+	tank_mobs -= src
 	stop_tank_sounds()
 	SSsounds.free_datum_channels(src)
 	return ..()
