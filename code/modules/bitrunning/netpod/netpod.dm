@@ -55,6 +55,7 @@ GLOBAL_LIST_INIT(netpod_outfit_sets, list(
 	var/scanning_can_toggle = 0
 	var/stored_sensor_mode
 	var/stored_has_sensor
+	var/datum/weakref/stored_uniform_ref
 
 /obj/machinery/netpod/Initialize()
 	. = ..()
@@ -73,6 +74,7 @@ GLOBAL_LIST_INIT(netpod_outfit_sets, list(
 	. = ..()
 
 	cached_outfits.Cut()
+	stored_uniform_ref = null
 
 /obj/machinery/netpod/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	. = ..()
@@ -200,13 +202,11 @@ GLOBAL_LIST_INIT(netpod_outfit_sets, list(
 
 /obj/machinery/netpod/open_machine(drop = TRUE, density_to_set = FALSE)
 	if(!isnull(stored_has_sensor))
-		var/obj/item/clothing/under/leaving_uniform
-		if(ishuman(occupant))
-			var/mob/living/carbon/human/leaving_human = occupant
-			leaving_uniform = leaving_human.w_uniform
-			if(istype(leaving_uniform))
-				leaving_uniform.has_sensor = stored_has_sensor
-				leaving_uniform.sensor_mode = stored_sensor_mode
+		var/obj/item/clothing/under/stored_uniform = stored_uniform_ref?.resolve()
+		if(istype(stored_uniform))
+			stored_uniform.has_sensor = stored_has_sensor
+			stored_uniform.sensor_mode = stored_sensor_mode
+		stored_uniform_ref = null
 		stored_has_sensor = null
 		stored_sensor_mode = null
 
@@ -515,8 +515,12 @@ GLOBAL_LIST_INIT(netpod_outfit_sets, list(
 
 	server.stock_gear(current_avatar, neo, generated_domain)
 
+	stored_uniform_ref = null
+	stored_sensor_mode = null
+	stored_has_sensor = null
 	var/obj/item/clothing/under/host_uniform = neo.w_uniform
 	if(istype(host_uniform))
+		stored_uniform_ref = WEAKREF(host_uniform)
 		stored_sensor_mode = host_uniform.sensor_mode
 		stored_has_sensor = host_uniform.has_sensor
 		host_uniform.sensor_mode = SENSOR_OFF

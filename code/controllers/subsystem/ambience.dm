@@ -43,7 +43,7 @@ SUBSYSTEM_DEF(ambience)
 			var/datum/component/avatar_connection/avatar_connection = client_mob.GetComponent(/datum/component/avatar_connection)
 			var/obj/machinery/quantum_server/server = avatar_connection?.server_ref?.resolve()
 			var/datum/lazy_template/virtual_domain/domain = server?.generated_domain
-			var/list/domain_tracks = domain?.get_ambient_sounds()
+			var/list/domain_tracks = domain?.ambient_sounds
 			if(domain_tracks?.len)
 				ambient_tracks = domain_tracks
 

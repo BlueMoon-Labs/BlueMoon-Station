@@ -342,7 +342,7 @@
 			var/turf/scope_turf = scope.get_target_turf()
 			if(scope_turf)
 				target = scope.get_target(scope_turf)
-				params = scope.get_center_params()
+				params = null
 				flag = FALSE
 	if (user.zone_selected == BODY_ZONE_PRECISE_GROIN && user.a_intent == INTENT_HELP)
 		do_eblya(target, user)
@@ -529,7 +529,7 @@
 			var/turf/scope_turf = scope.get_target_turf()
 			if(scope_turf)
 				target = scope.get_target(scope_turf)
-				params = scope.get_center_params()
+				params = null
 	add_fingerprint(user)
 
 	if(on_cooldown())

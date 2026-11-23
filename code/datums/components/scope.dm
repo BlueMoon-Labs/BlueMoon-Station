@@ -6,6 +6,8 @@
 	var/atom/movable/screen/fullscreen/scaled/scope/tracker
 	var/given_x = 0
 	var/given_y = 0
+	var/last_x
+	var/last_y
 
 /datum/component/scope/Initialize(range_modifier = 1, category = "scope", severity = 1)
 	if(!isitem(parent))
@@ -57,14 +59,14 @@
 	RegisterSignal(user, COMSIG_LIVING_DEATH, PROC_REF(on_user_death))
 	RegisterSignal(user, COMSIG_MOB_SWAP_HANDS, PROC_REF(on_user_swap_hands))
 	RegisterSignal(user, COMSIG_ATOM_ENTERING, PROC_REF(on_user_entered))
-	START_PROCESSING(SSfastprocess, src)
+	START_PROCESSING(SSprojectiles, src)
 	process()
 	return TRUE
 
 /datum/component/scope/proc/stop_zooming(mob/user = owner)
 	if(!tracker)
 		return FALSE
-	STOP_PROCESSING(SSfastprocess, src)
+	STOP_PROCESSING(SSprojectiles, src)
 	if(owner)
 		UnregisterSignal(owner, list(COMSIG_MOB_CLIENT_LOGOUT, COMSIG_LIVING_DEATH, COMSIG_MOB_SWAP_HANDS, COMSIG_ATOM_ENTERING))
 		if(owner.client)
@@ -73,6 +75,8 @@
 				owner.clear_fullscreen(category, 0)
 	tracker = null
 	owner = null
+	last_x = null
+	last_y = null
 	if(isgun(parent))
 		var/obj/item/gun/gun = parent
 		gun.zoomed = FALSE
@@ -106,6 +110,10 @@
 	var/y_cap = range_modifier * view_y / 2
 	given_x = clamp(round((screen_x - view_x / 2) * range_modifier), -x_cap, x_cap)
 	given_y = clamp(round((screen_y - view_y / 2) * range_modifier), -y_cap, y_cap)
+	if(given_x == last_x && given_y == last_y)
+		return
+	last_x = given_x
+	last_y = given_y
 	animate(owner.client, world.tick_lag, pixel_x = given_x, pixel_y = given_y)
 
 /datum/component/scope/proc/get_target_turf()
@@ -114,14 +122,6 @@
 	var/pixel_x = owner.client ? owner.client.pixel_x : given_x
 	var/pixel_y = owner.client ? owner.client.pixel_y : given_y
 	return locate(owner.x + round(pixel_x / world.icon_size, 1), owner.y + round(pixel_y / world.icon_size, 1), owner.z)
-
-/datum/component/scope/proc/get_center_params()
-	if(!owner?.client)
-		return
-	var/list/view_size = getviewsize(owner.client.view)
-	var/center_x = round(view_size[1] / 2)
-	var/center_y = round(view_size[2] / 2)
-	return "screen-loc=[center_x]:16,[center_y]:16;icon-x=16;icon-y=16"
 
 /datum/component/scope/proc/get_target(turf/target_turf)
 	if(!owner)

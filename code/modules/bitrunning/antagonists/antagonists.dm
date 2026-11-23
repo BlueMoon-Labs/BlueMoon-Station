@@ -30,7 +30,9 @@
 		carbon_mob.make_virtual_mob()
 
 	if(ishuman(owner.current))
-		grant_virtual_domain_access(owner.current)
+		var/area/current_area = get_area(owner.current)
+		if(current_area?.area_flags & VIRTUAL_AREA)
+			grant_virtual_domain_access(owner.current)
 
 /datum/objective/bitrunning_glitch_fluff
 
@@ -67,15 +69,17 @@
 	player.set_service_style()
 	player.equipOutfit(preview_outfit)
 	player.fully_replace_character_name(player.name, "Cyber Police [rand(100, 999)]")
-	fix_agent_id()
+	var/area/current_area = get_area(player)
+	fix_agent_id(current_area?.area_flags & VIRTUAL_AREA)
 
-/datum/antagonist/bitrunning_glitch/proc/fix_agent_id()
+/datum/antagonist/bitrunning_glitch/proc/fix_agent_id(virtual_domain = TRUE)
 	if(!ishuman(owner.current))
 		return
 
 	var/mob/living/carbon/human/player = owner.current
 
-	grant_virtual_domain_access(player)
+	if(virtual_domain)
+		grant_virtual_domain_access(player)
 	var/obj/item/card/id/outfit_id = player.wear_id?.GetID()
 	if(isnull(outfit_id))
 		return

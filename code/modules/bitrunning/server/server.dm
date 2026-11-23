@@ -382,7 +382,7 @@
 	return active
 
 /obj/machinery/quantum_server/proc/begin_shutdown(mob/user)
-	if(isnull(generated_domain))
+	if(isnull(generated_domain) || !is_ready)
 		return
 
 	var/list/datum/component/avatar_connection/connections = get_active_avatar_connections()
@@ -405,6 +405,8 @@
 	SEND_SIGNAL(src, COMSIG_BITRUNNER_SHUTDOWN_ALERT, user)
 
 	if(!do_after(user, 20 SECONDS, src))
+		return
+	if(!is_ready || QDELETED(src))
 		return
 
 	points = max(0, points - 1)
@@ -1192,7 +1194,7 @@
 
 	person.equipOutfit(antag_datum.preview_outfit)
 
-	antag_datum.fix_agent_id()
+	antag_datum.fix_agent_id(FALSE)
 
 /obj/machinery/quantum_server/proc/sever_connections()
 	if(isnull(generated_domain) || !length(get_active_avatar_connections()))

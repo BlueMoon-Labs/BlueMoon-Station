@@ -7,6 +7,7 @@
 	help_text = "Материнский корабль абдукторов по незнанию вошёл во враждебную среду. Сейчас они готовятся покинуть район вместе со своим снаряжением и добычей, включая ящик. Осторожно: они известны своим продвинутым вооружением."
 	is_modular = TRUE
 	key = "abductor_ship"
+	ambient_sounds = SPACE
 	map_name = "abductor_ship"
 	reward_points = BITRUNNER_REWARD_MEDIUM
 	forced_outfit = /datum/outfit/bitductor
@@ -345,6 +346,7 @@
 	difficulty = BITRUNNER_DIFFICULTY_MEDIUM
 	forced_outfit = /datum/outfit/job/miner
 	key = "ash_drake"
+	ambient_sounds = MINING
 	map_name = "ash_drake"
 	reward_points = BITRUNNER_REWARD_MEDIUM
 
@@ -354,6 +356,7 @@
 	completion_loot = list(/obj/item/toy/beach_ball = 1)
 	help_text = "Заведение держится на доходах с бара, и они не слишком охотно делятся подробностями. Может, пара порций жидкого обаяния поднимет им настроение. Как говорится, если не можешь победить — присоединяйся."
 	key = "beach_bar"
+	ambient_sounds = BEACH
 	map_name = "beach_bar"
 	domain_flags = DOMAIN_NO_NOHIT_BONUS
 
@@ -385,6 +388,7 @@
 	difficulty = BITRUNNER_DIFFICULTY_MEDIUM
 	forced_outfit = /datum/outfit/job/miner
 	key = "blood_drunk_miner"
+	ambient_sounds = MINING
 	map_name = "blood_drunk_miner"
 	reward_points = BITRUNNER_REWARD_MEDIUM
 
@@ -393,6 +397,7 @@
 	desc = "Прибрежный городок, к северу от которого раскинулся большой лес."
 	help_text = "Всё просто! Наслаждайтесь солнцем, ловите рыбу и хорошо проводите время! Только не давайте крабам себя укусить."
 	key = "breeze_bay"
+	ambient_sounds = BEACH
 	map_name = "breeze_bay"
 	reward_points = BITRUNNER_REWARD_LOW
 	domain_flags = DOMAIN_NO_NOHIT_BONUS
@@ -436,6 +441,7 @@
 	completion_loot = list(/obj/item/toy/plush/bubbleplush = 1)
 	forced_outfit = /datum/outfit/job/miner
 	key = "bubblegum"
+	ambient_sounds = MINING
 	map_name = "bubblegum"
 	reward_points = BITRUNNER_REWARD_HIGH
 
@@ -448,6 +454,7 @@
 	forced_outfit = /datum/outfit/job/clown
 	help_text = "Проберитесь через фабрику, найдите зашифрованный ящик и доставьте его в сейфхаус. Ящик можно отправить по трубам через приёмный жёлоб — он появится у выхода рядом с безопасной комнатой."
 	key = "clown_planet"
+	ambient_sounds = GENERIC
 	map_name = "clown_planet"
 	reward_points = BITRUNNER_REWARD_LOW
 
@@ -458,6 +465,7 @@
 	difficulty = BITRUNNER_DIFFICULTY_HIGH
 	forced_outfit = /datum/outfit/job/miner
 	key = "colossus"
+	ambient_sounds = MINING
 	map_name = "colossus"
 	reward_points = BITRUNNER_REWARD_HIGH
 
@@ -477,6 +485,7 @@
 	difficulty = BITRUNNER_DIFFICULTY_MEDIUM
 	help_text = "Возьмите фонарик и отправляйтесь. Ваш любимый медведь ждал вас..."
 	key = "fredingtonfastingbear"
+	ambient_sounds = MAINTENANCE
 	map_name = "fredingtonfastingbear"
 	reward_points = BITRUNNER_REWARD_MEDIUM
 
@@ -485,6 +494,7 @@
 	desc = "Астероид, на котором растёт обильный лес гондол. Безмятежно."
 	help_text = "Какой прекрасный лес. Здесь, в середине карты, стоит ящик с добычей. Хм... он не сдвигается с места. Похоже, гондолам не составляет труда его двигать. Наверняка есть способ сдвинуть его и самому."
 	key = "gondola_asteroid"
+	ambient_sounds = SPACE
 	map_name = "gondola_asteroid"
 	domain_flags = DOMAIN_NO_NOHIT_BONUS
 
@@ -526,6 +536,7 @@
 	help_text = "Как охотник, вы должны уметь выслеживать и убивать свою добычу. Докажите себя."
 	is_modular = TRUE
 	key = "grasslands_hunt"
+	ambient_sounds = GENERIC
 	map_name = "grasslands_hunt"
 	mob_modules = list(/datum/modular_mob_segment/deer)
 	domain_flags = DOMAIN_NO_NOHIT_BONUS
@@ -553,6 +564,7 @@
 	help_text = "Убивайте экипаж и тащите трупы на руну, чтобы набрать очки для ритуала. Чем выше ранг убитого, тем больше очков. Когда ритуал завершится, у руны появится зашифрованный ящик — затащите его в сейфхаус и положите на цельную площадку."
 	forced_outfit = /datum/outfit/virtual_domain_heretic
 	key = "heretic_hunt"
+	ambient_sounds = HOLY
 	map_name = "heretic_hunt"
 	reward_points = BITRUNNER_REWARD_LOW
 
@@ -732,6 +744,7 @@
 	difficulty = BITRUNNER_DIFFICULTY_HIGH
 	forced_outfit = /datum/outfit/job/miner
 	key = "hierophant"
+	ambient_sounds = MINING
 	map_name = "hierophant"
 	reward_points = BITRUNNER_REWARD_HIGH
 
@@ -744,6 +757,7 @@
 	forced_outfit = /datum/outfit/beachbum_combat
 	help_text = "По острову могут быть разбросаны награды, но главная цель — выжить. Смерти на острове пойдут в итоговый счёт."
 	key = "island_brawl"
+	ambient_sounds = BEACH
 	map_name = "island_brawl"
 	reward_points = BITRUNNER_REWARD_HIGH
 	domain_flags = DOMAIN_NO_LINKED_DAMAGE
@@ -795,6 +809,7 @@
 	help_text = "Ответьте на требования рабочих санкционированным насилием. Соберите ценные материалы, которые могут быть разбросаны вокруг. И помните свою подготовку: всегда исходите из того, что они виновны, — в медбее они могут во всём признаться... Или что-то в этом роде."
 	is_modular = TRUE
 	key = "meta_central"
+	ambient_sounds = MAINTENANCE
 	map_name = "meta_central"
 	mob_modules = list(/datum/modular_mob_segment/revolutionary)
 	reward_points = BITRUNNER_REWARD_LOW
@@ -809,6 +824,7 @@
 	help_text = "Ещё недавно это место кипело жизнью. Похоже, рабочие ушли в спешке, и теперь производительность на нуле. Что-то должно было разгромить это место, но что?"
 	is_modular = TRUE
 	key = "pipedream"
+	ambient_sounds = ENGINEERING
 	map_name = "pipedream"
 	mob_modules = list(
 		/datum/modular_mob_segment/hivebots,
@@ -907,6 +923,7 @@
 	difficulty = BITRUNNER_DIFFICULTY_MEDIUM
 	help_text = "Наденьте предложенную одежду, чтобы слиться с толпой, затем прорубитесь через враждебных пиратов. Хватайте сокровище и уходите, пока вас не задавили числом!"
 	key = "pirates"
+	ambient_sounds = BEACH
 	map_name = "pirates"
 	reward_points = BITRUNNER_REWARD_MEDIUM
 
@@ -918,6 +935,7 @@
 	forced_outfit = /datum/outfit/echolocator
 	help_text = "Привыкнуть к эхолокации может быть трудно. Не забывайте двигаться медленно и внимательно осматривать каждый ящик."
 	key = "psyker_shuffle"
+	ambient_sounds = SPOOKY
 	map_name = "psyker_shuffle"
 	reward_points = BITRUNNER_REWARD_HIGH
 
@@ -980,6 +998,7 @@
 	forced_outfit = /datum/outfit/echolocator
 	help_text = "Этот некогда любимый виртуальный домен был испорчен вирусом, из-за чего стал нестабильным, полным дыр и ЗОМБИ! Где-то рядом должен быть таинственный ящик, который поможет вам вооружиться. Вооружайтесь и закончите то, что начала киберполиция!"
 	key = "psyker_zombies"
+	ambient_sounds = SPOOKY
 	map_name = "psyker_zombies"
 	reward_points = BITRUNNER_REWARD_HIGH
 
@@ -999,6 +1018,7 @@
 	help_text = "Последняя часть домена может оказаться весьма PvP-ориентированной. Лучше не ходить одному и пронести с собой диски способностей и снаряжения."
 	forced_outfit = /datum/outfit/solfed_bitrun
 	key = "ancient_milsim"
+	ambient_sounds = AWAY_MISSION
 	map_name = "skyrat_ancientmilsim"
 	reward_points = BITRUNNER_REWARD_HIGH
 	mob_modules = list(/datum/modular_mob_segment/cin_mobs)
@@ -1114,6 +1134,7 @@
 	secondary_loot = list(/obj/item/clothing/shoes/wheelys = 2, /obj/item/clothing/head/ushanka = 1)
 	forced_outfit = /datum/outfit/job/virtual_domain_iceclimber
 	key = "stairs_and_cliffs"
+	ambient_sounds = ICEMOON
 	map_name = "stairs_and_cliffs"
 	reward_points = BITRUNNER_REWARD_MEDIUM
 	domain_flags = DOMAIN_NO_NOHIT_BONUS
@@ -1145,6 +1166,7 @@
 	help_text = "Группа оперативников Синдиката украла ценный груз со станции. Они поднялись на свой корабль и пытаются скрыться. Проникните на их корабль и верните ящик. Осторожно: они очень хорошо вооружены."
 	is_modular = TRUE
 	key = "syndicate_assault"
+	ambient_sounds = HIGHSEC
 	map_name = "syndicate_assault"
 	mob_modules = list(/datum/modular_mob_segment/syndicate_team)
 	reward_points = BITRUNNER_REWARD_MEDIUM
@@ -1152,11 +1174,13 @@
 /datum/lazy_template/virtual_domain/test_only
 	name = "Test Only"
 	key = "test_only"
+	ambient_sounds = GENERIC
 	map_name = "test_only"
 	domain_flags = DOMAIN_TEST_ONLY
 
 /datum/lazy_template/virtual_domain/test_only/expensive
 	key = "test_only_expensive"
+	ambient_sounds = GENERIC
 	cost = 3
 
 /datum/lazy_template/virtual_domain/vaporwave
@@ -1166,6 +1190,7 @@
 	difficulty = BITRUNNER_DIFFICULTY_NONE
 	completion_loot = list(/obj/item/stack/spacecash/c500 = 4)
 	key = "vaporwave"
+	ambient_sounds = VAPOR_AMBIENCE
 	map_name = "vaporwave"
 	reward_points = BITRUNNER_REWARD_EXTREME
 	domain_flags = DOMAIN_NO_NOHIT_BONUS
@@ -1177,6 +1202,7 @@
 	difficulty = BITRUNNER_DIFFICULTY_HIGH
 	forced_outfit = /datum/outfit/job/miner
 	key = "wendigo"
+	ambient_sounds = ICEMOON
 	map_name = "wendigo"
 	reward_points = BITRUNNER_REWARD_HIGH
 
@@ -1202,6 +1228,7 @@
 	help_text = "Вы на бесплодной планете, кишащей враждебными существами. Здесь есть ящик, он не спрятан — просто охраняется. Ожидайте сопротивления."
 	is_modular = TRUE
 	key = "xeno_nest"
+	ambient_sounds = SPOOKY
 	map_name = "xeno_nest"
 	mob_modules = list(/datum/modular_mob_segment/xenos)
 	reward_points = BITRUNNER_REWARD_LOW
