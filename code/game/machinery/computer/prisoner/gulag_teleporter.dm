@@ -1,10 +1,10 @@
 //computer that handle the points and teleports the prisoner
 /obj/machinery/computer/prisoner/gulag_teleporter_computer
 	name = "labor camp teleporter console"
-	desc = "Used to send criminals to the Labor Camp."
+	desc = "Консоль, используемая для отправки преступников в Лагерь принудительных работ."
 	icon_screen = "explosive"
 	icon_keyboard = "security_key"
-	req_access = list(ACCESS_ARMORY)
+	req_access = list(ACCESS_BRIG) // Доступ Брига
 	circuit = /obj/item/circuitboard/computer/gulag_teleporter_console
 
 	var/default_goal = 200
@@ -36,7 +36,7 @@
 		prisoner_list["name"] = prisoner.real_name
 		if(contained_id)
 			can_teleport = TRUE
-		if(!isnull(GLOB.data_core.general))
+		if(!isnull(GLOB.data_core.security))
 			for(var/r in GLOB.data_core.security)
 				var/datum/data/record/R = r
 				if(R.fields["name"] == prisoner_list["name"])
@@ -89,22 +89,28 @@
 				id_insert(usr)
 			return TRUE
 		if("set_goal")
+			if(!contained_id)
+				return
 			var/new_goal = text2num(params["value"])
 			if(!isnum(new_goal))
 				return
 			if(!new_goal)
 				new_goal = default_goal
-			contained_id.goal = clamp(new_goal, 0, 1000) //maximum 1000 points
+			contained_id.goal = clamp(new_goal, 0, 10000)
 			return TRUE
 		if("toggle_open")
-			if(teleporter.locked)
-				to_chat(usr, "<span class='alert'>The teleporter must be unlocked first.</span>")
+			if(!teleporter)
 				return
-			teleporter.toggle_open()
+			if(teleporter.locked)
+				to_chat(usr, "<span class='alert'>Сначала телепорт должен быть разблокирован.</span>")
+				return
+			teleporter.toggle_open(usr)
 			return TRUE
 		if("teleporter_lock")
+			if(!teleporter)
+				return
 			if(teleporter.state_open)
-				to_chat(usr, "<span class='alert'>The teleporter must be closed first.</span>")
+				to_chat(usr, "<span class='alert'>Сначала телепорт должен быть закрыт.</span>")
 				return
 			teleporter.locked = !teleporter.locked
 			return TRUE
@@ -119,36 +125,59 @@
 	beacon = findbeacon()
 
 /obj/machinery/computer/prisoner/gulag_teleporter_computer/proc/findteleporter()
-	var/obj/machinery/gulag_teleporter/teleporterf = null
-
-	for(var/direction in GLOB.cardinals)
-		teleporterf = locate(/obj/machinery/gulag_teleporter, get_step(src, direction))
-		if(teleporterf && teleporterf.is_operational())
-			return teleporterf
+	for(var/obj/machinery/gulag_teleporter/T in range(1, src))
+		if(T.is_operational())
+			return T
+	return null
 
 /obj/machinery/computer/prisoner/gulag_teleporter_computer/proc/findbeacon()
 	return locate(/obj/structure/gulag_beacon)
 
 /obj/machinery/computer/prisoner/gulag_teleporter_computer/proc/teleport(mob/user)
-	if(!contained_id) //incase the ID was removed after the transfer timer was set.
-		say("Warning: Unable to transfer prisoner without a valid Prisoner ID inserted!")
+	if(!contained_id)
+		say("Внимание: Невозможно отправить заключенного без действительной ID-карты!")
 		return
-	if(!prisoner)
-		say("Warning: No prisoner detected in the teleporter!")
+	if(!teleporter || !beacon) // Проверка на уничтожение
+		say("Внимание: Связь с телепортом или маяком потеряна!")
 		return
+	if(!teleporter.is_operational())
+		say("Внимание: Телепорт неисправен!")
+		return
+
+	if(!teleporter.occupant || !ishuman(teleporter.occupant))
+		say("Внимание: В телепорте не обнаружен заключенный!")
+		return
+
+	prisoner = teleporter.occupant
+
+	temporary_record = null
+	if(!isnull(GLOB.data_core.security))
+		for(var/r in GLOB.data_core.security)
+			var/datum/data/record/R = r
+			if(R.fields["name"] == prisoner.real_name)
+				temporary_record = R
+				break
+
+	if(temporary_record)
+		temporary_record.set_security_status(SEC_RECORD_STATUS_INCARCERATED)
+
 	var/id_goal_not_set
 	if(!contained_id.goal)
 		id_goal_not_set = TRUE
 		contained_id.goal = default_goal
-		say("[contained_id]'s ID card goal defaulting to [contained_id.goal] points.")
+		say("Цель ID-карты [contained_id] по умолчанию установлена на [contained_id.goal] очков.")
+
 	log_game("[key_name(user)] teleported [key_name(prisoner)] to the Labor Camp [COORD(beacon)] for [id_goal_not_set ? "default goal of ":""][contained_id.goal] points.")
+
 	teleporter.handle_prisoner(contained_id, temporary_record)
 	playsound(src, 'sound/weapons/emitter.ogg', 50, TRUE)
+
 	prisoner.forceMove(get_turf(beacon))
-	prisoner.Stun(40) // small travel dizziness
-	to_chat(prisoner, "<span class='warning'>The teleportation makes you a little dizzy.</span>")
+	prisoner.Stun(40)
+	to_chat(prisoner, "<span class='warning'>Телепортация вызывает у вас легкое головокружение.</span>")
 	new /obj/effect/particle_effect/sparks(get_turf(prisoner))
 	playsound(src, "sparks", 50, TRUE)
+
 	if(teleporter.locked)
 		teleporter.locked = FALSE
 	teleporter.toggle_open()

@@ -347,6 +347,7 @@ GLOBAL_LIST_INIT(carp_colors, list("#ffffff", "#cccccc", "#999999"))
 
 /datum/component/throwbonus_on_windup/Destroy()
 	stop_windup()
+	holder = null
 	return ..()
 
 /datum/component/throwbonus_on_windup/proc/on_equip(obj/item/source, mob/user, slot)
@@ -354,7 +355,7 @@ GLOBAL_LIST_INIT(carp_colors, list("#ffffff", "#cccccc", "#999999"))
 		return
 	holder = user
 	if(!windup_timer)
-		windup_timer = addtimer(CALLBACK(src, PROC_REF(increment)), windup_increment_speed, TIMER_LOOP | TIMER_STOPPABLE)
+		windup_timer = addtimer(CALLBACK(src, PROC_REF(increment)), windup_increment_speed, TIMER_STOPPABLE)
 
 /datum/component/throwbonus_on_windup/proc/on_drop(obj/item/source, mob/user)
 	holder = null
@@ -375,16 +376,17 @@ GLOBAL_LIST_INIT(carp_colors, list("#ffffff", "#cccccc", "#999999"))
 	if(istype(item))
 		item.throwforce = initial(item.throwforce)
 
+// Одноразовый таймер с перевзводом: deltimer изнутри колбэка TIMER_LOOP не снимает луп, и после взрыва рыбы он тикал на удалённом компоненте.
 /datum/component/throwbonus_on_windup/proc/increment()
-	if(!holder || QDELETED(holder) || !(parent in holder.held_items))
-		stop_windup()
+	windup_timer = null
+	var/obj/item/item = parent
+	if(QDELETED(src) || QDELETED(item) || QDELETED(holder) || !(item in holder.held_items))
 		return
 	current_bonus = min(current_bonus + 1, maximum_bonus)
-	var/obj/item/item = parent
 	item.throwforce = initial(item.throwforce) + current_bonus
 	if(current_bonus < maximum_bonus)
+		windup_timer = addtimer(CALLBACK(src, PROC_REF(increment)), windup_increment_speed, TIMER_STOPPABLE)
 		return
-	stop_windup()
 	if(throw_text)
 		holder.visible_message(span_warning("[holder] [throw_text]"))
 	pass_maximum_callback?.Invoke(holder)

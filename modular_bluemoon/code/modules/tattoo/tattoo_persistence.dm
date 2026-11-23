@@ -24,13 +24,13 @@
 
 // Загрузка настроек татуировок
 // tattoopref загружается/сохраняется в modular_citadel/code/modules/client/preferences_savefile.dm
-/datum/preferences/proc/load_tattoo_prefs(savefile/S)
+/datum/preferences/proc/load_tattoo_prefs(savefile/S, datum/player_save_document/document)
 	var/temp_persistent
 	var/temp_tattoos
 	var/list/temp_pending_removals
-	S["persistent_tattoos"] >> temp_persistent
-	S["tattoos_string"] >> temp_tattoos
-	S["pending_tattoo_removals"] >> temp_pending_removals
+	READ_PLAYER_SAVE(S, document, "persistent_tattoos", temp_persistent)
+	READ_PLAYER_SAVE(S, document, "tattoos_string", temp_tattoos)
+	READ_PLAYER_SAVE(S, document, "pending_tattoo_removals", temp_pending_removals)
 
 	persistent_tattoos = sanitize_integer(temp_persistent, 0, 1, TRUE)
 	// Strip control chars from saved tattoo text: the ^/~ field/record separators are
@@ -41,10 +41,10 @@
 	pending_tattoo_removals = islist(temp_pending_removals) ? temp_pending_removals : list()
 
 // Сохранение настроек татуировок
-/datum/preferences/proc/save_tattoo_prefs(savefile/S)
-	WRITE_FILE(S["persistent_tattoos"], persistent_tattoos)
-	WRITE_FILE(S["tattoos_string"], tattoos_string)
-	WRITE_FILE(S["pending_tattoo_removals"], pending_tattoo_removals)
+/datum/preferences/proc/save_tattoo_prefs(savefile/S, datum/player_save_document/document)
+	WRITE_PLAYER_SAVE(S, document, "persistent_tattoos", persistent_tattoos)
+	WRITE_PLAYER_SAVE(S, document, "tattoos_string", tattoos_string)
+	WRITE_PLAYER_SAVE(S, document, "pending_tattoo_removals", pending_tattoo_removals)
 
 // Экранирование разделителей в тексте татуировки для безопасного сохранения
 /proc/escape_tattoo_text(text)

@@ -368,18 +368,14 @@ SUBSYSTEM_DEF(director)
 /datum/controller/subsystem/director/proc/antag_target(crew)
 	return profile ? crew * profile.antag_intensity_per_crew : 0
 
-/// Актуализация копилок антаг-пулов: у пула без цели (или с протухшей - can_fire отвалился,
-/// например кончились кандидаты-призраки, либо живой вес затух до нуля) роллится новая.
-/// Валидная цель не перевыбирается - пул последовательно копит и исполняет план.
+// Копилка выбирает новую цель, если прежняя недоступна, потеряла кандидатов или её вес обнулился.
+// Пока цель доступна, пул продолжает копить на неё.
 /datum/controller/subsystem/director/proc/ensure_pool_targets(datum/director_signals/signals)
 	// Контент-код (can_fire) не должен логировать отказы при проверке плана - это не решение о запуске.
 	quiet_eval = TRUE
 	for(var/sev in list(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST))
 		var/datum/director_action/target = pool_saving[sev]
-		// Живой вес - часть валидности плана: у действий с изменяемым весом условие может
-		// пропасть уже после выбора цели (вес Lone Operative затухает, когда диск снова
-		// носят - nuclearbomb.dm). План с нулевым весом висел бы до исполнения, и оперативник
-		// приходил бы спустя полчаса после того, как диск унесли, - "спавн без причины".
+		// Условие может исчезнуть после выбора цели: вес Lone Operative обнуляется при смене клетки диска.
 		if(QDELETED(target) || action_recently_failed(target) || !target.can_fire(signals) || !action_preflight(target) || target.get_weight(signals) <= 0)
 			roll_pool_target(sev, signals)
 			continue
@@ -1802,11 +1798,14 @@ SUBSYSTEM_DEF(director)
 	var/was_guaranteed = pending_guaranteed
 	var/list/retry_candidates = pending_candidates
 	var/detail = selection_detail(fired_action, retry_candidates)
-	var/executed = spend_and_execute(fired_action, was_guaranteed ? "guaranteed" : "beat")
+	var/cancel_reason = fired_action.pending_cancel_reason()
+	var/executed = !cancel_reason && spend_and_execute(fired_action, was_guaranteed ? "guaranteed" : "beat")
 	var/result = was_guaranteed ? DIRECTOR_BEAT_GUARANTEED : DIRECTOR_BEAT_FIRED
+	var/skip_reason
 	if(!executed)
-		result = DIRECTOR_BEAT_FAILED
-		detail = "[execution_failure_detail(fired_action)]; [detail]"
+		result = cancel_reason ? DIRECTOR_BEAT_CANCELLED : DIRECTOR_BEAT_FAILED
+		skip_reason = cancel_reason || execution_failure_detail(fired_action)
+		detail = "[skip_reason]; [detail]"
 	else if(fired_action.director_kind == DIRECTOR_KIND_RULESET)
 		result = DIRECTOR_BEAT_SCHEDULED
 	director_log_beat(fired_signals, fired_action, result, null, detail)
@@ -1814,8 +1813,7 @@ SUBSYSTEM_DEF(director)
 	pending_candidates = null
 	pending_signals = null
 	pending_timer_id = null
-	// Кандидат мог исчезнуть за окно отмены. Не сжигаем весь бит: убираем провалившийся
-	// вариант и даём админам такое же окно отмены для следующего всё ещё готового кандидата.
+	// После отмены или ошибки повторно проверяем остальных кандидатов перед выбором замены.
 	if(!executed && length(retry_candidates))
 		retry_candidates -= fired_action
 		var/datum/director_signals/retry_signals = collect_signals()
@@ -1830,7 +1828,7 @@ SUBSYSTEM_DEF(director)
 			retry_candidates[retry] = current_candidates[retry]
 		if(length(retry_candidates))
 			var/datum/director_action/next_pick = pickweight(retry_candidates)
-			message_admins("DIRECTOR: [fired_action.action_name()] не запустился ([execution_failure_detail(fired_action)]), выбираю замену.")
+			message_admins("DIRECTOR: [fired_action.action_name()] не запустился ([skip_reason]), выбираю замену.")
 			announce_pick(next_pick, retry_candidates, was_guaranteed, retry_signals)
 
 /datum/controller/subsystem/director/Topic(href, href_list)

@@ -4,12 +4,15 @@
 #define SAVEFILE_BENCH_REPS 20
 
 /// Замер цены записи префов и смоделированной сессии игрока на сейве с сорока слотами.
-/// Собирается и на старом коде, где нет удержания файла: для парного замера туда хватает счётчика открытий.
+/// Собирается и на коде без удержания файла и на JSON-сейвах: для парного замера там нет счётчика открытий.
 /datum/unit_test/preferences_savefile_cost_benchmark
 
 /datum/unit_test/preferences_savefile_cost_benchmark/proc/bench_release(datum/preferences/prefs)
 	if(hascall(prefs, "release_savefile"))
 		call(prefs, "release_savefile")()
+
+/datum/unit_test/preferences_savefile_cost_benchmark/proc/bench_opens()
+	return ("player_savefile_opens" in GLOB.vars) ? GLOB.vars["player_savefile_opens"] : 0
 
 /datum/unit_test/preferences_savefile_cost_benchmark/proc/bench_prefs(path)
 	var/datum/preferences/prefs = new
@@ -21,7 +24,8 @@
 
 /datum/unit_test/preferences_savefile_cost_benchmark/Run()
 	var/path = "[GLOB.log_directory]/savefile_bench.sav"
-	fdel(path)
+	for(var/suffix in list("", ".journal", ".json", ".json.recovery", ".json.d/"))
+		fdel("[path][suffix]")
 	var/datum/preferences/writer = bench_prefs(path)
 	writer.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	for(var/slot in 1 to SAVEFILE_BENCH_SLOTS)
@@ -34,7 +38,7 @@
 	bench_release(writer)
 	qdel(writer)
 	sleep(1)
-	log_test("SAVEFILEBENCH fixture slots=[SAVEFILE_BENCH_SLOTS] size=[length(file(path))]")
+	log_test("SAVEFILEBENCH fixture slots=[SAVEFILE_BENCH_SLOTS] size=[length(file(path))] json=[length(file("[path].json"))]")
 	var/tiny_path = "[GLOB.log_directory]/savefile_bench_tiny.sav"
 	for(var/raw_path in list(path, tiny_path))
 		var/list/raw = list("open" = 0, "read" = 0, "write" = 0, "close" = 0)
@@ -66,7 +70,7 @@
 
 	for(var/held in list(FALSE, TRUE))
 		var/list/costs = list("single" = 0, "full" = 0, "char" = 0, "load" = 0)
-		var/opens_before = GLOB.player_savefile_opens
+		var/opens_before = bench_opens()
 		for(var/rep in 1 to SAVEFILE_BENCH_REPS)
 			if(!held)
 				bench_release(prefs)
@@ -93,22 +97,22 @@
 		var/list/parts = list()
 		for(var/op in costs)
 			parts += "[op]_us=[round(costs[op] / SAVEFILE_BENCH_REPS)]"
-		log_test("SAVEFILEBENCH ops [held ? "warm" : "cold"] [jointext(parts, " ")] opens=[GLOB.player_savefile_opens - opens_before] of [SAVEFILE_BENCH_REPS * 4] calls")
+		log_test("SAVEFILEBENCH ops [held ? "warm" : "cold"] [jointext(parts, " ")] opens=[bench_opens() - opens_before] of [SAVEFILE_BENCH_REPS * 4] calls")
 	bench_release(prefs)
 	qdel(prefs)
 
 	for(var/session in 1 to 3)
 		var/list/phase_us = list()
 		var/list/phase_opens = list()
-		var/opens_mark = GLOB.player_savefile_opens
+		var/opens_mark = bench_opens()
 		var/datum/preferences/player = bench_prefs(path)
 
 		rustg_time_reset("savefile_bench")
 		player.load_preferences(bypass_cooldown = TRUE)
 		player.load_character(null, bypass_cooldown = TRUE)
 		phase_us["login"] = rustg_time_microseconds("savefile_bench")
-		phase_opens["login"] = GLOB.player_savefile_opens - opens_mark
-		opens_mark = GLOB.player_savefile_opens
+		phase_opens["login"] = bench_opens() - opens_mark
+		opens_mark = bench_opens()
 
 		rustg_time_reset("savefile_bench")
 		player.slot_names_cache = null
@@ -120,8 +124,8 @@
 			player.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 		player.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
 		phase_us["editor"] = rustg_time_microseconds("savefile_bench")
-		phase_opens["editor"] = GLOB.player_savefile_opens - opens_mark
-		opens_mark = GLOB.player_savefile_opens
+		phase_opens["editor"] = bench_opens() - opens_mark
+		opens_mark = bench_opens()
 
 		bench_release(player)
 		rustg_time_reset("savefile_bench")
@@ -133,14 +137,14 @@
 			player.flush_single_prefs()
 			bench_release(player)
 		phase_us["toggles"] = rustg_time_microseconds("savefile_bench")
-		phase_opens["toggles"] = GLOB.player_savefile_opens - opens_mark
-		opens_mark = GLOB.player_savefile_opens
+		phase_opens["toggles"] = bench_opens() - opens_mark
+		opens_mark = bench_opens()
 
 		rustg_time_reset("savefile_bench")
 		player.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
 		phase_us["spawn"] = rustg_time_microseconds("savefile_bench")
-		phase_opens["spawn"] = GLOB.player_savefile_opens - opens_mark
-		opens_mark = GLOB.player_savefile_opens
+		phase_opens["spawn"] = bench_opens() - opens_mark
+		opens_mark = bench_opens()
 
 		bench_release(player)
 		rustg_time_reset("savefile_bench")
@@ -152,8 +156,8 @@
 			player.flush_single_prefs()
 			bench_release(player)
 		phase_us["midround"] = rustg_time_microseconds("savefile_bench")
-		phase_opens["midround"] = GLOB.player_savefile_opens - opens_mark
-		opens_mark = GLOB.player_savefile_opens
+		phase_opens["midround"] = bench_opens() - opens_mark
+		opens_mark = bench_opens()
 
 		rustg_time_reset("savefile_bench")
 		player.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
@@ -162,7 +166,7 @@
 		player.flush_single_prefs()
 		bench_release(player)
 		phase_us["logout"] = rustg_time_microseconds("savefile_bench")
-		phase_opens["logout"] = GLOB.player_savefile_opens - opens_mark
+		phase_opens["logout"] = bench_opens() - opens_mark
 
 		var/total_us = 0
 		var/total_opens = 0
@@ -174,8 +178,8 @@
 		log_test("SAVEFILEBENCH session [session] total_us=[round(total_us)] opens=[total_opens] [jointext(parts, " ")]")
 		qdel(player)
 
-	fdel(path)
-	fdel("[path].journal")
+	for(var/suffix in list("", ".journal", ".json", ".json.recovery", ".json.d/"))
+		fdel("[path][suffix]")
 
 #undef SAVEFILE_BENCH_SLOTS
 #undef SAVEFILE_BENCH_REPS

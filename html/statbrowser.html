@@ -405,13 +405,15 @@ img { image-rendering: pixelated; }
 }
 .verb-search:focus { border-color: var(--accent); }
 
-.verb-grid {
+.verb-grid,
+.emote-group-list {
 	display: inline-flex;
 	flex-wrap: wrap;
 	padding: 4px 6px;
 	gap: 4px;
 }
-.verb-pill {
+.verb-pill,
+.emote-button {
 	display: inline-block;
 	padding: var(--verb-padding-v, 5px) var(--verb-padding-h, 10px);
 	background: var(--bg-tertiary);
@@ -424,13 +426,157 @@ img { image-rendering: pixelated; }
 	transition: background 60ms;
 	white-space: nowrap;
 }
-.verb-pill:hover { background: var(--bg-hover); text-decoration: none; }
+.verb-pill:hover,
+.emote-button:hover {
+	background: var(--bg-hover);
+	text-decoration: none;
+}
 .verb-pill.favorited {
 	background: var(--fav-bg);
 	border-color: var(--fav-border);
 }
 .verb-pill.favorited:hover {
 	background: rgba(232, 168, 32, 0.25);
+}
+
+:root {
+	--emote-default-bg: #1c71b1;
+	--emote-default-hover: #3a94d8;
+	--emote-default-text: #ffffff;
+	--emote-default-border: var(--emote-button-bg, var(--emote-default-bg));
+	--emote-default-custom-bg: #8b2baa;
+}
+
+.emote-panel {
+	padding: 6px;
+	font-size: var(--emote-font-size, 12px);
+}
+.emote-toolbar,
+.emote-group-header {
+	display: flex;
+	align-items: stretch;
+	gap: 4px;
+}
+.emote-toolbar {
+	flex-wrap: wrap;
+	margin-bottom: 8px;
+}
+.emote-control,
+.emote-group-toggle {
+	padding: 4px 8px;
+	border: 1px solid var(--border);
+	border-radius: var(--border-radius);
+	background: var(--bg-secondary);
+	color: var(--text-primary);
+	font: inherit;
+	cursor: pointer;
+}
+.emote-toolbar .emote-control {
+	padding: 2px 5px;
+	font-size: 0.85em;
+}
+.emote-control:hover,
+.emote-group-toggle:hover {
+	background: var(--bg-hover);
+}
+.emote-group {
+	margin-bottom: 8px;
+}
+.emote-group-header {
+	border-radius: var(--border-radius);
+	background: var(--bg-tertiary);
+}
+.emote-group-toggle {
+	flex: 1;
+	min-width: 0;
+	background: var(--emote-group-color, var(--bg-secondary));
+	color: var(--emote-group-text, var(--text-primary));
+	text-align: left;
+	overflow-wrap: anywhere;
+	font-weight: bold;
+}
+.emote-group-toggle:hover {
+	background: var(--emote-group-color, var(--bg-hover));
+}
+.emote-grid-fixed .emote-group-list:not([hidden]) {
+	display: grid;
+	grid-template-columns: repeat(var(--emote-grid-cols), minmax(0, 1fr));
+}
+.emote-grid-fixed .emote-group-list .emote-button {
+	width: 100%;
+	text-align: center;
+}
+.emote-group-list[hidden] {
+	display: none;
+}
+.emote-group-empty {
+	grid-column: 1 / -1;
+	padding: 6px 8px;
+	color: var(--text-secondary);
+}
+.emote-button {
+	min-width: 0;
+	max-width: 100%;
+	padding: var(--emote-padding-v, 5px) var(--emote-padding-h, 10px);
+	background: var(--emote-button-bg, var(--emote-default-bg));
+	border-color: var(--emote-button-border, var(--emote-default-border));
+	color: var(--emote-button-text, var(--emote-default-text));
+	text-align: left;
+	font: inherit;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+.emote-button:hover {
+	background: var(--emote-button-hover, var(--emote-default-hover));
+	border-color: var(--emote-button-border, var(--emote-button-hover, var(--emote-default-hover)));
+}
+.emote-button.emote-custom {
+	--emote-custom-fill: var(--emote-button-custom-bg, var(--emote-default-custom-bg));
+	background: var(--emote-custom-fill);
+	border-color: var(--emote-custom-fill);
+}
+.emote-button.emote-custom:hover {
+	--emote-custom-hover: color-mix(in srgb, var(--emote-button-custom-bg) 88%, white);
+	--emote-custom-fill: var(--emote-custom-hover, #ad4fcd);
+}
+.emote-button.emote-colored {
+	background: var(--emote-color);
+	border-color: var(--emote-color);
+	color: var(--emote-color-text);
+}
+.emote-button.emote-colored:hover {
+	background: color-mix(in srgb, var(--emote-color) 90%, var(--emote-color-text));
+	border-color: var(--emote-color);
+}
+.emote-panel button:focus-visible {
+	outline-color: var(--emote-accent, var(--emote-default-hover));
+}
+.emote-sortable {
+	touch-action: none;
+	user-select: none;
+}
+.emote-dragging {
+	opacity: 0.5;
+}
+.emote-dragging,
+.emote-dragging .emote-group-toggle {
+	cursor: grabbing;
+}
+.emote-drop-before {
+	box-shadow: -2px 0 var(--emote-accent, var(--emote-default-hover));
+}
+.emote-drop-after {
+	box-shadow: 2px 0 var(--emote-accent, var(--emote-default-hover));
+}
+.emote-drop-group {
+	outline: 2px solid var(--emote-accent, var(--emote-default-hover));
+	outline-offset: -2px;
+}
+.emote-drop-group-before {
+	box-shadow: 0 -2px var(--emote-accent, var(--emote-default-hover));
+}
+.emote-drop-group-after {
+	box-shadow: 0 2px var(--emote-accent, var(--emote-default-hover));
 }
 /* ===== Verb Links Style ===== */
 body.verb-style-links .verb-pill {
@@ -1384,7 +1530,8 @@ var MC_KEY_SUBSYSTEMS = ["Atmospherics", "Garbage", "Machines", "Lighting", "Cli
 var SEARCH_ICON_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6.5" cy="6.5" r="5"/><line x1="10" y1="10" x2="15" y2="15"/></svg>';
 // Bridge protocol: must match STATBROWSER_PROTOCOL_VERSION in code/controllers/subsystem/statpanel.dm.
 // Bumped when the DM->JS payload shape changes incompatibly. Mismatch logs a warning and asks DM to reload.
-var EXPECTED_PROTOCOL_VERSION = 4;
+var EXPECTED_PROTOCOL_VERSION = 8;
+var STATPANEL_EMOTES_TAB = "Emotes";
 
 ;
 // === src/bridge.js ===
@@ -1495,6 +1642,7 @@ var State = {
 	turfContentsRaw: "",
 	// Favorites
 	favorites: {},
+	emotePanel: null,
 	// Images
 	storedImages: {},
 	imageRetryDelay: 500,
@@ -1558,6 +1706,7 @@ function getTabOrder(name) {
 	if (name === "Status") return 1;
 	if (name === "MC") return 2;
 	if (name === "Избранное") return 3;
+	if (name === STATPANEL_EMOTES_TAB) return 4;
 	return 100 + name.charCodeAt(0);
 }
 
@@ -1639,6 +1788,10 @@ var _tabScrollPositions = {};
 function tab_change(tab) {
 	_settingsActive = false;
 	if (tab === State.currentTab) return;
+	if (State.currentTab === STATPANEL_EMOTES_TAB) {
+		finishEmoteDrag();
+		State.emotePanel = null;
+	}
 	if (State.currentTab && statcontent) {
 		_tabScrollPositions[State.currentTab] = statcontent.scrollTop;
 	}
@@ -2045,6 +2198,9 @@ function getDefaultThemeState() {
 		turfFontSize: 12,
 		verbGridColumns: "auto",
 		verbGridMinWidth: 135,
+		emoteGridColumns: "auto",
+		emoteButtonPadding: 5,
+		emoteFontSize: 12,
 		turfGridColumns: "auto",
 		mcGridColumns: "auto",
 		mcGridMinWidth: 200
@@ -2053,8 +2209,17 @@ function getDefaultThemeState() {
 
 var _SETTINGS_KEYS = ["verbLayout", "verbStyle", "hideVerbSearch", "verbPadding", "tabPadding", "compactMode",
 	"turfLayout", "turfIconSize", "turfHideIcons", "turfFontSize",
-	"verbGridColumns", "verbGridMinWidth", "turfGridColumns", "mcGridColumns", "mcGridMinWidth",
+	"verbGridColumns", "verbGridMinWidth", "emoteGridColumns", "emoteButtonPadding", "emoteFontSize", "turfGridColumns", "mcGridColumns", "mcGridMinWidth",
 	"fontFamily", "fontSize", "borderRadius", "customCSS"];
+
+var EMOTE_BUTTON_PALETTE = [
+	["--emote-button-bg", "Фон кнопок", "--emote-default-bg"],
+	["--emote-button-hover", "Фон при наведении", "--emote-default-hover"],
+	["--emote-button-text", "Текст кнопок", "--emote-default-text"],
+	["--emote-button-border", "Граница кнопок", "--emote-default-border"],
+	["--emote-button-custom-bg", "Цвет кастомных эмоций", "--emote-default-custom-bg"],
+	["--emote-accent", "Акцент", "--emote-default-hover"]
+];
 
 function getPresetDefaults(presetKey) {
 	var defaults = getDefaultThemeState();
@@ -2140,6 +2305,9 @@ function applyTheme(themeState) {
 	var root = document.documentElement;
 	var preset = _resolvePreset(themeState);
 	root.style.removeProperty("--font-sans");
+	for (var i = 0; i < EMOTE_BUTTON_PALETTE.length; i++) {
+		root.style.removeProperty(EMOTE_BUTTON_PALETTE[i][0]);
+	}
 	if (preset) {
 		for (var key in preset.vars) {
 			root.style.setProperty(key, preset.vars[key]);
@@ -2156,6 +2324,11 @@ function applyTheme(themeState) {
 	var vp = themeState.verbPadding != null ? themeState.verbPadding : 5;
 	root.style.setProperty("--verb-padding-v", vp + "px");
 	root.style.setProperty("--verb-padding-h", (vp * 2) + "px");
+	var emotePadding = Math.min(12, Math.max(1, Number(themeState.emoteButtonPadding) || 5));
+	var emoteFontSize = Math.min(24, Math.max(8, Number(themeState.emoteFontSize) || 12));
+	root.style.setProperty("--emote-padding-v", emotePadding + "px");
+	root.style.setProperty("--emote-padding-h", (emotePadding * 2) + "px");
+	root.style.setProperty("--emote-font-size", emoteFontSize + "px");
 	var tp = themeState.tabPadding != null ? themeState.tabPadding : 6;
 	root.style.setProperty("--tab-padding-v", tp + "px");
 	root.style.setProperty("--tab-padding-h", (tp * 2) + "px");
@@ -2171,6 +2344,7 @@ function applyTheme(themeState) {
 	document.body.classList.toggle("turf-layout-compact", themeState.turfLayout === "compact");
 	document.body.classList.toggle("turf-hide-icons", !!themeState.turfHideIcons);
 	applyGridLayout("verb", themeState.verbGridColumns, themeState.verbGridMinWidth, 135);
+	applyGridLayout("emote", /^[1-6]$/.test(themeState.emoteGridColumns) ? themeState.emoteGridColumns : "auto", null, null);
 	applyGridLayout("turf", themeState.turfGridColumns, null, null); // no min-width var for turf — icon-size slider controls density
 	applyGridLayout("mc", themeState.mcGridColumns, themeState.mcGridMinWidth, 200);
 	if (!_customStyleEl) {
@@ -2293,6 +2467,8 @@ function renderCurrentTab() {
 		draw_mc();
 	} else if (tab === "Избранное") {
 		draw_favorites();
+	} else if (tab === STATPANEL_EMOTES_TAB) {
+		draw_emotes();
 	} else if (isSpell) {
 		draw_spells(tab);
 	} else if (tab === "Tickets") {
@@ -3770,6 +3946,315 @@ function draw_favorites() {
 }
 
 ;
+// === src/renderers/emotes.js ===
+var collapsedEmoteGroups = Object.create(null);
+var emoteDrag = null;
+
+function update_emotes(payload) {
+	var panel = safeParse(payload);
+	if (!panel || !Array.isArray(panel.emotes) || !Array.isArray(panel.groups)) return;
+	if (State.currentTab !== STATPANEL_EMOTES_TAB) return;
+	var scrollPosition = State.emotePanel && State.emotePanel.slot === panel.slot ? window.scrollY : 0;
+	State.emotePanel = panel;
+	if (_settingsActive) return;
+	draw_emotes();
+	window.scrollTo(0, scrollPosition);
+}
+
+function sendEmoteAction(action, fields) {
+	var panel = State.emotePanel;
+	if (!panel) return;
+	run_after_focus(function() {
+		if (_settingsActive || State.emotePanel !== panel) return;
+		byond_bridge_call("", Object.assign({
+			statpanel_emotes: "emotes/" + action,
+			slot: panel.slot
+		}, fields));
+	});
+}
+
+function emoteButton(label, cls, action) {
+	var button = el("button", cls, label);
+	button.type = "button";
+	button.onclick = action;
+	return button;
+}
+
+function skipEmoteDragClick(event) {
+	if (!event.detail || !event.currentTarget._skipEmoteClick) return false;
+	event.currentTarget._skipEmoteClick = false;
+	return true;
+}
+
+function draw_emotes() {
+	finishEmoteDrag();
+	statcontent.textContent = "";
+	var panel = State.emotePanel;
+	if (!panel) {
+		statcontent.appendChild(el("div", "fav-empty-msg", "Загрузка эмоций…"));
+		return;
+	}
+
+	var root = el("div", "emote-panel");
+	root.addEventListener("pointerdown", startEmoteDrag);
+	root.addEventListener("pointermove", updateEmoteDrag);
+	root.addEventListener("pointerup", dropEmote);
+	root.addEventListener("pointercancel", cancelEmotePointer);
+	root.addEventListener("lostpointercapture", cancelEmotePointer);
+	var toolbar = el("div", "emote-toolbar");
+	toolbar.appendChild(emoteButton("+ Эмоция", "emote-control", function() {
+		sendEmoteAction("create");
+	}));
+	toolbar.appendChild(emoteButton("+ Группа", "emote-control", function() {
+		sendEmoteAction("createGroup");
+	}));
+	root.appendChild(toolbar);
+
+	var groups = [{ id: "", name: "Без группы", color: panel.ungroupedColor }].concat(panel.groups);
+	var emotesByGroup = Object.create(null);
+	for (var i = 0; i < groups.length; i++) emotesByGroup[groups[i].id] = [];
+	for (var j = 0; j < panel.emotes.length; j++) {
+		var emote = panel.emotes[j];
+		var group = emote.entry && emote.entry.group;
+		(emotesByGroup[group] || emotesByGroup[""]).push(emote);
+	}
+
+	var collapsed = collapsedEmoteGroups[panel.slot];
+	if (!collapsed) collapsed = collapsedEmoteGroups[panel.slot] = Object.create(null);
+	for (var id in collapsed) {
+		if (!emotesByGroup[id]) delete collapsed[id];
+	}
+	for (var k = 0; k < groups.length; k++) {
+		var currentGroup = groups[k];
+		root.appendChild(drawEmoteGroup(currentGroup, emotesByGroup[currentGroup.id], collapsed));
+	}
+	statcontent.appendChild(root);
+}
+
+function drawEmoteGroup(group, emotes, collapsed) {
+	var section = el("section", "emote-group");
+	section.dataset.group = group.id;
+	var header = el("div", "emote-group-header");
+	header.dataset.group = group.id;
+	var list = el("div", "emote-group-list");
+	list.id = "emote-group-" + group.id;
+	list.dataset.group = group.id;
+	var label = group.name + " (" + emotes.length + ")";
+	var toggle = emoteButton("", "emote-group-toggle", function(event) {
+		if (skipEmoteDragClick(event)) return;
+		collapsed[group.id] = !collapsed[group.id];
+		updateGroupVisibility();
+	});
+	toggle.setAttribute("aria-controls", list.id);
+	if (group.id) {
+		toggle.classList.add("emote-sortable");
+		toggle.title = "Перетащите, чтобы изменить порядок групп";
+	}
+	if (/^#[0-9a-f]{6}$/i.test(group.color)) {
+		toggle.style.setProperty("--emote-group-color", group.color);
+		toggle.style.setProperty("--emote-group-text", contrastRatio("#000000", group.color) >= 4.5 ? "#000000" : "#FFFFFF");
+	}
+	header.appendChild(toggle);
+	updateGroupVisibility();
+	var colorButton = emoteButton("Цвет", "emote-control", function() {
+		sendEmoteAction("colorGroup", {
+			group: group.id,
+			defaultColor: normalizeToHex(getComputedStyle(toggle).backgroundColor)
+		});
+	});
+	var colorLabel = "Изменить цвет группы «" + group.name + "»";
+	colorButton.setAttribute("aria-label", colorLabel);
+	colorButton.title = colorLabel;
+	if (group.color) {
+		colorButton.title += " · ПКМ — вернуть цвет темы";
+		colorButton.oncontextmenu = function(event) {
+			event.preventDefault();
+			sendEmoteAction("colorGroup", { group: group.id, reset: 1 });
+		};
+	}
+	header.appendChild(colorButton);
+	if (group.id) {
+		var edit = emoteButton("⋯", "emote-control", function() {
+			sendEmoteAction("editGroup", { group: group.id });
+		});
+		edit.title = "Действия с группой «" + group.name + "»";
+		edit.setAttribute("aria-label", edit.title);
+		header.appendChild(edit);
+	}
+	if (!emotes.length) {
+		list.appendChild(el("div", "emote-group-empty", "Перетащите сюда эмоцию"));
+	}
+	for (var i = 0; i < emotes.length; i++) list.appendChild(drawEmoteItem(emotes[i], group.id));
+	section.appendChild(header);
+	section.appendChild(list);
+	return section;
+
+	function updateGroupVisibility() {
+		list.hidden = !!collapsed[group.id];
+		toggle.setAttribute("aria-expanded", String(!list.hidden));
+		toggle.textContent = (list.hidden ? "▸ " : "▾ ") + label;
+	}
+}
+
+function drawEmoteItem(emote, group) {
+	var entry = emote.entry;
+	var button = emoteButton(emote.name, entry ? "emote-button emote-sortable" : "emote-button", function(event) {
+		if (skipEmoteDragClick(event)) return;
+		sendEmoteAction("execute", { name: emote.name });
+	});
+	button.dataset.group = group;
+	button.dataset.emote = emote.name;
+	if (entry && /^#[0-9a-f]{6}$/i.test(entry.color)) {
+		button.classList.add("emote-colored");
+		button.style.setProperty("--emote-color", entry.color);
+		button.style.setProperty("--emote-color-text", contrastRatio("#000000", entry.color) >= 4.5 ? "#000000" : "#FFFFFF");
+	} else if (entry && (entry.type === 2 || entry.type === 3)) {
+		button.classList.add("emote-custom");
+	}
+	if (entry && entry.type === 1) {
+		button.title = "*" + entry.key;
+	} else if (entry && entry.type === 2) {
+		button.title = "*" + entry.key + " | " + entry.message_override;
+	} else if (entry && entry.type === 3) {
+		button.title = entry.message;
+	}
+	button.oncontextmenu = function(event) {
+		event.preventDefault();
+		if (!emoteDrag || !emoteDrag.active) {
+			sendEmoteAction("contextAction", {
+				name: emote.name,
+				defaultColor: normalizeToHex(getComputedStyle(button).backgroundColor)
+			});
+		}
+	};
+	return button;
+}
+
+function startEmoteDrag(event) {
+	var button = event.target;
+	if (event.button !== 0 || emoteDrag || !button.classList.contains("emote-sortable")) return;
+	if (!button.setPointerCapture) return;
+	var group = button.classList.contains("emote-group-toggle") && button.closest(".emote-group");
+	button._skipEmoteClick = false;
+	button.setPointerCapture(event.pointerId);
+	emoteDrag = {
+		button: button,
+		source: group || button,
+		isGroup: !!group,
+		root: event.currentTarget,
+		pointerId: event.pointerId,
+		startX: event.clientX,
+		startY: event.clientY,
+		active: false,
+		target: null,
+		marker: "",
+		frame: null
+	};
+}
+
+function updateEmoteDrag(event) {
+	var drag = emoteDrag;
+	if (!drag || drag.pointerId !== event.pointerId) return;
+	if (!drag.active) {
+		var dx = event.clientX - drag.startX;
+		var dy = event.clientY - drag.startY;
+		if (dx * dx + dy * dy < 25) return;
+		drag.active = true;
+		drag.source.classList.add("emote-dragging");
+	}
+	drag.x = event.clientX;
+	drag.y = event.clientY;
+	updateEmoteDropTarget();
+	if (event.type === "pointermove") queueEmoteDragScroll();
+}
+
+function updateEmoteDropTarget() {
+	var drag = emoteDrag;
+	// Обе координаты и прямоугольники уже учитывают масштаб статпанели.
+	var hit = document.elementFromPoint(drag.x, drag.y);
+	var selector = drag.isGroup ? ".emote-group" : ".emote-button, .emote-group-header, .emote-group-list";
+	var target = hit && hit.closest(selector);
+	if (target === drag.source || !drag.root.contains(target) || (drag.isGroup && !target.dataset.group)) target = null;
+	var marker = "emote-drop-group";
+	if (target && drag.isGroup) {
+		var header = target.firstElementChild.getBoundingClientRect();
+		marker = drag.y < (header.top + header.bottom) / 2 ? "emote-drop-group-before" : "emote-drop-group-after";
+	} else if (target && target.classList.contains("emote-button")) {
+		var rect = target.getBoundingClientRect();
+		marker = drag.x < (rect.left + rect.right) / 2 ? "emote-drop-before" : "emote-drop-after";
+	}
+	if (drag.target === target && drag.marker === marker) return;
+	if (drag.target) drag.target.classList.remove(drag.marker);
+	drag.target = target;
+	drag.marker = marker;
+	if (target) target.classList.add(marker);
+}
+
+function queueEmoteDragScroll() {
+	var drag = emoteDrag;
+	if (drag.frame !== null) return;
+	var scroll = document.scrollingElement;
+	if (!scroll) return;
+	var top = tabBar.getBoundingClientRect().bottom;
+	var bottom = window.innerHeight;
+	if (drag.x < 0 || drag.x >= window.innerWidth || drag.y < top || drag.y >= bottom) return;
+	var direction = 0;
+	if (drag.y < top + 26 && scroll.scrollTop > 0) direction = -1;
+	else if (drag.y > bottom - 26 && scroll.scrollTop + scroll.clientHeight < scroll.scrollHeight) direction = 1;
+	if (!direction) return;
+	drag.frame = requestAnimationFrame(function() {
+		drag.frame = null;
+		var previous = scroll.scrollTop;
+		scroll.scrollTop += direction * 10;
+		if (scroll.scrollTop === previous) return;
+		updateEmoteDropTarget();
+		queueEmoteDragScroll();
+	});
+}
+
+function dropEmote(event) {
+	var drag = emoteDrag;
+	if (!drag || drag.pointerId !== event.pointerId) return;
+	updateEmoteDrag(event);
+	finishEmoteDrag();
+	if (!drag.target) return;
+	if (drag.isGroup) {
+		sendEmoteAction("moveGroup", {
+			group: drag.source.dataset.group,
+			anchor: drag.target.dataset.group,
+			after: drag.marker === "emote-drop-group-after" ? 1 : 0
+		});
+		return;
+	}
+	sendEmoteAction("move", {
+		name: drag.button.dataset.emote,
+		group: drag.target.dataset.group,
+		anchor: drag.target.dataset.emote,
+		after: drag.marker === "emote-drop-after" ? 1 : 0
+	});
+}
+
+function cancelEmotePointer(event) {
+	if (emoteDrag && emoteDrag.pointerId === event.pointerId) finishEmoteDrag();
+}
+
+function finishEmoteDrag() {
+	var drag = emoteDrag;
+	if (!drag) return;
+	emoteDrag = null;
+	if (drag.frame !== null) cancelAnimationFrame(drag.frame);
+	if (drag.target) drag.target.classList.remove(drag.marker);
+	if (drag.active) {
+		// После отпускания браузер может прислать клик по захваченной кнопке.
+		drag.button._skipEmoteClick = true;
+		drag.source.classList.remove("emote-dragging");
+	}
+	if (drag.button.hasPointerCapture(drag.pointerId)) drag.button.releasePointerCapture(drag.pointerId);
+}
+
+window.addEventListener("blur", finishEmoteDrag);
+
+;
 // === src/renderers/spells.js ===
 function draw_spells(cat) {
 	statcontent.textContent = "";
@@ -4945,6 +5430,42 @@ function set_settings_color(varName, color) {
 	if (_settingsActive) draw_settings();
 }
 
+function makeThemeColorInput(varName, label, color) {
+	var input = el("button", "settings-color-input");
+	input.type = "button";
+	var currentColor = normalizeToHex(color);
+	input.style.backgroundColor = currentColor;
+	input.title = label + ": " + currentColor;
+	input.setAttribute("aria-label", "Выбрать цвет: " + label);
+	input.onclick = function() {
+		byond_topic("?statbrowser_pick_color=" + encodeURIComponent(varName) + "&color=" + encodeURIComponent(currentColor));
+	};
+	return input;
+}
+
+function addEmoteSizeRow(parent, themeState, key, text, min, max) {
+	var row = el("label", "settings-row");
+	row.appendChild(el("span", "settings-label", text));
+	var slider = el("input", "settings-slider");
+	slider.type = "range";
+	slider.min = min;
+	slider.max = max;
+	slider.value = themeState[key];
+	var value = el("span", "settings-slider-value", slider.value + "px");
+	slider.oninput = function() {
+		themeState[key] = Number(slider.value);
+		value.textContent = slider.value + "px";
+		var wasPreset = themeState.preset;
+		markCustomIfModified(themeState);
+		saveTheme(themeState);
+		applyTheme(themeState);
+		if (themeState.preset !== wasPreset) draw_settings();
+	};
+	row.appendChild(slider);
+	row.appendChild(value);
+	parent.appendChild(row);
+}
+
 // Renders a "columns: Авто / 1..6" select row and (optionally) a "min cell width" slider row
 // for one grid surface. opts: { colLabel, colKey } [ + minLabel, minKey, minDefault, minMin, minMax, minStep ].
 // The min-width slider is greyed out when a fixed column count is chosen (it only affects "Авто" mode).
@@ -4955,7 +5476,7 @@ function addGridRow(parent, themeState, opts) {
 	colRow.appendChild(el("span", "settings-label", opts.colLabel));
 	var sel = document.createElement("select");
 	sel.className = "settings-select";
-	var COL_OPTS = [["auto", "Авто"], ["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"]];
+	var COL_OPTS = [["auto", opts.autoLabel || "Авто"], ["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"]];
 	for (var i = 0; i < COL_OPTS.length; i++) {
 		var o = document.createElement("option");
 		o.value = COL_OPTS[i][0];
@@ -4963,6 +5484,7 @@ function addGridRow(parent, themeState, opts) {
 		sel.appendChild(o);
 	}
 	sel.value = themeState[opts.colKey] || "auto";
+	if (!sel.value) sel.value = "auto";
 	colRow.appendChild(sel);
 	parent.appendChild(colRow);
 
@@ -5013,6 +5535,7 @@ function addGridRow(parent, themeState, opts) {
 }
 
 function draw_settings() {
+	finishEmoteDrag();
 	_settingsActive = true;
 	clearTimeout(_fontApplyTimer);
 	statcontent.textContent = "";
@@ -5100,17 +5623,7 @@ function draw_settings() {
 		(function(varName, label) {
 			var row = el("div", "settings-row");
 			row.appendChild(el("span", "settings-label", label));
-			var input = document.createElement("button");
-			input.type = "button";
-			input.className = "settings-color-input";
-			var currentColor = normalizeToHex(effective[varName] || "#000000");
-			input.style.backgroundColor = currentColor;
-			input.title = label + ": " + currentColor;
-			input.setAttribute("aria-label", "Выбрать цвет: " + label);
-			input.onclick = function() {
-				byond_topic("?statbrowser_pick_color=" + encodeURIComponent(varName) + "&color=" + encodeURIComponent(currentColor));
-			};
-			row.appendChild(input);
+			row.appendChild(makeThemeColorInput(varName, label, effective[varName]));
 			if (varName in COLOR_CONTRAST_PAIRS) {
 				var badge = el("span", "settings-contrast-badge", "");
 				row.appendChild(badge);
@@ -5367,6 +5880,38 @@ function draw_settings() {
 	layoutSection.appendChild(compactRow);
 
 	panel.appendChild(layoutSection);
+
+	var emoteSection = el("div", "settings-section");
+	emoteSection.appendChild(el("div", "settings-section-title", "Эмоции"));
+	addGridRow(emoteSection, themeState, {
+		colLabel: "Расположение кнопок",
+		colKey: "emoteGridColumns",
+		autoLabel: "Плотно по ширине"
+	});
+	addEmoteSizeRow(emoteSection, themeState, "emoteButtonPadding", "Размер кнопок", 1, 12);
+	addEmoteSizeRow(emoteSection, themeState, "emoteFontSize", "Размер шрифта", 8, 24);
+	var emotePalette = getComputedStyle(document.documentElement);
+	EMOTE_BUTTON_PALETTE.forEach(function(option) {
+		var key = option[0];
+		var label = option[1];
+		var row = el("div", "settings-row");
+		row.appendChild(el("span", "settings-label", label));
+		var color = emotePalette.getPropertyValue(key).trim() || emotePalette.getPropertyValue(option[2]).trim();
+		row.appendChild(makeThemeColorInput(key, label, color));
+		if (key in themeState.overrides) {
+			var reset = el("button", "settings-toggle-btn", "Сбросить");
+			reset.type = "button";
+			reset.onclick = function() {
+				delete themeState.overrides[key];
+				saveTheme(themeState);
+				applyTheme(themeState);
+				draw_settings();
+			};
+			row.appendChild(reset);
+		}
+		emoteSection.appendChild(row);
+	});
+	panel.appendChild(emoteSection);
 
 	// ===== Turf (floor) section =====
 	var turfSection = el("div", "settings-section");
@@ -5628,6 +6173,7 @@ loadFavorites();
 
 if (!State.currentTab) {
 	addPermanentTab("Status");
+	addPermanentTab(STATPANEL_EMOTES_TAB);
 	tab_change("Status");
 }
 

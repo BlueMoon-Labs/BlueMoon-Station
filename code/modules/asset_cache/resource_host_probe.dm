@@ -70,6 +70,8 @@
 
 /// Строка для лога по ответу resource_probe_head(). `archive` - ждём zip с .rsc внутри, `local_rsc_size` - размер .rsc сборки (0 - неизвестен).
 /proc/resource_probe_verdict(list/result, archive, local_rsc_size)
+	if(!islist(result))
+		return "result не лист"
 	if(result["error"])
 		return "НЕДОСТУПЕН: [result["error"]]"
 	var/code = result["code"]

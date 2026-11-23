@@ -12,6 +12,42 @@ function set_settings_color(varName, color) {
 	if (_settingsActive) draw_settings();
 }
 
+function makeThemeColorInput(varName, label, color) {
+	var input = el("button", "settings-color-input");
+	input.type = "button";
+	var currentColor = normalizeToHex(color);
+	input.style.backgroundColor = currentColor;
+	input.title = label + ": " + currentColor;
+	input.setAttribute("aria-label", "Выбрать цвет: " + label);
+	input.onclick = function() {
+		byond_topic("?statbrowser_pick_color=" + encodeURIComponent(varName) + "&color=" + encodeURIComponent(currentColor));
+	};
+	return input;
+}
+
+function addEmoteSizeRow(parent, themeState, key, text, min, max) {
+	var row = el("label", "settings-row");
+	row.appendChild(el("span", "settings-label", text));
+	var slider = el("input", "settings-slider");
+	slider.type = "range";
+	slider.min = min;
+	slider.max = max;
+	slider.value = themeState[key];
+	var value = el("span", "settings-slider-value", slider.value + "px");
+	slider.oninput = function() {
+		themeState[key] = Number(slider.value);
+		value.textContent = slider.value + "px";
+		var wasPreset = themeState.preset;
+		markCustomIfModified(themeState);
+		saveTheme(themeState);
+		applyTheme(themeState);
+		if (themeState.preset !== wasPreset) draw_settings();
+	};
+	row.appendChild(slider);
+	row.appendChild(value);
+	parent.appendChild(row);
+}
+
 // Renders a "columns: Авто / 1..6" select row and (optionally) a "min cell width" slider row
 // for one grid surface. opts: { colLabel, colKey } [ + minLabel, minKey, minDefault, minMin, minMax, minStep ].
 // The min-width slider is greyed out when a fixed column count is chosen (it only affects "Авто" mode).
@@ -22,7 +58,7 @@ function addGridRow(parent, themeState, opts) {
 	colRow.appendChild(el("span", "settings-label", opts.colLabel));
 	var sel = document.createElement("select");
 	sel.className = "settings-select";
-	var COL_OPTS = [["auto", "Авто"], ["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"]];
+	var COL_OPTS = [["auto", opts.autoLabel || "Авто"], ["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"]];
 	for (var i = 0; i < COL_OPTS.length; i++) {
 		var o = document.createElement("option");
 		o.value = COL_OPTS[i][0];
@@ -30,6 +66,7 @@ function addGridRow(parent, themeState, opts) {
 		sel.appendChild(o);
 	}
 	sel.value = themeState[opts.colKey] || "auto";
+	if (!sel.value) sel.value = "auto";
 	colRow.appendChild(sel);
 	parent.appendChild(colRow);
 
@@ -80,6 +117,7 @@ function addGridRow(parent, themeState, opts) {
 }
 
 function draw_settings() {
+	finishEmoteDrag();
 	_settingsActive = true;
 	clearTimeout(_fontApplyTimer);
 	statcontent.textContent = "";
@@ -167,17 +205,7 @@ function draw_settings() {
 		(function(varName, label) {
 			var row = el("div", "settings-row");
 			row.appendChild(el("span", "settings-label", label));
-			var input = document.createElement("button");
-			input.type = "button";
-			input.className = "settings-color-input";
-			var currentColor = normalizeToHex(effective[varName] || "#000000");
-			input.style.backgroundColor = currentColor;
-			input.title = label + ": " + currentColor;
-			input.setAttribute("aria-label", "Выбрать цвет: " + label);
-			input.onclick = function() {
-				byond_topic("?statbrowser_pick_color=" + encodeURIComponent(varName) + "&color=" + encodeURIComponent(currentColor));
-			};
-			row.appendChild(input);
+			row.appendChild(makeThemeColorInput(varName, label, effective[varName]));
 			if (varName in COLOR_CONTRAST_PAIRS) {
 				var badge = el("span", "settings-contrast-badge", "");
 				row.appendChild(badge);
@@ -434,6 +462,38 @@ function draw_settings() {
 	layoutSection.appendChild(compactRow);
 
 	panel.appendChild(layoutSection);
+
+	var emoteSection = el("div", "settings-section");
+	emoteSection.appendChild(el("div", "settings-section-title", "Эмоции"));
+	addGridRow(emoteSection, themeState, {
+		colLabel: "Расположение кнопок",
+		colKey: "emoteGridColumns",
+		autoLabel: "Плотно по ширине"
+	});
+	addEmoteSizeRow(emoteSection, themeState, "emoteButtonPadding", "Размер кнопок", 1, 12);
+	addEmoteSizeRow(emoteSection, themeState, "emoteFontSize", "Размер шрифта", 8, 24);
+	var emotePalette = getComputedStyle(document.documentElement);
+	EMOTE_BUTTON_PALETTE.forEach(function(option) {
+		var key = option[0];
+		var label = option[1];
+		var row = el("div", "settings-row");
+		row.appendChild(el("span", "settings-label", label));
+		var color = emotePalette.getPropertyValue(key).trim() || emotePalette.getPropertyValue(option[2]).trim();
+		row.appendChild(makeThemeColorInput(key, label, color));
+		if (key in themeState.overrides) {
+			var reset = el("button", "settings-toggle-btn", "Сбросить");
+			reset.type = "button";
+			reset.onclick = function() {
+				delete themeState.overrides[key];
+				saveTheme(themeState);
+				applyTheme(themeState);
+				draw_settings();
+			};
+			row.appendChild(reset);
+		}
+		emoteSection.appendChild(row);
+	});
+	panel.appendChild(emoteSection);
 
 	// ===== Turf (floor) section =====
 	var turfSection = el("div", "settings-section");

@@ -142,30 +142,37 @@ The console is located at computer/gulag_teleporter.dm
 		if(is_type_in_typecache(I, telegulag_required_items) || !mob_occupant.temporarilyRemoveItemFromInventory(I))
 			continue
 		if(istype(I, /obj/item/restraints/handcuffs))
-			I.forceMove(get_turf(src))
+			I.forceMove(drop_location())
 			continue
 		if(linked_reclaimer)
 			linked_reclaimer.stored_items[mob_occupant] += I
-			linked_reclaimer.contents += I
 			I.forceMove(linked_reclaimer)
 		else
-			I.forceMove(src)
+			I.forceMove(drop_location())
 
 /obj/machinery/gulag_teleporter/proc/handle_prisoner(obj/item/id, datum/data/record/R)
 	if(!ishuman(occupant))
 		return
 	strip_occupant()
 	var/mob/living/carbon/human/prisoner = occupant
+
 	if(!isplasmaman(prisoner) && jumpsuit_type)
-		prisoner.equip_to_appropriate_slot(new jumpsuit_type)
+		var/obj/item/clothing/under/U = new jumpsuit_type
+		if(!prisoner.equip_to_appropriate_slot(U))
+			U.forceMove(drop_location())
+
 	if(shoes_type)
-		prisoner.equip_to_appropriate_slot(new shoes_type)
+		var/obj/item/clothing/shoes/S = new shoes_type
+		if(!prisoner.equip_to_appropriate_slot(S))
+			S.forceMove(drop_location())
+
 	if(id)
-		prisoner.equip_to_appropriate_slot(id)
+		if(!prisoner.equip_to_appropriate_slot(id))
+			id.forceMove(drop_location())
+
 	if(R)
 		R.set_security_status(SEC_RECORD_STATUS_INCARCERATED)
 	last_sent_prisoner = prisoner.mind
-
 /obj/item/circuitboard/machine/gulag_teleporter
 	name = "labor camp teleporter (Machine Board)"
 	build_path = /obj/machinery/gulag_teleporter

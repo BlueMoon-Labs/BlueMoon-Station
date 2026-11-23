@@ -195,13 +195,15 @@
 }
 .verb-search:focus { border-color: var(--accent); }
 
-.verb-grid {
+.verb-grid,
+.emote-group-list {
 	display: inline-flex;
 	flex-wrap: wrap;
 	padding: 4px 6px;
 	gap: 4px;
 }
-.verb-pill {
+.verb-pill,
+.emote-button {
 	display: inline-block;
 	padding: var(--verb-padding-v, 5px) var(--verb-padding-h, 10px);
 	background: var(--bg-tertiary);
@@ -214,13 +216,157 @@
 	transition: background 60ms;
 	white-space: nowrap;
 }
-.verb-pill:hover { background: var(--bg-hover); text-decoration: none; }
+.verb-pill:hover,
+.emote-button:hover {
+	background: var(--bg-hover);
+	text-decoration: none;
+}
 .verb-pill.favorited {
 	background: var(--fav-bg);
 	border-color: var(--fav-border);
 }
 .verb-pill.favorited:hover {
 	background: rgba(232, 168, 32, 0.25);
+}
+
+:root {
+	--emote-default-bg: #1c71b1;
+	--emote-default-hover: #3a94d8;
+	--emote-default-text: #ffffff;
+	--emote-default-border: var(--emote-button-bg, var(--emote-default-bg));
+	--emote-default-custom-bg: #8b2baa;
+}
+
+.emote-panel {
+	padding: 6px;
+	font-size: var(--emote-font-size, 12px);
+}
+.emote-toolbar,
+.emote-group-header {
+	display: flex;
+	align-items: stretch;
+	gap: 4px;
+}
+.emote-toolbar {
+	flex-wrap: wrap;
+	margin-bottom: 8px;
+}
+.emote-control,
+.emote-group-toggle {
+	padding: 4px 8px;
+	border: 1px solid var(--border);
+	border-radius: var(--border-radius);
+	background: var(--bg-secondary);
+	color: var(--text-primary);
+	font: inherit;
+	cursor: pointer;
+}
+.emote-toolbar .emote-control {
+	padding: 2px 5px;
+	font-size: 0.85em;
+}
+.emote-control:hover,
+.emote-group-toggle:hover {
+	background: var(--bg-hover);
+}
+.emote-group {
+	margin-bottom: 8px;
+}
+.emote-group-header {
+	border-radius: var(--border-radius);
+	background: var(--bg-tertiary);
+}
+.emote-group-toggle {
+	flex: 1;
+	min-width: 0;
+	background: var(--emote-group-color, var(--bg-secondary));
+	color: var(--emote-group-text, var(--text-primary));
+	text-align: left;
+	overflow-wrap: anywhere;
+	font-weight: bold;
+}
+.emote-group-toggle:hover {
+	background: var(--emote-group-color, var(--bg-hover));
+}
+.emote-grid-fixed .emote-group-list:not([hidden]) {
+	display: grid;
+	grid-template-columns: repeat(var(--emote-grid-cols), minmax(0, 1fr));
+}
+.emote-grid-fixed .emote-group-list .emote-button {
+	width: 100%;
+	text-align: center;
+}
+.emote-group-list[hidden] {
+	display: none;
+}
+.emote-group-empty {
+	grid-column: 1 / -1;
+	padding: 6px 8px;
+	color: var(--text-secondary);
+}
+.emote-button {
+	min-width: 0;
+	max-width: 100%;
+	padding: var(--emote-padding-v, 5px) var(--emote-padding-h, 10px);
+	background: var(--emote-button-bg, var(--emote-default-bg));
+	border-color: var(--emote-button-border, var(--emote-default-border));
+	color: var(--emote-button-text, var(--emote-default-text));
+	text-align: left;
+	font: inherit;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+.emote-button:hover {
+	background: var(--emote-button-hover, var(--emote-default-hover));
+	border-color: var(--emote-button-border, var(--emote-button-hover, var(--emote-default-hover)));
+}
+.emote-button.emote-custom {
+	--emote-custom-fill: var(--emote-button-custom-bg, var(--emote-default-custom-bg));
+	background: var(--emote-custom-fill);
+	border-color: var(--emote-custom-fill);
+}
+.emote-button.emote-custom:hover {
+	--emote-custom-hover: color-mix(in srgb, var(--emote-button-custom-bg) 88%, white);
+	--emote-custom-fill: var(--emote-custom-hover, #ad4fcd);
+}
+.emote-button.emote-colored {
+	background: var(--emote-color);
+	border-color: var(--emote-color);
+	color: var(--emote-color-text);
+}
+.emote-button.emote-colored:hover {
+	background: color-mix(in srgb, var(--emote-color) 90%, var(--emote-color-text));
+	border-color: var(--emote-color);
+}
+.emote-panel button:focus-visible {
+	outline-color: var(--emote-accent, var(--emote-default-hover));
+}
+.emote-sortable {
+	touch-action: none;
+	user-select: none;
+}
+.emote-dragging {
+	opacity: 0.5;
+}
+.emote-dragging,
+.emote-dragging .emote-group-toggle {
+	cursor: grabbing;
+}
+.emote-drop-before {
+	box-shadow: -2px 0 var(--emote-accent, var(--emote-default-hover));
+}
+.emote-drop-after {
+	box-shadow: 2px 0 var(--emote-accent, var(--emote-default-hover));
+}
+.emote-drop-group {
+	outline: 2px solid var(--emote-accent, var(--emote-default-hover));
+	outline-offset: -2px;
+}
+.emote-drop-group-before {
+	box-shadow: 0 -2px var(--emote-accent, var(--emote-default-hover));
+}
+.emote-drop-group-after {
+	box-shadow: 0 2px var(--emote-accent, var(--emote-default-hover));
 }
 /* ===== Verb Links Style ===== */
 body.verb-style-links .verb-pill {
