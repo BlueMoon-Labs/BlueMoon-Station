@@ -1185,20 +1185,26 @@
 	Resets the atom's color to null, and then sets it to the highest priority
 	colour available
 */
+/// Матрица в color хранит прозрачность в себе и при смене сбрасывает её, поэтому alpha возвращается вручную.
 /atom/proc/update_atom_colour()
 	if(!atom_colours)
 		atom_colours = list()
 		atom_colours.len = COLOUR_PRIORITY_AMOUNT //four priority levels currently.
+	var/kept_alpha = alpha
+	var/matrix_applied = FALSE
 	color = null
 	for(var/C in atom_colours)
 		if(islist(C))
 			var/list/L = C
 			if(L.len)
 				color = L
-				return
+				matrix_applied = TRUE
+				break
 		else if(C)
 			color = C
-			return
+			break
+	if(matrix_applied || alpha != kept_alpha)
+		alpha = kept_alpha
 
 /atom/vv_edit_var(var_name, var_value)
 	if(!GLOB.Debug2)

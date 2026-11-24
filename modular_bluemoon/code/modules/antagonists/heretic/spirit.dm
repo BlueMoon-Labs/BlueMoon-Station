@@ -1484,12 +1484,14 @@
 	return look
 
 /// Атом принимает облик души, но не плотность, непрозрачность и плоскость тела: копия /mutable_appearance всегда на FLOAT_PLANE и с пола не видна.
+/// Прозрачность ставится после цвета: матрица в color сбрасывает альфу в непрозрачную.
 /atom/movable/proc/heretic_spirit_wear_soul(mob/living/model)
 	var/own_density = density
 	var/own_opacity = opacity
 	var/own_plane = plane
 	appearance = heretic_spirit_soul_look(model)
 	color = heretic_vfx_ink_tint(heretic_path_ink(PATH_SPIRIT))
+	alpha = HERETIC_SPIRIT_SOUL_ALPHA
 	density = own_density
 	opacity = own_opacity
 	plane = own_plane
