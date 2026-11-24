@@ -2849,4 +2849,4 @@
 	name = "Sol Fed army box"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/solgoy_box
-	ckeywhitelist = list("rockymed")
+	ckeywhitelist = list("rockymed", "hartty", "dragon9090", "leony24", "theatlasgaming", "kennedykiller")
