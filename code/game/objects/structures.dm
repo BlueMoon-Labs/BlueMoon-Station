@@ -162,10 +162,5 @@
 	if(STR)
 		STR.max_combined_w_class = 60
 		STR.max_items = 14
+		max_w_class = WEIGHT_CLASS_BULKY
 		STR.insert_preposition = "in"
-
-/obj/structure/ship_hold/attackby(obj/item/I, mob/user, params)
-	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	if(STR && STR.attackby(I, user, params))
-		return TRUE
-	return ..()
