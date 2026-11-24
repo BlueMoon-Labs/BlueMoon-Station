@@ -39,8 +39,7 @@
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT, SELECT_FULLY_AUTOMATIC)
 	burst_size = 3
 	zoomable = TRUE
-	zoom_amt = 8 //Long range, enough to see in front of you, but no tiles behind you.
-	zoom_out_amt = 5
+	scope_range = 3
 	/// What datums of weapon modes can we use?
 	var/list/weapon_mode_options = list(
 		/datum/laser_weapon_mode,

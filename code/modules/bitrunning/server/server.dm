@@ -121,6 +121,8 @@
 		glitch_chance = 0.5
 		capacitor_coefficient = 0.1
 		points = 100
+		SStgui.update_uis(src)
+		update_appearance()
 		return ITEM_INTERACT_SUCCESS
 
 	return ..()
@@ -243,7 +245,7 @@
 
 	if(can_generate_tech_disk(grade))
 		SSblackbox.record_feedback("tally", "bitrunning_bepis_rewarded", 1, generated_domain.key)
-		new /obj/item/disk/design_disk(reward_cache)
+		new /obj/item/disk/tech_disk/major(reward_cache)
 		generated_domain.disk_reward_spawned = TRUE
 
 	chosen_forge.start_to_spawn(reward_cache)
@@ -380,13 +382,15 @@
 	return active
 
 /obj/machinery/quantum_server/proc/begin_shutdown(mob/user)
-	if(isnull(generated_domain))
+	if(isnull(generated_domain) || !is_ready)
 		return
 
 	var/list/datum/component/avatar_connection/connections = get_active_avatar_connections()
 	if(!length(connections))
 		balloon_alert_to_viewers("отключение домена...")
 		playsound(src, 'sound/machines/terminal_off.ogg', 40, vary = TRUE)
+		points = max(0, points - 1)
+		SStgui.update_uis(src)
 		reset()
 		return
 
@@ -402,7 +406,11 @@
 
 	if(!do_after(user, 20 SECONDS, src))
 		return
+	if(!is_ready || QDELETED(src))
+		return
 
+	points = max(0, points - 1)
+	SStgui.update_uis(src)
 	reset()
 
 /obj/machinery/quantum_server/proc/cold_boot_map(map_key, was_random_selection)
@@ -422,6 +430,8 @@
 		return FALSE
 
 	is_ready = FALSE
+	retries_spent = 0
+	exit_turfs.Cut()
 	playsound(src, 'sound/machines/terminal_processing.ogg', 30, 2)
 
 	if(!load_domain(map_key) || !load_map_items() || !load_mob_segments())
@@ -477,7 +487,7 @@
 
 	if(generated_domain.mission_min_candidates && (!COOLDOWN_FINISHED(src, polling_cooldown)))
 		say("Алгоритмы продвинутых NPC перезагружаются. Подождите [DisplayTimeText(polling_cooldown)] или загрузите другой домен.")
-		playsound(src, "sound/machines/buzz-[pick("sigh", "two")].ogg", 50, TRUE)
+		playsound(src, pick('sound/machines/buzz-sigh.ogg', 'sound/machines/buzz-two.ogg'), 50, TRUE)
 		return FALSE
 
 	var/list/mob/lucky_ghosts
@@ -491,7 +501,7 @@
 
 		if(length(lucky_ghosts) < generated_domain.mission_min_candidates)
 			notify_ghosts("Недостаточно кандидатов на роль [generated_domain.spawner_role]! Миссия отменена!")
-			playsound(src, "sound/machines/buzz-[pick("sigh", "two")].ogg", 50, TRUE)
+			playsound(src, pick('sound/machines/buzz-sigh.ogg', 'sound/machines/buzz-two.ogg'), 50, TRUE)
 			say("Ошибка! Не удалось загрузить продвинутых NPC. Попробуйте снова или выберите другой домен.")
 			COOLDOWN_START(src, polling_cooldown, POLLING_COOLDOWN_TIME)
 			return FALSE
@@ -502,6 +512,16 @@
 	generated_domain.load_advanced_npcs(lucky_ghosts)
 	RegisterSignal(generated_domain, COMSIG_LAZY_TEMPLATE_LOADED, PROC_REF(on_template_loaded))
 	generated_domain.lazy_load()
+
+	for(var/datum/turf_reservation/reservation as anything in generated_domain.reservations)
+		if(length(reservation.reserved_turfs))
+			var/turf/domain_turf = reservation.reserved_turfs[1]
+			var/domain_z = domain_turf ? domain_turf.z : 0
+			if(domain_z)
+				var/domain_z_key = "[domain_z]"
+				if(!(domain_z_key in GLOB.virtual_domain_z_levels))
+					GLOB.virtual_domain_z_levels[domain_z_key] = 0
+				GLOB.virtual_domain_z_levels[domain_z_key] += 1
 
 	return TRUE
 
@@ -547,6 +567,7 @@
 
 			new /obj/structure/hololadder(tile)
 
+	var/max_ghost_spawners = max(4, generated_domain.mission_max_candidates)
 	for(var/datum/turf_reservation/reservation as anything in generated_domain.reservations)
 		for(var/turf/tile as anything in reservation.reserved_turfs)
 			for(var/obj/effect/mob_spawn/human/virtual_domain/spawner in tile)
@@ -555,7 +576,10 @@
 				if(!generated_domain.announce_to_ghosts)
 					qdel(spawner)
 					continue
-				spawner.invisibility = 0
+				if(length(generated_domain.ghost_spawners) >= max_ghost_spawners)
+					qdel(spawner)
+					continue
+				spawner.invisibility = INVISIBILITY_ABSTRACT
 				spawner.density = FALSE
 				generated_domain.ghost_spawners += spawner
 
@@ -608,11 +632,24 @@
 	if(generated_domain)
 		generated_domain.ghost_spawners.Cut()
 		generated_domain.ghost_mobs.Cut()
+		generated_domain.custom_spawns.Cut()
+		generated_domain.disk_reward_spawned = FALSE
 
-	if(generated_domain && length(generated_domain.reservations))
-		var/datum/turf_reservation/res = generated_domain.reservations[1]
-		// Освобождение резервации может уснуть, поэтому не блокируем обработчик сигнала.
-		INVOKE_ASYNC(res, TYPE_PROC_REF(/datum/turf_reservation, Release))
+	if(generated_domain)
+		for(var/datum/turf_reservation/reservation as anything in generated_domain.reservations)
+			if(length(reservation.reserved_turfs))
+				var/turf/domain_turf = reservation.reserved_turfs[1]
+				var/domain_z = domain_turf ? domain_turf.z : 0
+				var/domain_z_key = "[domain_z]"
+				if(domain_z_key in GLOB.virtual_domain_z_levels)
+					var/domain_z_count = GLOB.virtual_domain_z_levels[domain_z_key]
+					if(domain_z_count <= 1)
+						GLOB.virtual_domain_z_levels -= domain_z_key
+					else
+						GLOB.virtual_domain_z_levels[domain_z_key] = domain_z_count - 1
+			INVOKE_ASYNC(reservation, TYPE_PROC_REF(/datum/turf_reservation, Release))
+		generated_domain.reservations.Cut()
+
 
 	var/list/creatures = spawned_threat_refs + mutation_candidate_refs
 	for(var/datum/weakref/creature_ref as anything in creatures)
@@ -670,12 +707,13 @@
 /obj/machinery/quantum_server/proc/generate_avatar(turf/destination, datum/outfit/netsuit, datum/preferences/prefs, load_loadout = FALSE, appearance_only = FALSE)
 	var/mob/living/carbon/human/avatar = new(destination)
 
-	if(!isnull(prefs))
+	if(!isnull(prefs) && !isnull(prefs.pref_species))
 		if(appearance_only)
 			prefs.copy_appearance_to(avatar)
 		else
 			prefs.copy_to(avatar)
 	ADD_TRAIT(avatar, TRAIT_CANNOT_CRYSTALIZE, "Bitrunning")
+	avatar.make_virtual_mob()
 	var/outfit_path = generated_domain.forced_outfit || netsuit
 	var/datum/outfit/to_wear = new outfit_path()
 
@@ -719,6 +757,14 @@
 		outfit_id.special_assignment = "bitavatar"
 		outfit_id.update_label()
 
+	avatar.AddComponent( \
+		/datum/component/simple_bodycam, \
+		camera_name = "bitrunner bodycam", \
+		c_tag = "Avatar [avatar.real_name]", \
+		network = BITRUNNER_CAMERA_NET, \
+		emp_proof = TRUE, \
+	)
+
 	return avatar
 
 /obj/machinery/quantum_server/proc/load_mob_segments()
@@ -744,6 +790,10 @@
 		var/list/mob_spawns = landmark.spawn_mobs(get_turf(landmark), segment)
 		if(length(mob_spawns))
 			mutation_candidate_refs += mob_spawns
+			for(var/datum/weakref/spawn_ref as anything in mob_spawns)
+				var/mob/living/spawned_mob = spawn_ref.resolve()
+				if(spawned_mob && !QDELETED(spawned_mob))
+					spawned_mob.AddComponent(/datum/component/virtual_entity, src)
 
 		qdel(landmark)
 		qdel(segment)
@@ -834,9 +884,10 @@
 			if(istype(creature, /mob/living/simple_animal/hostile/megafauna))
 				var/mob/living/simple_animal/hostile/megafauna/boss = creature
 				boss.make_virtual_megafauna()
-				continue
+			else
+				mutation_candidate_refs.Add(WEAKREF(creature))
 
-			mutation_candidate_refs.Add(WEAKREF(creature))
+			creature.AddComponent(/datum/component/virtual_entity, src)
 			continue
 
 		if(istype(thing, /obj/effect/mob_spawn/human/virtual_domain))
@@ -1079,17 +1130,19 @@
 	if(!length(exit_turfs))
 		return
 
-	if(retries_spent >= length(exit_turfs))
-		return
-
 	var/turf/exit_tile
 	for(var/turf/dest_turf in exit_turfs)
 		if(!locate(/obj/structure/hololadder) in dest_turf)
 			exit_tile = dest_turf
 			break
 
+	// Все выходы уже заняты голограммами — переиспользуем один из них.
+	// Иначе после нескольких подключений сервер навсегда отвечал "нет пропускной способности".
 	if(isnull(exit_tile))
-		return
+		return pick(exit_turfs)
+
+	if(retries_spent >= length(exit_turfs))
+		return pick(exit_turfs)
 
 	var/obj/structure/hololadder/wayout = new(exit_tile, src)
 	if(isnull(wayout))
@@ -1141,7 +1194,7 @@
 
 	person.equipOutfit(antag_datum.preview_outfit)
 
-	antag_datum.fix_agent_id()
+	antag_datum.fix_agent_id(FALSE)
 
 /obj/machinery/quantum_server/proc/sever_connections()
 	if(isnull(generated_domain) || !length(get_active_avatar_connections()))
@@ -1160,7 +1213,14 @@
 	var/datum/preferences/pref
 	var/load_loadout = FALSE
 	var/appearance_only = FALSE
-	var/obj/item/disk/bitrunning/prefs/prefdisk = locate() in neo.get_contents()
+	var/obj/item/disk/bitrunning/prefs/prefdisk
+	for(var/obj/item/disk/bitrunning/prefs/candidate in neo.get_contents())
+		if(candidate.loaded_preference)
+			prefdisk = candidate
+			break
+	if(isnull(prefdisk))
+		prefdisk = locate() in neo.get_contents()
+
 	if(prefdisk)
 		load_loadout = prefdisk.include_loadout
 		appearance_only = prefdisk.appearance_only

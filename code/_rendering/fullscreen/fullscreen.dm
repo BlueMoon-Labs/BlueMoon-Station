@@ -175,6 +175,9 @@
 		transform = matrix(actualview[1] / size_x, 0, 0, 0, actualview[2] / size_y, 0)
 	return ..()
 
+/atom/movable/screen/fullscreen/scaled/scope
+	icon_state = "scope"
+
 /atom/movable/screen/fullscreen/scaled/brute
 	icon_state = "brutedamageoverlay"
 	layer = UI_DAMAGE_LAYER

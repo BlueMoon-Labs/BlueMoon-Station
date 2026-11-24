@@ -52,10 +52,10 @@ export const AvatarHelp = (props) => {
   const { help_text = DEFAULT_HELP } = data;
 
   return (
-    <Window title="Информация о домене" width={600} height={600}>
+    <Window title="Информация о домене" width={700} height={700}>
       <Window.Content>
         <Stack fill vertical>
-          <Stack.Item grow>
+          <Stack.Item grow={2} basis={0} minHeight={9}>
             <Section
               color="good"
               fill
@@ -65,23 +65,23 @@ export const AvatarHelp = (props) => {
               {help_text}
             </Section>
           </Stack.Item>
-          <Stack.Item grow={4}>
+          <Stack.Item grow={5} basis={0}>
             <Stack fill vertical>
-              <Stack.Item grow>
+              <Stack.Item grow basis={0}>
                 <Stack fill>
                   {[0, 1].map((i) => (
                     <BoxHelp index={i} key={i} />
                   ))}
                 </Stack>
               </Stack.Item>
-              <Stack.Item grow>
+              <Stack.Item grow basis={0}>
                 <Stack fill>
                   {[2, 3].map((i) => (
                     <BoxHelp index={i} key={i} />
                   ))}
                 </Stack>
               </Stack.Item>
-              <Stack.Item grow>
+              <Stack.Item grow basis={0}>
                 <Stack fill>
                   {[4, 5].map((i) => (
                     <BoxHelp index={i} key={i} />
@@ -100,11 +100,11 @@ const BoxHelp = (props: { index: number }) => {
   const { index } = props;
 
   return (
-    <Stack.Item grow>
+    <Stack.Item grow basis={0}>
       <Section
         color="label"
         fill
-        minHeight={10}
+        minHeight={9}
         title={
           <Stack align="center">
             <Icon

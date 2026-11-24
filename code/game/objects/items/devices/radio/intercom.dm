@@ -143,7 +143,7 @@
 
 /obj/item/radio/intercom/can_receive(freq, level)
 	var/area/radio_area = get_area(src)
-	if(radio_area?.area_flags & RADIO_BLACKOUT)
+	if(radio_area?.area_flags & RADIO_BLACKOUT || is_virtual_domain(src))
 		return FALSE
 	if(!on)
 		return FALSE

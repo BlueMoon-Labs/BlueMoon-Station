@@ -241,7 +241,7 @@
 /turf/open/floor/light/colour_cycle/dancefloor_a,
 /area/virtual_domain/fullbright)
 "ml" = (
-/turf/template_noop,
+/turf/open/indestructible/bitrunning_transport,
 /area/virtual_domain/safehouse)
 "mq" = (
 /obj/structure/closet/secure_closet/freezer/kitchen,
@@ -287,7 +287,7 @@
 /turf/open/floor/wood,
 /area/virtual_domain/fullbright)
 "pr" = (
-/turf/template_noop,
+/turf/closed/indestructible/binary,
 /area/template_noop)
 "pC" = (
 /obj/machinery/computer/arcade/battle,
@@ -345,7 +345,7 @@
 /area/virtual_domain/fullbright)
 "sT" = (
 /obj/effect/baseturf_helper/virtual_domain,
-/turf/template_noop,
+/turf/open/indestructible/bitrunning_transport,
 /area/virtual_domain/safehouse)
 "tE" = (
 /obj/machinery/door/airlock/public/glass{
@@ -712,7 +712,7 @@
 /obj/modular_map_root/safehouse{
 	key = "mine"
 	},
-/turf/template_noop,
+/turf/open/indestructible/bitrunning_transport,
 /area/virtual_domain/safehouse)
 "FQ" = (
 /obj/structure/table/reinforced,

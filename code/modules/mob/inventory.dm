@@ -187,7 +187,7 @@
 	// (прод-раунд 9834). Сторона сброса такой гард уже имеет.
 	if(QDELETED(I))
 		return FALSE
-	if(ismob(src) && src.GetComponent(/datum/component/virtual_entity) && is_bitrunning_objective(I))
+	if(ismob(src) && src.GetComponent(/datum/component/virtual_entity) && is_protected_bitrunning_objective(I, src))
 		return FALSE
 	if(forced || can_put_in_hand(I, hand_index))
 		if(isturf(I.loc) && !ignore_anim)

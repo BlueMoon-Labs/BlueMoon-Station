@@ -29,6 +29,11 @@
 		var/mob/living/carbon/carbon_mob = owner.current
 		carbon_mob.make_virtual_mob()
 
+	if(ishuman(owner.current))
+		var/area/current_area = get_area(owner.current)
+		if(current_area?.area_flags & VIRTUAL_AREA)
+			grant_virtual_domain_access(owner.current)
+
 /datum/objective/bitrunning_glitch_fluff
 
 /datum/objective/bitrunning_glitch_fluff/New()
@@ -64,15 +69,18 @@
 	player.set_service_style()
 	player.equipOutfit(preview_outfit)
 	player.fully_replace_character_name(player.name, "Cyber Police [rand(100, 999)]")
-	fix_agent_id()
+	var/area/current_area = get_area(player)
+	fix_agent_id(current_area?.area_flags & VIRTUAL_AREA)
 
-/datum/antagonist/bitrunning_glitch/proc/fix_agent_id()
+/datum/antagonist/bitrunning_glitch/proc/fix_agent_id(virtual_domain = TRUE)
 	if(!ishuman(owner.current))
 		return
 
 	var/mob/living/carbon/human/player = owner.current
 
-	var/obj/item/card/id/outfit_id = player.wear_id
+	if(virtual_domain)
+		grant_virtual_domain_access(player)
+	var/obj/item/card/id/outfit_id = player.wear_id?.GetID()
 	if(isnull(outfit_id))
 		return
 
@@ -113,6 +121,14 @@
 	user.hair_style = "Business Hair"
 	user.update_hair()
 
+/datum/outfit/cyber_police/post_equip(mob/living/carbon/human/user, visuals_only)
+	. = ..()
+	var/obj/item/clothing/under/officer_uniform = user.w_uniform
+	if(istype(officer_uniform))
+		officer_uniform.has_sensor = NO_SENSORS
+		officer_uniform.sensor_mode = SENSOR_OFF
+		officer_uniform.sensor_mode_intended = SENSOR_OFF
+
 /datum/antagonist/bitrunning_glitch/cyber_tac
 	name = ROLE_CYBER_TAC
 	preview_outfit = /datum/outfit/cyber_police/tactical
@@ -147,6 +163,8 @@
 /datum/antagonist/domain_ghost_actor/on_gain()
 	. = ..()
 	owner.current.AddComponent(/datum/component/npc_friendly)
+	if(ishuman(owner.current))
+		grant_virtual_domain_access(owner.current)
 	forge_objectives()
 
 /datum/antagonist/domain_ghost_actor/proc/forge_objectives()

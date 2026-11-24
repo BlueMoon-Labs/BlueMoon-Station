@@ -209,6 +209,7 @@
 /obj/structure/closet/crate/freezer/blood
 	name = "blood freezer"
 	desc = "A freezer containing packs of blood."
+	icon = 'icons/obj/crates.dmi'
 	icon_state = "surgery"
 
 /obj/structure/closet/crate/freezer/blood/fake

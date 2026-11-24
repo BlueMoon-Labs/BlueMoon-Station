@@ -240,6 +240,7 @@
 	var/obj/item/card_sticker/sticker_prefix
 	var/obj/item/card_sticker/sticker_suffix
 	var/special_assignment = null // BLUEMOOD ADD для особых карт и их HUD, техническое
+	var/virtual_ghost_owned = FALSE
 
 /obj/item/card/id/Initialize(mapload)
 	. = ..()

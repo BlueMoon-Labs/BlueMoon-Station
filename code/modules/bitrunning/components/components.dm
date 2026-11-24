@@ -4,6 +4,7 @@
 	var/datum/weakref/old_mind_ref
 	var/datum/weakref/server_ref
 	var/datum/weakref/netpod_ref
+	var/datum/avatar_help_text/help_datum
 	var/nohit = TRUE
 	var/disconnecting = FALSE
 
@@ -29,6 +30,7 @@
 	server.avatar_connection_refs.Add(WEAKREF(src))
 
 	avatar.PossessByPlayer(old_body.key)
+	start_virtual_ambience(avatar)
 	ADD_TRAIT(avatar, TRAIT_NO_MINDSWAP, REF(src))
 	ADD_TRAIT(old_body, TRAIT_MIND_TEMPORARILY_GONE, REF(src))
 
@@ -45,10 +47,15 @@
 	RegisterSignal(avatar.mind, COMSIG_MIND_TRANSFERRED, PROC_REF(on_mind_transfer))
 #endif
 
-	if(!locate(/datum/action/avatar_domain_info) in avatar.actions)
-		var/datum/avatar_help_text/help_datum = new(help_text)
-		var/datum/action/avatar_domain_info/action = new(help_datum)
-		action.Grant(avatar)
+	var/datum/action/avatar_domain_info/help_action = locate() in avatar.actions
+	if(isnull(help_action))
+		help_datum = new(help_text)
+		help_action = new(help_datum)
+		help_action.Grant(avatar)
+	else
+		help_datum = help_action.target
+		if(help_datum && help_text)
+			help_datum.help_text = help_text
 
 	if(!locate(/datum/action/bitrunning_emergency_disconnect) in avatar.actions)
 		var/datum/action/bitrunning_emergency_disconnect/emergency_action = new()
@@ -189,7 +196,7 @@
 	nohit = FALSE
 
 /datum/component/avatar_connection/proc/apply_linked_damage(mob/living/carbon/old_body, damage, damage_type, def_zone, blocked)
-	if(QDELETED(src) || QDELETED(old_body))
+	if(QDELETED(src) || QDELETED(old_body) || disconnecting)
 		return
 
 	old_body.apply_damage(damage, damage_type, def_zone, blocked, wound_bonus = CANT_WOUND)
@@ -313,15 +320,18 @@
 	var/mob/living/old_body = old_body_ref?.resolve()
 	var/mob/living/avatar = parent
 
+	// Носителя уже нет — аватар не должен остаться трупом в домене/на станции.
+	if(isnull(old_mind) || isnull(old_body))
+		if(!QDELETED(avatar))
+			qdel(avatar)
+		return
+
 	var/mob/dead/observer/ghost = avatar.ghostize()
 	if(isnull(ghost))
 		ghost = avatar.get_ghost()
 
 	if(isnull(ghost))
 		CRASH("[src], принадлежащий [parent], не смог найти призрака для возвращения в тело!")
-
-	if(isnull(old_mind) || isnull(old_body))
-		return
 
 	ghost.mind = old_mind
 	if(old_body.stat != DEAD)
@@ -587,6 +597,36 @@
 		player.set_faction(previous_factions)
 	return ..()
 
+/datum/component/heretic_sacrifice
+	var/datum/weakref/domain_ref
+	var/points_value = 1
+
+/datum/component/heretic_sacrifice/Initialize(datum/lazy_template/virtual_domain/heretic_hunt/domain, points_value = 1)
+	if(!ishuman(parent))
+		return COMPONENT_INCOMPATIBLE
+
+	domain_ref = WEAKREF(domain)
+	src.points_value = points_value
+	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
+
+/datum/component/heretic_sacrifice/proc/on_moved(datum/source)
+	SIGNAL_HANDLER
+
+	var/mob/living/carbon/human/body = parent
+	var/obj/effect/heretic_rune/big/rune = locate() in body.loc
+	if(isnull(rune))
+		return
+
+	var/datum/lazy_template/virtual_domain/heretic_hunt/domain = domain_ref?.resolve()
+	if(domain)
+		domain.add_points(points_value)
+
+	body.balloon_alert_to_viewers("жертва принята")
+	rune.visible_message(span_notice("Руна вспыхивает, принимая жертву."))
+	playsound(rune, 'sound/magic/CastSummon.ogg', 50, TRUE, extrarange = SILENCED_SOUND_EXTRARANGE)
+	body.gib()
+	qdel(src)
+
 // Виртуальные сущности не могут входить в защищённые зоны.
 /datum/component/virtual_entity
 	COOLDOWN_DECLARE(OOB_cooldown)
@@ -596,6 +636,13 @@
 		jailbreak_mobs()
 		qdel(src)
 		return COMPONENT_INCOMPATIBLE
+
+	var/atom/movable/movable_parent = parent
+	var/area/current_area = get_area(movable_parent)
+	if(current_area && (current_area.area_flags & VIRTUAL_SAFE_AREA))
+		var/turf/destination = get_nearest_non_safe_turf(get_turf(movable_parent))
+		if(destination)
+			movable_parent.forceMove(destination)
 
 	RegisterSignal(parent, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(on_parent_pre_move))
 	RegisterSignal(quantum_server, COMSIG_ATOM_EMAG_ACT, PROC_REF(on_emagged))

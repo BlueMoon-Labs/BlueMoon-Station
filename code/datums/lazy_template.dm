@@ -122,6 +122,19 @@ GLOBAL_VAR_INIT(lazy_template_atoms_initializing, FALSE)
 		// чтобы их ландмарки выхода и кэша успели зарегистрироваться.
 		load_queued_map_modules()
 
+	for(var/turf/turf as anything in reservation.reserved_turfs)
+		if(QDELETED(turf))
+			continue
+		var/area/turf_area = get_area(turf)
+		if(!turf_area)
+			continue
+		if(IS_DYNAMIC_LIGHTING(turf_area))
+			turf.lighting_build_overlay()
+		else
+			turf.lighting_clear_overlay()
+		turf.update_fullbright_overlay(turf_area)
+		CHECK_TICK
+
 	// Домены грузятся на зарезервированный z-уровень. Некоторые турфы
 	// (например /turf/open/water) несут атмосферу Лаваленда и иначе
 	// высосали бы воздух всего домена.

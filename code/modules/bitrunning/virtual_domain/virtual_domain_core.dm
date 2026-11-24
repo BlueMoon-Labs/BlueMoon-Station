@@ -82,12 +82,6 @@
 		/mob/living/simple_animal/hostile/syndicate/melee,
 	)
 
-/datum/modular_mob_segment/abductor_agents
-	mobs = list(
-		/mob/living/simple_animal/hostile/syndicate/melee,
-		/mob/living/simple_animal/hostile/syndicate/ranged,
-	)
-
 /datum/modular_mob_segment/syndicate_elite
 	mobs = list(
 		/mob/living/simple_animal/hostile/syndicate/melee,
@@ -234,6 +228,7 @@
 	var/desc = "Карта."
 	var/difficulty = BITRUNNER_DIFFICULTY_NONE
 	var/help_text
+	var/list/ambient_sounds
 	var/name = "Virtual Domain"
 	var/reward_points = BITRUNNER_REWARD_MIN
 	var/domain_flags = NONE

@@ -234,8 +234,14 @@
 		return
 	if(kinetic_gun)
 		var/list/mods = kinetic_gun.modkits
+		for(var/obj/item/borg/upgrade/modkit/human_passthrough/passthrough in mods)
+			if(passthrough.projectile_prehit(src, target, kinetic_gun) == PROJECTILE_PIERCE_PHASE)
+				return PROJECTILE_PIERCE_PHASE
 		for(var/obj/item/borg/upgrade/modkit/modkit in mods)
-			modkit.projectile_prehit(src, target, kinetic_gun)
+			if(istype(modkit, /obj/item/borg/upgrade/modkit/human_passthrough))
+				continue
+			if(modkit.projectile_prehit(src, target, kinetic_gun) == PROJECTILE_PIERCE_PHASE)
+				return PROJECTILE_PIERCE_PHASE
 	if(ignores_pressure_penalty)
 		return
 	var/hit_turf = get_turf(target)
@@ -363,6 +369,18 @@
 
 //use this one for effects you want to trigger before any damage is done at all and before damage is decreased by pressure
 /obj/item/borg/upgrade/modkit/proc/projectile_prehit(obj/item/projectile/kinetic/K, atom/target, obj/item/gun/energy/kinetic_accelerator/KA)
+// Позволяет пробивать союзников, не нанося им урон.
+/obj/item/borg/upgrade/modkit/human_passthrough
+	name = "human passthrough"
+	desc = "Позволяет снарядам кинетического ускорителя проходить сквозь людей, не нанося им урона."
+	denied_type = /obj/item/borg/upgrade/modkit/human_passthrough
+	incompatible_modkits = list(/obj/item/borg/upgrade/modkit/minebot_passthrough)
+	cost = 0
+
+/obj/item/borg/upgrade/modkit/human_passthrough/projectile_prehit(obj/item/projectile/kinetic/K, atom/target, obj/item/gun/energy/kinetic_accelerator/KA)
+	if(ishuman(target))
+		return PROJECTILE_PIERCE_PHASE
+
 //use this one for effects you want to trigger before mods that do damage
 /obj/item/borg/upgrade/modkit/proc/projectile_strike_predamage(obj/item/projectile/kinetic/K, turf/target_turf, atom/target, obj/item/gun/energy/kinetic_accelerator/KA)
 //and this one for things that don't need to trigger before other damage-dealing mods
@@ -483,8 +501,9 @@
 //Minebot passthrough
 /obj/item/borg/upgrade/modkit/minebot_passthrough
 	name = "minebot passthrough"
-	desc = "Causes kinetic accelerator shots to pass through minebots."
+	desc = "Позволяет снарядам кинетического ускорителя проходить сквозь шахтёрских дронов."
 	denied_type = /obj/item/borg/upgrade/modkit/minebot_passthrough // If you have something cost zero, you can keep adding forever, why
+	incompatible_modkits = list(/obj/item/borg/upgrade/modkit/human_passthrough)
 	cost = 0
 
 //Tendril-unique modules
