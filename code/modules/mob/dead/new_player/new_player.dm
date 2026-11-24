@@ -562,6 +562,7 @@
 	client.prefs.apply_persistent_scars(H)
 
 	client.prefs.copy_to(H, initial_spawn = TRUE)
+	client.prefs.apply_persistent_nif(H)
 
 	// BLUEMOON ADD START - загрузка татуировок (после copy_to, чтобы regenerate_limbs() не уничтожил данные)
 	client.prefs.apply_tattoos_to_human(H)

@@ -508,6 +508,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/scars_list = list("1" = "", "2" = "", "3" = "", "4" = "", "5" = "")
 	/// Which of the 5 persistent scar slots we randomly roll to load for this round, if enabled. Actually rolled in [/datum/preferences/proc/load_character(slot)]
 	var/scars_index = 1
+	/// JSON-safe state for the persistent NIF organ and its installed programs.
+	var/list/nif_persistent_data = list()
 
 	var/hide_ckey = FALSE //pref for hiding if your ckey shows round-end or not
 

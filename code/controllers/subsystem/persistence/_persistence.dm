@@ -91,6 +91,7 @@ SUBSYSTEM_DEF(persistence)
 	SavePhotoPersistence()						//THIS IS PERSISTENCE, NOT THE LOGGING PORTION.
 	SavePaintings()
 	SaveScars()
+	SaveNIFs()
 
 /**
  * Loads persistent data relevant to the current map: Objects, etc.
@@ -377,6 +378,22 @@ SUBSYSTEM_DEF(persistence)
 		if(!ending_human.client)
 			return
 		ending_human.client.prefs.save_character()
+
+/// Saves the active character's NIF state at round end. Only the original living body can carry it forward.
+/datum/controller/subsystem/persistence/proc/SaveNIFs()
+	for(var/i in GLOB.joined_player_list)
+		var/mob/living/carbon/human/ending_human = get_mob_by_ckey(i)
+		if(!istype(ending_human) || !ending_human.mind || !ending_human.client || !ending_human.client.prefs)
+			continue
+
+		var/datum/preferences/prefs = ending_human.client.prefs
+		var/mob/living/carbon/human/original_human = ending_human.mind.original_character?.resolve()
+		var/obj/item/organ/cyberimp/brain/nif/implant = ending_human.getorganslot(ORGAN_SLOT_BRAIN_NIF)
+		if(original_human && original_human.stat != DEAD && original_human == ending_human && istype(implant) && implant.nif_persistence)
+			prefs.nif_persistent_data = implant.get_persistent_data()
+		else
+			prefs.nif_persistent_data = list()
+		prefs.save_character()
 
 /datum/controller/subsystem/persistence/proc/SaveTCGCards()
 	for(var/i in GLOB.joined_player_list)
