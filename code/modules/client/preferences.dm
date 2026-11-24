@@ -949,6 +949,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	list("id" = "subdermal_armor", "label" = "Подкожная броня", "desc" = "Композитные пластины под кожей: снижают урон от ближнего боя, пуль и лазеров.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/subdermal_armor, "organ" = TRUE),
 	list("id" = "reinforced_skeleton", "label" = "Усиленный скелет", "desc" = "Углеродный эндоскелет: увеличивает запас здоровья.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/reinforced_skeleton, "organ" = TRUE),
 	list("id" = "nutriment_pump", "label" = "Питательный насос", "desc" = "Синтезирует небольшую порцию питательных веществ в кровь при голоде.", "cost" = 1, "path" = /obj/item/organ/cyberimp/chest/nutriment, "organ" = TRUE),
+	list("id" = "nif_standart", "label" = "NIF стандартного типа", "desc" = "Мозговой имплант, который запускает программы NIFSoft.", "cost" = 1, "path" = /obj/item/organ/cyberimp/brain/nif, "organ" = TRUE)
 ))
 
 /datum/preferences/proc/body_mod_organ_group(slot)
