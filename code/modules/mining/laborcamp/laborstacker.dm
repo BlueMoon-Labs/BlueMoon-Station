@@ -33,6 +33,14 @@ GLOBAL_LIST(labor_sheet_values)
 /proc/cmp_sheet_list(list/a, list/b)
 	return a["value"] - b["value"]
 
+/obj/machinery/mineral/labor_claim_console/Destroy()
+	if(stacking_machine)
+		if(stacking_machine.CONSOLE == src)
+			stacking_machine.CONSOLE = null
+		stacking_machine = null
+	QDEL_NULL(Radio)
+	return ..()
+
 /obj/machinery/mineral/labor_claim_console/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
@@ -61,7 +69,10 @@ GLOBAL_LIST(labor_sheet_values)
 	if(istype(I, /obj/item/card/id/prisoner))
 		var/obj/item/card/id/prisoner/P = I
 		data["id_points"] = P.points
-		if(P.points >= P.goal)
+
+		if(P.goal <= 0)
+			data["status_info"] = "У вас нет установленной цели."
+		else if(P.points >= P.goal)
 			can_go_home = TRUE
 			data["status_info"] = "Цель достигнута!"
 		else
@@ -83,31 +94,42 @@ GLOBAL_LIST(labor_sheet_values)
 	if(.)
 		return
 
+	if(!Adjacent(usr))
+		return FALSE
+
 	var/mob/M = usr
 	switch(action)
 		if("claim_points")
 			if(!stacking_machine)
 				to_chat(M, "<span class='alert'>Ошибка: Устройство для сдачи руды не найдено.</span>")
-				return
+				return FALSE
 
 			var/obj/item/card/id/I
 			if(isliving(M))
 				var/mob/living/L = M
 				I = L.get_idcard(TRUE)
 
-			if(istype(I, /obj/item/card/id/prisoner))
-				var/obj/item/card/id/prisoner/P = I
-				P.points += stacking_machine.points
-				stacking_machine.points = 0
-				to_chat(M, "<span class='notice'>Очки успешно переведены на ID-карту.</span>")
-				return TRUE
-			else
+			if(!istype(I, /obj/item/card/id/prisoner))
 				to_chat(M, "<span class='alert'>Не обнаружена действительная ID-карта для перевода очков.</span>")
+				return FALSE
+
+			var/obj/item/card/id/prisoner/P = I
+			if(P.goal <= 0)
+				to_chat(M, "<span class='alert'>У вас нет установленной цели, очки не могут быть зачислены.</span>")
+				return FALSE
+			if(stacking_machine.points <= 0)
+				to_chat(M, "<span class='alert'>Нет очков для зачисления.</span>")
+				return FALSE
+
+			P.points += stacking_machine.points
+			stacking_machine.points = 0
+			to_chat(M, "<span class='notice'>Очки успешно переведены на ID-карту.</span>")
+			return TRUE
 
 		if("move_shuttle")
 			if(!alone_in_area(get_area(src), M))
 				to_chat(M, "<span class='alert'>Заключенным разрешено вызывать шаттл только находясь в одиночестве.</span>")
-				return
+				return FALSE
 
 			var/can_go_home = FALSE
 			if(obj_flags & EMAGGED)
@@ -117,17 +139,17 @@ GLOBAL_LIST(labor_sheet_values)
 				if(isliving(M))
 					var/mob/living/L = M
 					I = L.get_idcard(TRUE)
-
 				if(istype(I, /obj/item/card/id/prisoner))
 					var/obj/item/card/id/prisoner/P = I
-					if(P.points >= P.goal)
+					if(P.goal > 0 && P.points >= P.goal)
 						can_go_home = TRUE
 
 			if(!can_go_home)
 				to_chat(M, "<span class='alert'>Вы не выполнили свою квоту по добыче руды и не можете вызвать шаттл!</span>")
-				return
+				return FALSE
 
-			switch(SSshuttle.moveShuttle("laborcamp", "laborcamp_home", TRUE))
+			var/call_result = SSshuttle.moveShuttle("laborcamp", "laborcamp_home", TRUE)
+			switch(call_result)
 				if(1)
 					to_chat(M, "<span class='alert'>Шаттл не найден.</span>")
 				if(2)
@@ -137,21 +159,27 @@ GLOBAL_LIST(labor_sheet_values)
 				else
 					if(!(obj_flags & EMAGGED))
 						Radio.set_frequency(FREQ_SECURITY)
-
 						for(var/mob/Mob in GLOB.player_list)
 							if(Mob.client)
 								SEND_SOUND(Mob, sound('sound/misc/notice2.ogg'))
-
 						var/loud_msg = "<h2><span class='alert'>ВНИМАНИЕ! Заключенный возвращается на станцию! Минералы и ID-карта готовы к изъятию!</span></h2>"
 						Radio.talk_into(src, loud_msg, FREQ_SECURITY)
+
 					if(ishuman(M))
 						var/mob/living/carbon/human/H = M
+
 						if(!isnull(GLOB.data_core.security))
 							for(var/r in GLOB.data_core.security)
 								var/datum/data/record/R = r
 								if(R.fields["name"] == H.real_name)
 									R.set_security_status(SEC_RECORD_STATUS_RELEASED)
 									break
+
+						var/obj/item/card/id/I = H.get_idcard(TRUE)
+						if(istype(I, /obj/item/card/id/prisoner))
+							var/obj/item/card/id/prisoner/P = I
+							P.points = 0
+							P.goal = 0
 
 					to_chat(M, "<span class='notice'>Сообщение получено. Шаттл будет отправлен в ближайшее время.</span>")
 					return TRUE
@@ -178,26 +206,55 @@ GLOBAL_LIST(labor_sheet_values)
 	var/points = 0
 
 /obj/machinery/mineral/stacking_machine/laborstacker/process_sheet(obj/item/stack/sheet/inp)
+	if(QDELETED(inp))
+		return
+
+	var/silo_available    = materials?.silo && !materials.on_hold()
+	var/console_available = CONSOLE ? TRUE : FALSE
+
+	if(!silo_available && !console_available)
+		return
+
 	points += inp.point_value * inp.amount
-	return ..()
+
+	if(silo_available)
+		var/matlist = inp.custom_materials & materials.mat_container.materials
+		if (length(matlist))
+			var/sheet_count = inp.amount
+			materials.mat_container.insert_item(inp)
+			materials.silo_log(src, "collected", sheet_count, "sheets", matlist)
+			qdel(inp)
+			return
+
+	var/key = inp.merge_type
+	var/obj/item/stack/sheet/storage = stack_list[key]
+	if(!storage)
+		stack_list[key] = storage = new key(src, 0)
+	storage.amount += inp.amount
+	qdel(inp)
 
 /obj/machinery/mineral/stacking_machine/laborstacker/attackby(obj/item/I, mob/living/user, params)
 	if(istype(I, /obj/item/stack/ore))
 		to_chat(user, "<span class='warning'>[src] не принимает необработанную руду! Сначала переплавьте её.</span>")
 		return
 
-	if(istype(I, /obj/item/stack/sheet) && user.canUnEquip(I) && user.a_intent == INTENT_HELP)
+	if(istype(I, /obj/item/stack/sheet) && user.a_intent == INTENT_HELP && user.canUnEquip(I))
 		var/obj/item/stack/sheet/inp = I
-		var/added_points = inp.point_value * inp.amount
+		var/silo_available    = materials?.silo && !materials.on_hold()
+		var/console_available = CONSOLE ? TRUE : FALSE
 
-		if(added_points <= 0)
+		if(!silo_available && !console_available)
+			to_chat(user, "<span class='warning'>[src] не подключена ни к хранилищу, ни к консоли — принимать материалы некуда.</span>")
+			return
+
+		if(inp.point_value <= 0)
 			to_chat(user, "<span class='warning'>[src] не принимает эти материалы.</span>")
 			return
 
-		points += added_points
-		to_chat(user, span_notice("Вы загрузили [inp.name] в машину. Начислено очков: [added_points]."))
-		inp.use(inp.amount)
-
+		var/added      = inp.point_value * inp.amount
+		var/sheet_name = inp.name
+		process_sheet(inp)
+		to_chat(user, span_notice("Вы загрузили [sheet_name] в машину. Начислено очков: [added]."))
 		return
 
 	return ..()
