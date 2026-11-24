@@ -178,30 +178,12 @@
 	var/NVD_price = PRICE_REALLY_EXPENSIVE // цена покупки рецепта не имея правильных квирков
 	var/NVD_suspicious = 5 // шанс, что не имея правильных квирков рецепт при использовании выдаст штраф за кантробанду (подделку документов)
 	subcategory = LOADOUT_SUBCATEGORY_BACKPACK_GENERAL
-	path = /obj/item/card/voucher
+	path = /obj/item/card/voucher_blank
 
-/datum/gear/backpack/prescription/on_spawn(mob/living/carbon/human/user, obj/item/card/voucher/I)
+/datum/gear/backpack/prescription/on_spawn(mob/living/carbon/human/user, obj/item/card/voucher_blank/I)
 	if(!istype(user))
 		return
-	addtimer(CALLBACK(src, PROC_REF(handle_late_spawn), user, I), 1 SECONDS)
-
-/datum/gear/backpack/prescription/proc/handle_late_spawn(mob/living/carbon/human/user, obj/item/card/voucher/I)
-	if(isnull(I) || isnull(user))
-		return
-	var/I_loc = I.loc
-	qdel(I) // заглушка которая должная умереть
-	var/counterfeit = TRUE
-	for(var/quirk in base_valid_traits)
-		if(HAS_TRAIT(user, quirk))
-			counterfeit = FALSE
-			break
-
-	if(!counterfeit && prob(base_fortune_delivery))
-		new received_product(I_loc)
-		return
-
-	var/used_price = counterfeit ? NVD_price : base_price
-	new path(I_loc, received_product, used_price, NVD_suspicious)
+	addtimer(CALLBACK(I, TYPE_PROC_REF(/obj/item/card/voucher_blank, handle_registration), user, base_price, base_valid_traits, base_fortune_delivery, received_product, NVD_price, NVD_suspicious), 30 SECONDS)
 
 /datum/gear/backpack/prescription/psicodine
 	name = "Psicodine pill bottle prescription"

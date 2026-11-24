@@ -49,81 +49,66 @@ GLOBAL_LIST_INIT(valid_slimecross, get_existing_slimecross_types())
 
 /datum/bounty/item/slime/crossbreeded/New()
 	..()
-	// Проверям экстракты на его свойства вместо типа как айтема
-	var/slimetype = pick(GLOB.valid_slimecross)
-	var/slimedata = GLOB.valid_slimecross[slimetype]
-	target_colour = slimedata["colour"]
-	target_effect = slimedata["effect"]
+	set_target(pick(GLOB.valid_slimecross))
 
-	var/colour_name = capitalize(target_colour)
-	var/effect_name = capitalize(target_effect)
-	name = "[colour_name] [effect_name] Slime Extr."
-	description = "Nanotrasen's science lead is hunting for the rare and exotic [name]. A bounty has been offered for finding it."
-
-	var/color_rarity = get_slimecross_rarity(slimetype)
-	switch(color_rarity)
-		if ("common")
+/// Заказ на скрещённый экстракт того же цвета и эффекта, что у crossbreed_type.
+/datum/bounty/item/slime/crossbreeded/proc/set_target(obj/item/slimecross/crossbreed_type)
+	target_colour = initial(crossbreed_type.colour)
+	target_effect = initial(crossbreed_type.effect)
+	name = "[capitalize(target_colour)] [capitalize(target_effect)] Slime Extr."
+	description = "Научному руководству NT нужен редкий скрещённый экстракт [name]."
+	if(target_effect == "self-sustaining")
+		description += " Самоподдерживающийся экстракт сразу делится на четыре доли: отправьте любую."
+	switch(get_slimecross_rarity(crossbreed_type))
+		if("common")
 			reward = 7200 + round(rand(0, 2000), 100)
-		if ("rare")
+		if("rare")
 			reward = 9500 + round(rand(0, 4000), 100)
-		if ("highest")
+		if("highest")
 			reward = 13000 + round(rand(0, 2000), 100)
 		else
 			reward = 5000
 
 /datum/bounty/item/slime/crossbreeded/applies_to(obj/O)
+	var/obj/item/autoslime/split = O
+	if(istype(split))
+		return target_effect == "self-sustaining" && istype(split.extract, econ_selfsustaining_extract(target_colour))
 	if(!istype(O, /obj/item/slimecross))
 		return FALSE
 	var/obj/item/slimecross/S = O
-	if(!S.colour || !S.effect)
-		return FALSE
-	if(S.colour != target_colour)
-		return FALSE
-	if(S.effect != target_effect)
-		return FALSE
+	return S.colour == target_colour && S.effect == target_effect
 
-	return TRUE
+/// Экстракт, который лежит в самоподдерживающихся долях скрещённого экстракта цвета colour.
+/proc/econ_selfsustaining_extract(colour)
+	for(var/obj/item/slimecross/selfsustaining/crossbreed_type as anything in subtypesof(/obj/item/slimecross/selfsustaining))
+		if(initial(crossbreed_type.colour) == colour)
+			return initial(crossbreed_type.extract_type)
 ////////////////////////////////////////////////////////////
 
-/// Прок для расчёта выше комбинаций экстрактов по цвету и виду.
-/// 22*11 = 242, но у нас нет 242 видов скрещённых экстрактов. Прок будет это фильтровать.
+/// Скрещённые экстракты, которые даёт слайм: цвет есть у слаймов, эффект - у экстрактов, и каждая пара цвета и эффекта один раз.
+/// Самоподдерживающийся экстракт при создании делится на четыре, поэтому типы читаются через initial(), без экземпляров.
 /proc/get_existing_slimecross_types()
-	var/static/list/blacklisted_parentals = list(
-			/obj/item/slimecross,
-			/obj/item/slimecross/stabilized,
-			/obj/item/slimecross/selfsustaining,
-			/obj/item/slimecross/charged,
-			/obj/item/slimecross/burning,
-			/obj/item/slimecross/chilling,
-			/obj/item/slimecross/consuming,
-			/obj/item/slimecross/industrial,
-			/obj/item/slimecross/prismatic,
-			/obj/item/slimecross/recurring,
-			/obj/item/slimecross/reproductive,
-			/obj/item/slimecross/regenerative,
-		)
+	var/list/effects = list()
+	for(var/obj/item/slime_extract/extract_type as anything in subtypesof(/obj/item/slime_extract))
+		if(initial(extract_type.effectmod))
+			effects[initial(extract_type.effectmod)] = TRUE
 	var/list/valid_types = list()
-	for (var/T in typesof(/obj/item/slimecross))
-		if (T in blacklisted_parentals) // Нам не нужны в учёте родительские объекты кросс экстрактов
+	var/list/seen = list()
+	for(var/obj/item/slimecross/crossbreed_type as anything in subtypesof(/obj/item/slimecross))
+		var/colour = initial(crossbreed_type.colour)
+		var/effect = initial(crossbreed_type.effect)
+		if(!effects[effect] || !(replacetext(colour, " ", "") in SLIME_COLORS) || seen["[colour]|[effect]"])
 			continue
-
-		var/obj/item/slimecross/slime_temporal = new T() // Мы создаём временный объект, чтобы извлечь его переменные
-		if (!slime_temporal.name || !slime_temporal.effect || !slime_temporal.colour || findtext(slime_temporal.name, "slimecross"))
-			qdel(slime_temporal) // Разгрузка памяти
-			continue
-		valid_types[T] = list( // И извлекаем эти перемнные тут
-			"name" = slime_temporal.name,
-			"effect" = slime_temporal.effect,
-			"colour" = slime_temporal.colour
+		seen["[colour]|[effect]"] = TRUE
+		valid_types[crossbreed_type] = list(
+			"name" = "[effect] [colour] extract",
+			"effect" = effect,
+			"colour" = colour,
 		)
-		qdel(slime_temporal) // Разгрузка памяти
-
 	return valid_types
 
-/proc/get_slimecross_rarity(var/slimetypepath)
-	var/obj/item/slimecross/slime_temporal = new slimetypepath() // аналогично выше, но теперь цвет
-	var/color = slime_temporal.colour
-	qdel(slime_temporal) // Разгрузка памяти
+/proc/get_slimecross_rarity(obj/item/slimecross/slimetypepath)
+	var/color = replacetext(initial(slimetypepath.colour), " ", "")
 	if (color in COMMON_SLIME_COLORS)
 		return "common"
 	if (color in RARE_SLIME_COLORS)

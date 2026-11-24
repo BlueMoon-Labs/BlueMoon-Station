@@ -302,6 +302,7 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 			"wealth" = round(partner.wealth),
 			"next_unlock" = econ_partner_unlock_text(partner),
 			"embargo_minutes" = partner.embargoed() ? CEILING((partner.embargo_until - world.time) / (1 MINUTES) - 0.001, 1) : 0,
+			"offers_slowed" = partner.offers_ignored > 0,
 			"buys" = jointext(buys, ", "),
 			"sells" = jointext(sells, ", "),
 		))
@@ -346,7 +347,9 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 	var/list/auction = econ_auction_ui_data(econ_account_of(user))
 	for(var/key in auction)
 		data[key] = auction[key]
-	data["bundles"] = econ_bundles_ui_data()
+	data["bundles"] = econ_bundles_ui_data(user)
+	data["bundle_gap"] = "[round(BUNDLE_GAP_MIN / (1 MINUTES))]-[round(BUNDLE_GAP_MAX / (1 MINUTES))]"
+	data["bundle_first"] = round(BUNDLE_DEPARTMENT_FIRST / (1 MINUTES))
 	data["special_offers"] = list()
 	for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
 		if(econ_partner_visible(offer.get_partner(), show_contraband))
@@ -379,11 +382,12 @@ GLOBAL_DATUM_INIT(econ_cargo_prices, /datum/econ_cargo_prices, new)
 	var/uid = params["uid"]
 	if(istext(uid))
 		uid = text2num(uid)
-	var/error = SSmarket.place_auction_bid(econ_account_of(user), amount, user, uid)
+	var/datum/auction_lot/lot = SSmarket.find_auction_lot(uid)
+	var/error = SSmarket.place_auction_bid(econ_account_of(user), amount, user, uid, !!params["outbid"])
 	if(error)
 		to_chat(user, span_warning(error))
 		return FALSE
-	speaker.say("Ставка принята: [amount] кр.")
+	speaker.say("Ставка принята: [lot.bid] кр.")
 	return TRUE
 
 /// Покупка лота экипажа сразу из окна снабжения с личного счёта; где ждать посылку, говорит окно и карта.

@@ -124,6 +124,10 @@
 /// initializing = TRUE только из Initialize: датчики турфов там ещё не
 /// зарегистрированы и пересматривать нечего, а группа файрлоков ещё не собрана.
 /obj/machinery/door/firedoor/proc/CalculateAffectingAreas(initializing = FALSE)
+	// Модуль карты, догруженный до SSatoms, зовёт AfterChange по своей рамке: без
+	// Initialize ещё нет ни кэша типов для группы, ни подписок, а зоны он посчитает сам.
+	if(!(flags_1 & INITIALIZED_1))
+		return
 	remove_from_areas()
 	affecting_areas = get_adjacent_open_areas(src) | get_base_area(src)
 	for(var/I in affecting_areas)

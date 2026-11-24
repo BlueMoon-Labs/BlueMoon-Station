@@ -14,8 +14,10 @@
 	worker.department_id = ACCOUNT_SRV
 	worker.pay_grade = PAY_GRADE_EASY
 	var/before = department.account.account_balance
+	econ_test_set_balance(department.account, 0)
 	department.grant()
-	var/with_one = department.account.account_balance - before
+	var/with_one = department.account.account_balance
+	econ_test_set_balance(department.account, before)
 	qdel(worker)
 	var/datum/economy_settings/settings = SSeconomy.settings
 	var/expected_min = settings.grant_base + round(settings.wages[PAY_GRADE_EASY] * settings.grant_payroll_share / 100 / settings.payroll_interval_ticks)

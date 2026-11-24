@@ -31,6 +31,8 @@ GLOBAL_LIST_INIT(econ_slime_extract_value, list(
 	head_access = list(ACCESS_RD)
 	/// Цвета экстрактов, уже оплаченных в этом раунде
 	var/list/extracts_seen = list()
+	/// Модели мехов, сборка которых уже оплачена в этом раунде
+	var/list/mechs_seen = list()
 	/// world.time начала часового окна гранта на исследования
 	var/grant_window_start = 0
 	var/grant_points_in_window = 0
@@ -46,6 +48,38 @@ GLOBAL_LIST_INIT(econ_slime_extract_value, list(
 	var/value = GLOB.econ_slime_extract_value[colour]
 	if(value)
 		SSeconomy.record_work(id, WORK_SCI_SLIME_DISCOVERY, value, performer, memo = "Новый экстракт: [colour]")
+
+/// Первый за смену собранный на станции мех каждой модели оплачивается науке.
+/datum/economy_department/science/proc/note_mech(obj/vehicle/sealed/mecha/mech, mob/builder)
+	if(mechs_seen[mech.type] || !econ_on_station(mech))
+		return
+	if(SSeconomy.record_work(id, WORK_SCI_MECH, 1, builder, memo = "Сборка меха: [mech.name]"))
+		mechs_seen[mech.type] = TRUE
+
+/datum/economy_department/science/spending_advice()
+	return list(
+		"Ксенобиология платит отделу за каждый новый цвет экстракта: слаймам нужны обезьяны.",
+		"Детали робототехники и посуда для химии идут на исследования, а изученные узлы тоже оплачиваются.",
+	)
+
+/datum/economy_department/science/situational_needs()
+	. = list()
+	var/slimes = 0
+	for(var/mob/living/simple_animal/slime/slime in GLOB.mob_living_list)
+		var/turf/slime_turf = get_turf(slime)
+		if(slime.stat != DEAD && slime_turf && is_station_level(slime_turf.z))
+			slimes++
+	if(slimes)
+		.[/datum/supply_pack/science/monkey] = "Слаймов на станции: [slimes], их кормят обезьянами"
+	else
+		.[/datum/supply_pack/department/science_xenobio] = "Слаймов нет: ксенобиология стоит без дела"
+
+/datum/economy_department/science/everyday_needs()
+	return list(
+		/datum/supply_pack/science/monkey = "Обезьяньи кубики для ксенобиологии и генетики",
+		/datum/supply_pack/science/robotics = "Детали для киборгов и мехов",
+		/datum/supply_pack/science/beakers = "Посуда для химии",
+	)
 
 /proc/econ_node_points(datum/techweb_node/node, datum/techweb/web)
 	. = 0

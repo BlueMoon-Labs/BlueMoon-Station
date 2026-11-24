@@ -11,6 +11,7 @@
 			"icon" = "utensils",
 			"products" = list(
 				/obj/item/storage/bag/tray = 8,
+				/obj/item/storage/bag/tray/room_service = 2,
 				/obj/item/clothing/suit/apron/chef = 2,
 				/obj/item/kitchen/knife = 6,
 				/obj/item/kitchen/efink = 2,

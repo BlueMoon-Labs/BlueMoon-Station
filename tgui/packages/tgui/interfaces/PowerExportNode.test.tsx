@@ -26,6 +26,17 @@ const base: PowerExportNodeData = {
   demand_floor_percent: 20,
   demand_recovery_percent: 10,
   shift_minutes: 5,
+  budget: 4200,
+  budget_cap: 10000,
+  cap_share: 80,
+  economy_minutes: 5,
+  staple_cap: 6000,
+  pack_count: 24,
+  pack_examples: [
+    { name: 'Insulated Gloves', price: 800 },
+    { name: 'Solar Panel Crate', price: 2500 },
+    { name: 'Supermatter Shard', price: 9000 },
+  ],
 };
 
 const setup = (data: Partial<PowerExportNodeData> = {}) => {
@@ -90,4 +101,29 @@ test('без кабеля и с открытой панелью - предупр
 test('вне станции узел предупреждает, что не продаёт', () => {
   const { container } = setup({ on_station: 0 });
   expect(text(container)).toContain('Узел стоит вне станции');
+});
+
+test('куда идут деньги: весь доход инженерии, порог возврата NT и что купить', () => {
+  const { container } = setup();
+  const content = text(container);
+  expect(content).toContain('Весь доход с продажи получает бюджет инженерии. Снабжению с неё не идёт ничего');
+  expect(content).toContain('инженерам лично - только награда контракта «Поставка энергии в сеть сектора» и премии от главы инженерии.');
+  expect(content).not.toContain('NT заберёт');
+  expect(content).toContain('Сейчас в бюджете 4 200 кр., а сверх 10 000 кр. NT раз в 5 мин. забирает 80% излишка');
+  expect(content).toContain('в каталоге инженерии 24 пака. Расходники');
+  expect(content).toContain('Solar Panel Crate:2 500 кр.');
+  expect(content).toContain('до 6 000 кр. в час');
+});
+
+test('недовольство налогом снижает цену и окно это объясняет', () => {
+  const calm = setup();
+  expect(text(calm.container)).not.toContain('недовольства экипажа');
+  calm.unmount();
+  const angry = setup({ unrest_cut: 25 });
+  expect(text(angry.container)).toContain('150% × 75% из-за недовольства экипажа налогом)');
+});
+
+test('излишек к возврату NT: окно предупреждает и называет сумму', () => {
+  const { container } = setup({ return_due: 1600 });
+  expect(text(container)).toContain('Через несколько минут NT заберёт 1 600 кр. излишка - потратьте их или поставьте цель накопления');
 });

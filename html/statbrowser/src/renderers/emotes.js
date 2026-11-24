@@ -75,9 +75,17 @@ function draw_emotes() {
 	for (var id in collapsed) {
 		if (!emotesByGroup[id]) delete collapsed[id];
 	}
+	var alphabetical = document.body.classList.contains("emote-sort-alphabetical");
+	var collator = alphabetical && new Intl.Collator("en");
 	for (var k = 0; k < groups.length; k++) {
 		var currentGroup = groups[k];
-		root.appendChild(drawEmoteGroup(currentGroup, emotesByGroup[currentGroup.id], collapsed));
+		var groupEmotes = emotesByGroup[currentGroup.id];
+		if (alphabetical) {
+			groupEmotes.sort(function(a, b) {
+				return collator.compare(a.name, b.name);
+			});
+		}
+		root.appendChild(drawEmoteGroup(currentGroup, groupEmotes, collapsed));
 	}
 	statcontent.appendChild(root);
 }
@@ -160,7 +168,7 @@ function drawEmoteItem(emote, group) {
 		button.style.setProperty("--emote-color", entry.color);
 		button.style.setProperty("--emote-color-text", contrastRatio("#000000", entry.color) >= 4.5 ? "#000000" : "#FFFFFF");
 	} else if (entry && (entry.type === 2 || entry.type === 3)) {
-		button.classList.add("emote-custom");
+		button.classList.add(entry.type === 3 ? "emote-me" : "emote-custom");
 	}
 	if (entry && entry.type === 1) {
 		button.title = "*" + entry.key;
@@ -192,6 +200,7 @@ function startEmoteDrag(event) {
 		button: button,
 		source: group || button,
 		isGroup: !!group,
+		onlyChangeGroup: !group && document.body.classList.contains("emote-sort-alphabetical"),
 		root: event.currentTarget,
 		pointerId: event.pointerId,
 		startX: event.clientX,
@@ -223,9 +232,11 @@ function updateEmoteDropTarget() {
 	var drag = emoteDrag;
 	// Обе координаты и прямоугольники уже учитывают масштаб статпанели.
 	var hit = document.elementFromPoint(drag.x, drag.y);
-	var selector = drag.isGroup ? ".emote-group" : ".emote-button, .emote-group-header, .emote-group-list";
+	var selector = drag.isGroup ? ".emote-group" : ".emote-group-header, .emote-group-list";
+	if (!drag.isGroup && !drag.onlyChangeGroup) selector = ".emote-button, " + selector;
 	var target = hit && hit.closest(selector);
 	if (target === drag.source || !drag.root.contains(target) || (drag.isGroup && !target.dataset.group)) target = null;
+	if (target && drag.onlyChangeGroup && target.dataset.group === drag.button.dataset.group) target = null;
 	var marker = "emote-drop-group";
 	if (target && drag.isGroup) {
 		var header = target.firstElementChild.getBoundingClientRect();

@@ -58,7 +58,7 @@ GLOBAL_LIST_INIT(market_default_work_stocks, list(
 	WORK_MED_REVIVE = list("VYMD" = 0.1),
 	WORK_MED_SURGERY = list("BSHP" = 0.1, "VYMD" = 0.05),
 	WORK_ENG_POWER_EXPORT = list("NKMR" = 0.04),
-	WORK_SCI_NODE = list("EINS" = 0.3),
+	WORK_SCI_NODE = list("EINS" = 0.3, "CYBS" = 0.01),
 	WORK_SCI_SLIME_DISCOVERY = list("EINS" = 0.02),
 	WORK_SCI_ARTIFACT = list("SOLX" = 0.1),
 	WORK_MINING_ORE = list("PRSP" = 0.04),
@@ -67,7 +67,7 @@ GLOBAL_LIST_INIT(market_default_work_stocks, list(
 	WORK_SRV_DRINK = list("AGRO" = 0.1),
 	WORK_SRV_NEW_PLANT = list("AGRO" = 0.1),
 	WORK_SRV_CLEANING = list("NTRN" = 0.05),
-	WORK_SEC_CONTRABAND = list("HEPH" = 0.1, "CYBS" = -0.1),
+	WORK_SEC_CONTRABAND = list("HEPH" = 0.1, "CYBS" = -0.05),
 	STOCK_WORK_CONTRACTS = list("NTRN" = 0.005),
 ))
 
@@ -314,9 +314,7 @@ GLOBAL_LIST_INIT(market_work_reasons, list(
 		. += list(list("label" = "Продажи станции через снабжение партнёру \"[partner.name]\"", "effect" = STOCK_TRADE_BOOST_MAX * 100, "upto" = TRUE, "note" = note))
 		. += list(list("label" = "Сорванный станцией спецзаказ \"[partner.name]\"", "effect" = -MARKET_OFFER_FAIL_STOCK_SHOCK * 100))
 		. += list(list("label" = "Закупки станции у \"[partner.name]\"", "effect" = null, "note" = "цену не двигают: [SSeconomy.settings.stock_dividend_share]% суммы идёт в дивиденды держателям"))
-	var/list/work = work_driver()
-	if(work)
-		. += list(work)
+	. += work_drivers()
 	for(var/key in SSmarket.station_events)
 		var/list/effects = SSmarket.station_events[key]
 		if(isnull(effects[ticker]))
@@ -330,32 +328,34 @@ GLOBAL_LIST_INIT(market_work_reasons, list(
 			entry["note"] = note
 		. += list(entry)
 
-/// Сноска о работе отделов: какие работы двигают цену и на сколько за каждые STOCK_WORK_NOTE_CREDITS кр. оплаты отделу; null - никакие.
-/datum/stock_company/proc/work_driver()
-	var/list/names = list()
-	var/list/by_rate = list()
-	var/rising = FALSE
-	for(var/work_type in SSmarket.work_stocks)
-		var/list/binding = SSmarket.work_stocks[work_type]
-		var/share = binding[ticker]
-		if(!share)
+/// Сноски о работе отделов: отдельно работа, что поднимает цену, и та, что роняет, со сдвигом за каждые STOCK_WORK_NOTE_CREDITS кр. оплаты отделу.
+/datum/stock_company/proc/work_drivers()
+	. = list()
+	if(!(SSmarket.work_stock_cap > 0))
+		return
+	for(var/sign in list(1, -1))
+		var/list/names = list()
+		var/list/by_rate = list()
+		for(var/work_type in SSmarket.work_stocks)
+			var/list/binding = SSmarket.work_stocks[work_type]
+			var/share = binding[ticker]
+			if(!share || SIGN(share) != sign)
+				continue
+			var/work_name = market_work_driver_name(work_type)
+			names |= work_name
+			var/rate = SSmarket.signed_percent(round(share * 100 * STOCK_WORK_NOTE_CREDITS / STOCK_WORK_CREDITS, 0.01))
+			var/list/group = by_rate[rate]
+			if(!group)
+				group = list()
+				by_rate[rate] = group
+			group |= work_name
+		if(!length(names))
 			continue
-		var/work_name = market_work_driver_name(work_type)
-		names |= work_name
-		rising ||= share > 0
-		var/rate = SSmarket.signed_percent(round(share * 100 * STOCK_WORK_NOTE_CREDITS / STOCK_WORK_CREDITS, 0.01))
-		var/list/group = by_rate[rate]
-		if(!group)
-			group = list()
-			by_rate[rate] = group
-		group |= work_name
-	if(!length(names) || !(SSmarket.work_stock_cap > 0))
-		return null
-	var/list/parts = list()
-	for(var/rate in by_rate)
-		parts += length(by_rate) > 1 ? "[jointext(by_rate[rate], ", ")] [rate]" : rate
-	var/note = "[jointext(parts, "; ")] за каждые [STOCK_WORK_NOTE_CREDITS] кр., что станция получила за эту работу; в следующую смену не переходит"
-	return list("label" = "Работа станции: [jointext(names, ", ")]", "effect" = round((rising ? 1 : -1) * SSmarket.work_stock_cap * 100, 0.1), "upto" = TRUE, "note" = note)
+		var/list/parts = list()
+		for(var/rate in by_rate)
+			parts += length(by_rate) > 1 ? "[jointext(by_rate[rate], ", ")] [rate]" : rate
+		var/note = "[jointext(parts, "; ")] за каждые [STOCK_WORK_NOTE_CREDITS] кр., что станция получила за эту работу; в следующую смену не переходит"
+		. += list(list("label" = "Работа станции: [jointext(names, ", ")]", "effect" = round(sign * SSmarket.work_stock_cap * 100, 0.1), "upto" = TRUE, "note" = note))
 
 /// Сноски биржи, общие для всех компаний: события станции со сдвигом STOCK_ALL_COMPANIES.
 /proc/market_common_drivers()

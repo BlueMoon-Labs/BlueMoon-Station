@@ -182,17 +182,17 @@
 		add_fingerprint(usr)
 
 /* AI Turrets */
-/obj/machinery/turretid/AIAltClick() //toggles lethal on turrets
+/obj/machinery/turretid/AIAltClick(mob/living/silicon/ai/user) //toggles lethal on turrets
 	if(ailock)
 		return
-	toggle_lethal()
-	add_fingerprint(usr)
+	toggle_lethal(user)
+	add_fingerprint(user)
 
-/obj/machinery/turretid/AICtrlClick() //turns off/on Turrets
+/obj/machinery/turretid/AICtrlClick(mob/living/silicon/ai/user) //turns off/on Turrets
 	if(ailock)
 		return
-	toggle_on()
-	add_fingerprint(usr)
+	toggle_on(user)
+	add_fingerprint(user)
 	return TRUE
 
 /* Holopads */

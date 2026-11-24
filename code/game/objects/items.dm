@@ -415,6 +415,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		return
 	if(!user)
 		return
+	if(ismob(user) && user.GetComponent(/datum/component/virtual_entity) && is_protected_bitrunning_objective(src, user))
+		return
 	if(anchored)
 		return
 	if(loc == user && current_equipped_slot && current_equipped_slot != ITEM_SLOT_HANDS)
@@ -479,6 +481,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 /obj/item/attack_paw(mob/user)
 	if(!user)
+		return
+	if(ismob(user) && user.GetComponent(/datum/component/virtual_entity) && is_protected_bitrunning_objective(src, user))
 		return
 	if(anchored)
 		return

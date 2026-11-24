@@ -482,15 +482,27 @@
 	var/civilian_grant = civilian.grant_amount()
 	var/service_grant = service.grant_amount()
 	var/civilian_before = civilian.account.account_balance
+	econ_test_set_balance(civilian.account, 0)
 	civilian.grant()
-	var/civilian_paid = civilian.account.account_balance - civilian_before
+	var/civilian_paid = civilian.account.account_balance
+	var/level = civilian.grant_level()
+	var/expected_level = civilian.budget_threshold() + civilian.owed_to_staff()
+	econ_test_set_balance(civilian.account, level - 7)
+	civilian.grant()
+	var/near_level_balance = civilian.account.account_balance
+	econ_test_set_balance(civilian.account, level + 500)
+	civilian.grant()
+	var/above_level_balance = civilian.account.account_balance
 	econ_test_set_balance(civilian.account, civilian_before)
 	qdel(assistant)
 	qdel(cook)
 	SSeconomy.bank_accounts = saved_accounts
 	TEST_ASSERT_EQUAL(civilian_grant, round(settings.wages[PAY_GRADE_ASSISTANT] * settings.grant_payroll_share / 100 / settings.payroll_interval_ticks), "Гражданским - доля оклада без надбавки и без базы")
 	TEST_ASSERT_EQUAL(service_grant, round(settings.wages[PAY_GRADE_EASY] * settings.grant_payroll_share / 100 / settings.payroll_interval_ticks) + settings.grant_base, "Сервису - доля оклада и база на закупки")
-	TEST_ASSERT_EQUAL(civilian_paid, civilian_grant, "grant() платит grant_amount()")
+	TEST_ASSERT_EQUAL(civilian_paid, civilian_grant, "Пустому бюджету grant() платит grant_amount()")
+	TEST_ASSERT_EQUAL(level, expected_level, "Грант доливает до порога и следующей зарплаты")
+	TEST_ASSERT_EQUAL(near_level_balance, level, "У самого уровня грант доливает только недостающее")
+	TEST_ASSERT_EQUAL(above_level_balance, level + 500, "Выше уровня грант не идёт: его забрал бы возврат излишка")
 
 /// Излишек бюджета сверх порога частью возвращается NT на тике экономики; деньги ниже порога, долг и следующая зарплата сотрудникам не трогаются.
 /datum/unit_test/economy_budget_cap
@@ -1074,8 +1086,159 @@
 	econ_test_set_balance(cargo.account, 10000)
 	var/list/flow = SSeconomy.ledger.department_flow(ACCOUNT_CAR)
 	var/burned_before = flow["burned"]
-	var/kept_before = flow["kept"]
+	var/in_before = flow["in"]
 	cargo.account.debit(4000, ECON_PURCHASE)
 	cargo.account.credit(4000, ECON_REFUND)
 	TEST_ASSERT_EQUAL(flow["burned"], burned_before, "Возврат отменил сток покупки")
-	TEST_ASSERT_EQUAL(flow["kept"], kept_before, "Возврат не стал оставшимися у отдела деньгами")
+	TEST_ASSERT_EQUAL(flow["in"], in_before, "Возврат не стал оставшимися у отдела деньгами")
+
+/// Излишек, который забрал бы NT, сначала доливает ещё не набранную цель накопления другого отдела, остальное уходит NT; набранную цель он больше не доливает.
+/datum/unit_test/economy_budget_cap/surplus_funds_goals/Run()
+	var/datum/economy_department/medical = staff_medical()
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	var/mob/living/carbon/human/head = allocate(/mob/living/carbon/human)
+	var/obj/item/card/id/head_card = allocate(/obj/item/card/id)
+	head_card.access = list(ACCESS_CMO)
+	head.put_in_active_hand(head_card)
+	var/datum/supply_pack/pack = cheapest_pack(medical)
+	var/price = round(econ_pack_price(pack))
+	econ_test_set_balance(medical.account, 0)
+	TEST_ASSERT(medical.set_saving_goal(pack, head), "Цель не поставлена")
+	TEST_ASSERT_EQUAL(medical.saving_goal_shortfall(), price, "До цели не хватает её цены")
+	var/list/stats = econ_staff_stats()
+	econ_test_set_balance(cargo.account, cargo.budget_threshold(stats) + cargo.owed_to_staff(stats) + price * 4)
+	var/due = cargo.budget_return_due(stats)
+	TEST_ASSERT(due > price, "Излишка снабжения хватает на цель: [due] из [price]")
+	var/cargo_before = cargo.account.account_balance
+	cargo.return_excess(stats)
+	TEST_ASSERT_EQUAL(medical.account.account_balance, price, "Излишек снабжения долил цель медицины до цены")
+	TEST_ASSERT(medical.saving_goal_until, "Долитая цель набрана и дала срок на заказ")
+	TEST_ASSERT_EQUAL(cargo_before - cargo.account.account_balance, due, "Снабжение отдало не больше, чем забрал бы NT")
+	var/medical_before = medical.account.account_balance
+	cargo.return_excess(econ_staff_stats())
+	TEST_ASSERT_EQUAL(medical.account.account_balance, medical_before, "Набранную цель излишек больше не доливает")
+	TEST_ASSERT_EQUAL(medical.saving_goal_shortfall(), 0, "У набранной цели недостачи нет")
+
+/datum/unit_test/economy_budget_cap/proc/head_of(access)
+	var/mob/living/carbon/human/head = allocate(/mob/living/carbon/human)
+	var/obj/item/card/id/head_card = allocate(/obj/item/card/id)
+	head_card.access = list(access)
+	head.put_in_active_hand(head_card)
+	return head
+
+/// Снабжению излишек на заданную сумму возврата: баланс выше порога и зарплат на due / доля возврата.
+/datum/unit_test/economy_budget_cap/proc/cargo_with_due(due)
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	var/list/stats = econ_staff_stats()
+	econ_test_set_balance(cargo.account, cargo.budget_threshold(stats) + cargo.owed_to_staff(stats) + CEILING(due * 100 / SSeconomy.settings.budget_cap_return_share, 1))
+	return cargo
+
+/// Долив чужим излишком привязан к цели: потраченное на другое не доливается сверх первой недостачи, а при снятии цели без заказа долитое уходит NT, недостающее - в долг отдела.
+/datum/unit_test/economy_budget_cap/goal_funding_capped_and_reclaimed/Run()
+	var/datum/economy_department/medical = staff_medical()
+	var/mob/living/carbon/human/head = head_of(ACCESS_CMO)
+	var/datum/supply_pack/pack = cheapest_pack(medical)
+	var/price = round(econ_pack_price(pack))
+	TEST_ASSERT(price >= 10, "Пак слишком дешёвый для теста: [price]")
+	econ_test_set_balance(medical.account, 0)
+	TEST_ASSERT(medical.set_saving_goal(pack, head), "Цель не поставлена")
+	var/datum/economy_department/cargo = cargo_with_due(round(price / 2))
+	cargo.return_excess(econ_staff_stats())
+	var/first = medical.account.account_balance
+	TEST_ASSERT(first > 0 && first < price, "Первый долив частичный: [first] из [price]")
+	TEST_ASSERT_EQUAL(medical.saving_goal_funded, first, "Долив записан на цель")
+	econ_test_set_balance(medical.account, 0)
+	for(var/i in 1 to 4)
+		cargo_with_due(price)
+		cargo.return_excess(econ_staff_stats())
+	TEST_ASSERT_EQUAL(medical.saving_goal_funded, price, "Долив на цель не больше первой недостачи, сколько бы ни потратили")
+	TEST_ASSERT_EQUAL(medical.account.account_balance, price - first, "После траты долили только остаток до потолка")
+	var/owed_before = medical.owed
+	medical.clear_saving_goal(head)
+	TEST_ASSERT_EQUAL(medical.account.account_balance, 0, "Снятая цель отдала NT долитое")
+	TEST_ASSERT_EQUAL(medical.owed - owed_before, first, "Потраченный долив записан в долг отдела")
+	TEST_ASSERT_EQUAL(medical.saving_goal_funded, 0, "Учёт долива сброшен")
+
+/// Долив чужой цели не тратит защиту разовых поступлений источника: перевод из казны остаётся не излишком.
+/datum/unit_test/economy_budget_cap/goal_funding_keeps_source_shield/Run()
+	var/datum/economy_department/medical = staff_medical()
+	var/mob/living/carbon/human/head = head_of(ACCESS_CMO)
+	var/datum/supply_pack/pack = cheapest_pack(medical)
+	econ_test_set_balance(medical.account, 0)
+	TEST_ASSERT(medical.set_saving_goal(pack, head), "Цель не поставлена")
+	var/datum/economy_department/cargo = cargo_with_due(round(econ_pack_price(pack)) * 2)
+	econ_test_set_balance(SSeconomy.treasury(), 5000)
+	SSeconomy.treasury_transfer(cargo, 5000)
+	var/shield_before = cargo.shielded()
+	TEST_ASSERT_EQUAL(shield_before, 5000, "Перевод из казны под защитой")
+	cargo.return_excess(econ_staff_stats())
+	TEST_ASSERT(medical.saving_goal_until, "Цель долита")
+	TEST_ASSERT_EQUAL(cargo.shielded(), shield_before, "Долив не съел защиту источника")
+
+/// Излишка на две цели не хватает - первой его получает цель, поставленная раньше.
+/datum/unit_test/economy_budget_cap/goal_funding_oldest_first/Run()
+	var/datum/economy_department/medical = staff_medical()
+	var/datum/economy_department/science = SSeconomy.get_department(ACCOUNT_SCI)
+	var/datum/supply_pack/med_pack = cheapest_pack(medical)
+	var/datum/supply_pack/sci_pack = cheapest_pack(science)
+	econ_test_set_balance(medical.account, 0)
+	econ_test_set_balance(science.account, 0)
+	TEST_ASSERT(science.set_saving_goal(sci_pack, head_of(ACCESS_RD)), "Цель науки не поставлена")
+	science.saving_goal_set_at = world.time - 10
+	TEST_ASSERT(medical.set_saving_goal(med_pack, head_of(ACCESS_CMO)), "Цель медицины не поставлена")
+	var/datum/economy_department/cargo = cargo_with_due(round(econ_pack_price(sci_pack)))
+	cargo.return_excess(econ_staff_stats())
+	TEST_ASSERT(science.saving_goal_until, "Ранняя цель долита первой")
+	TEST_ASSERT_EQUAL(medical.account.account_balance, 0, "Поздней цели излишка не осталось")
+
+/// Отмена заказа, закрывшего долитую цель, возвращает цели и её долив: снять её потом без заказа - долитое уходит NT.
+/datum/unit_test/economy_budget_cap/goal_funding_survives_cancel/Run()
+	var/datum/economy_department/medical = staff_medical()
+	var/mob/living/carbon/human/head = head_of(ACCESS_CMO)
+	var/datum/supply_pack/pack = cheapest_pack(medical)
+	var/price = round(econ_pack_price(pack))
+	econ_test_set_balance(medical.account, 0)
+	TEST_ASSERT(medical.set_saving_goal(pack, head), "Цель не поставлена")
+	var/datum/economy_department/cargo = cargo_with_due(price * 2)
+	cargo.return_excess(econ_staff_stats())
+	TEST_ASSERT_EQUAL(medical.account.account_balance, price, "Цель долита до цены")
+	order_and_cancel(medical, pack)
+	TEST_ASSERT(medical.saving_goal == pack, "Отмена вернула цель")
+	TEST_ASSERT_EQUAL(medical.saving_goal_funded, price, "Отмена вернула цели её долив")
+	medical.clear_saving_goal(head)
+	TEST_ASSERT_EQUAL(medical.account.account_balance, 0, "Снятая после отмены цель отдала долитое NT")
+
+/// Отряд ОБР, оплаченный набранной доливом целью, не прилетел: цель возвращается вместе с учётом долива, и без вызова долитое уйдёт NT.
+/datum/unit_test/economy_budget_cap/goal_funding_survives_ert_refund/Run()
+	var/datum/economy_department/cargo/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	var/ert_id
+	for(var/i in 1 to length(GLOB.payed_ert))
+		var/list/candidate = GLOB.payed_ert[i]
+		if(candidate["available"])
+			ert_id = i
+			break
+	TEST_ASSERT(ert_id, "Нет доступного отряда ОБР")
+	var/price = GLOB.payed_ert[ert_id]["price"]
+	econ_test_set_balance(cargo.account, price)
+	cargo.saving_goal_ert = ert_id
+	cargo.saving_goal_set_at = world.time
+	cargo.saving_goal_funded = 500
+	cargo.saving_goal_funding_cap = 500
+	TEST_ASSERT_EQUAL(cargo.saving_goal_amount(), price, "Цель на отряд набрана")
+	TEST_ASSERT(cargo.pay_ert(ert_id), "Отряд не вызван")
+	TEST_ASSERT_EQUAL(cargo.saving_goal_funded, 0, "Вызов отряда закрыл долив")
+	cargo.refund_ert(ert_id, "Тест")
+	TEST_ASSERT_EQUAL(cargo.saving_goal_funded, 500, "Возврат за отряд вернул цели её долив")
+
+/// Долив цели из излишка казны не даёт получателю второй защиты разовых поступлений: её защищает сама цель.
+/datum/unit_test/economy_budget_cap/goal_funding_from_treasury_unshielded/Run()
+	var/datum/economy_department/medical = staff_medical()
+	var/datum/economy_department/command = SSeconomy.get_department(ACCOUNT_CMD)
+	var/datum/supply_pack/pack = cheapest_pack(medical)
+	econ_test_set_balance(medical.account, 0)
+	TEST_ASSERT(medical.set_saving_goal(pack, head_of(ACCESS_CMO)), "Цель не поставлена")
+	var/list/stats = econ_staff_stats()
+	econ_test_set_balance(command.account, command.budget_threshold(stats) + command.owed_to_staff(stats) + round(econ_pack_price(pack)) * 4)
+	command.return_excess(stats)
+	TEST_ASSERT(medical.saving_goal_until, "Излишек казны долил цель")
+	TEST_ASSERT_EQUAL(medical.shielded(), 0, "Долив из казны не защищён второй раз")

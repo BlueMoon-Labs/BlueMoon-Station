@@ -173,6 +173,16 @@
 	base_icon_state = "datadisk"
 	icon_state = "scanner"
 
+/obj/item/bitrunning_debug/attack_self(mob/user, modifiers)
+	. = ..()
+
+	var/obj/machinery/quantum_server/server = locate() in range(4, user)
+	if(isnull(server))
+		balloon_alert(user, "нужен квантовый сервер рядом")
+		return
+
+	server.base_item_interaction(user, src, null)
+
 /obj/item/disk/bitrunning
 	name = "generic bitrunning program"
 	desc = "Диск с исходным кодом."
@@ -325,9 +335,25 @@
 /obj/item/disk/bitrunning/item/tier2
 	name = "bitrunning gear: complex"
 	selectable_items = list(
-		/obj/item/reagent_containers/hypospray/medipen/survival,
+		/obj/item/reagent_containers/hypospray/medipen/survival/luxury,
 		/obj/item/gun/ballistic/automatic/pistol,
 		/obj/item/clothing/suit/armor/vest,
+	)
+
+/obj/item/reagent_containers/hypospray/medipen/survival/luxury
+	name = "luxury medipen"
+	desc = "Продвинутая версия survival medipen: 60 единиц мощной смеси для тяжёлых условий. Не смешивать с эпинефрином или атропином."
+	icon_state = "minepen"
+	item_state = "minepen"
+	volume = 60
+	amount_per_transfer_from_this = 60
+	list_reagents = list(
+		/datum/reagent/medicine/salbutamol = 10,
+		/datum/reagent/medicine/oxandrolone = 10,
+		/datum/reagent/medicine/sal_acid = 10,
+		/datum/reagent/medicine/omnizine = 10,
+		/datum/reagent/medicine/leporazine = 10,
+		/datum/reagent/medicine/epinephrine = 10,
 	)
 
 /obj/item/disk/bitrunning/item/tier3
@@ -345,6 +371,7 @@
 		/obj/item/borg/upgrade/modkit/damage,
 		/obj/item/borg/upgrade/modkit/cooldown,
 		/obj/item/borg/upgrade/modkit/aoe/mobs,
+		/obj/item/borg/upgrade/modkit/human_passthrough,
 	)
 
 /obj/item/disk/bitrunning/item/pka_mods/premium
@@ -648,8 +675,9 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 /obj/structure/closet/crate/secure/bitrunning
 	name = "base class cache"
 	desc = "Поговорите с кодером."
-	icon_state = "securecrate"
-	base_icon_state = "securecrate"
+	icon = 'icons/obj/storage/bitrunning.dmi'
+	icon_state = "bitrunning"
+	base_icon_state = "bitrunning"
 
 /obj/structure/closet/crate/secure/bitrunning/encrypted
 	name = "encrypted cache"
@@ -967,10 +995,6 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	var/list/grocery_list = list()
 
 	COOLDOWN_DECLARE(order_cooldown)
-
-/obj/machinery/computer/order_console/bitrunning/update_icon_state()
-	icon_state = "[initial(icon_state)][!is_operational ? "_off" : null]"
-	return ..()
 
 /obj/machinery/computer/order_console/bitrunning/update_overlays()
 	. = ..()

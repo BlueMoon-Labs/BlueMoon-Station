@@ -131,6 +131,7 @@
 	TEST_ASSERT(!built.bank_seed_due, "Собранный на смене автомат не ждёт стартового банка")
 	var/obj/machinery/computer/slot_machine/mapped = allocate(/obj/machinery/computer/slot_machine)
 	mapped.bank_seed_due = TRUE
+	econ_test_set_balance(SSeconomy.cash_account, saved_cash + 1000)
 	var/minted = SSeconomy.ledger.minted
 	mapped.take_bet(100)
 	var/first_bank = mapped.prize_bank

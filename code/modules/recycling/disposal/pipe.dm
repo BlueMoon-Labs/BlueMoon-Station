@@ -121,11 +121,13 @@
 		target = get_offset_target_turf(T, rand(5)-rand(5), rand(5)-rand(5))
 
 	playsound(src, 'sound/machines/hiss.ogg', 50, 0, 0)
+	var/area/output_area = get_area(src)
+	var/safe_virtual = output_area?.area_flags & VIRTUAL_AREA
 	for(var/A in H)
 		var/atom/movable/AM = A
 		AM.forceMove(get_turf(src))
 		AM.pipe_eject(direction)
-		if(target)
+		if(target && !safe_virtual)
 			AM.throw_at(target, eject_range, 1)
 	H.vent_gas(T)
 	qdel(H)

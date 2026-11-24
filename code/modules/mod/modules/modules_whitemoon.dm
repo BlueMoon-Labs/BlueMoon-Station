@@ -390,21 +390,28 @@
 		return FALSE
 	var/mob/living/carbon/patient = target
 	var/mob/living/carbon/human/user = mod.wearer
-	var/target_zones = zone2body_parts_covered(user.zone_selected)
+	var/target_zone = user.zone_selected
 	ripping = TRUE
 	playsound(src, 'sound/items/zip.ogg', MOD_SUPPORT_VOLUME, TRUE, frequency = -1)
 	var/finished = do_after(user, 1.5 SECONDS, patient)
 	ripping = FALSE
 	if(!finished || QDELETED(src) || mod?.wearer != user || !active || !check_required_modpart() || !drain_power(use_power_cost))
 		return FALSE
+	rip_clothing(patient, target_zone)
+	return TRUE
+
+/obj/item/mod/module/thread_ripper/proc/rip_clothing(mob/living/carbon/patient, target_zone)
+	// zone2body_parts_covered() отдаёт список флагов, а не битовую маску
+	var/target_flags = NONE
+	for(var/zone_flag in zone2body_parts_covered(target_zone))
+		target_flags |= zone_flag
 	for(var/obj/item/clothing/clothing in patient.get_equipped_items())
-		var/shared_flags = target_zones & clothing.body_parts_covered
+		var/shared_flags = target_flags & clothing.body_parts_covered
 		if(!shared_flags)
 			continue
 		ripped_clothing[clothing] = shared_flags
 		clothing.body_parts_covered &= ~shared_flags
 		RegisterSignal(clothing, COMSIG_PARENT_QDELETING, PROC_REF(on_clothing_deleted))
-	return TRUE
 
 /obj/item/mod/module/thread_ripper/proc/on_clothing_deleted(obj/item/clothing/source)
 	SIGNAL_HANDLER

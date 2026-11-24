@@ -29,6 +29,9 @@
 	dir = 1
 	},
 /obj/structure/table/wood,
+/obj/machinery/recharger{
+	pixel_x = -8
+	},
 /obj/item/gun/energy/laser/musket{
 	pixel_y = 7
 	},
@@ -43,7 +46,8 @@
 "cr" = (
 /obj/item/stack/cannonball/shellball{
 	pixel_x = 13;
-	pixel_y = 11
+	pixel_y = 11;
+	amount = 5
 	},
 /obj/item/stack/cannonball{
 	pixel_x = 9;
@@ -206,6 +210,9 @@
 /turf/open/floor/carpet/blue,
 /area/virtual_domain)
 "lK" = (
+/obj/item/stack/cannonball/shellball{
+	amount = 5
+	},
 /obj/item/stack/cannonball{
 	pixel_x = 7;
 	pixel_y = 8
@@ -226,7 +233,7 @@
 	},
 /area/virtual_domain/fullbright)
 "nb" = (
-/obj/structure/fermenting_barrel{
+/obj/structure/reagent_dispensers/blackpowder{
 	pixel_x = 6;
 	pixel_y = 11
 	},
@@ -693,7 +700,7 @@
 /turf/open/misc/grass,
 /area/virtual_domain/fullbright)
 "LK" = (
-/obj/structure/fermenting_barrel{
+/obj/structure/reagent_dispensers/blackpowder{
 	pixel_x = -4;
 	pixel_y = 17
 	},
@@ -924,12 +931,15 @@
 /turf/open/floor/carpet/blue,
 /area/virtual_domain)
 "Wu" = (
-/obj/structure/fermenting_barrel{
+/obj/structure/reagent_dispensers/blackpowder{
 	pixel_x = -4;
 	pixel_y = 17
 	},
-/obj/structure/fermenting_barrel{
+/obj/structure/reagent_dispensers/blackpowder{
 	pixel_x = 4
+	},
+/obj/item/stack/cannonball/shellball{
+	amount = 5
 	},
 /obj/item/stack/cannonball/four{
 	pixel_x = -9;

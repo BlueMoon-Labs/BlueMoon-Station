@@ -12,6 +12,7 @@ import {
   formatTimeLeft,
   isMine,
   isMyPost,
+  isOpenCrewRequest,
   PartnerOfferRow,
 } from './common/ContractTable';
 import { ContractEntry, ContractRank, CrewRequestRules, formatCredits, OfferEntry } from './common/Economy';
@@ -85,13 +86,15 @@ const PadSection = () => {
 
 type BoardFilter = 'all' | 'free' | 'personal' | string;
 
-/** Доска: контракты отделов, серии и личные заказы; объявления экипажа - на своей вкладке. */
-const BoardTab = () => {
+/** Доска: контракты отделов, серии и личные заказы; сверху - свободные объявления экипажа, все они - на своей вкладке. */
+const BoardTab = (props: { onPost: () => void }) => {
   const { act, data } = useBackend<ContractBoardData>();
-  const { contracts = [], my_account, performer_share, rank, reroll_left = 0, board_resets = [], contracts_help_topics } = data;
+  const { contracts = [], my_account, performer_share, rank, reroll_left = 0, board_resets = [], contracts_help_topics, crew_request } = data;
   const [filter, setFilter] = useState<BoardFilter>('all');
   const board = contracts.filter((contract) => contract.kind !== 'crew');
+  const openCrew = contracts.filter((contract) => isOpenCrewRequest(contract, my_account));
   const canAct = !!my_account && !!rank;
+  const canPost = canAct && !!crew_request;
   const departments = board.map((contract) => contract.department_name).filter((name, index, all) => all.indexOf(name) === index);
   const free = board.filter((contract) => !contract.taken_by && !!contract.takeable).length;
   const personal = board.filter((contract) => contract.kind === 'personal').length;
@@ -124,6 +127,11 @@ const BoardTab = () => {
           Обновить личные
         </Button>
       )}
+      {canPost && (
+        <Button icon="bullhorn" tooltip="Попросите экипаж о помощи: награда уйдёт исполнителю целиком." onClick={props.onPost}>
+          Дать объявление
+        </Button>
+      )}
       {data.mode === 'console' && <Button icon="print" content="Распечатать" onClick={() => act('Print')} />}
     </>
   );
@@ -133,6 +141,14 @@ const BoardTab = () => {
       buttons={tools}
       help={contracts_help_topics?.length ? <NtHelpTopics topics={contracts_help_topics} /> : undefined}>
       {board_resets.length > 0 && <BoardResets resets={board_resets} />}
+      {openCrew.length > 0 && (
+        <Box mb={1}>
+          <div className="NtTerm__contractTitle">Просит экипаж</div>
+          {openCrew.map((contract) => (
+            <ContractRow key={contract.uid} contract={contract} myAccount={my_account} />
+          ))}
+        </Box>
+      )}
       {!board.length ? (
         <NoticeBox>Контрактов сейчас нет.</NoticeBox>
       ) : (
@@ -199,10 +215,10 @@ const MineTab = () => {
 };
 
 /** Экипаж: объявления членов экипажа и форма своего. */
-const CrewTab = () => {
+const CrewTab = (props: { posting: boolean; setPosting: (posting: boolean) => void }) => {
   const { data } = useBackend<ContractBoardData>();
   const { contracts = [], my_account, rank, crew_request } = data;
-  const [posting, setPosting] = useState(false);
+  const { posting, setPosting } = props;
   const crew = contracts.filter((contract) => contract.kind === 'crew');
   const canPost = !!my_account && !!rank && !!crew_request;
   return (
@@ -233,7 +249,7 @@ const OffersTab = () => {
   return (
     <NtFrame
       title="Спецзаказы партнёров снабжения"
-      help="Положите товар на пад подработки и отправьте: оплата за штуки уйдёт вашему отделу, вам лично - доля участника. Купленное через снабжение и в автоматах не засчитывается.">
+      help="Положите товар на пад подработки и отправьте: оплата за штуки уйдёт вашему отделу, вам лично - доля участника. Купленное через снабжение и в автоматах не засчитывается, кроме тары из автомата, в которую нужное налили вы.">
       {offers.length ? offers.map((offer) => <PartnerOfferRow key={offer.uid} offer={offer} />) : <NtEmpty>Спецзаказов сейчас нет.</NtEmpty>}
     </NtFrame>
   );
@@ -353,6 +369,7 @@ export const ContractBoardContent = () => {
   const { data } = useBackend<ContractBoardData>();
   const { mode, my_name, my_account, stored_cash, rank, contracts = [], partner_offers = [] } = data;
   const [tab, setTab] = useState<Tab>('board');
+  const [posting, setPosting] = useState(false);
   const mine = contracts.filter((contract) => isMine(contract, my_account) || isMyPost(contract, my_account)).length;
   const crewFree = contracts.filter((contract) => contract.kind === 'crew' && !contract.taken_by && !isMyPost(contract, my_account)).length;
   const tabs: NtMenuItem<Tab>[] = [
@@ -382,9 +399,16 @@ export const ContractBoardContent = () => {
       }
       menu={<NtMenu<Tab> items={tabs} selected={current} onSelect={setTab} />}>
       {mode === 'pad' && <PadSection />}
-      {current === 'board' && <BoardTab />}
+      {current === 'board' && (
+        <BoardTab
+          onPost={() => {
+            setPosting(true);
+            setTab('crew');
+          }}
+        />
+      )}
       {current === 'mine' && <MineTab />}
-      {current === 'crew' && <CrewTab />}
+      {current === 'crew' && <CrewTab posting={posting} setPosting={setPosting} />}
       {current === 'offers' && <OffersTab />}
       {current === 'auction' && <AuctionTab />}
     </NtScreen>

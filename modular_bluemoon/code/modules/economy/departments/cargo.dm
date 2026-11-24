@@ -11,6 +11,15 @@
 /datum/economy_department/cargo/budget_floor()
 	return max(..(), SSeconomy.settings.budget_cap_floor_cargo)
 
+/datum/economy_department/cargo/spending_advice()
+	return list(
+		"Бюджет снабжения окупается товаром: паки под экспорт, шахтёрские вылазки за рудой и заказы для станции.",
+		"На дорогое - отряд ОБР или крупный пак - ставьте цель накопления, тогда NT не заберёт эти деньги излишком.",
+	)
+
+/datum/economy_department/cargo/everyday_needs()
+	return list(/datum/supply_pack/department/cargo_mining_kit = "Вылазка за рудой: переработку руды оплачивают отделу")
+
 /// Отряд из GLOB.payed_ert по номеру или null.
 /proc/econ_payed_ert(ert_id)
 	if(!isnum(ert_id) || ert_id != round(ert_id) || ert_id < 1 || ert_id > length(GLOB.payed_ert))
@@ -66,6 +75,7 @@
 
 /datum/economy_department/cargo/proc/set_saving_goal_ert(ert_id, mob/living/user)
 	var/list/ert = econ_payed_ert(ert_id)
+	lapse_expired_goal()
 	if(!ert || !ert["available"] || !can_start_saving_goal(user))
 		return FALSE
 	saving_goal = null
@@ -83,10 +93,11 @@
 	if(!ert || !ert["available"] || account.account_balance < ert["price"] || !account.debit(ert["price"], ECON_PURCHASE, user, "Вызов: [ert["name"]]"))
 		return FALSE
 	ert["available"] = FALSE
-	var/list/paid = list("shield" = account.department_shield_spent, "goal_until" = 0, "extended" = FALSE)
+	var/list/paid = list("shield" = account.department_shield_spent, "goal_until" = 0, "extended" = FALSE, "funded" = 0)
 	if(saving_goal_ert == ert_id)
 		paid["goal_until"] = saving_goal_until || (world.time + SSeconomy.settings.saving_goal_minutes MINUTES)
 		paid["extended"] = saving_goal_extended
+		paid["funded"] = saving_goal_funded
 		clear_saving_goal(ordered = TRUE)
 	ert_paid["[ert_id]"] = paid
 	return TRUE
@@ -114,7 +125,7 @@
 		until = world.time + ECON_ERT_REFUND_GOAL_GRACE
 		extended = TRUE
 	var/restored = !saving_goal && !saving_goal_ert
-	restore_saving_goal(null, until, ert_id)
+	restore_saving_goal(null, until, ert_id, paid["funded"] || 0)
 	if(restored && saving_goal_ert == ert_id)
 		saving_goal_extended = extended
 

@@ -37,6 +37,12 @@ GLOBAL_LIST_INIT(market_default_partners, list(
 	var/list/offers = list()
 	/// Из чего партнёр выбирает спецзаказы: path, name, min, max, unit_price, а также reagent и volume, subtypes
 	var/list/offer_items = list()
+	/// Спецзаказов подряд, снятых невзятыми за смену; взятый обнуляет
+	var/offers_ignored = 0
+	/// offer_item_key() -> вес товара в выборе спецзаказа; нет записи - 1
+	var/list/offer_interest = list()
+	/// Пачек скупки подряд, снятых непроданными за смену; купленная обнуляет
+	var/bundles_ignored = 0
 	/// До этого world.time партнёр под эмбарго: не покупает и не продаёт
 	var/embargo_until = 0
 
@@ -207,9 +213,11 @@ GLOBAL_LIST_INIT(market_default_partners, list(
 		return "reagent: [parsed["path"]] не держит реагенты"
 	return parsed
 
-/// Новый спецзаказ из offer_items на товар, которого партнёр ещё не ждёт.
+/// Новый спецзаказ из offer_items на товар, которого партнёр ещё не ждёт; сданное станцией за смену выпадает чаще, снятое невзятым - реже.
 /datum/trade_partner/proc/new_offer()
 	var/list/candidates = list()
+	var/list/weights = list()
+	var/total = 0
 	for(var/list/item_entry as anything in offer_items)
 		var/taken = FALSE
 		for(var/datum/market_offer/offer as anything in offers)
@@ -218,14 +226,88 @@ GLOBAL_LIST_INIT(market_default_partners, list(
 				break
 		if(!taken)
 			candidates += list(item_entry)
+			var/weight = offer_item_weight(item_entry["path"], item_entry["reagent"])
+			weights += weight
+			total += weight
 	if(!length(candidates))
 		return null
 	var/list/chosen = pick(candidates)
+	if(total > 0)
+		var/roll = rand() * total
+		for(var/index in 1 to length(candidates))
+			if(!weights[index])
+				continue
+			roll -= weights[index]
+			chosen = candidates[index]
+			if(roll <= 0)
+				break
 	var/multiplier = rand(MARKET_OFFER_MULT_MIN * 10, MARKET_OFFER_MULT_MAX * 10) / 10
 	var/datum/market_offer/offer = new(id, chosen["path"], chosen["name"], rand(chosen["min"], chosen["max"]), multiplier, chosen["unit_price"], chosen["reagent"], chosen["volume"], !!chosen["subtypes"])
 	offers += offer
 	log_econ("Партнёр [name] выставил спецзаказ #[offer.uid]: [offer.quantity] x [offer.wanted_name] по [offer.unit_reward()] кр.")
 	return offer
+
+/proc/offer_item_key(wanted_type, wanted_reagent)
+	return "[wanted_type]|[wanted_reagent]"
+
+/datum/trade_partner/proc/offer_item_weight(wanted_type, wanted_reagent)
+	var/weight = offer_interest[offer_item_key(wanted_type, wanted_reagent)]
+	return isnull(weight) ? 1 : weight
+
+/// Шанс в процентах выставить спецзаказ: каждый снятый невзятым подряд умножает обычный шанс на offer_ignored_factor, но не ниже offer_ignored_chance_min.
+/datum/trade_partner/proc/offer_spawn_chance()
+	return econ_ignored_chance(SSmarket.offer_chance, offers_ignored)
+
+/// Шанс в процентах выставить пачку скупки, когда подошёл её срок: так же падает от непроданных подряд.
+/datum/trade_partner/proc/bundle_spawn_chance()
+	return econ_ignored_chance(100, bundles_ignored)
+
+/proc/econ_ignored_chance(chance, ignored)
+	if(!ignored)
+		return chance
+	return max(chance * SSmarket.offer_ignored_factor ** ignored, min(SSmarket.offer_ignored_chance_min, chance))
+
+/// Невзятый спецзаказ снят по сроку: партнёр выставляет реже, а этот товар просит реже. Если за срок спецзаказа партнёр был под эмбарго, взять его было нельзя - не в счёт.
+/datum/trade_partner/proc/note_offer_ignored(datum/market_offer/offer)
+	if(embargo_crossed(offer.posted_at))
+		return
+	offers_ignored++
+	var/weight = lower_offer_interest(offer)
+	log_econ("Спецзаказ #[offer.uid] партнёра [name] снят невзятым: [offers_ignored] подряд, шанс новых [offer_spawn_chance()]%, вес товара [weight]")
+
+/// Товар спецзаказа станция не взяла или не довезла: его вес умножается на offer_ignored_factor, но не ниже offer_ignored_weight_min. Возвращает новый вес.
+/datum/trade_partner/proc/lower_offer_interest(datum/market_offer/offer)
+	var/weight = offer_item_weight(offer.wanted_type, offer.wanted_reagent)
+	weight = max(weight * SSmarket.offer_ignored_factor, min(SSmarket.offer_ignored_weight_min, weight))
+	offer_interest[offer_item_key(offer.wanted_type, offer.wanted_reagent)] = weight
+	return weight
+
+/datum/trade_partner/proc/note_offer_accepted()
+	offers_ignored = 0
+
+/// Станция сдала товар спецзаказа: партнёр будет просить его чаще.
+/datum/trade_partner/proc/note_offer_delivery(datum/market_offer/offer)
+	offer_interest[offer_item_key(offer.wanted_type, offer.wanted_reagent)] = SSmarket.offer_delivered_weight
+
+/// Станция продала партнёру обычным порядком предмет из его offer_items: этот товар он будет просить чаще. Купленное через снабжение не в счёт.
+/datum/trade_partner/proc/note_export_interest(atom/movable/thing)
+	if(!thing || contraband || thing.econ_imported)
+		return
+	for(var/list/item_entry as anything in offer_items)
+		if(!econ_offer_item_matches(thing, item_entry["path"], item_entry["subtypes"], item_entry["reagent"], item_entry["volume"]))
+			continue
+		var/key = offer_item_key(item_entry["path"], item_entry["reagent"])
+		if(offer_item_weight(item_entry["path"], item_entry["reagent"]) < SSmarket.offer_delivered_weight)
+			offer_interest[key] = SSmarket.offer_delivered_weight
+			log_econ("Партнёр [name]: интерес к \"[item_entry["name"]]\" вырос от экспорта, вес [SSmarket.offer_delivered_weight]")
+		return
+
+/// Пачка скупки снята непроданной; если за время её продажи партнёр был под эмбарго, купить её было нельзя - не в счёт.
+/datum/trade_partner/proc/note_bundle_ignored(datum/supply_pack/bundle/bundle)
+	if(embargo_crossed(bundle.expires_at - BUNDLE_LIFETIME))
+		return
+	bundles_ignored++
+	log_econ("Скупка #[bundle.uid] у [name] снята непроданной: [bundles_ignored] подряд, шанс новых [bundle_spawn_chance()]%")
 
 /datum/trade_partner/proc/check_unlock_rule(list/rule, list/partner_ids)
 	if(!islist(rule) || length(rule) != (rule["partner"] ? 2 : 1))
@@ -262,6 +344,10 @@ GLOBAL_LIST_INIT(market_default_partners, list(
 /datum/trade_partner/proc/embargoed()
 	return embargo_until > world.time
 
+/// Партнёр был под эмбарго хоть раз с момента since.
+/datum/trade_partner/proc/embargo_crossed(since)
+	return embargo_until && embargo_until > since
+
 /datum/trade_partner/proc/stock_of(datum/supply_pack/pack)
 	if(isnull(stock[pack.type]))
 		stock[pack.type] = SSmarket.partner_stock_default
@@ -284,6 +370,8 @@ GLOBAL_LIST_INIT(market_default_partners, list(
 	if(!(PARTNER_ANY in sells_groups))
 		stock[pack.type] = max(stock_of(pack) - 1, 0)
 	wealth += price
+	if(istype(pack, /datum/supply_pack/bundle))
+		bundles_ignored = 0
 	if(gives_reputation)
 		add_reputation(price * SSmarket.reputation_per_credit / 2)
 	SEND_SIGNAL(SSmarket, COMSIG_MARKET_TRADE, src, price, FALSE)

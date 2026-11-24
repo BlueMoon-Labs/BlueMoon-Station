@@ -49,6 +49,8 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/next_rival_at = 0
 	/// Имя соперника -> сколько он готов отдать
 	var/list/rivals = list()
+	/// Дороже стольких процентов оценки соперники этого лота не дают; окно показывает только его
+	var/rival_cap_percent = 0
 	/// Последние ставки: list(кто, сколько)
 	var/list/history = list()
 	/// weakref счёта, который ставил на лот, -> TRUE: перебитым за минуту до конца приходит напоминание
@@ -65,11 +67,34 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	return max(AUCTION_MIN_INCREMENT, round(value * AUCTION_START_SHARE))
 
 /datum/auction_lot/proc/increment()
-	return max(AUCTION_MIN_INCREMENT, round(bid * AUCTION_INCREMENT_SHARE))
+	return step_after(bid)
+
+/// Шаг, на который нужно перебить ставку amount.
+/datum/auction_lot/proc/step_after(amount)
+	return max(AUCTION_MIN_INCREMENT, round(amount * AUCTION_INCREMENT_SHARE))
 
 /// Наименьшая ставка, которую лот сейчас примет.
 /datum/auction_lot/proc/min_bid()
 	return bid ? bid + increment() : start_price()
+
+/// Сколько самое большее может дать соперник; 0 - соперников нет.
+/datum/auction_lot/proc/rival_ceiling()
+	return length(rivals) ? round(value * rival_cap_percent / 100) : 0
+
+/// Наименьшая ставка, которую соперники уже не перебьют. Считается от открытого потолка, а не от их настоящих сумм. null - перебивать некого.
+/datum/auction_lot/proc/outbid_price()
+	var/ceiling = rival_ceiling()
+	var/low = min_bid()
+	if(!ceiling || (bidder_account && low > ceiling))
+		return null
+	var/high = max(low, ceiling + 1)
+	while(low < high)
+		var/middle = round((low + high) / 2)
+		if(middle + step_after(middle) > ceiling)
+			high = middle
+		else
+			low = middle + 1
+	return low <= AUCTION_BID_MAX ? low : null
 
 /datum/auction_lot/proc/seconds_left()
 	return max(0, CEILING((ends_at - world.time) / (1 SECONDS), 1))
@@ -129,6 +154,9 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		"increment" = increment(),
 		"left" = seconds_left(),
 		"rivals" = length(rivals),
+		"rival_cap" = length(rivals) ? rival_cap_percent : null,
+		"rival_ceiling" = rival_ceiling() || null,
+		"outbid_price" = outbid_price(),
 		"history" = bids,
 	)
 
@@ -232,7 +260,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	if(world.time >= next_auction_at)
 		start_auction()
 
-/// Новый лот: случайный предмет, 2-3 соперника с потолком вокруг его цены.
+/// Новый лот: случайный предмет, 2-3 соперника с потолком вокруг его цены, у части лотов соперников нет.
 /datum/controller/subsystem/market/proc/start_auction(list/lot_entry)
 	if(auction)
 		return null
@@ -244,9 +272,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	lot.value = lot_entry["value"]
 	lot.ends_at = world.time + AUCTION_DURATION
 	lot.next_rival_at = world.time + rand(AUCTION_RIVAL_DELAY_MIN, AUCTION_RIVAL_DELAY_MAX)
-	var/list/names = GLOB.market_auction_rivals.Copy()
-	for(var/i in 1 to rand(2, 3))
-		lot.rivals[pick_n_take(names)] = round(lot.value * rand(AUCTION_RIVAL_MAX_MIN, AUCTION_RIVAL_MAX_MAX) / 100)
+	roll_auction_rivals(lot)
 	auction = lot
 	hook_auction_round_end()
 	publish("Аукцион сектора: на торги выставлен лот \"[lot.name]\", начальная цена [lot.start_price()] кр. Ставки - в Кошельке на КПК и в консоли снабжения, торги около [round(AUCTION_DURATION / (1 MINUTES))] мин.")
@@ -254,9 +280,20 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	var/list/rival_caps = list()
 	for(var/rival in lot.rivals)
 		rival_caps += "[rival] до [lot.rivals[rival]] кр."
-	log_econ("Аукцион: лот #[lot.uid] \"[lot.name]\" выставлен, соперники: [jointext(rival_caps, ", ")]")
+	log_econ("Аукцион: лот #[lot.uid] \"[lot.name]\" выставлен, соперники: [length(rival_caps) ? jointext(rival_caps, ", ") : "нет"]")
 	schedule_auction_step(lot)
 	return lot
+
+/// Соперники-станции лота с потолками в процентах оценки из настроек; с шансом auction_rival_free_chance лот идёт без них.
+/datum/controller/subsystem/market/proc/roll_auction_rivals(datum/auction_lot/lot)
+	var/datum/economy_settings/settings = SSeconomy.settings
+	lot.rivals = list()
+	lot.rival_cap_percent = settings.auction_rival_cap_max
+	if(prob(settings.auction_rival_free_chance))
+		return
+	var/list/names = GLOB.market_auction_rivals.Copy()
+	for(var/i in 1 to rand(2, 3))
+		lot.rivals[pick_n_take(names)] = round(lot.value * rand(settings.auction_rival_cap_min, settings.auction_rival_cap_max) / 100)
 
 /// Новый лот одной строкой по общему каналу, не чаще auction_announce_minutes на всю станцию. В строке только исходные имя и описание типа вещи, правки игрока в эфир не идут. TRUE, если прозвучал.
 /datum/controller/subsystem/market/proc/announce_auction_lot(datum/auction_lot/lot, minutes)
@@ -275,7 +312,7 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 		if(crew_lot.buyout)
 			buyout_text = ", купить сразу - [crew_lot.buyout] кр."
 	else
-		text = "Аукцион сектора: на торгах \"[lot.name]\"."
+		text = "Аукцион сектора: на торгах \"[lot.name]\"[length(lot.rivals) ? "" : ", других станций на торгах нет"]."
 	if(!paperwork_radio("[text] Старт [lot.start_price()] кр.[buyout_text], торги [minutes] мин. Ставки - в Кошельке на КПК, вкладка «Заказы».", RADIO_CHANNEL_COMMON))
 		return FALSE
 	auction_announce_ready_at = world.time + SSeconomy.settings.auction_announce_minutes MINUTES
@@ -385,24 +422,33 @@ GLOBAL_LIST_INIT(market_auction_rivals, list(
 	lot.note_bid(account.account_holder, amount)
 	return null
 
-/// Ставка с личного счёта: деньги замораживаются на счёте биржи до конца торгов или пока ставку не перебьют. Возвращает текст отказа или null.
-/datum/controller/subsystem/market/proc/place_auction_bid(datum/bank_account/account, amount, mob/user, uid)
+/// Ставка с личного счёта: деньги замораживаются на счёте биржи до конца торгов или пока ставку не перебьют; outbid - ставка по outbid_price(), amount - сумма с кнопки, и если цена с тех пор сменилась, ставка не идёт. Возвращает текст отказа или null.
+/datum/controller/subsystem/market/proc/place_auction_bid(datum/bank_account/account, amount, mob/user, uid, outbid = FALSE)
 	var/datum/auction_lot/lot = find_auction_lot(uid)
 	. = auction_bidder_problem(lot, account)
 	if(.)
 		return
+	if(outbid)
+		var/price = lot.outbid_price()
+		if(!price)
+			return length(lot.rivals) ? "Дороже [lot.rival_ceiling()] кр. станции сектора не дают - их уже не нужно перебивать, хватит ставки от [lot.min_bid()] кр." : "Станций сектора на этих торгах нет: ставьте от [lot.min_bid()] кр."
+		if(amount != price)
+			return "Цена изменилась: теперь [price] кр."
 	var/datum/auction_lot/crew/crew_lot = lot
 	if(istype(crew_lot) && crew_lot.buyout && (lot.min_bid() >= crew_lot.buyout || (isnum(amount) && amount >= crew_lot.buyout)))
 		return "Ставка не дойдёт до цены выкупа: этот лот можно сразу купить за [crew_lot.buyout] кр."
-	if(!isnum(amount) || round(amount) != amount || amount < lot.min_bid())
-		return "Ставка должна быть целой и не меньше [lot.min_bid()] кр."
+	if(!isnum(amount) || round(amount) != amount)
+		return "Ставка - целое число кредитов, от [lot.min_bid()] кр."
+	if(amount < lot.min_bid())
+		return lot.bid ? "Мало: сейчас ставка [lot.bid] кр., шаг [lot.increment()] кр. - ставьте от [lot.min_bid()] кр." : "Мало: торги начинаются с [lot.min_bid()] кр."
 	if(amount > AUCTION_BID_MAX)
 		return "Ставка больше [AUCTION_BID_MAX] кр. не принимается."
 	var/first = !lot.bid
+	var/raised_from = lot.bidder_account == account ? lot.bid : 0
 	. = take_auction_bid(lot, account, amount, user, "Аукцион: ставка на \"[lot.name]\"")
 	if(.)
 		return
-	log_econ("Аукцион: [key_name(user)] ставит [amount] кр. на лот #[lot.uid] \"[lot.name]\"")
+	log_econ("Аукцион: [key_name(user)] [raised_from ? "поднимает свою ставку с [raised_from] до [amount] кр." : "ставит [amount] кр."] на лот #[lot.uid] \"[lot.name]\"[outbid ? ", чтобы не перебили соперники" : ""]")
 	if(first && istype(crew_lot))
 		crew_lot.seller_account?.bank_card_talk("Аукцион экипажа: на ваш лот \"[lot.name]\" поставили [amount] кр. Теперь торги идут до конца, снять лот уже нельзя.", balloon = "первая ставка")
 

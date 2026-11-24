@@ -146,7 +146,7 @@
 
 /obj/machinery/turretid/BorgCtrlClick(mob/living/silicon/robot/user) //turret control on/off. Forwards to AI code.
 	if(get_dist(src,user) <= user.interaction_range)
-		AICtrlClick()
+		AICtrlClick(user)
 	else
 		..()
 
@@ -160,7 +160,7 @@
 
 /obj/machinery/turretid/BorgAltClick(mob/living/silicon/robot/user) //turret lethal on/off. Forwards to AI code.
 	if(get_dist(src,user) <= user.interaction_range)
-		return AIAltClick()
+		return AIAltClick(user)
 	return ..()
 
 /*

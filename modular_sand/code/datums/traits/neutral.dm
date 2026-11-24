@@ -80,7 +80,8 @@
 	var/old_stage = current_stage
 	get_estrous_bonus()
 	if(current_stage > old_stage)
-		to_chat(quirk_holder, span_love(current_stage >= 3 ? "Ваша фертильность достигла максимума." : "Гормональная активность усиливается."))
+		var/stage_message = current_stage >= 3 ? "Ваша фертильность достигла максимума." : "Гормональная активность усиливается."
+		to_chat(quirk_holder, span_love(stage_message))
 	schedule_heat_tick()
 
 /datum/quirk/estrous_active/proc/get_estrous_bonus()

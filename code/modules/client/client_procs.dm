@@ -219,7 +219,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		var/color_key = href_list["statbrowser_pick_color"]
 		var/static/list/color_keys = list(
 			"--bg-primary", "--bg-secondary", "--text-primary", "--text-secondary", "--text-muted", "--accent", "--border", "--health-good", "--health-warn", "--health-bad",
-			"--emote-button-bg", "--emote-button-hover", "--emote-button-text", "--emote-button-border", "--emote-button-custom-bg", "--emote-accent",
+			"--emote-button-bg", "--emote-button-hover", "--emote-button-text", "--emote-button-border", "--emote-button-custom-bg", "--emote-button-me-bg", "--emote-accent",
 		)
 		if(!(color_key in color_keys))
 			return
@@ -240,8 +240,14 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 	last_activity = world.time
 
-	if(href_list["statpanel_emotes"])
-		if(statbrowser_ready && stat_tab == STATPANEL_EMOTES_TAB && prefs && text2num(href_list["slot"]) == prefs.default_slot)
+	if(href_list["open_statpanel_emotes"])
+		if(statbrowser_ready)
+			src << output("", "statbrowser:open_emote_tab")
+		return
+
+	var/emote_action = href_list["statpanel_emotes"]
+	if(emote_action)
+		if(statbrowser_ready && prefs && (emote_action == "emotes/resetOrder" || (stat_tab == STATPANEL_EMOTES_TAB && text2num(href_list["slot"]) == prefs.default_slot)))
 			tgui_panel?.emotes_handle_stat_action(href_list)
 		return
 

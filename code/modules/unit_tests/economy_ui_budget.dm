@@ -56,7 +56,7 @@
 		staff.put_in_hands(card)
 	return staff
 
-/// КПК в руке: у глав приложение стоит с завода, остальным его ставят как скачанное.
+/// КПК в руке с приложением бюджета: оно стоит с завода, у КПК без жёсткого диска его ставят как скачанное.
 /datum/unit_test/economy_ui_budget/proc/give_pda(mob/living/carbon/human/owner, pda_type = /obj/item/modular_computer/pda)
 	var/obj/item/modular_computer/pda/pda = allocate(pda_type)
 	owner.put_in_hands(pda)
@@ -119,6 +119,28 @@
 	var/repeat = press(chief, chief_app, "deny", list("uid" = "[request.uid]"))
 	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Решённая заявка не меняется")
 	TEST_ASSERT_EQUAL(repeat, "Заявка не найдена или уже решена.", "Повтор объяснён")
+
+/// Глава дважды подряд нажал "заявку": первая оплачена сразу, вторая не заказывает второй пак и объясняет почему (10799: два Security MOD за 1.4 с).
+/datum/unit_test/economy_ui_budget/instant_request_repeat/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/mob/living/carbon/human/chief = make_staff(ACCOUNT_MED, list(ACCESS_CMO))
+	var/datum/computer_file/program/department_budget/app = give_pda(chief, /obj/item/modular_computer/pda/heads/cmo)
+	var/datum/supply_pack/pack = pack_above_auto_limit(medical)
+	TEST_ASSERT_NOTNULL(pack, "В каталоге медицины есть пак дороже автоодобрения")
+	var/price = round(econ_pack_price(pack))
+	econ_test_set_balance(medical.account, price * 3)
+	press(chief, app, "request", list("pack" = "[pack.type]", "reason" = ""))
+	TEST_ASSERT_EQUAL(length(medical.requests), 1, "Заявка главы подана")
+	var/datum/econ_request/request = medical.requests[1]
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Заявка главы оплачена сразу")
+	var/answer = press(chief, app, "request", list("pack" = "[pack.type]", "reason" = ""))
+	TEST_ASSERT_EQUAL(answer, econ_repeat_refusal(request), "Повтор объяснён")
+	TEST_ASSERT_EQUAL(length(medical.requests), 1, "Повторное нажатие не подало вторую заявку")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "В снабжении один заказ")
+	TEST_ASSERT_EQUAL(medical.account.account_balance, price * 2, "Бюджет заплатил один раз")
+	request.created -= ECON_REQUEST_REPEAT_GUARD
+	press(chief, app, "request", list("pack" = "[pack.type]", "reason" = ""))
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 2, "Позже второй такой же пак заказывается")
 
 /// Заказать и подать заявку можно только на пак из каталога своего отдела; строка пути из клиента проверяется по каталогу.
 /datum/unit_test/economy_ui_budget/catalog_guard/Run()
@@ -197,6 +219,185 @@
 	TEST_ASSERT_EQUAL(refusal, "Свой счёт так менять нельзя.", "Отказ не объяснён")
 	own.owner_ref = null
 	TEST_ASSERT(!engineering.set_wage_bonus(own, 50, chief), "Надбавка на счёт, куда главе платят, прошла")
+
+/// "Нужно сейчас": раненые и обескровленные на станции поднимают кровь и медикаменты первыми, блюдо дня - продукты под его рецепт; не больше ECON_NEEDS_MAX паков каталога, пересчёт не чаще ECON_NEEDS_REFRESH; окно отдаёт их вместе с советами отдела.
+/datum/unit_test/economy_ui_budget/needs_now
+	var/saved_dish
+
+/datum/unit_test/economy_ui_budget/needs_now/New()
+	. = ..()
+	var/datum/economy_department/service/service = SSeconomy.get_department(ACCOUNT_SRV)
+	saved_dish = service.dish_of_the_day
+
+/datum/unit_test/economy_ui_budget/needs_now/Destroy()
+	var/datum/economy_department/service/service = SSeconomy.get_department(ACCOUNT_SRV)
+	service.dish_of_the_day = saved_dish
+	for(var/id in SSeconomy.departments)
+		var/datum/economy_department/department = SSeconomy.departments[id]
+		department.needs_cache_until = 0
+	return ..()
+
+/datum/unit_test/economy_ui_budget/needs_now/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	for(var/id in SSeconomy.departments)
+		var/datum/economy_department/department = SSeconomy.departments[id]
+		department.needs_cache_until = 0
+		var/list/needs = department.needs_now()
+		var/list/packs = department.catalog()
+		TEST_ASSERT(length(needs) <= ECON_NEEDS_MAX, "[id]: нужно сейчас больше [ECON_NEEDS_MAX]")
+		TEST_ASSERT(length(needs) >= min(ECON_NEEDS_MIN, length(packs)), "[id]: нужно сейчас меньше [ECON_NEEDS_MIN]: [length(needs)]")
+		for(var/pack_type in needs)
+			TEST_ASSERT(SSshuttle.supply_packs[pack_type] in packs, "[id]: [pack_type] не из каталога отдела")
+		if(length(packs))
+			TEST_ASSERT(length(department.spending_advice()), "[id]: нет совета, на что тратить бюджет")
+	var/list/before = medical.needs_now()
+	var/station_z = SSmapping.levels_by_trait(ZTRAIT_STATION)[1]
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human, locate(3, 3, station_z))
+	patient.mind_initialize()
+	var/obj/item/clothing/under/uniform = allocate(/obj/item/clothing/under/color/grey)
+	uniform.has_sensor = HAS_SENSORS
+	uniform.sensor_mode = SENSOR_VITALS
+	patient.equip_to_slot_if_possible(uniform, ITEM_SLOT_ICLOTHING)
+	patient.adjustBruteLoss(ECON_NEEDS_INJURED_DAMAGE + 10)
+	patient.blood_volume = BLOOD_VOLUME_SAFE / 2
+	TEST_ASSERT(medical.needs_now() == before, "Пересчитано раньше ECON_NEEDS_REFRESH")
+	medical.needs_cache_until = 0
+	var/list/needs = medical.needs_now()
+	TEST_ASSERT(!econ_pack_unavailable(SSshuttle.supply_packs[/datum/supply_pack/medical/bloodpacks]), "Кровь есть у партнёров")
+	TEST_ASSERT_EQUAL(needs[1], /datum/supply_pack/medical/bloodpacks, "Кровь первой, когда у экипажа её мало: [json_encode(needs)]")
+	TEST_ASSERT(findtext(needs[/datum/supply_pack/medical/bloodpacks], "Мало крови у "), "Почему нужна кровь: [needs[/datum/supply_pack/medical/bloodpacks]]")
+	TEST_ASSERT(findtext(needs[/datum/supply_pack/medical/supplies], "Раненых на станции: "), "Почему нужны медикаменты: [needs[/datum/supply_pack/medical/supplies]]")
+	var/mob/living/carbon/human/cmo = make_staff(ACCOUNT_MED, list(ACCESS_CMO))
+	var/datum/computer_file/program/department_budget/app = give_pda(cmo, /obj/item/modular_computer/pda/heads/cmo)
+	var/list/shown = app.budget_data(cmo)["needs"]
+	var/list/first = shown[1]
+	TEST_ASSERT(first["type"] == "[/datum/supply_pack/medical/bloodpacks]" && first["why"] == needs[/datum/supply_pack/medical/bloodpacks], "Окно показывает нужное сейчас: [json_encode(shown)]")
+	TEST_ASSERT_EQUAL(json_encode(app.budget_static_data(cmo)["advice"]), json_encode(medical.spending_advice()), "Окно показывает советы отдела")
+	var/datum/economy_department/service/service = SSeconomy.get_department(ACCOUNT_SRV)
+	var/tomato = /obj/item/reagent_containers/food/snacks/grown/tomato
+	var/datum/crafting_recipe/food/tomato_dish
+	for(var/datum/crafting_recipe/food/recipe in GLOB.crafting_recipes)
+		if(recipe.always_availible && (tomato in recipe.reqs))
+			tomato_dish = recipe
+			break
+	TEST_ASSERT_NOTNULL(tomato_dish, "Есть блюдо с помидором")
+	service.dish_of_the_day = tomato_dish.result
+	service.needs_cache_until = 0
+	var/obj/item/dish = tomato_dish.result
+	TEST_ASSERT_EQUAL(service.situational_needs()[/datum/supply_pack/organic/randomized/vegetables], "Блюдо дня: [initial(dish.name)]", "Под блюдо дня с помидором - овощи")
+
+/// Ответ на заявку объясняет, почему она ждёт: сколько денег в бюджете против цены пака и через сколько минут недорогая снова пройдёт без одобрения.
+/datum/unit_test/economy_ui_budget/request_answer/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/mob/living/carbon/human/worker = make_staff(ACCOUNT_MED)
+	var/datum/computer_file/program/department_budget/app = give_pda(worker)
+	var/datum/supply_pack/cheap
+	for(var/datum/supply_pack/pack as anything in medical.catalog())
+		if(!econ_pack_unavailable(pack) && medical.auto_approvable(pack))
+			cheap = pack
+			break
+	TEST_ASSERT_NOTNULL(cheap, "Есть недорогой пак медицины")
+	var/price = round(econ_pack_price(cheap))
+	econ_test_set_balance(medical.account, 0)
+	var/answer = press(worker, app, "request", list("pack" = "[cheap.type]", "reason" = "тест"))
+	TEST_ASSERT(findtext(answer, "В бюджете сейчас 0 кр., пак стоит [price] кр."), "Ответ не называет деньги и цену: [answer]")
+	TEST_ASSERT(!findtext(answer, ".."), "В ответе две точки подряд: [answer]")
+	econ_test_set_balance(medical.account, price * 10 + medical.owed_to_staff())
+	var/datum/bank_account/account = econ_account_of(worker)
+	medical.auto_approve_after["[account.account_id]"] = world.time + 5 MINUTES
+	answer = press(worker, app, "request", list("pack" = "[cheap.type]", "reason" = "тест"))
+	TEST_ASSERT(findtext(answer, "Без одобрения снова через 5 мин."), "Ответ не называет перерыв: [answer]")
+	TEST_ASSERT(!findtext(answer, "В бюджете сейчас"), "Ответ жалуется на деньги, которых хватает: [answer]")
+
+/// Прайс работы в окне, подсказка о премии и осмотры называют оплату с поправкой на настроение экипажа.
+/datum/unit_test/economy_ui_budget/mood_prices/Run()
+	var/saved_mood = SSeconomy.tax_mood
+	SSeconomy.tax_mood = TAX_MOOD_UNREST
+	var/mob/living/carbon/human/chief = make_staff(ACCOUNT_MED, list(ACCESS_CMO))
+	var/datum/computer_file/program/department_budget/app = give_pda(chief, /obj/item/modular_computer/pda/heads/cmo)
+	var/list/data = app.budget_data(chief)
+	var/obj/item/healthanalyzer/analyzer = allocate(/obj/item/healthanalyzer)
+	var/examine = analyzer.econ_discharge_examine()
+	SSeconomy.tax_mood = TAX_MOOD_GOODWILL
+	var/goodwill_share = app.budget_data(chief)["work_share"]
+	SSeconomy.tax_mood = saved_mood
+	var/datum/economy_settings/settings = SSeconomy.settings
+	var/mult = (100 - settings.tax_unrest_work_cut) / 100
+	var/list/surgery
+	for(var/list/work as anything in data["work_prices"])
+		if(work["name"] == econ_work_name(WORK_MED_SURGERY))
+			surgery = work
+	TEST_ASSERT_NOTNULL(surgery, "В прайсе нет операции")
+	TEST_ASSERT_EQUAL(surgery["price"], round(settings.work_prices[WORK_MED_SURGERY] * mult, 0.01), "Прайс не учитывает недовольство")
+	TEST_ASSERT(findtext(examine, "[round(settings.work_prices[WORK_MED_DISCHARGE_LIGHT] * mult, 0.01)],"), "Осмотр анализатора не учитывает недовольство: [examine]")
+	TEST_ASSERT_EQUAL(goodwill_share, settings.work_personal_share + settings.tax_goodwill_premium_bonus, "Подсказка о премии не учитывает довольство")
+
+/// "Нужно сейчас" медицины видит экипаж только датчиками костюма, как монитор экипажа: раны и кровь - от SENSOR_VITALS, смерть - от SENSOR_LIVING; дефибриллятор - пока погибшего можно поднять, мешки - для тел вне морга и мешков. О новой нужде канал отдела слышит раз в ECON_NEEDS_ALERT_COOLDOWN и только при сотрудниках на смене.
+/datum/unit_test/economy_ui_budget/needs_sensors
+	var/list/saved_alerted
+
+/datum/unit_test/economy_ui_budget/needs_sensors/New()
+	. = ..()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	saved_alerted = medical.alerted_needs
+	medical.alerted_needs = list()
+	medical.needs_alert_cooldown = 0
+
+/datum/unit_test/economy_ui_budget/needs_sensors/Destroy()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	medical.alerted_needs = saved_alerted
+	medical.needs_alert_cooldown = 0
+	medical.needs_cache_until = 0
+	return ..()
+
+/datum/unit_test/economy_ui_budget/needs_sensors/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/station_z = SSmapping.levels_by_trait(ZTRAIT_STATION)[1]
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human, locate(3, 3, station_z))
+	patient.mind_initialize()
+	patient.adjustBruteLoss(ECON_NEEDS_INJURED_DAMAGE + 10)
+	patient.blood_volume = BLOOD_VOLUME_SAFE / 2
+	var/list/needs = medical.situational_needs()
+	TEST_ASSERT(!needs[/datum/supply_pack/medical/supplies] && !needs[/datum/supply_pack/medical/bloodpacks], "Раненый без датчиков виден: [json_encode(needs)]")
+	var/obj/item/clothing/under/uniform = allocate(/obj/item/clothing/under/color/grey)
+	uniform.has_sensor = HAS_SENSORS
+	uniform.sensor_mode = SENSOR_LIVING
+	TEST_ASSERT(patient.equip_to_slot_if_possible(uniform, ITEM_SLOT_ICLOTHING), "Комбинезон надет")
+	needs = medical.situational_needs()
+	TEST_ASSERT(!needs[/datum/supply_pack/medical/supplies], "Раны видны датчиком жизни: [json_encode(needs)]")
+	uniform.sensor_mode = SENSOR_VITALS
+	needs = medical.situational_needs()
+	TEST_ASSERT(needs[/datum/supply_pack/medical/supplies] && needs[/datum/supply_pack/medical/bloodpacks], "Раны и кровь по датчикам не видны: [json_encode(needs)]")
+
+	var/list/stats = list(ACCOUNT_MED = list("on_shift" = 1))
+	var/alert = medical.announce_new_needs(stats)
+	TEST_ASSERT(findtext(alert, "Отдел \"[medical.name]\", нужно сейчас: ") && findtext(alert, "Раненых на станции: "), "Канал не услышал о раненых: [alert]")
+	TEST_ASSERT_NULL(medical.announce_new_needs(stats), "О той же нужде объявили снова")
+
+	var/mob/living/carbon/human/corpse = allocate(/mob/living/carbon/human, locate(4, 3, station_z))
+	corpse.mind_initialize()
+	var/obj/item/clothing/under/corpse_uniform = allocate(/obj/item/clothing/under/color/grey)
+	corpse_uniform.has_sensor = HAS_SENSORS
+	corpse_uniform.sensor_mode = SENSOR_LIVING
+	corpse.equip_to_slot_if_possible(corpse_uniform, ITEM_SLOT_ICLOTHING)
+	corpse.death()
+	needs = medical.situational_needs()
+	TEST_ASSERT(findtext(needs[/datum/supply_pack/medical/defibs], "Погибших недавно: "), "Свежий погибший не просит дефибриллятор: [json_encode(needs)]")
+	TEST_ASSERT(findtext(needs[/datum/supply_pack/medical/bodybags], "Тел вне морга и мешков: "), "Тело вне морга не просит мешок: [json_encode(needs)]")
+	TEST_ASSERT_NULL(medical.announce_new_needs(stats), "Новая нужда объявлена раньше кулдауна")
+	medical.needs_alert_cooldown = 0
+	TEST_ASSERT_NULL(medical.announce_new_needs(list(ACCOUNT_MED = list("on_shift" = 0))), "Объявили в отдел без сотрудников на смене")
+	alert = medical.announce_new_needs(stats)
+	TEST_ASSERT(findtext(alert, "Погибших недавно: ") && !findtext(alert, "Раненых на станции: "), "Канал услышал не только новую нужду: [alert]")
+
+	var/obj/item/shockpaddles/paddles = /obj/item/shockpaddles
+	corpse.timeofdeath = world.time - initial(paddles.tlimit) - 1
+	var/obj/structure/closet/body_bag/bag = allocate(/obj/structure/closet/body_bag, corpse.loc)
+	corpse.forceMove(bag)
+	needs = medical.situational_needs()
+	TEST_ASSERT(!needs[/datum/supply_pack/medical/defibs], "Давно погибший просит дефибриллятор")
+	TEST_ASSERT(!needs[/datum/supply_pack/medical/bodybags], "Тело в мешке просит мешок")
+	corpse.forceMove(get_turf(bag))
 
 /// ГП и капитан переключают отдел, глава другого отдела - нет; грант на исследования покупает только наука.
 /datum/unit_test/economy_ui_budget/switch_and_grant
@@ -305,7 +506,7 @@
 	built.on_construction()
 	TEST_ASSERT_EQUAL(built.program.fixed_department, ACCOUNT_SRV, "Собранная консоль берёт отдел с платы")
 
-/// Каждый глава получает приложение в КПК; окно отдаёт ровно ожидаемые поля правил, без порогов аудита.
+/// Приложение бюджета стоит в КПК каждого главы и сотрудника отдела; окно отдаёт ровно ожидаемые поля правил, без порогов аудита.
 /datum/unit_test/economy_ui_budget/presets/Run()
 	for(var/pda_type in list(
 		/obj/item/modular_computer/pda/heads/captain,
@@ -315,6 +516,9 @@
 		/obj/item/modular_computer/pda/heads/cmo,
 		/obj/item/modular_computer/pda/heads/rd,
 		/obj/item/modular_computer/pda/heads/quartermaster,
+		/obj/item/modular_computer/pda/medical,
+		/obj/item/modular_computer/pda/engineering,
+		/obj/item/modular_computer/pda/cook,
 	))
 		var/obj/item/modular_computer/pda/pda = allocate(pda_type)
 		TEST_ASSERT_NOTNULL(locate(/datum/computer_file/program/department_budget) in pda.get_all_files(), "[pda_type] без бюджета отдела")
@@ -322,11 +526,15 @@
 	var/datum/computer_file/program/department_budget/program = give_pda(chief, /obj/item/modular_computer/pda/heads/cmo)
 	var/list/static_data = program.budget_static_data(chief)
 	var/list/data = program.budget_data(chief)
+	// Лимит премий сотруднику открыт и в памятке главам
+	var/list/public_audit = list("audit_rights", "audit_bonus_allowance", "audit_siphon_minutes")
 	for(var/key in static_data + data)
-		TEST_ASSERT(key == "audit_rights" || !findtext(key, "audit"), "Окно отдаёт порог аудита [key]")
+		TEST_ASSERT((key in public_audit) || !findtext(key, "audit"), "Окно отдаёт порог аудита [key]")
+	TEST_ASSERT_EQUAL(static_data["audit_bonus_allowance"], SSeconomy.audit_bonus_allowance(), "Лимит премий в окне - не тот, по которому открывается дело")
+	TEST_ASSERT_EQUAL(static_data["audit_siphon_minutes"], SSeconomy.settings.audit_siphon_minutes, "Окно премий аудита не из настроек")
 	TEST_ASSERT(data["can_manage"], "Главврач управляет медициной")
 	TEST_ASSERT(length(data["staff"]) >= 1, "Главе виден список сотрудников")
-	var/list/work_prices = static_data["work_prices"]
+	var/list/work_prices = data["work_prices"]
 	TEST_ASSERT_EQUAL(length(work_prices), length(GLOB.econ_department_work[ACCOUNT_MED]), "Цены работ медицины")
 	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED)
 	data = program.budget_data(doctor)

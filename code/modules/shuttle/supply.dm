@@ -175,6 +175,7 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 				LAZYADD(lockers_by_buyer[SO.gift_to || D], SO)
 			if(!SO.prepaid && !SO.paying_account)
 				econ_budget_goal_bought(D, SO.pack)
+				SO.cargo_paid = base_cost
 
 
 		if(SO.paying_account)
@@ -186,6 +187,7 @@ GLOBAL_LIST_INIT(cargo_shuttle_leave_behind_typecache, typecacheof(list(
 				D.bank_card_talk((SO.pack.goody || personal_catalog) ? "Заказ снабжения №[SO.id] отгружен, со счёта списано [price] кр." : "Заказ снабжения №[SO.id] отгружен, со счёта списано [price] кр.: цена пака и наценка частного заказа [round((ECON_PRIVATE_ORDER_MARKUP - 1) * 100)]%.")
 			SSeconomy.move(D, SSeconomy.get_dep_account(ACCOUNT_CAR), price - base_cost, ECON_PRIVATE_ORDER, memo = "Наценка частного заказа: [SO.pack.name]")
 			note_personal_shipment(SO)
+		note_request_shipment(SO)
 		value += SO.pack.get_cost()
 		SSshuttle.shoppinglist -= SO
 		SSshuttle.orderhistory += SO

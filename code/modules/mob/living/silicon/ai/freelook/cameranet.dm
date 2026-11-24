@@ -215,6 +215,9 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 
 
 /datum/cameranet/proc/checkTurfVis(turf/position)
+	// Цель вне карты (null-space, удаляется) камерам не видна
+	if(!position)
+		return FALSE
 	var/datum/camerachunk/chunk = chunkGenerated(position.x, position.y, position.z)
 	if(chunk)
 		if(chunk.changed)
