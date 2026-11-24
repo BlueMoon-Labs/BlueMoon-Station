@@ -50,6 +50,23 @@
 	icon_state = "mu88_boots"
 	item_state = "mu88_boots"
 
+/obj/item/clothing/shoes/jackboots/duty
+	name = "duty boots"
+	desc = "Army boots that trod where Sol Fed cut a window into a bright future. Over other xeno's heads, of course. Looks quite sturdy and honorable."
+	icon_state = "duty_boots"
+	item_state = "duty_boots"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/shoes.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'
+	unique_reskin = list(
+		"duty" = list("icon_state" = "duty_boots", item_state = "duty_boots"),
+		"tan" = list("icon_state" = "tan_duty_boots", item_state = "tan_duty_boots"),
+	)
+
+/obj/item/clothing/shoes/jackboots/duty/tan
+	name = "tan duty boots"
+	icon_state = "tan_duty_boots"
+	item_state = "tan_duty_boots"
+
 ///////////////////////////////////////////////
 
 /obj/item/clothing/shoes/exo_legs

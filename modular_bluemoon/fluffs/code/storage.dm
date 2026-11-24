@@ -463,6 +463,17 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/storage/belt/security/webbing/ds/melatonin_
 	if(kit_count != 0)
 		. += "melatonin_bola_case_[min(kit_count, 4)]"
 
+/obj/item/storage/box/solgoy_box
+	name = "SolFed Army Box"
+	desc = "Military box that contains a full kit of Sol Fed ACU."
+	icon_state = "ammobox"
+
+/obj/item/storage/box/solgoy_box/PopulateContents()
+	new /obj/item/clothing/accessory/bm/camo_jacket(src)
+	new /obj/item/clothing/under/donator/bm/camo_pants(src)
+	new /obj/item/clothing/shoes/jackboots/duty(src)
+	new /obj/item/clothing/gloves/color/black/duty(src)
+
 ///////////////////////////////////////////
 
 #define WARDROBE_BOX_ITEMS /obj/item/clothing/suit/donator/bm/long_fancy_kimono, /obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat, /obj/item/clothing/neck/cloak/cybersun/civil, /obj/item/clothing/neck/cloak/syndieadm, /obj/item/modkit/invis_belt
