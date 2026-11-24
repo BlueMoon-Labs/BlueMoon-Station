@@ -502,9 +502,9 @@
 		remove_verb(C, /client/proc/show_previous_roundend_report)
 
 	if(!data)
-		// Старые HTML-отчёты, сохранённые до перехода на tgui, открываем как раньше.
-		show_roundend_report_legacy(C, report_type)
-		return
+		// Снимка tgui нет (отчёт остался от старой версии). Всё равно открываем
+		// современный интерфейс, подложив старый HTML в сводку отчёта.
+		data = build_legacy_roundend_tgui_data(C, report_type)
 
 	if(!istype(C.roundend_report_ui))
 		C.roundend_report_ui = new(C)
