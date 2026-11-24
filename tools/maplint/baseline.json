@@ -724,31 +724,6 @@
 			"/obj/structure/barricade/wooden": 38
 		},
 		"multiple_lattice": {
-			"/obj/structure/lattice": 9,
-			"/obj/structure/lattice/catwalk": 1
-		},
-		"multiple_tables": {
-			"/obj/structure/table": 2,
-			"/obj/structure/table/glass": 2,
-			"/obj/structure/table/wood": 2
-		},
-		"multiple_windows": {
-			"/obj/structure/window/reinforced": 10
-		},
-		"smartfridges_in_walls": {
-			"/obj/machinery/smartfridge": 2,
-			"/obj/machinery/smartfridge/chemistry/preloaded": 2,
-			"/obj/machinery/smartfridge/organ/preloaded": 1
-		},
-		"wall_stacking": {
-			"/turf/closed/wall": 1
-		}
-	},
-	"_maps/map_files/Deltastation/deltastation2.dmm": {
-		"barricade_stacking": {
-			"/obj/structure/barricade/wooden": 38
-		},
-		"multiple_lattice": {
 			"/obj/structure/lattice": 8
 		},
 		"multiple_tables": {

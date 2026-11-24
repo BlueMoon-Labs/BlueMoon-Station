@@ -37,7 +37,6 @@
 #define HERETIC_WALTZ_CIRCLE_FADE (0.6 SECONDS)
 #define HERETIC_WALTZ_SHIMMER_LOW 90
 #define HERETIC_WALTZ_SHIMMER_PERIOD (1.6 SECONDS)
-#define HERETIC_WALTZ_MATRIX_ALPHA 16
 
 /datum/heretic_path
 	var/ascension_title
@@ -628,36 +627,42 @@
 	animate(src, alpha = rest_alpha, time = HERETIC_WALTZ_CIRCLE_FADE, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 	addtimer(CALLBACK(src, PROC_REF(fade_out)), max(0, duration - HERETIC_WALTZ_CIRCLE_FADE))
 
-/// Мерцание идёт по alpha края, а проявление и угасание - по доле прозрачности в его цвете, чтобы не сбивать мерцание.
+/// Прозрачность края живёт в его матрице цвета, поэтому матрица ставится раз и навсегда, а проявление, мерцание и угасание идут по alpha по очереди.
 /obj/effect/heretic_combat_zone/void/last_waltz/style_edge(obj/effect/heretic_field_edge/edge, reused = FALSE)
 	if(reused)
 		return
+	edge.color = edge_tint()
+	edge.alpha = 0
 	if(fading)
-		edge.color = edge_tint(0)
 		return
-	var/high = initial(edge.alpha)
-	var/rising = ISEVEN(edge.x + edge.y)
-	edge.alpha = rising ? HERETIC_WALTZ_SHIMMER_LOW : high
-	animate(edge, alpha = rising ? high : HERETIC_WALTZ_SHIMMER_LOW, time = HERETIC_WALTZ_SHIMMER_PERIOD / 2, easing = SINE_EASING, loop = -1)
-	animate(alpha = rising ? HERETIC_WALTZ_SHIMMER_LOW : high, time = HERETIC_WALTZ_SHIMMER_PERIOD / 2, easing = SINE_EASING)
-	edge.color = edge_tint(0)
-	animate(edge, color = edge_tint(1), time = HERETIC_WALTZ_CIRCLE_FADE, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+	animate(edge, alpha = shimmer_start(edge), time = HERETIC_WALTZ_CIRCLE_FADE, easing = SINE_EASING | EASE_OUT)
+	addtimer(CALLBACK(src, PROC_REF(shimmer_edge), edge), HERETIC_WALTZ_CIRCLE_FADE)
+
+/// Соседние клетки края мерцают в противофазе.
+/obj/effect/heretic_combat_zone/void/last_waltz/proc/shimmer_start(obj/effect/heretic_field_edge/edge)
+	return ISEVEN(edge.x + edge.y) ? HERETIC_WALTZ_SHIMMER_LOW : initial(edge.alpha)
+
+/obj/effect/heretic_combat_zone/void/last_waltz/proc/shimmer_edge(obj/effect/heretic_field_edge/edge)
+	if(fading || QDELETED(edge))
+		return
+	var/from = shimmer_start(edge)
+	var/to_alpha = from == HERETIC_WALTZ_SHIMMER_LOW ? initial(edge.alpha) : HERETIC_WALTZ_SHIMMER_LOW
+	animate(edge, alpha = to_alpha, time = HERETIC_WALTZ_SHIMMER_PERIOD / 2, easing = SINE_EASING, loop = -1)
+	animate(alpha = from, time = HERETIC_WALTZ_SHIMMER_PERIOD / 2, easing = SINE_EASING)
 
 /// Поворот печати сейчас: вращение идёт против часовой с момента появления.
 /obj/effect/heretic_combat_zone/void/last_waltz/proc/spin_angle()
 	var/turns = (world.time - spin_started_at) / HERETIC_WALTZ_CIRCLE_SPIN
 	return -360 * (turns - round(turns))
 
-/obj/effect/heretic_combat_zone/void/last_waltz/proc/edge_tint(opacity)
-	var/list/tint = color_matrix_multiply(color_matrix_saturation(0), color_hex2color_matrix(boundary_color))
-	tint[HERETIC_WALTZ_MATRIX_ALPHA] = opacity
-	return tint
+/obj/effect/heretic_combat_zone/void/last_waltz/proc/edge_tint()
+	return color_matrix_multiply(color_matrix_saturation(0), color_hex2color_matrix(boundary_color))
 
 /obj/effect/heretic_combat_zone/void/last_waltz/proc/fade_out()
 	fading = TRUE
 	animate(src, alpha = 0, time = HERETIC_WALTZ_CIRCLE_FADE, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
 	for(var/obj/effect/heretic_field_edge/edge as anything in boundary)
-		animate(edge, color = edge_tint(0), time = HERETIC_WALTZ_CIRCLE_FADE, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
+		animate(edge, alpha = 0, time = HERETIC_WALTZ_CIRCLE_FADE, easing = SINE_EASING | EASE_IN)
 
 /// Снятый раньше срока круг не пропадает разом: печать и граница гаснут на месте.
 /obj/effect/heretic_combat_zone/void/last_waltz/Destroy()
@@ -666,7 +671,7 @@
 		if(place)
 			new /obj/effect/temp_visual/heretic_waltz_fade(place, src, spin_angle())
 		for(var/obj/effect/heretic_field_edge/edge as anything in boundary)
-			animate(edge, color = edge_tint(0), time = HERETIC_WALTZ_CIRCLE_FADE, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
+			animate(edge, alpha = 0, time = HERETIC_WALTZ_CIRCLE_FADE, easing = SINE_EASING | EASE_IN)
 			QDEL_IN(edge, HERETIC_WALTZ_CIRCLE_FADE)
 		boundary.Cut()
 	return ..()
@@ -737,4 +742,3 @@
 #undef HERETIC_WALTZ_CIRCLE_FADE
 #undef HERETIC_WALTZ_SHIMMER_LOW
 #undef HERETIC_WALTZ_SHIMMER_PERIOD
-#undef HERETIC_WALTZ_MATRIX_ALPHA

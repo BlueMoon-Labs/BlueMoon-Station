@@ -20,17 +20,16 @@
 	TEST_ASSERT_EQUAL(length(GLOB.mob_spawners[SPAWNERS_MENU_TEST_GROUP]), SPAWNERS_MENU_TEST_NULLS + 1, "test premise: the group must hold the live spawner and the null entries")
 
 	var/mob/dead/observer/ghost = allocate(/mob/dead/observer, run_loc_floor_bottom_left)
-	var/datum/spawners_menu/menu = new(ghost)
+	var/datum/job_menu/menu = new /datum/job_menu/ghost(ghost.client?.prefs)
 	var/list/data = menu.ui_data(ghost)
 	qdel(menu)
 
 	var/list/group
-	for(var/list/entry as anything in data["spawners"])
+	for(var/list/entry as anything in data["ghostRoles"])
 		if(entry["name"] == SPAWNERS_MENU_TEST_GROUP)
 			group = entry
 	TEST_ASSERT_NOTNULL(group, "the group with a live spawner must stay in the menu")
-	TEST_ASSERT_EQUAL(group["amount_left"], 1, "only the live spawner counts")
-	TEST_ASSERT_EQUAL(length(group["refs"]), 1, "null entries must not reach the menu")
+	TEST_ASSERT_EQUAL(group["amount"], 1, "only the live spawner counts")
 	TEST_ASSERT_EQUAL(length(GLOB.mob_spawners[SPAWNERS_MENU_TEST_GROUP]), 1, "null entries are pruned from the group")
 	TEST_ASSERT(alive in GLOB.mob_spawners[SPAWNERS_MENU_TEST_GROUP], "the live spawner stays registered")
 

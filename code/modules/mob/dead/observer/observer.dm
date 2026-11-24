@@ -55,7 +55,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	// of the mob
 	var/deadchat_name
 	var/datum/orbit_menu/orbit_menu
-	var/datum/spawners_menu/spawners_menu
+	var/datum/job_menu/spawners_menu
 	var/lastclienttime = 0 //BLUEMOON ADD фиксируем время выхода игрока
 
 /mob/dead/observer/Initialize(mapload, mob/body)
@@ -1144,11 +1144,11 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	GLOB.observer_default_invisibility = amount
 
 /mob/dead/observer/proc/open_spawners_menu()
-	set name = "Spawners Menu"
-	set desc = "See all currently available spawners"
+	set name = "Ghost Role Spawners"
+	set desc = "See all currently available ghost roles"
 	set category = "Ghost"
-	if(!spawners_menu)
-		spawners_menu = new(src)
+	if(QDELETED(spawners_menu))
+		spawners_menu = new /datum/job_menu/ghost(client?.prefs)
 
 	spawners_menu.ui_interact(src)
 

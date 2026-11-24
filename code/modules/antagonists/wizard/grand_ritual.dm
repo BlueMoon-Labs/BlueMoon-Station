@@ -109,7 +109,7 @@
 
 /datum/outfit/wizard/ritual_coven
 	name = "Ritual Wizard"
-	r_hand = null
+	r_hand = /obj/item/spellbook/wizard_team_based
 	l_hand = null
 
 /datum/outfit/wizard/ritual_coven/battle
