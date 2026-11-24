@@ -59,7 +59,7 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 /datum/econ_request
 	/// Заявка ждала дольше request_handoff_minutes: решить её может и начальник снабжения
 	var/handed_off = FALSE
-	/// Сколько доплатил бюджет снабжения, когда начальник снабжения одобрил заявку отделу без денег
+	/// Сколько доплатил бюджет снабжения, когда переданную заявку отделу без денег одобрили начальник снабжения, ГП или капитан
 	var/cargo_topup = 0
 
 /datum/econ_request/proc/waited_minutes()
@@ -70,18 +70,32 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 	var/list/staple_spent = list()
 	COOLDOWN_DECLARE(handoff_announce_cooldown)
 
-/// Начальник снабжения решает переданную ему заявку, а не начальство отдела.
-/datum/economy_department/proc/decides_as_quartermaster(datum/econ_request/request, mob/living/user)
-	if(!request?.handed_off || !user || can_manage(user) || isAI(user))
+/// Переданную снабжению заявку решает тот, кто распоряжается бюджетом снабжения (его начальник, ГП, капитан): недостающее доплачивает снабжение.
+/datum/economy_department/proc/cargo_tops_up(datum/econ_request/request, mob/living/user)
+	if(!request?.handed_off || !user || isAI(user))
 		return FALSE
 	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
 	return cargo != src && cargo?.can_manage(user)
+
+/// Сколько снабжение держит сверх порога на доплату к заявкам других отделов, переданным ему: этот излишек NT не забирает.
+/datum/economy_department/proc/held_for_requests()
+	return 0
+
+/datum/economy_department/cargo/held_for_requests()
+	. = 0
+	for(var/id in SSeconomy.departments)
+		var/datum/economy_department/department = SSeconomy.departments[id]
+		if(department == src)
+			continue
+		for(var/datum/econ_request/request as anything in department.requests)
+			if(request.status == ECON_REQUEST_PENDING && request.handed_off && (request.pack in department.catalog()) && !econ_pack_unavailable(request.pack))
+				. += department.request_shortfall(request)
 
 /// Сколько бюджету отдела не хватает на пак заявки.
 /datum/economy_department/proc/request_shortfall(datum/econ_request/request)
 	return max(round(econ_pack_price(request.pack)) - account.account_balance, 0)
 
-/// Начальник снабжения одобряет заявку отделу без денег: недостающее переводится из бюджета снабжения. Возвращает доплату или null, если снабжению не на что.
+/// Переданную заявку отделу без денег одобряет распорядитель бюджета снабжения: недостающее переводится из бюджета снабжения. Возвращает доплату или null, если снабжению не на что.
 /datum/economy_department/proc/cargo_top_up(datum/econ_request/request, mob/living/user)
 	var/shortfall = request_shortfall(request)
 	if(!shortfall)
@@ -259,7 +273,7 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 		request.handed_off = TRUE
 		fresh += request
 		log_econ("Заявка [request.uid] отдела [name] ([request.pack.name]) ждёт дольше [minutes] мин. и передана снабжению")
-		request.notify_requester("Заявка №[request.uid] на \"[request.pack.name]\" ждёт решения дольше [minutes] мин.: решить её теперь может и начальник снабжения, оплатит бюджет отдела, а недостающее доплатит бюджет снабжения.")
+		request.notify_requester("Заявка №[request.uid] на \"[request.pack.name]\" ждёт решения дольше [minutes] мин.: решить её теперь может и начальник снабжения, оплатит бюджет отдела, а недостающее доплатит бюджет снабжения, кто бы её ни одобрил - он, ГП или капитан.")
 	if(!length(fresh) || !COOLDOWN_FINISHED(src, handoff_announce_cooldown))
 		return
 	COOLDOWN_START(src, handoff_announce_cooldown, ECON_CARGO_REQUEST_RADIO_COOLDOWN)
@@ -320,7 +334,7 @@ GLOBAL_LIST_INIT(econ_staple_packs, typecacheof(list(
 		parts += left > 0 ? "без ответа одобрится сама через [left] мин." : "одобрится сама на ближайшем цикле экономики"
 	else if(request.handed_off)
 		var/shortfall = request_shortfall(request)
-		parts += "передана снабжению: решить может и его начальник[shortfall ? ", недостающие [shortfall] кр. доплатит бюджет снабжения" : ""]"
+		parts += "передана снабжению: решить может и его начальник[shortfall ? ", недостающие [shortfall] кр. доплатит бюджет снабжения, одобрят ли он, ГП или капитан" : ""]"
 	else if(hands_off_requests() && settings.request_handoff_minutes > 0)
 		parts += "через [max(settings.request_handoff_minutes - request.waited_minutes(), 1)] мин. без решения перейдёт и начальнику снабжения"
 	return capitalize(jointext(parts, "; ")) + "."

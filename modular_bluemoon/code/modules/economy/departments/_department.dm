@@ -127,7 +127,7 @@
 /proc/econ_emergency_active()
 	return GLOB.security_level >= SEC_LEVEL_RED
 
-/// Сколько вернётся NT на ближайшем тике: доля излишка над порогом; долги и следующая зарплата сотрудникам, долг NT, разовые поступления и цель накопления не трогаются. При ЧС - ничего.
+/// Сколько вернётся NT на ближайшем тике: доля излишка над порогом; долги и следующая зарплата сотрудникам, долг NT, разовые поступления, цель накопления и у снабжения недостача переданных ему заявок не трогаются. При ЧС - ничего.
 /datum/economy_department/proc/budget_return_due(list/stats)
 	if(!stats)
 		stats = econ_staff_stats(id)
@@ -135,6 +135,8 @@
 	if(econ_emergency_active())
 		return 0
 	var/excess = account.account_balance - budget_threshold(stats) - owed_to_staff(stats) - owed - shielded() - goal
+	if(excess > 0)
+		excess -= held_for_requests()
 	if(excess <= 0)
 		return 0
 	return round(excess * SSeconomy.settings.budget_cap_return_share / 100)

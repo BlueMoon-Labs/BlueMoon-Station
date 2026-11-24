@@ -387,7 +387,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	if(econ_pack_unavailable(pack))
 		return "\"[pack.name]\" нет в наличии у партнёров снабжения."
 	var/price = round(econ_pack_price(pack))
-	if(account.account_balance < price && request && decides_as_quartermaster(request, user))
+	if(account.account_balance < price && request && cargo_tops_up(request, user))
 		return "В бюджете отдела [account.account_balance] кр. из [price], а в бюджете снабжения нет недостающих [request_shortfall(request)] кр."
 	if(account.account_balance < price)
 		return "В бюджете не хватает денег: \"[pack.name]\" стоит [price] кр."
@@ -530,7 +530,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		return FALSE
 	var/by_manager = !automatic && can_manage(user)
 	var/topup = 0
-	if(!automatic && decides_as_quartermaster(request, user) && (request.pack in catalog()) && !econ_pack_unavailable(request.pack))
+	if(!automatic && cargo_tops_up(request, user) && (request.pack in catalog()) && !econ_pack_unavailable(request.pack))
 		topup = cargo_top_up(request, user)
 		if(isnull(topup))
 			return FALSE
@@ -550,7 +550,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	log_econ("Заявка [request.uid] отдела [name] одобрена[by_whom]: [automatic ? "автоматически" : key_name(user)]")
 	request.notify_requester("Заявка на \"[request.pack.name]\" одобрена[by_whom] и ушла в снабжение[topup ? ", недостающие [topup] кр. доплатил бюджет снабжения" : ""].")
 	if(topup)
-		account.bank_card_talk("Начальник снабжения одобрил заявку №[request.uid] на \"[request.pack.name]\": бюджет снабжения доплатил недостающие [topup] кр.")
+		account.bank_card_talk("Переданная снабжению заявка №[request.uid] на \"[request.pack.name]\" одобрена: бюджет снабжения доплатил недостающие [topup] кр.")
 	if(automatic)
 		notify_auto_order(request, order)
 	econ_trim_resolved(requests)
