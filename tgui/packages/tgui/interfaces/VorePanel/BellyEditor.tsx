@@ -217,7 +217,7 @@ const ControlsTab = (props: { belly: BellyState; edit: boolean }) => {
                 <Button
                   key={addon}
                   selected={(belly.mode_addons || []).includes(addon)}
-                  tooltip={ADDON_TIP[addon]}
+                  tooltip={<span className="Tooltip__text">{ADDON_TIP[addon]}</span>}
                   onClick={() => act('toggle_addon', { addon })}>
                   {ADDON_RU[addon] || addon}
                 </Button>
@@ -234,10 +234,10 @@ const ControlsTab = (props: { belly: BellyState; edit: boolean }) => {
           confirmIcon="trash"
           color="bad"
           disabled={belly.immutable}
-          tooltip={belly.immutable ? 'Этот нутр нельзя удалить' : undefined}
-          confirmContent="Удалить навсегда?"
+          tooltip={belly.immutable ? 'Это нутро нельзя удалить' : undefined}
+          confirmContent="Удалить навсегда? "
           onClick={() => act('delete_belly')}>
-          Удалить нутр
+          Удалить нутро
         </Button.Confirm>
       )}
     </>
@@ -286,7 +286,7 @@ const DescriptionsTab = (props: { belly: BellyState; edit: boolean }) => {
     <Stack vertical spacing={0.5}>
       <Stack.Item>
         <LabeledList>
-          <LabeledList.Item label={<TipLabel text="Глагол: есть" tip="Используется в сообщениях поглощения." />}>
+          <LabeledList.Item label={<TipLabel text="Глагол поглощения" tip="Используется в сообщениях поглощения в нутро" />}>
             <TextField
               edit={edit}
               value={belly.vore_verb || ''}
@@ -294,7 +294,7 @@ const DescriptionsTab = (props: { belly: BellyState; edit: boolean }) => {
               onSave={(value) => setField('vore_verb', value)}
             />
           </LabeledList.Item>
-          <LabeledList.Item label={<TipLabel text="Глагол: выпуск" tip="Используется в сообщениях выпуска." />}>
+          <LabeledList.Item label={<TipLabel text="Глагол высвобождения" tip="Используется в сообщениях выпуска из нутра" />}>
             <TextField
               edit={edit}
               value={belly.release_verb || ''}
@@ -502,7 +502,7 @@ const OptionsTab = (props: { belly: BellyState; edit: boolean }) => {
             <LabeledList.Item label={<TipLabel text="Добыча видит" tip="Если выключено — находящиеся внутри слепы." />}>
               <ToggleField edit={edit} value={!!belly.can_victim_see} onToggle={() => setField('can_victim_see')} yes="Да" no="Нет" />
             </LabeledList.Item>
-            <LabeledList.Item label={<TipLabel text="Кормление снаружи" tip="Можно ли подкладывать добычу в этот нутр со стороны." />}>
+            <LabeledList.Item label={<TipLabel text="Кормление снаружи" tip="Можно ли подкладывать добычу в это нутро со стороны." />}>
               <ToggleField edit={edit} value={!!belly.feedable} onToggle={() => setField('feedable')} yes="Да" no="Нет" />
             </LabeledList.Item>
             <LabeledList.Item label={<TipLabel text="Приватность" tip="«Как обычно» — по глобальной настройке, «Тихо» — только вблизи, «Громко» — все в поле зрения." />}>
@@ -564,7 +564,7 @@ const OptionsTab = (props: { belly: BellyState; edit: boolean }) => {
                 />
               </LabeledList.Item>
             )}
-            <LabeledList.Item label={<TipLabel text="Заметность" tip="Минимальный размер добычи, чтобы нутр был заметен. 0 — не показывать." />}>
+            <LabeledList.Item label={<TipLabel text="Заметность" tip="Минимальный размер добычи, чтобы нутро было заметно. 0 — не показывать." />}>
               <NumberField
                 edit={edit}
                 value={asNum(belly.bulge_size, 0.25) * 100}
@@ -668,7 +668,7 @@ const OptionsTab = (props: { belly: BellyState; edit: boolean }) => {
                 onSave={(value) => setField('belly_temperature', value)}
               />
             </LabeledList.Item>
-            <LabeledList.Item label={<TipLabel text="Урон температуры" tip="Слишком горячий или холодный нутр наносит урон (при переваривании)." />}>
+            <LabeledList.Item label={<TipLabel text="Урон температуры" tip="Слишком горячее или холодное нутро наносит урон (при переваривании)." />}>
               <ToggleField
                 edit={edit}
                 value={!!belly.temperature_damage}

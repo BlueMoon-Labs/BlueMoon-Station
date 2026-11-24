@@ -193,7 +193,7 @@ export const MODE_RU: Record<string, string> = {
   Heal: 'Исцеление',
   Noisy: 'Шумное удержание',
   Dragon: 'Пожирание драконом',
-  Absorb: 'Поглощение',
+  Absorb: 'Высасывание',
   'Un-absorb': 'Отмена поглощения',
 };
 
@@ -230,16 +230,16 @@ export const NOISE_PRESETS: Record<string, string> = {
 
 /** Типы нутра ID из GLOB.vore_type_options. */
 export const VORE_TYPE_RU: Record<string, string> = {
-  'Oral Vore': 'Рот',
-  'Anal Vore': 'Анальный',
-  'Cock Vore': 'Через член',
-  'Sheath Vore': 'В чехол',
-  Unbirth: 'Вагинальный',
-  'Breast Vore': 'Грудной',
-  'Tail Vore': 'Хвостовой',
-  Absorption: 'Поглощение',
-  'Soul Vore': 'Душа',
-  'Hard Vore': 'Жёсткий',
+  'Oral Vore': 'Oral Vore (рот)',
+  'Anal Vore': 'Anal Vore (анал)',
+  'Cock Vore': 'Cock Vore (член)',
+  'Sheath Vore': 'Sheath Vore (чехол/щель члена)',
+  Unbirth: 'Unbirth (вагинальный)',
+  'Breast Vore': 'Breast Vore (грудь)',
+  'Tail Vore': 'Tail Vore (хвост)',
+  Absorption: 'Absorption (поглащение/впитывание)',
+  'Soul Vore': 'Soul Vore (душа)',
+  'Hard Vore': 'Hard Vore (кровь/мясо/кости)',
   Other: 'Другое',
 };
 

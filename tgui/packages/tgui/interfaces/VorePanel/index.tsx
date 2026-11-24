@@ -574,11 +574,11 @@ const PreferencesTab = () => {
 };
 
 const MAIN_TABS = [
-  { id: 'bellies', title: 'Нутры', icon: 'list', Component: BelliesTab },
+  { id: 'bellies', title: 'Слоты Нутра', icon: 'list', Component: BelliesTab },
   { id: 'inside', title: 'Внутри', icon: 'user', Component: InsideTab },
   { id: 'soulcatcher', title: 'Ловец душ', icon: 'ghost', Component: SoulcatcherTab },
-  { id: 'general', title: 'Общие', icon: 'user-circle', Component: GeneralTab },
-  { id: 'prefs', title: 'Настройки', icon: 'user-cog', Component: PreferencesTab },
+  { id: 'general', title: 'Общие Настройки', icon: 'user-circle', Component: GeneralTab },
+  { id: 'prefs', title: 'Настройки предпочтений', icon: 'user-cog', Component: PreferencesTab },
 ];
 
 export const VorePanel = () => {

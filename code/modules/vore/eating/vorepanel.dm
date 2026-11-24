@@ -361,8 +361,8 @@
 			return TRUE
 		if("int_help")
 			tgui_alert(usr, "Эти настройки определяют, как ваше нутро реагирует на сопротивление жертвы. Процент шанса каждого события указан ниже; 0% полностью отключает событие. \
-					Взаимодействия работают только при включённых взаимодействиях нутра. Помните: смена режима (переваривание/поглощение) затронет всех в нутре, \
-					а при одновременном срабатывании нескольких событий первым выполнится ближайшее в списке: побег > перемещение > поглощение > переваривание.", "Справка")
+					Взаимодействия работают только при включённых взаимодействиях нутра. Помните: смена режима (переваривание/высасывание) затронет всех в нутре, \
+					а при одновременном срабатывании нескольких событий первым выполнится ближайшее в списке: побег > перемещение > высасывание > переваривание.", "Справка")
 			return TRUE
 
 		// Host is inside someone else, and is trying to interact with something else inside that person.
@@ -383,7 +383,7 @@
 			if(host.vore_organs.len >= BELLIES_MAX)
 				return FALSE
 
-			var/new_name = tgui_input_text(usr,"Имя нового нутра. \nИмя должно быть не меньше [BELLIES_NAME_MIN] символов.","Новый нутр", "", BELLIES_NAME_MAX, FALSE, TRUE)
+			var/new_name = tgui_input_text(usr,"Имя нового нутра. \nИмя должно быть не меньше [BELLIES_NAME_MIN] символов.","Новое нутро", "", BELLIES_NAME_MAX, FALSE, TRUE)
 
 			var/failure_msg = validate_belly_name(new_name)
 			if(failure_msg)
@@ -405,7 +405,7 @@
 		if("move_belly")
 			var/dir = text2num(params["dir"])
 			if(LAZYLEN(host.vore_organs) <= 1)
-				to_chat(usr, "<span class='warning'>У вас всего один нутр - перемещать нечего...</span>")
+				to_chat(usr, "<span class='warning'>У вас всего одно нутро - перемещать нечего...</span>")
 				return TRUE
 
 			var/current_index = host.vore_organs.Find(host.vore_selected)
@@ -892,15 +892,15 @@
 		var/obj/belly/B = belly
 		if(B.transferlocation == host.vore_selected.name)
 			dest_for = B.name
-			failure_msg += "Этот нутр указан как место перемещения для '[dest_for]'. Сначала уберите его оттуда. "
+			failure_msg += "Это нутро указано как место перемещения для '[dest_for]'. Сначала уберите его оттуда. "
 			break
 
 	if(host.vore_selected.contents.len)
-		failure_msg += "Нельзя удалить нутр с содержимым! "
+		failure_msg += "Нельзя удалить нутро с содержимым! "
 	if(host.vore_selected.immutable)
-		failure_msg += "Этот нутр помечен как неудаляемый. "
+		failure_msg += "Это нутро помечено как неудаляемый. "
 	if(host.vore_organs.len == 1)
-		failure_msg += "У вас должен остаться хотя бы один нутр. "
+		failure_msg += "У вас должно остаться хотя бы одно нутро. "
 
 	if(failure_msg)
 		tgui_alert_async(user,failure_msg,"Ошибка!")
@@ -1281,7 +1281,7 @@
 				return TRUE
 
 			if(!host.vore_selected)
-				to_chat(user,"<span class='warning'>Сначала выберите нутр на себе!</span>")
+				to_chat(user,"<span class='warning'>Сначала выберите нутро на себе!</span>")
 				return TRUE
 
 			var/obj/belly/TB = host.vore_selected

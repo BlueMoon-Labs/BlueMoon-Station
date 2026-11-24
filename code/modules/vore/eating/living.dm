@@ -139,7 +139,7 @@
 		return FALSE
 
 	if(!belly.feedable && user != belly.owner)
-		to_chat(user, span_warning("Этот нутр не принимает кормление со стороны."))
+		to_chat(user, span_warning("Это нутро не принимает кормление со стороны."))
 		to_chat(belly.owner, span_warning("Кто-то пытался покормить вас, но ваш [belly.get_display_name_lower()] к этому не готов."))
 		return FALSE
 
@@ -149,7 +149,7 @@
 		for(var/mob/living/M in belly.contents)
 			inside_count++
 		if(inside_count >= belly.vore_capacity)
-			to_chat(user, span_warning("Этот нутр уже полон."))
+			to_chat(user, span_warning("Это нутро уже полное."))
 			return FALSE
 
 	// BLUEMOON ADD START - сверхтяжёлых персонажей нельзя перемещать с помощью Vore, если жрёт не такой же сверхтяж
