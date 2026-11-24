@@ -827,6 +827,33 @@
 	attack_self(H)
 	return
 
+// Особый гримуар для магов ковена (командный динамик): шесть очков, без маг-ивентов,
+// призыва демона/клоун-демона, посоха превращения и ядерного посоха.
+/obj/item/spellbook/wizard_team_based
+	name = "Гримуар ковена"
+	desc = "Сжатая магическая книга магов ковена: шесть очков на заклинания. Маг-ивенты, призыв демона и клоун-демона, посох превращения и ядерный посох недоступны."
+	uses = 6
+	var/list/team_closed_entries = list(
+		/datum/spellbook_entry/summon/events,
+		/datum/spellbook_entry/item/bloodbottle,
+		/datum/spellbook_entry/item/hugbottle,
+		/datum/spellbook_entry/item/staffchange,
+		/datum/spellbook_entry/item/staffnuclear,
+	)
+
+/obj/item/spellbook/wizard_team_based/prepare_spells()
+	var/entry_types = subtypesof(/datum/spellbook_entry) - /datum/spellbook_entry/item - /datum/spellbook_entry/summon
+	for(var/T in entry_types)
+		if(T in team_closed_entries)
+			continue
+		var/datum/spellbook_entry/E = new T
+		if(E.IsAvailible())
+			entries |= E
+			categories |= E.category
+		else
+			qdel(E)
+	tab = categories[1]
+
 #undef SPELL_CATEGORY_OFFENSIVE
 #undef SPELL_CATEGORY_DEFEND
 #undef SPELL_CATEGORY_ASSIST

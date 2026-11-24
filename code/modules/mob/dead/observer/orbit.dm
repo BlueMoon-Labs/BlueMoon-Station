@@ -132,6 +132,11 @@
 
 				for (var/_A in mind.antag_datums)
 					var/datum/antagonist/A = _A
+					if(istype(A, /datum/antagonist/warmonger))
+						was_special = TRUE
+						serialized["antag"] = A.name
+						antagonists += list(serialized)
+						break
 					if(istype(A, /datum/antagonist/ghost_role))
 						was_special = TRUE
 						serialized["role"] = A.name
