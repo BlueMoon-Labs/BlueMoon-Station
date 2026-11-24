@@ -1917,7 +1917,9 @@
 		TEST_ASSERT(control.cost > 0, "[control_name]: гост-антаг событие без cost")
 		TEST_ASSERT(control.intensity > 0, "[control_name]: гост-антаг событие без intensity")
 		TEST_ASSERT(control.director_ghost_minimum > 0, "[control_name]: preflight гост-роли не знает минимального числа кандидатов")
-		TEST_ASSERT(control.director_ghost_preference, "[control_name]: preflight гост-роли не знает требуемый preference")
+		// Часть ролей опрашивает призраков без be_special, но с jobban-проверкой - для них
+		// достаточно любого из двух фильтров, которые понимает ghost_event_preflight().
+		TEST_ASSERT(control.director_ghost_preference || control.director_ghost_jobban, "[control_name]: preflight гост-роли не знает ни preference, ни jobban")
 	// Пираты и рейдеры реализованы обычными событиями (не ghost_role), но поллят призраков.
 	var/datum/round_event_control/pirates/pirates_control = locate() in SSdirector.actions
 	TEST_ASSERT_NOTNULL(pirates_control, "Событие Space Pirates должно быть зарегистрировано у директора")
