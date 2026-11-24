@@ -232,7 +232,27 @@
 	. = ..()
 	AddComponent(/datum/component/swarming)
 
-	wanted_objects = typecacheof(wanted_objects, TRUE)
+	// wanted_objects уже тайпкэш от hostile/Initialize - расширяем его до
+	// подтипов и кэшируем по типу, чтобы не гонять typecacheof на каждого зомби.
+	cache_wanted_objects_subtypes()
+
+///Расширение wanted_objects до подтипов - то же, что делали Initialize
+///сабтипов напрямую, но результат кэшируется по типу моба: typecacheof
+///обходит всё дерево типов и на каждой волне съедал десятки мс на моба.
+/mob/living/simple_animal/hostile/infected/proc/cache_wanted_objects_subtypes()
+	var/static/list/wanted_objects_subtypes_cache = list()
+	if(!wanted_objects_subtypes_cache[type])
+		wanted_objects_subtypes_cache[type] = typecacheof(wanted_objects, TRUE)
+	wanted_objects = wanted_objects_subtypes_cache[type]
+
+///Второй проход расширения для сабтипов, которые уже получили кэш от
+///infected/Initialize: повторяем старое поведение typecacheof(wanted_objects, TRUE),
+///но один раз на тип, а не на каждого моба.
+/mob/living/simple_animal/hostile/infected/proc/cache_wanted_objects_subtypes_deep()
+	var/static/list/wanted_objects_subtypes_deep_cache = list()
+	if(!wanted_objects_subtypes_deep_cache[type])
+		wanted_objects_subtypes_deep_cache[type] = typecacheof(wanted_objects, TRUE)
+	wanted_objects = wanted_objects_subtypes_deep_cache[type]
 
 /mob/living/simple_animal/hostile/infected/Move(atom/newloc, dir, step_x, step_y)
 	if(handle_fence_movement(newloc))
@@ -408,7 +428,7 @@
 /mob/living/simple_animal/hostile/infected/acid_spitter/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/swarming)
-	wanted_objects = typecacheof(wanted_objects, TRUE)
+	cache_wanted_objects_subtypes_deep()
 
 /mob/living/simple_animal/hostile/infected/acid_spitter/Move(atom/newloc, dir, step_x, step_y)
 	if(handle_fence_movement(newloc))
@@ -486,7 +506,7 @@
 /mob/living/simple_animal/hostile/infected/charger/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/swarming)
-	wanted_objects = typecacheof(wanted_objects, TRUE)
+	cache_wanted_objects_subtypes_deep()
 
 	COOLDOWN_START(src, charge_cooldown, 0)
 
@@ -670,7 +690,7 @@
 /mob/living/simple_animal/hostile/infected/hunter/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/swarming)
-	wanted_objects = typecacheof(wanted_objects, TRUE)
+	cache_wanted_objects_subtypes_deep()
 
 	is_stealthed = TRUE
 	animate(src, alpha = stealth_alpha, time = 0)
