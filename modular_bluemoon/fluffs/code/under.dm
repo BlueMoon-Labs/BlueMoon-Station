@@ -1251,9 +1251,13 @@
 /obj/item/clothing/under/donator/bm/camo_pants
 	name = "camouflage pants"
 	desc = "Military style pants used primarily by Sol Fed ground forces. They look quite sturdy, though dated."
+	gender = PLURAL
+	body_parts_covered = GROIN|LEGS
+	fitted = NO_FEMALE_UNIFORM
+	can_adjust = FALSE
+	mutantrace_variation = STYLE_DIGITIGRADE
 	icon_state = "camo_pants"
 	item_state = "camo_pants"
-	can_adjust = FALSE
 	unique_reskin = list(
 		"camo" = list("icon_state" = "camo_pants", item_state = "camo_pants"),
 		"grey" = list("icon_state" = "camo_pants_grey", item_state = "camo_pants_grey"),
