@@ -1,5 +1,9 @@
 #define REGISTER_DRAWER_SOUND_COOLDOWN (3 SECONDS)
 #define REGISTER_FEEDBACK_COOLDOWN (1 SECONDS)
+/// Чужую карту кассир проводит, только если её владелец не дальше этого и видит кассу
+#define REGISTER_CARD_OWNER_RANGE 3
+/// Сколько окно покупателя показывает, что он только что заплатил
+#define REGISTER_JUST_PAID_TIME (2 MINUTES)
 
 GLOBAL_LIST_INIT(econ_register_chings, list(
 	'sound/economy/register_ching1.ogg',
@@ -31,7 +35,7 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 
 /obj/machinery/cash_register
 	name = "cash register"
-	desc = "Касса заведения. Кассиры, до двух сразу, встают за неё своей ID-картой, составляют общее меню и набирают каждый свой счёт. Клиент оплачивает счёт картой или наличными и может оставить чаевые. Платить необязательно: NT и так оплачивает отделу его работу."
+	desc = "Касса заведения. Продавец встаёт за неё своей ID-картой и набирает заказ в её окне, покупатель оплачивает счёт картой, КПК или наличными и может оставить чаевые. Касса необязательна: NT и так оплачивает отделу его работу."
 	icon = 'icons/obj/machines/economy/cash_register.dmi'
 	icon_state = "universal_off"
 	density = FALSE
@@ -51,21 +55,55 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 	var/list/receipts = list()
 	COOLDOWN_DECLARE(drawer_cooldown)
 	COOLDOWN_DECLARE(feedback_cooldown)
+	COOLDOWN_DECLARE(foreign_card_cooldown)
+
+/// Типовое меню корпуса: list(название, WORK_* - от цены этой работы NT, множитель цены).
+/obj/machinery/cash_register/proc/menu_template()
+	return null
 
 /obj/machinery/cash_register/bar
 	icon_state = "bar_off"
 	skin = "bar"
 	skin_name = "бар"
 
+/obj/machinery/cash_register/bar/menu_template()
+	return list(
+		list("Пиво", WORK_SRV_DRINK, 1),
+		list("Коктейль", WORK_SRV_DRINK, 1.5),
+		list("Крепкий коктейль", WORK_SRV_DRINK, 2),
+		list("Сок или газировка", WORK_SRV_DRINK, 0.5),
+		list("Кофе или чай", WORK_SRV_DRINK, 0.5),
+		list("Закуска", WORK_SRV_DISH, 0.5),
+	)
+
 /obj/machinery/cash_register/kitchen
 	icon_state = "kitchen_off"
 	skin = "kitchen"
 	skin_name = "кухня"
 
+/obj/machinery/cash_register/kitchen/menu_template()
+	return list(
+		list("Горячее блюдо", WORK_SRV_DISH, 1.5),
+		list("Бургер", WORK_SRV_DISH, 1),
+		list("Суп", WORK_SRV_DISH, 1),
+		list("Салат", WORK_SRV_DISH, 0.75),
+		list("Десерт", WORK_SRV_DISH, 0.75),
+		list("Напиток", WORK_SRV_DRINK, 0.5),
+	)
+
 /obj/machinery/cash_register/clinic
 	icon_state = "clinic_off"
 	skin = "clinic"
 	skin_name = "клиника"
+
+/obj/machinery/cash_register/clinic/menu_template()
+	return list(
+		list("Осмотр", WORK_MED_DISCHARGE_LIGHT, 0.5),
+		list("Лечение лёгкой травмы", WORK_MED_DISCHARGE_LIGHT, 1),
+		list("Лечение тяжёлой травмы", WORK_MED_DISCHARGE_HEAVY, 1),
+		list("Операция", WORK_MED_SURGERY, 1),
+		list("Реанимация", WORK_MED_REVIVE, 1),
+	)
 
 /obj/machinery/cash_register/Initialize(mapload)
 	. = ..()
@@ -89,7 +127,7 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 /obj/machinery/cash_register/examine(mob/user)
 	. = ..()
 	if(!length(cashiers))
-		. += span_notice("Касса свободна, экран погашен: проведите своей ID-картой, чтобы встать за неё.")
+		. += span_notice("Касса свободна, экран погашен. Продавцу: проведите по ней своей ID-картой или КПК с картой, чтобы встать за кассу.")
 	for(var/datum/register_cashier/cashier as anything in cashiers)
 		var/datum/economy_department/department = department_of(cashier)
 		var/total = order_total(cashier)
@@ -98,10 +136,11 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 			. += span_notice("За кассой [cashier.name]: [department.register_cashier_share]% выручки кассиру, [100 - department.register_cashier_share]% в бюджет отдела \"[department.name]\".[order_text]")
 		else
 			. += span_notice("За кассой [cashier.name], выручка целиком ему.[order_text]")
-	. += span_notice("Оплата - свайпом карты или из окна кассы, только с личного счёта, без налога. Наличные (голочип, купюры, монеты) прикладывают к кассе: сдачу она выдаёт голочипом.")
-	. += span_notice("[anchored ? "Прикручена к полу" : "Откручена"]: гаечным ключом кассу откручивают, чтобы переставить, в том числе на стол.")
 	if(is_cashier(user))
-		. += span_notice("Цена позиции от 1 до [REGISTER_PRICE_MAX] кр., в меню до [REGISTER_MENU_MAX] позиций, до [REGISTER_ORDER_COUNT_MAX] шт. одной позиции в счёте. Свайп своей картой - отойти от кассы.")
+		. += span_notice("Вы за кассой: заведите меню в её окне и добавляйте заказ покупателя кнопкой «В счёт», платит он сам. Можно и взять его карту и провести по кассе самому, если он рядом и в сознании. Цена позиции от 1 до [REGISTER_PRICE_MAX] кр., в меню до [REGISTER_MENU_MAX] позиций, до [REGISTER_ORDER_COUNT_MAX] шт. одной позиции в счёте. Свайп своей картой при пустом счёте - отойти от кассы.")
+	else
+		. += span_notice("Покупателю: скажите кассиру заказ, он наберёт счёт. Оплатить - провести по кассе ID-картой или КПК, нажать «Оплатить» в окне кассы или приложить наличные: голочип, купюры, монеты, сдачу касса выдаст голочипом. Платят с личного счёта, без налога.")
+	. += span_notice("[anchored ? "Прикручена к полу" : "Откручена"]: гаечным ключом кассу откручивают, чтобы переставить, в том числе на стол.")
 	if(!user.Adjacent(src))
 		return
 	for(var/list/item as anything in menu)
@@ -180,6 +219,8 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 	var/datum/register_cashier/cashier = cashier_of(user)
 	if(!cashier)
 		return FALSE
+	var/total = order_total(cashier)
+	to_chat(user, span_notice((total ? "Вы отошли от кассы, набранный счёт на [total] кр. сброшен." : "Вы отошли от кассы.")))
 	cashiers -= cashier
 	qdel(cashier)
 	update_appearance()
@@ -211,6 +252,25 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 /obj/machinery/cash_register/proc/order_changed(datum/register_cashier/cashier)
 	cashier.order_rev = ++next_rev
 	cashier.order_at = world.time
+	addtimer(CALLBACK(src, PROC_REF(show_totals)), REGISTER_SELECT_GRACE, TIMER_UNIQUE|TIMER_OVERRIDE)
+
+/// Сумма к оплате над кассой: когда счёт перестали править и свайп уже платит.
+/obj/machinery/cash_register/proc/show_totals()
+	var/list/totals = list()
+	for(var/datum/register_cashier/cashier as anything in open_orders())
+		totals += "[order_total(cashier)] кр"
+	if(length(totals))
+		balloon_alert_to_viewers("к оплате [jointext(totals, " / ")]")
+
+/// Заполняет пустое меню типовыми позициями корпуса с ценами от оплаты NT за ту же работу.
+/obj/machinery/cash_register/proc/fill_template(mob/user)
+	var/list/template = menu_template()
+	if(!length(template) || length(menu) || !is_cashier(user))
+		return FALSE
+	for(var/list/entry as anything in template)
+		var/base_price = SSeconomy.settings.work_prices[entry[2]] || 1
+		add_item(entry[1], clamp(round(base_price * entry[3]), 1, REGISTER_PRICE_MAX), user)
+	return TRUE
 
 /// Кассир добавляет в свой счёт или убирает из него штуки позиции меню.
 /obj/machinery/cash_register/proc/order_add(mob/user, item_id, delta)
@@ -257,20 +317,29 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 		if(length(cashier.order))
 			. += cashier
 
-/// Почему оплата картой не пройдёт: текст для клиента или null.
-/obj/machinery/cash_register/proc/charge_problem(datum/bank_account/payer, datum/register_cashier/cashier)
+/// Почему оплата картой не пройдёт: текст для клиента или null. foreign - платит чужая карта из рук кассира: её баланс ему не показывают.
+/obj/machinery/cash_register/proc/charge_problem(datum/bank_account/payer, datum/register_cashier/cashier, foreign = FALSE)
 	if(!cashier || !length(cashier.order))
 		return "Кассир ещё не набрал счёт к оплате."
 	if(SSeconomy.personal_account_problem(cashier.account, TRUE))
 		return "Счёт кассира заморожен или заблокирован, касса оплату не принимает."
 	. = SSeconomy.personal_account_problem(payer, TRUE)
 	if(.)
-		return
+		return (foreign && (payer in SSeconomy.bank_accounts)) ? "Счёт владельца карты заморожен или заблокирован." : .
 	if(payer == cashier.account)
 		return "Нельзя платить самому себе."
 	var/total = order_total(cashier)
 	if(!payer.has_money(total))
-		return "Недостаточно средств: на счёте [payer.account_balance] кр."
+		return foreign ? "На счёте владельца карты не хватает денег." : "Недостаточно средств: на счёте [payer.account_balance] кр."
+
+/// Владелец чужой карты стоит у кассы, в сознании и не SSD: без него кассир картой не платит.
+/obj/machinery/cash_register/proc/card_owner_nearby(datum/bank_account/account)
+	var/mob/living/owner = account?.owner_body()
+	var/turf/owner_turf = get_turf(owner)
+	var/turf/register_turf = get_turf(src)
+	if(!owner_turf || !register_turf || owner_turf.z != register_turf.z || owner.stat != CONSCIOUS || !GET_CLIENT(owner))
+		return FALSE
+	return get_dist(register_turf, owner_turf) <= REGISTER_CARD_OWNER_RANGE && can_see(register_turf, owner_turf, REGISTER_CARD_OWNER_RANGE)
 
 /obj/machinery/cash_register/proc/payment_line(datum/register_cashier/cashier)
 	return "[order_total(cashier)] кр., получатель: [cashier.name]"
@@ -292,18 +361,18 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 	for(var/list/line as anything in lines)
 		. += "[line["name"]][line["count"] > 1 ? " x[line["count"]]" : ""] - [line["price"] * line["count"]] кр."
 
-/obj/machinery/cash_register/proc/finish_sale(datum/register_cashier/cashier, mob/living/customer, total, cashier_part, how)
+/obj/machinery/cash_register/proc/finish_sale(datum/register_cashier/cashier, mob/living/customer, total, cashier_part, how, payer_name)
 	total_sales += total
 	cashier.order.Cut()
 	order_changed(cashier)
 	flick("[skin]_paid", src)
-	cashier.account.bank_card_talk("Касса: [customer.name] оплатил счёт [how] - [total] кр., ваша доля [cashier_part] кр.", balloon = cashier_part ? "касса +[cashier_part] кр" : null)
+	cashier.account.bank_card_talk("Касса: [payer_name || customer.name] оплатил счёт [how] - [total] кр., ваша доля [cashier_part] кр.", balloon = cashier_part ? "касса +[cashier_part] кр" : null)
 	if(COOLDOWN_FINISHED(src, feedback_cooldown))
 		COOLDOWN_START(src, feedback_cooldown, REGISTER_FEEDBACK_COOLDOWN)
 		playsound(src, pick(GLOB.econ_register_chings), 40, FALSE)
 
 /// Оплата счёта кассира картой. Всё, из-за чего move откажет, проверено в charge_problem.
-/obj/machinery/cash_register/proc/charge(mob/living/customer, datum/bank_account/payer, datum/register_cashier/cashier)
+/obj/machinery/cash_register/proc/charge(mob/living/customer, datum/bank_account/payer, datum/register_cashier/cashier, payer_name)
 	if(!payer)
 		payer = econ_account_of(customer)
 	var/problem = charge_problem(payer, cashier)
@@ -315,8 +384,8 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 	var/cashier_part = settle(cashier, payer, total, customer)
 	if(isnull(cashier_part))
 		return FALSE
-	receipts["[payer.account_id]"] = list("lines" = receipt_lines(lines), "total" = total, "cashier" = cashier.name, "time" = STATION_TIME_TIMESTAMP("hh:mm", world.time))
-	finish_sale(cashier, customer, total, cashier_part, "картой")
+	receipts["[payer.account_id]"] = list("lines" = receipt_lines(lines), "total" = total, "cashier" = cashier.name, "time" = STATION_TIME_TIMESTAMP("hh:mm", world.time), "at" = world.time)
+	finish_sale(cashier, customer, total, cashier_part, "картой", payer_name)
 	return TRUE
 
 /proc/econ_is_cash(obj/item/thing)
@@ -354,13 +423,20 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 		return FALSE
 	var/list/lines = order_lines(cashier)
 	var/cashier_name = cashier.name
+	var/list/cash_note = econ_cash_note(list(money))
+	var/money_origin = econ_cash_origin_of(money)
+	var/money_withdrawn = econ_cash_withdrawn(money)
 	var/change = take_cash(money, total)
 	if(isnull(change))
 		to_chat(customer, span_warning("Касса не смогла взять [total] кр. из [money.name]."))
 		return FALSE
+	var/found = SSeconomy.cash_shortfall(total)
 	var/cashier_part = settle(cashier, SSeconomy.cash_account, total, customer)
+	if(!isnull(cashier_part))
+		SSeconomy.note_cash_in(cash_note, total, "кассу [name], кассир [cashier_name]", customer, found)
 	if(change > 0)
 		var/obj/item/holochip/change_chip = new(drop_location(), change)
+		econ_cash_pass_on(change_chip, money_origin, money_withdrawn, "сдача кассы [name],")
 		customer.put_in_hands(change_chip)
 	finish_sale(cashier, customer, total, cashier_part || 0, "наличными")
 	give_receipt(customer, list("lines" = receipt_lines(lines), "total" = total, "cashier" = cashier_name, "time" = STATION_TIME_TIMESTAMP("hh:mm", world.time)), change)
@@ -413,6 +489,8 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 			return order_clear(user)
 		if("join")
 			return login(user)
+		if("template")
+			return fill_template(user)
 		if("pay")
 			var/datum/register_cashier/cashier = cashier_by_id(params["cashier"])
 			if(!cashier || params["rev"] != cashier.order_rev || params["total"] != order_total(cashier))
@@ -451,20 +529,48 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 			return FALSE
 	return TRUE
 
-/obj/machinery/cash_register/proc/swipe_card(mob/living/user, obj/item/card/id/card)
-	if(is_cashier(user))
+/// Кассир своей картой при пустом счёте отходит от кассы, а картой покупателя при нём оплачивает свой счёт.
+/obj/machinery/cash_register/proc/cashier_swipe(mob/living/user, obj/item/card/id/card, datum/register_cashier/mine)
+	if(card.registered_account == mine.account)
+		if(length(mine.order))
+			to_chat(user, span_warning("У вас набран счёт на [order_total(mine)] кр., его оплачивает покупатель: картой или КПК по кассе, кнопкой в окне кассы или наличными. Можно взять его карту и провести самому, пока он рядом. Чтобы отойти, очистите счёт или нажмите «Отойти от кассы» в окне - набранный счёт сбросится."))
+			return
 		logout(user)
-		to_chat(user, span_notice("Вы отошли от кассы."))
+		return
+	if(!length(mine.order))
+		to_chat(user, span_warning("Ваш счёт пуст: сначала наберите заказ в окне кассы, потом проводите карту покупателя."))
+		return
+	var/datum/bank_account/payer = card.registered_account
+	var/problem = payer ? charge_problem(payer, mine, TRUE) : "К карте не привязан счёт."
+	if(!problem && !card_owner_nearby(payer))
+		problem = "Владельца карты нет у кассы или он без сознания. Чужую карту проводят только при владельце."
+	if(problem)
+		to_chat(user, span_warning("Карта не платит: [problem]"))
+		return
+	var/line = payment_line(mine)
+	var/total = order_total(mine)
+	var/holder = card.registered_name || payer.account_holder
+	if(!charge(user, payer, mine, holder))
+		return
+	to_chat(user, span_notice("Оплачено картой [holder]: [line]. Верните карту владельцу."))
+	if(COOLDOWN_FINISHED(src, foreign_card_cooldown))
+		COOLDOWN_START(src, foreign_card_cooldown, REGISTER_FEEDBACK_COOLDOWN)
+		user.visible_message(span_notice("[user] проводит по кассе карту [holder]: [total] кр."), ignored_mobs = user)
+
+/obj/machinery/cash_register/proc/swipe_card(mob/living/user, obj/item/card/id/card)
+	var/datum/register_cashier/mine = cashier_of(user)
+	if(mine)
+		cashier_swipe(user, card, mine)
 		return
 	if(!length(open_orders()))
 		if(can_join_by_swipe(user) && login(user, card))
-			to_chat(user, span_notice("Вы встали за кассу."))
+			to_chat(user, span_notice("Вы встали за кассу. Откройте её окно: заведите меню и добавляйте заказ покупателя кнопкой «В счёт», платит он сам. Отойти - свайп своей картой при пустом счёте."))
 			return
 		var/problem = SSeconomy.personal_account_problem(econ_account_of(user), TRUE)
 		if(problem || card.registered_account != econ_account_of(user))
 			to_chat(user, span_warning(problem || "Встать за кассу можно только своей картой."))
 		else
-			to_chat(user, span_warning(length(cashiers) ? "Кассир ещё не набрал счёт к оплате. Встать вторым кассиром можно из окна кассы." : "Встать за кассу не вышло."))
+			to_chat(user, span_warning(length(cashiers) ? "Кассир ещё не набрал счёт: скажите ему заказ и проведите картой, когда сумма появится на кассе. Персонал встаёт вторым кассиром из окна кассы." : "Встать за кассу не вышло."))
 		return
 	var/datum/register_cashier/cashier = choose_order(user)
 	if(!cashier)
@@ -472,20 +578,37 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 	if(world.time < cashier.order_at + REGISTER_SELECT_GRACE)
 		to_chat(user, span_warning("Счёт только что изменился, проверьте сумму и проведите картой ещё раз."))
 		return
+	var/datum/bank_account/payer = card.registered_account
+	if(!payer)
+		to_chat(user, span_warning("Карта не платит: К карте не привязан счёт."))
+		return
 	var/line = payment_line(cashier)
-	if(charge(user, card.registered_account, cashier))
-		to_chat(user, span_notice("Оплачено: [line]."))
+	if(!charge(user, payer, cashier))
+		return
+	if(payer == econ_account_of(user))
+		to_chat(user, span_notice("Оплачено: [line]. Чек - кнопкой в окне кассы."))
+	else
+		to_chat(user, span_notice("Оплачено картой [card.registered_name || payer.account_holder]: [line]."))
+
+/// Карта, которой платят: сама ID-карта, карта в КПК или ноутбуке, лицевая карта кошелька. Чужие держатели карт (переноска с микро) не платят.
+/obj/machinery/cash_register/proc/payment_card(obj/item/thing)
+	if(istype(thing, /obj/item/card/id) || istype(thing, /obj/item/modular_computer) || istype(thing, /obj/item/storage/wallet))
+		return thing.GetID()
 
 /obj/machinery/cash_register/attackby(obj/item/thing, mob/living/user, params)
 	if(user.a_intent == INTENT_HARM)
 		return ..()
-	if(isidcard(thing))
-		swipe_card(user, thing)
+	var/obj/item/card/id/card = payment_card(thing)
+	if(card)
+		swipe_card(user, card)
+		return TRUE
+	if(istype(thing, /obj/item/modular_computer) || istype(thing, /obj/item/storage/wallet))
+		to_chat(user, span_warning("В [thing.name] нет ID-карты: вставьте её, чтобы платить."))
 		return TRUE
 	if(!econ_is_cash(thing))
 		return ..()
 	if(!length(open_orders()))
-		to_chat(user, span_warning("Кассир ещё не набрал счёт к оплате."))
+		to_chat(user, span_warning(length(cashiers) ? "Кассир ещё не набрал счёт: скажите ему заказ и приложите наличные, когда сумма появится на кассе." : "За кассой никого: наличные она примет, когда продавец встанет за неё и наберёт счёт."))
 		return TRUE
 	var/datum/register_cashier/cashier = choose_order(user)
 	if(!cashier || QDELETED(thing) || !user.is_holding(thing))
@@ -514,6 +637,7 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 		"cashiers_max" = REGISTER_CASHIERS_MAX,
 		"tip_max" = min(REGISTER_PRICE_MAX, settings.transfer_max),
 		"transfer_cooldown" = settings.transfer_cooldown_seconds,
+		"has_template" = !!length(menu_template()),
 	)
 
 /obj/machinery/cash_register/ui_data(mob/user)
@@ -534,6 +658,7 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 			"share" = department ? department.register_cashier_share : 100,
 			"pay_problem" = (!mine && length(cashier.order)) ? charge_problem(own, cashier) : null,
 		))
+	var/list/sale = own && receipts["[own.account_id]"]
 	return list(
 		"cashiers" = rows,
 		"is_cashier" = !!mine,
@@ -543,7 +668,8 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 		"has_account" = !!own,
 		"balance" = own ? own.account_balance : 0,
 		"cooldown_left" = own ? CEILING(COOLDOWN_TIMELEFT(own, personal_payment_cooldown) / (1 SECONDS), 1) : 0,
-		"receipt" = !!(own && receipts["[own.account_id]"]),
+		"receipt" = !!sale,
+		"just_paid" = (sale && world.time - sale["at"] < REGISTER_JUST_PAID_TIME) ? sale["total"] : null,
 	)
 
 /// Номер позиции меню по её постоянному id: окно шлёт id, номера сдвигаются при удалении.
@@ -571,7 +697,7 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 			return index && register_act(user, action, list("index" = index))
 		if("order")
 			return register_act(user, action, list("id" = econ_ui_number(params["id"]), "delta" = econ_ui_number(params["delta"])))
-		if("clear", "logout")
+		if("clear", "logout", "template")
 			return register_act(user, action, list())
 		if("join")
 			if(!register_act(user, action, list()))
@@ -646,5 +772,7 @@ GLOBAL_LIST_INIT(econ_register_chings, list(
 	var/obj/machinery/cash_register/register_type = build_path
 	to_chat(user, span_notice("Корпус кассы на плате: [initial(register_type.skin_name)]."))
 
+#undef REGISTER_JUST_PAID_TIME
+#undef REGISTER_CARD_OWNER_RANGE
 #undef REGISTER_FEEDBACK_COOLDOWN
 #undef REGISTER_DRAWER_SOUND_COOLDOWN

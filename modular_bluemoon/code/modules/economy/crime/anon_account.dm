@@ -68,4 +68,6 @@ GLOBAL_VAR_INIT(econ_anon_account_counter, 100)
 	amount = round(amount)
 	if(amount < 1 || !account || !SSeconomy.move(account, SSeconomy.cash_account, amount, ECON_CASH_OUT, user))
 		return null
-	return new /obj/item/holochip(user ? user.drop_location() : drop_location(), amount)
+	var/obj/item/holochip/chip = new(user ? user.drop_location() : drop_location(), amount)
+	econ_cash_mark_withdrawn(chip, account, user)
+	return chip

@@ -62,6 +62,7 @@
 	SSshuttle.shoppinglist += saved_shoppinglist
 	QDEL_LIST(SSshuttle.requestlist)
 	SSshuttle.requestlist += saved_requestlist
+	QDEL_LIST(GLOB.econ_shop_gifts)
 	return ..()
 
 /datum/unit_test/economy_catalog/proc/make_staff(department_id, list/access, account_type = /datum/bank_account)
@@ -283,7 +284,7 @@
 	TEST_ASSERT(engineering.order_pack(pack, chief, "тест"), "Глава заказывает второй раз")
 	TEST_ASSERT(!length(spy.heard), "Второй заказ в кулдаун не объявлен: [jointext(spy.heard, "; ")]")
 
-/// О заявке, ждущей решения, отдел оповещает сам, откуда бы её ни подали: канал отдела через систему оповещения и карты начальства на смене, кроме мёртвых; кулдаун общий.
+/// О заявке, ждущей решения, отдел оповещает сам, откуда бы её ни подали: канал отдела через систему оповещения, не чаще кулдауна, и карты начальства на смене, кроме мёртвых, - о каждой заявке.
 /datum/unit_test/economy_catalog/request_pending_announce/Run()
 	var/obj/item/radio/headset/econ_test_spy/spy = spy_announcer()
 	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
@@ -314,10 +315,11 @@
 	var/datum/bank_account/econ_test_ear/offline_ear = econ_account_of(offline_captain)
 	TEST_ASSERT(!length(offline_ear.heard), "Капитану не на смене карта не сообщает")
 	spy.heard.Cut()
-	medical.submit_request(pack, doctor, "Ещё")
+	var/datum/econ_request/second = medical.submit_request(pack, doctor, "Ещё")
 	TEST_ASSERT(!length(spy.heard), "Вторая заявка в кулдаун не объявлена: [jointext(spy.heard, "; ")]")
 	var/datum/bank_account/econ_test_ear/cmo_ear = econ_account_of(cmo)
-	TEST_ASSERT_EQUAL(length(cmo_ear.heard), 1, "Вторая заявка в кулдаун не пишет на карту")
+	TEST_ASSERT_EQUAL(length(cmo_ear.heard), 2, "Вторая заявка в кулдаун канала не пришла на карту главы")
+	TEST_ASSERT(findtext(cmo_ear.heard[2], "econ_request=[second.uid];econ_decide=approve"), "На второй заявке нет кнопок: [cmo_ear.heard[2]]")
 
 /// Заявка: глава одобряет - бюджет списан, заказ встал в очередь карго предоплаченным.
 /datum/unit_test/economy_catalog/request_approve/Run()
@@ -389,6 +391,167 @@
 	TEST_ASSERT_EQUAL(second.status, ECON_REQUEST_PENDING, "Второе автоодобрение ждёт перерыва")
 	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Второго заказа нет")
 
+/// При главе на смене недорогая заявка сотрудника одобряется сразу, не чаще перерыва; в СБ при начальстве она ждёт главу.
+/datum/unit_test/economy_catalog/request_instant_approve/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/datum/supply_pack/cheap = window_pack(medical, TRUE)
+	TEST_ASSERT_NOTNULL(cheap, "Есть недорогой пак медицины")
+	econ_test_set_balance(medical.account, round(econ_pack_price(cheap)) * 3)
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED)
+	on_shift(make_with_job(/datum/job/cmo))
+	TEST_ASSERT(medical.has_approver_on_shift(), "Главврач на смене")
+	var/datum/econ_request/request = medical.submit_request(cheap, doctor, "тест")
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Недорогая заявка одобрена сразу при главе на смене")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 1, "Заказ в очереди")
+	var/datum/econ_request/second = medical.submit_request(cheap, doctor, "тест")
+	TEST_ASSERT_EQUAL(second.status, ECON_REQUEST_PENDING, "Вторая ждёт перерыва или главу")
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/datum/supply_pack/armory_cheap
+	for(var/datum/supply_pack/pack as anything in security.catalog())
+		if(!econ_pack_unavailable(pack) && security.auto_approvable(pack))
+			armory_cheap = pack
+			break
+	TEST_ASSERT_NOTNULL(armory_cheap, "Есть недорогой пак СБ")
+	econ_test_set_balance(security.account, round(econ_pack_price(armory_cheap)) * 2)
+	var/mob/living/carbon/human/officer = make_staff(ACCOUNT_SEC)
+	TEST_ASSERT(security.instant_approval(), "Без начальства СБ недорогая заявка одобряется сама")
+	on_shift(make_with_job(/datum/job/hos))
+	TEST_ASSERT(!security.instant_approval(), "При главе СБ на смене сама не одобряется")
+	var/datum/econ_request/officer_request = security.submit_request(armory_cheap, officer, "тест")
+	TEST_ASSERT_EQUAL(officer_request.status, ECON_REQUEST_PENDING, "Заявка СБ ждёт главу")
+
+/// Карта главы сообщает о каждой ждущей заявке со ссылками "Одобрить" и "Отклонить", о пачке с консоли - одним сообщением со ссылками на каждую: глава решает заявку одним нажатием, сотрудник и мёртвый - нет.
+/datum/unit_test/economy_catalog/request_link_decide/Run()
+	var/datum/economy_department/engineering = SSeconomy.get_department(ACCOUNT_ENG)
+	var/datum/supply_pack/pack = pack_above_auto_limit(engineering)
+	econ_test_set_balance(engineering.account, round(econ_pack_price(pack)) + 50)
+	var/mob/living/carbon/human/engineer = make_staff(ACCOUNT_ENG)
+	var/mob/living/carbon/human/chief = make_with_job(/datum/job/chief_engineer, /datum/bank_account/econ_test_ear)
+	on_shift(chief)
+	var/datum/econ_request/request = engineering.submit_request(pack, engineer, "тест")
+	var/datum/econ_request/second = engineering.submit_request(pack, engineer, "тест")
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_PENDING, "Дорогая заявка ждёт главу")
+	var/datum/bank_account/econ_test_ear/ear = econ_account_of(chief)
+	TEST_ASSERT_EQUAL(length(ear.heard), 2, "Карта главы сообщила не о каждой заявке: [jointext(ear.heard, "; ")]")
+	TEST_ASSERT(findtext(ear.heard[1], "src=[REF(engineering)];econ_request=[request.uid];econ_decide=approve"), "В сообщении ссылка одобрения: [ear.heard[1]]")
+	TEST_ASSERT(findtext(ear.heard[1], "econ_decide=deny"), "В сообщении ссылка отказа")
+	TEST_ASSERT(findtext(ear.heard[1], "Отклонить</a> - или в программе \"Бюджет отдела\" на КПК."), "Ссылки не ведут к программе: [ear.heard[1]]")
+	TEST_ASSERT(findtext(ear.heard[2], "econ_request=[second.uid];econ_decide=approve"), "У второй заявки нет своей ссылки: [ear.heard[2]]")
+	usr = engineer
+	engineering.Topic(null, list("econ_request" = "[request.uid]", "econ_decide" = "approve"))
+	usr = null
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_PENDING, "Сотрудник по ссылке не одобряет")
+	usr = chief
+	engineering.Topic(null, list("econ_request" = "[request.uid]", "econ_decide" = "approve"))
+	engineering.Topic(null, list("econ_request" = "[second.uid]", "econ_decide" = "deny"))
+	usr = null
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Глава одобрил по ссылке")
+	TEST_ASSERT_EQUAL(second.status, ECON_REQUEST_DENIED, "Глава отклонил по ссылке")
+	TEST_ASSERT_EQUAL(engineering.account.account_balance, 50, "Одобренная оплачена бюджетом")
+	TEST_ASSERT_EQUAL(engineering.decide_from_link(chief, request.uid, TRUE), "Заявка №[request.uid] уже решена.", "Повторное нажатие объяснено")
+	ear.heard.Cut()
+	engineering.submit_window_requests(pack, engineer, "пачка", 2)
+	var/list/batch = engineering.requests.Copy(length(engineering.requests) - 1)
+	TEST_ASSERT_EQUAL(length(ear.heard), 1, "Пачка с консоли - одно сообщение: [jointext(ear.heard, "; ")]")
+	for(var/datum/econ_request/batched as anything in batch)
+		TEST_ASSERT(batched.status == ECON_REQUEST_PENDING && findtext(ear.heard[1], "econ_request=[batched.uid];econ_decide=approve"), "В сообщении о пачке нет ссылки на заявку №[batched.uid]: [ear.heard[1]]")
+	var/datum/econ_request/third = batch[1]
+	chief.death()
+	usr = chief
+	engineering.Topic(null, list("econ_request" = "[third.uid]", "econ_decide" = "approve"))
+	usr = null
+	TEST_ASSERT_EQUAL(third.status, ECON_REQUEST_PENDING, "Мёртвый глава по ссылке не решает")
+
+/// Заказ без одобрения не трогает деньги на долги и следующую зарплату сотрудникам: мгновенная заявка, расходник и залежавшаяся ждут главу, глава одобряет вручную.
+/datum/unit_test/economy_catalog/request_wage_reserve/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/datum/supply_pack/cheap = window_pack(medical, TRUE)
+	var/datum/supply_pack/staple = SSshuttle.supply_packs[/datum/supply_pack/medical/supplies]
+	TEST_ASSERT(cheap && econ_pack_staple(staple) && !econ_pack_unavailable(staple), "Есть недорогой пак и расходник медицины")
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED)
+	var/datum/bank_account/doctor_account = econ_account_of(doctor)
+	doctor_account.owed_wages = 500
+	var/mob/living/carbon/human/cmo = make_with_job(/datum/job/cmo)
+	var/reserve = medical.owed_to_staff()
+	TEST_ASSERT(reserve >= 500, "Долг отдела перед врачом в резерве: [reserve]")
+	var/price = round(econ_pack_price(cheap))
+	econ_test_set_balance(medical.account, reserve + price - 1)
+	var/datum/econ_request/instant = medical.submit_request(cheap, doctor, "тест")
+	TEST_ASSERT_EQUAL(instant.status, ECON_REQUEST_PENDING, "Мгновенная заявка съела зарплату сотрудникам")
+	TEST_ASSERT(findtext(medical.money_note(cheap), "[reserve] кр. отложено на зарплату"), "Ответ не объясняет резерв: [medical.money_note(cheap)]")
+	TEST_ASSERT(findtext(medical.request_outlook(instant), "отложено на зарплату"), "Окно не объясняет резерв: [medical.request_outlook(instant)]")
+	var/staple_price = round(econ_pack_price(staple))
+	econ_test_set_balance(medical.account, reserve + staple_price - 1)
+	var/datum/econ_request/staple_request = medical.submit_request(staple, doctor, "тест")
+	TEST_ASSERT_EQUAL(staple_request.status, ECON_REQUEST_PENDING, "Расходник съел зарплату сотрудникам")
+	econ_test_set_balance(medical.account, reserve + price - 1)
+	instant.created -= SSeconomy.settings.auto_approve_wait_minutes MINUTES
+	medical.approve_stale_requests()
+	TEST_ASSERT_EQUAL(instant.status, ECON_REQUEST_PENDING, "Залежавшаяся заявка съела зарплату сотрудникам")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Заказ без одобрения ушёл в снабжение")
+	on_shift(cmo)
+	TEST_ASSERT(medical.approve(instant, cmo), "Глава вручную резерв не держит")
+	TEST_ASSERT_EQUAL(medical.account.account_balance, reserve - 1, "Одобренная главой оплачена бюджетом")
+
+/// О заказе без одобрения начальству на смене приходит тихая строка со ссылкой отмены: сотрудник ей не пользуется, глава снимает заказ и возвращает деньги, пока шаттл не улетел.
+/datum/unit_test/economy_catalog/request_auto_order_cancel/Run()
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/datum/supply_pack/cheap = window_pack(medical, TRUE)
+	var/mob/living/carbon/human/doctor = make_staff(ACCOUNT_MED, account_type = /datum/bank_account/econ_test_ear)
+	var/mob/living/carbon/human/cmo = make_with_job(/datum/job/cmo, /datum/bank_account/econ_test_ear)
+	on_shift(cmo)
+	var/price = round(econ_pack_price(cheap))
+	econ_test_set_balance(medical.account, price * 2)
+	var/datum/econ_request/request = medical.submit_request(cheap, doctor, "тест")
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Недорогая заявка одобрена сама")
+	var/datum/supply_order/order = SSshuttle.shoppinglist[1]
+	TEST_ASSERT(order.econ_request_uid == request.uid && order.requester_account_id == request.requester_account_id, "Заказ помнит заявку и подавшего")
+	var/datum/bank_account/econ_test_ear/cmo_ear = econ_account_of(cmo)
+	var/notice
+	for(var/line in cmo_ear.heard)
+		if(findtext(line, "без одобрения"))
+			notice = line
+	TEST_ASSERT(notice && findtext(notice, "заказал \"[cheap.name]\" за [price] кр."), "Главе не сказали о заказе без одобрения: [jointext(cmo_ear.heard, "; ")]")
+	TEST_ASSERT(findtext(notice, "src=[REF(medical)];econ_cancel_order=[order.id]"), "В строке нет ссылки отмены: [notice]")
+	usr = doctor
+	medical.Topic(null, list("econ_cancel_order" = "[order.id]"))
+	usr = null
+	TEST_ASSERT(order in SSshuttle.shoppinglist, "Сотрудник снял заказ по ссылке главы")
+	usr = cmo
+	medical.Topic(null, list("econ_cancel_order" = "[order.id]"))
+	usr = null
+	TEST_ASSERT(!(order in SSshuttle.shoppinglist), "Глава не снял заказ по ссылке")
+	TEST_ASSERT_EQUAL(medical.account.account_balance, price * 2, "Деньги не вернулись в бюджет")
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_DENIED, "Отменённая заявка числится одобренной")
+	var/datum/bank_account/econ_test_ear/doctor_ear = econ_account_of(doctor)
+	TEST_ASSERT(findtext(doctor_ear.heard[length(doctor_ear.heard)], "отменил заказ"), "Подавшему не сказали об отмене: [jointext(doctor_ear.heard, "; ")]")
+	TEST_ASSERT_EQUAL(medical.cancel_from_link(cmo, order.id), "Заказ уже улетел шаттлом или снят с корзины: отменить его нельзя.", "Повторная отмена не объяснена")
+	qdel(order)
+
+/// Заявка СБ при главе СБ на смене не одобряется сама ни сразу, ни по истечении ожидания; без начальства залежавшаяся одобряется.
+/datum/unit_test/economy_catalog/request_security_waits_head/Run()
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/datum/supply_pack/cheap
+	for(var/datum/supply_pack/pack as anything in security.catalog())
+		if(!econ_pack_unavailable(pack) && security.auto_approvable(pack))
+			cheap = pack
+			break
+	TEST_ASSERT_NOTNULL(cheap, "Есть недорогой пак СБ")
+	TEST_ASSERT(SSeconomy.settings.auto_approve_wait_minutes > 0, "Залежавшиеся заявки одобряются сами")
+	econ_test_set_balance(security.account, round(econ_pack_price(cheap)) * 3)
+	var/mob/living/carbon/human/officer = make_staff(ACCOUNT_SEC)
+	var/mob/living/carbon/human/hos = make_with_job(/datum/job/hos)
+	on_shift(hos)
+	var/datum/econ_request/request = security.submit_request(cheap, officer, "тест")
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_PENDING, "Заявка СБ при главе на смене одобрилась сразу")
+	request.created -= SSeconomy.settings.auto_approve_wait_minutes MINUTES
+	security.approve_stale_requests()
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_PENDING, "Заявка СБ при главе на смене одобрилась по ожиданию")
+	TEST_ASSERT(!findtext(security.request_outlook(request), "одобрится сама"), "Окно обещает автоодобрение СБ при главе: [security.request_outlook(request)]")
+	GLOB.player_list -= hos
+	security.approve_stale_requests()
+	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Без начальства залежавшаяся заявка СБ не одобрилась")
+
 /// Недорогая заявка без ответа дольше auto_approve_wait_minutes одобряется на тике экономики, дорогая ждёт решения.
 /datum/unit_test/economy_catalog/request_stale_auto_approve/Run()
 	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
@@ -450,7 +613,7 @@
 	click_cargo(console, cargo_tech, "clear")
 	TEST_ASSERT_EQUAL(engineering.account.account_balance, before, "Очистка корзины возвращает деньги отделу")
 
-/// Доставка шаттлом: предоплаченный заказ никого не списывает повторно, содержимое помечено закупкой и не идёт в контракт.
+/// Доставка шаттлом: предоплаченный заказ никого не списывает повторно, содержимое помечено закупкой и не идёт в контракт; подавшему заявку карта говорит, что заказ приехал, ушедшему со смены и мёртвому - нет.
 /datum/unit_test/economy_catalog/shuttle_delivery/Run()
 	var/datum/economy_department/engineering = SSeconomy.get_department(ACCOUNT_ENG)
 	var/datum/supply_pack/pack = SSshuttle.supply_packs[/datum/supply_pack/department/engineering_export_node]
@@ -458,12 +621,32 @@
 	engineering.account.credit(econ_pack_price(pack), ECON_ADMIN)
 	TEST_ASSERT(engineering.order_pack(pack, chief, "тест"), "Заказ оформлен")
 	var/datum/supply_order/order = SSshuttle.shoppinglist[1]
+	var/mob/living/carbon/human/engineer = make_staff(ACCOUNT_ENG, account_type = /datum/bank_account/econ_test_ear)
+	var/datum/bank_account/econ_test_ear/requester = econ_account_of(engineer)
+	order.requester_account_id = requester.account_id
+	order.econ_request_uid = 77
 	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	var/cargo_before = cargo.account_balance
 	var/engineering_before = engineering.account.account_balance
 	var/list/crates_before = new_crates(list(), /obj/structure/closet)
 	SSshuttle.supply.buy()
 	SSshuttle.orderhistory -= order
+	TEST_ASSERT(!length(requester.heard), "Подавшему сказали о прибытии до посадки шаттла: [jointext(requester.heard, "; ")]")
+	SSshuttle.supply.notify_personal_arrivals()
+	TEST_ASSERT(length(requester.heard) == 1 && findtext(requester.heard[1], "привёз заказ по вашей заявке: \"[pack.name]\" (заявка №77)"), "Подавшему не сказали, что заказ приехал: [jointext(requester.heard, "; ")]")
+	var/mob/living/carbon/human/sleeper = make_staff(ACCOUNT_ENG, account_type = /datum/bank_account/econ_test_ear)
+	var/datum/bank_account/econ_test_ear/sleeper_account = econ_account_of(sleeper)
+	sleeper_account.state = ACCOUNT_DORMANT
+	var/mob/living/carbon/human/corpse = make_staff(ACCOUNT_ENG, account_type = /datum/bank_account/econ_test_ear)
+	var/datum/bank_account/econ_test_ear/corpse_account = econ_account_of(corpse)
+	corpse_account.bind_owner(corpse)
+	corpse.death()
+	for(var/datum/bank_account/silent as anything in list(sleeper_account, corpse_account))
+		order.requester_account_id = silent.account_id
+		SSshuttle.supply.note_request_shipment(order)
+	SSshuttle.supply.notify_personal_arrivals()
+	TEST_ASSERT(!length(sleeper_account.heard), "Ушедшему со смены сказали о прибытии")
+	TEST_ASSERT(!length(corpse_account.heard), "Мёртвому сказали о прибытии")
 	TEST_ASSERT(!(order in SSshuttle.shoppinglist), "Заказ отгружен")
 	TEST_ASSERT_EQUAL(cargo.account_balance, cargo_before, "Карго не платит за заказ отдела")
 	TEST_ASSERT_EQUAL(engineering.account.account_balance, engineering_before, "Отдел не платит второй раз")
@@ -1107,3 +1290,334 @@
 	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), 0, "Подарки не отгружены")
 	for(var/datum/bank_account/payer as anything in givers)
 		TEST_ASSERT_EQUAL(payer.account_balance, givers[payer], "С [payer.account_holder] при отгрузке списан сбор за чужие кейсы")
+
+/// Капсулы магазина, которые ещё не сели рядом с center: возвращает их содержимое и снимает сами капсулы, чтобы они не сели посреди следующих тестов.
+/datum/unit_test/economy_catalog/proc/catch_shop_pods(turf/center)
+	. = list()
+	for(var/obj/effect/pod_landingzone/zone in range(ECON_EXPRESS_LANDING_RANGE, center))
+		var/obj/structure/closet/supplypod/pod = zone.pod
+		var/list/inside = pod.GetAllContents() - pod
+		. += inside
+		allocated += inside
+		for(var/atom/movable/thing as anything in pod)
+			thing.moveToNullspace()
+		QDEL_NULL(zone.helper)
+		qdel(pod)
+		qdel(zone)
+
+/// Типы вещей, которые прилетели в капсулах рядом с center.
+/datum/unit_test/economy_catalog/proc/shop_pod_types(turf/center)
+	. = list()
+	for(var/atom/movable/thing as anything in catch_shop_pods(center))
+		. += thing.type
+
+/// Строка корзины магазина, как её шлёт окно: цена - та, что видит покупатель.
+/datum/unit_test/economy_catalog/proc/shop_line(item_type, text = "")
+	return list("id" = "[item_type]", "price" = econ_shop_entry(item_type)[1], "text" = text)
+
+/// Магазин Кошелька: корзина до ECON_SHOP_CART_MAX вещей летит одной тихой капсулой рядом с покупателем, цена с гравировками списывается сразу, вещи помечены купленными; гравировка видна при осмотре и не стирается сменой описания, на плакат её не сделать; питомец летит отдельно в закрытой переноске и получает кличку. Вне станции, по старой цене, чаще кулдауна, без денег, чужой вещи и сверх корзины - отказ без списания.
+/datum/unit_test/economy_catalog/personal_shop_order/Run()
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "test premise: нет станционного пола")
+	var/mob/living/carbon/human/buyer = make_pda_buyer("Econ Shop Buyer", 100000)
+	var/datum/bank_account/econ_test_ear/account = pda_account(buyer)
+	var/datum/computer_file/program/wallet/wallet = pda_wallet(buyer)
+	var/list/shop = wallet.wallet_static_data()["shop"]
+	var/list/first = shop[1]
+	TEST_ASSERT_EQUAL(first["name"], ECON_SHOP_NOVELTY_SECTION, "Новинки смены не первыми в магазине")
+	TEST_ASSERT_EQUAL(length(first["items"]), ECON_SHOP_NOVELTIES, "Новинок смены не [ECON_SHOP_NOVELTIES]")
+	var/hat_type = /obj/item/clothing/head/fedora
+	var/hat_price = econ_shop_entry(hat_type)[1]
+	var/plush_type = /obj/item/toy/plush/carpplushie
+	var/plush_price = econ_shop_entry(plush_type)[1]
+
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(hat_type))))
+	TEST_ASSERT(findtext(wallet.message, "негде сесть"), "Вне станции капсула не отказала: [wallet.message]")
+	TEST_ASSERT_EQUAL(account.account_balance, 100000, "Отказ вне станции списал деньги")
+	buyer.forceMove(station_turf)
+	press_wallet(buyer, "shop_order", list("items" = list(list("id" = "[hat_type]", "price" = hat_price - 1))))
+	TEST_ASSERT(findtext(wallet.message, "Цена изменилась") && findtext(wallet.message, "[hat_price] кр."), "Отказ не называет новую цену: [wallet.message]")
+	press_wallet(buyer, "shop_order", list("items" = list(list("id" = "[/obj/item/gun/energy/laser]", "price" = 1))))
+	TEST_ASSERT(findtext(wallet.message, "нет"), "Вещь не из магазина куплена: [wallet.message]")
+	var/list/too_many = list()
+	for(var/i in 1 to ECON_SHOP_CART_MAX + 1)
+		too_many += list(shop_line(plush_type))
+	press_wallet(buyer, "shop_order", list("items" = too_many))
+	TEST_ASSERT(findtext(wallet.message, "не больше [ECON_SHOP_CART_MAX]"), "Корзина больше [ECON_SHOP_CART_MAX] вещей не отказала: [wallet.message]")
+	var/pet_type = /mob/living/simple_animal/mouse/white
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(pet_type), shop_line(plush_type))))
+	TEST_ASSERT(findtext(wallet.message, "Питомец"), "Питомец с вещами в одной капсуле не отказал: [wallet.message]")
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(/obj/item/poster/random_official, "Мой плакат"))))
+	TEST_ASSERT(findtext(wallet.message, "гравировку"), "Гравировка на плакат не отказала: [wallet.message]")
+	var/datum/bank_account/broke = new("Econ Shop Broke")
+	allocated += broke
+	TEST_ASSERT(!econ_shop_order(buyer, broke, list(shop_line(hat_type)))[1], "Покупка без денег прошла")
+	var/list/pool = econ_shop_novelty_pool()
+	var/list/outside_pool = pool - GLOB.econ_shop_novelties
+	if(length(outside_pool))
+		press_wallet(buyer, "shop_order", list("items" = list(list("id" = "[outside_pool[1]]", "price" = pool[outside_pool[1]][1]))))
+		TEST_ASSERT(findtext(wallet.message, "нет"), "Новинка не этой смены куплена: [wallet.message]")
+	TEST_ASSERT_EQUAL(account.account_balance, 100000, "Отказы списали деньги")
+	TEST_ASSERT_EQUAL(length(shop_pod_types(station_turf)), 0, "Отказ вызвал капсулу")
+
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(hat_type, "Для капитана"), shop_line(plush_type, "Карпуша"), shop_line(plush_type))))
+	TEST_ASSERT_EQUAL(account.account_balance, 100000 - hat_price - plush_price * 2 - ECON_SHOP_ENGRAVING_PRICE * 2, "Списана не цена корзины с гравировками: [wallet.message]")
+	var/list/zones = list()
+	for(var/obj/effect/pod_landingzone/zone in range(ECON_EXPRESS_LANDING_RANGE, buyer))
+		zones += zone
+	TEST_ASSERT_EQUAL(length(zones), 1, "Корзина летит не одной капсулой")
+	var/obj/effect/pod_landingzone/first_zone = zones[1]
+	TEST_ASSERT(first_zone.pod.effectQuiet, "Капсула магазина не тихая")
+	TEST_ASSERT(!first_zone.pod.explosionSize[3] && !first_zone.pod.explosionSize[4], "Капсула магазина взрывается")
+	var/list/delivered = catch_shop_pods(get_turf(buyer))
+	var/obj/item/clothing/head/fedora/hat = locate() in delivered
+	TEST_ASSERT_NOTNULL(hat, "Капсула рядом с покупателем не везёт шляпу")
+	var/list/plushes = list()
+	for(var/obj/item/toy/plush/carpplushie/plush in delivered)
+		plushes += plush
+	TEST_ASSERT_EQUAL(length(plushes), 2, "В капсуле не обе игрушки из корзины")
+	TEST_ASSERT(!findtext(hat.desc, "Для капитана"), "Гравировка записана в описание: [hat.desc]")
+	TEST_ASSERT(findtext(jointext(hat.examine(buyer), "\n"), "Для капитана"), "Гравировки не видно при осмотре")
+	TEST_ASSERT(hat.econ_imported && hat.econ_vended, "Шляпа из магазина не помечена купленной")
+	var/obj/item/toy/plush/engraved_plush
+	for(var/obj/item/toy/plush/plush as anything in plushes)
+		if(plush.GetComponent(/datum/component/econ_engraving))
+			engraved_plush = plush
+	TEST_ASSERT_NOTNULL(engraved_plush, "Гравировка не досталась игрушке")
+	engraved_plush.update_desc()
+	TEST_ASSERT(findtext(jointext(engraved_plush.examine(buyer), "\n"), "Карпуша"), "Смена описания игрушки стёрла гравировку")
+	var/balance = account.account_balance
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(hat_type))))
+	TEST_ASSERT(findtext(wallet.message, "не чаще"), "Вторая капсула подряд не отказала: [wallet.message]")
+	TEST_ASSERT_EQUAL(account.account_balance, balance, "Отказ по кулдауну списал деньги")
+
+	COOLDOWN_RESET(account, personal_shop_cooldown)
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(pet_type, "!!!"))))
+	TEST_ASSERT(findtext(wallet.message, "кличку"), "Негодная кличка не отказала: [wallet.message]")
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(pet_type, "Пушок"))))
+	TEST_ASSERT_EQUAL(account.account_balance, balance - econ_shop_entry(pet_type)[1], "Питомец с кличкой списал не свою цену: [wallet.message]")
+	delivered = catch_shop_pods(get_turf(buyer))
+	var/obj/item/pet_carrier/carrier = locate() in delivered
+	TEST_ASSERT_NOTNULL(carrier, "Питомец прилетел не в переноске")
+	TEST_ASSERT(!carrier.open, "Переноска с питомцем открыта")
+	var/mob/living/simple_animal/mouse/white/pet = locate() in delivered
+	TEST_ASSERT_NOTNULL(pet, "В переноске нет питомца")
+	TEST_ASSERT_EQUAL(pet.name, "Пушок", "Питомец не получил кличку")
+
+	COOLDOWN_RESET(account, personal_shop_cooldown)
+	press_wallet(buyer, "shop_order", list("items" = list(shop_line(plush_type))))
+	var/obj/item/toy/plush/landed
+	for(var/i in 1 to 30)
+		for(var/obj/item/toy/plush/carpplushie/plush in range(ECON_EXPRESS_LANDING_RANGE, buyer))
+			landed = plush
+		if(landed)
+			break
+		sleep(5)
+	TEST_ASSERT_NOTNULL(landed, "Капсула не высадила игрушку рядом с покупателем")
+	allocated += landed
+	TEST_ASSERT_EQUAL(get_area(landed), get_area(buyer), "Игрушка села не в том помещении, где покупатель")
+
+/// Подарок из магазина: платит даритель, получатель узнаёт о нём по карте и забирает кнопкой в Кошельке - капсула садится рядом с ним, на открытке его имя с карты и имя с карты дарителя; жив ли он и где, до оплаты не раскрывается. Не забрал за срок - деньги дарителю без объяснения причины. Себе и чаще паузы подарок не оформить, чужой подарок не забрать.
+/datum/unit_test/economy_catalog/personal_shop_gift/Run()
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "test premise: нет станционного пола")
+	var/mob/living/carbon/human/giver = make_pda_buyer("Econ Shop Giver", 100000)
+	var/datum/bank_account/econ_test_ear/payer = pda_account(giver)
+	var/obj/item/modular_computer/pda/pda = giver.get_active_held_item()
+	pda.stored_id.registered_name = "Econ Card Alias"
+	var/mob/living/carbon/human/friend = make_pda_buyer("Econ Shop Friend", 0)
+	var/datum/bank_account/econ_test_ear/receiver = pda_account(friend)
+	var/obj/item/modular_computer/pda/friend_pda = friend.get_active_held_item()
+	friend_pda.stored_id.registered_name = "Econ Friend Card"
+	var/plush_type = /obj/item/toy/plush/beeplushie
+	var/price = econ_shop_entry(plush_type)[1]
+	var/datum/computer_file/program/wallet/wallet = press_wallet(giver, "shop_order", list("items" = list(shop_line(plush_type)), "recipient" = payer.account_holder))
+	TEST_ASSERT(findtext(wallet.message, "Себе"), "Подарок себе не отказал: [wallet.message]")
+	TEST_ASSERT_EQUAL(payer.account_balance, 100000, "Отказ списал деньги")
+
+	press_wallet(giver, "shop_order", list("items" = list(shop_line(plush_type)), "recipient" = "[receiver.account_id]"))
+	TEST_ASSERT_EQUAL(payer.account_balance, 100000 - price, "Подарок получателю вне станции и без тела не оформлен или списан не с дарителя: [wallet.message]")
+	TEST_ASSERT(!findtext(wallet.message, "не может") && !findtext(wallet.message, "станци"), "Ответ дарителю раскрыл, где получатель: [wallet.message]")
+	TEST_ASSERT_EQUAL(receiver.account_balance, 0, "Подарок тронул счёт получателя")
+	TEST_ASSERT_EQUAL(length(catch_shop_pods(station_turf)), 0, "Подарок прилетел до того, как его забрали")
+	var/heard = jointext(receiver.heard, "\n")
+	TEST_ASSERT(findtext(heard, "Вам подарок от Econ Card Alias") && findtext(heard, "Получить"), "Получатель не узнал, кто дарит и как забрать: [heard]")
+	var/datum/computer_file/program/wallet/friend_wallet = pda_wallet(friend)
+	var/list/gifts = friend_wallet.wallet_data(friend)["shop_gifts"]
+	TEST_ASSERT_EQUAL(length(gifts), 1, "Подарок не ждёт в Кошельке получателя")
+	var/list/gift_entry = gifts[1]
+	TEST_ASSERT_EQUAL(gift_entry["from"], "Econ Card Alias", "Кошелёк получателя называет дарителя не по карте")
+	TEST_ASSERT(!length(wallet.wallet_data(giver)["shop_gifts"]), "Чужой подарок виден дарителю как свой")
+	press_wallet(giver, "shop_gift_accept", list("id" = gift_entry["id"]))
+	TEST_ASSERT(findtext(wallet.message, "нет"), "Даритель забрал подарок получателя: [wallet.message]")
+
+	press_wallet(friend, "shop_gift_accept", list("id" = gift_entry["id"]))
+	TEST_ASSERT(findtext(friend_wallet.message, "негде сесть"), "Подарок вне станции не отказал: [friend_wallet.message]")
+	TEST_ASSERT_EQUAL(length(friend_wallet.wallet_data(friend)["shop_gifts"]), 1, "Подарок пропал после неудачной попытки")
+	friend.forceMove(station_turf)
+	press_wallet(friend, "shop_gift_accept", list("id" = gift_entry["id"]))
+	var/list/delivered = catch_shop_pods(station_turf)
+	TEST_ASSERT(locate(plush_type) in delivered, "Капсула рядом с получателем не везёт подарок: [friend_wallet.message]")
+	var/obj/item/paper/card = locate() in delivered
+	TEST_ASSERT_NOTNULL(card, "К подарку нет открытки")
+	TEST_ASSERT(findtext(card.get_raw_text(), "Econ Card Alias") && findtext(card.get_raw_text(), "Econ Friend Card"), "Открытка не называет обоих по картам: [card.get_raw_text()]")
+	TEST_ASSERT(!findtext(card.get_raw_text(), payer.account_holder) && !findtext(card.get_raw_text(), receiver.account_holder), "Открытка назвала владельцев счетов вместо имён с карт")
+	TEST_ASSERT(!length(friend_wallet.wallet_data(friend)["shop_gifts"]), "Забранный подарок всё ещё ждёт")
+	TEST_ASSERT(findtext(jointext(payer.heard, "\n"), "получен"), "Даритель не узнал, что подарок забрали")
+
+	press_wallet(giver, "shop_order", list("items" = list(shop_line(plush_type)), "recipient" = "[receiver.account_id]"))
+	TEST_ASSERT(findtext(wallet.message, "не чаще"), "Второй подарок подряд не отказал: [wallet.message]")
+	COOLDOWN_RESET(payer, personal_gift_cooldown)
+	receiver.heard.Cut()
+	payer.heard.Cut()
+	var/balance = payer.account_balance
+	press_wallet(giver, "shop_order", list("items" = list(shop_line(plush_type)), "recipient" = receiver.account_holder, "hide_name" = TRUE))
+	TEST_ASSERT_EQUAL(payer.account_balance, balance - price, "Подарок без имени не оформлен: [wallet.message]")
+	heard = jointext(receiver.heard, "\n")
+	TEST_ASSERT(findtext(heard, "анонимного дарителя") && !findtext(heard, "Econ Card Alias"), "Карта получателя назвала скрывшего имя дарителя: [heard]")
+	var/datum/econ_shop_gift/gift = econ_shop_gifts_for(receiver)[1]
+	TEST_ASSERT_NULL(gift.giver_name, "Подарок без имени хранит имя дарителя")
+	gift.expire()
+	TEST_ASSERT(QDELETED(gift), "Просроченный подарок остался")
+	TEST_ASSERT_EQUAL(payer.account_balance, balance, "Не забранный подарок не вернул деньги дарителю")
+	var/refund_text = jointext(payer.heard, "\n")
+	TEST_ASSERT(findtext(refund_text, "вернулись") && !findtext(refund_text, "мёртв") && !findtext(refund_text, "станци") && !findtext(refund_text, "смен"), "Возврат не пришёл или раскрыл причину: [refund_text]")
+
+/// Капсула садится только туда, куда от адресата можно дойти за ECON_EXPRESS_LANDING_RANGE шагов: из клетки брига со стеклом вокруг - никуда, сквозь окно на краю клетки - нет, через открытую сторону - только за ней.
+/datum/unit_test/economy_catalog/express_landing_reachable/Run()
+	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	TEST_ASSERT(length(econ_landing_spots(center)), "test premise: на открытом полу капсуле есть где сесть")
+	var/list/walls = list()
+	for(var/direction in GLOB.alldirs)
+		walls["[direction]"] = allocate(/obj/structure/window/reinforced/fulltile, get_step(center, direction))
+	TEST_ASSERT(!length(econ_landing_spots(center)), "Капсула садится за стекло брига: [json_encode(econ_landing_spots(center))]")
+	qdel(walls["[NORTH]"])
+	allocate(/obj/structure/window/reinforced, center, NORTH)
+	TEST_ASSERT(!length(econ_landing_spots(center)), "Капсула садится за окно на краю клетки")
+	qdel(walls["[SOUTH]"])
+	var/list/spots = econ_landing_spots(center)
+	TEST_ASSERT(length(spots), "Капсула не садится в открытой стороне клетки")
+	for(var/turf/spot as anything in spots)
+		TEST_ASSERT(spot.y < center.y, "Капсула села не по ту сторону открытой стороны: [spot.x],[spot.y] от [center.x],[center.y]")
+
+/// Цыплёнок в переноске растёт в курицу в той же переноске: переноска знает курицу, а не удалённого цыплёнка, и выпускает её.
+/datum/unit_test/economy_catalog/chick_grows_in_carrier/Run()
+	var/obj/item/pet_carrier/carrier = allocate(/obj/item/pet_carrier)
+	var/mob/living/simple_animal/chick/chick = allocate(/mob/living/simple_animal/chick)
+	chick.name = "Цыпа"
+	carrier.add_occupant(chick)
+	TEST_ASSERT(chick in carrier.occupants, "test premise: цыплёнок в переноске")
+	var/mob/living/simple_animal/chicken/hen = chick.grow_up(/mob/living/simple_animal/chicken)
+	allocated += hen
+	TEST_ASSERT(QDELETED(chick), "Выросший цыплёнок не удалён")
+	TEST_ASSERT_EQUAL(hen.loc, carrier, "Курица выросла не в переноске")
+	TEST_ASSERT(hen in carrier.occupants, "Переноска не знает выросшую курицу")
+	TEST_ASSERT(!(chick in carrier.occupants), "Переноска держит удалённого цыплёнка")
+	TEST_ASSERT_EQUAL(carrier.occupant_weight, hen.mob_size, "Вес переноски не равен весу курицы")
+	TEST_ASSERT_EQUAL(hen.name, "Цыпа", "Курица потеряла кличку цыплёнка")
+	hen.forceMove(run_loc_floor_bottom_left)
+	TEST_ASSERT(!(hen in carrier.occupants) && carrier.occupant_weight == 0, "Вышедшая из переноски курица осталась в ней по учёту")
+
+/// Сторож магазина: только вид и уют - без оружия, брони, лекарств, доступов и маскировки лица, у каждой вещи иконка; доставленное ни сдачей NT, ни переработкой в листы не окупает цену даже на пике рынка у лучшего покупателя, а спецзаказы его не берут.
+/datum/unit_test/economy_catalog/no_shop_farm
+	var/list/saved_market
+
+/datum/unit_test/economy_catalog/no_shop_farm/New()
+	. = ..()
+	saved_market = econ_test_swap_market()
+	if(!length(GLOB.exports_list))
+		setupExports()
+
+/datum/unit_test/economy_catalog/no_shop_farm/Destroy()
+	econ_test_restore_market(saved_market)
+	return ..()
+
+/datum/unit_test/economy_catalog/no_shop_farm/Run()
+	var/static/list/forbidden = typecacheof(list(
+		/obj/item/gun,
+		/obj/item/melee,
+		/obj/item/grenade,
+		/obj/item/implant,
+		/obj/item/implanter,
+		/obj/item/implantcase,
+		/obj/item/card,
+		/obj/item/organ,
+		/obj/item/reagent_containers,
+		/obj/item/stack/medical,
+		/obj/item/clothing/suit/armor,
+		/obj/item/clothing/head/helmet,
+		/obj/item/clothing/mask,
+		/obj/item/clothing/gloves,
+	))
+	var/list/pool = econ_shop_novelty_pool()
+	var/list/items = pool.Copy()
+	var/list/sections = econ_shop_sections()
+	for(var/section in sections)
+		items |= sections[section]
+	econ_test_partner_extremes()
+	for(var/id in SSmarket.commodities)
+		var/datum/commodity/commodity = SSmarket.commodities[id]
+		commodity.price_factor = MARKET_PRICE_MAX
+		commodity.hot_mult = MARKET_HOT_MULT_MAX
+		commodity.demand = 1
+	var/list/problems = list()
+	for(var/atom/movable/item_type as anything in items)
+		var/list/entry = items[item_type]
+		var/price = entry[1]
+		if(!econ_shop_icon_ok(initial(item_type.icon), initial(item_type.icon_state)))
+			problems += "[item_type]: нет иконки для витрины"
+		var/list/things = list(econ_shop_pack(item_type, run_loc_floor_bottom_left, price))
+		var/list/everything = list()
+		for(var/atom/movable/thing as anything in things)
+			everything += thing.GetAllContents()
+		var/value = 0
+		var/recycled = 0
+		for(var/atom/movable/part as anything in everything)
+			var/problem = combat_problem(part, forbidden)
+			if(problem)
+				problems += "[item_type]: [part.type] [problem]"
+			if(!part.econ_imported)
+				problems += "[item_type]: [part.type] не помечен купленным, спецзаказы его возьмут"
+			for(var/datum/material/material as anything in part.custom_materials)
+				var/datum/export/export = econ_material_export(material)
+				if(export)
+					recycled += part.custom_materials[material] / MINERAL_MATERIAL_AMOUNT * export.init_cost * econ_sale_factor(export.commodity) * econ_buyer_factor(export.commodity)
+		for(var/atom/movable/thing as anything in things)
+			value += econ_export_report_value(export_item_and_contents(thing, EXPORT_CARGO | EXPORT_CONTRABAND | EXPORT_EMAG, delete_unsold = FALSE, dry_run = TRUE))
+		if(value >= price)
+			problems += "[item_type]: сдаётся за [value] кр. при цене [price]"
+		if(recycled >= price)
+			problems += "[item_type]: переработка в листы даёт [round(recycled)] кр. при цене [price]"
+		for(var/atom/movable/part as anything in everything)
+			if(!QDELETED(part))
+				qdel(part)
+		econ_test_clear_turf(run_loc_floor_bottom_left)
+	TEST_ASSERT(!length(problems), "Магазин продаёт не косметику или окупаемое: [jointext(problems, "; ")]")
+
+/// Почему вещь из магазина даёт преимущество в бою, работе или маскировке; null - не даёт.
+/datum/unit_test/economy_catalog/no_shop_farm/proc/combat_problem(atom/movable/part, list/forbidden)
+	if(is_type_in_typecache(part, forbidden))
+		return "запрещённого вида"
+	if(isliving(part))
+		var/mob/living/simple_animal/pet = part
+		if(istype(pet) && pet.melee_damage_upper > 5)
+			return "кусается на [pet.melee_damage_upper]"
+		return null
+	var/obj/item/item = part
+	if(!istype(item))
+		return null
+	if(item.force > 5 || item.throwforce > 5)
+		return "бьёт на [max(item.force, item.throwforce)]"
+	var/obj/item/clothing/clothing = item
+	if(!istype(clothing))
+		return null
+	for(var/rating in list(MELEE, BULLET, LASER, ENERGY, BOMB))
+		if(clothing.armor?.getRating(rating) > 0)
+			return "с бронёй [rating] [clothing.armor.getRating(rating)]"
+	if(clothing.flash_protect > 0)
+		return "защищает от вспышек"
+	if(clothing.clothing_flags & (STOPSPRESSUREDAMAGE | THICKMATERIAL | NOSLIP | NOSLIP_ICE | NOSLIP_ALL))
+		return "с защитными флагами [clothing.clothing_flags]"
+	if(clothing.flags_inv & HIDEFACE)
+		return "прячет лицо"
+	return null

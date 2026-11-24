@@ -235,3 +235,36 @@
 	TEST_ASSERT(preview > packaging, "Металл в превью не оценён")
 	TEST_ASSERT_EQUAL(revenue, preview, "Выплата не совпала с превью сканера")
 	TEST_ASSERT(abs(metals.demand - max(1 - (preview - packaging) / metals.demand_capacity, 0)) < 0.001, "Спрос металлов [metals.demand] снят не по всей отгрузке")
+
+/// Манифест ящика за счёт снабжения: верный отказ ошибочному возвращает уплаченное минус ящик и не меньше подписи, отказ верному не платит.
+/datum/unit_test/economy_cargo/manifest_stamps/Run()
+	setup()
+	var/datum/supply_pack/pack = SSshuttle.supply_packs[/datum/supply_pack/vending/hydro]
+	econ_test_set_balance(cargo, 1000000)
+	var/datum/supply_order/order = new(pack, "Econ Test", "Cargo Technician", null, "тест")
+	SSshuttle.shoppinglist += order
+	var/before = cargo.account_balance
+	var/list/cargo_before = list()
+	for(var/area/shuttle/shuttle_area as anything in SSshuttle.supply.shuttle_areas)
+		for(var/atom/movable/thing in shuttle_area)
+			cargo_before += thing
+	SSshuttle.supply.buy()
+	SSshuttle.orderhistory -= order
+	var/paid = before - cargo.account_balance
+	var/obj/item/paper/fluff/jobs/cargo/manifest/manifest
+	for(var/area/shuttle/shuttle_area as anything in SSshuttle.supply.shuttle_areas)
+		for(var/obj/structure/closet/crate/crate in shuttle_area)
+			if(!(crate in cargo_before))
+				allocated += crate.GetAllContents()
+				manifest = locate() in crate
+	qdel(order)
+	TEST_ASSERT_NOTNULL(manifest, "В ящике манифест")
+	TEST_ASSERT(paid > 700, "Снабжение заплатило за пак: [paid]")
+	TEST_ASSERT_EQUAL(manifest.order_cost, paid, "Манифест знает, сколько заплатило снабжение")
+	manifest.errors = MANIFEST_ERROR_CONTENTS
+	manifest.add_stamp("paper121x54 stamp-deny", 0, 0, 0, "stamp-deny")
+	TEST_ASSERT_EQUAL(econ_export_report_value(export_item_and_contents(manifest, EXPORT_CARGO, delete_unsold = FALSE, dry_run = TRUE)), paid - 500, "Верный отказ возвращает цену без ящика")
+	manifest.order_cost = 0
+	TEST_ASSERT_EQUAL(econ_export_report_value(export_item_and_contents(manifest, EXPORT_CARGO, delete_unsold = FALSE, dry_run = TRUE)), 200, "Верный отказ чужого заказа платит как подпись")
+	manifest.errors = NONE
+	TEST_ASSERT_EQUAL(econ_export_report_value(export_item_and_contents(manifest, EXPORT_CARGO, delete_unsold = FALSE, dry_run = TRUE)), 0, "Отказ верному манифесту не платит")

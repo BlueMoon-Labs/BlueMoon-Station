@@ -2,7 +2,7 @@ import { BooleanLike, classes } from 'common/react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useBackend } from '../backend';
-import { AnimatedNumber, Box, Button, Input, RestrictedInput, Stack } from '../components';
+import { AnimatedNumber, Box, Button, Icon, Input, RestrictedInput, Stack } from '../components';
 import { Window } from '../layouts';
 import { formatCredits } from './common/Economy';
 import { NtEmpty, NtFrame, NtLine, NtPulse, NtReadout, NtScreen } from './common/NtTerminal';
@@ -40,6 +40,7 @@ export type CashRegisterData = {
   cashiers_max: number;
   tip_max: number;
   transfer_cooldown: number;
+  has_template: BooleanLike;
   cashiers: Cashier[];
   is_cashier: BooleanLike;
   can_join: BooleanLike;
@@ -49,10 +50,28 @@ export type CashRegisterData = {
   balance: number;
   cooldown_left: number;
   receipt: BooleanLike;
+  /** Сумма своей оплаты картой за последние пару минут, пока чек не распечатан */
+  just_paid: number | null;
 };
 
 const shareText = (cashier: Cashier) =>
   cashier.department ? `${cashier.share}% кассиру, остальное отделу "${cashier.department}"` : 'вся сумма кассиру';
+
+type Step = { text: string; done: boolean };
+
+/** Что делать по шагам: сделанные отмечены галочкой, первый несделанный выделен. */
+const Steps = (props: { steps: Step[] }) => {
+  const current = props.steps.findIndex((step) => !step.done);
+  return (
+    <div className="NtTerm__help">
+      {props.steps.map((step, index) => (
+        <div key={step.text} aria-current={index === current ? 'step' : undefined} className={index === current ? 'NtTerm__lcdItem' : undefined}>
+          {step.done ? <Icon name="check" color="good" /> : <b>{index + 1}.</b>} {step.text}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const OrderLines = (props: { lines: OrderLine[] }) => (
   <>
@@ -128,6 +147,16 @@ const JoinButton = () => {
   if (!data.can_join) {
     return null;
   }
+  if (data.cashiers.length) {
+    return (
+      <Button
+        icon="cash-register"
+        content="Встать вторым кассиром"
+        tooltip="Для персонала: у вас будет свой счёт по общему меню. Покупателю это не нужно."
+        onClick={() => act('join')}
+      />
+    );
+  }
   return <Button icon="cash-register" content="Встать за кассу" onClick={() => act('join')} />;
 };
 
@@ -173,11 +202,22 @@ const Tips = () => {
 
 const CustomerView = () => {
   const { data } = useBackend<CashRegisterData>();
-  const { cashiers, menu, receipt, has_account } = data;
+  const { cashiers, menu, receipt, has_account, just_paid } = data;
   if (!cashiers.length) {
     return (
       <>
-        <NtEmpty>Касса свободна: встаньте за неё кнопкой ниже или свайпом своей ID-карты.</NtEmpty>
+        <NtEmpty>За кассой никого.</NtEmpty>
+        <div className="NtTerm__help">
+          <div>
+            <b>Продаёте?</b>{' '}
+            {has_account
+              ? 'Встаньте за кассу кнопкой ниже или проведите по ней своей ID-картой или КПК.'
+              : 'Нужна ID-карта с личным счётом.'}
+          </div>
+          <div>
+            <b>Покупаете?</b> Дождитесь кассира или просто попросите, что хотите: касса необязательна.
+          </div>
+        </div>
         <Stack justify="center" mb={1}>
           <Stack.Item>
             <JoinButton />
@@ -191,14 +231,27 @@ const CustomerView = () => {
       </>
     );
   }
+  const ordered = cashiers.some((cashier) => cashier.order.length > 0);
   return (
     <>
+      {just_paid !== null && !ordered && (
+        <div className="NtTerm__paid">Вы оплатили {formatCredits(just_paid)} Чек и чаевые - ниже, по желанию.</div>
+      )}
+      <Steps
+        steps={[
+          { text: 'Скажите кассиру, что хотите: он наберёт счёт, и сумма появится здесь.', done: ordered },
+          {
+            text: 'Оплатите: кнопкой «Оплатить картой», ID-картой или КПК по кассе или приложите к ней наличные, сдача голочипом.',
+            done: false,
+          },
+          { text: 'По желанию: чаевые кассиру и чек.', done: false },
+        ]}
+      />
       {cashiers.map((cashier) => (
         <Bill key={cashier.id} cashier={cashier} titled={cashiers.length > 1} />
       ))}
       <Box className="NtTerm__hint" mb={1}>
-        {has_account ? 'Платят только с личного счёта, без налога; карту можно просто провести по кассе.' : 'Нужна ID-карта с личным счётом.'}{' '}
-        Наличные приложите к кассе: сдачу она выдаст голочипом.
+        {has_account ? 'Платят с личного счёта, без налога.' : 'Нужна ID-карта с личным счётом.'}
       </Box>
       {(!!receipt || !!data.can_join) && (
         <Stack mb={1.5}>
@@ -289,7 +342,7 @@ const MyOrder = (props: { cashier: Cashier }) => {
         </Box>
       )}
       <Box className="NtTerm__hint" mt={1}>
-        Клиент платит этот счёт картой, из окна кассы или наличными. Ваша доля: {shareText(cashier)}.
+        С оплаты: {shareText(cashier)}. Чаевые - вам целиком.
       </Box>
     </NtFrame>
   );
@@ -307,7 +360,17 @@ const MenuEditor = (props: { cashier: Cashier }) => {
     <NtFrame
       title={`Меню ${menu.length}/${menu_max}`}
       help={`Меню общее для обоих кассиров: убранная позиция пропадает и из всех счетов. Цена от 1 до ${formatCredits(price_max)}, до ${count_max} шт. одной позиции в счёте.`}>
-      {menu.length === 0 && <NtEmpty>Меню пустое: добавьте первую позицию.</NtEmpty>}
+      {menu.length === 0 && (
+        <NtEmpty>
+          Меню пустое: добавьте первую позицию
+          {data.has_template ? ' или возьмите типовое меню: лишнее потом уберёте.' : '.'}
+        </NtEmpty>
+      )}
+      {menu.length === 0 && !!data.has_template && (
+        <Box textAlign="center" mb={1}>
+          <Button icon="list" content="Типовое меню" tooltip={`Обычные позиции для корпуса «${data.skin_name}» с ценами`} onClick={() => act('template')} />
+        </Box>
+      )}
       {menu.map((item) => (
         <Stack key={item.id} align="center" className="NtTerm__line">
           <Stack.Item grow>{item.name}</Stack.Item>
@@ -369,9 +432,24 @@ const CashierView = () => {
           </Stack.Item>
         )}
         <Stack.Item>
-          <Button icon="sign-out-alt" content="Отойти от кассы" onClick={() => act('logout')} />
+          <Button
+            icon="sign-out-alt"
+            content="Отойти от кассы"
+            tooltip={mine.order.length > 0 ? `Набранный счёт на ${formatCredits(mine.total)} сбросится` : undefined}
+            onClick={() => act('logout')}
+          />
         </Stack.Item>
       </Stack>
+      <Steps
+        steps={[
+          { text: 'Заведите позиции в меню ниже: название и цена.', done: data.menu.length > 0 },
+          { text: 'Выслушайте заказ и добавьте его в свой счёт кнопкой «В счёт».', done: mine.order.length > 0 },
+          { text: 'Покупатель платит сам: картой или КПК по кассе, из окна кассы или наличными. Можно взять его карту и провести самому.', done: false },
+        ]}
+      />
+      <Box className="NtTerm__hint" mb={1.5}>
+        Касса необязательна: можно обслуживать и бесплатно, отдел свою работу и так получает от NT.
+      </Box>
       <MyOrder cashier={mine} />
       <MenuEditor cashier={mine} />
     </>

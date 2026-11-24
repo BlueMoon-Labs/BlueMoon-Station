@@ -95,12 +95,30 @@
 	return ..()
 
 /obj/item/borg_shapeshifter/proc/clear_startup_filters()
-	if(!QDELETED(startup_user))
-		for(var/own_filter in startup_filters)
-			animate(own_filter)
-			startup_user.filters -= own_filter
+	if(!QDELETED(startup_user) && length(startup_filters))
+		startup_user.remove_filter(startup_filters)
 	startup_filters.Cut()
 	startup_user = null
+
+/obj/item/borg_shapeshifter/proc/start_startup_filters(mob/living/silicon/robot/user)
+	startup_user = user
+	for(var/i in 1 to 7)
+		var/wave_x
+		var/wave_y
+		var/rsq
+		do
+			wave_x = 60*rand() - 30
+			wave_y = 60*rand() - 30
+			rsq = wave_x*wave_x + wave_y*wave_y
+		while(rsq<100 || rsq>900)
+		var/filter_name = "borg_shapeshifter_wave_[i]"
+		user.add_filter(filter_name, 1, list("type" = "wave", "x" = wave_x, "y" = wave_y, "size" = rand()*2.5+0.5, "offset" = rand()))
+		startup_filters += filter_name
+	// animate() принимает только фильтр, уже лежащий в filters, а add_filter() пересобирает весь список
+	for(var/filter_name in startup_filters)
+		var/own_filter = user.get_filter(filter_name)
+		animate(own_filter, offset=own_filter:offset, time=0, loop=3, flags=ANIMATION_PARALLEL)
+		animate(offset=own_filter:offset-1, time=rand()*20+10)
 
 /obj/item/borg_shapeshifter/dropped(mob/user)
 	. = ..()
@@ -577,19 +595,7 @@ GLOBAL_LIST_INIT(borg_disguise_options, list(
 		animation_playing = TRUE
 		to_chat(user, "<span class='notice'>You activate \the [src].</span>")
 		playsound(src, 'sound/effects/seedling_chargeup.ogg', 100, TRUE, -6)
-		startup_user = user
-		var/X,Y,rsq,i
-		for(i=1, i<=7, ++i)
-			do
-				X = 60*rand() - 30
-				Y = 60*rand() - 30
-				rsq = X*X + Y*Y
-			while(rsq<100 || rsq>900)
-			var/own_filter = filter(type="wave", x=X, y=Y, size=rand()*2.5+0.5, offset=rand())
-			startup_filters += own_filter
-			user.filters += own_filter
-			animate(own_filter, offset=own_filter:offset, time=0, loop=3, flags=ANIMATION_PARALLEL)
-			animate(offset=own_filter:offset-1, time=rand()*20+10)
+		start_startup_filters(user)
 		var/completed = do_after(user, 5 SECONDS, user)
 		if(QDELETED(src))
 			return

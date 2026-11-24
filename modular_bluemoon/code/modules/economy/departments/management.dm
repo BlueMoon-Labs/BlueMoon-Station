@@ -1,5 +1,9 @@
 /datum/econ_request/treasury
 	var/amount
+	/// Строка о запросе дошла хотя бы до одного капитана или ГП на смене
+	var/notified = FALSE
+	/// Капитану и ГП уже напомнили о запросе без решения
+	var/reminded = FALSE
 
 /datum/econ_request/treasury/New(department_id, amount, reason, requester, requester_account_id)
 	..(department_id, null, requester, requester_account_id, reason)
@@ -36,7 +40,7 @@
 
 /// Сколько премий этот счёт ещё может получить в текущем часе: от других глав или от самого себя.
 /datum/bank_account/proc/bonus_left(self_paid = FALSE)
-	if(world.time - bonus_window_start >= 1 HOURS)
+	if(world.time - bonus_window_start >= ECON_BONUS_WINDOW)
 		bonus_window_start = world.time
 		bonus_in_window = 0
 		self_bonus_in_window = 0
@@ -94,7 +98,36 @@
 	SSeconomy.treasury_requests += request
 	econ_trim_resolved(SSeconomy.treasury_requests)
 	log_econ("[key_name(user)] запросил из казны [amount] кр. для [name] (запрос [request.uid]), причина: [reason]")
+	request.notified = SSeconomy.notify_treasury_request(request) > 0
 	return request
+
+/// Капитану и ГП на смене - строка на карту о запросе из казны; возвращает, скольким она дошла.
+/datum/controller/subsystem/economy/proc/notify_treasury_request(datum/econ_request/treasury/request, reminder = FALSE)
+	var/datum/economy_department/command = get_department(ACCOUNT_CMD)
+	var/datum/economy_department/target = get_department(request.department_id)
+	var/head = "[reminder ? "Запрос" : "Новый запрос"] №[request.uid] из казны: [request.amount] кр. для отдела \"[target?.name]\" от [request.requester]"
+	var/list/parts = list(econ_sentence(request.reason ? "[head], причина: [request.reason]" : head))
+	if(reminder)
+		parts += "Ждёт решения дольше [settings.treasury_request_remind_minutes] мин."
+	parts += "Решить - в программе \"Казна\" на КПК."
+	var/message = jointext(parts, " ")
+	. = 0
+	for(var/datum/bank_account/manager_account as anything in command?.managers_on_shift())
+		manager_account.bank_card_talk(message)
+		.++
+
+/// Запрос, о котором некому было сказать, приходит капитану или ГП, когда они выйдут на смену; ждущему дольше treasury_request_remind_minutes - одно напоминание, дошедшее до кого-то.
+/datum/controller/subsystem/economy/proc/remind_treasury_requests()
+	var/minutes = settings.treasury_request_remind_minutes
+	for(var/datum/econ_request/treasury/request as anything in treasury_requests)
+		if(request.status != ECON_REQUEST_PENDING)
+			continue
+		if(!request.notified)
+			request.notified = notify_treasury_request(request) > 0
+			continue
+		if(minutes <= 0 || request.reminded || world.time - request.created < minutes MINUTES)
+			continue
+		request.reminded = notify_treasury_request(request, TRUE) > 0
 
 /datum/controller/subsystem/economy/proc/resolve_treasury_request(uid, approve, mob/living/user)
 	var/datum/economy_department/command = get_department(ACCOUNT_CMD)

@@ -190,6 +190,8 @@ i'd be right happy to */
 	data["department_account"] = department_account // BLUEMOON ADD
 	data["access_hint"] = access_hint // BLUEMOON ADD
 	data["beacon_only"] = beacon_only
+	if(!station_budget())
+		data["outpost"] = econ_outpost_earnings_ui(department_account)
 	data += econ_cargo_viewer_data(user)
 	message = "Sales are near-instantaneous - please choose carefully."
 	if(SSshuttle.supplyBlocked)
@@ -415,7 +417,7 @@ i'd be right happy to */
 
 /obj/machinery/computer/cargo/express/tar
 	name = "express supply console (Тарков Индастриз)"
-	desc = "Консоль экспресс-доставки Тарков Индастриз: пак прилетает капсулой на маяк почти сразу, а его цена списывается в момент заказа с бюджета Тарков Индастриз или, в режиме частного заказа, с личного счёта карты."
+	desc = "Консоль экспресс-доставки Тарков Индастриз: пак прилетает капсулой на маяк почти сразу, а его цена списывается в момент заказа с бюджета Тарков Индастриз или, в режиме частного заказа, с личного счёта карты. В окне - заказы аванпоста и спецзаказы партнёров, которые сдаются сканером продажи."
 	department_account = ACCOUNT_TAR
 	req_access = list(ACCESS_TARKOFF)
 	icon_screen = "idce"
@@ -426,7 +428,7 @@ i'd be right happy to */
 
 /obj/machinery/computer/cargo/express/ds
 	name = "express supply console (Deep Space)"
-	desc = "Консоль экспресс-доставки Deep Space: пак прилетает капсулой на маяк почти сразу, а его цена списывается в момент заказа с бюджета Deep Space или, в режиме частного заказа, с личного счёта карты."
+	desc = "Консоль экспресс-доставки Deep Space: пак прилетает капсулой на маяк почти сразу, а его цена списывается в момент заказа с бюджета Deep Space или, в режиме частного заказа, с личного счёта карты. В окне - заказы аванпоста и спецзаказы партнёров, которые сдаются сканером продажи."
 	department_account = ACCOUNT_DS
 	req_access = list(ACCESS_SYNDICATE_LEADER)
 	icon_screen = "commsyndie"

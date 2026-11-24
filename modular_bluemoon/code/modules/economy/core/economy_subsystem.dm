@@ -58,6 +58,11 @@ SUBSYSTEM_DEF(economy)
 	cash_account = SSeconomy.cash_account
 	market_account = SSeconomy.market_account
 	tax_rate = SSeconomy.tax_rate
+	tax_band = SSeconomy.tax_band
+	tax_band_held = SSeconomy.tax_band_held
+	tax_band_checked = SSeconomy.tax_band_checked
+	tax_mood = SSeconomy.tax_mood
+	tax_mood_timer = SSeconomy.tax_mood_timer
 	fire_count = SSeconomy.fire_count
 	economy_state = SSeconomy.economy_state
 	price_surge_mult = SSeconomy.price_surge_mult
@@ -67,6 +72,10 @@ SUBSYSTEM_DEF(economy)
 	contracts_started = SSeconomy.contracts_started
 	loose_contracts = SSeconomy.loose_contracts
 	contract_demand = SSeconomy.contract_demand
+	relays = SSeconomy.relays
+	orbital_paid = SSeconomy.orbital_paid
+	outpost_contracts = SSeconomy.outpost_contracts
+	outpost_refill_at = SSeconomy.outpost_refill_at
 	escrow_account = SSeconomy.escrow_account
 	lottery = SSeconomy.lottery
 	treasury_requests = SSeconomy.treasury_requests
@@ -89,12 +98,15 @@ SUBSYSTEM_DEF(economy)
 		department.approve_stale_requests()
 		department.hand_off_stale_requests()
 		department.on_economy_tick()
+		department.announce_new_needs(staff_stats)
 		department.settle_owed()
+	remind_treasury_requests()
 	if(contracts_started)
 		recover_contract_demand()
 		refresh_contracts()
 	else
 		start_contracts()
+	refresh_outpost_contracts()
 	if(!(fire_count % settings.payroll_interval_ticks))
 		run_payroll()
 	staff_stats = econ_staff_stats()
@@ -102,6 +114,7 @@ SUBSYSTEM_DEF(economy)
 		var/datum/economy_department/department = departments[id]
 		department.return_excess(staff_stats)
 	update_state()
+	update_tax_mood()
 	ledger.snapshot()
 
 /// Раунд закончен: зарплаты, гранты и оплата работы больше не начисляются, итог смены уже в econ.log.

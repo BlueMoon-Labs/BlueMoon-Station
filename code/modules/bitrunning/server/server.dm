@@ -25,6 +25,8 @@
 	var/threat = 0
 	var/threat_prob_max = 15
 	var/list/turf/exit_turfs = list()
+	/// Клетки приёма груза текущего домена; турфы резервации переживают её освобождение вместе с сигналами
+	var/list/turf/goal_turfs = list()
 	var/broadcasting = FALSE
 	COOLDOWN_DECLARE(broadcast_toggle_cd)
 	COOLDOWN_DECLARE(polling_cooldown)
@@ -40,6 +42,7 @@
 	avatar_connection_refs.Cut()
 	spawned_threat_refs.Cut()
 	exit_turfs.Cut()
+	release_goal_turfs()
 	QDEL_NULL(generated_domain)
 	return ..()
 
@@ -234,14 +237,13 @@
 	var/time_difference = world.time - generated_domain.start_time
 	var/grade = grade_completion(time_difference)
 
-	var/obj/item/paper/certificate = new()
+	var/obj/structure/closet/crate/secure/bitrunning/decrypted/reward_cache = new(src, generated_domain, bonus)
+
+	var/obj/item/paper/certificate = new(reward_cache)
 	certificate.add_raw_text(get_completion_certificate(time_difference, grade))
 	certificate.name = "certificate of domain completion"
 	certificate.update_appearance()
-
-	var/obj/structure/closet/crate/secure/bitrunning/decrypted/reward_cache = new(src, generated_domain, bonus)
-	reward_cache.manifest = WEAKREF(certificate)
-	reward_cache.update_appearance()
+	reward_cache.set_manifest(certificate)
 
 	if(can_generate_tech_disk(grade))
 		SSblackbox.record_feedback("tally", "bitrunning_bepis_rewarded", 1, generated_domain.key)
@@ -526,7 +528,7 @@
 	return TRUE
 
 /obj/machinery/quantum_server/proc/load_map_items()
-	var/turf/goal_turfs = list()
+	release_goal_turfs()
 	var/turf/cache_turfs = list()
 	var/turf/curiosity_turfs = list()
 
@@ -537,10 +539,7 @@
 			continue
 
 		if(istype(thing, /obj/effect/landmark/bitrunning/cache_goal_turf))
-			var/turf/tile = get_turf(thing)
-			goal_turfs += tile
-			RegisterSignal(tile, COMSIG_ATOM_ENTERED, PROC_REF(on_goal_turf_entered))
-			RegisterSignal(tile, COMSIG_ATOM_EXAMINE, PROC_REF(on_goal_turf_examined))
+			register_goal_turf(get_turf(thing))
 			qdel(thing)
 			continue
 
@@ -587,10 +586,7 @@
 		CRASH("Не удалось найти клетки выхода в сгенерированном домене.")
 	// Модульные домены могут иметь только выход в сейфхаусе — доставляем ящик туда.
 	if(!length(goal_turfs) && length(exit_turfs))
-		var/turf/fallback_goal = exit_turfs[1]
-		goal_turfs += fallback_goal
-		RegisterSignal(fallback_goal, COMSIG_ATOM_ENTERED, PROC_REF(on_goal_turf_entered))
-		RegisterSignal(fallback_goal, COMSIG_ATOM_EXAMINE, PROC_REF(on_goal_turf_examined))
+		register_goal_turf(exit_turfs[1])
 	if(!length(goal_turfs))
 		CRASH("Не удалось найти клетки отправки в сгенерированном домене.")
 	if(!attempt_spawn_cache(cache_turfs))
@@ -604,6 +600,18 @@
 		curiosity_turfs -= picked_turf
 
 	return TRUE
+
+/obj/machinery/quantum_server/proc/register_goal_turf(turf/tile)
+	if(isnull(tile) || (tile in goal_turfs))
+		return
+	goal_turfs += tile
+	RegisterSignal(tile, COMSIG_ATOM_ENTERED, PROC_REF(on_goal_turf_entered))
+	RegisterSignal(tile, COMSIG_ATOM_EXAMINE, PROC_REF(on_goal_turf_examined))
+
+/obj/machinery/quantum_server/proc/release_goal_turfs()
+	for(var/turf/tile as anything in goal_turfs)
+		UnregisterSignal(tile, list(COMSIG_ATOM_ENTERED, COMSIG_ATOM_EXAMINE))
+	goal_turfs.Cut()
 
 /obj/machinery/quantum_server/proc/reset(fast = FALSE)
 	is_ready = FALSE
@@ -663,6 +671,7 @@
 
 	avatar_connection_refs.Cut()
 	exit_turfs = list()
+	release_goal_turfs()
 	generated_domain = null
 	mutation_candidate_refs.Cut()
 	spawned_threat_refs.Cut()

@@ -20,6 +20,10 @@
 	var/stock_order_serial = 0
 	/// Первая зарплата смены уже подсказала, где выключаются сообщения о доходах
 	var/income_toggle_hinted = FALSE
+	/// Вторая зарплата смены уже подсказала, на что тратить деньги
+	var/spending_hinted = FALSE
+	/// За смену уже покупал в магазине или личном каталоге: осмотр карты и КПК больше не подсказывает, где тратить
+	var/shop_used = FALSE
 	/// Долг NT (квирк «В долгах»): гасится долей каждой зарплаты на руки
 	var/nt_debt = 0
 	/// Общий служебный счёт команды (инспекция Sol): скиммер его не копирует, кража с него не засчитывается
@@ -102,6 +106,9 @@
 	if(!income_toggle_hinted)
 		income_toggle_hinted = TRUE
 		hint = " Выключить сообщения о доходах: настройки чата, «Уведомления о доходах»."
+	else if(!spending_hinted)
+		spending_hinted = TRUE
+		hint = " Потратить: Кошелёк на КПК, блок «Куда потратить» - магазин, заплатить человеку рядом или попросить у него оплату; в номере отеля Гильберта - еда с кухни и бара."
 	bank_card_talk("Зарплата: [max(paid, floor)] кр.[tax > 0 ? ", налог [tax] кр. в казну станции и NT" : ""], на руки [net - debt_paid] кр.[debt_paid ? " В счёт долга NT [debt_paid] кр., осталось [nt_debt] кр." : ""][owed_wages ? " Отдел должен вам [owed_wages] кр." : ""][hint]", quiet = TRUE)
 	return max(paid, floor)
 
@@ -132,6 +139,13 @@
 	if(owner_ref?.resolve() == user)
 		return TRUE
 	return !!user.mind && owner_mind_ref?.resolve() == user.mind
+
+/// Тело владельца: нынешнее тело его разума, иначе последнее известное.
+/datum/bank_account/proc/owner_body()
+	var/datum/mind/owner_mind = owner_mind_ref?.resolve()
+	if(isliving(owner_mind?.current))
+		return owner_mind.current
+	return owner_ref?.resolve()
 
 /// История операций для окон: time, label, amount, counterparty.
 /datum/bank_account/proc/ui_history()

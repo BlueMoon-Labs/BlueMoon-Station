@@ -286,6 +286,31 @@
 	var/expected_tc = round(SSeconomy.settings.contraband_value_per_tc * 2 * econ_sale_factor(COMMODITY_CONTRABAND))
 	TEST_ASSERT(findtext(jointext(locker.examine(performer), " "), "[expected_tc] кр. за каждый телекристалл"), "Осмотр называет цену телекристалла без цены работы")
 
+/// При недовольстве экипажа налогом окно, лимит и выплата хранилища считаются по урезанной оплате: улика дороже остатка лимита до урезания, но не после, уходит NT.
+/datum/unit_test/economy_work/security/evidence_locker_unrest/Run()
+	TEST_ASSERT_NOTNULL(setup_officer(), "ID офицера надета")
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/obj/machinery/evidence_locker/locker = allocate(/obj/machinery/evidence_locker, station_turf)
+	var/obj/item/card/id/syndicate/agent_card = allocate(/obj/item/card/id/syndicate)
+	TEST_ASSERT(locker.store(hold(agent_card), performer), "Карту принимает")
+	var/saved_mood = SSeconomy.tax_mood
+	SSeconomy.tax_mood = TAX_MOOD_UNREST
+	var/full = round(econ_contraband_value(agent_card) * SSeconomy.settings.work_prices[WORK_SEC_CONTRABAND])
+	var/cut = round(econ_contraband_value(agent_card) * SSeconomy.work_price(WORK_SEC_CONTRABAND))
+	SSeconomy.contraband_paid_in_window = SSeconomy.settings.contraband_cap_hour - cut
+	var/list/data = locker.ui_data(performer)
+	var/list/entry = data["items"][1]
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	security.work_remainder[WORK_SEC_CONTRABAND] = 0
+	var/before = budget.account_balance
+	var/paid = locker.hand_over(agent_card, performer)
+	SSeconomy.tax_mood = saved_mood
+	TEST_ASSERT(cut < full, "Недовольство не урезало оплату: [cut] из [full]")
+	TEST_ASSERT_EQUAL(entry["value"], cut, "Окно показывает оплату без урезания")
+	TEST_ASSERT_EQUAL(paid, cut, "Улика в пределах остатка лимита после урезания не оплачена или оплачена не так")
+	TEST_ASSERT_EQUAL(budget.account_balance - before, cut, "Бюджет СБ получил не урезанную оплату")
+
 /// После конца раунда NT улики не забирает: улика остаётся в хранилище, а не исчезает без оплаты.
 /datum/unit_test/economy_work/security/evidence_locker_round_over/Run()
 	TEST_ASSERT_NOTNULL(setup_officer(), "ID офицера надета")

@@ -173,12 +173,12 @@
 	var/datum/economy_department/science/science = SSeconomy.get_department(ACCOUNT_SCI)
 	if(!science?.pays_extracts_at(src))
 		return
-	var/price = SSeconomy.settings.work_prices[WORK_SCI_SLIME_DISCOVERY]
+	var/price = SSeconomy.work_price(WORK_SCI_SLIME_DISCOVERY)
 	var/list/values = list()
 	for(var/colour in GLOB.econ_slime_extract_value)
 		values += GLOB.econ_slime_extract_value[colour]
 	if(price && length(values))
-		. += span_notice("Первый за смену экстракт каждого цвета Nanotrasen оплачивает бюджету науки: от [min(values) * price] до [max(values) * price] кр. в зависимости от цвета.")
+		. += span_notice("Первый за смену экстракт каждого цвета Nanotrasen оплачивает бюджету науки: от [round(min(values) * price, 0.01)] до [round(max(values) * price, 0.01)] кр. в зависимости от цвета.")
 
 /obj/machinery/processor/slime/adjust_item_drop_location(atom/movable/AM)
 	var/static/list/slimecores = subtypesof(/obj/item/slime_extract)

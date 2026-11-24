@@ -150,6 +150,9 @@
 /obj/item/mecha_parts/mecha_equipment/proc/detach(atom/moveto=null)
 	moveto = moveto || get_turf(chassis)
 	if(src.Move(moveto))
+		// Клетка идущего взрыва подрывает вошедшего (/turf/Entered), и Destroy() уже снял модуль с меха
+		if(QDELETED(src))
+			return
 		QDEL_LIST_ASSOC_VAL(pilot_actions)
 		LAZYREMOVE(chassis.equipment, src)
 		if(chassis.selected == src)

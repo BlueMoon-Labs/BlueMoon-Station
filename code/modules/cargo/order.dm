@@ -38,6 +38,8 @@
 	var/contraband_supply = FALSE
 	/// Партнёр, выбранный при заказе; если к отгрузке он не может везти, везёт самый дешёвый
 	var/partner_id
+	/// Сколько заплатил бюджет снабжения при отгрузке: столько вернёт верно отклонённый манифест
+	var/cargo_paid = 0
 
 /datum/supply_order/New(datum/supply_pack/pack, orderer, orderer_rank, orderer_ckey, reason, paying_account, coupon)
 	id = SSshuttle.ordernum++
@@ -132,7 +134,7 @@
 		account_holder = "Cargo"
 	var/obj/structure/closet/crate/C = pack.generate(A, owner)
 	econ_mark_imported(C)
-	generateManifest(C, account_holder, pack)
+	generateManifest(C, account_holder, pack, cargo_paid)
 	return C
 
 /datum/supply_order/proc/generateCombo(miscbox, misc_own, misc_contents)

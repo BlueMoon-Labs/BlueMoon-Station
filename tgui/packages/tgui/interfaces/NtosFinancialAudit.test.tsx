@@ -56,6 +56,7 @@ const base: FinancialAuditData = {
   rules: {
     siphon_threshold: 1000,
     siphon_minutes: 30,
+    siphon_bonus_limit: 6000,
     structuring_count: 5,
     structuring_minutes: 5,
     insider_threshold: 2000,
@@ -66,6 +67,7 @@ const base: FinancialAuditData = {
     trace_minutes: 30,
     trace_depth: 3,
     fee_percent: 10,
+    cash_deposit_threshold: 50000,
     owed_cap: 6,
     reason_max: 64,
     search_max: 20,
@@ -282,12 +284,33 @@ describe('NtosFinancialAudit', () => {
     fireEvent.click(getByText('Правила'));
     const content = text(container);
     expect(content).toContain('на 1 000 кр. и больше за 30 мин.');
+    expect(content).toContain('Премии главы сотруднику в пределах лимита премий дела не открывают.');
+    expect(content).not.toContain('6 000 кр. за 30 мин.');
     expect(content).toContain('5 и больше личных переводов одному получателю за 5 мин.');
     expect(content).toContain('сделки после того, как она встала в очередь: она выходит через 3-5 мин.');
     expect(content).toContain('сделки за 5 мин. до его выхода');
     expect(content).toContain('опровержения, которое выходит через 7 мин.');
     expect(content).toContain('если с последнего движения по нему прошло меньше 30 мин.');
     expect(content).toContain('10% суммы уходит сбором в бюджет отдела безопасности');
+    expect(content).toContain('Внесение на личный счёт 50 000 кр. и больше наличными за раз.');
+  });
+
+  test('правила: без порога крупного внесения строки нет', () => {
+    const { container, getByText } = setup({ rules: { ...base.rules!, cash_deposit_threshold: 0 } });
+    fireEvent.click(getByText('Правила'));
+    expect(text(container)).not.toContain('Крупное внесение наличных');
+  });
+
+  test('крупное внесение наличных: счёт вкладчика, вернуть некому, только закрыть', () => {
+    const deposit: AuditCase = { ...cashout, uid: 10, kind: 'cash_deposit', text: 'Крупное внесение наличных', amount: 60000 };
+    const { container, getByText, queryByText } = setup({ cases: [deposit] });
+    fireEvent.click(rowOf(getByText('Крупное внесение наличных')).getByText('Разобрать'));
+    const content = text(container);
+    expect(content).toContain('Чей счёт');
+    expect(content).not.toContain('Откуда:');
+    expect(content).toContain('Деньги пришли наличными, возвращать их некому.');
+    expect(queryByText('Вернуть средства')).toBeNull();
+    expect(getByText('Закрыть дело')).toBeTruthy();
   });
 
   test('объединённое дело: получатели с остатками, возврат с выбранного', () => {

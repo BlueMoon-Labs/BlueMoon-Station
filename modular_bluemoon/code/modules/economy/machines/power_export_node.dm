@@ -30,10 +30,10 @@
 	power_export_paid_w += paid
 	return paid
 
-/// Цена МДж для бюджета инженерии: база настроек, рынок энергии и цена работы экспорта энергии.
+/// Цена МДж для бюджета инженерии: база настроек, рынок энергии, цена работы экспорта энергии и настроение экипажа.
 /proc/econ_power_export_price_per_mj()
 	var/datum/economy_settings/settings = SSeconomy.settings
-	return settings.power_export_credits_per_mj * (settings.work_prices[WORK_ENG_POWER_EXPORT] || 0) * econ_sale_factor(COMMODITY_ENERGY)
+	return settings.power_export_credits_per_mj * (settings.work_prices[WORK_ENG_POWER_EXPORT] || 0) * econ_sale_factor(COMMODITY_ENERGY) * SSeconomy.work_pay_mult()
 
 /obj/machinery/power/proc/accrue_power_export(credits)
 	var/datum/economy_department/engineering/engineering = SSeconomy.get_department(ACCOUNT_ENG)
@@ -217,8 +217,29 @@
 		ui = new(user, src, "PowerExportNode", name)
 		ui.open()
 
+/// Что инженерия покупает на доход: число паков каталога и три примера по цене - самый дешёвый, средний и самый дорогой.
+/obj/machinery/power/export_node/ui_static_data(mob/user)
+	var/datum/economy_department/engineering = SSeconomy.get_department(ACCOUNT_ENG)
+	var/list/priced = list()
+	for(var/datum/supply_pack/pack as anything in engineering?.catalog())
+		priced[pack] = econ_pack_price(pack, engineering.account)
+	sortTim(priced, GLOBAL_PROC_REF(cmp_numeric_asc), associative = TRUE)
+	var/list/examples = list()
+	var/count = length(priced)
+	for(var/index in (count ? uniqueList(list(1, CEILING(count / 2, 1), count)) : list()))
+		var/datum/supply_pack/pack = priced[index]
+		examples += list(list("name" = pack.name, "price" = priced[pack]))
+	return list(
+		"pack_count" = count,
+		"pack_examples" = examples,
+		"staple_cap" = SSeconomy.settings.staple_self_order_cap_hour,
+		"cap_share" = SSeconomy.settings.budget_cap_return_share,
+		"economy_minutes" = round(SSeconomy.wait / (1 MINUTES), 1),
+	)
+
 /obj/machinery/power/export_node/ui_data(mob/user)
 	var/datum/economy_settings/settings = SSeconomy.settings
+	var/datum/economy_department/engineering = SSeconomy.get_department(ACCOUNT_ENG)
 	var/market_factor = econ_sale_factor(COMMODITY_ENERGY)
 	var/price = econ_power_export_price_per_mj()
 	var/paid_w = min(last_export_w, settings.power_export_station_cap_kw * WATTS_PER_KILOWATT)
@@ -244,6 +265,10 @@
 		"income_per_minute" = round(paid_w / WATTS_PER_MEGAWATT * (1 MINUTES / (1 SECONDS)) * price),
 		"payout_minutes" = ECON_POWER_EXPORT_PAYOUT_INTERVAL / (1 MINUTES),
 		"payout_bulk" = ECON_POWER_EXPORT_PAYOUT_BULK,
+		"unrest_cut" = SSeconomy.tax_mood == TAX_MOOD_UNREST ? settings.tax_unrest_work_cut : 0,
+		"budget" = engineering?.account.account_balance || 0,
+		"budget_cap" = engineering?.budget_threshold() || 0,
+		"return_due" = engineering?.budget_return_due() || 0,
 	)
 
 /obj/machinery/power/export_node/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
