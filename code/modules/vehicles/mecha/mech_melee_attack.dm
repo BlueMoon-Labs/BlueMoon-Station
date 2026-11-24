@@ -54,13 +54,24 @@
 			to_chat(user, "<span class='warning'>You don't want to harm other living beings!</span>")
 			return
 		mecha_attacker.do_attack_animation(src)
-		if(mecha_attacker.damtype == "brute")
-			step_away(src, mecha_attacker, 15)
+		if(mecha_attacker.damtype == BRUTE)
+			step_away(src, mecha_attacker, 15) // Отбрасывание на 1 клетку
 		switch(mecha_attacker.damtype)
 			if(BRUTE)
-				Unconscious(20)
-				take_overall_damage(rand(mecha_attacker.force/2, mecha_attacker.force))
+				// Knock down all targets
+				Knockdown(40)
+				// Disarm - drop held items
+				for(var/obj/item/held in held_items)
+					if(held && !QDELETED(held))
+						dropItemToGround(held, force = TRUE)
+				// Double stamina damage from the hit
+				var/dmg = rand(mecha_attacker.force * 0.5, mecha_attacker.force)
+				adjustStaminaLoss(dmg * 2)
 				playsound(src, 'sound/weapons/punch4.ogg', 50, TRUE)
+				// Other heavy special mechs (Seraphim etc.) additionally stun and damage the target
+				if(mecha_attacker.force > 40)
+					Unconscious(20)
+					take_overall_damage(rand(mecha_attacker.force/2, mecha_attacker.force))
 			if(BURN)
 				take_overall_damage(0, rand(mecha_attacker.force * 0.5, mecha_attacker.force))
 				playsound(src, 'sound/items/welder.ogg', 50, TRUE)
