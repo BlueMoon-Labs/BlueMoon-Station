@@ -307,13 +307,13 @@
 /// Ручка contract_relay_stage_rotations = 1: этап, и первый, и со второго, ждёт ровно одну ротацию; меньше единицы ручка не принимает.
 /datum/unit_test/economy_relay/one_rotation/Run()
 	SSeconomy.settings.contract_relay_stage_rotations = 1
-	var/age = SSeconomy.contract_rotation_age()
 	var/datum/econ_contract/first = SSeconomy.begin_relay(template_titled("Лекарства для медбея"))
 	TEST_ASSERT_NOTNULL(first, "Первый этап не выставлен")
 	var/datum/econ_relay/relay = first.relay
+	var/age = SSeconomy.contract_rotation_age()
 	TEST_ASSERT_EQUAL(relay.stage_minutes(), round(age / (1 MINUTES)), "Срок этапа при одной ротации")
 	TEST_ASSERT_EQUAL(first.rotation_due_at(), relay.stage_due_at(), "Первый этап снимется не в срок этапа")
-	TEST_ASSERT_EQUAL(first.ui_entry()["relay_minutes"], round(age / (1 MINUTES)), "Карточка обещает не тот срок")
+	TEST_ASSERT_EQUAL(first.ui_entry()["relay_minutes"], max(CEILING((relay.stage_due_at() - world.time) / (1 MINUTES), 1), 1), "Карточка обещает не тот срок")
 	relay.stage = 2
 	TEST_ASSERT_EQUAL(first.rotation_due_at(), relay.stage_due_at(), "Этап со второго ждёт дольше одной ротации")
 	relay.stage = 1

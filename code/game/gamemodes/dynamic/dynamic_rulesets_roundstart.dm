@@ -1368,6 +1368,7 @@ BLUEMOON REMOVAL END*/
 	intensity = 15 // спящие антаги, активны только после смерти
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
 	requirements = list(101,10,10,10,10,10,10,10,10,10) //BLUEMOON CHANGES
+	flags = HIGH_IMPACT_RULESET | LONE_RULESET
 	antag_cap = list("denominator" = 2) // половина экипажа
 
 /datum/dynamic_ruleset/roundstart/hidden_zombies/pre_execute(population)

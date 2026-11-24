@@ -316,7 +316,7 @@
 	name = "Maintenance Hatch"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/space/basic,
+/turf/open/floor/plasteel/rivets,
 /area/maintenance/port/central)
 "Y" = (
 /obj/effect/decal/cleanable/dirt,

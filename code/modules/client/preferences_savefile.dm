@@ -2142,7 +2142,7 @@ GLOBAL_VAR(player_save_migration_timer)
 	//Sanitize
 
 	real_name = reject_bad_name(real_name, TRUE)
-	character_slot_name = copytext_char(trimtext(strip_control_chars(sanitize_text(character_slot_name))), 1, MAX_NAME_LEN + 1)
+	character_slot_name = player_save_slot_name(character_slot_name)
 	gender = sanitize_gender(gender, TRUE, TRUE)
 	features["body_model"] = sanitize_gender(features["body_model"], FALSE, FALSE, gender == FEMALE ? FEMALE : MALE)
 	if(!real_name)
@@ -2505,7 +2505,7 @@ GLOBAL_VAR(player_save_migration_timer)
 		names[slot] = entry?[1]
 		if(!names[slot])
 			continue
-		custom_slot_names[slot] = copytext_char(trimtext(strip_control_chars(sanitize_text(entry[2]))), 1, MAX_NAME_LEN + 1)
+		custom_slot_names[slot] = player_save_slot_name(entry[2])
 	slot_names_cache = names
 	slot_custom_names_cache = custom_slot_names
 	return TRUE
