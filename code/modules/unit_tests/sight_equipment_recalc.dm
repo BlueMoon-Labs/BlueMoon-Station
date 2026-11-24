@@ -81,4 +81,4 @@
 	var/list/matrix = plane.color
 	if(!islist(matrix))
 		return plane.alpha
-	return round(matrix[16] * plane.alpha, 1)
+	return round(matrix[16] * 255, 1)
