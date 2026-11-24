@@ -180,6 +180,7 @@
 #include "atmos_pipenet_rebuild.dm"
 #include "atmos_gas_balance.dm"
 #include "atmos_handbook.dm"
+#include "atom_colour_matrix_alpha.dm"
 #include "atoms_initialize_overlap.dm"
 #include "firelock_alarm.dm"
 #include "rpd_fixes.dm"
