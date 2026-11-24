@@ -305,6 +305,10 @@
 				node_json -= key
 		tree = merged
 
+/// Нормализация названия слота, одинаковая для кэша, диска и индекса.
+/proc/player_save_slot_name(value)
+	return copytext_char(trimtext(strip_control_chars(sanitize_text(value))), 1, MAX_NAME_LEN + 1)
+
 /// Запись слота в корне: имя персонажа и название слота с тем же поколением, что и анкета.
 /// Строка вместо списка - корень сборки без названий слотов, название тогда берётся из анкеты.
 /proc/player_save_slot_index(name, slot_name)
