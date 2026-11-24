@@ -116,9 +116,12 @@
 	// некоторые сабтипы (bees) мутируют wanted_objects через -= / |=, а общий
 	// кэшированный ассоциативный массив протёк бы между экземплярами.
 	var/static/list/wanted_objects_cache = list()
-	if(!wanted_objects_cache[type])
-		wanted_objects_cache[type] = typecacheof(wanted_objects)
-	wanted_objects = wanted_objects_cache[type].Copy()
+	var/list/cached_wanted_objects = wanted_objects_cache[type] as list
+	if(!cached_wanted_objects) {
+		cached_wanted_objects = typecacheof(wanted_objects)
+		wanted_objects_cache[type] = cached_wanted_objects
+	}
+	wanted_objects = cached_wanted_objects.Copy()
 
 	var/chosen_profile = select_ai_profile()
 	//Явно выключенные типы (AI_OFF на типе) - игровые оболочки и постоянные
