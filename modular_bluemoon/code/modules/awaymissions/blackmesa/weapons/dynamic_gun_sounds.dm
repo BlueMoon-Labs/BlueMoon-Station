@@ -85,7 +85,6 @@
 	var/has_dynamic_sounds = FALSE
 	var/datum/dynamic_gun_sound/dynamic_sound_datum = null
 	var/dynamic_looping = FALSE
-	var/mesa_muzzle_flash = FALSE
 	var/dynamic_sound_dry = null
 	var/dynamic_sound_tail = null
 	var/dynamic_sound_volume = 50
@@ -114,8 +113,6 @@
 	return ..()
 
 /obj/item/gun/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
-	if(mesa_muzzle_flash && user)
-		user.flash_lighting_fx(4, 5, LIGHT_COLOR_ORANGE, 1)
 	if(mesa_shotgun_bonus && pointblank && pbtarget)
 		var/mob/living/victim
 		if(istype(pbtarget, /mob/living))

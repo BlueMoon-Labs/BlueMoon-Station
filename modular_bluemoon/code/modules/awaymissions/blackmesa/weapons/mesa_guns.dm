@@ -13,10 +13,10 @@
 	burst_size = 1
 	spread = 7
 	fire_delay = 0
+	ranged_attack_speed = CLICK_CD_RAPID
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
 	automatic_burst_overlay = FALSE
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/9mm.ogg'
-	mesa_muzzle_flash = TRUE
 	gunlight_state = "mini-light"
 	can_flashlight = 0
 
@@ -82,7 +82,6 @@
 	icon_state = "m4oa1"
 	item_state = "m4oa1"
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/m16.ogg'
-	mesa_muzzle_flash = TRUE
 	recoil = 1
 	weapon_weight = WEAPON_HEAVY
 	mag_type = /obj/item/ammo_box/magazine/sniper_rounds/m4oa1
@@ -115,7 +114,6 @@
 	icon_state = "javelin"
 	item_state = "javelin"
 	fire_sound = null
-	mesa_muzzle_flash = FALSE
 	recoil = 1
 	weapon_weight = WEAPON_HEAVY
 	mag_type = /obj/item/ammo_box/magazine/sniper_rounds/javelin_vdd_svz
@@ -223,7 +221,6 @@
 	icon_state = "mp5"
 	item_state = "mp5"
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/mp5.ogg'
-	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/mp5
 	load_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/loadin.ogg'
 	load_empty_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/magout.ogg'
@@ -454,7 +451,7 @@
 	fire_select_modes = list(SELECT_FULLY_AUTOMATIC)
 	burst_size = 1
 	fire_delay = 1.5
-	recoil = 4
+	recoil = 2.67
 	spread = 22
 	projectile_simple_mob_damage_multiplier = 2
 	automatic_burst_overlay = FALSE
@@ -629,7 +626,6 @@
 	icon_state = "spas"
 	item_state = "spas"
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/spas.ogg'
-	mesa_muzzle_flash = TRUE
 	w_class = WEIGHT_CLASS_BULKY
 	recoil = 3
 	force = 10
@@ -864,7 +860,6 @@
 
 /obj/item/gun/ballistic/revolver/grenadelauncher/halflife
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/underbarrel.ogg'
-	mesa_muzzle_flash = TRUE
 	pin = /obj/item/firing_pin
 
 // TIER 3
@@ -880,7 +875,6 @@
 	fire_delay = 1 //ATATATATATATATATA!!!
 	spread = 11
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/m16.ogg'
-	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/m16/mesa
 	obj_flags = UNIQUE_RENAME
 	projectile_simple_mob_damage_multiplier = 3.5
@@ -969,7 +963,6 @@
 	fire_delay = 0.8
 	spread = 8
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/mp7.ogg'
-	mesa_muzzle_flash = TRUE
 	weapon_weight = WEAPON_LIGHT
 	mag_type = /obj/item/ammo_box/magazine/mp7
 	projectile_simple_mob_damage_multiplier = 0.8
@@ -1039,7 +1032,6 @@
 	spread = 10
 	burst_size = 3
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/scar.ogg'
-	mesa_muzzle_flash = TRUE
 	weapon_weight = WEAPON_HEAVY
 	w_class = WEIGHT_CLASS_BULKY
 	mag_type = /obj/item/ammo_box/magazine/scar
@@ -1095,7 +1087,6 @@
 	fire_delay = 1.5 //FUUUUUUUUCK!!!!!
 	spread = 17
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/p90.ogg'
-	mesa_muzzle_flash = TRUE
 	weapon_weight = WEAPON_HEAVY
 	w_class = WEIGHT_CLASS_BULKY
 	mag_type = /obj/item/ammo_box/magazine/p90
@@ -1144,7 +1135,6 @@
 	desc = "Тaurus Model 85 является компактным револьвером, который был разработан бразильской компанией Taurus International. Он предназначен для скрытого ношения и самообороны, и является популярным выбором среди гражданских лиц и правоохранительных органов. Данный экземпляр может похвастаться модифицированным барабаном на 4 выстрела калибром .357"
 	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
 	icon_state = "taurus"
-	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/rev357/taurus
 	fire_delay = 3
 
@@ -1397,7 +1387,6 @@
 	icon_state = "rs12"
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	fire_sound = 'modular_bluemoon/sound/weapons/rsh.ogg'
-	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/hlrsh12
 	recoil = 6
 	fire_delay = 4
@@ -1449,7 +1438,6 @@
 	desc = "Карманная артиллерия прямо у вас в руках. пустынный орёл способен пробивать бронежилеты большинства стандартных образцов, что делает его идеальным выбором для лидеров отрядов HECU"
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	icon_state = "hldeagle"
-	mesa_muzzle_flash = TRUE
 	w_class = WEIGHT_CLASS_NORMAL
 	can_suppress = FALSE
 	burst_size = 1
@@ -1472,7 +1460,6 @@
 	desc = "Достаточно неплохого калибра револьвер, специально выбранный для быстрого устранения... Крупной дичи"
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	icon_state = "hl357"
-	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/rev357
 /obj/item/ammo_box/magazine/internal/cylinder/rev357
 	name = "revolver cylinder (.357)"
@@ -1491,7 +1478,6 @@
 	icon_state = "m249"
 	item_state = "m249"
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/m249.ogg'
-	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/m249
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY

@@ -297,6 +297,11 @@
 
 	QDEL_IN(src, corpse_cleanup_time)
 
+/mob/living/simple_animal/hostile/infected/emote(act, m_type = 1, message = null, intentional = FALSE, message_override = null)
+	if(act && lowertext(act) == "deathgasp" && !src.deathsound && !istype(src, /mob/living/simple_animal/hostile/infected/tank))
+		return
+	..(act, m_type, message, intentional, message_override)
+
 /mob/living/simple_animal/hostile/infected/Destroy()
 	if(GLOB.zombie_director)
 		var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
