@@ -277,11 +277,17 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 		/datum/event_admin_setup/listed_options/bitrunning_glitch,
 	)
 	category = EVENT_CATEGORY_INVASION
+	severity = DIRECTOR_SEVERITY_GHOST // поллит призраков - гост-пул, а не общий MAJOR
+	cost = 10
+	intensity = 15
 	description = "Вызывает кратковременного антагониста в виртуальном домене."
 	min_players = 1
 	max_occurrences = 0
 	typepath = /datum/round_event/ghost_role/bitrunning_glitch
-	weight = 100
+	weight = 10
+	// Мутирует члена экипажа в боевого антагониста - не лёгкий и не фоновый профиль.
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
+	director_ghost_jobban = ROLE_GLITCH // опрос кандидатов идёт без be_special, но с бан-проверкой GLITCH
 	var/list/datum/weakref/active_servers = list()
 
 /datum/round_event_control/bitrunning_glitch/can_fire(datum/director_signals/signals)
