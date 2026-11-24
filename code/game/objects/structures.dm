@@ -144,3 +144,28 @@
 
 /obj/structure/rust_heretic_act()
 	take_damage(500, BRUTE, MELEE, 1)
+
+/obj/structure/ship_hold
+	name = "the ship's hold"
+	desc = "An indestructible storage that opens a local pocket of bluepace. It can hold as much as a bluepace bag."
+	icon = 'icons/obj/hellgate/ship_hold.dmi'
+	icon_state = "ship_hold"
+	density = TRUE
+	anchored = TRUE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
+	max_integrity = 1000
+	integrity_failure = 0
+
+/obj/structure/ship_hold/Initialize(mapload)
+	. = ..()
+	var/datum/component/storage/STR = AddComponent(/datum/component/storage/concrete/bluespace/bag_of_holding)
+	if(STR)
+		STR.max_combined_w_class = 60
+		STR.max_items = 14
+		STR.insert_preposition = "in"
+
+/obj/structure/ship_hold/attackby(obj/item/I, mob/user, params)
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	if(STR && STR.attackby(I, user, params))
+		return TRUE
+	return ..()
