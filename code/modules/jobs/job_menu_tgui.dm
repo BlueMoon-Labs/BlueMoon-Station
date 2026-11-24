@@ -306,6 +306,8 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 /datum/job_menu/proc/build_ghost_roles()
 	. = list()
 	var/ghost_mode = (mode == JOB_MENU_GHOST)
+	if(ghost_mode && QDELETED(GLOB.antag_training_spawner))
+		GLOB.antag_training_spawner = new /obj/effect/mob_spawn/antag_training(null)
 	var/list/empty_keys = list()
 	for(var/spawner_key in GLOB.mob_spawners)
 		var/list/spawner_list = GLOB.mob_spawners[spawner_key]
