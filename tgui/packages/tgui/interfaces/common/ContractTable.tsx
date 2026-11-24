@@ -21,6 +21,8 @@ type ContractBoardData = {
   my_account?: number | null;
   performer_share?: number;
   team_share?: number;
+  /** Сколько раз один человек выполняет один и тот же заказ за смену, 0 - без лимита. */
+  repeat_limit?: number;
   drop_cooldown?: number;
   rank?: ContractRank | null;
   reroll_left?: number;
@@ -51,9 +53,23 @@ export const isMine = (contract: ContractEntry, myAccount?: number | null) => !!
 export const isMyPost = (contract: ContractEntry, myAccount?: number | null) =>
   contract.kind === 'crew' && !!myAccount && contract.poster_id === myAccount;
 
+/** Чужое объявление экипажа, которое ещё никто не взял. */
+export const isOpenCrewRequest = (contract: ContractEntry, myAccount?: number | null) =>
+  contract.kind === 'crew' && !contract.taken_by && !isMyPost(contract, myAccount);
+
 /** Сколько чужих объявлений экипажа ещё никто не взял. */
 export const freeCrewRequests = (contracts: ContractEntry[], myAccount?: number | null) =>
-  contracts.filter((contract) => contract.kind === 'crew' && !contract.taken_by && !isMyPost(contract, myAccount)).length;
+  contracts.filter((contract) => isOpenCrewRequest(contract, myAccount)).length;
+
+/** Свободные чужие объявления экипажа - первыми: их легко не заметить среди заказов NT. */
+export const crewRequestsFirst = (contracts: ContractEntry[], myAccount?: number | null) =>
+  [...contracts].sort((a, b) => Number(isOpenCrewRequest(b, myAccount)) - Number(isOpenCrewRequest(a, myAccount)));
+
+/** Как платит серия или эстафета: каждый этап, премия за последний и потолок всей награды. */
+const stagesNote = (contract: ContractEntry, perStage: string) =>
+  `${perStage}, за последний - премия ${contract.chain_bonus}% от суммы этапов${
+    contract.chain_cap ? `, всего не больше ${formatCredits(contract.chain_cap)}` : '.'
+  }`;
 
 const DropButton = (props: { contract: ContractEntry }) => {
   const { act, data } = useBackend<ContractBoardData>();
@@ -62,6 +78,8 @@ const DropButton = (props: { contract: ContractEntry }) => {
   let tooltip = `Контракт уйдёт с доски, на его место придёт другой.${cooldown}`;
   if (contract.kind === 'crew') {
     tooltip = `Объявление снова станет свободным.${cooldown}`;
+  } else if (contract.kind === 'relay') {
+    tooltip = `Этап снова станет свободным, эстафета не оборвётся, пока не выйдет срок этапа.${cooldown}`;
   } else if (contract.started) {
     tooltip = `Контракт снова станет свободным, отгруженное по нему останется засчитанным.${cooldown}`;
   }
@@ -124,7 +142,7 @@ const PosterAction = (props: { contract: ContractEntry }) => {
 };
 
 const ContractAction = (props: { contract: ContractEntry; myAccount?: number | null; readOnly?: boolean }) => {
-  const { act } = useBackend<ContractBoardData>();
+  const { act, data } = useBackend<ContractBoardData>();
   const { contract, myAccount, readOnly } = props;
   if (!readOnly && isMyPost(contract, myAccount)) {
     return <PosterAction contract={contract} />;
@@ -152,17 +170,19 @@ const ContractAction = (props: { contract: ContractEntry; myAccount?: number | n
     );
   }
   if (!contract.takeable) {
-    return <Box color="label">Выполняет отдел</Box>;
+    return <Box color="label">{contract.kind === 'incident' ? 'Брать не нужно' : 'Выполняет отдел'}</Box>;
   }
   if (readOnly) {
     return <Box color="good">Свободен</Box>;
   }
+  let refusal: string | null = myAccount ? null : 'Нужен банковский счёт';
+  if (myAccount && contract.repeat_capped) {
+    refusal = `Этот заказ вы за смену уже выполнили столько раз, сколько можно одному человеку${
+      data.repeat_limit ? ` (${data.repeat_limit})` : ''
+    }. Возьмите другой.`;
+  }
   return (
-    <Button
-      color="good"
-      disabled={!myAccount}
-      tooltip={myAccount ? null : 'Нужен банковский счёт'}
-      onClick={() => act('take', { uid: contract.uid })}>
+    <Button color="good" disabled={!!refusal} tooltip={refusal} onClick={() => act('take', { uid: contract.uid })}>
       Взять
     </Button>
   );
@@ -185,6 +205,13 @@ const RewardNote = (props: { contract: ContractEntry; myAccount?: number | null 
       </div>
     );
   }
+  if (contract.kind === 'incident') {
+    return (
+      <div className="NtTerm__hint">
+        {contract.incident_team || 'Инженерам на смене поровну'} {data.team_share}%, остальное - бюджету
+      </div>
+    );
+  }
   if (!contract.taken_by && !!contract.people_only) {
     return (
       <div className="NtTerm__hint">Поровну всем в отделе на смене, бюджету ничего</div>
@@ -200,11 +227,25 @@ const RewardNote = (props: { contract: ContractEntry; myAccount?: number | null 
   return null;
 };
 
+/** Когда невзятый контракт снимут: этап эстафеты, не выполненный к сроку, обрывает всю эстафету. */
+const rotationNote = (contract: ContractEntry, left: number) => {
+  if (contract.kind === 'relay') {
+    return `Не выполните за ${formatTimeLeft(left)} - эстафета оборвётся`;
+  }
+  return contract.started
+    ? `Снимется через ${formatTimeLeft(left)}, отгруженное не вернётся`
+    : `Смена через ${formatTimeLeft(left)}`;
+};
+
 export const ContractRow = (props: { contract: ContractEntry; myAccount?: number | null; readOnly?: boolean }) => {
   const { contract, myAccount, readOnly } = props;
   const share = progressShare(contract.progress);
   const mine = isMine(contract, myAccount) || isMyPost(contract, myAccount);
   const lowDemand = contract.demand !== undefined && contract.demand < 100;
+  const hasTimeLeft = contract.time_left !== null && contract.time_left !== undefined;
+  // Свой срок этапа эстафеты (взятого или срочного) наступит раньше ротации: его срыв и оборвёт эстафету
+  const relayDeadline =
+    contract.kind === 'relay' && hasTimeLeft && (contract.rotates_in === null || contract.rotates_in === undefined || (contract.time_left ?? 0) <= contract.rotates_in);
   return (
     <div className={mine ? 'NtTerm__contract NtTerm__contract--mine' : 'NtTerm__contract'}>
       <div className="NtTerm__contractMain">
@@ -219,13 +260,28 @@ export const ContractRow = (props: { contract: ContractEntry; myAccount?: number
               Серия: этап {contract.stage} из {contract.stages}
             </span>
           )}
+          {contract.kind === 'relay' && (
+            <span className="NtTerm__contractTag">
+              Эстафета: этап {contract.stage} из {contract.stages}
+            </span>
+          )}
+          {contract.kind === 'incident' && <span className="NtTerm__contractUrgent">Авария</span>}
           {contract.kind === 'crew' && <span className="NtTerm__contractTag">Объявление: {contract.poster}</span>}
           {lowDemand && <span className="NtTerm__contractTag NtTerm__contractTag--low">Спрос {contract.demand}%</span>}
         </div>
         <div className="NtTerm__hint">{contract.desc}</div>
-        {contract.kind === 'chain' && (
+        {contract.kind === 'chain' && <div className="NtTerm__hint">{stagesNote(contract, 'Каждый этап оплачивается сразу')}</div>}
+        {contract.kind === 'relay' && (
           <div className="NtTerm__hint">
-            Каждый этап оплачивается сразу, за последний - премия {contract.chain_bonus}% от суммы этапов.
+            «{contract.relay_title}»: сейчас {contract.relay_label}
+            {contract.relay_next ? `, дальше - ${contract.relay_next}` : ', это последний этап'}.{' '}
+            {!contract.taken_by && !!contract.relay_minutes && `На этап - ${contract.relay_minutes} мин., потом эстафета оборвётся. `}
+            {stagesNote(contract, 'Каждый этап оплачивается сразу своему отделу')}
+          </div>
+        )}
+        {contract.kind === 'incident' && (
+          <div className="NtTerm__hint">
+            {contract.incident_note || 'Брать не нужно: контракт закроется сам, когда станция будет в порядке.'}
           </div>
         )}
         {lowDemand && <div className="NtTerm__hint">Этот заказ недавно сдавали: награда снижена, со временем спрос вернётся.</div>}
@@ -243,14 +299,11 @@ export const ContractRow = (props: { contract: ContractEntry; myAccount?: number
       <div className="NtTerm__contractSide">
         <div className="NtTerm__contractReward">{formatCredits(contract.reward)}</div>
         {!readOnly && <RewardNote contract={contract} myAccount={myAccount} />}
-        {contract.time_left !== null && contract.time_left !== undefined && (
-          <div className="NtTerm__hint">Осталось {formatTimeLeft(contract.time_left)}</div>
-        )}
-        {contract.rotates_in !== null && contract.rotates_in !== undefined && (
-          <div className={contract.started ? 'color-average' : 'NtTerm__hint'}>
-            {contract.started
-              ? `Снимется через ${formatTimeLeft(contract.rotates_in)}, отгруженное не вернётся`
-              : `Смена через ${formatTimeLeft(contract.rotates_in)}`}
+        {hasTimeLeft && <div className="NtTerm__hint">Осталось {formatTimeLeft(contract.time_left ?? 0)}</div>}
+        {relayDeadline && <div className="color-average">Срыв срока оборвёт эстафету</div>}
+        {contract.rotates_in !== null && contract.rotates_in !== undefined && !relayDeadline && (
+          <div className={contract.started || contract.kind === 'relay' ? 'color-average' : 'NtTerm__hint'}>
+            {rotationNote(contract, contract.rotates_in)}
           </div>
         )}
         <Box mt={0.5}>
@@ -307,7 +360,7 @@ const PartnerOffers = (props: { offers: OfferEntry[] }) => {
       <div className="NtTerm__contractTitle">Спецзаказы партнёров снабжения</div>
       <Box className="NtTerm__hint" mb={0.5}>
         Положите товар на пад подработки и отправьте: оплата за штуки уйдёт вашему отделу, вам лично - доля участника. Купленное через
-        снабжение и в автоматах не засчитывается.
+        снабжение и в автоматах не засчитывается, кроме тары из автомата, в которую нужное налили вы.
       </Box>
       {offers.map((offer) => (
         <PartnerOfferRow key={offer.uid} offer={offer} />
@@ -343,7 +396,7 @@ const resetTooltip = (board: BoardReset) => {
   if (board.left > 0) {
     return `Снова можно через ${formatTimeLeft(board.left)}`;
   }
-  const rules = `Неначатые контракты отдела сменятся новыми. Взятые снимаются без штрафа репутации и без паузы на взятие, кроме вашего собственного и взятых меньше ${board.grace_minutes} мин. назад - если взявший не в игре, его контракт снимется всё равно. Начатые и заказы ЦК останутся. Не чаще раза в ${board.minutes} мин.`;
+  const rules = `Неначатые контракты отдела сменятся новыми. Взятые снимаются без штрафа репутации и без паузы на взятие, кроме вашего собственного и взятых меньше ${board.grace_minutes} мин. назад - если взявший не в игре, его контракт снимется всё равно. Свободный первый этап эстафеты тоже снимется, и эстафета оборвётся. Начатые, взятые этапы эстафет и этапы со второго, заказы ЦК останутся. Не чаще раза в ${board.minutes} мин.`;
   return board.remove > 0 ? rules : `Сейчас снимать нечего. ${rules}`;
 };
 
@@ -438,7 +491,7 @@ export const ContractTable = (props: { showShare?: boolean; readOnly?: boolean }
     ...(crewCount ? ([['crew', `Экипаж (${crewCount})`]] as [Filter, string][]) : []),
     ...(departments.length > 1 ? departments.map((name) => [`dep:${name}`, name] as [Filter, string]) : []),
   ];
-  const shown = contracts.filter((contract) => {
+  const shown = crewRequestsFirst(contracts, my_account).filter((contract) => {
     if (filter === 'free') {
       return !contract.taken_by && !!contract.takeable && !isMyPost(contract, my_account);
     }

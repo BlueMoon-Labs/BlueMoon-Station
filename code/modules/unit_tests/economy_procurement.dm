@@ -80,6 +80,8 @@
 	engineering.approve_stale_requests()
 	TEST_ASSERT_EQUAL(over.status, ECON_REQUEST_APPROVED, "С новым часом ждущий расходник заказан на тике")
 	econ_test_set_balance(engineering.account, 0)
+	// Цена пака плавает с рынком: после заказа на тике лимита может не хватить на второй
+	engineering.staple_spent -= "[engineer_account.account_id]"
 	var/datum/econ_request/poor = engineering.submit_request(glass, engineer, "Без денег")
 	TEST_ASSERT_EQUAL(poor.status, ECON_REQUEST_PENDING, "Без денег расходник ждёт")
 	TEST_ASSERT(findtext(engineering.request_outlook(poor), "закажется сам, когда хватит денег"), "Окно объясняет ожидание расходника: [engineering.request_outlook(poor)]")
@@ -156,7 +158,7 @@
 	GLOB.player_list -= list(hos, ai)
 	TEST_ASSERT(!medical.has_decider_on_shift(), "ИИ без игрока заявки на смене не решает")
 
-/// Заявку без решения дольше request_handoff_minutes может решить начальник снабжения за бюджет отдела: до срока нельзя, о передаче слышат подавший и канал снабжения; заявки СБ не передаются.
+/// Заявку без решения дольше request_handoff_minutes может решить начальник снабжения за бюджет отдела: до срока нельзя, о передаче слышат подавший и канал снабжения; заявки СБ передаются так же.
 /datum/unit_test/economy_catalog/request_handoff/Run()
 	var/obj/item/radio/headset/econ_test_spy/spy = spy_announcer()
 	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
@@ -168,6 +170,7 @@
 	var/datum/supply_pack/expensive = pack_above_auto_limit(medical)
 	var/datum/supply_pack/arms = pack_above_auto_limit(security)
 	econ_test_set_balance(medical.account, round(econ_pack_price(expensive)))
+	econ_test_set_balance(security.account, round(econ_pack_price(arms)))
 	var/datum/econ_request/request = medical.submit_request(expensive, doctor, "Операционная")
 	var/datum/econ_request/guns = security.submit_request(arms, officer, "Арсенал")
 	TEST_ASSERT(request && guns, "Обе заявки поданы")
@@ -181,7 +184,7 @@
 	medical.hand_off_stale_requests()
 	security.hand_off_stale_requests()
 	TEST_ASSERT(request.handed_off, "Зависшая заявка медицины передана снабжению")
-	TEST_ASSERT(!guns.handed_off, "Заявка СБ снабжению не передаётся")
+	TEST_ASSERT(guns.handed_off, "Зависшая заявка СБ передана снабжению")
 	var/datum/bank_account/econ_test_ear/doctor_ear = econ_account_of(doctor)
 	TEST_ASSERT(length(doctor_ear.heard) && findtext(doctor_ear.heard[length(doctor_ear.heard)], "начальник снабжения"), "Подавший узнал о передаче: [jointext(doctor_ear.heard, "; ")]")
 	var/supply_line
@@ -195,17 +198,21 @@
 	TEST_ASSERT(findtext(medical.request_outlook(request), "начальник снабжения"), "Окно называет начальника снабжения: [medical.request_outlook(request)]")
 	var/datum/computer_file/program/department_budget/app = allocate(/datum/computer_file/program/department_budget)
 	var/list/data = app.budget_data(qm)
-	TEST_ASSERT_EQUAL(length(data["handoff_requests"]), 1, "Начальнику снабжения окно показывает одну переданную заявку")
-	var/list/entry = data["handoff_requests"][1]
-	TEST_ASSERT(entry["uid"] == request.uid && entry["department_id"] == ACCOUNT_MED && entry["can_decide"], "Переданная заявка медицины, её можно решить")
+	TEST_ASSERT_EQUAL(length(data["handoff_requests"]), 2, "Начальнику снабжения окно показывает обе переданные заявки")
+	var/list/entry
+	for(var/list/handed as anything in data["handoff_requests"])
+		if(handed["uid"] == request.uid && handed["department_id"] == ACCOUNT_MED)
+			entry = handed
+	TEST_ASSERT(entry && entry["can_decide"], "Переданная заявка медицины, её можно решить")
 	var/answer = budget_press(app, qm, "approve", list("uid" = request.uid, "department" = ACCOUNT_MED))
 	TEST_ASSERT_EQUAL(request.status, ECON_REQUEST_APPROVED, "Начальник снабжения одобрил заявку: [answer]")
 	TEST_ASSERT(findtext(answer, "за бюджет отдела"), "Ответ называет бюджет отдела: [answer]")
 	TEST_ASSERT_EQUAL(medical.account.account_balance, 0, "Оплатил бюджет медицины, не снабжения")
 	TEST_ASSERT(findtext(doctor_ear.heard[length(doctor_ear.heard)], "одобрена снабжением"), "Подавший узнал, кто одобрил: [doctor_ear.heard[length(doctor_ear.heard)]]")
-	var/refusal = budget_press(app, qm, "approve", list("uid" = guns.uid, "department" = ACCOUNT_SEC))
-	TEST_ASSERT_EQUAL(guns.status, ECON_REQUEST_PENDING, "Заявку СБ начальник снабжения не решает")
-	TEST_ASSERT_EQUAL(refusal, "Эту заявку снабжению не передавали.", "Отказ объяснён")
+	TEST_ASSERT(security.can_decide(guns, qm), "Переданную заявку СБ начальник снабжения решает")
+	var/guns_answer = budget_press(app, qm, "approve", list("uid" = guns.uid, "department" = ACCOUNT_SEC))
+	TEST_ASSERT_EQUAL(guns.status, ECON_REQUEST_APPROVED, "Начальник снабжения одобрил заявку СБ: [guns_answer]")
+	TEST_ASSERT_EQUAL(security.account.account_balance, 0, "Оплатил бюджет СБ, не снабжения")
 
 /// Без начальства, ИИ и начальника снабжения окно честно говорит, что решить некому и что будет дальше.
 /datum/unit_test/economy_catalog/request_outlook_nobody/Run()
@@ -220,3 +227,113 @@
 	TEST_ASSERT_NULL(medical.deciders_text(request), "Решающих на смене нет")
 	var/text = medical.pending_text(expensive, doctor, 1)
 	TEST_ASSERT(findtext(text, "либо ИИ") && findtext(text, "начальник снабжения"), "Подавшему сказано, кого ждать и что дальше: [text]")
+
+/// Начальник снабжения одобряет переданную заявку отделу без денег: недостающее доплачивает бюджет снабжения. Нет денег и у снабжения - заявка ждёт, деньги не двигаются.
+/datum/unit_test/economy_catalog/request_handoff_topup/Run()
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	var/mob/living/carbon/human/officer = make_staff(ACCOUNT_SEC, null, /datum/bank_account/econ_test_ear)
+	var/mob/living/carbon/human/qm = make_with_job(/datum/job/qm)
+	on_shift(qm)
+	var/datum/supply_pack/arms = pack_above_auto_limit(security)
+	var/price = round(econ_pack_price(arms))
+	var/have = round(price / 3)
+	var/shortfall = price - have
+	econ_test_set_balance(security.account, have)
+	econ_test_set_balance(cargo.account, shortfall - 1)
+	var/datum/econ_request/guns = security.submit_request(arms, officer, "Арсенал")
+	TEST_ASSERT_EQUAL(guns?.status, ECON_REQUEST_PENDING, "Заявка СБ ждёт решения")
+	guns.created -= SSeconomy.settings.request_handoff_minutes MINUTES
+	security.hand_off_stale_requests()
+	TEST_ASSERT(findtext(security.request_outlook(guns), "недостающие [shortfall] кр. доплатит бюджет снабжения"), "Окно обещает доплату: [security.request_outlook(guns)]")
+	var/datum/computer_file/program/department_budget/app = allocate(/datum/computer_file/program/department_budget)
+	var/refused = budget_press(app, qm, "approve", list("uid" = guns.uid, "department" = ACCOUNT_SEC))
+	TEST_ASSERT_EQUAL(guns.status, ECON_REQUEST_PENDING, "Без денег у снабжения заявка ждёт: [refused]")
+	TEST_ASSERT(findtext(refused, "в бюджете снабжения нет недостающих [shortfall] кр."), "Ответ называет недостачу: [refused]")
+	TEST_ASSERT_EQUAL(security.account.account_balance, have, "Отказ не тронул бюджет СБ")
+	TEST_ASSERT_EQUAL(cargo.account.account_balance, shortfall - 1, "Отказ не тронул бюджет снабжения")
+	econ_test_set_balance(cargo.account, price)
+	var/answer = budget_press(app, qm, "approve", list("uid" = guns.uid, "department" = ACCOUNT_SEC))
+	TEST_ASSERT_EQUAL(guns.status, ECON_REQUEST_APPROVED, "Начальник снабжения одобрил заявку с доплатой: [answer]")
+	TEST_ASSERT(findtext(answer, "недостающие [shortfall] кр. доплатил бюджет снабжения"), "Ответ называет доплату: [answer]")
+	TEST_ASSERT_EQUAL(security.account.account_balance, 0, "Бюджет СБ отдал всё, что было")
+	TEST_ASSERT_EQUAL(cargo.account.account_balance, price - shortfall, "Снабжение доплатило только недостающее")
+	var/datum/bank_account/econ_test_ear/officer_ear = econ_account_of(officer)
+	TEST_ASSERT(findtext(officer_ear.heard[length(officer_ear.heard)], "доплатил бюджет снабжения"), "Подавший узнал о доплате: [officer_ear.heard[length(officer_ear.heard)]]")
+
+/// Запрос в казну сразу приходит капитану на карту и ещё раз, если ждёт дольше treasury_request_remind_minutes; напоминание одно.
+/datum/unit_test/economy_catalog/treasury_request_notice/Run()
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/mob/living/carbon/human/hos = make_with_job(/datum/job/hos)
+	var/mob/living/carbon/human/captain = make_with_job(/datum/job/captain, /datum/bank_account/econ_test_ear)
+	on_shift(captain)
+	var/datum/bank_account/econ_test_ear/ear = econ_account_of(captain)
+	var/list/saved_requests = SSeconomy.treasury_requests
+	SSeconomy.treasury_requests = list()
+	var/datum/econ_request/treasury/request = security.request_treasury(3000, "Дробовики", hos)
+	TEST_ASSERT_NOTNULL(request, "ГСБ подал запрос в казну")
+	TEST_ASSERT(length(ear.heard) && findtext(ear.heard[length(ear.heard)], "№[request.uid] из казны: 3000 кр."), "Капитан узнал о запросе: [jointext(ear.heard, "; ")]")
+	var/heard = length(ear.heard)
+	SSeconomy.remind_treasury_requests()
+	TEST_ASSERT_EQUAL(length(ear.heard), heard, "Свежий запрос не напоминается")
+	request.created -= SSeconomy.settings.treasury_request_remind_minutes MINUTES
+	SSeconomy.remind_treasury_requests()
+	TEST_ASSERT_EQUAL(length(ear.heard), heard + 1, "О зависшем запросе напомнили")
+	TEST_ASSERT(findtext(ear.heard[length(ear.heard)], "ждёт решения дольше"), "Напоминание говорит, что запрос ждёт: [ear.heard[length(ear.heard)]]")
+	SSeconomy.remind_treasury_requests()
+	TEST_ASSERT_EQUAL(length(ear.heard), heard + 1, "Напоминание одно")
+	QDEL_LIST(SSeconomy.treasury_requests)
+	SSeconomy.treasury_requests = saved_requests
+
+/// Отмена заказа, оплаченного с доплатой снабжения, возвращает доплату снабжению, а остальное - отделу; глава отдела без денег снабжение не трогает.
+/datum/unit_test/economy_catalog/request_handoff_topup_cancel/Run()
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	var/mob/living/carbon/human/officer = make_staff(ACCOUNT_SEC)
+	var/mob/living/carbon/human/qm = make_with_job(/datum/job/qm)
+	var/mob/living/carbon/human/hos = make_with_job(/datum/job/hos)
+	on_shift(qm)
+	var/datum/supply_pack/arms = pack_above_auto_limit(security)
+	var/price = round(econ_pack_price(arms))
+	var/have = round(price / 3)
+	econ_test_set_balance(security.account, have)
+	econ_test_set_balance(cargo.account, price)
+	var/datum/econ_request/guns = security.submit_request(arms, officer, "Арсенал")
+	guns.created -= SSeconomy.settings.request_handoff_minutes MINUTES
+	security.hand_off_stale_requests()
+	TEST_ASSERT(!security.approve(guns, hos), "ГСБ без денег в бюджете заявку не одобряет")
+	TEST_ASSERT_EQUAL(cargo.account.account_balance, price, "Решение главы снабжение не тронуло")
+	var/list/before = SSshuttle.shoppinglist.Copy()
+	TEST_ASSERT(security.approve(guns, qm), "Начальник снабжения одобрил с доплатой")
+	var/list/placed = SSshuttle.shoppinglist - before
+	TEST_ASSERT_EQUAL(length(placed), 1, "Заказ в корзине")
+	var/datum/supply_order/order = placed[1]
+	econ_cancel_order(order, qm)
+	SSshuttle.shoppinglist -= order
+	qdel(order)
+	TEST_ASSERT_EQUAL(security.account.account_balance, have, "Отдел получил назад своё")
+	TEST_ASSERT_EQUAL(cargo.account.account_balance, price, "Снабжение получило назад доплату")
+
+/// Запрос в казну без капитана и ГП на смене дойдёт до них, когда они выйдут; подавшему честно сказано, что он ждёт.
+/datum/unit_test/economy_catalog/treasury_request_waits_for_captain/Run()
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/mob/living/carbon/human/hos = make_with_job(/datum/job/hos)
+	var/mob/living/carbon/human/captain = make_with_job(/datum/job/captain, /datum/bank_account/econ_test_ear)
+	var/datum/bank_account/econ_test_ear/ear = econ_account_of(captain)
+	var/list/saved_requests = SSeconomy.treasury_requests
+	SSeconomy.treasury_requests = list()
+	var/datum/econ_request/treasury/request = security.request_treasury(2000, "Дробовики.", hos)
+	TEST_ASSERT_NOTNULL(request, "ГСБ подал запрос в казну")
+	TEST_ASSERT(!request.notified, "Без капитана и ГП строку некому отдать")
+	request.created -= SSeconomy.settings.treasury_request_remind_minutes MINUTES
+	SSeconomy.remind_treasury_requests()
+	TEST_ASSERT(!request.reminded, "Напоминание в пустоту не сгорает")
+	on_shift(captain)
+	SSeconomy.remind_treasury_requests()
+	TEST_ASSERT(request.notified && length(ear.heard), "Вышедший капитан узнал о запросе")
+	var/line = ear.heard[length(ear.heard)]
+	TEST_ASSERT(!findtext(line, ".."), "В строке нет двойной точки: [line]")
+	SSeconomy.remind_treasury_requests()
+	TEST_ASSERT(request.reminded, "Следующий цикл напомнил о зависшем запросе")
+	QDEL_LIST(SSeconomy.treasury_requests)
+	SSeconomy.treasury_requests = saved_requests

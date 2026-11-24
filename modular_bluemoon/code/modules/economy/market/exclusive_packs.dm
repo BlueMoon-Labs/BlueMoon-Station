@@ -149,11 +149,10 @@
 		return FALSE
 	return econ_exclusive_ok(partner, pack) && partner.sells_group(pack.group) && partner.in_stock(pack)
 
-/// Поставщик заказа: выбранный при заказе партнёр, если он ещё может везти, иначе самый дешёвый.
+/// Поставщик заказа: выбранный при заказе партнёр, если он ещё может везти, иначе самый дешёвый. Пачку скупки везёт только её продавец и только не под эмбарго.
 /proc/econ_order_supplier(datum/supply_order/order)
 	if(istype(order.pack, /datum/supply_pack/bundle))
-		var/datum/supply_pack/bundle/bundle = order.pack
-		return SSmarket.get_partner(bundle.seller_id)
+		return econ_bundle_seller(order.pack)
 	var/datum/trade_partner/chosen = order.partner_id ? SSmarket.get_partner(order.partner_id) : null
 	if(econ_partner_supplies(chosen, order.pack, order.contraband_supply))
 		return chosen

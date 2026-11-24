@@ -340,9 +340,10 @@
 	var/list/move = company.moves[length(company.moves)]
 	return move["text"]
 
-/datum/unit_test/economy_stocks/proc/work_driver_of(datum/stock_company/company)
+/// Сноска о работе станции, которая поднимает цену компании, а с falling - роняет её.
+/datum/unit_test/economy_stocks/proc/work_driver_of(datum/stock_company/company, falling = FALSE)
 	for(var/list/driver as anything in company.price_drivers())
-		if(findtext(driver["label"], "Работа станции") == 1)
+		if(findtext(driver["label"], "Работа станции") == 1 && (driver["effect"] < 0) == falling)
 			return driver
 
 /// Работа отдела сразу поднимает цену привязанной компании и пишет причину в ленту, повторы копятся одной строкой; рост упирается в потолок за смену.
@@ -406,7 +407,7 @@
 	var/list/shares = SSmarket.work_stocks[WORK_MED_REVIVE]
 	var/rate = SSmarket.signed_percent(round(shares["VYMD"] * 100 * STOCK_WORK_NOTE_CREDITS / STOCK_WORK_CREDITS, 0.01))
 	TEST_ASSERT(findtext(driver["note"], "[rate]") && findtext(driver["note"], "[STOCK_WORK_NOTE_CREDITS] кр."), "Сноска без шага: [driver["note"]]")
-	var/list/cybersun = work_driver_of(SSmarket.get_company("CYBS"))
+	var/list/cybersun = work_driver_of(SSmarket.get_company("CYBS"), TRUE)
 	TEST_ASSERT_EQUAL(cybersun["effect"], -round(SSmarket.work_stock_cap * 100, 0.1), "Изъятие контрабанды роняет Киберсан")
 	TEST_ASSERT_NULL(work_driver_of(SSmarket.get_company(STOCK_INDEX_TICKER)), "У индекса сноска о работе")
 	var/datum/stock_company/nakamura = SSmarket.get_company("NKMR")
@@ -415,6 +416,34 @@
 		labels[each["label"]] = each["effect"]
 	TEST_ASSERT_EQUAL(labels[GLOB.market_station_event_names["power_failure"]], -10, "Сбой энергосети в сносках Накамуры")
 	TEST_ASSERT_EQUAL(labels[GLOB.market_station_event_names["gravity_lost"]], -10, "Отказ гравитации в сносках Накамуры")
+
+/// Встроенные привязки работы: Киберсан понемногу растёт от исследований и падает от изъятой контрабанды; обычная наука смены не упирает его в потолок; сноски показывают рост и падение отдельно.
+/datum/unit_test/economy_stocks/cybersun_work
+
+/datum/unit_test/economy_stocks/cybersun_work/Destroy()
+	SSmarket.load_work_stocks(SSeconomy.settings.raw?["market"]?["work_stocks"])
+	return ..()
+
+/datum/unit_test/economy_stocks/cybersun_work/Run()
+	SSmarket.load_work_stocks(null)
+	var/datum/stock_company/cybersun = SSmarket.get_company("CYBS")
+	var/list/research = SSmarket.work_stocks[WORK_SCI_NODE]
+	var/list/seized = SSmarket.work_stocks[WORK_SEC_CONTRABAND]
+	TEST_ASSERT(research["CYBS"] > 0, "Исследования не поднимают Киберсан")
+	TEST_ASSERT(seized["CYBS"] < 0, "Изъятая контрабанда не роняет Киберсан")
+	var/price_before = cybersun.price
+	SSmarket.apply_work(WORK_SCI_NODE, 500)
+	TEST_ASSERT(cybersun.price > price_before, "Оплаченные исследования не подняли Киберсан")
+	SSmarket.apply_work(WORK_SCI_NODE, 4500)
+	TEST_ASSERT(cybersun.work_boost < SSmarket.work_stock_cap / 2, "5000 кр. исследований довели Киберсан почти до потолка: [cybersun.work_boost]")
+	var/list/rising = work_driver_of(cybersun)
+	var/list/falling = work_driver_of(cybersun, TRUE)
+	var/research_name = market_work_driver_name(WORK_SCI_NODE)
+	var/seized_name = market_work_driver_name(WORK_SEC_CONTRABAND)
+	TEST_ASSERT(rising && findtext(rising["label"], research_name) && !findtext(rising["label"], seized_name), "Сноска роста не про исследования: [json_encode(rising)]")
+	TEST_ASSERT_EQUAL(rising["effect"], round(SSmarket.work_stock_cap * 100, 0.1), "Потолок роста от работы")
+	TEST_ASSERT(falling && findtext(falling["label"], seized_name) && !findtext(falling["label"], research_name), "Сноска падения не про контрабанду: [json_encode(falling)]")
+	TEST_ASSERT(findtext(falling["note"], SSmarket.signed_percent(round(seized["CYBS"] * 100 * STOCK_WORK_NOTE_CREDITS / STOCK_WORK_CREDITS, 0.01))), "Сноска падения без шага: [falling["note"]]")
 
 /// Заметный сдвиг от работы станции выходит срочной новостью рынка, повтор до кулдауна - нет.
 /datum/unit_test/economy_stocks/work_news/Run()

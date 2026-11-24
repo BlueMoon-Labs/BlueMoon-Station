@@ -36,6 +36,8 @@
 	var/obj/item/mecha_parts/chassis/parent_chassis = parent
 	M.CheckParts(parent_chassis.contents)
 	econ_mark_mech_assembled(M, parent_chassis)
+	var/datum/economy_department/science/science = SSeconomy.get_department(ACCOUNT_SCI)
+	science?.note_mech(M, user)
 	record_sol_inspection_builder(M, user)
 
 	SSblackbox.record_feedback("tally", "mechas_created", 1, M.name)

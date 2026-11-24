@@ -84,6 +84,37 @@
 	TEST_ASSERT(findtext(jointext(node.examine(engineer), "\n"), "Узел стоит вне станции"), "Осмотр не говорит, что узел вне станции")
 	TEST_ASSERT(!node.ui_data(engineer)["on_station"], "Окно считает узел станционным")
 
+/// Окно узла показывает, куда идут деньги: бюджет инженерии, его порог и сумму возврата NT, что из каталога инженерии на них купить (один пак - один пример); при недовольстве экипажа налогом цена МДж ниже.
+/datum/unit_test/economy_engineering/power_export_money/Run()
+	save_state()
+	var/obj/machinery/power/export_node/node = allocate(/obj/machinery/power/export_node/econ_test_station)
+	econ_test_set_balance(budget, 1234)
+	var/list/data = node.ui_data(null)
+	TEST_ASSERT_EQUAL(data["budget"], 1234, "Окно не показывает бюджет инженерии")
+	TEST_ASSERT_EQUAL(data["budget_cap"], engineering.budget_threshold(), "Окно не показывает порог возврата NT")
+	var/list/static_data = node.ui_static_data(null)
+	TEST_ASSERT_EQUAL(static_data["pack_count"], length(engineering.catalog()), "Число паков каталога инженерии")
+	var/list/examples = static_data["pack_examples"]
+	TEST_ASSERT_EQUAL(length(examples), min(3, length(engineering.catalog())), "Примеры покупок: [json_encode(examples)]")
+	for(var/i in 2 to length(examples))
+		TEST_ASSERT(examples[i]["price"] >= examples[i - 1]["price"], "Примеры не по возрастанию цены: [json_encode(examples)]")
+	var/list/full_catalog = econ_department_packs(ACCOUNT_ENG)
+	GLOB.econ_department_packs[ACCOUNT_ENG] = list(engineering.catalog()[1])
+	var/list/single = node.ui_static_data(null)["pack_examples"]
+	GLOB.econ_department_packs[ACCOUNT_ENG] = full_catalog
+	TEST_ASSERT_EQUAL(length(single), 1, "Один пак каталога показан дважды: [json_encode(single)]")
+	econ_test_set_balance(budget, engineering.budget_threshold() + engineering.owed_to_staff() + engineering.shielded() + 100000)
+	TEST_ASSERT(engineering.budget_return_due() > 0, "Излишка к возврату нет")
+	TEST_ASSERT_EQUAL(node.ui_data(null)["return_due"], engineering.budget_return_due(), "Окно не показывает, сколько заберёт NT")
+	var/price = econ_power_export_price_per_mj()
+	var/saved_mood = SSeconomy.tax_mood
+	SSeconomy.tax_mood = TAX_MOOD_UNREST
+	var/unrest_price = econ_power_export_price_per_mj()
+	var/unrest_cut = node.ui_data(null)["unrest_cut"]
+	SSeconomy.tax_mood = saved_mood
+	TEST_ASSERT(abs(unrest_price - price * (100 - SSeconomy.settings.tax_unrest_work_cut) / 100) < 0.001, "Цена при недовольстве [unrest_price] из [price]")
+	TEST_ASSERT_EQUAL(unrest_cut, SSeconomy.settings.tax_unrest_work_cut, "Окно не говорит о снижении цены")
+
 /// Индекс исправности считается по APC и воздушным тревогам станции вне техтоннелей и платит инженерии на тике экономики.
 /datum/unit_test/economy_engineering/integrity/Run()
 	save_state()

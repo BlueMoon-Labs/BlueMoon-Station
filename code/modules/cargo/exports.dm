@@ -49,6 +49,7 @@ Credit dupes that require a lot of manual work shouldn't be removed, unless they
 	var/datum/trade_partner/buyer = SSmarket.best_buyer(market_commodity.id, allow_contraband)
 	if(buyer && !thing?.econ_imported)
 		partner_sales[buyer] += value
+		buyer.note_export_interest(thing)
 
 /datum/export_report/proc/settle_market()
 	for(var/datum/commodity/market_commodity as anything in market_sales)

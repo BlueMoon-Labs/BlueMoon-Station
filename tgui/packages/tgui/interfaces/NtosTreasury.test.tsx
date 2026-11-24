@@ -17,7 +17,15 @@ const base: TreasuryData = {
   wage_floor: 30,
   owed_cap: 6,
   treasury_grant: 200,
+  treasury_grant_level: 32000,
   tax_nt_share: 50,
+  tax_unrest_above: 20,
+  tax_unrest_cut: 25,
+  tax_unrest_nt_share: 90,
+  tax_goodwill_upto: 5,
+  tax_goodwill_premium: 15,
+  work_premium_base: 10,
+  tax_mood_minutes: 15,
   treasury_cap: 30000,
   treasury_return_due: 700,
   grace_minutes: 15,
@@ -118,7 +126,7 @@ describe('NtosTreasury', () => {
     const content = text(container);
     expect(content).toContain('12 000 кр.');
     expect(content).toContain('не выше 30%');
-    expect(content).toContain('грант NT 200 кр. раз в 5 мин.');
+    expect(content).toContain('грант NT раз в 5 мин. доливает её до 32 000 кр., не больше 200 кр. за раз.');
     expect(content).toContain('торгует только капитан');
     expect(content).toContain('50% налога забирает NT, остальное получает казна');
     expect(content).toContain('Сверх 30 000 кр. казна раз в 5 мин. возвращает NT 10% излишка');
@@ -139,6 +147,31 @@ describe('NtosTreasury', () => {
     commit(move.getByRole('textbox'), '250');
     fireEvent.click(move.getByText('Перевести'));
     expect(sent(topic, 'move_budget')).toEqual([{ from: 'MED', to: 'SCI', amount: 250 }]);
+  });
+
+  test('налог с последствиями: правила, предупреждение и действующее недовольство', () => {
+    const calm = setup();
+    const rules = text(calm.container);
+    expect(rules).toContain('Экипаж замечает налог, который держится дольше 15 мин.: время копится, и короткий сброс налога отсчёт не обнуляет. Выше 20% - недовольство');
+    expect(rules).toContain('отделы получают за работу на 25% меньше, премии за работу тоже ниже, а NT забирает 90% налога.');
+    expect(rules).toContain('До 5% - довольство: премия за работу 15% вместо 10%');
+    expect(rules).toContain('Вернули налог в обычные пределы (от 6% до 20%) - настроение проходит сразу.');
+    calm.unmount();
+    const flat = setup({ tax_goodwill_premium: 10 });
+    expect(text(flat.container)).not.toContain('- довольство');
+    expect(text(flat.container)).toContain('Вернули налог в обычные пределы (до 20%) - настроение проходит сразу.');
+    flat.unmount();
+    const angry = setup({
+      tax_rate: 30,
+      tax_mood: 'unrest',
+      tax_mood_note: 'Экипаж недоволен налогом выше 20%: отделы получают за работу на 25% меньше, премии за работу тоже ниже.',
+      tax_mood_hint: '',
+    });
+    const notices = [...angry.container.querySelectorAll('.NoticeBox')].map((box) => box.textContent).join('|');
+    expect(notices).toContain('Экипаж недоволен налогом выше 20%');
+    angry.unmount();
+    const soon = setup({ tax_rate: 25, tax_mood_hint: 'Если налог продержится выше 20% ещё 12 мин., экипаж станет недоволен.' });
+    expect(soon.container.querySelector('.NoticeBox--type--info')?.textContent).toContain('ещё 12 мин.');
   });
 
   test('запросы: одобрить и отклонить', () => {

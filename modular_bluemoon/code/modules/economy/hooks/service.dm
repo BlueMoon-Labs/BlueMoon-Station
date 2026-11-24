@@ -49,20 +49,37 @@
 	source.econ_dish = new /datum/econ_dish(chef_ref, source.econ_complexity, source.type)
 	econ_dish = source.econ_dish
 
+/// Единицы работы WORK_SRV_DISH за блюдо повара с учётом сложности и блюда дня; 0 - не приготовлено поваром или уже оплачено.
+/proc/econ_dish_work_units(obj/item/food)
+	var/datum/econ_dish/dish = food.econ_dish
+	if(food.econ_paid || dish?.paid || !(dish ? dish.chef_ref : econ_chef_ref(food)))
+		return 0
+	. = clamp(dish ? dish.complexity : food.econ_complexity, 1, SSeconomy.settings.dish_complexity_max)
+	var/datum/economy_department/service/service = SSeconomy.get_department(ACCOUNT_SRV)
+	if(service?.dish_of_the_day && ispath(dish ? dish.dish_type : food.type, service.dish_of_the_day))
+		. *= SSeconomy.settings.dish_of_the_day_mult
+
+/// Смешанный напиток, налитый живым игроком: за него сервису платят работу.
+/proc/econ_drink_work_ready(obj/item/reagent_containers/glass)
+	if(!istype(glass) || !isliving(glass.econ_pourer?.resolve()))
+		return FALSE
+	var/datum/reagent/main = glass.reagents?.get_master_reagent()
+	return main && econ_is_mixed_drink(main.type)
+
+/// Едок или гость, за которого сервису платят: живой игрок, а не тело без игрока.
+/proc/econ_consumer_counts(mob/living/consumer)
+	return isliving(consumer) && consumer.stat != DEAD && !!GET_CLIENT(consumer)
+
 /proc/econ_food_eaten(obj/item/food, mob/living/eater)
 	var/datum/econ_dish/dish = food.econ_dish
 	if(food.econ_paid || dish?.paid)
 		return
 	var/mob/living/chef = econ_mob_of_mind_ref(dish ? dish.chef_ref : econ_chef_ref(food))
-	if(!isliving(chef) || !econ_on_station(chef) || !econ_on_station(eater))
+	if(!isliving(chef) || !econ_on_station(chef) || !econ_on_station(eater) || !econ_consumer_counts(eater))
 		return
-	var/datum/economy_department/service/service = SSeconomy.get_department(ACCOUNT_SRV)
-	if(!service)
+	if(!SSeconomy.get_department(ACCOUNT_SRV))
 		return
-	var/amount = clamp(dish ? dish.complexity : food.econ_complexity, 1, SSeconomy.settings.dish_complexity_max)
-	if(service.dish_of_the_day && ispath(dish ? dish.dish_type : food.type, service.dish_of_the_day))
-		amount *= SSeconomy.settings.dish_of_the_day_mult
-	if(!SSeconomy.record_work(ACCOUNT_SRV, WORK_SRV_DISH, amount, chef, eater, "Блюдо: [food.name]"))
+	if(!SSeconomy.record_work(ACCOUNT_SRV, WORK_SRV_DISH, econ_dish_work_units(food), chef, eater, "Блюдо: [food.name]"))
 		return
 	food.econ_paid = TRUE
 	if(dish)
@@ -109,7 +126,7 @@ GLOBAL_LIST_EMPTY(econ_bar_stock_reagents)
 
 /proc/econ_drink_consumed(obj/item/reagent_containers/glass, mob/living/drinker)
 	var/mob/living/pourer = glass.econ_pourer?.resolve()
-	if(!isliving(pourer) || !econ_on_station(pourer) || !econ_on_station(drinker))
+	if(!isliving(pourer) || !econ_on_station(pourer) || !econ_on_station(drinker) || !econ_consumer_counts(drinker))
 		return
 	var/datum/reagent/main = glass.reagents?.get_master_reagent()
 	if(!main || !econ_is_mixed_drink(main.type))
@@ -130,22 +147,22 @@ GLOBAL_LIST_EMPTY(econ_bar_stock_reagents)
 	if(!econ_on_station(src))
 		return
 	var/datum/economy_department/service/service = SSeconomy.get_department(ACCOUNT_SRV)
-	var/price = SSeconomy.settings.work_prices[WORK_SRV_DISH]
+	var/price = econ_shown_work_price(WORK_SRV_DISH)
 	var/obj/item/dish_of_the_day = service?.dish_of_the_day
-	. += span_notice("Сервис получает [price] кр., когда приготовленное поваром блюдо съедает другой член экипажа. Блюдо, собранное по рецепту крафта, приносит столько за каждый вид ингредиента, но не больше [price * SSeconomy.settings.dish_complexity_max] кр.[dish_of_the_day ? " Блюдо дня - [initial(dish_of_the_day.name)], за него платят [econ_times_text(SSeconomy.settings.dish_of_the_day_mult)] больше." : ""]")
+	. += span_notice("Сервис получает [price] кр., когда приготовленное поваром блюдо съедает другой член экипажа. Блюдо, собранное по рецепту крафта, приносит столько за каждый вид ингредиента, но не больше [price * SSeconomy.settings.dish_complexity_max] кр.[dish_of_the_day ? " Блюдо дня - [initial(dish_of_the_day.name)], за него платят [econ_times_text(SSeconomy.settings.dish_of_the_day_mult)] больше." : ""] Блюдо, отправленное в номер отеля подносом обслуживания номеров, оплачивается сразу при доставке.")
 
 /obj/item/reagent_containers/food/drinks/shaker/examine(mob/user)
 	. = ..()
 	if(econ_on_station(src))
-		. += span_notice("Сервис получает [SSeconomy.settings.work_prices[WORK_SRV_DRINK]] кр., когда другой член экипажа выпьет налитый вами коктейль. Пиво, вино, соки, газировка из раздатчиков и бутылки из Booze-O-Mat коктейлем не считаются.")
+		. += span_notice("Сервис получает [econ_shown_work_price(WORK_SRV_DRINK)] кр., когда другой член экипажа выпьет налитый вами коктейль. Пиво, вино, соки, газировка из раздатчиков и бутылки из Booze-O-Mat коктейлем не считаются. Коктейль, отправленный в номер отеля подносом обслуживания номеров, оплачивается сразу при доставке.")
 
 /obj/machinery/hydroponics/examine(mob/user)
 	. = ..()
 	if(econ_on_station(src))
-		. += span_notice("Первый за смену урожай каждого вида или мутации приносит сервису [SSeconomy.settings.work_prices[WORK_SRV_NEW_PLANT]] кр.")
+		. += span_notice("Первый за смену урожай каждого вида или мутации приносит сервису [econ_shown_work_price(WORK_SRV_NEW_PLANT)] кр.")
 
 /proc/econ_cleaning_examine()
-	var/price = SSeconomy.settings.work_prices[WORK_SRV_CLEANING]
+	var/price = econ_shown_work_price(WORK_SRV_CLEANING)
 	return span_notice("Каждая отмытая от грязи плитка приносит сервису [price] кр., не больше [SSeconomy.settings.cleaning_cap_per_tick * price] кр. от одного уборщика за [SSeconomy.wait / (1 MINUTES)] мин.")
 
 /obj/item/mop/examine(mob/user)

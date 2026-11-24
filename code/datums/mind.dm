@@ -782,6 +782,8 @@ GLOBAL_LIST(objective_choices)
 	for(var/t in allowed_types)
 		var/datum/objective/type_cast = t
 		GLOB.objective_choices[initial(type_cast.name)] = t
+	for(var/datum/objective/economy/economic as anything in subtypesof(/datum/objective/economy))
+		GLOB.objective_choices["economy: [initial(economic.name)]"] = economic
 
 
 /datum/mind/proc/on_objectives_request_cd_end(datum/source)
@@ -1386,6 +1388,8 @@ GLOBAL_LIST(objective_choices)
 					request_target.explanation_text = requested_obj_change["text"]
 				else
 					request_target.admin_edit(usr)
+				if(QDELETED(request_target))
+					return
 				antag_datum.objectives += request_target
 				message_admins("[key_name_admin(usr)] approved a requested objective from [current]: [request_target.explanation_text]")
 				log_admin("[key_name(usr)] approved a requested objective from [current]: [request_target.explanation_text]")
@@ -1611,6 +1615,8 @@ GLOBAL_LIST(objective_choices)
 			new_objective = new selected_type
 			new_objective.owner = src
 			new_objective.admin_edit(usr)
+			if(QDELETED(new_objective))
+				return
 			target_antag.objectives += new_objective
 
 			message_admins("[key_name_admin(usr)] added a new objective for [current]: [new_objective.explanation_text]")
@@ -1619,12 +1625,16 @@ GLOBAL_LIST(objective_choices)
 			if(old_objective.type == selected_type)
 				//Edit the old
 				old_objective.admin_edit(usr)
+				if(QDELETED(old_objective))
+					return
 				new_objective = old_objective
 			else
 				//Replace the old
 				new_objective = new selected_type
 				new_objective.owner = src
 				new_objective.admin_edit(usr)
+				if(QDELETED(new_objective))
+					return
 				target_antag.objectives -= old_objective
 				target_antag.objectives.Insert(objective_pos, new_objective)
 			message_admins("[key_name_admin(usr)] edited [current]'s objective to [new_objective.explanation_text]")

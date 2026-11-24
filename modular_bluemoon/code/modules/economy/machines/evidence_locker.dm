@@ -34,9 +34,9 @@
 	to_chat(user, span_warning("Нет доступа."))
 	locker_feedback("locker_locked", 'sound/economy/locker_clunk.ogg', TRUE)
 
-/// Кредитов бюджету СБ за кредит оценки улики: цена работы из настроек и рынок контрабанды.
+/// Кредитов бюджету СБ за кредит оценки улики: цена работы из настроек, рынок контрабанды и настроение экипажа.
 /proc/econ_evidence_rate()
-	return (SSeconomy.settings.work_prices[WORK_SEC_CONTRABAND] || 0) * econ_sale_factor(COMMODITY_CONTRABAND)
+	return (SSeconomy.settings.work_prices[WORK_SEC_CONTRABAND] || 0) * econ_sale_factor(COMMODITY_CONTRABAND) * SSeconomy.work_pay_mult()
 
 /obj/machinery/evidence_locker/examine(mob/user)
 	. = ..()
@@ -46,7 +46,7 @@
 		. += span_warning("Хранилище стоит вне станции: NT за переданные отсюда улики не платит.")
 		return
 	var/rate = econ_evidence_rate()
-	. += span_notice("За переданную NT контрабанду бюджет СБ получает по текущему рынку контрабанды [round(settings.contraband_value_per_tc * rate)] кр. за каждый телекристалл её цены в аплинке Синдиката ([round(settings.contraband_value_default * rate)] кр., если цены нет). Офицер, передавший улику, получает премию [settings.work_personal_share]% от суммы; вместе с премией выплата не превышает нынешнюю цену предмета на чёрном рынке, а за купленное там или в автомате - [round(econ_import_resale_factor() * 100)]% уплаченного.")
+	. += span_notice("За переданную NT контрабанду бюджет СБ получает по текущему рынку контрабанды [round(settings.contraband_value_per_tc * rate)] кр. за каждый телекристалл её цены в аплинке Синдиката ([round(settings.contraband_value_default * rate)] кр., если цены нет). Офицер, передавший улику, получает премию [SSeconomy.work_premium_share()]% от суммы; вместе с премией выплата не превышает нынешнюю цену предмета на чёрном рынке, а за купленное там или в автомате - [round(econ_import_resale_factor() * 100)]% уплаченного.")
 	. += span_notice("Переданные NT улики и изъятое таможней уходят с рынка сектора: цены контрабанды и чёрного рынка растут.")
 	. += span_notice("Предметы, которые экипаж получает и без Синдиката (фабрикаторы, карго, автоматы, призы, снаряжение должностей и лоадаут), контрабандой не считаются.")
 	. += span_notice("За час NT оплачивает изъятий не больше чем на [settings.contraband_cap_hour] кр., в этом часе осталось [SSeconomy.contraband_cap_left()] кр. Улика, на которую не хватает остатка, ждёт в хранилище; улику дороже часового лимита NT оплачивает по нему.")
@@ -102,10 +102,9 @@
 	log_game("[key_name(user)] поместил [thing] ([thing.type]) в хранилище улик в [AREACOORD(src)]")
 	return TRUE
 
-/// Выплата бюджету СБ за улику: оценка по цене работы, не больше часового лимита NT.
+/// Выплата бюджету СБ за улику: оценка по цене работы с поправкой на настроение экипажа, не больше часового лимита NT.
 /obj/machinery/evidence_locker/proc/payout_for(obj/item/thing)
-	var/price = SSeconomy.settings.work_prices[WORK_SEC_CONTRABAND] || 0
-	return min(round(econ_contraband_value(thing) * price), SSeconomy.settings.contraband_cap_hour)
+	return min(round(econ_contraband_value(thing) * SSeconomy.work_price(WORK_SEC_CONTRABAND)), SSeconomy.settings.contraband_cap_hour)
 
 /// Передаёт улику NT: предмет уничтожается, СБ получает оплату работы. Возвращает выплату отделу.
 /obj/machinery/evidence_locker/proc/hand_over(obj/item/thing, mob/living/user)
@@ -123,6 +122,7 @@
 		to_chat(user, span_warning("NT оплатит эту улику в [payout] кр., а лимита на оплату изъятий в этом часе осталось [cap_left] кр.: улика остаётся в хранилище."))
 		return 0
 	var/price = SSeconomy.settings.work_prices[WORK_SEC_CONTRABAND]
+	var/full = round(econ_contraband_value(thing) * price)
 	log_game("[key_name(user)] передал NT улику [thing] ([thing.type]) из хранилища в [AREACOORD(src)], выплата [payout] кр.")
 	stored -= thing
 	econ_release_non_contraband(thing, drop_location())
@@ -130,7 +130,9 @@
 	locker_feedback("locker_handover", 'sound/economy/locker_clunk.ogg', TRUE, TRUE)
 	if(payout <= 0)
 		return 0
-	. = SSeconomy.record_work(ACCOUNT_SEC, WORK_SEC_CONTRABAND, payout / price, user, memo = "Изъятие передано NT")
+	var/cut = SSeconomy.work_pay_mult()
+	var/units = full * cut > SSeconomy.settings.contraband_cap_hour ? payout / (price * cut) : full / price
+	. = SSeconomy.record_work(ACCOUNT_SEC, WORK_SEC_CONTRABAND, units, user, memo = "Изъятие передано NT")
 	SSeconomy.note_contraband_paid(.)
 	SSmarket.note_seizure(.)
 
@@ -161,7 +163,7 @@
 		"items" = items,
 		"per_tc" = round(settings.contraband_value_per_tc * rate),
 		"default_value" = round(settings.contraband_value_default * rate),
-		"premium_percent" = settings.work_personal_share,
+		"premium_percent" = SSeconomy.work_premium_share(),
 		"resale_percent" = round(econ_import_resale_factor() * 100),
 		"cap_hour" = settings.contraband_cap_hour,
 		"cap_left" = SSeconomy.contraband_cap_left(),

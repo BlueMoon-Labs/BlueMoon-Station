@@ -44,3 +44,50 @@
 		return
 	cleaned_this_tick[cleaner] += 1
 	SSeconomy.record_work(id, WORK_SRV_CLEANING, 1, user)
+
+/datum/economy_department/service/spending_advice()
+	return list(
+		"Продукты под блюдо дня окупаются: NT платит сервису за каждую его подачу больше.",
+		"Семена, спецпродукты и уборочный инвентарь - сорта урожая и чистые полы тоже оплачиваются отделу.",
+	)
+
+/// Рецепт блюда дня или null.
+/datum/economy_department/service/proc/dish_recipe()
+	if(!dish_of_the_day)
+		return null
+	for(var/datum/crafting_recipe/food/recipe in GLOB.crafting_recipes)
+		if(recipe.result == dish_of_the_day)
+			return recipe
+
+/datum/economy_department/service/situational_needs()
+	. = list()
+	var/datum/crafting_recipe/food/recipe = dish_recipe()
+	if(!recipe)
+		return
+	var/obj/item/dish = dish_of_the_day
+	var/why = "Блюдо дня: [initial(dish.name)]"
+	var/needs_reagents = FALSE
+	for(var/requirement in recipe.reqs)
+		if(!ispath(requirement, /obj/item))
+			needs_reagents = TRUE
+	for(var/datum/supply_pack/pack as anything in catalog())
+		for(var/content in pack.contains)
+			if(econ_matches_any(content, recipe.reqs))
+				.[pack.type] = why
+				break
+	if(needs_reagents)
+		.[/datum/supply_pack/organic/food] = why
+
+/// content - подтип хотя бы одного предмета из requirements.
+/proc/econ_matches_any(content, list/requirements)
+	for(var/requirement in requirements)
+		if(ispath(requirement, /obj/item) && ispath(content, requirement))
+			return TRUE
+	return FALSE
+
+/datum/economy_department/service/everyday_needs()
+	return list(
+		/datum/supply_pack/organic/food = "Мука, яйца, молоко и специи для кухни",
+		/datum/supply_pack/organic/randomized/vegetables = "Овощи для кухни и бара",
+		/datum/supply_pack/organic/seeds = "Семена: за новый сорт урожая платят отделу",
+	)

@@ -404,7 +404,8 @@ DEFINE_BITFIELD(turret_flags, list(
 
 /obj/machinery/porta_turret/take_damage(damage, damage_type = BRUTE, damage_flag = 0, sound_effect = 1)
 	. = ..()
-	if(. && obj_integrity > 0) //damage received
+	// Турель роя удаляет себя уже на поломке (obj_break), с прочностью выше нуля
+	if(. && obj_integrity > 0 && !QDELETED(src)) //damage received
 		if(prob(30))
 			spark_system.start()
 		if(on && !(turret_flags & TURRET_FLAG_SHOOT_ALL_REACT) && !(obj_flags & EMAGGED))

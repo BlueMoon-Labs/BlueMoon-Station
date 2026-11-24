@@ -272,8 +272,20 @@
 	if(!stat && !ckey)
 		amount_grown += rand(1,2)
 		if(amount_grown >= 100)
-			new /mob/living/simple_animal/chicken(src.loc)
-			qdel(src)
+			grow_up(/mob/living/simple_animal/chicken)
+
+/// Детёныш вырос: взрослый встаёт на его место с его кличкой, а в переноске остаётся в ней.
+/mob/living/simple_animal/proc/grow_up(adult_type)
+	var/atom/home = loc
+	var/mob/living/simple_animal/adult = new adult_type(home)
+	if(name != initial(name))
+		adult.name = name
+		adult.real_name = name
+	qdel(src)
+	var/obj/item/pet_carrier/carrier = home
+	if(istype(carrier))
+		carrier.add_occupant(adult)
+	return adult
 
 /mob/living/simple_animal/chick/holo/BiologicalLife(delta_time, times_fired)
 	if(!(. = ..()))
@@ -514,8 +526,7 @@
 	if(!stat && !ckey)
 		amount_grown += rand(1,2)
 		if(amount_grown >= 100)
-			new /mob/living/simple_animal/kiwi(src.loc)
-			qdel(src)
+			grow_up(/mob/living/simple_animal/kiwi)
 
 /obj/item/reagent_containers/food/snacks/egg/kiwiEgg
 	name = "kiwi egg"

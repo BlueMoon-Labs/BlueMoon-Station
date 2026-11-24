@@ -64,4 +64,77 @@ describe('CargoExpress', () => {
   test('частный заказ платит личный счёт карты', () => {
     expect(text(setup({ self_paid: 1 }).container)).toContain('личный счёт карты, сразу при заказе');
   });
+
+  const outpost = {
+    contracts: [
+      {
+        uid: 7,
+        kind: 'outpost',
+        department: 'TAR',
+        department_name: 'бюджет Тарков Индастриз',
+        title: 'Pie',
+        desc: 'Ship a whole one.',
+        reward: 1571,
+        share: 25,
+        urgent: 0,
+        time_left: null,
+        taken_by: null,
+        taker_id: null,
+        takeable: 0,
+        special: 0,
+        rotates_in: 600,
+        started: 0,
+        progress: '0/1',
+      },
+    ],
+    offers: [
+      {
+        uid: 3,
+        partner: 'Гильдия старателей',
+        partner_id: 'prospectors',
+        item: 'плазма',
+        requirement: '"плазма"',
+        quantity: 10,
+        delivered: 4,
+        unit_price: 100,
+        unit_reward: 200,
+        premium: 1000,
+        reward: 2000,
+        paid: 400,
+        accepted: 1,
+        contraband: 0,
+        time_left: 300,
+      },
+    ],
+    team_share: 25,
+    refill_in: 900,
+    budget_name: 'бюджет Тарков Индастриз',
+  };
+
+  test('консоль аванпоста показывает его заказы и спецзаказы партнёров', () => {
+    const content = text(setup({ outpost, budget_name: 'бюджет Тарков Индастриз' }).container);
+    expect(content).toContain('Заработок аванпоста');
+    expect(content).toContain('Pie');
+    expect(content).toContain('1 571 кр.');
+    expect(content).toContain('Сдано: 0/1');
+    expect(content).toContain('Сдавшим 25%');
+    expect(content).toContain('Новые заказычерез 15:00');
+    expect(content).toContain('Гильдия старателей');
+    expect(content).toContain('Сдано 4 из 10');
+    expect(content).toContain('Деньги идут в бюджет Тарков Индастриз, сдавшему лично 25%');
+  });
+
+  test('заработок аванпоста виден и на заблокированной консоли, а станционной не показывается', () => {
+    const locked = text(setup({ outpost, locked: 1 }).container);
+    expect(locked).toContain('Разблокировать консоль');
+    expect(locked).toContain('Заработок аванпоста');
+    expect(text(setup().container)).not.toContain('Заработок аванпоста');
+  });
+
+  test('пустая доска аванпоста говорит, когда будут заказы', () => {
+    const content = text(setup({ outpost: { ...outpost, contracts: [], offers: [], refill_in: 0 } }).container);
+    expect(content).toContain('Заказов сейчас нет.');
+    expect(content).toContain('Спецзаказов сейчас нет.');
+    expect(content).toContain('с ближайшим обновлением доски');
+  });
 });

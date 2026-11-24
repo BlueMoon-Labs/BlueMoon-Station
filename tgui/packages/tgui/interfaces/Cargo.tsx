@@ -15,12 +15,12 @@ import {
   LabeledList,
   NoticeBox,
   ProgressBar,
-  RestrictedInput,
   Stack,
   Table,
   Tooltip,
 } from '../components';
 import { Window } from '../layouts';
+import { AuctionBidEntry } from './common/AuctionBid';
 import { ContractTable } from './common/ContractTable';
 import { ContractEntry, Credits, EconomyLogo, formatCredits, OfferEntry, Sparkline } from './common/Economy';
 import { NtEmpty, NtFrame, NtHelpTopic, NtHelpTopics, NtLine, NtMenu, NtMenuItem, NtPulse, NtReadout, NtScreen } from './common/NtTerminal';
@@ -60,6 +60,10 @@ type BudgetRequest = {
   /** Есть кому одобрить заявку (начальство или ИИ): без него паки дороже auto_limit уходят снабжению */
   approver?: BooleanLike;
   auto_limit: number;
+  /** Недорогая заявка одобряется сразу, а не ждёт начальство: у всех, кроме СБ при начальстве на смене */
+  instant?: BooleanLike;
+  /** Как часто недорогая заявка сотрудника одобряется сама, мин. */
+  auto_cooldown?: number;
   /** Сколько расходников зритель ещё закажет без одобрения в этом часе */
   staple_left?: number;
 };
@@ -136,6 +140,8 @@ type Partner = {
   wealth: number;
   next_unlock: string | null;
   embargo_minutes?: number;
+  /** Спецзаказы партнёра снимаются невзятыми: новые он выставляет реже. */
+  offers_slowed?: BooleanLike;
   buys: string;
   sells: string;
 };
@@ -158,6 +164,11 @@ type AuctionLot = {
   increment: number;
   left: number;
   rivals: number;
+  /** Дороже стольких процентов оценки станции-соперники не дают. */
+  rival_cap?: number | null;
+  rival_ceiling?: number | null;
+  /** Наименьшая ставка, которую станции-соперники уже не перебьют. */
+  outbid_price?: number | null;
   history: { who: string; amount: number }[];
   outbid?: BooleanLike;
   /** Лот экипажа: имя продавца или "аноним". */
@@ -173,11 +184,26 @@ type BundleOffer = {
   uid: number;
   partner: string;
   partner_id: string;
-  items: string[];
+  /** Отдел, для которого собрана пачка, и "для кого" в названии: "медбея" */
+  department?: string | null;
+  whom?: string | null;
+  packs: string[];
+  /** Пак из пачки, который отделу нужен сейчас, и почему - только своим: в причине бывают данные датчиков */
+  need?: string | null;
+  need_why?: string | null;
   full_value: number;
   price: number;
+  /** Цена лично с наценкой частного заказа, как её спишет сервер */
+  private_price?: number;
   discount: number;
   left: number;
+  embargoed?: BooleanLike;
+  /** Зритель - глава отдела пачки, ГП или капитан: берёт её за бюджет отдела */
+  can_budget?: BooleanLike;
+  /** Все паки пачки продаются лично */
+  private_ok?: BooleanLike;
+  /** Сколько секунд пачку ещё берут только за бюджет её отдела */
+  department_left?: number;
 };
 
 type AuctionResult = { name: string; winner: string | null; price: number; ours: BooleanLike };
@@ -226,6 +252,10 @@ type CargoData = {
   contracts?: ContractEntry[];
   auction?: AuctionLot | null;
   bundles?: BundleOffer[];
+  /** Раз во сколько минут партнёры выставляют новую пачку, "8-15" */
+  bundle_gap?: string;
+  /** Столько минут с выставления пачку берут только за бюджет отдела, если на смене есть кому одобрить */
+  bundle_first?: number;
   auction_next?: number;
   auction_results?: AuctionResult[];
   crew_results?: CrewResult[];
@@ -471,11 +501,13 @@ const BudgetNotice = (props: { budget: BudgetRequest }) => {
   const { budget } = props;
   const own = budget.name && !budget.any ? `отдела "${budget.name}" (сейчас ${formatCredits(budget.balance || 0)})` : 'отдела пака';
   const deciders = budget.id === 'SEC' ? 'глава отдела, ГП или капитан' : 'глава отдела, ГП, капитан или ИИ';
-  let text = `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявку одобряет ${deciders} в программе "Бюджет отдела"; если ответа долго нет, заявка до ${formatCredits(budget.auto_limit)} одобряется сама, кроме расходников.`;
+  let text = budget.instant
+    ? `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявка до ${formatCredits(budget.auto_limit)}, кроме расходников, одобряется сама сразу, если после заказа в бюджете остаётся на зарплату сотрудникам, не чаще раза в ${budget.auto_cooldown ?? 0} мин.; дороже - одобряет ${deciders}, им приходит сообщение на карту.`
+    : `Паки с пометкой "бюджет отдела" оплатит бюджет ${own}. Заявку одобряет ${deciders} в программе "Бюджет отдела" или кнопкой в сообщении на карте, сама она не одобряется.`;
   if (budget.manager) {
     text = `Паки с пометкой "бюджет отдела" вы заказываете сразу за бюджет ${own}: заказ уходит в снабжение оплаченным.`;
   } else if (!budget.approver) {
-    text = `Начальства отдела${budget.id === 'SEC' ? '' : ' и ИИ'} на смене нет: пак своего каталога до ${formatCredits(budget.auto_limit)}, кроме расходников, оплатит бюджет ${own}, заявка одобрится сама. Пак дороже уйдёт заявкой снабжению.`;
+    text = `Начальства отдела${budget.id === 'SEC' ? '' : ' и ИИ'} на смене нет: пак своего каталога до ${formatCredits(budget.auto_limit)}, кроме расходников, оплатит бюджет ${own}, заявка одобрится сама, если бюджету хватит на зарплату сотрудникам. Пак дороже уйдёт заявкой снабжению.`;
   }
   if (!budget.manager && budget.staple_left !== undefined) {
     text += ` Расходники своего отдела вы заказываете без одобрения, по своему часовому лимиту, осталось ${formatCredits(budget.staple_left)} Сверх остатка расходник ждёт решения${budget.approver ? '' : ' или уходит заявкой снабжению'}, сам он не одобряется.`;
@@ -736,7 +768,7 @@ export const CargoCatalog = (props: { express?: boolean }) => {
           const pack = withPrice(listed, data.prices, partnerNames);
           const priced = typeof pack.cost === 'number';
           const outOfStock = !priced || (pack.in_stock !== undefined && !pack.in_stock);
-          const cost = self_paid && !express && !pack.goody && !pack.personal ? Math.round((pack.cost || 0) * private_markup) : pack.cost || 0;
+          const cost = self_paid && !express && !pack.goody && !pack.personal ? Math.floor((pack.cost || 0) * private_markup) : pack.cost || 0;
           const open = openId === pack.id;
           const favorite = favorites.includes(pack.id);
           const byBudget = paidByBudget(pack, budget);
@@ -1016,7 +1048,7 @@ const SpecialOffers = (props) => {
           Брать спецзаказы и печатать накладные можно только на консоли снабжения станции.
         </Box>
       )}
-      {offers.length === 0 && <NtEmpty>Спецзаказов сейчас нет.</NtEmpty>}
+      {offers.length === 0 && <NtEmpty>Спецзаказов сейчас нет. Партнёры выставляют реже, когда их не берут.</NtEmpty>}
       <Stack vertical>
         {offers.map((offer) => (
           <Stack.Item key={offer.uid}>
@@ -1091,12 +1123,12 @@ const SpecialOffers = (props) => {
 const Bundles = (props) => {
   const { act, data } = useBackend<CargoData>();
   const bundles = data.bundles || [];
-  const { self_paid, private_markup = 1, requestonly, can_send } = data;
+  const { self_paid, private_markup = 1, requestonly, can_send, bundle_gap, bundle_first } = data;
   const forCargo = !!can_send && !requestonly;
   return (
     <NtFrame
       title="Скупка"
-      help="Партнёры распродают пачки разных предметов дешевле, чем по отдельности, но только целиком. Взятая пачка уходит в корзину и из скупки пропадает. Новые пачки появляются раз в 8-15 минут."
+      help={`Партнёры собирают пачку из нескольких паков каталога одного отдела, сперва из того, что ему нужно сейчас, и отдают её дешевле, чем паки по отдельности, но только целиком. О новой пачке слышат канал её отдела и карты его начальства на смене, а о взятой - как её взяли, при покупке за бюджет - и кто. За бюджет отдела пачку берёт его глава, ГП или капитан - здесь или в «Бюджете отдела» на КПК; за бюджет снабжения - снабжение, лично - любой, если на счёте хватает на цену с наценкой частного заказа и в пачке нет паков, которые лично не продаются (как у СБ). Если отдел услышал о пачке и на смене есть кому её одобрить, первые ${bundle_first ?? 'несколько'} мин. её берут только за его бюджет. Взятая пачка уходит в корзину и из скупки пропадает. Новые пачки появляются раз в ${bundle_gap || 'несколько'} мин.; пачки, которые не берут, партнёр выставляет реже. У партнёра под эмбарго пачку не купить.`}
       buttons={
         <Button.Checkbox checked={self_paid} onClick={() => act('toggleprivate')}>
           Купить лично
@@ -1104,23 +1136,37 @@ const Bundles = (props) => {
       }>
       {!forCargo && (
         <Box className="NtTerm__hint" mb={1}>
-          За бюджет снабжения скупку берёт снабжение с консоли; вы можете купить пачку лично.
+          За бюджет снабжения скупку берёт снабжение с консоли. Пачку для отдела берёт за его бюджет глава, ГП или капитан; лично - любой, если в ней нет паков, которые лично не продаются.
         </Box>
       )}
-      {bundles.length === 0 && <NtEmpty>Сейчас партнёры ничего не распродают.</NtEmpty>}
+      {bundles.length === 0 && <NtEmpty>Сейчас партнёры ничего не распродают. Партнёры выставляют реже, когда их не берут.</NtEmpty>}
       {bundles.map((bundle) => {
-        const price = self_paid ? Math.round(bundle.price * private_markup) : bundle.price;
-        const canBuy = !!self_paid || forCargo;
+        const price = self_paid ? (bundle.private_price ?? Math.floor(bundle.price * private_markup)) : bundle.price;
+        const departmentOnly = (bundle.department_left || 0) > 0;
+        const privateBlocked = !!self_paid && !bundle.private_ok;
+        const canBuy = (!!self_paid || forCargo) && !departmentOnly && !privateBlocked;
+        const buyRefusal = departmentOnly
+          ? `Пока пачка только для отдела «${bundle.department}»: ещё ${Math.ceil((bundle.department_left || 0) / 60)} мин.`
+          : privateBlocked
+            ? 'В пачке есть паки, которые лично не продаются'
+            : undefined;
         return (
           <Box key={bundle.uid} className="NtTerm__contract">
             <Box className="NtTerm__contractMain">
               <Box className="NtTerm__contractTitle">
                 <span className="NtTerm__tag NtTerm__tag--lead">{bundle.partner}</span>
-                {bundle.items.length} {plural(bundle.items.length, 'предмет', 'предмета', 'предметов')}, только вместе
+                {bundle.whom ? `Для ${bundle.whom}: ` : ''}
+                {bundle.packs.length} {plural(bundle.packs.length, 'пак', 'пака', 'паков')}, только вместе
               </Box>
               <Box className="NtTerm__hint" mt={0.5}>
-                {bundle.items.join(', ')}
+                {bundle.packs.join(', ')}
               </Box>
+              {!!bundle.need && (
+                <Box italic color="label" mt={0.5}>
+                  Нужно сейчас: {bundle.need}
+                  {bundle.need_why ? ` - ${bundle.need_why}` : ''}
+                </Box>
+              )}
             </Box>
             <Box className="NtTerm__contractSide">
               <Box className="NtTerm__hint">
@@ -1128,10 +1174,25 @@ const Bundles = (props) => {
               </Box>
               <Box className="NtTerm__contractReward">{formatCredits(price)}</Box>
               <Box className={bundle.left < 120 ? 'color-average' : 'NtTerm__hint'}>ещё {formatTime(bundle.left)}</Box>
+              {departmentOnly && <Box className="NtTerm__hint">для отдела ещё {Math.ceil((bundle.department_left || 0) / 60)} мин.</Box>}
               <Box mt={0.5}>
-                <Button color="good" disabled={!canBuy} onClick={() => act('buy_bundle', { uid: bundle.uid })}>
-                  Купить пачкой
-                </Button>
+                {bundle.embargoed ? (
+                  <Box color="bad">Эмбарго: пока не купить</Box>
+                ) : (
+                  <>
+                    {!!bundle.can_budget && (
+                      <Button
+                        color="good"
+                        tooltip={`Сразу списать ${formatCredits(bundle.price)} из бюджета отдела «${bundle.department}»`}
+                        onClick={() => act('buy_bundle', { uid: bundle.uid, budget: 1 })}>
+                        За бюджет отдела
+                      </Button>
+                    )}
+                    <Button color="good" disabled={!canBuy} tooltip={buyRefusal} onClick={() => act('buy_bundle', { uid: bundle.uid })}>
+                      Купить пачку
+                    </Button>
+                  </>
+                )}
               </Box>
             </Box>
           </Box>
@@ -1158,19 +1219,16 @@ const useOutbid = (lot: AuctionLot | null | undefined) => {
 };
 
 const Auction = (props) => {
-  const { act, data } = useBackend<CargoData>();
+  const { data } = useBackend<CargoData>();
   const lot = data.auction;
   const results = data.auction_results || [];
-  const [amount, setAmount] = useState<number | null>(null);
   const outbid = useOutbid(lot);
-  const minBid = lot?.min_bid || 0;
-  const bid = Math.max(amount ?? minBid, minBid);
   return (
     <>
       {lot ? (
         <NtFrame
           title={`Лот: ${lot.name}`}
-          help="Ставка идёт с личного счёта и замораживается до конца торгов; если её перебьют, деньги сразу вернутся. Ставка в последнюю минуту продлевает торги до минуты. Выигранный лот прилетит капсулой на склад снабжения запертой посылкой на имя победителя."
+          help="Впишите сумму и нажмите «Поставить» или Enter - ставка встанет сразу. «Перебить соперников» ставит наименьшую сумму, которую станции сектора уже не перебьют. Ставка идёт с личного счёта и замораживается до конца торгов, к своей ставке доплачивается только разница; если её перебьют, деньги сразу вернутся. Ставка в последнюю минуту продлевает торги до минуты. Выигранный лот прилетит капсулой на склад снабжения запертой посылкой на имя победителя."
           buttons={
             <Box inline className="NtTerm__num" color={lot.left < 60 ? 'average' : 'label'}>
               осталось {formatTime(lot.left)}
@@ -1186,24 +1244,19 @@ const Auction = (props) => {
               {lot.bid ? `${formatCredits(lot.bid)} - ${lot.mine ? 'ваша' : lot.bidder}` : `ставок нет, старт ${formatCredits(lot.min_bid)}`}
             </NtPulse>
           </NtLine>
-          <NtLine label="Торгуются ещё">{lot.rivals} станции сектора</NtLine>
-          <Stack align="center" mt={1.5} wrap>
-            <Stack.Item>
-              <RestrictedInput width="7em" value={bid} minValue={minBid} maxValue={100000} onChange={(_, value) => setAmount(value)} /> кр.
-            </Stack.Item>
-            <Stack.Item>
-              <Button onClick={() => setAmount(minBid)}>Минимум</Button>
-              <Button onClick={() => setAmount(minBid + lot.increment * 2)}>+2 шага</Button>
-            </Stack.Item>
-            <Stack.Item>
-              <Button color="good" icon="gavel" onClick={() => act('auction_bid', { uid: lot.uid, amount: bid })}>
-                {`Поставить ${formatCredits(bid)}`}
-              </Button>
-            </Stack.Item>
+          <NtLine label="Соперники">
+            {lot.rivals
+              ? `${lot.rivals} ${plural(lot.rivals, 'станция', 'станции', 'станций')} сектора, дороже ${lot.rival_cap ?? 0}% оценки не дают`
+              : 'нет, торгуется только станция'}
+          </NtLine>
+          <Box mt={1.5}>
+            <AuctionBidEntry key={lot.uid} lot={lot} balance={data.my_balance} steps />
             {data.my_balance !== null && data.my_balance !== undefined && (
-              <Stack.Item className="NtTerm__hint">на счёте {formatCredits(data.my_balance)}</Stack.Item>
+              <Box className="NtTerm__hint" mt={0.5}>
+                на счёте {formatCredits(data.my_balance)}
+              </Box>
             )}
-          </Stack>
+          </Box>
           {lot.history.length > 0 && (
             <Box mt={1.5}>
               <Box className="NtTerm__hint" mb={0.5}>
@@ -1247,7 +1300,7 @@ const CrewLots = (props) => {
   return (
     <NtFrame
       title="Лоты экипажа"
-      help={`Вещи экипажа, выставленные с пада подработки. Торгуется только экипаж, ставка идёт с личного счёта и замораживается до конца торгов; лот с ценой «купить сразу» можно забрать без торгов. Продавцу уходит ставка без сбора NT ${data.auction_fee ?? 0}%, победителю - запертая посылка на его имя капсулой в снабжение.`}>
+      help={`Вещи экипажа, выставленные с пада подработки. Торгуется только экипаж, ставку можно вписать любой суммой, она идёт с личного счёта и замораживается до конца торгов; лот с ценой «купить сразу» можно забрать без торгов. Продавцу уходит ставка без сбора NT ${data.auction_fee ?? 0}%, победителю - запертая посылка на его имя капсулой в снабжение.`}>
       {lots.length === 0 ? (
         <NtEmpty>Лотов экипажа нет. Свою вещь выставляют с пада подработки.</NtEmpty>
       ) : (
@@ -1266,9 +1319,9 @@ const CrewLots = (props) => {
               </Box>
               {!!lot.inscription && <Box className="NtTerm__hint">На вещи надпись: {lot.inscription}</Box>}
               {biddable && (
-                <Button color="good" icon="gavel" mt={0.5} onClick={() => act('auction_bid', { uid: lot.uid, amount: lot.min_bid })}>
-                  {`${lot.mine ? 'Поднять до' : 'Поставить'} ${formatCredits(lot.min_bid)}`}
-                </Button>
+                <Box mt={0.5}>
+                  <AuctionBidEntry lot={lot} balance={data.my_balance} buyout={buyout} />
+                </Box>
               )}
               {!!buyout && (
                 <Button.Confirm
@@ -1404,6 +1457,11 @@ const Partners = (props) => {
                 </Box>
                 {!!partner.embargo_minutes && (
                   <NoticeBox danger>Эмбарго: ещё {partner.embargo_minutes} мин. партнёр не покупает и не продаёт.</NoticeBox>
+                )}
+                {!!partner.offers_slowed && (
+                  <Box color="average" mb={1}>
+                    Выставляет реже: спецзаказы не берут
+                  </Box>
                 )}
                 {!!partner.next_unlock && <NoticeBox>{partner.next_unlock}</NoticeBox>}
                 {trades && (

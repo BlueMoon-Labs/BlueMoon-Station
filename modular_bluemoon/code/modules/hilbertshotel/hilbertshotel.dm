@@ -632,51 +632,38 @@
 		door.roomnumber = currentRoomnumber
 	for(var/turf/open/space/bluespace/BSturf in currentArea)
 		BSturf.parentSphere = src
+	currentArea.ensure_room_service_panel()
 
 /obj/item/hilbertshotel/proc/ejectRooms()
-	if(activeRooms.len)
-		for(var/x in activeRooms)
-			var/datum/turf_reservation/room = activeRooms[x]
-			for(var/i in 0 to room.width-1)
-				for(var/j in 0 to room.height-1)
-					for(var/atom/movable/A in locate(room.bottom_left_coords[1] + i, room.bottom_left_coords[2] + j, room.bottom_left_coords[3]))
-						if(ismob(A))
-							var/mob/M = A
-							if(M.mind)
-								to_chat(M, "<span class='warning'>As the sphere breaks apart, you're suddenly ejected into the depths of space!</span>")
-						var/max = world.maxx-TRANSITIONEDGE
-						var/min = 1+TRANSITIONEDGE
-						var/list/possible_transtitons = list()
-						for(var/AZ in SSmapping.z_list)
-							var/datum/space_level/D = AZ
-							if(D.linkage == CROSSLINKED)
-								possible_transtitons += D.z_value
-						var/_z = pick(possible_transtitons)
-						var/_x = rand(min,max)
-						var/_y = rand(min,max)
-						var/turf/T = locate(_x, _y, _z)
-						A.forceMove(T)
-			qdel(room)
-	if(storedRooms.len)
-		for(var/x in storedRooms)
-			var/list/atomList = storedRooms[x]
-			for(var/atom/movable/A in atomList)
-				var/max = world.maxx-TRANSITIONEDGE
-				var/min = 1+TRANSITIONEDGE
-				var/list/possible_transtitons = list()
-				for(var/AZ in SSmapping.z_list)
-					var/datum/space_level/D = AZ
-					if (D.linkage == CROSSLINKED)
-						possible_transtitons += D.z_value
-				var/_z = pick(possible_transtitons)
-				var/_x = rand(min,max)
-				var/_y = rand(min,max)
-				var/turf/T = locate(_x, _y, _z)
-				A.forceMove(T)
-		for(var/obj/item/abstracthotelstorage/S in SShilbertshotel.storageTurf)
-			if(S.parentSphere == src)
-				qdel(S)
-		storedRooms.Cut()
+	for(var/x in activeRooms)
+		var/datum/turf_reservation/room = activeRooms[x]
+		for(var/i in 0 to room.width-1)
+			for(var/j in 0 to room.height-1)
+				for(var/atom/movable/A in locate(room.bottom_left_coords[1] + i, room.bottom_left_coords[2] + j, room.bottom_left_coords[3]))
+					if(!istype(A, /atom/movable/lighting_object))
+						eject_from_room(A)
+		qdel(room)
+	// Хранилище номера - объект на общем тайле: выбрасывается то, что в нём лежит, а не записи storedRooms
+	for(var/obj/item/abstracthotelstorage/S in SShilbertshotel.storageTurf)
+		if(S.parentSphere != src)
+			continue
+		for(var/atom/movable/A in S)
+			eject_from_room(A)
+		qdel(S)
+	storedRooms.Cut()
+
+/// Выбрасывает атом из номера разрушенной сферы в случайную точку космоса.
+/obj/item/hilbertshotel/proc/eject_from_room(atom/movable/A)
+	if(ismob(A))
+		var/mob/M = A
+		if(M.mind)
+			to_chat(M, span_warning("Сфера рассыпается, и вас выбрасывает в открытый космос!"))
+	var/list/possible_transitions = list()
+	for(var/datum/space_level/D as anything in SSmapping.z_list)
+		if(D.linkage == CROSSLINKED)
+			possible_transitions += D.z_value
+	var/turf/T = length(possible_transitions) ? locate(rand(1 + TRANSITIONEDGE, world.maxx - TRANSITIONEDGE), rand(1 + TRANSITIONEDGE, world.maxy - TRANSITIONEDGE), pick(possible_transitions)) : get_turf(src)
+	A.forceMove(T)
 
 //Turfs and Areas
 /turf/closed/indestructible/hotelwall

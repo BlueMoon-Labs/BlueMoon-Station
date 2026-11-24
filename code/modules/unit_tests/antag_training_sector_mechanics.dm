@@ -1,5 +1,15 @@
+/datum/unit_test/antag_training_sector_leaks
+	var/economy_could_fire
+
+/datum/unit_test/antag_training_sector_leaks/Destroy()
+	SSeconomy.can_fire = economy_could_fire
+	return ..()
+
 /// Каждый сектор грузится и выгружается, не оставляя следов в глобальных реестрах раунда.
 /datum/unit_test/antag_training_sector_leaks/Run()
+	// Грант NT в бюджет науки раз в тик экономики - не утечка сектора
+	economy_could_fire = SSeconomy.can_fire
+	SSeconomy.can_fire = FALSE
 	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
 	TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
 	var/datum/antag_training_arena/arena = session.arena

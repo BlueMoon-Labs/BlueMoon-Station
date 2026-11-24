@@ -294,6 +294,8 @@
 	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human)
 	var/obj/item/holochip/chip = new(buyer.loc, 2000)
 	buyer.put_in_active_hand(chip)
+	if(SSeconomy.cash_account.account_balance < 2000)
+		SSeconomy.cash_account.credit(2000 - SSeconomy.cash_account.account_balance, ECON_ADMIN, memo = "Голочип покупателя уже в обороте")
 	var/cash_before = SSeconomy.cash_account.account_balance
 	var/burned_before = SSeconomy.ledger.burned
 	chip.melee_attack_chain(buyer, uplink)

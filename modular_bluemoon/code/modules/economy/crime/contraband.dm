@@ -57,6 +57,9 @@ GLOBAL_LIST_INIT(econ_contraband_offstation_vendors, list(
 		var/family_tc = tc_by_type[family]
 		for(var/subtype in typesof(family))
 			tc_by_type[subtype] = max(tc_by_type[subtype] || 0, family_tc || 0)
+	// Телекристаллов нет среди товаров аплинка, но это та же валюта: кристалл стоит 1 ТК
+	for(var/obj/item/stack/telecrystal/crystal_type as anything in typesof(/obj/item/stack/telecrystal))
+		tc_by_type[crystal_type] = max(tc_by_type[crystal_type] || 0, initial(crystal_type.amount))
 	var/list/station_made = econ_station_obtainable_types()
 	var/list/cache = list()
 	for(var/item in tc_by_type)
@@ -161,11 +164,10 @@ GLOBAL_LIST_INIT(econ_contraband_offstation_vendors, list(
 /proc/econ_contraband_credits(obj/item/thing, unit_price = 1)
 	if(!econ_is_contraband(thing))
 		return 0
-	var/datum/economy_settings/settings = SSeconomy.settings
 	var/value = econ_contraband_base_value(thing) * econ_sale_factor(COMMODITY_CONTRABAND)
 	var/limit = econ_contraband_limit(thing)
 	if(!isnull(limit))
-		value = min(value, limit * 100 / ((100 + settings.work_personal_share) * unit_price))
+		value = min(value, limit * 100 / ((100 + SSeconomy.work_premium_share()) * unit_price))
 	return max(round(value), 0)
 
 /// Оценка изъятия для оплаты работы СБ: кредиты оценки по прайсу WORK_SEC_CONTRABAND.

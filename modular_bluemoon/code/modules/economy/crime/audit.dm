@@ -24,6 +24,12 @@
 	var/close_reason
 	/// ckey и REF разума тех, кто двигал деньги по делу: они его не закрывают
 	var/list/actors
+	/// Операции после последней строки дела в econ.log: пишутся итогом не чаще AUDIT_LOG_REPEAT_INTERVAL, при закрытии и в конце смены
+	var/unlogged_count = 0
+	var/unlogged_amount = 0
+	var/next_log_time = 0
+	/// text на момент последней строки дела в econ.log: дописанное вызывателями после неё идёт в следующий итог
+	var/logged_text
 
 /// Ключи для flag.actors: ckey и REF разума.
 /proc/econ_audit_identities(mob/actor)
@@ -107,6 +113,25 @@
 		return AUDIT_WATCH_UNOWNED
 	return "[counterparty?.account_id]"
 
+/// Премии кнопкой человеку копятся в audit_watch отдельно от прочих выплат бюджета: дело только сверх лимита премий за окно.
+/proc/econ_audit_bonus_key(number)
+	return "[number] bonus"
+
+/// Ключи audit_watch, копящие дело вида kind по паре: дело, открытое или закрытое по паре, сбрасывает их все.
+/proc/econ_audit_pair_keys(kind, counterparty_number, pooled)
+	if(pooled)
+		return list(AUDIT_WATCH_UNOWNED)
+	. = list("[counterparty_number]")
+	if(kind == AUDIT_FLAG_BUDGET_SIPHON)
+		. += econ_audit_bonus_key(counterparty_number)
+
+/// Сколько премий одному человеку за audit_siphon_minutes ещё не дело: лимит премий за каждое окно ECON_BONUS_WINDOW, которое захватит окно аудита с корзинами (на стыке окон - два лимита), но не меньше порога выплат.
+/datum/controller/subsystem/economy/proc/audit_bonus_allowance()
+	return max(settings.bonus_cap_hour * econ_audit_bonus_windows(), settings.audit_bonus_threshold - 1)
+
+/proc/econ_audit_bonus_windows()
+	return CEILING((SSeconomy.settings.audit_siphon_minutes MINUTES + AUDIT_BUCKET) / ECON_BONUS_WINDOW, 1) + 1
+
 /// Ставка аукциона - залог, а не отток: след покупателя к продавцу пишет итог лота экипажа одной строкой
 GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, ECON_ADMIN, ECON_ACCOUNT_CLOSED, ECON_BUDGET_RETURN, ECON_AUCTION_BID))
 
@@ -152,6 +177,10 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 	note_anon_cashout(source, amount, reason, actor)
 	if(!personal_target)
 		return
+	if(reason == ECON_CASH_IN)
+		if(settings.audit_cash_deposit_threshold && amount >= settings.audit_cash_deposit_threshold)
+			add_audit_flag(target, AUDIT_FLAG_CASH_DEPOSIT, "Крупное внесение наличных", amount, null, actor)
+		return
 	if(reason == ECON_SKIM && source.add_to_accounts)
 		add_audit_flag(source, AUDIT_FLAG_UNKNOWN_DEVICE, "Списание с неопознанного устройства", amount, target, actor)
 		return
@@ -163,6 +192,9 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 		return
 	if(reason == ECON_BONUS && econ_account_of(actor) == target)
 		add_audit_flag(source, AUDIT_FLAG_SELF_BONUS, "Глава выписал премию самому себе", amount, target, actor)
+		return
+	if(reason == ECON_BONUS && target.owner_ref)
+		watch_pair(source, target, amount, AUDIT_FLAG_BUDGET_SIPHON, "Премии одному человеку сверх лимита премий", actor, econ_audit_bonus_key(target.account_id), audit_bonus_allowance() + 1)
 		return
 	watch_pair(source, target, amount, AUDIT_FLAG_BUDGET_SIPHON, target.owner_ref ? "Крупные выплаты из бюджета одному человеку" : "Выплаты из бюджета на счета без владельца", actor)
 
@@ -197,14 +229,14 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 	if(source.audit_pool)
 		econ_audit_prune_pairs(source.audit_pool, world.time - settings.audit_siphon_minutes MINUTES)
 
-/// Дробление (число переводов) и отток бюджета (сумма) по паре: открытое дело пополняется, иначе копится до порога.
-/datum/controller/subsystem/economy/proc/watch_pair(datum/bank_account/source, datum/bank_account/target, amount, kind, text, mob/actor)
+/// Дробление (число переводов) и отток бюджета (сумма) по паре: открытое дело пополняется, иначе копится до порога. key и threshold - свой счётчик пары и свой порог суммы.
+/datum/controller/subsystem/economy/proc/watch_pair(datum/bank_account/source, datum/bank_account/target, amount, kind, text, mob/actor, key, threshold)
 	if(open_audit_flag(kind, source, target))
 		add_audit_flag(source, kind, text, amount, target, actor)
 		return
 	if(!source.audit_watch)
 		source.audit_watch = list()
-	var/key = econ_audit_watch_key(kind, target)
+	key ||= econ_audit_watch_key(kind, target)
 	var/list/buckets = source.audit_watch[key]
 	if(!buckets)
 		buckets = list()
@@ -226,7 +258,7 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 	var/structuring = kind == AUDIT_FLAG_STRUCTURING
 	var/since = world.time - (structuring ? settings.audit_structuring_minutes : settings.audit_siphon_minutes) MINUTES
 	var/list/stats = econ_audit_bucket_stats(buckets, since)
-	if(!(structuring ? stats[1] >= settings.audit_structuring_count : stats[2] >= settings.audit_bonus_threshold))
+	if(!(structuring ? stats[1] >= settings.audit_structuring_count : stats[2] >= (threshold || settings.audit_bonus_threshold)))
 		return
 	var/datum/econ_audit_flag/flag = add_audit_flag(source, kind, text, stats[2], target, actor)
 	if(!pooled)
@@ -252,7 +284,8 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 /// account - откуда ушли деньги, counterparty - куда. Свежее открытое дело того же вида по той же паре пополняется.
 /datum/controller/subsystem/economy/proc/add_audit_flag(datum/bank_account/account, kind, text, amount, datum/bank_account/counterparty, mob/actor)
 	var/datum/econ_audit_flag/flag = open_audit_flag(kind, account, counterparty)
-	if(!flag)
+	var/opened = !flag
+	if(opened)
 		flag = new
 		flag.uid = ++audit_flag_uid
 		flag.account_number = account.account_id
@@ -267,28 +300,77 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 		LAZYINITLIST(flag.recipients)
 		flag.recipients["[counterparty.account_id]"] += amount
 	var/list/identities = econ_audit_identities(actor)
-	if(counterparty && account.audit_watch)
-		account.audit_watch -= econ_audit_watch_key(kind, counterparty)
-	if(counterparty && account.audit_watch_actors)
-		var/key = econ_audit_watch_key(kind, counterparty)
-		identities |= account.audit_watch_actors[key]
-		account.audit_watch_actors -= key
+	var/list/keys = counterparty ? econ_audit_pair_keys(kind, counterparty.account_id, flag.pooled) : null
+	if(keys && account.audit_watch)
+		account.audit_watch -= keys
+	if(keys && account.audit_watch_actors)
+		for(var/key in keys)
+			var/list/known = account.audit_watch_actors[key]
+			if(known)
+				identities |= known
+		account.audit_watch_actors -= keys
 	if(length(identities))
 		LAZYINITLIST(flag.actors)
 		flag.actors |= identities
 	flag.amount += amount
 	flag.last_seen = world.time
-	log_econ("Аудит, дело [flag.uid]: [text], [amount] кр. со счёта [account.account_holder] №[account.account_id][counterparty ? " на [counterparty.account_holder] №[counterparty.account_id]" : ""]")
+	if(opened)
+		ledger.audit_opened++
+		flag.next_log_time = world.time + AUDIT_LOG_REPEAT_INTERVAL
+		flag.logged_text = flag.text
+		log_econ("Аудит, дело [flag.uid]: [text], [num2text(amount, ECON_TEXT_DIGITS)] кр. со счёта [account.account_holder] №[account.account_id][counterparty ? " на [counterparty.account_holder] №[counterparty.account_id]" : ""]")
+		return flag
+	flag.unlogged_count++
+	flag.unlogged_amount += amount
+	if(world.time >= flag.next_log_time)
+		log_audit_repeats(flag)
 	return flag
 
+/// Итог операций дела с прошлой строки в econ.log, с тем, что вызыватели дописали в текст дела после неё.
+/datum/controller/subsystem/economy/proc/log_audit_repeats(datum/econ_audit_flag/flag)
+	flag.next_log_time = world.time + AUDIT_LOG_REPEAT_INTERVAL
+	var/added = econ_audit_text_growth(flag.logged_text, flag.text)
+	if(!flag.unlogged_count && !added)
+		return
+	var/list/parts = list()
+	if(flag.unlogged_count)
+		parts += "ещё операций: [flag.unlogged_count] на [num2text(flag.unlogged_amount, ECON_TEXT_DIGITS)] кр., всего по делу [num2text(flag.amount, ECON_TEXT_DIGITS)] кр."
+	if(added)
+		parts += "добавлено к делу: [added]"
+	log_econ("Аудит, дело [flag.uid]: [jointext(parts, "; ")]")
+	flag.unlogged_count = 0
+	flag.unlogged_amount = 0
+	flag.logged_text = flag.text
+
+/// Что дописано в текст дела после old_text, без ведущего разделителя; весь new_text, если начало переписано.
+/proc/econ_audit_text_growth(old_text, new_text)
+	if(old_text == new_text)
+		return ""
+	if(!old_text || findtext(new_text, old_text) != 1)
+		return new_text
+	var/added = copytext(new_text, length(old_text) + 1)
+	if(copytext(added, 1, 3) in list(", ", "; "))
+		added = copytext(added, 3)
+	return added
+
+/datum/controller/subsystem/economy/proc/flush_audit_logs()
+	for(var/datum/econ_audit_flag/flag as anything in audit_flags)
+		log_audit_repeats(flag)
+
 /datum/controller/subsystem/economy/proc/close_audit_flag(datum/econ_audit_flag/flag)
+	log_audit_repeats(flag)
 	flag.closed = TRUE
+	if(flag.refunded)
+		ledger.audit_closed_refunded++
+		ledger.audit_refunded += flag.refunded
+	else
+		ledger.audit_closed_dismissed++
 	var/datum/bank_account/source = find_account(flag.account_number)
-	var/key = flag.pooled ? AUDIT_WATCH_UNOWNED : "[flag.counterparty_number]"
+	var/list/keys = econ_audit_pair_keys(flag.kind, flag.counterparty_number, flag.pooled)
 	if(source?.audit_watch)
-		source.audit_watch -= key
+		source.audit_watch -= keys
 	if(source?.audit_watch_actors)
-		source.audit_watch_actors -= key
+		source.audit_watch_actors -= keys
 	if(source && flag.pooled)
 		source.audit_pool = null
 
@@ -437,6 +519,8 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 		return "Дело не найдено."
 	if(flag.closed)
 		return "Дело уже закрыто, повторный возврат запрещён."
+	if(flag.kind == AUDIT_FLAG_CASH_DEPOSIT)
+		return "Деньги по этому делу пришли наличными, возвращать их некому. Дело закрывается без возврата, с причиной."
 	if(!from_account || !to_account || QDELETED(from_account) || QDELETED(to_account) || !flag.involves(from_account.account_id) || from_account.account_id == flag.account_number || to_account.account_id != flag.account_number)
 		return "Вернуть можно только со счёта получателя по делу на счёт, с которого ушли деньги."
 	var/limit = flag.refundable_from(from_account.account_id)
@@ -481,7 +565,7 @@ GLOBAL_LIST_INIT(econ_reasons_unaudited, list(ECON_WAGE, ECON_TAX, ECON_TAX_NT, 
 	to_account.bank_card_talk("Возврат по делу аудита №[flag.uid]: +[returned] кр.", TRUE)
 	var/outcome = flag.closed ? "Дело №[flag.uid] закрыто." : "Дело №[flag.uid] открыто, [flag.remaining_text(from_account.account_id)]"
 	to_chat(user, span_notice("Возвращено [returned] кр., сбор отдела безопасности [fee] кр. ([settings.audit_case_fee_percent]% с получателя). [outcome] NT за дела не доплачивает."))
-	log_econ("[key_name(user)] вернул [returned] кр. по делу [flag.uid] со счёта [from_account.account_holder] №[from_account.account_id] на [to_account.account_holder] №[to_account.account_id], сбор СБ [fee] кр.")
+	log_econ("[key_name(user)] вернул [num2text(returned, ECON_TEXT_DIGITS)] кр. по делу [flag.uid] со счёта [from_account.account_holder] №[from_account.account_id] на [to_account.account_holder] №[to_account.account_id], сбор СБ [num2text(fee, ECON_TEXT_DIGITS)] кр.")
 	return list("returned" = returned, "fee" = fee)
 
 /// Почему нельзя закрыть дело без возврата; null - можно.

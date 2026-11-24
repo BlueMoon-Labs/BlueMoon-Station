@@ -255,6 +255,10 @@
 	if(objectives.len)
 		var/count = 1
 		for(var/datum/objective/objective in objectives)
+			if(!objective.completable)
+				objectives_text += "<br><B>Objective #[count]</B>: [objective.explanation_text]"
+				count++
+				continue
 			var/completion = objective.check_completion()
 			if(completion >= 1)
 				objectives_text += "<br><B>Objective #[count]</B>: [objective.explanation_text] [span_greentext("Success!")]"

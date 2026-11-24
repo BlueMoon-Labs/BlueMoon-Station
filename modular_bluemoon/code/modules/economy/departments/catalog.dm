@@ -68,15 +68,28 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		return
 	department.restore_shield(order.shield_entries)
 	department.ledger_cancel_purchase(order.prepaid)
+	var/topup_back = min(order.cargo_topup, order.prepaid)
+	if(topup_back && SSeconomy.department_transfer(department, SSeconomy.get_department(ACCOUNT_CAR), topup_back, user))
+		department.restore_shield(department.account.department_shield_spent)
+		log_econ("Отмена заказа [order.pack.name] отдела [department.name]: доплата [topup_back] кр. вернулась снабжению")
+	order.cargo_topup = 0
 	if(order.saving_goal_until)
-		department.restore_saving_goal(order.pack, order.saving_goal_until)
+		department.restore_saving_goal(order.pack, order.saving_goal_until, funded = order.saving_goal_funded)
 		order.saving_goal_until = 0
+		order.saving_goal_funded = 0
 	log_econ("[key_name(user)] снял заказ [order.pack.name] отдела [department.name], возвращено [order.prepaid] кр.")
 	order.prepaid = 0
 
 /datum/supply_order
 	/// Заказ закрыл цель накопления отдела: до какого world.time она действовала, отмена заказа её возвращает
 	var/saving_goal_until = 0
+	/// Сколько чужого излишка было долито на цель, которую закрыл заказ: отмена возвращает его цели
+	var/saving_goal_funded = 0
+	/// Сколько доплатил бюджет снабжения к заказу по переданной заявке: отмена возвращает это снабжению
+	var/cargo_topup = 0
+	/// Заказ по заявке сотрудника: номер заявки и счёт подавшего, его карта узнает о прибытии
+	var/econ_request_uid
+	var/requester_account_id
 
 /datum/supply_order/proc/cart_entry()
 	var/datum/economy_department/department = prepaid ? SSeconomy.get_department(department_id) : null
@@ -103,6 +116,8 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	var/reason
 	var/status = ECON_REQUEST_PENDING
 	var/created
+	/// Одобрена и оплачена сразу при подаче
+	var/instant = FALSE
 
 /datum/econ_request/New(department_id, datum/supply_pack/pack, requester, requester_account_id, reason)
 	uid = ++GLOB.econ_request_uid
@@ -190,6 +205,9 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 
 /// Подаёт до amount заявок отделу с окна снабжения и возвращает ответ подавшему. О ждущих решения отдел оповещает сам: через radio от speaker, если они есть.
 /datum/economy_department/proc/submit_window_requests(datum/supply_pack/pack, mob/living/user, reason, amount, obj/item/radio/radio, atom/movable/speaker)
+	var/datum/econ_request/repeat = instant_repeat(pack, user)
+	if(repeat)
+		return econ_repeat_refusal(repeat)
 	var/list/approved = list()
 	var/list/pending = list()
 	for(var/i in 1 to amount)
@@ -209,19 +227,52 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	var/list/parts = list()
 	if(submitted == 1)
 		var/datum/econ_request/request = length(approved) ? approved[1] : pending[1]
-		parts += "Заявка №[request.uid] отделу [name] [length(approved) ? "одобрена и оплачена из бюджета отдела, заказ ушёл в снабжение" : pending_text(pack, user, 1)]."
+		parts += econ_sentence("Заявка №[request.uid] отделу [name] [length(approved) ? "одобрена и оплачена из бюджета отдела, заказ ушёл в снабжение" : pending_text(pack, user, 1)]")
 	else
 		parts += "Подано заявок отделу [name]: [submitted][submitted < amount ? " из [amount], больше [SSeconomy.settings.request_pending_per_requester] ждущих решения на сотрудника не бывает" : ""]."
 		if(length(approved))
 			parts += "[length(approved)] [ru_plural(length(approved), "одобрена и оплачена", "одобрены и оплачены", "одобрены и оплачены")] из бюджета отдела, заказ ушёл в снабжение."
 		if(length(pending))
-			parts += "[length(pending)] [pending_text(pack, user, length(pending))]."
-	var/price = round(econ_pack_price(pack))
-	if(length(pending) && account.account_balance < price)
-		parts += "В бюджете сейчас [account.account_balance] кр., пак стоит [price] кр."
+			parts += econ_sentence("[length(pending)] [pending_text(pack, user, length(pending))]")
+	if(length(pending))
+		var/money = money_note(pack)
+		if(money)
+			parts += money
+		var/datum/bank_account/requester_account = econ_account_of(user)
+		var/cooldown = cooldown_note(pack, requester_account?.account_id)
+		if(cooldown)
+			parts += cooldown
 	return jointext(parts, " ")
 
-/// Почему count заявок user на pack ждут, без точки в конце.
+/// Почему бюджет не оплатит пак без одобрения: не хватает денег или они отложены на зарплату сотрудникам; пусто, если хватает.
+/datum/economy_department/proc/money_note(datum/supply_pack/pack)
+	var/price = round(econ_pack_price(pack))
+	var/balance = account.account_balance
+	if(balance < price)
+		return "В бюджете сейчас [balance] кр., пак стоит [price] кр.[can_save_for(pack) ? " Глава может поставить его целью накопления в \"Бюджете отдела\": NT дольёт её излишками других отделов." : ""]"
+	var/reserve = owed_to_staff()
+	if(balance - price < reserve)
+		return "В бюджете сейчас [balance] кр., пак стоит [price] кр., но [reserve] кр. отложено на зарплату сотрудникам: без одобрения такой заказ не пройдёт."
+	return ""
+
+/// Когда недорогая заявка сотрудника снова одобрится сразу; пусто, если перерыва нет.
+/datum/economy_department/proc/cooldown_note(datum/supply_pack/pack, account_id)
+	if(!account_id || !auto_approvable(pack) || !instant_approval())
+		return ""
+	var/left = auto_approve_after["[account_id]"] - world.time
+	if(left <= 0)
+		return ""
+	return "Без одобрения снова через [CEILING(left / (1 MINUTES), 1)] мин."
+
+/// После заказа pack без одобрения в бюджете остаются долги и следующая зарплата сотрудникам.
+/datum/economy_department/proc/keeps_wage_reserve(datum/supply_pack/pack)
+	return account.account_balance - round(econ_pack_price(pack)) >= owed_to_staff()
+
+/// Текст с точкой в конце, без второй точки после сокращения вроде "мин.".
+/proc/econ_sentence(text)
+	return copytext(text, -1) == "." ? text : "[text]."
+
+/// Почему count заявок user на pack ждут; точку в конце ставит econ_sentence().
 /datum/economy_department/proc/pending_text(datum/supply_pack/pack, mob/living/user, count)
 	var/verb_wait = ru_plural(count, "ждёт", "ждут", "ждут")
 	if(can_manage(user) || staple_allowed(user, pack))
@@ -239,30 +290,108 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		return "[verb_wait]: начальства отдела на смене нет, [count > 1 ? "одобрятся сами" : "одобрится сама"] через [settings.auto_approve_wait_minutes] мин."
 	return "[verb_wait]: начальства отдела на смене нет, решит глава, когда выйдет на смену"
 
-/// Оповещает о ждущих заявках канал отдела и карты тех, кто может их одобрить, не чаще ECON_CARGO_REQUEST_RADIO_COOLDOWN на отдел.
+/// Оповещает о ждущих заявках канал отдела, не чаще ECON_CARGO_REQUEST_RADIO_COOLDOWN на отдел, и карты тех, кто может их одобрить, - о каждой заявке, с кнопками решения.
 /// Канал слышит через radio от speaker, без них - через станционную систему оповещения. Заявки главы ждут только денег, о них не оповещает.
 /datum/economy_department/proc/announce_pending(list/pending, mob/living/requester, obj/item/radio/radio, atom/movable/speaker)
-	if(!length(pending) || can_manage(requester) || !COOLDOWN_FINISHED(src, request_announce_cooldown))
+	if(!length(pending) || can_manage(requester))
 		return FALSE
-	COOLDOWN_START(src, request_announce_cooldown, ECON_CARGO_REQUEST_RADIO_COOLDOWN)
 	var/datum/econ_request/first = pending[1]
-	var/what = "[first.pack.name][length(pending) > 1 ? " x[length(pending)]" : ""], [round(econ_pack_price(first.pack))] кр. за штуку"
-	var/how = "Одобрить - в программе \"Бюджет отдела\" на КПК."
-	var/channel = radio_channel()
-	if(radio && speaker)
-		econ_radio_department(radio, speaker, "Заявка №[first.uid] от [first.requester]: [what]. [how]", channel)
-	else if(channel)
-		paperwork_radio("Отдел \"[name]\": заявка №[first.uid] от [first.requester] ждёт решения - [what]. [how]", channel)
-	var/list/told = list()
+	var/count = length(pending)
+	var/what = "[first.pack.name][count > 1 ? " x[count]" : ""], [round(econ_pack_price(first.pack))] кр. за штуку"
+	if(COOLDOWN_FINISHED(src, request_announce_cooldown))
+		COOLDOWN_START(src, request_announce_cooldown, ECON_CARGO_REQUEST_RADIO_COOLDOWN)
+		var/how = "Одобрить - в программе \"Бюджет отдела\" на КПК."
+		var/channel = radio_channel()
+		if(radio && speaker)
+			econ_radio_department(radio, speaker, "Заявка №[first.uid] от [first.requester]: [what]. [how]", channel)
+		else if(channel)
+			paperwork_radio("Отдел \"[name]\": заявка №[first.uid] от [first.requester] ждёт решения - [what]. [how]", channel)
+	var/list/links = list()
+	for(var/datum/econ_request/request as anything in pending)
+		links += count > 1 ? "№[request.uid]: [decision_links(request)]" : decision_links(request)
+	var/head = count > 1 ? "[count] [ru_plural(count, "заявка", "заявки", "заявок")] от [first.requester] ждут" : "заявка №[first.uid] от [first.requester] ждёт"
+	var/message = "Отдел \"[name]\": [head] вашего решения - [what]. [jointext(links, "; ")] - или в программе \"Бюджет отдела\" на КПК."
+	for(var/datum/bank_account/manager_account as anything in managers_on_shift())
+		manager_account.bank_card_talk(message)
+	return TRUE
+
+/// Счета живого начальства отдела на смене, без повторов.
+/datum/economy_department/proc/managers_on_shift()
+	. = list()
 	for(var/mob/living/carbon/human/player in GLOB.player_list)
-		if(player == requester || player.stat == DEAD || !can_manage(player))
+		if(player.stat == DEAD || !can_manage(player))
 			continue
 		var/datum/bank_account/manager_account = econ_account_of(player)
-		if(!manager_account || (manager_account in told))
+		if(manager_account)
+			. |= manager_account
+
+/// Ссылки в сообщении карты главы: решить заявку одним нажатием, не открывая программу.
+/datum/economy_department/proc/decision_links(datum/econ_request/request)
+	return "<a href='byond://?src=[REF(src)];econ_request=[request.uid];econ_decide=approve'>Одобрить</a> | <a href='byond://?src=[REF(src)];econ_request=[request.uid];econ_decide=deny'>Отклонить</a>"
+
+/// Тихая строка начальству на смене о заказе без одобрения: со ссылкой отмены, пока заказ ждёт шаттла.
+/datum/economy_department/proc/notify_auto_order(datum/econ_request/request, datum/supply_order/order)
+	var/message = "Отдел \"[name]\": [request.requester] заказал \"[request.pack.name]\" за [order.prepaid] кр. без одобрения. <a href='byond://?src=[REF(src)];econ_cancel_order=[order.id]'>Отменить</a>"
+	for(var/datum/bank_account/manager_account as anything in managers_on_shift())
+		manager_account.bank_card_talk(message, quiet = TRUE)
+
+/datum/economy_department/Topic(href, list/href_list)
+	. = ..()
+	var/mob/living/user = usr
+	if(!isliving(user) || user.stat != CONSCIOUS || user.incapacitated())
+		return
+	var/cancel_id = text2num(href_list["econ_cancel_order"])
+	if(isnum(cancel_id))
+		to_chat(user, span_notice(cancel_from_link(user, cancel_id)))
+		return
+	var/decision = href_list["econ_decide"]
+	var/uid = text2num(href_list["econ_request"])
+	if(!(decision in list("approve", "deny")) || !isnum(uid))
+		return
+	to_chat(user, span_notice(decide_from_link(user, uid, decision == "approve")))
+
+/// Отмена заказа без одобрения по ссылке из сообщения карты: деньги возвращаются бюджету, пока заказ не улетел. Возвращает ответ.
+/datum/economy_department/proc/cancel_from_link(mob/living/user, order_id)
+	if(!can_manage(user))
+		return "Отменить заказ отдела может только глава отдела, ГП или капитан: нужна их ID-карта."
+	for(var/datum/supply_order/order as anything in SSshuttle.shoppinglist)
+		if(order.id != order_id || order.department_id != id || !order.prepaid)
 			continue
-		told += manager_account
-		manager_account.bank_card_talk("Отдел \"[name]\": заявка №[first.uid] от [first.requester] ждёт вашего решения - [what]. [how]")
-	return TRUE
+		var/refund = order.prepaid
+		econ_cancel_order(order, user)
+		SSshuttle.shoppinglist -= order
+		for(var/datum/econ_request/request as anything in requests)
+			if(request.uid == order.econ_request_uid && request.status == ECON_REQUEST_APPROVED)
+				request.status = ECON_REQUEST_DENIED
+				request.notify_requester("Глава отдела отменил заказ \"[order.pack.name]\" по вашей заявке №[request.uid]: деньги вернулись в бюджет отдела.")
+		return "Заказ \"[order.pack.name]\" отменён, [refund] кр. вернулись в бюджет."
+	return "Заказ уже улетел шаттлом или снят с корзины: отменить его нельзя."
+
+/// Решение заявки по ссылке из сообщения карты; возвращает ответ решившему.
+/datum/economy_department/proc/decide_from_link(mob/living/user, uid, approving)
+	var/datum/econ_request/request
+	for(var/datum/econ_request/candidate as anything in requests)
+		if(candidate.uid == uid)
+			request = candidate
+			break
+	if(!request || request.status != ECON_REQUEST_PENDING)
+		return "Заявка №[uid] уже решена."
+	if(!can_decide(request, user))
+		return "Решить заявку №[uid] может только глава отдела, ГП или капитан: нужна их ID-карта."
+	if(!approving)
+		return deny(request, user) ? "Заявка №[uid] отклонена." : "Заявка №[uid] не отклонена."
+	return approve(request, user) ? "Заявка №[uid] одобрена, заказ ушёл в снабжение[request.cargo_topup ? ", недостающие [request.cargo_topup] кр. доплатил бюджет снабжения" : ""]." : order_refusal(request.pack, request, user)
+
+/// Почему заказ пака за бюджет не прошёл.
+/datum/economy_department/proc/order_refusal(datum/supply_pack/pack, datum/econ_request/request, mob/living/user)
+	if(econ_pack_unavailable(pack))
+		return "\"[pack.name]\" нет в наличии у партнёров снабжения."
+	var/price = round(econ_pack_price(pack))
+	if(account.account_balance < price && request && decides_as_quartermaster(request, user))
+		return "В бюджете отдела [account.account_balance] кр. из [price], а в бюджете снабжения нет недостающих [request_shortfall(request)] кр."
+	if(account.account_balance < price)
+		return "В бюджете не хватает денег: \"[pack.name]\" стоит [price] кр."
+	return "Заказ не оформлен."
 
 /// Заявки отделу с окна снабжения: ответ произносит speaker, о ждущих решения слышит канал отдела через radio.
 /proc/econ_cargo_department_order(datum/economy_department/department, mob/living/user, datum/supply_pack/pack, reason, amount, atom/movable/speaker, obj/item/radio/radio)
@@ -278,7 +407,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	radio.talk_into(speaker, message, channel)
 
 /// Окну снабжения в режиме заявок: чей бюджет оплатит заявки зрителя на паки каталога отдела. ГП и капитану - бюджет отдела пака, отдел их счёта не показывается.
-/// approver - есть кому одобрить заявку (начальство или ИИ): без него паки дороже auto_limit уходят снабжению, кроме расходников в пределах staple_left.
+/// approver - есть кому одобрить заявку (начальство или ИИ): без него паки дороже auto_limit уходят снабжению, кроме расходников в пределах staple_left. instant - недорогая заявка одобряется сразу, а не ждёт начальство.
 /proc/econ_budget_request_ui(mob/living/user)
 	var/datum/economy_department/command = SSeconomy.get_department(ACCOUNT_CMD)
 	var/auto_limit = SSeconomy.settings.auto_approve_limit
@@ -298,6 +427,8 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		"any" = FALSE,
 		"approver" = manager || department.has_decider_on_shift(),
 		"auto_limit" = auto_limit,
+		"instant" = department.instant_approval(),
+		"auto_cooldown" = SSeconomy.settings.auto_approve_cooldown_minutes,
 		"staple_left" = department.staple_left(own.account_id),
 	)
 
@@ -345,21 +476,38 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	log_econ("[key_name(user)] подал заявку [request.uid] отделу [name]: [pack.name] ([econ_pack_price(pack)] кр.), причина: [reason]")
 	if(can_manage(user))
 		approve(request, user)
-	else if(!approve_staple(request) && account_id && auto_approvable(pack) && !has_approver_on_shift() && world.time >= auto_approve_after["[account_id]"])
+	else if(!approve_staple(request) && account_id && auto_approvable(pack) && instant_approval() && world.time >= auto_approve_after["[account_id]"])
 		if(approve(request, null, TRUE))
 			auto_approve_after["[account_id]"] = world.time + SSeconomy.settings.auto_approve_cooldown_minutes MINUTES
+	request.instant = request.status == ECON_REQUEST_APPROVED
 	if(announce && request.status == ECON_REQUEST_PENDING)
 		announce_pending(list(request), user)
 	return request
 
-/// Одобряет расходники, которым теперь хватает денег, и недорогие заявки, которые ждут ответа дольше auto_approve_wait_minutes. Без денег заявка ждёт следующего тика.
+/// Заявка на тот же пак, которую этот сотрудник только что подал и она сразу оплачена: повторное нажатие кнопки второй пак не заказывает.
+/datum/economy_department/proc/instant_repeat(datum/supply_pack/pack, mob/living/user)
+	var/datum/bank_account/account = econ_account_of(user)
+	if(!account)
+		return null
+	for(var/datum/econ_request/request as anything in requests)
+		if(request.instant && request.pack == pack && request.requester_account_id == account.account_id && world.time - request.created < ECON_REQUEST_REPEAT_GUARD)
+			return request
+
+/proc/econ_repeat_refusal(datum/econ_request/request)
+	return "Заявка №[request.uid] на \"[request.pack.name]\" только что оплачена, повторное нажатие второй пак не заказывает. Нужен ещё один - подайте заявку снова чуть позже."
+
+/// Одобряет расходники, которым теперь хватает денег, и недорогие заявки, которые ждут ответа дольше auto_approve_wait_minutes (у СБ - только без начальства на смене). Без денег сверх зарплаты сотрудникам заявка ждёт следующего тика.
 /datum/economy_department/proc/approve_stale_requests()
 	var/datum/economy_settings/settings = SSeconomy.settings
 	for(var/datum/econ_request/request as anything in requests.Copy())
 		if(request.status != ECON_REQUEST_PENDING || approve_staple(request))
 			continue
-		if(settings.auto_approve_wait_minutes > 0 && world.time - request.created >= settings.auto_approve_wait_minutes MINUTES && auto_approvable(request.pack))
+		if(settings.auto_approve_wait_minutes > 0 && instant_approval() && world.time - request.created >= settings.auto_approve_wait_minutes MINUTES && auto_approvable(request.pack))
 			approve(request, null, TRUE)
+
+/// Недорогая заявка сотрудника одобряется сразу, даже при начальстве на смене; у СБ - только когда начальства нет.
+/datum/economy_department/proc/instant_approval()
+	return id != ACCOUNT_SEC || !has_approver_on_shift()
 
 /// Пак одобряется сам по обычному пути: не дороже auto_approve_limit и не расходник - расходники одобряются сами только в часовом лимите сотрудника.
 /datum/economy_department/proc/auto_approvable(datum/supply_pack/pack)
@@ -374,16 +522,37 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 			requests.Cut(i, i + 1)
 			qdel(request)
 
+/// automatic - без решения человека: такой заказ не трогает деньги, отложенные на долги и следующую зарплату сотрудникам, а начальство получает строку на карту с отменой.
 /datum/economy_department/proc/approve(datum/econ_request/request, mob/living/user, automatic = FALSE)
 	if(!(request in requests) || request.status != ECON_REQUEST_PENDING || (!automatic && !can_decide(request, user)))
 		return FALSE
-	var/by_manager = !automatic && can_manage(user)
-	if(!order_pack(request.pack, user, "Заявка [request.requester]: [request.reason]", automatic || !by_manager))
+	if(automatic && !keeps_wage_reserve(request.pack))
 		return FALSE
+	var/by_manager = !automatic && can_manage(user)
+	var/topup = 0
+	if(!automatic && decides_as_quartermaster(request, user) && (request.pack in catalog()) && !econ_pack_unavailable(request.pack))
+		topup = cargo_top_up(request, user)
+		if(isnull(topup))
+			return FALSE
+	var/datum/supply_order/order = order_pack(request.pack, user, "Заявка [request.requester]: [request.reason]", automatic || !by_manager)
+	if(!order)
+		if(topup && SSeconomy.department_transfer(src, SSeconomy.get_department(ACCOUNT_CAR), topup, user))
+			restore_shield(account.department_shield_spent)
+		return FALSE
+	if(topup)
+		request.cargo_topup = topup
+		order.cargo_topup = topup
+		log_econ("Снабжение доплатило [topup] кр. к заявке [request.uid] отдела [name]: [key_name(user)]")
+	order.econ_request_uid = request.uid
+	order.requester_account_id = request.requester_account_id
 	request.status = ECON_REQUEST_APPROVED
 	var/by_whom = automatic || by_manager ? "" : (isAI(user) ? " ИИ" : " снабжением")
 	log_econ("Заявка [request.uid] отдела [name] одобрена[by_whom]: [automatic ? "автоматически" : key_name(user)]")
-	request.notify_requester("Заявка на \"[request.pack.name]\" одобрена[by_whom] и ушла в снабжение.")
+	request.notify_requester("Заявка на \"[request.pack.name]\" одобрена[by_whom] и ушла в снабжение[topup ? ", недостающие [topup] кр. доплатил бюджет снабжения" : ""].")
+	if(topup)
+		account.bank_card_talk("Начальник снабжения одобрил заявку №[request.uid] на \"[request.pack.name]\": бюджет снабжения доплатил недостающие [topup] кр.")
+	if(automatic)
+		notify_auto_order(request, order)
 	econ_trim_resolved(requests)
 	return TRUE
 
@@ -396,9 +565,9 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	econ_trim_resolved(requests)
 	return TRUE
 
-/// Заказ из каталога за счёт бюджета: деньги списываются сразу, заказ встаёт в очередь снабжения предоплаченным.
+/// Заказ из каталога или пачки скупки для отдела за счёт бюджета: деньги списываются сразу, заказ встаёт в очередь снабжения предоплаченным. Возвращает заказ или FALSE.
 /datum/economy_department/proc/order_pack(datum/supply_pack/pack, mob/living/user, reason, automatic = FALSE)
-	if(!pack || !(pack in catalog()) || (!automatic && !can_manage(user)) || econ_pack_unavailable(pack))
+	if(!pack || !(econ_bundle_department(pack) == id || (pack in catalog())) || (!automatic && !can_manage(user)) || econ_pack_unavailable(pack))
 		return FALSE
 	var/price = round(econ_pack_price(pack))
 	if(!account.debit(price, ECON_IMPORT, user, "Закупка: [pack.name]"))
@@ -416,9 +585,10 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	order.shield_entries = account.department_shield_spent
 	if(pack == saving_goal)
 		order.saving_goal_until = saving_goal_until || (world.time + SSeconomy.settings.saving_goal_minutes MINUTES)
+		order.saving_goal_funded = saving_goal_funded
 		clear_saving_goal(ordered = TRUE)
 	log_econ("[user ? key_name(user) : "Автоодобрение"]: заказ [pack.name] для [name] за [price] кр.")
 	if(id != ACCOUNT_CAR && COOLDOWN_FINISHED(src, supply_notice_cooldown))
 		COOLDOWN_START(src, supply_notice_cooldown, ECON_CARGO_REQUEST_RADIO_COOLDOWN)
 		paperwork_radio("Отдел \"[name]\" оплатил заказ: [pack.name], в корзине снабжения.", RADIO_CHANNEL_SUPPLY)
-	return TRUE
+	return order

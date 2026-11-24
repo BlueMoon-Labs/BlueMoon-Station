@@ -210,6 +210,9 @@
 	var/turf/proj_turf = owner.loc // destabilizer bolt, ignoring cooldown
 	if(!isturf(proj_turf))
 		return
+	// Нападавший уже ушёл с карты (удаляется) - бить болтом некуда
+	if(!get_turf(attacker))
+		return
 	var/obj/item/projectile/destabilizer/D = new /obj/item/projectile/destabilizer(proj_turf)
 	for(var/t in trophies)
 		var/obj/item/crusher_trophy/T = t

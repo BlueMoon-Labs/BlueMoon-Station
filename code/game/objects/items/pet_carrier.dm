@@ -39,13 +39,13 @@
 
 /obj/item/pet_carrier/Exited(atom/movable/occupant)
 	. = ..() //без родителя переноска вечно держала питомца в important_recursive_contents
-	if(occupant in occupants && isliving(occupant))
+	if((occupant in occupants) && isliving(occupant))
 		var/mob/living/L = occupant
 		occupants -= occupant
 		occupant_weight -= L.mob_size
 
 /obj/item/pet_carrier/handle_atom_del(atom/A)
-	if(A in occupants && isliving(A))
+	if((A in occupants) && isliving(A))
 		var/mob/living/L = A
 		occupants -= L
 		occupant_weight -= L.mob_size
@@ -207,7 +207,7 @@
 	return TRUE
 
 /obj/item/pet_carrier/proc/add_occupant(mob/living/occupant)
-	if(occupant in occupants || !istype(occupant))
+	if((occupant in occupants) || !istype(occupant))
 		return
 	occupant.forceMove(src)
 	occupants += occupant
@@ -216,9 +216,9 @@
 /obj/item/pet_carrier/proc/remove_occupant(mob/living/occupant, turf/new_turf)
 	if(!(occupant in occupants) || !istype(occupant))
 		return
-	occupant.forceMove(new_turf ? new_turf : get_turf(src))
 	occupants -= occupant
 	occupant_weight -= occupant.mob_size
+	occupant.forceMove(new_turf ? new_turf : get_turf(src))
 	occupant.setDir(SOUTH)
 
 /obj/item/pet_carrier/remove_air_ratio(ratio)

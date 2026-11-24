@@ -22,6 +22,15 @@
 	var/tax_max = 30
 	/// Какая доля налога уходит NT (сгорает), проценты; остальное - в казну
 	var/tax_nt_share = 75
+	/// Налог выше tax_unrest_above дольше tax_mood_minutes - экипаж недоволен: оплата работы отделам и премии за неё ниже на tax_unrest_work_cut процентов
+	var/tax_unrest_above = 20
+	var/tax_unrest_work_cut = 25
+	/// Какую долю налога NT забирает при недовольстве экипажа вместо tax_nt_share, проценты
+	var/tax_unrest_nt_share = 90
+	/// Налог не выше tax_goodwill_upto дольше tax_mood_minutes - экипаж доволен: премия за работу выше на tax_goodwill_premium_bonus процентных пунктов
+	var/tax_goodwill_upto = 5
+	var/tax_goodwill_premium_bonus = 5
+	var/tax_mood_minutes = 15
 	/// Порог бюджета отдела в окладах сотрудников на смене за выплату, но не ниже budget_cap_floor (у снабжения - budget_cap_floor_cargo); с излишка сверх порога, долгов и следующей зарплаты NT забирает budget_cap_return_share процентов за тик
 	var/budget_cap_paydays = 5
 	var/budget_cap_floor = 10000
@@ -72,6 +81,10 @@
 	var/auction_crew_relist_minutes = 3
 	/// Новый лот аукциона звучит по общему каналу не чаще раза в столько минут на всю станцию
 	var/auction_announce_minutes = 3
+	/// Аукцион сектора: доля лотов без станций-соперников и потолок соперника в процентах оценки лота
+	var/auction_rival_free_chance = 25
+	var/auction_rival_cap_min = 50
+	var/auction_rival_cap_max = 110
 	/// Доля кассира в оплате на кассе по умолчанию, проценты
 	var/register_cashier_share_default = 50
 	var/cargo_handling_fee = 12
@@ -91,7 +104,7 @@
 	var/auto_approve_cooldown_minutes = 10
 	/// Сколько сотрудник за час заказывает из бюджета отдела расходников (econ_pack_staple) без одобрения, по цене паков
 	var/staple_self_order_cap_hour = 6000
-	/// Через сколько минут без решения заявку отдела, кроме СБ, может решить и начальник снабжения; 0 - не передавать
+	/// Через сколько минут без решения заявку отдела, кроме снабжения, может решить и начальник снабжения; 0 - не передавать
 	var/request_handoff_minutes = 20
 	/// Сколько заявок одного сотрудника может ждать решения одновременно
 	var/request_pending_per_requester = 3
@@ -99,6 +112,8 @@
 	var/treasury_requests_pending_per_department = 2
 	/// Наибольшая сумма одного запроса в казну
 	var/treasury_request_max = 5000
+	/// Через сколько минут без решения капитану и ГП напоминают о запросе в казну; 0 - не напоминать
+	var/treasury_request_remind_minutes = 10
 	/// Сколько счетов без владельца в экипаже казна может держать открытыми
 	var/treasury_unowned_accounts_max = 30
 	var/work_personal_share = 10
@@ -146,9 +161,13 @@
 	/// Контракт деятельности платит такую долю цены своих работ по прайсу (сверх оплаты самих работ); срочный - ещё в contract_urgent_mult раз
 	var/contract_work_mult = 1
 	/// Множитель наград контрактов поставки (заказы ЦК на предметы): ими калибруется доля контрактов в эмиссии
-	var/contract_delivery_mult = 1
+	var/contract_delivery_mult = 0.5
 	/// Снабжение получает за выполненное орбитальное задание Авангарда такую долю его награды сверх выплат рейнджерам и экипажу
-	var/orbital_cargo_mult = 1.5
+	var/orbital_cargo_mult = 0.5
+	/// Пока орбитальные задания вместе с долей снабжения выпустили за смену меньше этого, задание платит полную награду; дальше - orbital_overcap_share процентов; 0 - без потолка
+	var/orbital_shift_cap = 60000
+	/// Сколько процентов награды платит задание, закрытое после orbital_shift_cap
+	var/orbital_overcap_share = 50
 	/// Сколько личных заказов NT держит в подборке каждого счёта экипажа
 	var/contract_personal_offers = 3
 	/// Награда личного заказа - такой процент награды того же заказа на доске отдела
@@ -163,6 +182,18 @@
 	var/contract_chain_chance = 15
 	/// Премия за закрытую серию, проценты суммы наград её этапов
 	var/contract_chain_bonus = 50
+	/// Потолок общей награды серии поставок или эстафеты отделов вместе с премией; 0 - без потолка
+	var/contract_chain_reward_cap = 15000
+	/// Шанс, что новый контракт отдела, с которого начинается эстафета, - её первый этап
+	var/contract_relay_chance = 10
+	/// Сколько ротаций доски этап эстафеты ждёт свой отдел; не выполнят за это время - эстафета обрывается
+	var/contract_relay_stage_rotations = 3
+	/// Множитель наград гражданских заказов поставки: поделки ассистентов
+	var/contract_civilian_mult = 0.6
+	/// Сколько раз один человек берёт и выполняет один и тот же заказ за смену; 0 - без лимита
+	var/contract_repeat_per_person = 2
+	/// Награда контракта аварии за каждую поломку или пострадавшего, без надбавки срочности
+	var/contract_incident_unit_reward = 150
 	/// Процент награды контракта без исполнителя, который делят его участники по вкладу
 	var/contract_team_share = 25
 	/// Границы награды объявления экипажа
@@ -174,6 +205,8 @@
 	var/crew_request_personal_announce_minutes = 20
 	/// Сколько оплаченных с КПК личных заказов одного счёта может ждать шаттла
 	var/personal_order_limit = 5
+	/// Сколько минут подарок из магазина Кошелька ждёт, пока получатель его заберёт; потом деньги возвращаются дарителю
+	var/shop_gift_accept_minutes = 15
 	/// Спред биржи в процентах: покупка дороже цены, продажа дешевле
 	var/stock_spread = 1
 	/// Комиссия биржи в процентах от суммы сделки, уходит в сток
@@ -194,7 +227,7 @@
 	/// Сколько скиммеры снимают с одного счёта за минуту, вместе
 	var/skim_rate = 300
 	var/skimmer_slots = 3
-	/// Сколько премий и переводов из бюджета одному человеку за audit_siphon_minutes помечается аудитом
+	/// Сколько выплат из бюджета одному человеку за audit_siphon_minutes помечается аудитом; премии кнопкой - только сверх bonus_cap_hour
 	var/audit_bonus_threshold = 1000
 	var/audit_siphon_minutes = 30
 	/// Столько личных переводов одному получателю за audit_structuring_minutes - дробление
@@ -205,6 +238,8 @@
 	var/audit_trace_depth = 3
 	/// Доля возврата по делу аудита, которая уходит отделу безопасности сбором с получателя
 	var/audit_case_fee_percent = 10
+	/// Внесение наличных на личный счёт от этой суммы за раз открывает дело аудита; 0 - не открывать
+	var/audit_cash_deposit_threshold = 50000
 	/// Чистые сделки счёта в сторону события компании на столько кредитов - инсайд: у настоящих событий после постановки в очередь, у фальшивок за audit_insider_window_minutes до выхода
 	var/audit_insider_threshold = 2000
 	var/audit_insider_window_minutes = 5
@@ -239,6 +274,7 @@
 		WORK_SCI_NODE = 5,
 		WORK_SCI_SLIME_DISCOVERY = 10,
 		WORK_SCI_ARTIFACT = 1,
+		WORK_SCI_MECH = 600,
 		WORK_MINING_ORE = 2,
 		WORK_CARGO_PAPERWORK = 30,
 		WORK_SRV_DISH = 40,
@@ -300,6 +336,12 @@
 	if(slot_house_edge + slot_jackpot_share > 100)
 		. += "settings.slot_jackpot_share: вместе с slot_house_edge больше 100%"
 		slot_jackpot_share = 100 - slot_house_edge
+	if(tax_goodwill_upto >= tax_unrest_above)
+		. += "settings.tax_goodwill_upto: не ниже tax_unrest_above ([tax_unrest_above])"
+		tax_goodwill_upto = max(tax_unrest_above - 1, 0)
+	if(auction_rival_cap_min > auction_rival_cap_max)
+		. += "settings.auction_rival_cap_min: больше auction_rival_cap_max ([auction_rival_cap_max])"
+		auction_rival_cap_min = auction_rival_cap_max
 	if(crew_request_min > crew_request_max)
 		. += "settings.crew_request_min: больше crew_request_max ([crew_request_max])"
 		crew_request_min = crew_request_max
@@ -330,8 +372,8 @@
 	work_prices = merged
 
 /datum/economy_settings/proc/check_value(key, value)
-	var/static/list/at_least_one = list("payroll_interval_ticks", "dormant_after_minutes", "work_subject_cooldown_minutes", "request_pending_per_requester", "treasury_requests_pending_per_department", "treasury_request_max", "power_export_step_kw", "dish_complexity_max", "dish_of_the_day_mult", "contracts_per_department", "contract_rotation_ticks", "contract_urgent_minutes", "contract_urgent_mult", "crew_request_min", "crew_request_max", "personal_order_limit", "stock_position_cap", "stock_treasury_cap_mult", "transfer_max", "stall_rent_minutes", "skim_rate", "skimmer_slots", "audit_bonus_threshold", "audit_siphon_minutes", "audit_structuring_count", "audit_structuring_minutes", "audit_trace_minutes", "audit_trace_depth", "audit_insider_threshold", "audit_insider_window_minutes", "press_release_refute_minutes", "press_release_cooldown_minutes", "event_grant_min", "event_grant_max", "event_ransom_min", "event_embargo_minutes", "event_boom_goods", "event_shortage_mult", "event_shortage_shifts", "budget_cap_paydays", "saving_goal_minutes", "saving_goal_cooldown_minutes", "saving_goal_collect_minutes", "slot_card_deposit_max", "lottery_ticket_price", "lottery_tickets_per_account", "lottery_sale_minutes")
-	var/static/list/percents = list("tax_default", "tax_max", "tax_nt_share", "department_sink_target_min", "department_sink_target_max", "budget_cap_return_share", "max_wage_bonus", "work_personal_share", "vend_wholesale_share", "vend_premium_sink_share", "slot_house_edge", "slot_jackpot_share", "lottery_house_share", "register_cashier_share_default", "cargo_handling_fee", "contract_urgent_chance", "contract_performer_share", "contract_personal_reward", "contract_personal_share", "contract_repeat_step", "contract_repeat_floor", "contract_chain_chance", "contract_team_share", "stock_spread", "stock_fee", "stock_dividend_share", "audit_case_fee_percent", "customs_chance", "customs_chance_inspection", "customs_chance_alert", "customs_fine_share", "traitor_econ_objective_chance", "event_ransom_share", "event_crash_trend_drop", "quirk_debt_wage_share")
+	var/static/list/at_least_one = list("payroll_interval_ticks", "dormant_after_minutes", "work_subject_cooldown_minutes", "request_pending_per_requester", "treasury_requests_pending_per_department", "treasury_request_max", "power_export_step_kw", "dish_complexity_max", "dish_of_the_day_mult", "contracts_per_department", "contract_rotation_ticks", "contract_urgent_minutes", "contract_urgent_mult", "contract_relay_stage_rotations", "crew_request_min", "crew_request_max", "personal_order_limit", "stock_position_cap", "stock_treasury_cap_mult", "transfer_max", "stall_rent_minutes", "skim_rate", "skimmer_slots", "audit_bonus_threshold", "audit_siphon_minutes", "audit_structuring_count", "audit_structuring_minutes", "audit_trace_minutes", "audit_trace_depth", "audit_insider_threshold", "audit_insider_window_minutes", "press_release_refute_minutes", "press_release_cooldown_minutes", "event_grant_min", "event_grant_max", "event_ransom_min", "event_embargo_minutes", "event_boom_goods", "event_shortage_mult", "event_shortage_shifts", "budget_cap_paydays", "saving_goal_minutes", "saving_goal_cooldown_minutes", "saving_goal_collect_minutes", "slot_card_deposit_max", "lottery_ticket_price", "lottery_tickets_per_account", "lottery_sale_minutes")
+	var/static/list/percents = list("tax_default", "tax_max", "tax_nt_share", "department_sink_target_min", "department_sink_target_max", "budget_cap_return_share", "max_wage_bonus", "work_personal_share", "vend_wholesale_share", "vend_premium_sink_share", "slot_house_edge", "slot_jackpot_share", "lottery_house_share", "register_cashier_share_default", "cargo_handling_fee", "contract_urgent_chance", "contract_performer_share", "contract_personal_reward", "contract_personal_share", "contract_repeat_step", "contract_repeat_floor", "contract_chain_chance", "contract_relay_chance", "contract_team_share", "orbital_overcap_share", "stock_spread", "stock_fee", "stock_dividend_share", "audit_case_fee_percent", "customs_chance", "customs_chance_inspection", "customs_chance_alert", "customs_fine_share", "traitor_econ_objective_chance", "event_ransom_share", "event_crash_trend_drop", "quirk_debt_wage_share")
 	if(key == "wages")
 		for(var/grade in list(PAY_GRADE_ASSISTANT, PAY_GRADE_MINIMAL, PAY_GRADE_EASY, PAY_GRADE_MEDIUM, PAY_GRADE_HARD, PAY_GRADE_COMMAND))
 			if(!isnum(value[grade]) || value[grade] < 0)
@@ -353,8 +395,14 @@
 		return "вне 0..100"
 	if(key == "research_grant_price_per_point" && value <= 0)
 		return "нужно число больше 0"
-	if((key in list("auction_crew_lots_per_account", "auction_crew_lots_max", "auction_announce_minutes")) && value < 1)
+	if(key == "shop_gift_accept_minutes" && value < 1)
 		return "меньше 1"
+	if((key in list("auction_crew_lots_per_account", "auction_crew_lots_max", "auction_announce_minutes", "tax_mood_minutes")) && value < 1)
+		return "меньше 1"
+	if((key in list("tax_unrest_above", "tax_unrest_work_cut", "tax_unrest_nt_share", "tax_goodwill_upto", "tax_goodwill_premium_bonus", "auction_rival_free_chance")) && (value < 0 || value > 100))
+		return "вне 0..100"
+	if((key in list("auction_rival_cap_min", "auction_rival_cap_max")) && (value < 1 || value > 1000))
+		return "вне 1..1000"
 	if(key == "auction_crew_fee" && (value < 0 || value > 100))
 		return "вне 0..100"
 	if(value < 0)

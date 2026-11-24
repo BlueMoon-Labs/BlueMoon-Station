@@ -10,7 +10,15 @@ GLOBAL_LIST_INIT(econ_contract_ranks, list(
 	/// Репутация подрядчика за смену
 	var/contract_rep = 0
 	var/contracts_done = 0
+	/// Ключ заказа -> сколько раз счёт выполнил его взятым за смену
+	var/list/contract_repeats
 	COOLDOWN_DECLARE(contract_reroll_cooldown)
+
+/datum/bank_account/proc/note_contract_repeat(key)
+	if(!key)
+		return
+	LAZYINITLIST(contract_repeats)
+	contract_repeats[key] += 1
 
 /datum/bank_account/proc/contract_rank()
 	for(var/list/rank as anything in GLOB.econ_contract_ranks)

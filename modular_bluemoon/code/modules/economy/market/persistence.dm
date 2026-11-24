@@ -12,7 +12,7 @@
 /proc/market_save_sector_state()
 	SSmarket.save_state()
 
-/// Загрузка состояния сектора при инициализации и подписка на его запись в конце раунда.
+/// Загрузка состояния сектора при инициализации и подписка на конец раунда: продажа непроданных акций и запись состояния.
 /datum/controller/subsystem/market/proc/restore_sector()
 #ifdef UNIT_TESTS
 	if(!state_path)
@@ -23,6 +23,7 @@
 	if(round_end_hooked)
 		return
 	round_end_hooked = TRUE
+	SSticker.OnRoundend(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(market_sell_off_shares)))
 	SSticker.OnRoundend(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(market_save_sector_state)))
 
 /// Цена на старте смены - первая точка тренда: иначе график появляется только со второго сдвига рынка.

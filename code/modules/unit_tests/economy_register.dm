@@ -8,6 +8,8 @@
 	var/saved_share
 	var/saved_service_balance
 	var/saved_tax_rate
+	/// Люди с поддельным клиентом: снять его до удаления
+	var/list/mob/living/with_client = list()
 
 /datum/unit_test/economy_register/New()
 	. = ..()
@@ -21,7 +23,25 @@
 	service.register_cashier_share = saved_share
 	econ_test_set_balance(service.account, saved_service_balance)
 	SSeconomy.tax_rate = saved_tax_rate
+	for(var/mob/living/person as anything in with_client)
+		person.mock_client = null
+	with_client.Cut()
 	return ..()
+
+/// Человек - владелец своего счёта и в игре: при нём кассир может провести его карту.
+/datum/unit_test/economy_register/proc/bring_owner(mob/living/person)
+	var/datum/bank_account/account = econ_account_of(person)
+	account.bind_owner(person)
+	person.mock_client = new /datum/client_interface()
+	with_client += person
+
+/// Кассир держит карту покупателя вместо своей.
+/datum/unit_test/economy_register/proc/hand_card_to_cashier()
+	var/obj/item/card/id/customer_card = customer.get_active_held_item()
+	customer.dropItemToGround(customer_card)
+	cashier.dropItemToGround(cashier.get_active_held_item())
+	cashier.put_in_active_hand(customer_card)
+	return customer_card
 
 /datum/unit_test/economy_register/proc/make_person(holder, department_id, balance = 0, list/access)
 	var/mob/living/carbon/human/person = allocate(/mob/living/carbon/human)
@@ -186,6 +206,8 @@
 	var/datum/register_cashier/seller = till()
 	seller.order_at -= REGISTER_SELECT_GRACE
 	var/budget_before = service.account.account_balance
+	if(SSeconomy.cash_account.account_balance < 100)
+		SSeconomy.cash_account.credit(100 - SSeconomy.cash_account.account_balance, ECON_ADMIN, memo = "Купюры клиента уже в обороте")
 	var/cash_before = SSeconomy.cash_account.account_balance
 	var/minted_before = SSeconomy.ledger.minted
 	var/burned_before = SSeconomy.ledger.burned
@@ -226,6 +248,66 @@
 	for(var/obj/item/econ_receipt/extra in customer.held_items + counter.contents)
 		qdel(extra)
 	QDEL_NULL(chip)
+
+/datum/unit_test/economy_register/cash_found_line
+	var/saved_cash
+
+/datum/unit_test/economy_register/cash_found_line/Destroy()
+	if(!isnull(saved_cash))
+		econ_test_set_balance(SSeconomy.cash_account, saved_cash)
+	return ..()
+
+/// Наличные сверх оборота на кассе пишут найденные наличные с происхождением купюр, сдача помнит, откуда деньги.
+/datum/unit_test/economy_register/cash_found_line/Run()
+	setup_register()
+	open_with_item(25)
+	var/datum/register_cashier/seller = till()
+	seller.order_at -= REGISTER_SELECT_GRACE
+	saved_cash = SSeconomy.cash_account.account_balance
+	econ_test_set_balance(SSeconomy.cash_account, 0)
+	var/obj/item/card/id/card = customer.get_active_held_item()
+	customer.dropItemToGround(card)
+	var/obj/item/stack/spacecash/c20/bills = allocate(/obj/item/stack/spacecash/c20, null, 2)
+	var/bills_origin = bills.origin
+	customer.put_in_active_hand(bills)
+	var/log_start = econ_test_log_length()
+	bills.melee_attack_chain(customer, register)
+	var/text = jointext(econ_test_cash_lines(log_start, "Найденные наличные: 25 кр."), " | ")
+	TEST_ASSERT(findtext(text, bills_origin) && findtext(text, "кассу [register.name]"), "Касса не называет, откуда найденные наличные: [jointext(econ_test_log_since(log_start), " | ")]")
+	var/obj/item/holochip/change = locate() in customer.held_items
+	TEST_ASSERT(change?.credits == 15 && findtext(change.origin, "сдача кассы") && findtext(change.origin, bills_origin), "Сдача не помнит, откуда деньги: [change?.origin]")
+	QDEL_NULL(change)
+	var/atom/counter = register.drop_location()
+	for(var/obj/item/econ_receipt/extra in customer.held_items + counter.contents)
+		qdel(extra)
+
+/// Мелкая покупка с крупного голочипа не пишет в econ.log номинал всего чипа; крупная пишет уплаченное.
+/datum/unit_test/economy_register/cash_found_line/partial_chip/Run()
+	setup_register()
+	open_with_item(25)
+	var/datum/register_cashier/seller = till()
+	seller.order_at -= REGISTER_SELECT_GRACE
+	saved_cash = SSeconomy.cash_account.account_balance
+	econ_test_set_balance(SSeconomy.cash_account, 100000)
+	var/obj/item/card/id/card = customer.get_active_held_item()
+	customer.dropItemToGround(card)
+	var/obj/item/holochip/chip = allocate(/obj/item/holochip, null, 5000)
+	customer.put_in_active_hand(chip)
+	var/log_start = econ_test_log_length()
+	chip.melee_attack_chain(customer, register)
+	TEST_ASSERT_EQUAL(chip.credits, 4975, "С голочипа списано 25 кр.")
+	TEST_ASSERT_EQUAL(length(econ_test_cash_lines(log_start, "Вносили:")), 0, "Покупка на 25 кр. пишет номинал всего голочипа: [jointext(econ_test_log_since(log_start), " | ")]")
+	TEST_ASSERT(register.register_act(cashier, "add_item", list("name" = "Коньяк", "price" = 1500)), "Дорогая позиция добавлена")
+	TEST_ASSERT(order(cashier, 2), "Дорогая позиция в счёте")
+	seller.order_at -= REGISTER_SELECT_GRACE
+	log_start = econ_test_log_length()
+	chip.melee_attack_chain(customer, register)
+	TEST_ASSERT_EQUAL(chip.credits, 3475, "С голочипа списано 1500 кр.")
+	TEST_ASSERT_EQUAL(length(econ_test_cash_lines(log_start, "Наличные не со снятия со счёта: 1500 кр. из внесённых 1500 кр.")), 1, "Строка не называет уплаченное: [jointext(econ_test_log_since(log_start), " | ")]")
+	QDEL_NULL(chip)
+	var/atom/counter = register.drop_location()
+	for(var/obj/item/econ_receipt/extra in customer.held_items + counter.contents)
+		qdel(extra)
 
 /// Замороженный и приостановленный счёт не платят и не дают чаевых ни при какой доле, касса ничего не засчитывает.
 /datum/unit_test/economy_register/blocked_payer/Run()
@@ -270,6 +352,7 @@
 	TEST_ASSERT_EQUAL(customer_account.account_balance, 1000, "С клиента ничего не списано")
 	TEST_ASSERT_EQUAL(cashier_account.account_balance, 0, "Кассиру ничего")
 	TEST_ASSERT_EQUAL(service.account.account_balance, budget_before, "Бюджету ничего")
+	register.register_act(cashier, "clear", list())
 	swipe(cashier)
 	cashier_account.state = ACCOUNT_FROZEN
 	swipe(cashier)
@@ -290,6 +373,213 @@
 	swipe(cashier)
 	TEST_ASSERT(!length(register.cashiers), "Кассир отошёл от кассы")
 	TEST_ASSERT_EQUAL(length(register.menu), 1, "Меню осталось после выхода")
+
+/// Карта без счёта не платит: касса отказывает и не списывает с личного счёта того, кто её провёл.
+/datum/unit_test/economy_register/unlinked_card/Run()
+	setup_register()
+	open_with_item(100)
+	var/datum/register_cashier/seller = till()
+	seller.order_at -= REGISTER_SELECT_GRACE
+	var/obj/item/card/id/blank = allocate(/obj/item/card/id)
+	var/obj/item/card/id/own_card = customer.get_active_held_item()
+	customer.dropItemToGround(own_card)
+	customer.put_in_active_hand(blank)
+	GLOB.unit_test_chat_capture = list()
+	swipe(customer)
+	var/list/chat = GLOB.unit_test_chat_capture
+	GLOB.unit_test_chat_capture = null
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 1000, "Пустая карта списала с личного счёта")
+	TEST_ASSERT_EQUAL(register.order_total(seller), 100, "Счёт ждёт оплаты")
+	TEST_ASSERT(findtext(econ_test_chat_to(chat, customer), "К карте не привязан счёт"), "Отказ не объясняет причину: [econ_test_chat_to(chat, customer)]")
+
+/// КПК с ID-картой внутри работает как сама карта: за кассу встают и платят им; КПК без карты ничего не делает.
+/datum/unit_test/economy_register/pda_swipe/Run()
+	setup_register()
+	var/datum/economy_department/service = SSeconomy.get_department(ACCOUNT_SRV)
+	service.register_cashier_share = 50
+	var/obj/item/modular_computer/pda/cashier_pda = allocate(/obj/item/modular_computer/pda)
+	cashier_pda.InsertID(cashier.get_active_held_item())
+	cashier.put_in_active_hand(cashier_pda)
+	swipe(cashier)
+	TEST_ASSERT(register.is_cashier(cashier), "Кассир встал за кассу КПК с картой")
+	TEST_ASSERT(register.register_act(cashier, "add_item", list("name" = "Пиво", "price" = 100)), "Позиция добавлена")
+	TEST_ASSERT(order(cashier), "Позиция в счёте")
+	var/datum/register_cashier/seller = till()
+	seller.order_at -= REGISTER_SELECT_GRACE
+	var/obj/item/modular_computer/pda/empty_pda = allocate(/obj/item/modular_computer/pda)
+	var/obj/item/card/id/customer_card = customer.get_active_held_item()
+	customer.dropItemToGround(customer_card)
+	customer.put_in_active_hand(empty_pda)
+	swipe(customer)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 1000, "КПК без карты не платит")
+	customer.dropItemToGround(empty_pda)
+	var/obj/item/modular_computer/pda/customer_pda = allocate(/obj/item/modular_computer/pda)
+	customer_pda.InsertID(customer_card)
+	customer.put_in_active_hand(customer_pda)
+	swipe(customer)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 900, "КПК с картой оплатил счёт")
+	TEST_ASSERT_EQUAL(cashier_account.account_balance, 50, "Доля кассира")
+
+/// Кассир с набранным счётом свайпом своей карты не теряет счёт; картой покупателя он сам проводит оплату.
+/datum/unit_test/economy_register/cashier_swipes_customer_card/Run()
+	setup_register()
+	var/datum/economy_department/service = SSeconomy.get_department(ACCOUNT_SRV)
+	service.register_cashier_share = 40
+	bring_owner(customer)
+	open_with_item(100)
+	var/datum/register_cashier/seller = till()
+	swipe(cashier)
+	TEST_ASSERT(register.is_cashier(cashier), "Свайп своей картой при набранном счёте не уводит от кассы")
+	TEST_ASSERT_EQUAL(register.order_total(till(cashier)), 100, "Счёт цел")
+	var/obj/item/card/id/customer_card = customer.get_active_held_item()
+	var/obj/item/card/id/own_card = cashier.get_active_held_item()
+	customer.dropItemToGround(customer_card)
+	cashier.dropItemToGround(own_card)
+	cashier.put_in_active_hand(customer_card)
+	swipe(cashier)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 900, "Кассир провёл карту покупателя - счёт оплачен с неё")
+	TEST_ASSERT_EQUAL(cashier_account.account_balance, 40, "Доля кассира")
+	TEST_ASSERT(!length(seller.order), "Счёт закрыт")
+	TEST_ASSERT(register.is_cashier(cashier), "Кассир остался за кассой")
+	swipe(cashier)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 900, "Пустой счёт картой покупателя не платится")
+	TEST_ASSERT(register.is_cashier(cashier), "Чужая карта не уводит от кассы")
+	cashier.dropItemToGround(customer_card)
+	cashier.put_in_active_hand(own_card)
+	swipe(cashier)
+	TEST_ASSERT(!register.is_cashier(cashier), "Своей картой при пустом счёте кассир отошёл")
+
+/// Чужую карту кассир проводит только при владельце: рядом, в сознании и в игре.
+/datum/unit_test/economy_register/cashier_card_owner_present/Run()
+	setup_register()
+	bring_owner(customer)
+	open_with_item(100)
+	hand_card_to_cashier()
+	var/turf/far_turf = locate(min(run_loc_floor_bottom_left.x + REGISTER_CASHIER_RANGE + 1, world.maxx), run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	customer.forceMove(far_turf)
+	swipe(cashier)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 1000, "Владелец далеко - карта не платит")
+	customer.forceMove(run_loc_floor_bottom_left)
+	customer.mock_client = null
+	swipe(cashier)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 1000, "Владелец SSD - карта не платит")
+	customer.mock_client = new /datum/client_interface()
+	customer.Unconscious(1 MINUTES)
+	TEST_ASSERT(customer.stat == UNCONSCIOUS, "Покупатель без сознания")
+	swipe(cashier)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 1000, "Владелец без сознания - карта не платит")
+	customer.SetUnconscious(0)
+	TEST_ASSERT(customer.stat == CONSCIOUS, "Покупатель очнулся")
+	swipe(cashier)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 900, "Владелец рядом и в сознании - оплачено")
+
+/// Кассир с картой покупателя: замороженная карта и нехватка денег не платят, счёт цел, отказ говорит о владельце карты, а не о кассире.
+/datum/unit_test/economy_register/cashier_card_refusals/Run()
+	setup_register()
+	bring_owner(customer)
+	open_with_item(100)
+	var/datum/register_cashier/seller = till()
+	hand_card_to_cashier()
+	customer_account.state = ACCOUNT_FROZEN
+	TEST_ASSERT_EQUAL(register.charge_problem(customer_account, seller, TRUE), "Счёт владельца карты заморожен или заблокирован.", "Отказ называет владельца карты")
+	swipe(cashier)
+	customer_account.state = ACCOUNT_ACTIVE
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 1000, "Замороженная карта не платит")
+	econ_test_set_balance(customer_account, 50)
+	TEST_ASSERT_EQUAL(register.charge_problem(customer_account, seller, TRUE), "На счёте владельца карты не хватает денег.", "Баланс владельца кассиру не показан")
+	swipe(cashier)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 50, "Без денег карта не платит")
+	TEST_ASSERT_EQUAL(cashier_account.account_balance, 0, "Кассиру ничего")
+	TEST_ASSERT_EQUAL(register.order_total(seller), 100, "Счёт ждёт оплаты")
+
+/// Переноска с микро-персонажем не платит его картой ни в руках кассира, ни у покупателя.
+/datum/unit_test/economy_register/micro_holder/Run()
+	setup_register()
+	var/mob/living/carbon/human/micro = make_person("econ_test_micro", null, 1000)
+	var/datum/bank_account/micro_account = econ_account_of(micro)
+	bring_owner(micro)
+	var/obj/item/clothing/head/mob_holder/micro/holder = allocate(/obj/item/clothing/head/mob_holder/micro, get_turf(micro), micro)
+	TEST_ASSERT(holder.GetID(), "Карта микро видна через переноску")
+	open_with_item(100)
+	var/datum/register_cashier/seller = till()
+	seller.order_at -= REGISTER_SELECT_GRACE
+	var/obj/item/card/id/own_card = cashier.get_active_held_item()
+	cashier.dropItemToGround(own_card)
+	cashier.put_in_active_hand(holder)
+	swipe(cashier)
+	TEST_ASSERT_EQUAL(micro_account.account_balance, 1000, "Кассир переноской не платит картой микро")
+	cashier.dropItemToGround(holder)
+	TEST_ASSERT(QDELETED(holder), "Брошенная переноска отпустила микро")
+	holder = allocate(/obj/item/clothing/head/mob_holder/micro, get_turf(micro), micro)
+	var/obj/item/card/id/customer_card = customer.get_active_held_item()
+	customer.dropItemToGround(customer_card)
+	TEST_ASSERT(customer.put_in_active_hand(holder), "Покупатель взял микро")
+	swipe(customer)
+	TEST_ASSERT_EQUAL(micro_account.account_balance, 1000, "Покупатель переноской не платит картой микро")
+	TEST_ASSERT_EQUAL(register.order_total(seller), 100, "Счёт не оплачен")
+	customer.dropItemToGround(holder)
+
+/// Кошелёк платит лицевой картой; пустой кошелёк и ноутбук без карты не платят.
+/datum/unit_test/economy_register/wallet_swipe/Run()
+	setup_register()
+	open_with_item(100)
+	var/datum/register_cashier/seller = till()
+	seller.order_at -= REGISTER_SELECT_GRACE
+	var/obj/item/card/id/customer_card = customer.get_active_held_item()
+	customer.dropItemToGround(customer_card)
+	var/obj/item/storage/wallet/wallet = allocate(/obj/item/storage/wallet)
+	customer.put_in_active_hand(wallet)
+	swipe(customer)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 1000, "Пустой кошелёк не платит")
+	customer.dropItemToGround(wallet)
+	var/obj/item/modular_computer/laptop/laptop = allocate(/obj/item/modular_computer/laptop/preset/civilian)
+	customer.put_in_active_hand(laptop)
+	swipe(customer)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 1000, "Ноутбук без карты не платит")
+	customer.dropItemToGround(laptop)
+	SEND_SIGNAL(wallet, COMSIG_TRY_STORAGE_INSERT, customer_card, customer, TRUE, TRUE)
+	TEST_ASSERT(wallet.GetID() == customer_card, "Карта в кошельке")
+	customer.put_in_active_hand(wallet)
+	swipe(customer)
+	TEST_ASSERT_EQUAL(customer_account.account_balance, 900, "Кошелёк с картой оплатил счёт")
+
+/// Кнопка ухода при набранном счёте уводит от кассы и сбрасывает счёт.
+/datum/unit_test/economy_register/logout_drops_order/Run()
+	setup_register()
+	open_with_item(100)
+	TEST_ASSERT(register.register_act(cashier, "logout", list()), "Кассир ушёл кнопкой")
+	TEST_ASSERT(!length(register.cashiers), "За кассой никого")
+	TEST_ASSERT(!length(register.open_orders()), "Счёт сброшен")
+
+/// Типовое меню корпуса: только кассиру и только в пустое меню, цены от оплаты NT за ту же работу; у универсальной кассы его нет.
+/datum/unit_test/economy_register/menu_template/Run()
+	setup_register()
+	swipe(cashier)
+	TEST_ASSERT(!register.register_act(customer, "template", list()), "Покупатель не заводит меню")
+	TEST_ASSERT(register.register_act(cashier, "template", list()), "Кассир взял типовое меню")
+	var/list/template = register.menu_template()
+	TEST_ASSERT_EQUAL(length(register.menu), length(template), "Все типовые позиции в меню")
+	TEST_ASSERT(length(register.menu) <= REGISTER_MENU_MAX, "Не больше потолка меню")
+	var/list/beer = register.menu[1]
+	TEST_ASSERT_EQUAL(beer["price"], SSeconomy.settings.work_prices[WORK_SRV_DRINK], "Пиво по цене напитка")
+	TEST_ASSERT(!register.register_act(cashier, "template", list()), "В непустое меню типовое не добавляется")
+	for(var/register_type in typesof(/obj/machinery/cash_register))
+		var/obj/machinery/cash_register/probe = allocate(register_type)
+		for(var/list/entry as anything in probe.menu_template())
+			TEST_ASSERT(length_char(entry[1]) <= MAX_NAME_LEN && !isnull(SSeconomy.settings.work_prices[entry[2]]), "[register_type]: позиция [entry[1]] с ценой работы")
+		TEST_ASSERT_EQUAL(probe.ui_static_data(cashier)["has_template"], register_type != /obj/machinery/cash_register, "[register_type]: кнопка типового меню")
+
+/// Окно покупателя знает, что он только что заплатил, пару минут; чек остаётся и позже.
+/datum/unit_test/economy_register/just_paid/Run()
+	setup_register()
+	open_with_item(100)
+	TEST_ASSERT_NULL(register.ui_data(customer)["just_paid"], "До оплаты нечего показывать")
+	TEST_ASSERT(pay(customer), "Оплачено")
+	TEST_ASSERT_EQUAL(register.ui_data(customer)["just_paid"], 100, "Только что оплачено 100")
+	var/list/sale = register.receipts["[customer_account.account_id]"]
+	sale["at"] -= 3 MINUTES
+	TEST_ASSERT_NULL(register.ui_data(customer)["just_paid"], "Через пару минут оплата уже не новая")
+	TEST_ASSERT(register.ui_data(customer)["receipt"], "Чек всё ещё можно распечатать")
 
 /// Меню правит только кассир; цена от 1 до потолка, длина меню ограничена; правка меню не сбивает счёт.
 /datum/unit_test/economy_register/menu_rules/Run()
@@ -334,6 +624,8 @@
 	var/datum/register_cashier/seller = till()
 	TEST_ASSERT(length(seller.order), "Счёт не оплачен")
 	TEST_ASSERT(!pay(cashier), "Кассир не платит сам себе")
+	swipe(cashier, budget_card)
+	TEST_ASSERT(length(seller.order), "Кассир картой бюджета свой счёт не оплатил")
 	TEST_ASSERT_EQUAL(service.account.account_balance, budget_before, "Бюджет не тронут")
 	TEST_ASSERT_EQUAL(cashier_account.account_balance, 0, "Кассиру ничего")
 

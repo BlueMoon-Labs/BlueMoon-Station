@@ -67,7 +67,9 @@
 		else if(prob(100/3)) // cum. not counting download: 20%.
 			var/datum/objective/sabotage/sabotage_objective = new
 			sabotage_objective.owner = T.owner
-			sabotage_objective.find_target()
+			if(!sabotage_objective.find_target())
+				qdel(sabotage_objective)
+				return FALSE
 			T.add_objective(sabotage_objective)
 		else  // cum. not counting download: 40%
 			var/datum/objective/flavor/traitor/flavor_objective = new
