@@ -944,11 +944,19 @@
 	var/attack_recovery_until = 0
 	var/tank_theme_channel
 	var/tank_idle_channel
-	var/tank_theme_playing = FALSE
 	var/list/tank_theme_listeners = list()
 	// Все живые танки: тему у слушателя ведёт ближайший агрившийся танк,
 	// иначе два танка в радиусе наслаивали одинаковый трек на разные каналы.
 	var/static/list/tank_mobs = list()
+	// theme_until - grace-окно после потери цели (world.time, децисекунды).
+	// Без него тема гасла на первом же тике после того, как игрок вышел из
+	// зрения танка, и рестартовала с нуля при каждом ре-агро.
+	var/tank_theme_until = 0
+	var/tank_theme_grace = 100
+	var/tank_theme_range = 20
+	// listener -> tank, владеющий темой игрока прямо сейчас. Без этого два
+	// агрировавшихся танка играли один трек на двух каналах одновременно.
+	var/static/theme_listener_owners = alist()
 	ranged_message = "hurls a stone shard"
 	ranged_cooldown_time = 5 SECONDS
 	ranged_telegraph_duration = 2 SECONDS
@@ -1039,9 +1047,18 @@
 	playsound(src, pick(tank_aggro_sounds), 80, TRUE)
 	update_theme_listeners()
 
+// Танк считается "в теме", пока цель жива или ещё не вышло grace-окно -
+// короткие провалы цели ИИ не должны обрывать музыку.
+/mob/living/simple_animal/hostile/infected/tank/proc/theme_is_active()
+	return isliving(target) || world.time < tank_theme_until
+
 /mob/living/simple_animal/hostile/infected/tank/proc/update_theme_listeners()
 	if(stat == DEAD || QDELETED(src))
 		return
+
+	// Пока цель жива - продлеваем окно; потеряли - тема дотикает grace-период.
+	if(isliving(target))
+		tank_theme_until = world.time + tank_theme_grace
 
 	// Выход из зоны ihategordon не шлёт сигнала - перепроверяем записанных
 	// слушателей даже без цели, иначе тема играла бы у покинувших область
@@ -1060,10 +1077,8 @@
 			unregister_theme_listener(listener)
 		}
 
-	if(!isliving(target))
+	if(!theme_is_active())
 		return
-	if(!tank_theme_playing)
-		tank_theme_playing = TRUE
 
 	for(var/mob/living/player in GLOB.player_list)
 		if(!player || QDELETED(player) || !player.client)
@@ -1078,23 +1093,35 @@
 		// дальние танки не должны накладывать свой трек поверх.
 		if(closest_theme_tank_for(player) != src)
 			continue
+		// Перехват у прежнего владельца: глушим его канал и снимаем
+		// регистрацию, иначе два танка играли трек на двух каналах разом.
+		var/mob/living/simple_animal/hostile/infected/tank/old_owner = theme_listener_owners[player]
+		if(old_owner && old_owner != src && !QDELETED(old_owner)) {
+			old_owner.stop_theme_listener_sound(player)
+			old_owner.unregister_theme_listener(player)
+		}
 		SEND_SOUND(player, sound('modular_bluemoon/sound/creatures/mesa/tank/tanktheme.ogg', repeat = TRUE, volume = 50, channel = tank_theme_channel))
 		register_theme_listener(player)
+		theme_listener_owners[player] = src
 
 // Ближайший к слушателю агрировавшийся живой танк - владелец его темы.
 /mob/living/simple_animal/hostile/infected/tank/proc/closest_theme_tank_for(mob/listener)
 	var/best = null
 	var/best_dist = 0
-	var/listener_turf = get_turf(listener)
+	var/turf/listener_turf = get_turf(listener)
 	if(!listener_turf)
 		return null
 	for(var/mob/living/simple_animal/hostile/infected/tank/T in tank_mobs)
-		if(!T || QDELETED(T) || T.stat == DEAD || !isliving(T.target))
+		if(!T || QDELETED(T) || T.stat == DEAD || !T.theme_is_active())
 			continue
-		var/tank_turf = get_turf(T)
-		if(!tank_turf)
+		var/turf/tank_turf = get_turf(T)
+		if(!tank_turf || tank_turf.z != listener_turf.z)
 			continue
 		var/dist = get_dist(tank_turf, listener_turf)
+		// Без лимита дальности тема играла всей области миссии, пока
+		// где-то на карте дрался хоть один танк.
+		if(dist > T.tank_theme_range)
+			continue
 		if(!best || dist < best_dist) {
 			best = T
 			best_dist = dist
@@ -1123,6 +1150,8 @@
 	if(listener_mind && !QDELETED(listener_mind))
 		UnregisterSignal(listener_mind, COMSIG_MIND_TRANSFER)
 	tank_theme_listeners -= listener
+	if(theme_listener_owners[listener] == src)
+		theme_listener_owners -= listener
 
 /mob/living/simple_animal/hostile/infected/tank/proc/stop_theme_listener_sound(mob/listener)
 	if(!listener || QDELETED(listener) || !tank_theme_channel)
@@ -1141,6 +1170,8 @@
 
 /mob/living/simple_animal/hostile/infected/tank/proc/on_theme_listener_qdeleting(mob/source)
 	SIGNAL_HANDLER
+	// Без стопа repeat-трек оставался крутиться на клиенте навсегда.
+	stop_theme_listener_sound(source)
 	unregister_theme_listener(source, source.mind)
 
 /mob/living/simple_animal/hostile/infected/tank/proc/on_theme_listener_mind_transfer(datum/mind/source, mob/new_character, mob/old_character)
@@ -1153,7 +1184,6 @@
 	unregister_theme_listener(old_character, source)
 
 /mob/living/simple_animal/hostile/infected/tank/proc/stop_tank_sounds()
-	tank_theme_playing = FALSE
 	for(var/mob/listener in tank_theme_listeners.Copy())
 		stop_theme_listener_sound(listener)
 		unregister_theme_listener(listener)

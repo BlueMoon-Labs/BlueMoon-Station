@@ -1085,8 +1085,14 @@
 		return
 	sleep(50)
 	for(var/mob/listener in hearers)
-		if(!QDELETED(listener))
-			listener.stop_sound_channel(heli_crit_channel)
+		if(QDELETED(listener))
+			continue
+		listener.stop_sound_channel(heli_crit_channel)
+		// Если слушатель за 50 дс умер/загостился, стоп на старый моб не
+		// доезжает до клиента - шлём ещё и на текущий контролируемый моб.
+		var/mob/current = listener.mind ? listener.mind.current : null
+		if(current && current != listener)
+			current.stop_sound_channel(heli_crit_channel)
 
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_update_rotor_sound()
 	if(!heli_rotor_channel || heli_died || stat == DEAD)
@@ -1125,7 +1131,7 @@
 	if(!heli_theme_channel || heli_died || stat == DEAD)
 		return
 	for(var/mob/listener in heli_theme_listeners.Copy())
-		if(QDELETED(listener) || listener.stat == DEAD || !istype(get_area(listener), /area/awaymission/ihategordon))
+		if(QDELETED(listener) || listener.stat == DEAD || !listener.client || !listener.client.prefs || !(listener.client.prefs.toggles & SOUND_AMBIENCE) || !istype(get_area(listener), /area/awaymission/ihategordon))
 			stop_theme_listener_sound(listener)
 			unregister_theme_listener(listener)
 
@@ -1181,6 +1187,8 @@
 
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/on_theme_listener_qdeleting(mob/source)
 	SIGNAL_HANDLER
+	// Без стопа repeat-трек оставался крутиться на клиенте навсегда.
+	stop_theme_listener_sound(source)
 	unregister_theme_listener(source, source.mind)
 
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/on_theme_listener_mind_transfer(datum/mind/source, mob/new_character, mob/old_character)
@@ -1205,6 +1213,7 @@
 			continue
 		listener.stop_sound_channel(heli_theme_channel)
 		listener.stop_sound_channel(heli_rotor_channel)
+		listener.stop_sound_channel(heli_crit_channel)
 	heli_theme_listeners.Cut()
 
 /obj/effect/portal/mesa_rift
