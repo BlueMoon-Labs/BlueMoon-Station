@@ -187,7 +187,9 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
     const { hovered } = this.state;
 
     let target: ReactNode;
-    if (canDirectlyRef(children)) {
+    if (typeof children === 'string' || typeof children === 'number') {
+      target = <span ref={this.handleRef}>{children}</span>;
+    } else if (canDirectlyRef(children)) {
       target = cloneElement(children as any, { ref: this.handleRef });
     } else {
       // Fallback wrapper for text and class component children.
