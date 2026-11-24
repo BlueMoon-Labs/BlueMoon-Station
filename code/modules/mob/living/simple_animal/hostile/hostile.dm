@@ -116,7 +116,7 @@
 	// некоторые сабтипы (bees) мутируют wanted_objects через -= / |=, а общий
 	// кэшированный ассоциативный массив протёк бы между экземплярами.
 	var/static/list/wanted_objects_cache = list()
-	var/list/cached_wanted_objects = wanted_objects_cache[type] as list
+	var/list/cached_wanted_objects = wanted_objects_cache[type]
 	if(!cached_wanted_objects) {
 		cached_wanted_objects = typecacheof(wanted_objects)
 		wanted_objects_cache[type] = cached_wanted_objects
