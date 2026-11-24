@@ -112,6 +112,15 @@ function set_byond_tab(tab) {
 	send_byond_command("Set-Tab " + tab);
 }
 
+function open_emote_tab() {
+	if (State.currentTab === STATPANEL_EMOTES_TAB && _settingsActive) {
+		_settingsActive = false;
+		renderCurrentTab();
+		return;
+	}
+	tab_change(STATPANEL_EMOTES_TAB);
+}
+
 function SendTabsToByond() {
 	var tabs = [].concat(State.permanentTabs, State.verbTabs);
 	for (var i = 0; i < tabs.length; i++) SendTabToByond(tabs[i]);
