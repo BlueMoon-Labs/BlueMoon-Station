@@ -1,0 +1,5 @@
+author: vkbotpython
+delete-after: true
+changes:
+  - bugfix: Кнопки Your Last Round / Server's Last Round теперь открывают современный
+      tgui-отчёт вместо устаревшего HTML-окна.
