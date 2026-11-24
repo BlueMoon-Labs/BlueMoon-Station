@@ -303,7 +303,7 @@ const stubTip = (field: string) => {
 
 /** Подпись строки LabeledList с подсказкой. */
 export const TipLabel = (props: { text: string; tip?: string }) =>
-  props.tip ? <Tooltip content={props.tip}>{props.text}</Tooltip> : props.text;
+  props.tip ? <Tooltip content={<span className="Tooltip__text">{props.tip}</span>} position="right">{props.text}</Tooltip> : props.text
 
 /** Большое поле textarea с кнопкой сохранения. */
 export const LongTextField = (props: {
