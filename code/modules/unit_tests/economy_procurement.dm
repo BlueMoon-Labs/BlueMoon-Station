@@ -373,6 +373,69 @@
 	TEST_ASSERT_EQUAL(guns.cargo_topup, shortfall, "Доплата - недостача заявки")
 	TEST_ASSERT_EQUAL(cargo.held_for_requests(), 0, "Решённая заявка излишек не держит")
 
+/// Главе не хватает на пак каталога: недостающее до surplus_topup_max_share% цены доплачивает излишек снабжения сверх его порога, отмена заказа возвращает доплату снабжению. Больше доли, без излишка или автоодобрением - отказ, деньги не двигаются.
+/datum/unit_test/economy_catalog/order_surplus_topup/Run()
+	var/datum/economy_settings/settings = SSeconomy.settings
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	var/mob/living/carbon/human/hos = make_with_job(/datum/job/hos)
+	var/datum/supply_pack/arms = pack_above_auto_limit(security)
+	var/price = round(econ_pack_price(arms))
+	var/max_topup = round(price * settings.surplus_topup_max_share / 100)
+	var/shortfall = max_topup - 1
+	var/cargo_base = cargo.budget_threshold() + cargo.owed_to_staff()
+	var/datum/computer_file/program/department_budget/app = allocate(/datum/computer_file/program/department_budget)
+	econ_test_set_balance(security.account, price - max_topup - 1)
+	econ_test_set_balance(cargo.account, cargo_base + price)
+	var/refused = budget_press(app, hos, "order", list("pack" = "[arms.type]"))
+	TEST_ASSERT(findtext(refused, "доплачивает до [settings.surplus_topup_max_share]% цены"), "Недостача больше доли - отказ с объяснением: [refused]")
+	TEST_ASSERT_EQUAL(cargo.account.account_balance, cargo_base + price, "Отказ не тронул снабжение")
+	econ_test_set_balance(security.account, price - shortfall)
+	econ_test_set_balance(cargo.account, cargo_base + shortfall - 1)
+	TEST_ASSERT_EQUAL(cargo.budget_surplus(), shortfall - 1, "Излишек снабжения - сверх порога и зарплат")
+	refused = budget_press(app, hos, "order", list("pack" = "[arms.type]"))
+	TEST_ASSERT(findtext(refused, "не хватает денег"), "Излишка меньше недостачи - отказ: [refused]")
+	TEST_ASSERT_EQUAL(security.account.account_balance, price - shortfall, "Отказ не тронул бюджет СБ")
+	TEST_ASSERT(!security.order_pack(arms, null, "тест", TRUE), "Автоматический заказ излишек снабжения не берёт")
+	econ_test_set_balance(cargo.account, cargo_base + shortfall)
+	TEST_ASSERT(!security.order_pack(arms, null, "тест", TRUE), "Автоматический заказ излишек снабжения не берёт и при излишке")
+	TEST_ASSERT_EQUAL(cargo.account.account_balance, cargo_base + shortfall, "Автоматический заказ снабжение не тронул")
+	var/list/before = SSshuttle.shoppinglist.Copy()
+	var/answer = budget_press(app, hos, "order", list("pack" = "[arms.type]"))
+	TEST_ASSERT(findtext(answer, "недостающие [shortfall] кр. доплатил излишек снабжения"), "Глава заказал с доплатой излишка: [answer]")
+	TEST_ASSERT_EQUAL(security.account.account_balance, 0, "Бюджет СБ отдал всё, что было")
+	TEST_ASSERT_EQUAL(cargo.account.account_balance, cargo_base, "Снабжение отдало только излишек")
+	var/list/placed = SSshuttle.shoppinglist - before
+	TEST_ASSERT_EQUAL(length(placed), 1, "Заказ в корзине")
+	var/datum/supply_order/order = placed[1]
+	TEST_ASSERT_EQUAL(order.cargo_topup, shortfall, "Заказ помнит доплату")
+	econ_cancel_order(order, hos)
+	SSshuttle.shoppinglist -= order
+	qdel(order)
+	TEST_ASSERT_EQUAL(security.account.account_balance, price - shortfall, "Отмена вернула отделу его часть")
+	TEST_ASSERT_EQUAL(cargo.account.account_balance, cargo_base + shortfall, "Отмена вернула доплату снабжению")
+
+/// Глава одобряет заявку сотрудника, на которую не хватает: недостающее доплачивает излишек снабжения, и подавший об этом слышит.
+/datum/unit_test/economy_catalog/request_surplus_topup/Run()
+	var/datum/economy_settings/settings = SSeconomy.settings
+	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	var/mob/living/carbon/human/officer = make_staff(ACCOUNT_SEC, null, /datum/bank_account/econ_test_ear)
+	var/mob/living/carbon/human/hos = make_with_job(/datum/job/hos)
+	var/datum/supply_pack/arms = pack_above_auto_limit(security)
+	var/price = round(econ_pack_price(arms))
+	var/shortfall = round(price * settings.surplus_topup_max_share / 100) - 1
+	var/cargo_base = cargo.budget_threshold() + cargo.owed_to_staff()
+	econ_test_set_balance(security.account, price - shortfall)
+	econ_test_set_balance(cargo.account, cargo_base + shortfall)
+	var/datum/econ_request/guns = security.submit_request(arms, officer, "Арсенал")
+	TEST_ASSERT_EQUAL(guns?.status, ECON_REQUEST_PENDING, "Заявка ждёт решения")
+	TEST_ASSERT(security.approve(guns, hos), "ГСБ одобрил заявку с доплатой излишка")
+	TEST_ASSERT_EQUAL(guns.cargo_topup, shortfall, "Заявка помнит доплату")
+	TEST_ASSERT_EQUAL(cargo.account.account_balance, cargo_base, "Снабжение отдало только излишек")
+	var/datum/bank_account/econ_test_ear/officer_ear = econ_account_of(officer)
+	TEST_ASSERT(findtext(officer_ear.heard[length(officer_ear.heard)], "недостающие [shortfall] кр. доплатил бюджет снабжения"), "Подавший узнал о доплате: [officer_ear.heard[length(officer_ear.heard)]]")
+
 /// Запрос в казну без капитана и ГП на смене дойдёт до них, когда они выйдут; подавшему честно сказано, что он ждёт.
 /datum/unit_test/economy_catalog/treasury_request_waits_for_captain/Run()
 	var/datum/economy_department/security = SSeconomy.get_department(ACCOUNT_SEC)

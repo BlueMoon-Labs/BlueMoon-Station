@@ -129,17 +129,19 @@
 
 /// Сколько вернётся NT на ближайшем тике: доля излишка над порогом; долги и следующая зарплата сотрудникам, долг NT, разовые поступления, цель накопления и у снабжения недостача переданных ему заявок не трогаются. При ЧС - ничего.
 /datum/economy_department/proc/budget_return_due(list/stats)
-	if(!stats)
-		stats = econ_staff_stats(id)
-	var/goal = saving_goal_amount()
-	if(econ_emergency_active())
-		return 0
-	var/excess = account.account_balance - budget_threshold(stats) - owed_to_staff(stats) - owed - shielded() - goal
-	if(excess > 0)
-		excess -= held_for_requests()
-	if(excess <= 0)
+	var/excess = budget_surplus(stats)
+	if(econ_emergency_active() || excess <= 0)
 		return 0
 	return round(excess * SSeconomy.settings.budget_cap_return_share / 100)
+
+/// Излишек бюджета сверх порога, долгов и следующей зарплаты сотрудникам, долга NT, разовых поступлений, цели накопления и у снабжения недостачи переданных ему заявок; не меньше 0.
+/datum/economy_department/proc/budget_surplus(list/stats)
+	if(!stats)
+		stats = econ_staff_stats(id)
+	. = account.account_balance - budget_threshold(stats) - owed_to_staff(stats) - owed - shielded() - saving_goal_amount()
+	if(. > 0)
+		. -= held_for_requests()
+	. = max(., 0)
 
 /datum/economy_department/proc/return_excess(list/stats)
 	if(!stats)

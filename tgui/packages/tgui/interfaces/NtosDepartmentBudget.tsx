@@ -22,6 +22,8 @@ type DepartmentInfo = {
   threshold?: number;
   threshold_floor?: number;
   return_due?: number;
+  /** Свободный излишек снабжения сверх его порога: из него доплачивается закупка отдела */
+  cargo_spare?: number;
   /** Долги и следующая зарплата сотрудникам: заказ без одобрения их не трогает */
   reserve?: number;
   /** Через сколько минут ближайший цикл экономики, на котором NT заберёт излишек */
@@ -130,6 +132,8 @@ export type BudgetData = {
   grant_payroll_share: number;
   cap_paydays?: number;
   cap_share?: number;
+  /** Какую долю цены закупки отдела может доплатить излишек снабжения, проценты */
+  surplus_topup_share?: number;
   grace_minutes?: number;
   goal_minutes?: number;
   goal_cooldown_minutes?: number;
@@ -456,7 +460,10 @@ const BudgetHelp = () => {
             : ''}
           ; набрать её цену нужно за {data.goal_collect_minutes} мин., иначе цель снимется; набрали - {data.goal_minutes} мин. на
           заказ; после её истечения или снятия новая - через {data.goal_cooldown_minutes} мин.). При красном коде и выше NT
-          излишек не забирает.
+          излишек не забирает.{' '}
+          {department.id === 'CAR'
+            ? `Из излишка снабжения доплачиваются закупки других отделов из их каталогов, до ${data.surplus_topup_share ?? 0}% цены.`
+            : `Не хватает на закупку из каталога - до ${data.surplus_topup_share ?? 0}% цены доплатит излишек снабжения сверх его порога, если он есть.`}
         </Box>
         <Box>
           Зарплаты сотрудникам платятся из этого бюджета раз в {data.wage_minutes} мин. Если денег не хватает, отдел платит
@@ -730,7 +737,10 @@ const CatalogTab = () => {
                 </Table.Cell>
                 <Table.Cell collapsing>
                   {canOrder && (
-                    <Button disabled={!available} onClick={() => act('order', { pack: pack.type })}>
+                    <Button
+                      disabled={!available}
+                      tooltip={orderTooltip(data, price?.price || 0)}
+                      onClick={() => act('order', { pack: pack.type })}>
                       Заказать
                     </Button>
                   )}
@@ -800,6 +810,32 @@ export const ordersItself = (data: BudgetData, pack: { staple?: BooleanLike }, p
     return price <= (data.staple_left ?? 0);
   }
   return !!data.instant_approval && data.auto_ready_in === 0 && price <= data.auto_approve_limit;
+};
+
+/** Сколько излишек снабжения доплатит к закупке за price: вся недостача, если она не больше surplus_topup_share% цены и излишка хватает; иначе 0. */
+export const surplusTopup = (data: BudgetData, price: number) => {
+  const department = data.department;
+  if (!department || department.id === 'CAR') {
+    return 0;
+  }
+  const shortfall = price - Math.max(department.balance, 0);
+  if (shortfall <= 0 || shortfall > Math.round((price * (data.surplus_topup_share ?? 0)) / 100)) {
+    return 0;
+  }
+  return (department.cargo_spare ?? 0) >= shortfall ? shortfall : 0;
+};
+
+/** Подсказка кнопки заказа главы: хватает ли бюджета и доплатит ли излишек снабжения. */
+export const orderTooltip = (data: BudgetData, price: number) => {
+  const balance = data.department?.balance ?? 0;
+  if (balance >= price) {
+    return undefined;
+  }
+  const topup = surplusTopup(data, price);
+  if (topup) {
+    return `В бюджете ${formatCredits(balance)}: недостающие ${formatCredits(topup)} доплатит излишек снабжения`;
+  }
+  return `В бюджете ${formatCredits(balance)}, пак стоит ${formatCredits(price)}: излишек снабжения доплачивает до ${data.surplus_topup_share ?? 0}% цены, сейчас свободно ${formatCredits(data.department?.cargo_spare ?? 0)}`;
 };
 
 /** Подсказка кнопки заявки, которую сотрудник сам не оплатит: ждёт денег или главу. */

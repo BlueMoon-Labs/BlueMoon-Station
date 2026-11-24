@@ -291,14 +291,14 @@
 		return list(FALSE, "Партнёр под эмбарго: пачку можно будет купить, когда его снимут.")
 	if(!department.can_manage(user))
 		return list(FALSE, "За [department.budget_name] пачку берёт глава отдела, ГП или капитан: нужна их ID-карта.")
-	var/datum/supply_order/order = department.order_pack(bundle, user, "Скупка для отдела \"[department.name]\"")
+	var/datum/supply_order/order = department.order_pack(bundle, user, "Скупка для отдела \"[department.name]\"", surplus_topup = TRUE)
 	if(!order)
-		return list(FALSE, "В бюджете не хватает денег: пачка стоит [bundle.price] кр., в бюджете [department.account.account_balance] кр.")
+		return list(FALSE, "В бюджете не хватает денег: пачка стоит [bundle.price] кр., в бюджете [department.account.account_balance] кр., излишек снабжения доплачивает до [SSeconomy.settings.surplus_topup_max_share]% цены.")
 	SSmarket.bundles -= bundle
 	order.partner_id = bundle.seller_id
 	log_econ("[key_name(user)] берёт скупку #[bundle.uid] за [bundle.price] кр. из бюджета отдела [department.name]")
 	econ_bundle_taken(bundle, order, "за бюджет отдела")
-	return list(TRUE, "Пачка в корзине снабжения: [bundle.price] кр. списано, [department.budget_name] сэкономил [bundle.full_value - bundle.price] кр.")
+	return list(TRUE, "Пачка в корзине снабжения: [bundle.price] кр. списано[order.cargo_topup ? ", из них [order.cargo_topup] кр. доплатил излишек снабжения" : ""], [department.budget_name] сэкономил [bundle.full_value - bundle.price] кр.")
 
 /// Покупка пачки из окна снабжения: за бюджет её отдела (budget) - глава, ГП или капитан; за бюджет снабжения - снабжение; или лично, если все её паки продаются лично и на счёте хватает на цену с наценкой частного заказа.
 /// Пока идёт окно department_left(), только за бюджет отдела. Заявкой скупку не взять, у партнёра под эмбарго - тоже. Пачка уходит в корзину и пропадает из скупки.

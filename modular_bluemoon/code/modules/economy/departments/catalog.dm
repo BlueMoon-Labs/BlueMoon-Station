@@ -382,6 +382,18 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		return deny(request, user) ? "Заявка №[uid] отклонена." : "Заявка №[uid] не отклонена."
 	return approve(request, user) ? "Заявка №[uid] одобрена, заказ ушёл в снабжение[request.cargo_topup ? ", недостающие [request.cargo_topup] кр. доплатил бюджет снабжения" : ""]." : order_refusal(request.pack, request, user)
 
+/// Сколько излишка снабжения доплатит отделу к закупке за price: вся недостача, если её хватает в излишке снабжения и она не больше surplus_topup_max_share% цены; иначе 0.
+/datum/economy_department/proc/surplus_topup_for(price)
+	var/shortfall = price - max(account.account_balance, 0)
+	if(id == ACCOUNT_CAR || shortfall <= 0 || shortfall > round(price * SSeconomy.settings.surplus_topup_max_share / 100))
+		return 0
+	return econ_cargo_surplus() >= shortfall ? shortfall : 0
+
+/// Свободный излишек снабжения сверх его порога: из него доплачиваются закупки других отделов.
+/proc/econ_cargo_surplus()
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	return cargo ? cargo.budget_surplus() : 0
+
 /// Почему заказ пака за бюджет не прошёл.
 /datum/economy_department/proc/order_refusal(datum/supply_pack/pack, datum/econ_request/request, mob/living/user)
 	if(econ_pack_unavailable(pack))
@@ -390,7 +402,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	if(account.account_balance < price && request && cargo_tops_up(request, user))
 		return "В бюджете отдела [account.account_balance] кр. из [price], а в бюджете снабжения нет недостающих [request_shortfall(request)] кр."
 	if(account.account_balance < price)
-		return "В бюджете не хватает денег: \"[pack.name]\" стоит [price] кр."
+		return "В бюджете не хватает денег: \"[pack.name]\" стоит [price] кр.[id == ACCOUNT_CAR ? "" : " Излишек снабжения доплачивает до [SSeconomy.settings.surplus_topup_max_share]% цены, сейчас свободно [econ_cargo_surplus()] кр."]"
 	return "Заказ не оформлен."
 
 /// Заявки отделу с окна снабжения: ответ произносит speaker, о ждущих решения слышит канал отдела через radio.
@@ -534,15 +546,17 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		topup = cargo_top_up(request, user)
 		if(isnull(topup))
 			return FALSE
-	var/datum/supply_order/order = order_pack(request.pack, user, "Заявка [request.requester]: [request.reason]", automatic || !by_manager)
+	var/datum/supply_order/order = order_pack(request.pack, user, "Заявка [request.requester]: [request.reason]", automatic || !by_manager, !automatic)
 	if(!order)
 		if(topup && SSeconomy.department_transfer(src, SSeconomy.get_department(ACCOUNT_CAR), topup, user))
 			restore_shield(account.department_shield_spent)
 		return FALSE
 	if(topup)
-		request.cargo_topup = topup
-		order.cargo_topup = topup
 		log_econ("Снабжение доплатило [topup] кр. к заявке [request.uid] отдела [name]: [key_name(user)]")
+	var/from_surplus = order.cargo_topup
+	topup += from_surplus
+	request.cargo_topup = topup
+	order.cargo_topup = topup
 	order.econ_request_uid = request.uid
 	order.requester_account_id = request.requester_account_id
 	request.status = ECON_REQUEST_APPROVED
@@ -550,7 +564,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	log_econ("Заявка [request.uid] отдела [name] одобрена[by_whom]: [automatic ? "автоматически" : key_name(user)]")
 	request.notify_requester("Заявка на \"[request.pack.name]\" одобрена[by_whom] и ушла в снабжение[topup ? ", недостающие [topup] кр. доплатил бюджет снабжения" : ""].")
 	if(topup)
-		account.bank_card_talk("Переданная снабжению заявка №[request.uid] на \"[request.pack.name]\" одобрена: бюджет снабжения доплатил недостающие [topup] кр.")
+		account.bank_card_talk("[from_surplus ? "Заявка" : "Переданная снабжению заявка"] №[request.uid] на \"[request.pack.name]\" одобрена: бюджет снабжения доплатил недостающие [topup] кр.")
 	if(automatic)
 		notify_auto_order(request, order)
 	econ_trim_resolved(requests)
@@ -566,11 +580,21 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	return TRUE
 
 /// Заказ из каталога или пачки скупки для отдела за счёт бюджета: деньги списываются сразу, заказ встаёт в очередь снабжения предоплаченным. Возвращает заказ или FALSE.
-/datum/economy_department/proc/order_pack(datum/supply_pack/pack, mob/living/user, reason, automatic = FALSE)
+/// surplus_topup - решение человека или ИИ: недостающее до цены доплачивает излишек снабжения (surplus_topup_for).
+/datum/economy_department/proc/order_pack(datum/supply_pack/pack, mob/living/user, reason, automatic = FALSE, surplus_topup = FALSE)
 	if(!pack || !(econ_bundle_department(pack) == id || (pack in catalog())) || (!automatic && !can_manage(user)) || econ_pack_unavailable(pack))
 		return FALSE
 	var/price = round(econ_pack_price(pack))
+	var/datum/economy_department/cargo = SSeconomy.get_department(ACCOUNT_CAR)
+	var/topup = surplus_topup ? surplus_topup_for(price) : 0
+	if(topup)
+		if(SSeconomy.department_transfer(cargo, src, topup, user))
+			cargo.restore_shield(cargo.account.department_shield_spent)
+		else
+			topup = 0
 	if(!account.debit(price, ECON_IMPORT, user, "Закупка: [pack.name]"))
+		if(topup && SSeconomy.department_transfer(src, cargo, topup, user))
+			restore_shield(account.department_shield_spent)
 		return FALSE
 	var/orderer_name = name
 	var/orderer_rank = name
@@ -581,6 +605,7 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 	var/datum/supply_order/order = new(pack, orderer_name, orderer_rank, user?.ckey, reason)
 	order.prepaid = price
 	order.department_id = id
+	order.cargo_topup = topup
 	SSshuttle.shoppinglist += order
 	order.shield_entries = account.department_shield_spent
 	if(pack == saving_goal)
@@ -588,6 +613,8 @@ GLOBAL_VAR_INIT(econ_department_packs_count, 0)
 		order.saving_goal_funded = saving_goal_funded
 		clear_saving_goal(ordered = TRUE)
 	log_econ("[user ? key_name(user) : "Автоодобрение"]: заказ [pack.name] для [name] за [price] кр.")
+	if(topup)
+		log_econ("Излишек снабжения доплатил [topup] кр. к закупке [pack.name] отдела [name]")
 	if(id != ACCOUNT_CAR && COOLDOWN_FINISHED(src, supply_notice_cooldown))
 		COOLDOWN_START(src, supply_notice_cooldown, ECON_CARGO_REQUEST_RADIO_COOLDOWN)
 		paperwork_radio("Отдел \"[name]\" оплатил заказ: [pack.name], в корзине снабжения.", RADIO_CHANNEL_SUPPLY)

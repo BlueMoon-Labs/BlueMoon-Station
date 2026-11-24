@@ -124,6 +124,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"grant_payroll_share" = settings.grant_payroll_share,
 		"cap_paydays" = settings.budget_cap_paydays,
 		"cap_share" = settings.budget_cap_return_share,
+		"surplus_topup_share" = settings.surplus_topup_max_share,
 		"grace_minutes" = settings.budget_cap_grace_ticks * round(SSeconomy.wait / (1 MINUTES), 1),
 		"goal_minutes" = settings.saving_goal_minutes,
 		"goal_cooldown_minutes" = settings.saving_goal_cooldown_minutes,
@@ -197,6 +198,7 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 		"threshold" = department.budget_threshold(staff_stats),
 		"threshold_floor" = department.budget_floor(),
 		"return_due" = department.budget_return_due(staff_stats),
+		"cargo_spare" = department.id == ACCOUNT_CAR ? 0 : econ_cargo_surplus(),
 		"reserve" = department.owed_to_staff(staff_stats),
 		"return_in" = max(CEILING((SSeconomy.next_fire - world.time) / (1 MINUTES), 1), 1),
 		"shielded" = department.shielded(),
@@ -460,7 +462,8 @@ GLOBAL_LIST_INIT(econ_department_work, list(
 			else if(!can_manage)
 				messages[user_ref] = manage_refusal
 			else
-				messages[user_ref] = department.order_pack(pack, user, "Заказ главы: [department.name]") ? "\"[pack.name]\" заказан, деньги списаны из бюджета." : department.order_refusal(pack)
+				var/datum/supply_order/order = department.order_pack(pack, user, "Заказ главы: [department.name]", surplus_topup = TRUE)
+				messages[user_ref] = order ? "\"[pack.name]\" заказан, деньги списаны из бюджета[order.cargo_topup ? ", недостающие [order.cargo_topup] кр. доплатил излишек снабжения" : ""]." : department.order_refusal(pack)
 		if("buy_bundle")
 			var/datum/supply_pack/bundle/bundle = SSmarket.bundle_by_uid(econ_ui_number(params["uid"]))
 			if(!bundle || bundle.department_id != department.id)

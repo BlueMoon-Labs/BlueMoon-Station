@@ -3,7 +3,7 @@ import { combineReducers, createStore, setGlobalStore } from 'common/redux';
 
 import { backendReducer, backendUpdate } from '../backend';
 import { debugReducer } from '../debug';
-import { BudgetData, DepartmentConsole, NtosDepartmentBudgetContent, ordersItself, requestTooltip } from './NtosDepartmentBudget';
+import { BudgetData, DepartmentConsole, NtosDepartmentBudgetContent, ordersItself, orderTooltip, requestTooltip, surplusTopup } from './NtosDepartmentBudget';
 
 const base: BudgetData = {
   departments: [
@@ -380,6 +380,18 @@ describe('NtosDepartmentBudget', () => {
     expect(requestTooltip({ ...data, head_on_shift: 1 }, 800)).toBe('Заявка главе: ему придёт сообщение на карту');
     expect(requestTooltip({ ...data, head_on_shift: 0 }, 800)).not.toContain('главе');
     expect(ordersItself({ ...data, department: { ...base.department!, balance: 1500, reserve: 800 } }, { staple: 1 }, 800)).toBe(false);
+  });
+
+  test('заказ главы: недостающее до доли цены доплатит излишек снабжения, больше доли или без излишка - нет', () => {
+    const department = { ...base.department!, id: 'SEC', balance: 600, cargo_spare: 500 };
+    const data = { ...base, surplus_topup_share: 50, department } as BudgetData;
+    expect(surplusTopup(data, 1000)).toBe(400);
+    expect(orderTooltip(data, 1000)!.replace(/\u00a0/g, ' ')).toBe('В бюджете 600 кр.: недостающие 400 кр. доплатит излишек снабжения');
+    expect(surplusTopup({ ...data, department: { ...department, balance: 400 } }, 1000)).toBe(0);
+    expect(surplusTopup({ ...data, department: { ...department, cargo_spare: 300 } }, 1000)).toBe(0);
+    expect(orderTooltip({ ...data, department: { ...department, cargo_spare: 300 } }, 1000)!.replace(/\u00a0/g, ' ')).toContain('доплачивает до 50% цены, сейчас свободно 300 кр.');
+    expect(surplusTopup({ ...data, department: { ...department, id: 'CAR' } }, 1000)).toBe(0);
+    expect(orderTooltip(data, 500)).toBeUndefined();
   });
 
   test('на что тратить бюджет: советы и "нужно сейчас" с кнопкой', () => {
