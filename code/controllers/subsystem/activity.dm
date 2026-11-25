@@ -25,6 +25,9 @@ SUBSYSTEM_DEF(activity)
 			threats["antagonists"] += A.threat()
 	threats["events"] = 0
 	for(var/datum/round_event/R as anything in SSdirector.running)
+		// Мезовые ивенты - отдельный контур, в угрозу станции не считаются.
+		if(istype(R.control, /datum/round_event_control/blackmesa))
+			continue
 		threats["events"] += R.control ? R.control.intensity : 0
 	threats["players"] = 0
 	SEND_SIGNAL(src, COMSIG_THREAT_CALC, threats)

@@ -5213,6 +5213,7 @@
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\mesa_trigger_zones.dm"
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\mesameds.dm"
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\zombie_director.dm"
+#include "modular_bluemoon\code\modules\awaymissions\ihategordon_alarm_radio.dm"
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\mobs\horde.dm"
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\mobs\mesa_benrey_boss.dm"
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\mobs\mesa_helicopter_boss.dm"

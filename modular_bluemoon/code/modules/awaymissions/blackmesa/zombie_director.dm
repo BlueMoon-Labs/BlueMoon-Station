@@ -687,28 +687,29 @@
 
 /datum/ai_director/zombie_mission/proc/trigger_horde(from_generator = FALSE)
 	if(!src)
-		return
+		return FALSE
 	if(spawning_wave)
-		return
+		return FALSE
 	if(is_generator_horde_active(TRUE) && !from_generator)
-		return
+		return FALSE
 	var/list/alive_players = get_alive_players_in_mission()
 	if(!alive_players || !alive_players.len)
-		return
+		return FALSE
 
 	var/threat_level = calculate_threat_level(alive_players.len)
 	if(!threat_level || threat_level <= 0)
-		return
+		return FALSE
 
 	wave_timer = rand(min_wave_interval, max_wave_interval)
 
 	if(spawn_zombie_wave(threat_level, alive_players))
 		last_wave_time = world.time
 		current_wave_number++
-	else
-		// Запуск не состоялся - повторим попытку скоро, а не через
-		// полный случайный интервал.
-		last_wave_time = world.time - wave_timer + 30 SECONDS
+		return TRUE
+	// Запуск не состоялся - повторим попытку скоро, а не через
+	// полный случайный интервал.
+	last_wave_time = world.time - wave_timer + 30 SECONDS
+	return FALSE
 
 /datum/ai_director/zombie_mission/proc/refresh_horde_state()
 	// Generators self-register in GLOB.urbanism_generators - no world scan.

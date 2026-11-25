@@ -446,6 +446,52 @@
 	// 	reagent_flags = NONE
 	update_icon()
 
+// =============================================================================
+// ОСОБЫЙ БОЕВОЙ ДЕФИБРИЛЛЯТОР СЕКТОРА H
+// =============================================================================
+
+/obj/item/defibrillator/compact/combat/mesa
+	name = "особый боевой дефибриллятор"
+	desc = "Уникальный полевой дефибриллятор Чёрной Мезы. Полностью реанимирует пациента: восстанавливает отсутствующие и разрушенные органы, включая сердце и мозг. Работает только в пределах Сектора H."
+	icon_state = "defibcombat"
+	item_state = "defibcombat"
+	mesa_defib = TRUE
+	cell_removable = FALSE
+
+/obj/item/defibrillator/proc/mesa_zone_active(atom/A)
+	if(!A || QDELETED(A))
+		return FALSE
+	if(SSblackmesa_events && SSblackmesa_events.mesa_actor_in_zone(A))
+		return TRUE
+	return istype(get_area(A), /area/awaymission/ihategordon)
+
+/obj/item/defibrillator/proc/mesa_restore_patient(mob/living/carbon/H)
+	if(!H || QDELETED(H))
+		return
+	// Отсутствующие жизненно важные органы ставим на место.
+	if(!H.getorganslot(ORGAN_SLOT_HEART))
+		var/obj/item/organ/heart/Ht = new /obj/item/organ/heart()
+		Ht.Insert(H)
+	if(!H.getorganslot(ORGAN_SLOT_BRAIN))
+		var/obj/item/organ/brain/BR = new /obj/item/organ/brain()
+		BR.Insert(H)
+	// Доставляем остальные недостающие органы и лечим повреждённые.
+	H.regenerate_organs()
+	for(var/obj/item/organ/O in H.internal_organs)
+		if(O && (O.organ_flags & ORGAN_FAILING))
+			O.setOrganDamage(0)
+	var/obj/item/organ/heart/existing_heart = H.getorganslot(ORGAN_SLOT_HEART)
+	if(existing_heart)
+		existing_heart.setOrganDamage(0)
+	var/obj/item/organ/brain/existing_brain = H.getorganslot(ORGAN_SLOT_BRAIN)
+	if(existing_brain)
+		existing_brain.setOrganDamage(0)
+	// can_be_revived() требует health выше порога смерти - восстанавливаем все пулы урона.
+	H.setToxLoss(0, 0)
+	H.setOxyLoss(0, 0)
+	H.heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, FALSE, forced = TRUE)
+	H.updatehealth()
+
 /obj/item/reagent_containers/hypospray/medipen/mesa_robot/update_icon_state()
 	if(reagents.total_volume > 0)
 		icon_state = initial(icon_state)

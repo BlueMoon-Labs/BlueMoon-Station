@@ -183,6 +183,10 @@ SUBSYSTEM_DEF(director)
 
 /datum/controller/subsystem/director/proc/register_event_actions()
 	for(var/type in typesof(/datum/round_event_control))
+		// Мезовые ивенты запускает только SSblackmesa_events ( Mesa zone + living players ).
+		// В пуле директора они бы жгли бюджет MAJOR-ступени и висели в intensity_ledger.
+		if(ispath(type, /datum/round_event_control/blackmesa))
+			continue
 		var/datum/round_event_control/event_control = new type()
 		if(!event_control.typepath)
 			continue

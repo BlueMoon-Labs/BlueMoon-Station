@@ -88,15 +88,20 @@
 /obj/item/projectile/bullet/a84mm/helicopter_rocket
 	name = "unguided rocket"
 	icon_state = "missile"
-	damage = 70
+	damage = 40
 	pixels_per_second = TILES_TO_PIXELS(45)
 	range = 45
+	allow_crit_gib = FALSE
 
 /obj/item/projectile/bullet/a84mm/helicopter_rocket/do_boom(atom/target, random_crit_gib = FALSE)
+	if(isliving(target))
+		var/turf/T = get_turf(target)
+		if(T)
+			T.visible_message(span_bolddanger("[target] накрывает взрывом apache-ракеты!"), span_bolddanger("По вам попала ракета!"))
 	if(!isliving(target))
-		explosion(target, heavy_impact_range = 1, light_impact_range = 2, flame_range = 3, flash_range = 0)
+		explosion(target, heavy_impact_range = 1, light_impact_range = 2, flame_range = 2, flash_range = 0)
 	else
-		explosion(target, light_impact_range = 2, flame_range = 3, flash_range = 0)
+		explosion(target, light_impact_range = 1, flame_range = 2, flash_range = 0)
 		if(random_crit_gib)
 			var/mob/living/gibbed_dude = target
 			new /obj/effect/temp_visual/crit(get_turf(gibbed_dude))
@@ -176,6 +181,7 @@
 	var/list/heli_bounds = null
 	var/attacks_until_relocate = 3
 	var/overheated_until = 0
+	var/last_fire_warning = 0
 	var/overheat_visual_active = FALSE
 	var/list/heli_drop_thresholds = list(75, 50, 35, 10)
 	var/list/heli_drops_done = list()
@@ -450,13 +456,13 @@
 	if(overheated != overheat_visual_active)
 		overheat_visual_active = overheated
 		if(overheated)
-			visible_message("<span class='boldwarning'>[src]'s weapons are overheating - it is vulnerable!</span>")
+			visible_message("<span class='bolddanger'>[src]'s weapons are overheating - it is vulnerable!</span>")
 
 	var/critical = health <= maxHealth * 0.3
 	if(critical != heli_critical)
 		heli_critical = critical
 		if(critical)
-			visible_message("<span class='boldwarning'>[src] is critically damaged - its systems are failing!</span>")
+			visible_message("<span class='bolddanger'>[src] is critically damaged - its systems are failing!</span>")
 
 	if(critical && world.time >= heli_crit_beep_next)
 		heli_crit_beep_next = world.time + 100
@@ -534,6 +540,10 @@
 	var/turf/target_turf = get_turf(targeted_atom)
 	if(!startloc || !target_turf || target_turf.z != startloc.z)
 		return
+	if(isliving(targeted_atom) && world.time >= last_fire_warning)
+		last_fire_warning = world.time + 20
+		var/mob/living/L = targeted_atom
+		L.visible_message(span_bolddanger("[src] ведёт по вам огонь!"), span_bolddanger("Apache стреляет по вам!"))
 	var/obj/item/projectile/P = new /obj/item/projectile/bullet/helicopter_autocannon(startloc)
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/apache/apacheshot.ogg', 80, TRUE, -4)
 	P.firer = src
@@ -647,7 +657,7 @@
 
 	playsound(src, 'sound/vehicles/high_eng.ogg', 85, TRUE, -4)
 	playsound(src, 'sound/vehicles/rocketlaunch.ogg', 70, TRUE, -4)
-	visible_message("<span class='boldwarning'>[src] begins a strafing run!</span>")
+	visible_message("<span class='bolddanger'>[src] begins a strafing run!</span>")
 	sleep(HELI_STRAFE_WARN_DS)
 	if(QDELETED(src) || stat != CONSCIOUS)
 		heli_busy = FALSE
@@ -683,7 +693,7 @@
 	if(!get_mesa_targets().len)
 		heli_attack_done()
 		return
-	visible_message("<span class='boldwarning'>[src] is spooling its rocket pods - incoming fire!</span>")
+	visible_message("<span class='bolddanger'>[src] is spooling its rocket pods - incoming fire!</span>")
 
 	for(var/i in 1 to 3)
 		if(QDELETED(src) || stat != CONSCIOUS)
@@ -712,6 +722,9 @@
 	var/turf/target_turf = get_turf(targeted_atom)
 	if(!startloc || !target_turf || target_turf.z != startloc.z)
 		return
+	if(isliving(targeted_atom))
+		var/mob/living/L = targeted_atom
+		L.visible_message(span_bolddanger("[src] выпускает по вам ракету!"), span_bolddanger("Apache выпускает по вам ракету!"))
 	var/obj/item/projectile/P = new /obj/item/projectile/bullet/a84mm/helicopter_rocket(startloc)
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/apache/apacheshot.ogg', 70, TRUE, -4)
 	P.firer = src
@@ -738,7 +751,7 @@
 	if(!istype(TT))
 		heli_attack_done()
 		return
-	visible_message("<span class='boldwarning'>[src] is scanning [T] - weapons free!</span>")
+	visible_message("<span class='bolddanger'>[src] is scanning [T] - weapons free!</span>")
 	sleep(HELI_STRAFE_WARN_DS)
 	if(QDELETED(src) || stat != CONSCIOUS)
 		heli_busy = FALSE
@@ -884,7 +897,7 @@
 	var/turf/target_t = heli_target_pad_turf()
 
 	if(land_t)
-		land_t.visible_message("<span class='boldwarning'>[src] is inbound on the LZ!</span>")
+		land_t.visible_message("<span class='bolddanger'>[src] is inbound on the LZ!</span>")
 	playsound(src, 'sound/vehicles/high_eng.ogg', 85, TRUE, -3)
 	pixel_z = 220
 	animate(src, pixel_z = 0, time = 20, easing = SINE_EASING)
@@ -926,7 +939,7 @@
 		return
 	heli_cutscene = FALSE
 	if(land_t)
-		land_t.visible_message("<span class='boldwarning'>[src]'s weapons are live - it opens fire!</span>")
+		land_t.visible_message("<span class='bolddanger'>[src]'s weapons are live - it opens fire!</span>")
 
 /mob/living/simple_animal/hostile/megafauna/helicopter/proc/heli_cinematic_strike(turf/target_t)
 	if(!istype(target_t))
@@ -984,7 +997,7 @@
 			dropped++
 		sleep(3)
 	if(dropped)
-		dt.visible_message("<span class='boldwarning'>[src] inserts a special ops team!</span>")
+		dt.visible_message("<span class='bolddanger'>[src] inserts a special ops team!</span>")
 		if(SSblackmesa_events)
 			SSblackmesa_events.mesa_announce("Зафиксирована тактическая высадка чёрных оперативников! Ожидайте пехотный десант!", "Troop deployment", 'sound/vehicles/rocketlaunch.ogg')
 
@@ -1324,7 +1337,7 @@
 			A.close()
 			doors_closed++
 	if(doors_closed)
-		visible_message("<span class='boldwarning'>Blast doors seal the sector - there is no way out!</span>")
+		visible_message("<span class='bolddanger'>Blast doors seal the sector - there is no way out!</span>")
 
 /obj/machinery/negotiations_radio/helicopter/proc/activate_mesa_rift()
 	if(!src)
@@ -1345,7 +1358,7 @@
 	P.hard_target = B
 	P.hardlinked = FALSE
 	playsound(A, 'sound/effects/space_wind.ogg', 90, TRUE, -4)
-	visible_message("<span class='boldwarning'>A rift tears open by the sealed gates - the boss arena is reachable through it!</span>")
+	visible_message("<span class='bolddanger'>A rift tears open by the sealed gates - the boss arena is reachable through it!</span>")
 
 /obj/machinery/negotiations_radio/helicopter/proc/heli_landmark_turf(type)
 	var/turf/my_t = get_turf(src)

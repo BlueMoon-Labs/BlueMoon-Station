@@ -122,6 +122,11 @@
 	weight = 0
 	max_occurrences = 0
 	category = EVENT_CATEGORY_INVASION
+	// Мезовые ивенты крутит только SSblackmesa_events и только при живых игроках в гейте.
+	// severity=FLAVOR обнуляет cost/intensity/linger в New(), а директор вообще не регистрирует
+	// эти контроли (register_event_actions их пропускает) - они не едят бюджет, не висят
+	// в intensity_ledger и не попадают в угрозу SSactivity.
+	severity = DIRECTOR_SEVERITY_FLAVOR
 	var/min_difficulty_level = 0 // Minimum difficulty level required for this event
 
 /datum/round_event/blackmesa

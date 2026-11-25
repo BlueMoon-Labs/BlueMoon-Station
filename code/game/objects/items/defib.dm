@@ -31,6 +31,9 @@
 	var/timedeath = 10
 	var/disarm_shock_time = 10
 	var/always_emagged = FALSE
+	/// Уникальный дефибриллятор Сектора H: игнорирует отсутствующие/разрушенные органы,
+	/// восстанавливает их на месте и работает только в пределах зоны ihategordon.
+	var/mesa_defib = FALSE
 	/// The icon state for the paddle overlay, not applied if null
 	var/paddle_state = "defibunit-paddles"
 	/// The icon state for the powered on overlay, not applied if null
@@ -611,6 +614,8 @@
 		primetimer2 = 20
 		deathtimer = DEFIB_TIME_LOSS * 10
 
+	var/mesa_mode = req_defib && defib && defib.mesa_defib
+
 	if(do_after(user, primetimer, H)) //beginning to place the paddles on patient's chest to allow some time for people to move away to stop the process
 		user.visible_message("<span class='notice'>[user] places [src] on [H]'s chest.</span>", "<span class='warning'>You place [src] on [H]'s chest.</span>")
 		playsound(src, 'sound/machines/defib_charge.ogg', 75, 0)
@@ -642,17 +647,19 @@
 					failed = span_warning("[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - кажется, душа пациента находится на другом плане существования. Дальнейшие попытки бесполезны.")
 				else if(!H.can_be_medically_revived(require_player = FALSE))
 					failed = span_warning("[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - возвращение пациента к жизни невозможно. Дальнейшие попытки бесполезны.")
-				else if (tplus > tlimit)
+				else if(mesa_mode && !defib.mesa_zone_active(H))
+					failed = "<span class='warning'>[defib] жужжит: Устройство работает только в пределах Сектора H. Операция прервана.</span>"
+				else if (!mesa_mode && tplus > tlimit)
 					failed = "<span class='warning'>[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - тело слишком долго разлагалось. Дальнейшие попытки бесполезны.</span>"
-				else if (!heart)
+				else if (!mesa_mode && !heart)
 					failed = "<span class='warning'>[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - у пациента отсутствует сердце.</span>"
-				else if (heart.organ_flags & ORGAN_FAILING)
+				else if (!mesa_mode && heart.organ_flags & ORGAN_FAILING)
 					failed = "<span class='warning'>[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - сердце пациента сильно повреждено.</span>"
-				else if(total_burn >= 180 || total_brute >= 180)
+				else if(!mesa_mode && (total_burn >= 180 || total_brute >= 180))
 					failed = "<span class='warning'>[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - тело пациента слишком сильно повреждено. Дальнейшие попытки бесполезны.</span>"
-				else if(!H.client && !H.is_antag_training_patient())
+				else if(!mesa_mode && !H.client && !H.is_antag_training_patient())
 					failed = span_warning("[req_defib ? "[defib]" : "[src]"] жужжит: Реанимация не удалась - временное отсутствие активности в мозге пациента. Повторите попытку реанимации.")
-				else
+				else if(!mesa_mode)
 					var/obj/item/organ/brain/BR = H.getorgan(/obj/item/organ/brain)
 					if(BR) //BUG_PROBABLE_CAUSE - slight difference between us and tg
 						if(BR.organ_flags & ORGAN_FAILING)
@@ -685,7 +692,14 @@
 					user.visible_message("<span class='notice'>[req_defib ? "[defib]" : "[src]"] пищит: Реанимация прошла успешно.</span>")
 					playsound(src, 'sound/machines/defib_success.ogg', 50, 0)
 					H.set_heartattack(FALSE)
-					H.revive(post_revive_effects = TRUE, medical_revive = TRUE)
+					if(mesa_mode)
+						defib.mesa_restore_patient(H)
+					var/revived = H.revive(post_revive_effects = TRUE, medical_revive = TRUE)
+					if(mesa_mode && revived)
+						// Призрак возвращаем в тело только после успешного revive -
+						// can_be_medically_revived() внутри revive ждёт живой ghost.client.
+						H.notify_ghost_cloning("Your heart is being defibrillated!")
+						H.grab_ghost()
 					if(breathless)
 						H.emote("twitch")
 						if(H.health > HALFWAYCRITDEATH)
@@ -695,7 +709,7 @@
 						H.emote("gasp")
 					H.Jitter(100)
 					SEND_SIGNAL(H, COMSIG_LIVING_MINOR_SHOCK)
-					if(tplus > tloss)
+					if(!mesa_mode && tplus > tloss)
 						// setOrganLoss, а не adjustOrganLoss: tlimit растянут до четырёх часов
 						// ради окна реанимации, поэтому выражение почти всегда даёт ровно 99,
 						// и каждый следующий разряд добивал мозг до тяжёлой травмы. Потолок на

@@ -22,10 +22,11 @@
 	/// Whether we do extra damage when hitting a mech or silicon
 	var/anti_armour_damage = 75
 	/// Whether the rocket is capable of instantly killing a living target
+	var/allow_crit_gib = TRUE
 
 /obj/item/projectile/bullet/a84mm/on_hit(atom/target, blocked = 0, pierce_hit)
 	var/random_crit_gib = FALSE
-	if(isliving(target) && prob(5))
+	if(allow_crit_gib && isliving(target) && prob(5))
 		var/mob/living/gibbed_dude = target
 		// if(gibbed_dude.stat < UNCONSCIOUS)
 		gibbed_dude.say("ЭТО ЁБАННАЯ РАКЕТ-", forced = "hit by rocket")
