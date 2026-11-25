@@ -1,6 +1,12 @@
 /proc/is_camera_chat_appearance(image/visual)
 	return visual.icon in GLOB.speech_bubble_icons
 
+/proc/camera_can_render_subject(atom/movable/subject, see_ghosts = FALSE)
+	if(!subject.alpha || (subject.invisibility && !(see_ghosts && isobserver(subject))))
+		return FALSE
+	// Служебные объекты рисуются отдельно от спрайтов сцены.
+	return !(istype(subject, /atom/movable/lighting_object) || (subject.appearance_flags & PLANE_MASTER) || (subject.render_target && copytext(subject.render_target, 1, 2) == "*"))
+
 /datum/camera_frame_entry
 	var/image/visual
 	var/pixel_left
@@ -54,6 +60,104 @@
 /proc/play_camera_shutter(atom/source, sound/custom_sound)
 	playsound(source, custom_sound || pick('sound/items/polaroid1.ogg', 'sound/items/polaroid2.ogg'), 75, TRUE, -3)
 
+/atom/movable/screen/map_view/photo_viewfinder
+	icon = null
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	appearance_flags = APPEARANCE_UI | TILE_BOUND
+	var/atom/movable/screen/background/frame_border
+	var/list/frame_appearances = list()
+	var/list/frame_buffer = list()
+
+/atom/movable/screen/map_view/photo_viewfinder/Destroy()
+	hide_from()
+	QDEL_NULL(frame_border)
+	frame_appearances = null
+	frame_buffer = null
+	return ..()
+
+/atom/movable/screen/map_view/photo_viewfinder/ensure_plane_group()
+	if(!popup_plane_group)
+		popup_plane_group = new /datum/plane_master_group/popup/on_demand/photo_viewfinder(PLANE_GROUP_POPUP_WINDOW(src), assigned_map)
+	return popup_plane_group
+
+/atom/movable/screen/map_view/photo_viewfinder/proc/show_frame(client/viewer, radius_x, radius_y)
+	frame_border = new
+	frame_border.assigned_map = assigned_map
+	frame_border.del_on_map_removal = FALSE
+	frame_border.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	resize_frame(radius_x, radius_y)
+	display_to_client(viewer)
+	viewer.register_map_obj(frame_border)
+
+/atom/movable/screen/map_view/photo_viewfinder/proc/resize_frame(radius_x, radius_y)
+	frame_border.fill_rect(1, 1, radius_x * 2 + 1, radius_y * 2 + 1)
+
+/atom/movable/screen/map_view/photo_viewfinder/proc/clear_frame()
+	if(!length(frame_appearances))
+		return FALSE
+	frame_appearances.Cut()
+	overlays.Cut()
+	return TRUE
+
+/atom/movable/screen/map_view/photo_viewfinder/proc/update_frame(turf/center, mob/user, radius_x, radius_y, flash_enabled)
+	var/list/turfs = camera_frame_turfs(center, user, radius_x, radius_y, flash_enabled)
+	var/list/scene = frame_buffer
+	for(var/turf/tile as anything in turfs)
+		var/x = (tile.x - center.x + radius_x) * world.icon_size
+		var/y = (tile.y - center.y + radius_y) * world.icon_size
+		scene += tile.appearance
+		scene += x
+		scene += y
+		if(tile.loc.icon_state)
+			scene += tile.loc.appearance
+			scene += x
+			scene += y
+		if(!flash_enabled && tile.lighting_object)
+			scene += tile.lighting_object.appearance
+			scene += x
+			scene += y
+		// vis_contents турфа показал бы и невидимое содержимое. Передаём только внешности, разрешённые для снимка.
+		for(var/atom/movable/subject as anything in tile.contents)
+			if(!camera_can_render_subject(subject) || is_camera_chat_appearance(subject))
+				continue
+			scene += subject.appearance
+			scene += x + subject.step_x
+			scene += y + subject.step_y
+
+	var/offset = GET_TURF_PLANE_OFFSET(center)
+	popup_plane_group.ensure_popup_depth(offset)
+	var/atom/movable/screen/plane_master/overlay_light = popup_plane_group.get_plane(GET_NEW_PLANE(O_LIGHTING_VISUAL_PLANE, offset))
+	var/overlay_alpha = flash_enabled ? 0 : 255
+	if(overlay_light && overlay_light.alpha != overlay_alpha)
+		overlay_light.alpha = overlay_alpha
+	if(compare_list(scene, frame_appearances))
+		scene.Cut()
+		return FALSE
+	frame_buffer = frame_appearances
+	frame_buffer.Cut()
+	frame_appearances = scene
+	var/list/sprites = list()
+	for(var/index = 1, index <= length(scene), index += 3)
+		var/mutable_appearance/sprite = new
+		sprite.appearance = scene[index]
+		sprite.pixel_x += scene[index + 1]
+		sprite.pixel_y += scene[index + 2]
+		sprite.maptext = null
+		sprites += sprite
+	overlays = sprites
+	return TRUE
+
+/datum/plane_master_group/popup/on_demand/photo_viewfinder/get_plane_types()
+	return list(
+		/atom/movable/screen/plane_master/lighting,
+		/atom/movable/screen/plane_master/o_light_visual,
+		/atom/movable/screen/plane_master/emissive,
+		/atom/movable/screen/plane_master/lamps,
+		/atom/movable/screen/plane_master/lamps_selfglow,
+		/atom/movable/screen/plane_master/lamps_glare,
+		/atom/movable/screen/plane_master/chat_messages,
+	)
+
 /proc/render_camera_frame(list/turf/turfs, turf/center, psize_x, psize_y, use_scene_lighting, see_ghosts)
 	var/list/entries = list()
 	var/list/tile_lights
@@ -77,10 +181,7 @@
 		if(use_scene_lighting && tile.lighting_object)
 			LAZYADD(tile_lights, new /datum/camera_frame_entry(tile.lighting_object, tile_left, tile_bottom))
 		for(var/atom/movable/subject as anything in tile.contents)
-			if(!subject.alpha || (subject.invisibility && !(see_ghosts && isobserver(subject))))
-				continue
-			// Служебные маски и объекты освещения нельзя накладывать на кадр как обычные спрайты.
-			if(istype(subject, /atom/movable/lighting_object) || (subject.appearance_flags & PLANE_MASTER) || (subject.render_target && copytext(subject.render_target, 1, 2) == "*"))
+			if(!camera_can_render_subject(subject, see_ghosts))
 				continue
 			entries += new /datum/camera_frame_entry(subject, tile_left, tile_bottom)
 			if(use_scene_lighting)

@@ -2,6 +2,8 @@
 #define PDA_CAMERA_PRINT_UPLOAD_TIME (2.5 SECONDS)
 #define PDA_CAMERA_MAX_RADIUS 3
 #define PDA_CAMERA_CURSOR 'icons/effects/mouse_pointers/pda_camera.dmi'
+#define PDA_CAMERA_VIEWFINDER_DELAY (0.2 SECONDS)
+#define PDA_CAMERA_VIEWFINDER_IDLE_DELAY (0.5 SECONDS)
 
 /datum/computer_file/program/pda_camera
 	filename = "Camera"
@@ -43,6 +45,12 @@
 	var/previous_mouse_up
 	var/previous_mouse_down
 	var/aim_time_zone
+	var/atom/movable/screen/map_view/photo_viewfinder/viewfinder
+	var/viewfinder_timer
+	var/viewfinder_idle_timer = FALSE
+	var/viewfinder_cursor_dirty = FALSE
+	var/datum/weakref/viewfinder_target_ref
+	var/datum/weakref/viewfinder_origin_ref
 
 /datum/computer_file/program/pda_camera/Destroy()
 	close_camera_window()
@@ -147,6 +155,7 @@
 	data["frameWidth"] = frame_radius_x * 2 + 1
 	data["frameHeight"] = frame_radius_y * 2 + 1
 	data["viewfinder"] = aiming ? "aiming" : (aim_requested ? "blocked" : "idle")
+	data["viewfinderMap"] = viewfinder?.assigned_map
 	data["capturing"] = capturing
 	data["localCount"] = length(local_photos)
 	data["page"] = gallery_page
@@ -190,6 +199,7 @@
 			if(tab != "camera" || capturing)
 				return FALSE
 			flash_enabled = !flash_enabled
+			queue_viewfinder_refresh()
 		if("set_width", "set_height")
 			var/size = params["size"]
 			if(tab != "camera" || capturing || !isnum(size))
@@ -199,6 +209,8 @@
 				frame_radius_x = radius
 			else
 				frame_radius_y = radius
+			viewfinder?.resize_frame(frame_radius_x, frame_radius_y)
+			queue_viewfinder_refresh()
 		if("shutter")
 			if(tab != "camera" || capturing)
 				return FALSE
@@ -300,9 +312,16 @@
 	aim_client.mouse_down_icon = PDA_CAMERA_CURSOR
 	aim_client.mouse_pointer_icon = PDA_CAMERA_CURSOR
 	RegisterSignal(user, COMSIG_MOB_CLICKON, PROC_REF(on_photo_click))
-	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_aim_moved))
-	RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(on_aim_user_deleted))
+	RegisterSignal(user, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_STATCHANGE), PROC_REF(on_aim_moved))
+	RegisterSignal(user, COMSIG_MOB_CLIENT_MOUSEMOVE, PROC_REF(on_aim_mouse_moved))
+	RegisterSignal(user, list(COMSIG_PARENT_QDELETING, COMSIG_MOB_HUD_CREATED), PROC_REF(on_aim_invalidated))
 	RegisterSignal(computer, list(COMSIG_MOVABLE_MOVED, COMSIG_ITEM_DROPPED, COMSIG_ITEM_EQUIPPED), PROC_REF(on_aim_moved))
+	RegisterSignal(aim_client, COMSIG_CLIENT_SET_EYE, PROC_REF(on_aim_moved))
+	viewfinder = new
+	viewfinder.generate_view("pda_camera_[REF(src)]_map")
+	viewfinder.show_frame(aim_client, frame_radius_x, frame_radius_y)
+	viewfinder_cursor_dirty = TRUE
+	queue_viewfinder_refresh()
 
 /datum/computer_file/program/pda_camera/proc/stop_aiming()
 	aim_requested = FALSE
@@ -310,10 +329,20 @@
 	if(!aiming)
 		return
 	aiming = FALSE
+	if(viewfinder_timer)
+		deltimer(viewfinder_timer)
+		viewfinder_timer = null
+	viewfinder_idle_timer = FALSE
+	viewfinder_cursor_dirty = FALSE
+	viewfinder_target_ref = null
+	viewfinder_origin_ref = null
+	QDEL_NULL(viewfinder)
+	if(aim_client)
+		UnregisterSignal(aim_client, COMSIG_CLIENT_SET_EYE)
 	restore_aim_cursor()
 	var/mob/viewer = viewer_ref?.resolve()
 	if(viewer)
-		UnregisterSignal(viewer, list(COMSIG_MOB_CLICKON, COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
+		UnregisterSignal(viewer, list(COMSIG_MOB_CLICKON, COMSIG_MOVABLE_MOVED, COMSIG_MOB_STATCHANGE, COMSIG_MOB_CLIENT_MOUSEMOVE, COMSIG_PARENT_QDELETING, COMSIG_MOB_HUD_CREATED))
 	if(computer)
 		UnregisterSignal(computer, list(COMSIG_MOVABLE_MOVED, COMSIG_ITEM_DROPPED, COMSIG_ITEM_EQUIPPED))
 
@@ -333,13 +362,77 @@
 	previous_mouse_up = null
 	previous_mouse_down = null
 
-/datum/computer_file/program/pda_camera/proc/on_aim_user_deleted(mob/source)
+/datum/computer_file/program/pda_camera/proc/on_aim_invalidated(mob/source)
 	SIGNAL_HANDLER
 	stop_aiming()
+	if(!QDELETED(source))
+		INVOKE_ASYNC(src, PROC_REF(push_update))
+
+/datum/computer_file/program/pda_camera/proc/on_aim_mouse_moved(mob/user, atom/target, turf/location, control, params)
+	SIGNAL_HANDLER
+	if(control != "mapwindow.map" && control != "map")
+		return
+	viewfinder_cursor_dirty = TRUE
+	queue_viewfinder_refresh()
+
+/datum/computer_file/program/pda_camera/proc/queue_viewfinder_refresh()
+	if(!viewfinder || (!viewfinder_cursor_dirty && !viewfinder_target_ref && !viewfinder_timer))
+		return
+	if(viewfinder_timer)
+		if(!viewfinder_idle_timer)
+			return
+		deltimer(viewfinder_timer)
+	viewfinder_idle_timer = FALSE
+	viewfinder_timer = addtimer(CALLBACK(src, PROC_REF(refresh_viewfinder)), PDA_CAMERA_VIEWFINDER_DELAY, TIMER_STOPPABLE)
+
+/datum/computer_file/program/pda_camera/proc/get_viewfinder_cursor_turf(mob/user, params)
+	if(!params || !isturf(user.loc))
+		return null
+	var/list/modifiers = params2list(params)
+	if(modifiers[SCREEN_LOC])
+		return parse_caught_click_modifiers(modifiers, user.loc, user.client)
+
+/datum/computer_file/program/pda_camera/proc/refresh_viewfinder()
+	viewfinder_timer = null
+	if(!aiming || QDELETED(viewfinder))
+		return
+	var/mob/viewer = viewer_ref?.resolve()
+	if(!can_aim(viewer) || computer.active_program != src || !computer.enabled)
+		stop_aiming()
+		aim_requested = TRUE
+		push_update()
+		return
+	var/turf/center = viewfinder_target_ref?.resolve()
+	if(aim_client.mouse_control_object == "mapwindow.map" || aim_client.mouse_control_object == "map")
+		if(viewfinder_cursor_dirty)
+			var/atom/target = aim_client.mouse_object_ref?.resolve()
+			var/turf/location = aim_client.mouse_location_ref?.resolve()
+			if(istype(target, /atom/movable/screen/click_catcher) || !target)
+				center = isturf(location) ? location : get_viewfinder_cursor_turf(viewer, aim_client.mouseParams)
+			else
+				center = istype(target, /atom/movable/screen) ? null : get_turf(target)
+		else if(center && viewfinder_origin_ref?.resolve() != viewer.loc)
+			// Камера сдвинулась под неподвижной мышью. Берём её позицию относительно нового центра.
+			center = get_viewfinder_cursor_turf(viewer, aim_client.mouseParams)
+		viewfinder_target_ref = WEAKREF(center)
+		viewfinder_origin_ref = WEAKREF(viewer.loc)
+	viewfinder_cursor_dirty = FALSE
+	if(!center)
+		viewfinder.clear_frame()
+		return
+	var/changed
+	if(!viewer.is_blind() && camera_can_target(center, viewer, flash_enabled))
+		changed = viewfinder.update_frame(center, viewer, frame_radius_x, frame_radius_y, flash_enabled)
+	else
+		changed = viewfinder.clear_frame()
+	// Свет и двери могут меняться без движения мыши. Неподвижный кадр проверяем реже.
+	viewfinder_idle_timer = !changed
+	viewfinder_timer = addtimer(CALLBACK(src, PROC_REF(refresh_viewfinder)), changed ? PDA_CAMERA_VIEWFINDER_DELAY : PDA_CAMERA_VIEWFINDER_IDLE_DELAY, TIMER_STOPPABLE)
 
 /datum/computer_file/program/pda_camera/proc/on_aim_moved(datum/source)
 	SIGNAL_HANDLER
 	if(can_aim(viewer_ref?.resolve()))
+		queue_viewfinder_refresh()
 		return
 	stop_aiming()
 	aim_requested = TRUE
@@ -548,3 +641,5 @@
 #undef PDA_CAMERA_PRINT_UPLOAD_TIME
 #undef PDA_CAMERA_MAX_RADIUS
 #undef PDA_CAMERA_CURSOR
+#undef PDA_CAMERA_VIEWFINDER_DELAY
+#undef PDA_CAMERA_VIEWFINDER_IDLE_DELAY

@@ -4,6 +4,7 @@ import { useBackend } from '../backend';
 import {
   Box,
   Button,
+  ByondUi,
   Icon,
   Input,
   LabeledList,
@@ -42,6 +43,7 @@ type CameraData = {
   frameHeight: number;
   maxFrameSize: number;
   viewfinder: 'idle' | 'aiming' | 'blocked';
+  viewfinderMap: string | null;
   capturing: ByondFlag;
   localCount: number;
   gallery: GalleryPhoto[] | null;
@@ -62,10 +64,12 @@ type CameraData = {
   serverUtcOffset: string;
 };
 
-const CameraSettings = () => {
+const CameraSettings = ({ open, onOpenChange }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
   const { act, data } = useBackend<CameraData>();
   const { frameWidth, frameHeight, maxFrameSize, capturing } = data;
-  const [open, setOpen] = useState(false);
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -74,12 +78,12 @@ const CameraSettings = () => {
     }
     const closeOutside = (event: MouseEvent) => {
       if (!container.current?.contains(event.target as Node)) {
-        setOpen(false);
+        onOpenChange(false);
       }
     };
     document.addEventListener('click', closeOutside, true);
     return () => document.removeEventListener('click', closeOutside, true);
-  }, [open]);
+  }, [open, onOpenChange]);
 
   const dimensions = [
     { label: 'Ширина, м', action: 'set_width', value: frameWidth },
@@ -98,7 +102,7 @@ const CameraSettings = () => {
         width="3.5rem"
         lineHeight="2.8rem"
         textAlign="center"
-        onClick={() => setOpen(previous => !previous)}
+        onClick={() => onOpenChange(!open)}
       />
       {open && (
         <Box
@@ -137,7 +141,8 @@ const CameraSettings = () => {
 
 const Viewfinder = () => {
   const { act, data } = useBackend<CameraData>();
-  const { flash, viewfinder, capturing, localCount } = data;
+  const { flash, viewfinder, viewfinderMap, capturing, localCount } = data;
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const aiming = viewfinder === 'aiming';
   const blocked = viewfinder === 'blocked';
 
@@ -152,16 +157,35 @@ const Viewfinder = () => {
             border: '1px solid rgba(255, 255, 255, 0.16)',
             display: 'grid',
             placeItems: 'center',
+            position: 'relative',
           }}>
-          <Box textAlign="center" textColor="#eee" mx={2}>
-            {!blocked && <Icon name={aiming ? 'crosshairs' : 'camera'} size={4} />}
-            {aiming && <Box mt={1}>Щёлкните по цели на игровой карте.</Box>}
-            {blocked && (
-              <Box>Для съёмки держите ПДА в руке и выйдите на открытое место.</Box>
-            )}
-          </Box>
+          {aiming && viewfinderMap && !settingsOpen ? (
+            <ByondUi
+              key={viewfinderMap}
+              fillPositionedParent
+              params={{
+                id: viewfinderMap,
+                type: 'map',
+                letterbox: true,
+                'background-color': '#101216',
+                'is-disabled': true,
+              }}
+            />
+          ) : (
+            <Box textAlign="center" textColor="#eee" mx={2}>
+              {!blocked && <Icon name={aiming ? 'crosshairs' : 'camera'} size={4} />}
+              {blocked && (
+                <Box>Для съёмки держите ПДА в руке и выйдите на открытое место.</Box>
+              )}
+            </Box>
+          )}
         </Box>
       </Stack.Item>
+      {aiming && (
+        <Stack.Item textAlign="center" color="label">
+          Наведите курсор и щёлкните по цели на игровой карте.
+        </Stack.Item>
+      )}
       <Stack.Item>
         <Stack>
           <Stack.Item>
@@ -178,7 +202,7 @@ const Viewfinder = () => {
             />
           </Stack.Item>
           <Stack.Item>
-            <CameraSettings />
+            <CameraSettings open={settingsOpen} onOpenChange={setSettingsOpen} />
           </Stack.Item>
           <Stack.Item grow>
             <Button

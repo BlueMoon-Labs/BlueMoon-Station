@@ -236,10 +236,7 @@
 		after_picture(user, picture, flag)
 	blending = FALSE
 
-/proc/capture_camera_picture(turf/target_turf, mob/user, size_x, size_y, flash_enabled, see_ghosts = FALSE, atom/target = target_turf)
-	size_x = clamp(size_x, 0, CAMERA_PICTURE_SIZE_HARD_LIMIT)
-	size_y = clamp(size_y, 0, CAMERA_PICTURE_SIZE_HARD_LIMIT)
-	var/list/photo_description = list("На снимке участок размером [size_x * 2 + 1] × [size_y * 2 + 1] м.")
+/proc/camera_frame_turfs(turf/target_turf, mob/user, size_x, size_y, flash_enabled, atom/target = target_turf)
 	var/ai_user = isAI(user)
 	var/list/seen
 	if(flash_enabled)
@@ -251,19 +248,31 @@
 		var/list/viewlist = user?.client ? getviewsize(user.client.view) : getviewsize(world.view)
 		var/view_radius = max(viewlist[1], viewlist[2]) + max(size_x, size_y)
 		var/atom/view_center = istype(user) ? user : target
+		var/turf/view_turf = get_turf(view_center)
+		if(view_turf)
+			// За пределами этого радиуса нет ни одного тайла кадра.
+			view_radius = min(view_radius, max(abs(view_turf.x - target_turf.x) + size_x, abs(view_turf.y - target_turf.y) + size_y))
 		seen = get_hear(view_radius, view_center)
 	var/list/turfs = list()
-	var/list/mobs = list()
-	var/blueprints = FALSE
 	var/turf/bottom_left = locate(max(1, target_turf.x - size_x), max(1, target_turf.y - size_y), target_turf.z)
 	var/turf/top_right = locate(min(world.maxx, target_turf.x + size_x), min(world.maxy, target_turf.y + size_y), target_turf.z)
 	for(var/turf/T in block(bottom_left, top_right))
 		if((ai_user && GLOB.cameranet.checkTurfVis(T)) || (T in seen))
 			turfs += T
-			for(var/mob/M in T)
-				mobs += M
-			if(locate(/obj/item/areaeditor/blueprints) in T)
-				blueprints = TRUE
+	return turfs
+
+/proc/capture_camera_picture(turf/target_turf, mob/user, size_x, size_y, flash_enabled, see_ghosts = FALSE, atom/target = target_turf)
+	size_x = clamp(size_x, 0, CAMERA_PICTURE_SIZE_HARD_LIMIT)
+	size_y = clamp(size_y, 0, CAMERA_PICTURE_SIZE_HARD_LIMIT)
+	var/list/photo_description = list("На снимке участок размером [size_x * 2 + 1] × [size_y * 2 + 1] м.")
+	var/list/turfs = camera_frame_turfs(target_turf, user, size_x, size_y, flash_enabled, target)
+	var/list/mobs = list()
+	var/blueprints = FALSE
+	for(var/turf/T as anything in turfs)
+		for(var/mob/M in T)
+			mobs += M
+		if(locate(/obj/item/areaeditor/blueprints) in T)
+			blueprints = TRUE
 	if(!length(turfs))
 		turfs += target_turf
 	for(var/i in mobs)
