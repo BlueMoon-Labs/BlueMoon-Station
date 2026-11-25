@@ -445,7 +445,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	return environment ? environment.return_pressure() : 0
 
 /mob/living/proc/show_speech_bubble(message, bubble_type, list/recipient_clients)
-	var/image/bubble = image('icons/mob/talk.dmi', src, "[bubble_type][say_test(message)]", FLY_LAYER)
+	var/image/bubble = image(SPEECH_BUBBLE_ICON, src, "[bubble_type][say_test(message)]", FLY_LAYER)
 	bubble.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA
 	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(flick_overlay), bubble, recipient_clients, 30)
 

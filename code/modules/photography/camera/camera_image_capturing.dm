@@ -1,19 +1,36 @@
+/proc/is_camera_chat_appearance(image/visual)
+	return visual.icon in GLOB.speech_bubble_icons
+
 /datum/camera_frame_entry
 	var/image/visual
 	var/pixel_left
 	var/pixel_bottom
 	var/render_plane
 
-/datum/camera_frame_entry/New(atom/subject, tile_left, tile_bottom)
-	visual = subject.appearance
+/datum/camera_frame_entry/New(atom/subject, tile_left, tile_bottom, image/attached_visual)
+	visual = attached_visual || subject.appearance
 	pixel_left = tile_left + subject.pixel_x + subject.pixel_w
 	pixel_bottom = tile_bottom + subject.pixel_y + subject.pixel_z
 	if(ismovable(subject))
 		var/atom/movable/movable_subject = subject
 		pixel_left += movable_subject.step_x
 		pixel_bottom += movable_subject.step_y
+	if(attached_visual)
+		pixel_left += attached_visual.pixel_x + attached_visual.pixel_w
+		pixel_bottom += attached_visual.pixel_y + attached_visual.pixel_z
 	var/plane = visual.plane
 	render_plane = plane == FLOAT_PLANE ? 0 : PLANE_TO_TRUE(plane)
+
+/datum/camera_frame_entry/proc/draw(icon/frame, list/flat_icon_cache, blend_mode)
+	var/appearance_key = "\ref[visual]"
+	var/list/rendered = flat_icon_cache[appearance_key]
+	if(!rendered)
+		rendered = list()
+		rendered["icon"] = getFlatIcon(visual, no_anim = TRUE, icon_offsets = rendered, apply_photo_transform = TRUE)
+		flat_icon_cache[appearance_key] = rendered
+	var/icon/flattened = rendered["icon"]
+	if(flattened)
+		frame.Blend(flattened, blend_mode, pixel_left - rendered["x"], pixel_bottom - rendered["y"])
 
 /proc/cmp_camera_frame_entry(datum/camera_frame_entry/left, datum/camera_frame_entry/right)
 	if(left.render_plane != right.render_plane)
@@ -22,6 +39,10 @@
 
 /obj/item/camera/proc/camera_get_icon(list/turf/turfs, turf/center, psize_x = 96, psize_y = 96)
 	var/list/entries = list()
+	var/list/tile_lights
+	var/list/overlay_lights
+	var/use_scene_lighting = !flash_enabled
+	var/overlay_light_plane = use_scene_lighting ? MUTATE_PLANE(O_LIGHTING_VISUAL_PLANE, center) : null
 	var/x_origin = round((psize_x - world.icon_size) / 2) + 1
 	var/y_origin = round((psize_y - world.icon_size) / 2) + 1
 	// Снимаем внешность и координаты до первого CHECK_TICK, чтобы кадр не менялся при сборке.
@@ -31,6 +52,8 @@
 		entries += new /datum/camera_frame_entry(tile, tile_left, tile_bottom)
 		if(tile.loc.icon_state)
 			entries += new /datum/camera_frame_entry(tile.loc, tile_left, tile_bottom)
+		if(use_scene_lighting && tile.lighting_object)
+			LAZYADD(tile_lights, new /datum/camera_frame_entry(tile.lighting_object, tile_left, tile_bottom))
 		for(var/atom/movable/subject as anything in tile.contents)
 			if(!subject.alpha || (subject.invisibility && !(see_ghosts && isobserver(subject))))
 				continue
@@ -38,26 +61,39 @@
 			if(istype(subject, /atom/movable/lighting_object) || (subject.appearance_flags & PLANE_MASTER) || (subject.render_target && copytext(subject.render_target, 1, 2) == "*"))
 				continue
 			entries += new /datum/camera_frame_entry(subject, tile_left, tile_bottom)
+			if(use_scene_lighting)
+				for(var/image/light_overlay as anything in subject.underlays)
+					if(light_overlay.plane == overlay_light_plane && light_overlay.alpha)
+						LAZYADD(overlay_lights, new /datum/camera_frame_entry(subject, tile_left, tile_bottom, light_overlay))
 
 	var/icon/result = icon('icons/effects/camera_image_base.dmi', "")
 	result.Scale(psize_x, psize_y)
 	result.DrawBox("#000000", 1, 1, psize_x, psize_y)
 	sortTim(entries, GLOBAL_PROC_REF(cmp_camera_frame_entry))
 
-	// У одинаковых внешностей общие растр и смещение, даже если спрайты стоят на разных тайлах.
+	// Одинаковые внешности используют общий растр и смещение в пределах кадра.
 	var/list/flat_icon_cache = list()
+	var/icon/lighting_map
+	if(tile_lights || overlay_lights)
+		// Белый сохраняет яркость тайлов без маски. Цветные маски освещают уже собранную сцену.
+		lighting_map = icon('icons/effects/camera_image_base.dmi', "")
+		lighting_map.Scale(psize_x, psize_y)
+		lighting_map.DrawBox(COLOR_WHITE, 1, 1, psize_x, psize_y)
+		for(var/datum/camera_frame_entry/light as anything in tile_lights)
+			light.draw(lighting_map, flat_icon_cache, ICON_OVERLAY)
+			CHECK_TICK
+		for(var/datum/camera_frame_entry/light as anything in overlay_lights)
+			light.draw(lighting_map, flat_icon_cache, ICON_OVERLAY)
+			CHECK_TICK
+
 	for(var/datum/camera_frame_entry/entry as anything in entries)
-		var/image/visual = entry.visual
-		var/appearance_key = "\ref[visual]"
-		var/list/rendered = flat_icon_cache[appearance_key]
-		if(!rendered)
-			rendered = list()
-			rendered["icon"] = getFlatIcon(visual, no_anim = TRUE, icon_offsets = rendered, apply_photo_transform = TRUE)
-			flat_icon_cache[appearance_key] = rendered
-		var/icon/flattened = rendered["icon"]
-		if(flattened)
-			result.Blend(flattened, blendMode2iconMode(visual.blend_mode), entry.pixel_left - rendered["x"], entry.pixel_bottom - rendered["y"])
+		if(lighting_map && entry.render_plane > LIGHTING_PLANE)
+			result.Blend(lighting_map, ICON_MULTIPLY)
+			lighting_map = null
+		entry.draw(result, flat_icon_cache, blendMode2iconMode(entry.visual.blend_mode))
 		CHECK_TICK
+	if(lighting_map)
+		result.Blend(lighting_map, ICON_MULTIPLY)
 
 	if(!QDELETED(src) && !silent)
 		playsound(loc, custom_sound || pick('sound/items/polaroid1.ogg', 'sound/items/polaroid2.ogg'), 75, TRUE, -3)

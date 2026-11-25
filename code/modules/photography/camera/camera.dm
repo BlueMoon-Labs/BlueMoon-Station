@@ -45,6 +45,8 @@
 /obj/item/camera/examine(mob/user)
 	. = ..()
 	. += "<span class='notice'>Alt-click to change its focusing, allowing you to set how big of an area it will capture.</span>"
+	if(initial(flash_enabled))
+		. += span_notice("Вспышка [flash_enabled ? "включена" : "выключена"]. Ctrl+Shift+ЛКМ переключает вспышку. При выключенной вспышке на снимке сохраняется освещение сцены.")
 	. += "It has [pictures_left] photos left."
 
 /obj/item/camera/AltClick(mob/user)
@@ -55,6 +57,14 @@
 	var/desired_y = input(user, "How wide do you want the camera to shoot, between [picture_size_y_min] and [picture_size_y_max]?", "Zoom", picture_size_y) as num
 	picture_size_x = min(clamp(desired_x, picture_size_x_min, picture_size_x_max), CAMERA_PICTURE_SIZE_HARD_LIMIT)
 	picture_size_y = min(clamp(desired_y, picture_size_y_min, picture_size_y_max), CAMERA_PICTURE_SIZE_HARD_LIMIT)
+	return TRUE
+
+/obj/item/camera/CtrlShiftClick(mob/user)
+	. = ..()
+	if(!initial(flash_enabled) || !user.canUseTopic(src, BE_CLOSE, check_resting = FALSE))
+		return
+	flash_enabled = !flash_enabled
+	to_chat(user, span_notice("Вспышка [flash_enabled ? "включена" : "выключена"]."))
 	return TRUE
 
 /obj/item/camera/attack_self(mob/user)

@@ -869,6 +869,8 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 		icon_offsets["y"] = 0
 	if(!A || A.alpha <= 0)
 		return BLANK
+	if(apply_photo_transform && is_camera_chat_appearance(A))
+		return null
 
 	var/noIcon = FALSE
 	if(start)

@@ -3,6 +3,18 @@
 	Currently contains speech spans and message modes
 */
 
+// Для нового файла спрайтов пузырьков добавь дефайн и внеси его в список фильтра фотографий.
+#define SPEECH_BUBBLE_ICON 'icons/mob/talk.dmi'
+#define SPEECH_BUBBLE_ICON_64X64 'icons/mob/talk_64x64.dmi'
+#define SPEECH_BUBBLE_ICON_DOGBORG 'modular_sand/icons/mob/talk.dmi'
+
+GLOBAL_LIST_INIT(speech_bubble_icons, list(
+	SPEECH_BUBBLE_ICON,
+	SPEECH_BUBBLE_ICON_64X64,
+	SPEECH_BUBBLE_ICON_DOGBORG,
+))
+GLOBAL_PROTECT(speech_bubble_icons)
+
 //Message modes. Each one defines a radio channel, more or less.
 #define MODE_HEADSET "headset"
 #define MODE_ROBOT "robot"
