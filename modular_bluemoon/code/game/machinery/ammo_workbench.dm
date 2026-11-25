@@ -31,8 +31,10 @@
 	/// A list of all possible ammo types.
 	var/list/possible_ammo_types = list()
 	// hello future codediver. open to suggestions on how to do the following without it sucking so badly
-	/// what casings we're able to use
+	/// what casings we're able to use (просто список типов, без ассоциативных ключей)
 	var/list/valid_casings = list()
+	/// названия типов из valid_casings, чтобы length() списка не учитывал ключи дважды
+	var/list/casing_names = list()
 	/// the material requirement strings for these casings (for the tooltip)
 	var/list/casing_mat_strings = list()
 	/// can it print ammunition flagged as harmful (e.g. most ammo)?
@@ -117,6 +119,7 @@
 
 /obj/machinery/ammo_workbench/proc/update_ammotypes()
 	LAZYCLEARLIST(valid_casings)
+	LAZYCLEARLIST(casing_names)
 	LAZYCLEARLIST(casing_mat_strings)
 	if(!loaded_magazine)
 		return
@@ -166,7 +169,7 @@
 		mat_string += " на патрон"
 
 		valid_casings += our_casing
-		valid_casings[our_casing] = initial(our_casing.name)
+		casing_names[our_casing] = initial(our_casing.name)
 		casing_mat_strings += mat_string
 
 /obj/machinery/ammo_workbench/ui_data(mob/user)
@@ -228,7 +231,7 @@
 	for(var/casings_to_relay = 1 to length(valid_casings))
 		var/typepath = valid_casings[casings_to_relay]
 		data["available_rounds"] += list(list(
-			"name" = valid_casings[typepath],
+			"name" = casing_names[typepath],
 			"typepath" = typepath,
 			"mats_list" = casing_mat_strings[casings_to_relay]
 		))
