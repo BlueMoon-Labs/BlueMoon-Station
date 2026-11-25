@@ -841,3 +841,12 @@
   - bugfix: Кнопки Your Last Round / Server's Last Round теперь открывают современный
       tgui-отчёт вместо устаревшего HTML-окна.
     pr: 4438
+2026-11-25:
+  Lev1932:
+  - pr: 4452
+    rscadd: NIF теперь сохраняется между раундами
+  - pr: 4452
+    rscadd: Теперь NIFSoft "Grimoire Libidine" может создать большую анальную пробку
+  cnaper-dodo:
+  - pr: 4449
+    rscadd: add ship hold
