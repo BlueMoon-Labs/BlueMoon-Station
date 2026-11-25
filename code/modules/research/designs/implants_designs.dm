@@ -86,7 +86,8 @@
 	construction_time = 200
 	build_path = /obj/item/organ/cyberimp/arm/shield/sec_level
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags =  DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = RIOT_SHIELD_SEC_LEVEL
 
 /datum/design/cyberimp_shield/hack
 	name = "Riot Shield implant"
@@ -94,21 +95,40 @@
 	build_path = /obj/item/organ/cyberimp/arm/shield
 	hacked_only = TRUE
 
-/datum/design/cyberimp_chem
+/datum/design/cyberimp_bloodpump
 	name = "Corporate Blood pump implant"
 	desc = "An emergency blood pump that injects regenerative compounds into the bloodstream when critically injured."
-	id = "ci-chemseq"
+	id = "ci-bloodpump"
 	build_type = PROTOLATHE | MECHFAB
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 5000, /datum/material/gold = 1000)
 	construction_time = 120
 	build_path = /obj/item/organ/cyberimp/chest/blood_pump/sec_level
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = CHEM_SEQ_SEC_LEVEL
+
+/datum/design/cyberimp_bloodpump/hack
+	name = "Blood pump implant"
+	id = "ci-bloodpump-hack"
+	build_path = /obj/item/organ/cyberimp/chest/blood_pump
+	hacked_only = TRUE
+
+/datum/design/cyberimp_chem
+	name = "Corporate chemical sequencer implant"
+	desc = "An emergency blood pump that injects regenerative compounds into the bloodstream when critically injured."
+	id = "ci-chemseq"
+	build_type = PROTOLATHE | MECHFAB
+	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 5000, /datum/material/gold = 1000)
+	construction_time = 120
+	build_path = /obj/item/organ/cyberimp/chest/chem_implant/sec_level
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = CHEM_SEQ_SEC_LEVEL
 
 /datum/design/cyberimp_chem/hack
-	name = "Blood pump implant"
+	name = "Chemical sequencer implant"
 	id = "ci-chemseq-hack"
-	build_path = /obj/item/organ/cyberimp/chest/blood_pump
+	build_path = /obj/item/organ/cyberimp/chest/chem_implant
 	hacked_only = TRUE
 
 /datum/design/cyberimp_blood_pump_antag
@@ -176,7 +196,7 @@
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 500, /datum/material/gold = 500)
 	build_path = /obj/item/organ/cyberimp/eyes/hud/diagnostic
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+    departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/cyberimp_antidrop
 	name = "Corporate Anti-Drop Implant"
@@ -187,7 +207,8 @@
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 400, /datum/material/gold = 400)
 	build_path = /obj/item/organ/cyberimp/brain/anti_drop/sec_level
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = ANTI_DROP_SEC_LEVEL
 
 /datum/design/cyberimp_antidrop/hack
 	name = "Anti-Drop Implant"
@@ -204,7 +225,8 @@
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 500, /datum/material/gold = 1000)
 	build_path = /obj/item/organ/cyberimp/brain/anti_stun/sec_level
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = CNS_REBOOTER_SEC_LEVEL
 
 /datum/design/cyberimp_antistun/hack
 	name = "CNS Rebooter Implant"
@@ -254,7 +276,8 @@
 	materials = list(/datum/material/iron = 800, /datum/material/glass = 800, /datum/material/gold = 300, /datum/material/uranium = 500)
 	build_path = /obj/item/organ/cyberimp/chest/reviver/sec_level
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = REVIVER_SEC_LEVEL
 
 /datum/design/cyberimp_reviver/hack
 	name = "Reviver Implant"
@@ -282,7 +305,7 @@
 	materials = list(/datum/material/iron = 5000, /datum/material/titanium = 2500, /datum/material/silver = 1500)
 	build_path = /obj/item/organ/cyberimp/leg/tendons
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/cyberimp_leg_ankles
 	name = "Fortified Ankles Implant"
@@ -293,7 +316,7 @@
 	materials = list(/datum/material/iron = 5000, /datum/material/titanium = 3000, /datum/material/glass = 1000)
 	build_path = /obj/item/organ/cyberimp/leg/ankles
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/cyberimp_leg_lynx_paws
 	name = "Lynx Paws Implant"
@@ -304,7 +327,7 @@
 	materials = list(/datum/material/iron = 2000, /datum/material/glass = 1000, /datum/material/silver = 1000)
 	build_path = /obj/item/organ/cyberimp/leg/lynx_paws
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/cyberimp_sandevistan_corp
 	name = "Corporate Sandevistan"
@@ -315,7 +338,8 @@
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 3000, /datum/material/gold = 2000)
 	build_path = /obj/item/organ/cyberimp/brain/sandevistan/sec_level
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_RED
 
 /datum/design/cyberimp_sandevistan_corp/hack
 	name = "Sandevistan Implant"
@@ -332,7 +356,8 @@
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 3000, /datum/material/silver = 2000)
 	build_path = /obj/item/organ/cyberimp/brain/berserker/sec_level
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/cyberimp_berserker_corp/hack
 	name = "Berserker Implant"
@@ -349,7 +374,7 @@
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 4000, /datum/material/gold = 2000)
 	build_path = /obj/item/organ/cyberimp/arm/ballistic_processor
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/cyberimp_subdermal_armor
 	name = "Subdermal Armor Implant"
@@ -382,7 +407,8 @@
 	materials = list(/datum/material/iron = 4000, /datum/material/glass = 1500, /datum/material/silver = 2000, /datum/material/diamond = 500)
 	build_path = /obj/item/organ/cyberimp/arm/monostring/sec_level
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = MANTIS_IMPLANT_SEC_LEVEL
 
 /datum/design/cyberimp_monostring/hack
 	name = "Monowire Implant"
@@ -399,7 +425,8 @@
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 2000, /datum/material/silver = 3000, /datum/material/gold = 2000)
 	build_path = /obj/item/organ/cyberimp/arm/gorilla/sec_level
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/cyberimp_gorilla_arms/hack
 	name = "Gorilla Arms Implant"
@@ -416,7 +443,8 @@
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 3000, /datum/material/silver = 3000, /datum/material/gold = 2000)
 	build_path = /obj/item/organ/cyberimp/arm/handgun/sec_level
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = MANTIS_IMPLANT_SEC_LEVEL
 
 /datum/design/cyberimp_handcannon/hacked_only
 	name = "Integrated Hand Cannon Implant"
@@ -456,7 +484,8 @@
 	construction_time = 200
 	build_path = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = MANTIS_IMPLANT_SEC_LEVEL
 
 /datum/design/cyberimp_mantis/hack
 	name = "Mantis Blade Implant"
@@ -473,7 +502,7 @@
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 2500, /datum/material/silver = 2000, /datum/material/gold = 1500)
 	build_path = /obj/item/organ/internal/cyberimp/chest/scanner
 	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/cyberimphealerext
 	name = "External Healing Implant"
