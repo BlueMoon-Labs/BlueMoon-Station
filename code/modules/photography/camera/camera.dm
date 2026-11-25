@@ -105,14 +105,17 @@
 	if(!on || blending || !pictures_left)
 		return FALSE
 	var/turf/T = get_turf(target)
-	if(!T)
+	if(!T || (isAI(user) && !GLOB.cameranet.checkTurfVis(T)))
 		return FALSE
+	if(flash_enabled)
+		var/turf/view_center = get_turf(user)
+		if(istype(user) && user.client && user.client.view != world.view && !(T in dview(user.client.view, view_center)))
+			return FALSE
+		return T in dview(world.view, view_center)
 	if(istype(user))
-		if(isAI(user) && !GLOB.cameranet.checkTurfVis(T))
+		if(user.client && !(T in get_hear(user.client.view, user)))
 			return FALSE
-		else if(user.client && !(get_turf(target) in get_hear(user.client.view, user)))
-			return FALSE
-		else if(!(get_turf(target) in get_hear(world.view, user)))
+		else if(!(T in get_hear(world.view, user)))
 			return FALSE
 	else					//user is an atom
 		if(!(get_turf(target) in view(world.view, user)))
@@ -173,11 +176,16 @@
 	var/list/photo_description = list("На снимке участок размером [size_x * 2 + 1] × [size_y * 2 + 1] м.")
 	var/ai_user = isAI(user)
 	var/list/seen
-	var/list/viewlist = user?.client ? getviewsize(user.client.view) : getviewsize(world.view)
-	var/viewr = max(viewlist[1], viewlist[2]) + max(size_x, size_y)
-	// Must match can_target(): living mobs use their mob for get_hear(), not client.eye (eye can be a remote camera).
-	var/atom/view_center = istype(user, /mob) ? user : (user?.client?.eye || target)
-	seen = get_hear(viewr, view_center)
+	if(flash_enabled)
+		// Вспышка освещает открытые участки кадра, даже если расчёт света ещё не обновился.
+		var/turf/view_center = get_turf(user) || target_turf
+		var/view_radius = max(abs(view_center.x - target_turf.x) + size_x, abs(view_center.y - target_turf.y) + size_y)
+		seen = dview(view_radius, view_center)
+	else
+		var/list/viewlist = user?.client ? getviewsize(user.client.view) : getviewsize(world.view)
+		var/view_radius = max(viewlist[1], viewlist[2]) + max(size_x, size_y)
+		var/atom/view_center = istype(user) ? user : target
+		seen = get_hear(view_radius, view_center)
 	var/list/turfs = list()
 	var/list/mobs = list()
 	var/blueprints = FALSE

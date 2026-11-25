@@ -50,6 +50,12 @@
 		var/tile_left = (tile.x - center.x) * world.icon_size + x_origin
 		var/tile_bottom = (tile.y - center.y) * world.icon_size + y_origin
 		entries += new /datum/camera_frame_entry(tile, tile_left, tile_bottom)
+		if(isclosedturf(tile))
+			// Подложки диагональных стен рисуются на плоскости пола или космоса.
+			for(var/image/ground as anything in tile.underlays)
+				var/ground_plane = PLANE_TO_TRUE(ground.plane)
+				if(ground.plane != tile.plane && (ground_plane == FLOOR_PLANE || ground_plane == PLANE_SPACE))
+					entries += new /datum/camera_frame_entry(tile, tile_left, tile_bottom, ground)
 		if(tile.loc.icon_state)
 			entries += new /datum/camera_frame_entry(tile.loc, tile_left, tile_bottom)
 		if(use_scene_lighting && tile.lighting_object)
