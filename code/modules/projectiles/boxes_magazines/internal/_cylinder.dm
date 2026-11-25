@@ -49,7 +49,7 @@
 		rotate()
 
 /obj/item/ammo_box/magazine/internal/cylinder/give_round(obj/item/ammo_casing/R, replace_spent = 0)
-	if(!R || (caliber && !(R.caliber in caliber)) || (!caliber && R.type != ammo_type))
+	if(!caliber_compatible(R))
 		return FALSE
 
 	for(var/i in 1 to stored_ammo.len)
