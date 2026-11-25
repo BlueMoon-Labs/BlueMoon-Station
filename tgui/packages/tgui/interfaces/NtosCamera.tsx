@@ -500,7 +500,7 @@ const PhotoDetails = ({ photo }: { photo: SelectedPhoto }) => {
         buttons={!data.editMode && (
           <>
             <Button icon="arrow-left" tooltip="К списку фотографий" onClick={() => act('back')} />
-            {data.tab === 'local' ? (
+            {data.tab === 'local' && (
               <Button
                 icon={photo.uploaded ? 'check' : 'cloud-upload-alt'}
                 iconColor={photo.uploaded ? 'blue' : undefined}
@@ -508,18 +508,15 @@ const PhotoDetails = ({ photo }: { photo: SelectedPhoto }) => {
                 tooltip={photo.uploaded ? 'Загружено в облако' : 'Сохранить в облаке'}
                 onClick={() => act('upload')}
               />
-            ) : (
-              <>
-                <Button icon="pen" tooltip="Редактировать" onClick={() => act('edit')} />
-                <Button.Confirm
-                  icon="trash"
-                  confirmIcon="trash"
-                  tooltip="Удалить из облака"
-                  confirmContent="Удалить?"
-                  onClick={() => act('delete', { id: photo.id })}
-                />
-              </>
             )}
+            <Button icon="pen" tooltip="Редактировать" onClick={() => act('edit')} />
+            <Button.Confirm
+              icon="trash"
+              confirmIcon="trash"
+              tooltip={data.tab === 'local' ? 'Удалить с ПДА' : 'Удалить из облака'}
+              confirmContent="Удалить?"
+              onClick={() => act('delete', { id: photo.id, tab: data.tab })}
+            />
             <Button icon="print" tooltip="Печать" onClick={() => act('request_print')} />
           </>
         )}>

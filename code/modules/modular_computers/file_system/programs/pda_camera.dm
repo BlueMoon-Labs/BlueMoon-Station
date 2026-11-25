@@ -53,6 +53,7 @@
 	var/viewfinder_cursor_dirty = FALSE
 	var/datum/weakref/viewfinder_target_ref
 	var/datum/weakref/viewfinder_origin_ref
+	var/photos_taken = 0
 
 /datum/computer_file/program/pda_camera/Destroy()
 	close_camera_window()
@@ -263,9 +264,7 @@
 		if("edit", "upload")
 			if(print_open || !get_selection())
 				return FALSE
-			if((action == "edit" && tab != "cloud") || (action == "upload" && (tab != "local" || is_uploaded(selected_id))))
-				return FALSE
-			if(action == "upload" && !can_upload_to_cloud(user))
+			if(action == "upload" && (tab != "local" || is_uploaded(selected_id) || !can_upload_to_cloud(user)))
 				return FALSE
 			edit_mode = action
 		if("cancel_edit")
@@ -274,9 +273,15 @@
 			if(params["id"] != selected_id || !save_selection(params, user))
 				return FALSE
 		if("delete")
-			if(tab != "cloud" || !cloud_selection || edit_mode || print_open || params["id"] != selected_id)
+			var/datum/picture/selected = get_selection()
+			if(!selected || edit_mode || print_open || params["id"] != selected_id || params["tab"] != tab)
 				return FALSE
-			if(!delete_pda_cloud_photo(cloud_photo_path(selected_id)))
+			if(tab == "local")
+				local_photos -= selected_id
+				if(local_thumbnails)
+					local_thumbnails -= selected_id
+				qdel(selected)
+			else if(!delete_pda_cloud_photo(cloud_photo_path(selected_id)))
 				to_chat(user, span_warning("Не удалось удалить фотографию из облака."))
 				return FALSE
 			clear_selection()
@@ -478,7 +483,8 @@
 	if(QDELETED(src))
 		qdel(picture)
 		return
-	picture.picture_name = "Фотография №[length(local_photos) + 1]"
+	photos_taken++
+	picture.picture_name = "Фотография №[photos_taken]"
 	picture.station_capture_time = station_capture_time
 	picture.capture_time_zone = time_zone
 	picture.server_capture_time = server_capture_time
@@ -551,29 +557,35 @@
 	if(!edit_mode || !selected || !istext(params["name"]) || !istext(params["description"]) || !istext(params["caption"]))
 		return FALSE
 	var/uploading = edit_mode == "upload"
-	if(uploading ? is_uploaded(selected_id) : !is_uploaded(selected_id))
+	var/saving_to_cloud = uploading || tab == "cloud"
+	if(saving_to_cloud && (uploading ? is_uploaded(selected_id) : !is_uploaded(selected_id)))
 		to_chat(user, span_warning("Состояние фотографии в облаке изменилось. Откройте галерею заново."))
 		return FALSE
 	if(uploading && !can_upload_to_cloud(user))
 		return FALSE
-	var/datum/picture/edited = selected.Copy()
 	var/photo_name = html_encode_readable(trim(strip_control_chars(params["name"]), PHOTO_NAME_LIMIT + 1))
-	if(length(photo_name))
-		edited.picture_name = photo_name
+	if(!length(photo_name))
+		photo_name = selected.picture_name
+	var/photo_desc = selected.picture_desc
 	// Длинное описание сцены сохраняется целиком, пока игрок не заменит его в редакторе.
-	if(params["description"] != html_decode(selected.picture_desc))
-		edited.picture_desc = html_encode_readable(trim(strip_control_chars(params["description"]), PHOTO_DESCRIPTION_LIMIT + 1))
-	edited.caption = html_encode_readable(trim(strip_control_chars(params["caption"]), PHOTO_CAPTION_LIMIT + 1))
-	var/saved = save_pda_cloud_photo(cloud_photo_path(selected_id), edited, local_thumbnails?[selected_id])
-	if(saved)
-		selected.picture_name = edited.picture_name
-		selected.picture_desc = edited.picture_desc
-		selected.caption = edited.caption
-		edit_mode = null
-	else
-		to_chat(user, span_warning("Не удалось сохранить фотографию в облаке."))
-	qdel(edited)
-	return saved
+	if(params["description"] != html_decode(photo_desc))
+		photo_desc = html_encode_readable(trim(strip_control_chars(params["description"]), PHOTO_DESCRIPTION_LIMIT + 1))
+	var/photo_caption = html_encode_readable(trim(strip_control_chars(params["caption"]), PHOTO_CAPTION_LIMIT + 1))
+	if(saving_to_cloud)
+		var/datum/picture/edited = selected.Copy()
+		edited.picture_name = photo_name
+		edited.picture_desc = photo_desc
+		edited.caption = photo_caption
+		var/saved = save_pda_cloud_photo(cloud_photo_path(selected_id), edited, local_thumbnails?[selected_id])
+		qdel(edited)
+		if(!saved)
+			to_chat(user, span_warning("Не удалось сохранить фотографию в облаке."))
+			return FALSE
+	selected.picture_name = photo_name
+	selected.picture_desc = photo_desc
+	selected.caption = photo_caption
+	edit_mode = null
+	return TRUE
 
 /datum/computer_file/program/pda_camera/proc/in_printer_range(obj/machinery/photocopier/printer, mob/user)
 	var/turf/device_turf = get_turf(computer)
