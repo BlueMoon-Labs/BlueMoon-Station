@@ -309,7 +309,7 @@
 			if(prob(I.block_chance*2))
 				return TRUE
 
-/mob/living/get_photo_description(obj/item/camera/camera)
+/mob/living/get_photo_description(see_ghosts)
 	var/list/holding = list()
 	for(var/obj/item/held_item in held_items)
 		holding += "[held_item]"

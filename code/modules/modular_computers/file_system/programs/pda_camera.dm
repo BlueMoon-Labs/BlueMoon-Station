@@ -1,0 +1,475 @@
+#define PDA_CAMERA_PAGE_SIZE 8
+#define PDA_CAMERA_PRINT_TIME (2.5 SECONDS)
+#define PDA_CAMERA_SIZE 3
+
+/datum/computer_file/program/pda_camera
+	filename = "Camera"
+	filedesc = "Камера"
+	category = PROGRAM_CATEGORY_CREW
+	extended_desc = "Снимает фотографии, хранит их на ПДА и сохраняет в личное облако."
+	usage_flags = PROGRAM_PDA
+	size = 2
+	tgui_id = "NtosCamera"
+	program_icon = "camera"
+	var/list/datum/picture/local_photos
+	var/flash_enabled = TRUE
+	var/capturing = FALSE
+	COOLDOWN_DECLARE(shutter_cooldown)
+	var/datum/weakref/viewer_ref
+	var/datum/weakref/viewer_ui_ref
+	var/cloud_directory
+	var/tab = "camera"
+	var/aim_requested = FALSE
+	var/aiming = FALSE
+	var/list/gallery_ids
+	var/list/gallery_rows
+	var/gallery_page = 1
+	var/gallery_pages = 1
+	var/selected_id
+	var/datum/picture/cloud_selection
+	var/edit_mode
+	var/print_open = FALSE
+	var/print_message
+	var/datum/weakref/printer_ref
+	var/print_timer
+	var/print_job = 0
+	var/print_completed = FALSE
+
+/datum/computer_file/program/pda_camera/Destroy()
+	close_camera_window()
+	QDEL_LIST_ASSOC_VAL(local_photos)
+	local_photos = null
+	return ..()
+
+/datum/computer_file/program/pda_camera/kill_program(forced = FALSE)
+	close_camera_window()
+	return ..()
+
+/datum/computer_file/program/pda_camera/ui_interact(mob/user, datum/tgui/ui)
+	if(!isliving(user) || !user.client || !user.ckey || computer?.active_program != src)
+		return
+	var/datum/ui_state/state = ui_state(user)
+	if(state.can_use_topic(computer, user) != UI_INTERACTIVE)
+		return
+	var/datum/tgui/current_ui = viewer_ui_ref?.resolve()
+	if(current_ui?.user == user)
+		if(!current_ui.initialized || SStgui.try_update_ui(user, src, current_ui))
+			return
+	else
+		current_ui?.close()
+	clear_session()
+	viewer_ref = WEAKREF(user)
+	cloud_directory = pda_photo_cloud_path(user.ckey)
+	RegisterSignal(user, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(on_viewer_logout))
+	ui = new(user, src, tgui_id, filedesc)
+	viewer_ui_ref = WEAKREF(ui)
+	RegisterSignal(ui, COMSIG_PARENT_QDELETING, PROC_REF(on_viewer_ui_deleted))
+	ui.set_autoupdate(FALSE)
+	if(ui.open())
+		ui.send_asset(get_asset_datum(/datum/asset/simple/headers))
+	else
+		qdel(ui)
+
+/datum/computer_file/program/pda_camera/ui_status(mob/user, datum/ui_state/state)
+	if(viewer_ref?.resolve() != user || computer?.active_program != src || !computer.enabled)
+		return UI_CLOSE
+	return ..()
+
+/datum/computer_file/program/pda_camera/ui_close(mob/user, datum/tgui/ui)
+	if(viewer_ui_ref?.resolve() == ui)
+		clear_session()
+	return ..()
+
+/datum/computer_file/program/pda_camera/proc/on_viewer_ui_deleted(datum/tgui/ui)
+	SIGNAL_HANDLER
+	clear_session()
+
+/datum/computer_file/program/pda_camera/proc/on_viewer_logout(mob/user)
+	SIGNAL_HANDLER
+	clear_session()
+
+/datum/computer_file/program/pda_camera/proc/close_camera_window()
+	var/datum/tgui/ui = viewer_ui_ref?.resolve()
+	clear_session()
+	ui?.close()
+
+/datum/computer_file/program/pda_camera/proc/clear_session()
+	stop_aiming()
+	clear_selection()
+	var/mob/viewer = viewer_ref?.resolve()
+	if(viewer)
+		UnregisterSignal(viewer, COMSIG_MOB_CLIENT_LOGOUT)
+	var/datum/tgui/ui = viewer_ui_ref?.resolve()
+	if(ui)
+		UnregisterSignal(ui, COMSIG_PARENT_QDELETING)
+	viewer_ref = null
+	viewer_ui_ref = null
+	cloud_directory = null
+	gallery_ids = null
+	gallery_rows = null
+	tab = "camera"
+
+/datum/computer_file/program/pda_camera/proc/clear_selection()
+	cancel_print()
+	print_open = FALSE
+	print_message = null
+	print_completed = FALSE
+	edit_mode = null
+	selected_id = null
+	QDEL_NULL(cloud_selection)
+
+/datum/computer_file/program/pda_camera/ui_static_data(mob/user)
+	return list(
+		"nameLimit" = PHOTO_NAME_LIMIT,
+		"descriptionLimit" = PHOTO_DESCRIPTION_LIMIT,
+		"captionLimit" = PHOTO_CAPTION_LIMIT,
+		"printDuration" = PDA_CAMERA_PRINT_TIME * 100,
+	)
+
+/datum/computer_file/program/pda_camera/ui_data(mob/user)
+	var/list/data = get_header_data()
+	if(viewer_ref?.resolve() != user)
+		return data
+	data["tab"] = tab
+	data["flash"] = flash_enabled
+	data["viewfinder"] = aiming ? "aiming" : (aim_requested ? "blocked" : "idle")
+	data["capturing"] = capturing
+	data["localCount"] = length(local_photos)
+	data["page"] = gallery_page
+	data["pages"] = gallery_pages
+	data["editMode"] = edit_mode
+	data["printOpen"] = print_open
+	data["printMessage"] = print_message
+	data["printJob"] = print_timer ? print_job : null
+	data["printCompleted"] = print_completed
+	var/datum/picture/selected = get_selection()
+	if(selected)
+		var/list/photo = list(
+			"id" = selected_id,
+			"name" = html_decode(selected.picture_name),
+			"description" = html_decode(selected.picture_desc),
+			"caption" = selected.caption ? html_decode(selected.caption) : "",
+		)
+		if(print_open)
+			var/obj/machinery/photocopier/printer = print_timer ? printer_ref?.resolve() : find_printer(user)
+			data["printerNearby"] = !!printer
+			data["printerError"] = (!print_timer && printer) ? printer.pda_photo_print_error() : null
+		else
+			photo["uploaded"] = (tab == "local" && is_uploaded(selected_id))
+			photo += selected.photo_ui_media()
+		data["photo"] = photo
+	else
+		data["photo"] = null
+	data["gallery"] = (tab != "camera" && !selected) ? gallery_rows : null
+	return data
+
+/datum/computer_file/program/pda_camera/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	var/mob/user = ui?.user
+	if(. || !user?.client || viewer_ref?.resolve() != user)
+		return .
+	switch(action)
+		if("toggle_flash")
+			if(tab != "camera" || capturing)
+				return FALSE
+			flash_enabled = !flash_enabled
+		if("shutter")
+			if(tab != "camera" || capturing)
+				return FALSE
+			if(aim_requested)
+				stop_aiming()
+			else if(COOLDOWN_FINISHED(src, shutter_cooldown))
+				aim_requested = TRUE
+				if(can_aim(user))
+					start_aiming(user)
+		if("tab")
+			var/destination = params["tab"]
+			if(destination != "camera" && destination != "local" && destination != "cloud")
+				return FALSE
+			stop_aiming()
+			clear_selection()
+			ui.set_autoupdate(FALSE)
+			tab = destination
+			if(tab == "camera")
+				gallery_ids = null
+				gallery_rows = null
+			else
+				refresh_gallery(1)
+		if("page")
+			var/page = params["page"]
+			if(tab == "camera" || selected_id || !isnum(page))
+				return FALSE
+			refresh_gallery(round(page))
+		if("select")
+			var/id = params["id"]
+			if(tab == "camera" || selected_id || !istext(id) || !gallery_ids?.Find(id))
+				return FALSE
+			if(tab == "cloud")
+				cloud_selection = read_pda_cloud_photo(cloud_photo_path(id), TRUE)
+				if(!cloud_selection)
+					to_chat(user, span_warning("Не удалось открыть фотографию из облака."))
+					refresh_gallery(gallery_page)
+					return TRUE
+			selected_id = id
+		if("back")
+			clear_selection()
+			ui.set_autoupdate(FALSE)
+			if(tab != "camera")
+				refresh_gallery(gallery_page)
+		if("edit", "upload")
+			if(print_open || !get_selection())
+				return FALSE
+			if((action == "edit" && tab != "cloud") || (action == "upload" && (tab != "local" || is_uploaded(selected_id))))
+				return FALSE
+			edit_mode = action
+		if("cancel_edit")
+			edit_mode = null
+		if("save")
+			if(params["id"] != selected_id || !save_selection(params, user))
+				return FALSE
+		if("delete")
+			if(tab != "cloud" || !cloud_selection || edit_mode || print_open || params["id"] != selected_id)
+				return FALSE
+			if(!delete_pda_cloud_photo(cloud_photo_path(selected_id)))
+				to_chat(user, span_warning("Не удалось удалить фотографию из облака."))
+				return FALSE
+			clear_selection()
+			refresh_gallery(gallery_page)
+		if("request_print")
+			if(!get_selection() || edit_mode)
+				return FALSE
+			print_open = TRUE
+			ui.set_autoupdate(TRUE)
+		if("start_print")
+			if(!print_open || print_timer || params["id"] != selected_id)
+				return FALSE
+			if(!start_print(user))
+				return FALSE
+		if("cancel_print")
+			cancel_print()
+			print_open = FALSE
+			print_message = null
+			print_completed = FALSE
+			ui.set_autoupdate(FALSE)
+		else
+			return FALSE
+	return TRUE
+
+/datum/computer_file/program/pda_camera/proc/can_aim(mob/user)
+	// ПДА находится в персонаже, поэтому проверяем турф под персонажем.
+	return user?.client && user.client.eye == user && computer?.loc == user && isturf(user.loc) && user.is_holding(computer) && !user.incapacitated()
+
+/datum/computer_file/program/pda_camera/proc/start_aiming(mob/user)
+	aiming = TRUE
+	RegisterSignal(user, COMSIG_MOB_CLICKON, PROC_REF(on_photo_click))
+	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_aim_moved))
+	RegisterSignal(computer, list(COMSIG_MOVABLE_MOVED, COMSIG_ITEM_DROPPED, COMSIG_ITEM_EQUIPPED), PROC_REF(on_aim_moved))
+
+/datum/computer_file/program/pda_camera/proc/stop_aiming()
+	aim_requested = FALSE
+	if(!aiming)
+		return
+	aiming = FALSE
+	var/mob/viewer = viewer_ref?.resolve()
+	if(viewer)
+		UnregisterSignal(viewer, list(COMSIG_MOB_CLICKON, COMSIG_MOVABLE_MOVED))
+	if(computer)
+		UnregisterSignal(computer, list(COMSIG_MOVABLE_MOVED, COMSIG_ITEM_DROPPED, COMSIG_ITEM_EQUIPPED))
+
+/datum/computer_file/program/pda_camera/proc/on_aim_moved(datum/source)
+	SIGNAL_HANDLER
+	if(can_aim(viewer_ref?.resolve()))
+		return
+	stop_aiming()
+	aim_requested = TRUE
+	INVOKE_ASYNC(src, PROC_REF(push_update))
+
+/datum/computer_file/program/pda_camera/proc/on_photo_click(mob/user, atom/target, params)
+	SIGNAL_HANDLER
+	if(istype(target, /atom/movable/screen))
+		return NONE
+	if(!can_aim(user) || computer.active_program != src || !computer.enabled)
+		stop_aiming()
+		aim_requested = TRUE
+		INVOKE_ASYNC(src, PROC_REF(push_update))
+		return NONE
+	var/list/modifiers = params2list(params)
+	if(!modifiers[LEFT_CLICK] || modifiers[RIGHT_CLICK] || modifiers[SHIFT_CLICK] || modifiers[CTRL_CLICK] || modifiers[ALT_CLICK] || modifiers[MIDDLE_CLICK])
+		return NONE
+	var/turf/center = get_turf(target)
+	if(!camera_can_target(center, user, flash_enabled))
+		return COMSIG_MOB_CANCEL_CLICKON
+	stop_aiming()
+	capturing = TRUE
+	COOLDOWN_START(src, shutter_cooldown, 1 SECONDS)
+	INVOKE_ASYNC(src, PROC_REF(take_picture), center, user, flash_enabled)
+	return COMSIG_MOB_CANCEL_CLICKON
+
+/datum/computer_file/program/pda_camera/proc/take_picture(turf/center, mob/user, use_flash)
+	if(QDELETED(src) || QDELETED(computer))
+		return
+	var/turf/device_turf = get_turf(computer)
+	if(use_flash && device_turf)
+		device_turf.flash_lighting_fx(8)
+	play_camera_shutter(computer)
+	var/datum/picture/picture = capture_camera_picture(center, user, PDA_CAMERA_SIZE, PDA_CAMERA_SIZE, use_flash)
+	if(QDELETED(src))
+		qdel(picture)
+		return
+	var/id = rustg_generate_uuid_v7()
+	picture.picture_name = "Фотография №[length(local_photos) + 1]"
+	LAZYINITLIST(local_photos)
+	local_photos.Insert(1, id)
+	local_photos[id] = picture
+	if(tab == "local" && !selected_id)
+		refresh_gallery(gallery_page)
+	capturing = FALSE
+	push_update()
+
+/datum/computer_file/program/pda_camera/proc/cloud_photo_path(id)
+	return "[cloud_directory][id].sav"
+
+/datum/computer_file/program/pda_camera/proc/is_uploaded(id)
+	var/path = cloud_photo_path(id)
+	return fexists(path) || fexists("[path].bak")
+
+/datum/computer_file/program/pda_camera/proc/get_selection()
+	if(!selected_id)
+		return null
+	if(tab == "local")
+		return local_photos?[selected_id]
+	return cloud_selection
+
+/datum/computer_file/program/pda_camera/proc/refresh_gallery(page)
+	gallery_ids = tab == "cloud" ? pda_photo_cloud_ids(cloud_directory) : local_photos
+	gallery_pages = max(1, CEILING(length(gallery_ids) / PDA_CAMERA_PAGE_SIZE, 1))
+	gallery_page = clamp(page, 1, gallery_pages)
+	gallery_rows = list()
+	var/start = (gallery_page - 1) * PDA_CAMERA_PAGE_SIZE + 1
+	for(var/index = start to min(start + PDA_CAMERA_PAGE_SIZE - 1, length(gallery_ids)))
+		var/id = gallery_ids[index]
+		var/photo_name
+		if(tab == "cloud")
+			var/list/metadata = read_pda_cloud_photo(cloud_photo_path(id))
+			if(!metadata)
+				continue
+			photo_name = metadata["name"]
+		else
+			var/datum/picture/photo = local_photos[id]
+			photo_name = photo.picture_name
+		gallery_rows += list(list("id" = id, "name" = html_decode(photo_name), "uploaded" = (tab == "local" && is_uploaded(id))))
+
+/datum/computer_file/program/pda_camera/proc/save_selection(list/params, mob/user)
+	var/datum/picture/selected = get_selection()
+	if(!edit_mode || !selected || !istext(params["name"]) || !istext(params["description"]) || !istext(params["caption"]))
+		return FALSE
+	if(edit_mode == "upload" ? is_uploaded(selected_id) : !is_uploaded(selected_id))
+		to_chat(user, span_warning("Состояние фотографии в облаке изменилось. Откройте галерею заново."))
+		return FALSE
+	var/datum/picture/edited = selected.Copy()
+	var/photo_name = html_encode_readable(trim(strip_control_chars(params["name"]), PHOTO_NAME_LIMIT + 1))
+	if(length(photo_name))
+		edited.picture_name = photo_name
+	// Длинное описание сцены сохраняется целиком, пока игрок не заменит его в редакторе.
+	if(params["description"] != html_decode(selected.picture_desc))
+		edited.picture_desc = html_encode_readable(trim(strip_control_chars(params["description"]), PHOTO_DESCRIPTION_LIMIT + 1))
+	edited.caption = html_encode_readable(trim(strip_control_chars(params["caption"]), PHOTO_CAPTION_LIMIT + 1))
+	var/saved = save_pda_cloud_photo(cloud_photo_path(selected_id), edited)
+	if(saved)
+		selected.picture_name = edited.picture_name
+		selected.picture_desc = edited.picture_desc
+		selected.caption = edited.caption
+		edit_mode = null
+	else
+		to_chat(user, span_warning("Не удалось сохранить фотографию в облаке."))
+	qdel(edited)
+	return saved
+
+/datum/computer_file/program/pda_camera/proc/in_printer_range(obj/machinery/photocopier/printer, mob/user)
+	var/turf/device_turf = get_turf(computer)
+	var/turf/user_turf = get_turf(user)
+	var/turf/printer_turf = printer?.loc
+	return isturf(printer_turf) && device_turf && user_turf && printer_turf.z == device_turf.z && printer_turf.z == user_turf.z && get_dist(printer_turf, device_turf) <= 1 && get_dist(printer_turf, user_turf) <= 1
+
+/datum/computer_file/program/pda_camera/proc/find_printer(mob/user)
+	var/turf/device_turf = get_turf(computer)
+	if(!device_turf)
+		return null
+	var/obj/machinery/photocopier/nearby
+	for(var/obj/machinery/photocopier/printer in range(1, device_turf))
+		if(QDELETED(printer) || !in_printer_range(printer, user))
+			continue
+		if(!printer.pda_photo_print_error())
+			return printer
+		if(!nearby)
+			nearby = printer
+	return nearby
+
+/datum/computer_file/program/pda_camera/proc/start_print(mob/user)
+	var/obj/machinery/photocopier/printer = find_printer(user)
+	if(!printer || printer.pda_photo_print_error() || !get_selection())
+		return FALSE
+	printer_ref = WEAKREF(printer)
+	RegisterSignal(printer, COMSIG_PARENT_QDELETING, PROC_REF(on_printer_deleted))
+	RegisterSignal(printer, COMSIG_MOVABLE_MOVED, PROC_REF(on_print_moved))
+	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_print_moved))
+	RegisterSignal(computer, COMSIG_MOVABLE_MOVED, PROC_REF(on_print_moved))
+	print_message = null
+	print_completed = FALSE
+	print_job++
+	print_timer = addtimer(CALLBACK(src, PROC_REF(finish_print), print_job), PDA_CAMERA_PRINT_TIME, TIMER_STOPPABLE)
+	printer.start_pda_photo_print()
+	return TRUE
+
+/datum/computer_file/program/pda_camera/proc/on_print_moved(datum/source)
+	SIGNAL_HANDLER
+	if(in_printer_range(printer_ref?.resolve(), viewer_ref?.resolve()))
+		return
+	cancel_print("Печать отменена. Подойдите вплотную к принтеру.")
+	INVOKE_ASYNC(src, PROC_REF(push_update))
+
+/datum/computer_file/program/pda_camera/proc/on_printer_deleted(obj/machinery/photocopier/printer)
+	SIGNAL_HANDLER
+	cancel_print("Печать отменена. Принтер уничтожен.", printer)
+	INVOKE_ASYNC(src, PROC_REF(push_update))
+
+/datum/computer_file/program/pda_camera/proc/cancel_print(message, obj/machinery/photocopier/deleted_printer)
+	if(!print_timer)
+		return
+	deltimer(print_timer)
+	print_timer = null
+	var/obj/machinery/photocopier/printer = deleted_printer || printer_ref?.resolve()
+	printer_ref = null
+	if(printer)
+		UnregisterSignal(printer, list(COMSIG_PARENT_QDELETING, COMSIG_MOVABLE_MOVED))
+		if(!QDELETED(printer))
+			printer.reset_busy()
+	var/mob/viewer = viewer_ref?.resolve()
+	if(viewer)
+		UnregisterSignal(viewer, COMSIG_MOVABLE_MOVED)
+	if(computer)
+		UnregisterSignal(computer, COMSIG_MOVABLE_MOVED)
+	print_message = message
+
+/datum/computer_file/program/pda_camera/proc/finish_print(job)
+	if(!print_timer || job != print_job)
+		return
+	var/mob/viewer = viewer_ref?.resolve()
+	var/datum/tgui/ui = viewer_ui_ref?.resolve()
+	var/obj/machinery/photocopier/printer = printer_ref?.resolve()
+	var/datum/picture/selected = get_selection()
+	ui?.process_status()
+	if(!viewer?.client || !ui || ui.closing || ui.status != UI_INTERACTIVE || !selected || !in_printer_range(printer, viewer))
+		cancel_print("Печать отменена.")
+	else
+		var/error_message = printer.pda_photo_print_error(FALSE)
+		if(!error_message && printer.finish_pda_photo_print(selected))
+			cancel_print("Фотография напечатана.")
+			print_completed = TRUE
+		else
+			cancel_print(error_message || "Печать отменена.")
+	push_update()
+
+#undef PDA_CAMERA_PAGE_SIZE
+#undef PDA_CAMERA_PRINT_TIME
+#undef PDA_CAMERA_SIZE

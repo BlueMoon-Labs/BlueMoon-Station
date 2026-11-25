@@ -226,6 +226,8 @@ GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
 				balloon_alert(usr, "Буфер обмена пуст!")
 				return FALSE
 			var/datum/picture/selection = tempAI.aicamera.selectpicture(usr)
+			if(!selection || QDELETED(src) || check_busy(usr))
+				return FALSE
 			do_copies(CALLBACK(src, PROC_REF(make_photo_copy), selection, PHOTO_COLOR), usr, PHOTO_PAPER_USE, PHOTO_TONER_USE, 1)
 			return TRUE
 
@@ -418,6 +420,28 @@ GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
 	delete_paper(PHOTO_PAPER_USE)
 	toner_cartridge.charges -= PHOTO_TONER_USE
 	return copied_pic
+
+/obj/machinery/photocopier/proc/pda_photo_print_error(include_busy = TRUE)
+	if(!is_operational())
+		return "Принтер не работает."
+	if(include_busy && busy)
+		return "Принтер занят."
+	if(!toner_cartridge || toner_cartridge.charges < PHOTO_TONER_USE)
+		return "В принтере недостаточно тонера."
+	if(get_paper_count() < PHOTO_PAPER_USE)
+		return "В принтере закончилась бумага."
+
+/obj/machinery/photocopier/proc/start_pda_photo_print()
+	busy = TRUE
+	use_power(ACTIVE_POWER_USE)
+	playsound(src, 'sound/effects/printer.ogg', 50, vary = FALSE)
+
+/obj/machinery/photocopier/proc/finish_pda_photo_print(datum/picture/photo)
+	var/obj/item/photo/printed_photo = make_photo_copy(photo, PHOTO_COLOR)
+	if(printed_photo)
+		printed_photo.forceMove(drop_location())
+		give_pixel_offset(printed_photo)
+	return printed_photo
 
 /**
  * Handles the copying of documents.

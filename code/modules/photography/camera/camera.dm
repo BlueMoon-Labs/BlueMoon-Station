@@ -160,7 +160,9 @@
 /obj/item/camera/proc/can_target(atom/target, mob/user, prox_flag)
 	if(!on || blending || !pictures_left)
 		return FALSE
-	var/turf/T = get_turf(target)
+	return camera_can_target(get_turf(target), user, flash_enabled)
+
+/proc/camera_can_target(turf/T, mob/user, flash_enabled)
 	if(!T || (isAI(user) && !GLOB.cameranet.checkTurfVis(T)))
 		return FALSE
 	if(flash_enabled)
@@ -174,7 +176,7 @@
 		else if(!(T in get_hear(world.view, user)))
 			return FALSE
 	else					//user is an atom
-		if(!(get_turf(target) in view(world.view, user)))
+		if(!(T in view(world.view, user)))
 			return FALSE
 	return TRUE
 
@@ -217,13 +219,24 @@
 	selection?.ui_interact(user)
 
 /obj/item/camera/proc/captureimage(atom/target, mob/user, flag, size_x = 1, size_y = 1)
-	if(flash_enabled)
+	var/use_flash = flash_enabled
+	if(use_flash)
 		flash_lighting_fx(8, light_power, light_color)
 	blending = TRUE
 	var/turf/target_turf = get_turf(target)
-	if(!isturf(target_turf))
-		blending = FALSE
-		return FALSE
+	var/datum/picture/picture
+	if(target_turf)
+		picture = capture_camera_picture(target_turf, user, size_x, size_y, use_flash, see_ghosts, target)
+	if(picture)
+		if(QDELETED(src))
+			qdel(picture)
+			return FALSE
+		if(!silent)
+			play_camera_shutter(loc, custom_sound)
+		after_picture(user, picture, flag)
+	blending = FALSE
+
+/proc/capture_camera_picture(turf/target_turf, mob/user, size_x, size_y, flash_enabled, see_ghosts = FALSE, atom/target = target_turf)
 	size_x = clamp(size_x, 0, CAMERA_PICTURE_SIZE_HARD_LIMIT)
 	size_y = clamp(size_y, 0, CAMERA_PICTURE_SIZE_HARD_LIMIT)
 	var/list/photo_description = list("На снимке участок размером [size_x * 2 + 1] × [size_y * 2 + 1] м.")
@@ -255,18 +268,15 @@
 		turfs += target_turf
 	for(var/i in mobs)
 		var/mob/M = i
-		photo_description += M.get_photo_description(src)
+		photo_description += M.get_photo_description(see_ghosts)
 
 	var/psize_x = (size_x * 2 + 1) * world.icon_size
 	var/psize_y = (size_y * 2 + 1) * world.icon_size
 	var/list/subjects = photo_subjects_seen(mobs)
-	var/icon/captured = camera_get_icon(turfs, target_turf, psize_x, psize_y)
-	if(QDELETED(src))
-		return FALSE
+	var/icon/captured = render_camera_frame(turfs, target_turf, psize_x, psize_y, !flash_enabled, see_ghosts)
 	var/datum/picture/P = new("picture", photo_description.Join(" "), captured, null, psize_x, psize_y, blueprints)
 	P.subjects_seen = subjects
-	after_picture(user, P, flag)
-	blending = FALSE
+	return P
 
 /obj/item/camera/proc/after_picture(mob/user, datum/picture/picture, proximity_flag)
 	printpicture(user, picture)

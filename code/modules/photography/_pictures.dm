@@ -120,7 +120,7 @@
 		has_blueprints = input["blueprints"]
 	if(input["caption"])
 		caption = input["caption"]
-	if(input["desc"])
+	if(istext(input["desc"]))
 		picture_desc = input["desc"]
 	if(input["name"])
 		picture_name = input["name"]
@@ -206,6 +206,7 @@
 	var/datum/picture/P = new
 	P.picture_name = picture_name
 	P.picture_desc = picture_desc
+	P.caption = caption
 	if(picture_image)
 		P.picture_image = icon(picture_image)	//Copy, not reference.
 	if(picture_icon)

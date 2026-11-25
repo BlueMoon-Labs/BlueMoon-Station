@@ -38,10 +38,17 @@
 	return left.visual.layer - right.visual.layer
 
 /obj/item/camera/proc/camera_get_icon(list/turf/turfs, turf/center, psize_x = 96, psize_y = 96)
+	. = render_camera_frame(turfs, center, psize_x, psize_y, !flash_enabled, see_ghosts)
+	if(!QDELETED(src) && !silent)
+		play_camera_shutter(loc, custom_sound)
+
+/proc/play_camera_shutter(atom/source, sound/custom_sound)
+	playsound(source, custom_sound || pick('sound/items/polaroid1.ogg', 'sound/items/polaroid2.ogg'), 75, TRUE, -3)
+
+/proc/render_camera_frame(list/turf/turfs, turf/center, psize_x, psize_y, use_scene_lighting, see_ghosts)
 	var/list/entries = list()
 	var/list/tile_lights
 	var/list/overlay_lights
-	var/use_scene_lighting = !flash_enabled
 	var/overlay_light_plane = use_scene_lighting ? MUTATE_PLANE(O_LIGHTING_VISUAL_PLANE, center) : null
 	var/x_origin = round((psize_x - world.icon_size) / 2) + 1
 	var/y_origin = round((psize_y - world.icon_size) / 2) + 1
@@ -101,8 +108,6 @@
 	if(lighting_map)
 		result.Blend(lighting_map, ICON_MULTIPLY)
 
-	if(!QDELETED(src) && !silent)
-		playsound(loc, custom_sound || pick('sound/items/polaroid1.ogg', 'sound/items/polaroid2.ogg'), 75, TRUE, -3)
 	return result
 
 /proc/transform_camera_icon(icon/source, matrix/pose, list/offsets, pivot_x, pivot_y)

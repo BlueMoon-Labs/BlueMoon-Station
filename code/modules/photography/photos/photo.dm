@@ -1,7 +1,3 @@
-#define PHOTO_NAME_LIMIT 32
-#define PHOTO_DESCRIPTION_LIMIT 128
-#define PHOTO_CAPTION_LIMIT 256
-
 /*
  * Photo
  */
@@ -241,7 +237,3 @@ GLOBAL_DATUM_INIT(photo_editor_state, /datum/ui_state/photo_viewer/editor, new)
 
 /obj/item/photo/old
 	icon_state = "photo_old"
-
-#undef PHOTO_NAME_LIMIT
-#undef PHOTO_DESCRIPTION_LIMIT
-#undef PHOTO_CAPTION_LIMIT
