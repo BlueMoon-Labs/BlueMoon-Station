@@ -482,6 +482,20 @@
 	item_state = "tacticool_sec_blue"
 	current_skin = "Blue"
 
+/// Terrorist field shirt in the requested brown colour.
+/obj/item/clothing/underwear/shirt/deathmatch_terror
+	name = "terrorist shirt"
+	color = "#845647"
+
+/// Polychromic hijab locked to the requested grey for the Terrorist side.
+/obj/item/clothing/mask/balaclava/breath/hijab/deathmatch_terror
+	name = "terrorist balaclava"
+	poly_colors = list("#a5a397")
+
+/// CT deathmatch rigs are black; the shared military belt base is untouched.
+/obj/item/storage/belt/military/deathmatch_ct
+	color = "#121212"
+
 /// Ammo rigs keep every side's spare ammunition out of its pockets.
 /obj/item/storage/belt/military/deathmatch_makarov
 /obj/item/storage/belt/military/deathmatch_makarov/PopulateContents()
@@ -489,6 +503,7 @@
 		new /obj/item/ammo_box/magazine/m10mm(src)
 
 /obj/item/storage/belt/military/deathmatch_enforcer
+	color = "#121212"
 /obj/item/storage/belt/military/deathmatch_enforcer/PopulateContents()
 	for(var/magazine in 1 to 3)
 		new /obj/item/ammo_box/magazine/e45/e45_extended/ap(src)
@@ -499,6 +514,7 @@
 		new /obj/item/ammo_box/magazine/m50(src)
 
 /obj/item/storage/belt/military/deathmatch_sniper
+	color = "#121212"
 /obj/item/storage/belt/military/deathmatch_sniper/PopulateContents()
 	new /obj/item/ammo_box/magazine/sniper_rounds(src)
 
@@ -507,9 +523,26 @@
 	new /obj/item/ammo_box/magazine/sniper_rounds/m4oa1(src)
 
 /obj/item/storage/belt/military/deathmatch_buckshot
+	color = "#121212"
 /obj/item/storage/belt/military/deathmatch_buckshot/PopulateContents()
 	for(var/shell in 1 to 12)
 		new /obj/item/ammo_casing/shotgun/buckshot(src)
+
+/// Terrorist belts keep the ammunition of the rig they replaced, but on the
+/// requested woodland belt sprite. A knife round has no ammunition to carry.
+/obj/item/storage/belt/military/green/deathmatch_buckshot
+/obj/item/storage/belt/military/green/deathmatch_buckshot/PopulateContents()
+	for(var/shell in 1 to 12)
+		new /obj/item/ammo_casing/shotgun/buckshot(src)
+
+/obj/item/storage/belt/military/green/deathmatch_makarov
+/obj/item/storage/belt/military/green/deathmatch_makarov/PopulateContents()
+	for(var/magazine in 1 to 3)
+		new /obj/item/ammo_box/magazine/m10mm(src)
+
+/obj/item/storage/belt/military/green/deathmatch_m4oa1
+/obj/item/storage/belt/military/green/deathmatch_m4oa1/PopulateContents()
+	new /obj/item/ammo_box/magazine/sniper_rounds/m4oa1(src)
 
 /// The knife round's weapon.
 ///
@@ -595,12 +628,16 @@
 /datum/outfit/vr/deathmatch_loadout/tdm_shotgun_terror
 	name = "TDM Shotguns (Terrorist)"
 	display_name = "Terrorist Shotguns"
-	desc = "A Peacebreaker shotgun loaded with buckshot, a bandolier of spare shells and a combat knife."
+	desc = "A Peacebreaker shotgun loaded with buckshot, a belt of spare shells and a combat knife."
 	tdm_only = TRUE
-	uniform = /obj/item/clothing/under/color/random
-	shoes = /obj/item/clothing/shoes/sneakers/black
+	uniform = /obj/item/clothing/under/pants/camo
+	shirt = /obj/item/clothing/underwear/shirt/deathmatch_terror
+	belt = /obj/item/storage/belt/military/green/deathmatch_buckshot
+	gloves = /obj/item/clothing/gloves/fingerless
+	mask = /obj/item/clothing/mask/balaclava/breath/hijab/deathmatch_terror
+	shoes = /obj/item/clothing/shoes/workboots
+	glasses = /obj/item/clothing/glasses/hud/spacecop
 	r_hand = /obj/item/gun/ballistic/shotgun/riot/syndicate/deathmatch
-	belt = /obj/item/storage/belt/bandolier/deathmatch
 	r_pocket = /obj/item/kitchen/knife/combat
 
 /// The Counter-Terrorist shotgun kit: the stock riot shotgun, same ammunition.
@@ -621,12 +658,16 @@
 /datum/outfit/vr/deathmatch_loadout/tdm_pistol_terror
 	name = "TDM Pistols (Terrorist)"
 	display_name = "Terrorist Pistols"
-	desc = "A Makarov pistol, a chest rig with three spare magazines and a combat knife."
+	desc = "A Makarov pistol, a belt with three spare magazines and a combat knife."
 	tdm_only = TRUE
-	uniform = /obj/item/clothing/under/color/random
-	shoes = /obj/item/clothing/shoes/sneakers/black
+	uniform = /obj/item/clothing/under/pants/camo
+	shirt = /obj/item/clothing/underwear/shirt/deathmatch_terror
+	belt = /obj/item/storage/belt/military/green/deathmatch_makarov
+	gloves = /obj/item/clothing/gloves/fingerless
+	mask = /obj/item/clothing/mask/balaclava/breath/hijab/deathmatch_terror
+	shoes = /obj/item/clothing/shoes/workboots
+	glasses = /obj/item/clothing/glasses/hud/spacecop
 	r_hand = /obj/item/gun/ballistic/automatic/pistol
-	belt = /obj/item/storage/belt/military/deathmatch_makarov
 	r_pocket = /obj/item/kitchen/knife/combat
 
 /// The Counter-Terrorist sidearm kit: an Enforcer with an extended AP magazine,
@@ -662,12 +703,16 @@
 /datum/outfit/vr/deathmatch_loadout/tdm_sniper_terror
 	name = "TDM Snipers (Terrorist)"
 	display_name = "Terrorist Snipers"
-	desc = "An m40a1 sniper rifle, one spare magazine in a chest rig and a combat knife. One shot, one kill, if you can place it."
+	desc = "An m40a1 sniper rifle, one spare magazine in a belt and a combat knife. One shot, one kill, if you can place it."
 	tdm_only = TRUE
-	uniform = /obj/item/clothing/under/color/random
-	shoes = /obj/item/clothing/shoes/sneakers/black
+	uniform = /obj/item/clothing/under/pants/camo
+	shirt = /obj/item/clothing/underwear/shirt/deathmatch_terror
+	belt = /obj/item/storage/belt/military/green/deathmatch_m4oa1
+	gloves = /obj/item/clothing/gloves/fingerless
+	mask = /obj/item/clothing/mask/balaclava/breath/hijab/deathmatch_terror
+	shoes = /obj/item/clothing/shoes/workboots
+	glasses = /obj/item/clothing/glasses/hud/spacecop
 	r_hand = /obj/item/gun/ballistic/automatic/sniper_rifle/m4oa1
-	belt = /obj/item/storage/belt/military/deathmatch_m4oa1
 	r_pocket = /obj/item/kitchen/knife/combat
 
 /// The Counter-Terrorist sniper kit: the standard sniper rifle and one spare
@@ -692,8 +737,13 @@
 	display_name = "Terrorist Knives"
 	desc = "One knife: thirty damage, an instant kill from behind and half again the normal speed while it is in your hand. Nothing else."
 	tdm_only = TRUE
-	uniform = /obj/item/clothing/under/color/random
-	shoes = /obj/item/clothing/shoes/sneakers/black
+	uniform = /obj/item/clothing/under/pants/camo
+	shirt = /obj/item/clothing/underwear/shirt/deathmatch_terror
+	belt = /obj/item/storage/belt/military/green
+	gloves = /obj/item/clothing/gloves/fingerless
+	mask = /obj/item/clothing/mask/balaclava/breath/hijab/deathmatch_terror
+	shoes = /obj/item/clothing/shoes/workboots
+	glasses = /obj/item/clothing/glasses/hud/spacecop
 	r_hand = /obj/item/kitchen/knife/combat/deathmatch
 
 /// The Counter-Terrorist knife kit. Equipment can be changed independently of
@@ -704,7 +754,7 @@
 	desc = "One knife: thirty damage, an instant kill from behind and half again the normal speed while it is in your hand. Nothing else."
 	tdm_only = TRUE
 	uniform = /obj/item/clothing/under/rank/security/officer/tacticool/deathmatch_blue
-	belt = /obj/item/storage/belt/military
+	belt = /obj/item/storage/belt/military/deathmatch_ct
 	gloves = /obj/item/clothing/gloves/combat
 	mask = /obj/item/clothing/mask/gas/hecu
 	shoes = /obj/item/clothing/shoes/combat/swat
@@ -717,10 +767,15 @@
 	display_name = "Terrorist Assault Rifles"
 	desc = "The Terrorist assault rifle kit."
 	tdm_only = TRUE
-	uniform = /obj/item/clothing/under/color/random
-	shoes = /obj/item/clothing/shoes/sneakers/black
+	uniform = /obj/item/clothing/under/pants/camo
+	shirt = /obj/item/clothing/underwear/shirt/deathmatch_terror
+	belt = /obj/item/storage/belt/military/green
+	gloves = /obj/item/clothing/gloves/fingerless
+	mask = /obj/item/clothing/mask/balaclava/breath/hijab/deathmatch_terror
+	shoes = /obj/item/clothing/shoes/workboots
+	glasses = /obj/item/clothing/glasses/hud/spacecop
 	// r_hand = Terrorist assault rifle goes here.
-	// belt = A military belt containing spare ammunition goes here.
+	// belt = Swap to a populated green belt once that rifle and its magazine are chosen.
 
 /// Assault rifle preset, Counter-Terrorist side. Its equipment is independent
 /// of the Terrorist kit above and is intentionally left to the loadout author.
@@ -730,7 +785,7 @@
 	desc = "The Counter-Terrorist assault rifle kit."
 	tdm_only = TRUE
 	uniform = /obj/item/clothing/under/rank/security/officer/tacticool/deathmatch_blue
-	belt = /obj/item/storage/belt/military
+	belt = /obj/item/storage/belt/military/deathmatch_ct
 	gloves = /obj/item/clothing/gloves/combat
 	mask = /obj/item/clothing/mask/gas/hecu
 	shoes = /obj/item/clothing/shoes/combat/swat
