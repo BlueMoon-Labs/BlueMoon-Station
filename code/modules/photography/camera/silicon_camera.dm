@@ -1,6 +1,7 @@
 
 /obj/item/camera/siliconcam
 	name = "silicon photo camera"
+	can_customise = FALSE
 	var/in_camera_mode = FALSE
 	var/list/datum/picture/stored = list()
 

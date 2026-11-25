@@ -108,11 +108,10 @@
 		return
 	ui_interact(user)
 
-/obj/item/photo/proc/offer_camera_editor(mob/user)
+/obj/item/photo/proc/offer_camera_editor(mob/user, ask = TRUE)
 	set waitfor = FALSE
 	var/datum/picture/captured_picture = picture
-	var/choice = tgui_alert(user, "Открыть редактор фотографии?", "Редактирование фотографии", list("Нет", "Да"))
-	if(choice == "Да" && !QDELETED(src) && open_camera_editor(user))
+	if((!ask || tgui_alert(user, "Открыть редактор фотографии?", "Редактирование фотографии", list("Нет", "Да")) == "Да") && !QDELETED(src) && open_camera_editor(user))
 		return
 	if(CONFIG_GET(flag/picture_logging_camera))
 		captured_picture?.log_to_file()

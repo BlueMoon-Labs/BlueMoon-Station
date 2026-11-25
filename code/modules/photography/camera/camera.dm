@@ -1,5 +1,8 @@
 
 #define CAMERA_PICTURE_SIZE_HARD_LIMIT 21
+#define CAMERA_EDITOR_ASK "ask"
+#define CAMERA_EDITOR_OPEN "open"
+#define CAMERA_EDITOR_SKIP "skip"
 
 /obj/item/camera
 	name = "camera"
@@ -36,6 +39,7 @@
 	var/picture_size_y_max = 4
 	var/can_customise = TRUE
 	var/default_picture_name
+	var/editor_mode = CAMERA_EDITOR_ASK
 
 /obj/item/camera/Initialize(mapload)
 	. = ..()
@@ -44,39 +48,86 @@
 
 /obj/item/camera/examine(mob/user)
 	. = ..()
-	. += span_notice("Alt+ЛКМ позволяет изменить ширину и высоту кадра.")
 	if(initial(flash_enabled))
-		. += span_notice("Вспышка [flash_enabled ? "включена" : "выключена"]. Ctrl+Shift+ЛКМ переключает вспышку. При выключенной вспышке на снимке сохраняется освещение сцены.")
+		. += span_notice("Вспышка [flash_enabled ? "включена" : "выключена"]. Alt+ЛКМ переключает вспышку. При выключенной вспышке на снимке сохраняется освещение сцены.")
 	. += "Осталось кадров: [pictures_left]."
 
 /obj/item/camera/AltClick(mob/user)
-	. = ..()
-	if(!user.client || !user.canUseTopic(src, BE_CLOSE, check_resting = FALSE))
-		return
-	var/desired_x = tgui_input_number(user, "Выберите ширину кадра.", "Размер кадра", picture_size_x, min(picture_size_x_max, CAMERA_PICTURE_SIZE_HARD_LIMIT), picture_size_x_min, round_value = TRUE)
-	if(isnull(desired_x) || QDELETED(src) || !user.client || !user.canUseTopic(src, BE_CLOSE, check_resting = FALSE))
-		return
-	var/desired_y = tgui_input_number(user, "Выберите высоту кадра.", "Размер кадра", picture_size_y, min(picture_size_y_max, CAMERA_PICTURE_SIZE_HARD_LIMIT), picture_size_y_min, round_value = TRUE)
-	if(isnull(desired_y) || QDELETED(src) || !user.client || !user.canUseTopic(src, BE_CLOSE, check_resting = FALSE))
-		return
-	picture_size_x = desired_x
-	picture_size_y = desired_y
-	return TRUE
-
-/obj/item/camera/CtrlShiftClick(mob/user)
 	. = ..()
 	if(!initial(flash_enabled) || !user.canUseTopic(src, BE_CLOSE, check_resting = FALSE))
 		return
 	flash_enabled = !flash_enabled
 	to_chat(user, span_notice("Вспышка [flash_enabled ? "включена" : "выключена"]."))
+	SStgui.update_uis(src)
 	return TRUE
 
 /obj/item/camera/attack_self(mob/user)
-	if(!disk)
-		return
-	to_chat(user, span_notice("Вы извлекаете [disk] из камеры."))
-	user.put_in_hands(disk)
-	disk = null
+	ui_interact(user)
+
+/obj/item/camera/ui_state(mob/user)
+	return GLOB.hands_state
+
+/obj/item/camera/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "PhotoCamera", "Настройки камеры")
+		ui.set_autoupdate(FALSE)
+		if(!ui.open())
+			qdel(ui)
+
+/obj/item/camera/ui_static_data(mob/user)
+	return list(
+		"canFlash" = initial(flash_enabled),
+		"minWidth" = picture_size_x_min * 2 - 1,
+		"maxWidth" = min(picture_size_x_max, CAMERA_PICTURE_SIZE_HARD_LIMIT) * 2 - 1,
+		"minHeight" = picture_size_y_min * 2 - 1,
+		"maxHeight" = min(picture_size_y_max, CAMERA_PICTURE_SIZE_HARD_LIMIT) * 2 - 1,
+	)
+
+/obj/item/camera/ui_data(mob/user)
+	return list(
+		"width" = picture_size_x * 2 - 1,
+		"height" = picture_size_y * 2 - 1,
+		"flashEnabled" = flash_enabled,
+		"editorMode" = can_customise ? editor_mode : null,
+		"hasDisk" = !QDELETED(disk),
+	)
+
+/obj/item/camera/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	if(..())
+		return FALSE
+	switch(action)
+		if("set_width", "set_height")
+			var/size = params["size"]
+			if(!isnum(size))
+				return FALSE
+			// Кадр включает центральный тайл и одинаковый отступ с каждой стороны.
+			var/setting = round(size / 2) + 1
+			if(action == "set_width")
+				picture_size_x = clamp(setting, picture_size_x_min, min(picture_size_x_max, CAMERA_PICTURE_SIZE_HARD_LIMIT))
+			else
+				picture_size_y = clamp(setting, picture_size_y_min, min(picture_size_y_max, CAMERA_PICTURE_SIZE_HARD_LIMIT))
+			return TRUE
+		if("toggle_flash")
+			if(!initial(flash_enabled))
+				return FALSE
+			flash_enabled = !flash_enabled
+			return TRUE
+		if("set_editor_mode")
+			var/mode = params["mode"]
+			if(!can_customise || !(mode in list(CAMERA_EDITOR_ASK, CAMERA_EDITOR_OPEN, CAMERA_EDITOR_SKIP)))
+				return FALSE
+			editor_mode = mode
+			return TRUE
+		if("eject_disk")
+			if(QDELETED(disk))
+				return FALSE
+			var/obj/item/disk/holodisk/ejected_disk = disk
+			disk = null
+			to_chat(ui.user, span_notice("Вы извлекаете [ejected_disk] из камеры."))
+			ui.user.put_in_hands(ejected_disk)
+			return TRUE
+	return FALSE
 
 /obj/item/camera/attack(mob/living/carbon/human/M, mob/user)
 	return
@@ -99,6 +150,7 @@
 				return TRUE
 			to_chat(user, span_notice("Вы вставляете голодиск в разъём на задней стороне камеры."))
 			disk = I
+			SStgui.update_uis(src)
 		else
 			to_chat(user, span_warning("В камере уже есть голодиск."))
 		return TRUE //no afterattack
@@ -228,8 +280,12 @@
 		user.put_in_hands(p)
 		pictures_left--
 		to_chat(user, span_notice("Осталось кадров: [pictures_left]."))
-		if(can_customise && !QDELETED(p) && user.client)
-			p.offer_camera_editor(user)
+		if(can_customise && editor_mode != CAMERA_EDITOR_SKIP && !QDELETED(p) && user.client)
+			p.offer_camera_editor(user, editor_mode == CAMERA_EDITOR_ASK)
 			return
 	if(CONFIG_GET(flag/picture_logging_camera))
 		picture.log_to_file()
+
+#undef CAMERA_EDITOR_ASK
+#undef CAMERA_EDITOR_OPEN
+#undef CAMERA_EDITOR_SKIP
