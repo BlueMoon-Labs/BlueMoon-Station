@@ -3,8 +3,8 @@
 
 /obj/item/camera
 	name = "camera"
+	desc = "Фотоаппарат мгновенной печати."
 	icon = 'icons/obj/items_and_weapons.dmi'
-	desc = "A polaroid camera."
 	icon_state = "camera"
 	item_state = "camera"
 	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
@@ -44,19 +44,23 @@
 
 /obj/item/camera/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Alt-click to change its focusing, allowing you to set how big of an area it will capture.</span>"
+	. += span_notice("Alt+ЛКМ позволяет изменить ширину и высоту кадра.")
 	if(initial(flash_enabled))
 		. += span_notice("Вспышка [flash_enabled ? "включена" : "выключена"]. Ctrl+Shift+ЛКМ переключает вспышку. При выключенной вспышке на снимке сохраняется освещение сцены.")
-	. += "It has [pictures_left] photos left."
+	. += "Осталось кадров: [pictures_left]."
 
 /obj/item/camera/AltClick(mob/user)
 	. = ..()
-	if(!user.canUseTopic(src, BE_CLOSE, check_resting = FALSE))
+	if(!user.client || !user.canUseTopic(src, BE_CLOSE, check_resting = FALSE))
 		return
-	var/desired_x = input(user, "How high do you want the camera to shoot, between [picture_size_x_min] and [picture_size_x_max]?", "Zoom", picture_size_x) as num
-	var/desired_y = input(user, "How wide do you want the camera to shoot, between [picture_size_y_min] and [picture_size_y_max]?", "Zoom", picture_size_y) as num
-	picture_size_x = min(clamp(desired_x, picture_size_x_min, picture_size_x_max), CAMERA_PICTURE_SIZE_HARD_LIMIT)
-	picture_size_y = min(clamp(desired_y, picture_size_y_min, picture_size_y_max), CAMERA_PICTURE_SIZE_HARD_LIMIT)
+	var/desired_x = tgui_input_number(user, "Выберите ширину кадра.", "Размер кадра", picture_size_x, min(picture_size_x_max, CAMERA_PICTURE_SIZE_HARD_LIMIT), picture_size_x_min, round_value = TRUE)
+	if(isnull(desired_x) || QDELETED(src) || !user.client || !user.canUseTopic(src, BE_CLOSE, check_resting = FALSE))
+		return
+	var/desired_y = tgui_input_number(user, "Выберите высоту кадра.", "Размер кадра", picture_size_y, min(picture_size_y_max, CAMERA_PICTURE_SIZE_HARD_LIMIT), picture_size_y_min, round_value = TRUE)
+	if(isnull(desired_y) || QDELETED(src) || !user.client || !user.canUseTopic(src, BE_CLOSE, check_resting = FALSE))
+		return
+	picture_size_x = desired_x
+	picture_size_y = desired_y
 	return TRUE
 
 /obj/item/camera/CtrlShiftClick(mob/user)
@@ -70,7 +74,7 @@
 /obj/item/camera/attack_self(mob/user)
 	if(!disk)
 		return
-	to_chat(user, "<span class='notice'>You eject [disk] out the back of [src].</span>")
+	to_chat(user, span_notice("Вы извлекаете [disk] из камеры."))
 	user.put_in_hands(disk)
 	disk = null
 
@@ -80,23 +84,23 @@
 /obj/item/camera/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/camera_film))
 		if(pictures_left)
-			to_chat(user, "<span class='notice'>[src] still has some film in it!</span>")
+			to_chat(user, span_notice("В камере ещё осталась плёнка!"))
 			return
 		if(!user.temporarilyRemoveItemFromInventory(I))
 			return
-		to_chat(user, "<span class='notice'>You insert [I] into [src].</span>")
+		to_chat(user, span_notice("Вы вставляете кассету с плёнкой в камеру."))
 		qdel(I)
 		pictures_left = pictures_max
 		return
 	if(istype(I, /obj/item/disk/holodisk))
 		if (!disk)
 			if(!user.transferItemToLoc(I, src))
-				to_chat(user, "<span class='warning'>[I] is stuck to your hand!</span>")
+				to_chat(user, span_warning("[I] прилип к вашей руке!"))
 				return TRUE
-			to_chat(user, "<span class='notice'>You slide [I] into the back of [src].</span>")
+			to_chat(user, span_notice("Вы вставляете голодиск в разъём на задней стороне камеры."))
 			disk = I
 		else
-			to_chat(user, "<span class='warning'>There's already a disk inside [src].</span>")
+			to_chat(user, span_warning("В камере уже есть голодиск."))
 		return TRUE //no afterattack
 	..()
 
@@ -133,7 +137,7 @@
 			disk.record.caller_name = M.name
 			disk.record.set_caller_image(M)
 		else
-			to_chat(user, "<span class='warning'>Invalid holodisk target.</span>")
+			to_chat(user, span_warning("Голодиск не может записать эту цель."))
 			return
 
 	if(!can_target(target, user, flag))
@@ -224,7 +228,8 @@
 		user.put_in_hands(p)
 		pictures_left--
 		to_chat(user, span_notice("Осталось кадров: [pictures_left]."))
-		if(can_customise && !QDELETED(p) && p.open_camera_editor(user))
+		if(can_customise && !QDELETED(p) && user.client)
+			p.offer_camera_editor(user)
 			return
-		if(CONFIG_GET(flag/picture_logging_camera))
-			picture.log_to_file()
+	if(CONFIG_GET(flag/picture_logging_camera))
+		picture.log_to_file()

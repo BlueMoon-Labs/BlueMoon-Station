@@ -52,7 +52,7 @@ export const PhotoViewer = () => {
 
   return (
     <Window width={500} height={580} title={photoName || 'Фотография'}>
-      <Window.Content scrollable>
+      <Window.Content scrollable style={{ scrollbarWidth: 'none' }}>
         <PhotoPreview {...data} />
         {!!description && (
           <Section title="Описание" mt={1}>

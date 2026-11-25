@@ -1,6 +1,6 @@
 /datum/picture
 	var/picture_name = "picture"
-	var/picture_desc = "This is a picture."
+	var/picture_desc = "Это фотография."
 	var/caption
 	var/icon/picture_image
 	var/icon/picture_icon

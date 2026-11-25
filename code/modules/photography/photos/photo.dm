@@ -63,7 +63,7 @@
 		icon = I
 
 /obj/item/photo/suicide_act(mob/living/carbon/user)
-	user.visible_message("<span class='suicide'>[user] is taking one last look at \the [src]! It looks like [user.ru_who()] giving in to death!</span>")//when you wanna look at photo of waifu one last time before you die...
+	user.visible_message(span_suicide("[user] в последний раз смотрит на фотографию. Похоже, жить больше незачем!"))
 	if (user.gender == MALE || (user.gender == PLURAL && ismasculine(user)))
 		playsound(user, 'sound/voice/human/manlaugh1.ogg', 50, TRUE)//EVERY TIME I DO IT MAKES ME LAUGH
 	else if (user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
@@ -78,17 +78,19 @@
 		return
 	if(istype(P, /obj/item/pen) || istype(P, /obj/item/toy/crayon))
 		if(!user.can_write(P))
-			to_chat(user, "<span class='notice'>You scribble illegibly on [src]!</span>")
+			to_chat(user, span_notice("Вы выводите на фотографии неразборчивые каракули!"))
 			return
-		var/txt = stripped_input(user, "What would you like to write on the back?", "Photo Writing", "", 128)
-		if(txt && user.canUseTopic(src, BE_CLOSE))
+		if(!user.client)
+			return
+		var/txt = tgui_input_text(user, "Что написать на обороте фотографии?", "Подпись на фотографии", "", 128, encode = TRUE)
+		if(txt && !QDELETED(src) && user.client && user.canUseTopic(src, BE_CLOSE))
 			scribble = txt
 			photo_changed()
 		return
 	if(istype(P, /obj/item/modular_computer/pda))
 		var/obj/item/modular_computer/pda/pda_device = P
 		pda_device.picture = picture
-		to_chat(user, "<span class='notice'>Вы просканировали [src] в [pda_device].</span>")
+		to_chat(user, span_notice("Вы сканируете фотографию с помощью [pda_device]."))
 		return
 	return ..()
 
@@ -105,6 +107,15 @@
 		to_chat(user, span_warning("На фотографии ничего нет."))
 		return
 	ui_interact(user)
+
+/obj/item/photo/proc/offer_camera_editor(mob/user)
+	set waitfor = FALSE
+	var/datum/picture/captured_picture = picture
+	var/choice = tgui_alert(user, "Открыть редактор фотографии?", "Редактирование фотографии", list("Нет", "Да"))
+	if(choice == "Да" && !QDELETED(src) && open_camera_editor(user))
+		return
+	if(CONFIG_GET(flag/picture_logging_camera))
+		captured_picture?.log_to_file()
 
 /obj/item/photo/proc/open_camera_editor(mob/user)
 	if(!user?.client)
@@ -217,15 +228,17 @@ GLOBAL_DATUM_INIT(photo_editor_state, /datum/ui_state/photo_viewer/editor, new)
 	set src in usr
 
 	var/mob/living/L = usr
-	if(!istype(L))
+	if(!istype(L) || !L.client)
 		return
 
-	var/n_name = stripped_input(usr, "What would you like to label the photo?", "Photo Labelling", "", MAX_NAME_LEN)
-	//loc.loc check is for making possible renaming photos in clipboards
-	if(n_name && (loc == usr || loc.loc && loc.loc == usr) && CHECK_MOBILITY(L, MOBILITY_USE))
-		name = "photo[(n_name ? text("- '[n_name]'") : null)]"
+	var/n_name = tgui_input_text(L, "Как назвать фотографию?", "Название фотографии", "", MAX_NAME_LEN, encode = TRUE)
+	if(QDELETED(src) || !L.client)
+		return
+	// Фотографию можно переименовать и внутри папки в руках.
+	if(n_name && (loc == L || loc?.loc == L) && CHECK_MOBILITY(L, MOBILITY_USE))
+		name = "photo- '[n_name]'"
 		photo_changed()
-	add_fingerprint(usr)
+	add_fingerprint(L)
 
 /obj/item/photo/old
 	icon_state = "photo_old"

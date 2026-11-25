@@ -154,7 +154,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 
 /mob/dead/observer/get_photo_description(obj/item/camera/camera)
 	if(!invisibility || camera.see_ghosts)
-		return "You can also see a g-g-g-g-ghooooost!"
+		return "На снимке также видно п-п-п-привидение!"
 
 /mob/dead/observer/narsie_act()
 	var/old_color = color
