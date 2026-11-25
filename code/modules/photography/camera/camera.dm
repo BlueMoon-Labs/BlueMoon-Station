@@ -158,10 +158,7 @@
 	on = TRUE
 
 /obj/item/camera/proc/show_picture(mob/user, datum/picture/selection)
-	var/obj/item/photo/P = new(src, selection)
-	P.show(user)
-	to_chat(user, P.desc)
-	qdel(P)
+	selection?.ui_interact(user)
 
 /obj/item/camera/proc/captureimage(atom/target, mob/user, flag, size_x = 1, size_y = 1)
 	if(flash_enabled)
@@ -221,27 +218,13 @@
 /obj/item/camera/proc/printpicture(mob/user, datum/picture/picture) //Normal camera proc for creating photos
 	var/obj/item/photo/p = new(get_turf(src), picture)
 	if(in_range(src, user)) //needed because of TK
+		if(default_picture_name)
+			picture.picture_name = default_picture_name
+		p.set_picture(picture, TRUE, TRUE)
 		user.put_in_hands(p)
 		pictures_left--
-		to_chat(user, "<span class='notice'>[pictures_left] photos left.</span>")
-		var/customise = "No"
-		if(can_customise)
-			customise = alert(user, "Do you want to customize the photo?", "Customization", "Yes", "No")
-		if(customise == "Yes")
-			var/name1 = stripped_input(user, "Set a name for this photo, or leave blank. 32 characters max.", "Name", max_length = 32)
-			var/desc1 = stripped_input(user, "Set a description to add to photo, or leave blank. 128 characters max.", "Caption", max_length = 128)
-			var/caption = stripped_input(user, "Set a caption for this photo, or leave blank. 256 characters max.", "Caption", max_length = 256)
-			if(name1)
-				picture.picture_name = name1
-			if(desc1)
-				picture.picture_desc = "[desc1] - [picture.picture_desc]"
-			if(caption)
-				picture.caption = caption
-		else
-			if(default_picture_name)
-				picture.picture_name = default_picture_name
-
-		if(!QDELETED(p))
-			p.set_picture(picture, TRUE, TRUE)
+		to_chat(user, span_notice("Осталось кадров: [pictures_left]."))
+		if(can_customise && !QDELETED(p) && p.open_camera_editor(user))
+			return
 		if(CONFIG_GET(flag/picture_logging_camera))
 			picture.log_to_file()

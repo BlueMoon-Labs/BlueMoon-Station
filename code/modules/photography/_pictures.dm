@@ -49,6 +49,37 @@
 		base64_cache_source = picture_image
 	return base64_cache
 
+/datum/picture/proc/photo_ui_media()
+	if(picture_url)
+		return list("url" = html_decode(picture_url))
+	return list("image" = get_base64())
+
+/datum/picture/ui_state(mob/user)
+	return GLOB.always_state
+
+/datum/picture/ui_interact(mob/user, datum/tgui/ui)
+	if(!picture_image && !picture_url)
+		return FALSE
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(ui)
+		return TRUE
+	ui = new(user, src, "PhotoViewer", picture_name)
+	ui.set_autoupdate(FALSE)
+	if(ui.open())
+		return TRUE
+	qdel(ui)
+	return FALSE
+
+/datum/picture/ui_static_data(mob/user)
+	return photo_ui_media()
+
+/datum/picture/ui_data(mob/user)
+	return list(
+		"photoName" = html_decode(picture_name),
+		"description" = html_decode(picture_desc),
+		"caption" = caption ? html_decode(caption) : null,
+	)
+
 /datum/picture/proc/get_small_icon(iconstate)
 	if(!picture_icon)
 		regenerate_small_icon(iconstate)
