@@ -4,7 +4,6 @@
 #define PDA_CAMERA_CURSOR 'icons/effects/mouse_pointers/pda_camera.dmi'
 #define PDA_CAMERA_VIEWFINDER_DELAY (0.2 SECONDS)
 #define PDA_CAMERA_VIEWFINDER_IDLE_DELAY (0.5 SECONDS)
-#define PDA_CAMERA_CLOUD_UPLOAD_COOLDOWN (1 MINUTES)
 #define PDA_CAMERA_CLOUD_LIMIT 50
 #define PDA_CAMERA_CLOUD_TIER_1_LIMIT 200
 
@@ -499,13 +498,7 @@
 	return fexists(path) || fexists("[path].bak")
 
 /datum/computer_file/program/pda_camera/proc/can_upload_to_cloud(mob/user)
-	var/datum/player_details/account = user.client?.player_details
-	if(!account || !cloud_directory)
-		return FALSE
-	var/time_left = COOLDOWN_TIMELEFT(account, pda_photo_upload_cooldown)
-	if(time_left > 0)
-		var/seconds_left = CEILING(time_left / (1 SECONDS), 1)
-		to_chat(user, span_warning("До следующей загрузки в облако осталось [seconds_left] сек."))
+	if(!cloud_directory)
 		return FALSE
 	if(IS_CKEY_DONATOR_GROUP(user.ckey, DONATOR_GROUP_TIER_2))
 		return TRUE
@@ -573,8 +566,6 @@
 	edited.caption = html_encode_readable(trim(strip_control_chars(params["caption"]), PHOTO_CAPTION_LIMIT + 1))
 	var/saved = save_pda_cloud_photo(cloud_photo_path(selected_id), edited, local_thumbnails?[selected_id])
 	if(saved)
-		if(uploading)
-			COOLDOWN_START(user.client.player_details, pda_photo_upload_cooldown, PDA_CAMERA_CLOUD_UPLOAD_COOLDOWN)
 		selected.picture_name = edited.picture_name
 		selected.picture_desc = edited.picture_desc
 		selected.caption = edited.caption
@@ -670,6 +661,5 @@
 #undef PDA_CAMERA_CURSOR
 #undef PDA_CAMERA_VIEWFINDER_DELAY
 #undef PDA_CAMERA_VIEWFINDER_IDLE_DELAY
-#undef PDA_CAMERA_CLOUD_UPLOAD_COOLDOWN
 #undef PDA_CAMERA_CLOUD_LIMIT
 #undef PDA_CAMERA_CLOUD_TIER_1_LIMIT
