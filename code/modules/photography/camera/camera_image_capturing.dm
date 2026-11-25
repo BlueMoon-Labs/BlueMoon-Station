@@ -138,8 +138,9 @@
 	frame_appearances = scene
 	var/list/sprites = list()
 	for(var/index = 1, index <= length(scene), index += 3)
-		var/mutable_appearance/sprite = new
-		sprite.appearance = scene[index]
+		var/image/source_appearance = scene[index]
+		// Передаём dir в конструктор image, чтобы слой не наследовал направление экрана.
+		var/image/sprite = image(source_appearance, dir = source_appearance.dir)
 		sprite.pixel_x += scene[index + 1]
 		sprite.pixel_y += scene[index + 2]
 		sprite.maptext = null

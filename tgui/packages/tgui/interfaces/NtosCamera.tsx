@@ -183,7 +183,7 @@ const Viewfinder = () => {
       </Stack.Item>
       {aiming && (
         <Stack.Item textAlign="center" color="label">
-          Наведите курсор и щёлкните по цели на игровой карте.
+          Наведите курсор и щёлкните.
         </Stack.Item>
       )}
       <Stack.Item>
