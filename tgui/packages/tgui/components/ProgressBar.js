@@ -15,6 +15,7 @@ export const ProgressBar = props => {
     value,
     minValue = 0,
     maxValue = 1,
+    animated = true,
     color,
     ranges = {},
     children,
@@ -35,7 +36,10 @@ export const ProgressBar = props => {
       ])}
       {...computeBoxProps(rest)}>
       <div
-        className="ProgressBar__fill ProgressBar__fill--animated"
+        className={classes([
+          'ProgressBar__fill',
+          animated && 'ProgressBar__fill--animated',
+        ])}
         style={{
           width: clamp01(scaledValue) * 100 + '%',
         }} />

@@ -56,8 +56,25 @@
 
 	log_test("camera_photo_shaded_background: tiles=[report.Join(" | ")]")
 
+	// В одном кадре без вспышки освещённый пол должен сохраниться, а соседний остаться тёмным.
+	var/list/previous_light = list()
+	for(var/turf/tile as anything in turfs)
+		var/atom/movable/lighting_object/light = tile.lighting_object
+		previous_light[light] = light.color
+		light.color = tile == center ? LIGHTING_BASE_MATRIX : LIGHTING_DARK_MATRIX
+	cam.flash_enabled = FALSE
+	var/icon/unflashed = cam.camera_get_icon(turfs, center, psize, psize)
+	for(var/atom/movable/lighting_object/light as anything in previous_light)
+		if(!QDELETED(light))
+			light.color = previous_light[light]
+
 	for(var/atom/movable/lighting_object/lo as anything in created_los)
 		if(!QDELETED(lo))
 			qdel(lo, force = TRUE)
 
 	TEST_ASSERT_EQUAL(black_tiles, 0, "Shaded camera photo lost [black_tiles]/9 background floor tiles to black (lighting_object cloned into the photo)")
+	var/sample_offset = round(world.icon_size / 2)
+	var/center_pixel = world.icon_size + sample_offset
+	TEST_ASSERT_NOTNULL(unflashed, "No-flash camera render returned null")
+	TEST_ASSERT(camera_pixel_is_lit(unflashed, center_pixel, center_pixel), "No-flash photo lost the lit center tile")
+	TEST_ASSERT(!camera_pixel_is_lit(unflashed, sample_offset, sample_offset), "No-flash photo ignored the dark neighbor")

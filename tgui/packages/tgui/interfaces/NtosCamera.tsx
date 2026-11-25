@@ -94,7 +94,7 @@ const CameraSettings = () => {
         width="3.5rem"
         lineHeight="2.8rem"
         textAlign="center"
-        onClick={() => setOpen(true)}
+        onClick={() => setOpen(previous => !previous)}
       />
       {open && (
         <Box
@@ -360,7 +360,7 @@ const PrintProgress = ({ duration }: { duration: number }) => {
     return () => window.clearInterval(interval);
   }, [duration]);
 
-  return <ProgressBar value={percent} maxValue={100} />;
+  return <ProgressBar value={percent} maxValue={100} animated={false} />;
 };
 
 const PrintPhoto = ({ photo }: { photo: SelectedPhoto }) => {
@@ -471,6 +471,20 @@ export const NtosCamera = () => {
                     Облако
                   </Tabs.Tab>
                 </Tabs>
+              </Stack.Item>
+              <Stack.Item>
+                <Button
+                  icon="question"
+                  aria-label="О хранилищах"
+                  tooltip={(
+                    <>
+                      Локальные снимки удаляются в конце смены.
+                      <br />
+                      Снимки в облаке сохраняются между сменами.
+                    </>
+                  )}
+                  tooltipPosition="bottom-end"
+                />
               </Stack.Item>
               <Stack.Item>
                 <Button icon="camera" onClick={() => act('tab', { tab: 'camera' })}>

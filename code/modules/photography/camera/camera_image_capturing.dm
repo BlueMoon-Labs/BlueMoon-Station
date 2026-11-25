@@ -21,12 +21,21 @@
 	var/plane = visual.plane
 	render_plane = plane == FLOAT_PLANE ? 0 : PLANE_TO_TRUE(plane)
 
-/datum/camera_frame_entry/proc/draw(icon/frame, list/flat_icon_cache, blend_mode)
+/datum/camera_frame_entry/proc/draw(icon/frame, list/flat_icon_cache, blend_mode, tile_light = FALSE)
 	var/appearance_key = "\ref[visual]"
 	var/list/rendered = flat_icon_cache[appearance_key]
 	if(!rendered)
 		rendered = list()
-		rendered["icon"] = getFlatIcon(visual, no_anim = TRUE, icon_offsets = rendered, apply_photo_transform = TRUE)
+		if(tile_light)
+			// Матрица света использует исходную альфу для четвёртого угла.
+			// visual.alpha читает только её множитель и даёт 0, хотя маска после перекраски непрозрачна.
+			var/icon/light_mask = icon(visual.icon, visual.icon_state || "", visual.dir, 1)
+			var/list/light_color = visual.color
+			if(islist(light_color))
+				light_mask.MapColors(arglist(light_color))
+			rendered["icon"] = light_mask
+		else
+			rendered["icon"] = getFlatIcon(visual, no_anim = TRUE, icon_offsets = rendered, apply_photo_transform = TRUE)
 		flat_icon_cache[appearance_key] = rendered
 	var/icon/flattened = rendered["icon"]
 	if(flattened)
@@ -93,7 +102,7 @@
 		lighting_map.Scale(psize_x, psize_y)
 		lighting_map.DrawBox(COLOR_WHITE, 1, 1, psize_x, psize_y)
 		for(var/datum/camera_frame_entry/light as anything in tile_lights)
-			light.draw(lighting_map, flat_icon_cache, ICON_OVERLAY)
+			light.draw(lighting_map, flat_icon_cache, ICON_OVERLAY, tile_light = TRUE)
 			CHECK_TICK
 		for(var/datum/camera_frame_entry/light as anything in overlay_lights)
 			light.draw(lighting_map, flat_icon_cache, ICON_OVERLAY)

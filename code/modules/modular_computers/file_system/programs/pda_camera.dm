@@ -1,6 +1,7 @@
 #define PDA_CAMERA_PAGE_SIZE 12
 #define PDA_CAMERA_PRINT_UPLOAD_TIME (2.5 SECONDS)
 #define PDA_CAMERA_MAX_RADIUS 3
+#define PDA_CAMERA_CURSOR 'icons/effects/mouse_pointers/pda_camera.dmi'
 
 /datum/computer_file/program/pda_camera
 	filename = "Camera"
@@ -37,6 +38,10 @@
 	var/frame_radius_x = PDA_CAMERA_MAX_RADIUS
 	var/frame_radius_y = PDA_CAMERA_MAX_RADIUS
 	var/list/local_thumbnails
+	var/client/aim_client
+	var/previous_cursor
+	var/previous_mouse_up
+	var/previous_mouse_down
 
 /datum/computer_file/program/pda_camera/Destroy()
 	close_camera_window()
@@ -277,8 +282,17 @@
 
 /datum/computer_file/program/pda_camera/proc/start_aiming(mob/user)
 	aiming = TRUE
+	aim_client = user.client
+	previous_cursor = aim_client.mouse_override_icon
+	previous_mouse_up = aim_client.mouse_up_icon
+	previous_mouse_down = aim_client.mouse_down_icon
+	aim_client.mouse_override_icon = PDA_CAMERA_CURSOR
+	aim_client.mouse_up_icon = PDA_CAMERA_CURSOR
+	aim_client.mouse_down_icon = PDA_CAMERA_CURSOR
+	aim_client.mouse_pointer_icon = PDA_CAMERA_CURSOR
 	RegisterSignal(user, COMSIG_MOB_CLICKON, PROC_REF(on_photo_click))
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_aim_moved))
+	RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(on_aim_user_deleted))
 	RegisterSignal(computer, list(COMSIG_MOVABLE_MOVED, COMSIG_ITEM_DROPPED, COMSIG_ITEM_EQUIPPED), PROC_REF(on_aim_moved))
 
 /datum/computer_file/program/pda_camera/proc/stop_aiming()
@@ -286,11 +300,32 @@
 	if(!aiming)
 		return
 	aiming = FALSE
+	restore_aim_cursor()
 	var/mob/viewer = viewer_ref?.resolve()
 	if(viewer)
-		UnregisterSignal(viewer, list(COMSIG_MOB_CLICKON, COMSIG_MOVABLE_MOVED))
+		UnregisterSignal(viewer, list(COMSIG_MOB_CLICKON, COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
 	if(computer)
 		UnregisterSignal(computer, list(COMSIG_MOVABLE_MOVED, COMSIG_ITEM_DROPPED, COMSIG_ITEM_EQUIPPED))
+
+/datum/computer_file/program/pda_camera/proc/restore_aim_cursor()
+	if(aim_client)
+		if(aim_client.mouse_override_icon == PDA_CAMERA_CURSOR)
+			aim_client.mouse_override_icon = previous_cursor
+		if(aim_client.mouse_up_icon == PDA_CAMERA_CURSOR)
+			aim_client.mouse_up_icon = previous_mouse_up
+		if(aim_client.mouse_down_icon == PDA_CAMERA_CURSOR)
+			aim_client.mouse_down_icon = previous_mouse_down
+		if(aim_client.mouse_pointer_icon == PDA_CAMERA_CURSOR)
+			aim_client.mouse_pointer_icon = aim_client.mouse_override_icon || initial(aim_client.mouse_pointer_icon)
+			aim_client.mob?.update_mouse_pointer()
+	aim_client = null
+	previous_cursor = null
+	previous_mouse_up = null
+	previous_mouse_down = null
+
+/datum/computer_file/program/pda_camera/proc/on_aim_user_deleted(mob/source)
+	SIGNAL_HANDLER
+	stop_aiming()
 
 /datum/computer_file/program/pda_camera/proc/on_aim_moved(datum/source)
 	SIGNAL_HANDLER
@@ -490,9 +525,10 @@
 	else
 		var/error_message = printer.start_pda_photo_print(selected)
 		print_transferred = !error_message
-		cancel_print_upload(error_message || "Фотография передана на принтер.")
+		cancel_print_upload(error_message)
 	push_update()
 
 #undef PDA_CAMERA_PAGE_SIZE
 #undef PDA_CAMERA_PRINT_UPLOAD_TIME
 #undef PDA_CAMERA_MAX_RADIUS
+#undef PDA_CAMERA_CURSOR
