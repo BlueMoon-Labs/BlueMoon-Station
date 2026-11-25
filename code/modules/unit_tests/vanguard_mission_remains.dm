@@ -76,6 +76,50 @@
 		GLOB.expedition_body_beacons = saved_beacons
 	return ..()
 
+/// Труп авангардца после ghost'а (нет ни mind, ни ckey) возвращается домой по ДНК из снимка.
+/datum/unit_test/vanguard_mission_ghosted_remains
+	var/list/saved_beacons
+	var/mob/living/carbon/human/victim
+	var/mob/living/carbon/human/lookalike
+	var/mob/living/carbon/human/bystander
+
+/datum/unit_test/vanguard_mission_ghosted_remains/Run()
+	saved_beacons = GLOB.expedition_body_beacons.Copy()
+	GLOB.expedition_body_beacons.Cut()
+	var/obj/structure/fulton_beacon/beacon = allocate(/obj/structure/fulton_beacon, vanguard_home_beacon_spot())
+
+	victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/enzymes = victim.dna.unique_enzymes
+	//Имитируем ghostize(): у тела больше нет ни сознания, ни ckey.
+	victim.stat = DEAD
+	TEST_ASSERT(get_dist(victim, beacon) > 1, "Труп с самого начала лежит у маяка")
+
+	//Живой человек с той же ДНК не должен улететь вместе с трупом.
+	lookalike = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	lookalike.dna.unique_enzymes = enzymes
+	//Посторонний труп с чужой ДНК тоже остаётся на руине.
+	bystander = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	bystander.dna.unique_enzymes = "NOT_EXPEDITION_CREW"
+	bystander.stat = DEAD
+
+	var/datum/orbital_objective/objective = new
+	objective.objective_z_level = run_loc_floor_bottom_left.z
+	objective.expedition_crew_ckeys = null
+	objective.expedition_crew_enzymes = list(enzymes)
+	qdel(objective)
+
+	TEST_ASSERT(isturf(victim.loc) && get_dist(victim, beacon) <= 1, "Труп авангардца без mind не доставлен на маяк")
+	TEST_ASSERT(get_dist(lookalike, beacon) > 1, "Живой клон авангардца улетел на маяк")
+	TEST_ASSERT(get_dist(bystander, beacon) > 1, "Посторонний труп улетел на маяк")
+
+/datum/unit_test/vanguard_mission_ghosted_remains/Destroy()
+	QDEL_NULL(victim)
+	QDEL_NULL(lookalike)
+	QDEL_NULL(bystander)
+	if(saved_beacons)
+		GLOB.expedition_body_beacons = saved_beacons
+	return ..()
+
 /// Приёмный маяк стоит на станции: маяк на уровне задания стирается вместе с руиной.
 /datum/unit_test/proc/vanguard_home_beacon_spot()
 	return locate(run_loc_floor_top_right.x, run_loc_floor_top_right.y, SSmapping.levels_by_trait(ZTRAIT_STATION)[1])

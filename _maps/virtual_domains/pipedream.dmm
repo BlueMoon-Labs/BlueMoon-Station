@@ -1832,11 +1832,6 @@
 /area/virtual_domain)
 "aa" = (
 /obj/structure/table/reinforced,
-/obj/machinery/button/door{
-	id = "factorylockdown";
-	name = "Factory Lockdown";
-	pixel_y = 26
-	},
 /obj/item/gun/ballistic/shotgun/lethal,
 /obj/item/ammo_box/shotgun/loaded/buckshot,
 /obj/item/ammo_box/shotgun/loaded/buckshot,
@@ -2736,7 +2731,7 @@ xa
 eg
 eg
 eg
-kU
+ab
 Zb
 kU
 Yt

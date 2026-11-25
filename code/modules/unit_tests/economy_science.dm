@@ -116,7 +116,7 @@
 	TEST_ASSERT(!("oil" in science.extracts_seen), "Хирургия вне станции не помечает цвет")
 	TEST_ASSERT(!findtext(jointext(processor.examine(viewer), "\n"), "экстракт каждого цвета"), "Процессор вне станции оплату не обещает")
 
-/// Консоль станционной сети упоминает оплату исследований, внестанционной - нет.
+/// Консоль станционной сети упоминает оплату исследований и чьи акции они поднимают, внестанционной - нет.
 /datum/unit_test/economy_science/console_examine/Run()
 	setup()
 	var/mob/living/carbon/human/scientist = allocate(/mob/living/carbon/human)
@@ -131,6 +131,15 @@
 	var/pay_line = "[SSeconomy.settings.work_prices[WORK_SCI_NODE]] кр. за [ECON_NODE_POINTS_UNIT] очков"
 	TEST_ASSERT(findtext(jointext(station_console.examine(scientist), "\n"), pay_line), "Станционная консоль описывает оплату")
 	TEST_ASSERT(!findtext(jointext(offstation_console.examine(scientist), "\n"), pay_line), "Внестанционная консоль оплату не обещает")
+	var/list/shares = SSmarket.work_stocks[WORK_SCI_NODE]
+	var/list/rising = list()
+	for(var/ticker in shares)
+		if(shares[ticker] > 0)
+			rising += ticker
+	TEST_ASSERT(length(rising), "Исследования не двигают ни одной компании")
+	var/stocks_line = "Оплаченные исследования поднимают на бирже акции [jointext(rising, ", ")]."
+	TEST_ASSERT(findtext(jointext(station_console.examine(scientist), "\n"), stocks_line), "Станционная консоль не говорит, чьи акции растут от исследований")
+	TEST_ASSERT(!findtext(jointext(offstation_console.examine(scientist), "\n"), stocks_line), "Внестанционная консоль обещает рост акций")
 
 /// Находка ксеноархеологии, проданная сканером, платит науке, а не карго.
 /datum/unit_test/economy_science/artifact_scanner/Run()

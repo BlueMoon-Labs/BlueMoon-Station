@@ -148,5 +148,4 @@
 	mag_type = /obj/item/ammo_box/magazine/internal/boltaction/rebarxbow/syndie
 	draw_time = 1 SECONDS // syndicate model: near-instant draw
 	zoomable = TRUE
-	zoom_amt = 8
-	zoom_out_amt = 5
+	scope_range = 3

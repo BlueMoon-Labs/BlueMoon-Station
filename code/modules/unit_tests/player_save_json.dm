@@ -1041,6 +1041,13 @@ GLOBAL_VAR_INIT(unit_test_legacy_probe_loaded, FALSE)
 	TEST_ASSERT(prefs.import_character_json(donor_loadout), "донатный предмет отклонил весь файл: [prefs.player_transfer_error]")
 	TEST_ASSERT_EQUAL(length(prefs.loadout_data["SAVE_1"]), 0, "импорт открыл донатный предмет")
 	TEST_ASSERT(length(prefs.player_transfer_notices), "игроку не сказали об убранном предмете")
+	// Старые сейвы хранят пути переименованных и удалённых вещей.
+	var/list/stale_loadout = list("SAVE_1" = list(list(LOADOUT_ITEM = "/datum/gear/removed_test_item"), list(LOADOUT_ITEM = "[/datum/gear/accessory/necklace]")))
+	var/stale_json = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("loadout" = json_encode(stale_loadout))))
+	TEST_ASSERT(prefs.import_character_json(stale_json), "удалённый предмет отклонил весь файл: [prefs.player_transfer_error]")
+	var/list/stale_kept = prefs.loadout_data["SAVE_1"]
+	TEST_ASSERT_EQUAL(length(stale_kept), 1, "импорт не убрал удалённый предмет или потерял существующий")
+	TEST_ASSERT(length(prefs.player_transfer_notices), "игроку не сказали об удалённом предмете")
 	TEST_ASSERT_EQUAL(prefs.real_name, "Protected Character", "импорт экипировки изменил персонажа")
 	prefs.path = null
 
@@ -2579,3 +2586,114 @@ GLOBAL_VAR_INIT(unit_test_legacy_probe_loaded, FALSE)
 	return ..()
 
 #endif
+
+/// Стоны хранятся текстом: файл-ресурс вшивал .ogg в сейв и ронял экспорт персонажа.
+/datum/unit_test/player_save_json/custom_moan_sounds/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	var/moan = GLOB.lewd_purr_sounds[1]
+	prefs.custom_moan_sounds = list(moan)
+	prefs.use_custom_moan_sounds = TRUE
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	var/slot_path = "/character[prefs.default_slot]"
+	var/savefile/slot = prefs.open_player_save(slot_path)
+	slot.cd = slot_path
+	var/list/stored
+	slot["custom_moan_sounds"] >> stored
+	TEST_ASSERT(islist(stored) && length(stored) == 1 && istext(stored[1]), "стон сохранён не текстом")
+	// Сейвы до правки хранят сам файл-ресурс.
+	slot["custom_moan_sounds"] << list(moan)
+	TEST_ASSERT(prefs.commit_player_save(slot, slot_path), "не записан стон старого формата")
+	prefs.custom_moan_sounds = list()
+	TEST_ASSERT(prefs.load_character(prefs.default_slot, TRUE), "слот со старым стоном не загрузился")
+	TEST_ASSERT_EQUAL(length(prefs.custom_moan_sounds), 1, "стон старого формата потерян")
+	TEST_ASSERT_EQUAL("[prefs.custom_moan_sounds[1]]", "[moan]", "стон старого формата подменён")
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(exported, "экспорт со своими стонами не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(!findtext(exported, "filedata"), "экспорт вшил звуковой файл")
+	prefs.custom_moan_sounds = list()
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не сброшены стоны перед импортом")
+	TEST_ASSERT(prefs.import_character_json(exported), "импорт со стонами не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(length(prefs.custom_moan_sounds), 1, "импорт потерял стон")
+	TEST_ASSERT_EQUAL("[prefs.custom_moan_sounds[1]]", "[moan]", "импорт подменил стон")
+	prefs.path = null
+
+/// Игрок видит, какое поле мешает экспорту.
+/datum/unit_test/player_save_json/export_error_names_field/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.job_preferences = list("Assistant" = /obj/item)
+	TEST_ASSERT_NULL(prefs.export_character_json(), "экспорт пропустил путь типа")
+	TEST_ASSERT(findtext(prefs.player_transfer_error, "job_preferences"), "ошибка экспорта не называет поле: [prefs.player_transfer_error]")
+	prefs.path = null
+
+/// Окно сейвов раскладывает файлы по слотам и выгружает всё одним JSON, который восстанавливается.
+/datum/unit_test/player_save_json/save_inspector
+	var/inspector_directory
+
+/datum/unit_test/player_save_json/save_inspector/Destroy()
+	if(inspector_directory)
+		fdel(inspector_directory)
+	return ..()
+
+/datum/unit_test/player_save_json/save_inspector/Run()
+	prepare()
+	inspector_directory = player_save_debug_directory("UT_Save_Inspector")
+	fdel(inspector_directory)
+	var/list/tree = list(
+		"default_slot" = list("value" = 31, "children" = list()),
+		"character31" = list("value" = list("type" = "list", "items" = list("Anahit", ""), "associations" = list(null, null)), "children" = list()),
+		"character6" = list("value" = "Норика", "children" = list()),
+	)
+	text2file(json_encode(list("format" = "bluemoon-player-save", "version" = 1, "tree" = tree)), "[inspector_directory]preferences.sav.json")
+	var/slot31 = "preferences.sav.json.d/[md5("character31")].sav.json"
+	text2file("{\"slot\":31}", "[inspector_directory][slot31]")
+	text2file("{\"slot\":31}", "[inspector_directory][slot31].recovery")
+	text2file("{\"slot\":6}", "[inspector_directory]preferences.sav.json.d/[md5("character6")].sav.json")
+	text2file("{}", "[inspector_directory]metadollars.json")
+	var/savefile/legacy = new("[inspector_directory]preferences.sav")
+	legacy.cd = "/character1"
+	legacy["real_name"] << "Legacy Name"
+	legacy.Flush()
+	legacy = null
+
+	var/datum/player_save_inspector/inspector = new
+	allocated += inspector
+	inspector.set_target("UT_Save_Inspector")
+	TEST_ASSERT_EQUAL(inspector.default_slot, 31, "не найден активный слот")
+	TEST_ASSERT_EQUAL(length(inspector.file_rows), 6, "список файлов неполон")
+	var/list/kinds = list()
+	var/slot31_rows = 0
+	for(var/list/row as anything in inspector.file_rows)
+		kinds[row["path"]] = row["kind"]
+		if(row["slot"] == 31)
+			slot31_rows++
+			TEST_ASSERT_EQUAL(row["character"], "Anahit", "у слота нет имени персонажа")
+		if(row["slot"] == 6)
+			TEST_ASSERT_EQUAL(row["character"], "Норика", "не прочитано имя из текстового индекса")
+	TEST_ASSERT_EQUAL(slot31_rows, 2, "раздел слота и его откат не распознаны")
+	TEST_ASSERT_EQUAL(kinds["preferences.sav.json"], "root", "корень не распознан")
+	TEST_ASSERT_EQUAL(kinds["preferences.sav"], "legacy", "старый сейв не распознан")
+	TEST_ASSERT_EQUAL(kinds["metadollars.json"], "other", "посторонний файл попал в аккаунт")
+	TEST_ASSERT(!inspector.has_file("../preferences.sav.json"), "путь вне списка принят")
+
+	var/list/paths = list()
+	for(var/list/row as anything in inspector.file_rows)
+		paths += row["path"]
+	var/list/bundle = json_decode(player_save_debug_bundle(inspector.player_ckey, inspector_directory, paths))
+	TEST_ASSERT_EQUAL(bundle["format"], "bluemoon-player-save-bundle", "неверный формат выгрузки")
+	var/list/files = bundle["files"]
+	TEST_ASSERT_EQUAL(length(files), 6, "выгрузка потеряла файлы")
+	var/list/root_entry = files["preferences.sav.json"]
+	TEST_ASSERT_EQUAL(root_entry["content"], file2text("[inspector_directory]preferences.sav.json"), "корень выгружен не дословно")
+	var/list/legacy_entry = files["preferences.sav"]
+	TEST_ASSERT_EQUAL(legacy_entry["encoding"], "savefile_export_text", "старый сейв выгружен не текстом")
+	var/savefile/restored = new
+	restored.ImportText("/", legacy_entry["content"])
+	restored.cd = "/character1"
+	var/restored_name
+	restored["real_name"] >> restored_name
+	TEST_ASSERT_EQUAL(restored_name, "Legacy Name", "старый сейв из выгрузки не восстанавливается")

@@ -502,9 +502,9 @@
 		remove_verb(C, /client/proc/show_previous_roundend_report)
 
 	if(!data)
-		// Старые HTML-отчёты, сохранённые до перехода на tgui, открываем как раньше.
-		show_roundend_report_legacy(C, report_type)
-		return
+		// Снимка tgui нет (отчёт остался от старой версии). Всё равно открываем
+		// современный интерфейс, подложив старый HTML в сводку отчёта.
+		data = build_legacy_roundend_tgui_data(C, report_type)
 
 	if(!istype(C.roundend_report_ui))
 		C.roundend_report_ui = new(C)
@@ -873,7 +873,9 @@
 	var/list/objective_parts = list()
 	var/count = 1
 	for(var/datum/objective/objective in objectives)
-		if(objective.check_completion())
+		if(!objective.completable)
+			objective_parts += "<b>Цель #[count]</b>: [objective.explanation_text]"
+		else if(objective.check_completion())
 			objective_parts += "<b>Цель #[count]</b>: [objective.explanation_text] <span class='greentext'>Успех!</span>"
 		else
 			objective_parts += "<b>Цель #[count]</b>: [objective.explanation_text] <span class='redtext'>Провал.</span>"

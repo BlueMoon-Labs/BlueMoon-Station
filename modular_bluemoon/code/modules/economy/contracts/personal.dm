@@ -20,7 +20,7 @@
 			return
 		have++
 
-/// Личный заказ из заказов отдела счёта и общих гражданских; того, что уже есть в подборке, не повторяет.
+/// Личный заказ из заказов отдела счёта и общих гражданских; того, что уже есть в подборке, и выполненного до лимита повторов не предлагает.
 /datum/controller/subsystem/economy/proc/generate_personal_contract(datum/bank_account/account)
 	var/list/by_department = econ_bounty_types_by_department()
 	var/list/bounty_types = list()
@@ -30,6 +30,10 @@
 			bounty_types |= department_types
 	for(var/datum/econ_contract/delivery/existing in personal_contracts_of(account))
 		bounty_types -= existing.bounty.type
+	var/limit = settings.contract_repeat_per_person
+	for(var/bounty_type in account.contract_repeats)
+		if(limit && account.contract_repeats[bounty_type] >= limit)
+			bounty_types -= bounty_type
 	var/datum/bounty/bounty = pick_bounty(bounty_types)
 	if(!bounty)
 		return null

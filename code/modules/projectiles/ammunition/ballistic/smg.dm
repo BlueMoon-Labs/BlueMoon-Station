@@ -11,7 +11,7 @@
 /obj/item/ammo_casing/c46x30mm/ap
 	name = "4.6x30mm armor-piercing bullet casing"
 	desc = "A 4.6x30mm armor-piercing bullet casing."
-	projectile_type = /obj/item/projectile/bullet/c46x30mm_ap
+	projectile_type = /obj/item/projectile/bullet/c46x30mm/ap
 	can_be_printed = TRUE
 	advanced_print_req = TRUE
 	custom_materials = list(/datum/material/iron = 400, /datum/material/titanium = 100)

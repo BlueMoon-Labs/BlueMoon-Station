@@ -14,7 +14,8 @@ const DEFAULTS = settingsReducer(undefined, { type: 'init' });
 // Не оформление: тема, звук и подсветка, время, вкладки, служебное.
 const NOT_APPEARANCE = ['version', 'theme', 'adminMusicVolume',
   'highlightSettings', 'enableTimestamps', 'timestampFormat', 'enableTimeDividers',
-  'timeDividerInterval', 'newMessagesMarker', 'visibleMessageLimit', 'view'];
+  'timeDividerInterval', 'newMessagesMarker', 'visibleMessageLimit',
+  'emoteSortAlphabetical', 'view'];
 
 // Кнопка сброса каждой вкладки и ключи оформления этой вкладки.
 const RESETS = [

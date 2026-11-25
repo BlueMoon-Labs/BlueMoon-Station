@@ -9,10 +9,19 @@
 #define CIV_JOB_CMO 17
 #define CIV_JOB_RD 18
 
-#define ECONOMY_CONFIG_PATH "config/economy.json"
+/// economy.json в папке конфига мира: она переопределяется параметром config-directory
+#define ECONOMY_CONFIG_PATH "[global.config.directory]/economy.json"
+/// economy.json из репозитория - для тестов, что он совпадает с дефолтами кода
+#define ECONOMY_REPO_CONFIG_PATH "config/economy.json"
 #define ECON_SNAPSHOT_MAX 48
+/// От этой суммы одного движения SSeconomy.move отказывает: вся эмиссия смены около миллиона, а выше 1e7 числа BYOND теряют точность до кредита
+#define ECON_MOVE_AMOUNT_MAX 10000000
 /// Значащих цифр в суммах для текста: без этого числа от миллиона печатаются как 1e+006
 #define ECON_TEXT_DIGITS 12
+/// С этой суммы наличные не со снятия со счёта пишут при внесении строку econ.log с составом и происхождением
+#define ECON_CASH_IN_LOG_MIN 1000
+/// Символов в происхождении пачки или голочипа: при слиянии сверх него первыми уходят части "снято со счёта"
+#define ECON_CASH_ORIGIN_MAX 1000
 
 #define ACCOUNT_CMD "CMD"
 #define ACCOUNT_CMD_NAME "Казна станции"
@@ -24,6 +33,11 @@
 #define ECON_STATE_POOR "poor"
 #define ECON_STATE_NORMAL "normal"
 #define ECON_STATE_RICH "rich"
+
+/// Настроение экипажа от налога, который держится дольше tax_mood_minutes
+#define TAX_MOOD_NONE ""
+#define TAX_MOOD_UNREST "unrest"
+#define TAX_MOOD_GOODWILL "goodwill"
 
 #define PAY_GRADE_ASSISTANT "assistant"
 #define PAY_GRADE_MINIMAL "minimal"
@@ -68,6 +82,7 @@
 #define WORK_SCI_NODE "sci_node"
 #define WORK_SCI_SLIME_DISCOVERY "sci_slime_discovery"
 #define WORK_SCI_ARTIFACT "sci_artifact"
+#define WORK_SCI_MECH "sci_mech"
 /// Цена WORK_SCI_NODE платится за каждые столько очков стоимости узла
 #define ECON_NODE_POINTS_UNIT 1000
 #define WORK_MINING_ORE "mining_ore"
@@ -110,9 +125,6 @@
 #define AUCTION_INCREMENT_SHARE 0.05
 #define AUCTION_MIN_INCREMENT 25
 #define AUCTION_BID_MAX 100000
-/// Потолок соперника - процент цены лота
-#define AUCTION_RIVAL_MAX_MIN 70
-#define AUCTION_RIVAL_MAX_MAX 150
 /// Соперники отвечают через случайную паузу, в последнюю минуту - быстрее
 #define AUCTION_RIVAL_CHANCE 70
 #define AUCTION_RIVAL_DELAY_MIN (20 SECONDS)
@@ -129,18 +141,22 @@
 #define AUCTION_INSCRIPTION_MAX 120
 /// Вещь с такой силой удара и выше аукцион экипажа считает оружием
 #define AUCTION_WEAPON_FORCE 15
-/// Скупка: пачки разных предметов партнёра только целиком, со скидкой к сумме по отдельности
+/// Скупка: несколько паков каталога одного отдела у одного партнёра, только целиком, со скидкой к сумме по отдельности
 #define BUNDLE_GROUP "Скупка"
 #define BUNDLES_MAX 3
-#define BUNDLE_ITEMS_MIN 4
-#define BUNDLE_ITEMS_MAX 6
+#define BUNDLE_PACKS_MIN 2
+#define BUNDLE_PACKS_MAX 3
 #define BUNDLE_DISCOUNT_MIN 20
 #define BUNDLE_DISCOUNT_MAX 35
 #define BUNDLE_LIFETIME (20 MINUTES)
+/// Столько с выставления пачку берут только за бюджет её отдела, если о ней объявили и на смене есть кому её одобрить
+#define BUNDLE_DEPARTMENT_FIRST (5 MINUTES)
 #define BUNDLE_GAP_MIN (8 MINUTES)
 #define BUNDLE_GAP_MAX (15 MINUTES)
-/// Предметы для пачки берутся из паков не больше чем на столько вещей: из больших наборов цена одной вещи слишком мала
-#define BUNDLE_SOURCE_PACK_MAX 12
+/// Паки пачки вместе стоят по отдельности не больше: дороже бюджету отдела не потянуть
+#define BUNDLE_VALUE_MAX 8000
+/// Канал отдела слышит о новой пачке для него не чаще
+#define BUNDLE_RADIO_COOLDOWN (10 MINUTES)
 /// Столько одинаковых паков консоль снабжения добавляет одним нажатием
 #define ECON_CARGO_ADD_MAX 10
 /// В скольких клетках от заказавшего ищется пол для капсулы экспресс-доставки отдела
@@ -162,12 +178,17 @@
 #define AUDIT_FLAG_INSIDER "insider"
 #define AUDIT_FLAG_ANON_CASHOUT "anon_cashout"
 #define AUDIT_FLAG_CRYPTOMINER "cryptominer"
+#define AUDIT_FLAG_CASH_DEPOSIT "cash_deposit"
 /// Сколько дел аудита хранит раунд; сверх этого вытесняются старые закрытые
 #define AUDIT_FLAGS_MAX 200
+/// Повторы в открытом деле пишутся в econ.log итогом не чаще этого, а не строкой на каждую операцию
+#define AUDIT_LOG_REPEAT_INTERVAL (5 MINUTES)
 #define AUDIT_REASON_MAX 64
 #define AUDIT_OWN_MOVES_REFUSAL "Вы сами двигали деньги по этому делу: его закрывает другой аудитор."
 /// Исходящие одному получателю складываются в корзины этой длины: память пары не зависит от числа операций
 #define AUDIT_BUCKET (1 MINUTES)
+/// Окно лимита премий одному человеку: начинается с первой премии и не скользит
+#define ECON_BONUS_WINDOW (1 HOURS)
 #define AUDIT_BUCKET_START 1
 #define AUDIT_BUCKET_AMOUNT 2
 #define AUDIT_BUCKET_COUNT 3
@@ -193,6 +214,12 @@
 #define ECON_OBJECTIVE_CRASH_MAX 30
 /// Счёт главы считается опустошённым, если на нём осталось не больше этого
 #define ECON_OBJECTIVE_DRAIN_LEFT 100
+/// Замена экономического задания: сколько раз пробовать выдать обычное
+#define ECON_OBJECTIVE_SWAP_ATTEMPTS 20
+#define ECON_OBJECTIVE_SWAP_EVAC_REFUSAL "Эвакуационный шаттл уже вызван: заменить задание нельзя."
+/// Множитель шанса экономического задания: снабжение, сервис и командование - и все остальные
+#define ECON_OBJECTIVE_CHANCE_MONEY_JOB 2
+#define ECON_OBJECTIVE_CHANCE_OTHER_JOB 0.5
 /// Репутация подрядчика: штраф за отказ от взятого контракта и за сорванный срок
 #define ECON_CONTRACT_REP_DROP 2
 #define ECON_CONTRACT_REP_EXPIRED 1
@@ -204,6 +231,30 @@
 #define ECON_CONTRACT_BOARD_RESET_GRACE (5 MINUTES)
 /// Этапов в серии поставок
 #define ECON_CONTRACT_CHAIN_STAGES 3
+/// Авария для срочного контракта инженерии: новых поломок сверх обычного не меньше MIN и не меньше доли MIN_SHARE от всех щитков или тревог
+#define ECON_INCIDENT_POWER "power"
+#define ECON_INCIDENT_AIR "air"
+#define ECON_INCIDENT_CASUALTIES "casualties"
+#define ECON_INCIDENT_POWER_MIN 4
+#define ECON_INCIDENT_AIR_MIN 3
+#define ECON_INCIDENT_MIN_SHARE 0.08
+/// Авария устранена, когда из новых поломок осталось не больше этой доли
+#define ECON_INCIDENT_LEFT_SHARE 0.25
+/// Больше стольких поломок одна авария не оплачивает
+#define ECON_INCIDENT_UNITS_MAX 30
+#define ECON_INCIDENT_TIME (30 MINUTES)
+#define ECON_INCIDENT_CHECK_INTERVAL (20 SECONDS)
+/// После аварии того же вида новый срочный контракт не выставляется столько
+#define ECON_INCIDENT_COOLDOWN (20 MINUTES)
+/// Сколько худших отсеков авария называет в описании и по радио
+#define ECON_INCIDENT_WORST_AREAS 3
+/// Массовые пострадавшие: столько людей в крите на станции сразу выставляют медицине срочный контракт
+#define ECON_CASUALTIES_MIN 3
+/// Обход СБ: сколько общих отсеков, срок после взятия, награда и как часто проверяется, где обходчик
+#define ECON_PATROL_AREAS 4
+#define ECON_PATROL_TIME (20 MINUTES)
+#define ECON_PATROL_REWARD 600
+#define ECON_PATROL_CHECK_INTERVAL (2 SECONDS)
 /// Объявлений экипажа от одного счёта одновременно
 #define ECON_CREW_REQUESTS_PER_POSTER 2
 /// Срок объявления экипажа
@@ -214,6 +265,15 @@
 #define ECON_CREW_REQUEST_ANNOUNCE_DELAY (45 SECONDS)
 /// Как часто один счёт может оформить подарок с КПК: оформление и отмена шлют сообщения карте получателя
 #define ECON_PERSONAL_GIFT_COOLDOWN (1 MINUTES)
+/// Как часто один счёт вызывает капсулу из магазина Кошелька
+#define ECON_SHOP_ORDER_COOLDOWN (30 SECONDS)
+/// Сколько вещей летит одной капсулой магазина; питомец - всегда отдельно
+#define ECON_SHOP_CART_MAX 5
+/// Сколько вещей из пула новинок продаётся за смену
+#define ECON_SHOP_NOVELTIES 4
+#define ECON_SHOP_NOVELTY_SECTION "Новинки смены"
+#define ECON_SHOP_ENGRAVING_PRICE 300
+#define ECON_SHOP_ENGRAVING_MAX 40
 #define ECON_CREW_REQUEST_TITLE_MAX 60
 #define ECON_CREW_REQUEST_DESC_MAX 300
 /// Срок, который получает взятый контракт без своего срока
@@ -230,24 +290,65 @@
 #define ECON_CONTRACT_REWARD_STEP 50
 /// Начатый, но никем не взятый контракт снимается через столько возрастов ротации
 #define ECON_CONTRACT_STALE_ROTATIONS 3
+/// Заказов на доске аванпоста; выполненные заменяются новыми только раз в возраст ротации
+#define ECON_OUTPOST_CONTRACTS 3
 #define ECON_REQUEST_PENDING "pending"
 #define ECON_REQUEST_APPROVED "approved"
 #define ECON_REQUEST_DENIED "denied"
 /// Сколько решённых заявок отдел хранит для истории
 #define ECON_REQUESTS_KEPT 20
+/// Та же заявка того же сотрудника, оплаченная сразу при подаче, раньше этого срока - второй клик по кнопке, а не второй заказ
+#define ECON_REQUEST_REPEAT_GUARD (5 SECONDS)
 /// Наибольшая длина причины заявки или запроса в казну из окна бюджета отдела
 #define ECON_REQUEST_REASON_MAX 200
+/// Сколько паков "нужно сейчас" показывает окно бюджета отдела и как часто они пересчитываются по станции
+#define ECON_NEEDS_MAX 5
+#define ECON_NEEDS_MIN 3
+#define ECON_NEEDS_REFRESH (1 MINUTES)
+/// Как часто канал отдела слышит о новой нужде по датчикам станции
+#define ECON_NEEDS_ALERT_COOLDOWN (10 MINUTES)
+/// С какого урона ушибами и ожогами член экипажа считается раненым для "нужно сейчас" медицины
+#define ECON_NEEDS_INJURED_DAMAGE 30
 #define REGISTER_MENU_MAX 20
 #define REGISTER_PRICE_MAX 5000
 /// Сколько кассиров сразу стоит за одной кассой, у каждого свой счёт к оплате
 #define REGISTER_CASHIERS_MAX 2
 /// Сколько штук одной позиции меню влезает в счёт
 #define REGISTER_ORDER_COUNT_MAX 20
+/// Заказ в номер отеля: срок доставки сервисом, после него деньги возвращаются и номеру, пока гость в нём, открывается кейтеринг NT
+#define ROOM_SERVICE_STAFF_WAIT (15 MINUTES)
+/// Во сколько раз кейтеринг NT дороже заказа сервису
+#define ROOM_SERVICE_CATERING_MULT 2
+#define ROOM_SERVICE_COUNT_MAX 4
+/// Ждущих доставки заказов на один номер
+#define ROOM_SERVICE_ORDERS_PER_ROOM 3
+/// Сколько раз один набор декора можно купить в один номер
+#define ROOM_SERVICE_DECOR_PER_ROOM 2
+#define ROOM_SERVICE_ACT_COOLDOWN (3 SECONDS)
+/// Канал сервиса слышит о заказах одного вида не чаще этого, карты сервиса - о каждом
+#define ROOM_SERVICE_NOTIFY_COOLDOWN (1 MINUTES)
+/// Не взятый за это время заказ возвращается досрочно; с умершего, ушедшего или SSD сотрудника отметка снимается через столько же
+#define ROOM_SERVICE_CLAIM_WAIT (5 MINUTES)
+/// За сколько до срока карты сервиса напоминают о заказе
+#define ROOM_SERVICE_REMIND_BEFORE (5 MINUTES)
+/// Сколько после доставки терминал предлагает оставить чаевые
+#define ROOM_SERVICE_TIP_WINDOW (2 MINUTES)
+#define ROOM_SERVICE_FOOD "food"
+#define ROOM_SERVICE_DRINK "drink"
 /// Кассир дальше этого или на другом уровне считается ушедшим, его кассу может занять другой
 #define REGISTER_CASHIER_RANGE 7
 /// Свайп клиента сразу после смены позиции не платит: сумму нужно успеть увидеть
 #define REGISTER_SELECT_GRACE (2 SECONDS)
 #define ECON_TRANSFER_MEMO_MAX 64
+/// В скольких клетках от КПК кошелёк видит людей, которым можно заплатить без номера счёта
+#define ECON_NEARBY_PAY_RANGE 3
+/// Почти прозрачных (маскировка, невидимость) кошелёк в списке «рядом» не показывает
+#define ECON_NEARBY_MIN_ALPHA 100
+/// Запрос оплаты у человека рядом: пауза просителя, пауза на того же человека, срок запроса и сколько их может ждать у одного счёта
+#define ECON_PAY_REQUEST_COOLDOWN (15 SECONDS)
+#define ECON_PAY_REQUEST_PAIR_COOLDOWN (2 MINUTES)
+#define ECON_PAY_REQUEST_TTL (5 MINUTES)
+#define ECON_PAY_REQUESTS_PER_PAYER 3
 /// Наибольшая сумма одной админской корректировки счёта
 #define ECON_ADMIN_ADJUST_MAX 100000
 #define ECON_ADMIN_COMMENT_MAX 200
@@ -295,6 +396,7 @@
 #define ECON_VEND_WHOLESALE "vend_wholesale"
 #define ECON_PURCHASE "purchase"
 #define ECON_REGISTER "register"
+#define ECON_ROOM_SERVICE "room_service"
 #define ECON_RENT "rent"
 #define ECON_GAMBLING "gambling"
 #define ECON_GAMBLING_WIN "gambling_win"
@@ -324,6 +426,8 @@
 #define ECON_DIVIDEND "dividend"
 #define ECON_CASH_OUT "cash_out"
 #define ECON_CASH_IN "cash_in"
+/// Эмиссия наличных, которых нет в обороте (найденные, стартовые в кошельках): внесение не уводит Наличные в обороте в минус
+#define ECON_FOUND_CASH "found_cash"
 #define ECON_BLACKMARKET "blackmarket"
 #define ECON_SKIM "skim"
 #define ECON_ADMIN "admin"

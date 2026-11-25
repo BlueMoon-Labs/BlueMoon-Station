@@ -6,6 +6,8 @@
 	var/saved_next_roll
 	var/list/saved_plants
 	var/list/saved_cleaned
+	/// Едоки с игроком: сервису платят только за живых игроков
+	var/list/players = list()
 
 /datum/unit_test/economy_work/service/proc/setup_service()
 	setup_pair()
@@ -23,6 +25,7 @@
 	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
 	performer.forceMove(station_turf)
 	patient.forceMove(station_turf)
+	add_player(patient)
 
 /datum/unit_test/economy_work/service/Destroy()
 	if(service)
@@ -32,7 +35,14 @@
 		service.cleaned_this_tick = saved_cleaned
 		service = null
 	station_turf = null
+	for(var/mob/living/player as anything in players)
+		player.mock_client = null
+	players = null
 	return ..()
+
+/datum/unit_test/economy_work/service/proc/add_player(mob/living/body)
+	body.mock_client = new /datum/client_interface()
+	players += body
 
 /datum/unit_test/economy_work/service/proc/chef_dish(dish_type, complexity)
 	var/obj/item/reagent_containers/food/snacks/dish = allocate(dish_type, station_turf)
@@ -45,6 +55,7 @@
 	var/mob/living/carbon/human/guest = allocate(/mob/living/carbon/human, where || station_turf)
 	guest.mind_initialize()
 	guest.mind.key = "econ_test_guest"
+	add_player(guest)
 	return guest
 
 /datum/unit_test/economy_work/service/proc/cut(obj/item/reagent_containers/food/snacks/food, result_type, amount, mob/user)

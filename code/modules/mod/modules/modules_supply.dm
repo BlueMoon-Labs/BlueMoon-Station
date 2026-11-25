@@ -298,7 +298,7 @@
 
 /obj/item/mod/module/orebag/on_uninstall(deleting = FALSE)
 	if(stored)
-		UnregisterSignal(mod.wearer, COMSIG_MOVABLE_MOVED)
+		UnregisterSignal(mod?.wearer, COMSIG_MOVABLE_MOVED)
 		stored.forceMove(drop_location())
 
 /obj/item/mod/module/orebag/on_equip()
@@ -312,12 +312,13 @@
 /obj/item/mod/module/orebag/Exited(atom/movable/gone, direction)
 	. = ..()
 	if(gone == stored)
-		UnregisterSignal(mod.wearer, COMSIG_MOVABLE_MOVED)
+		UnregisterSignal(mod?.wearer, COMSIG_MOVABLE_MOVED)
 		stored = null
 
 /obj/item/mod/module/orebag/Destroy()
+	// Удаляемый костюм снимает модуль (mod = null) раньше, чем удаляет его
 	if(stored)
-		UnregisterSignal(mod.wearer, COMSIG_MOVABLE_MOVED)
+		UnregisterSignal(mod?.wearer, COMSIG_MOVABLE_MOVED)
 	QDEL_NULL(stored)
 	return ..()
 

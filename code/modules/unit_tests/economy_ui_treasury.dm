@@ -3,6 +3,10 @@
 	var/list/saved_balances = list()
 	var/list/saved_treasury_requests
 	var/saved_tax_rate
+	var/saved_tax_band
+	var/list/saved_tax_band_held
+	var/saved_tax_band_checked
+	var/saved_tax_mood
 	var/list/accounts_before
 	/// Списки аудита казны: тесты открывают счета из неё
 	var/list/saved_treasury_audit
@@ -15,6 +19,10 @@
 	saved_treasury_requests = SSeconomy.treasury_requests
 	SSeconomy.treasury_requests = list()
 	saved_tax_rate = SSeconomy.tax_rate
+	saved_tax_band = SSeconomy.tax_band
+	saved_tax_band_held = SSeconomy.tax_band_held.Copy()
+	saved_tax_band_checked = SSeconomy.tax_band_checked
+	saved_tax_mood = SSeconomy.tax_mood
 	accounts_before = SSeconomy.bank_accounts.Copy()
 	var/datum/bank_account/treasury = SSeconomy.treasury()
 	saved_treasury_audit = list(treasury.audit_outflows, treasury.audit_watch, treasury.audit_pool)
@@ -31,6 +39,12 @@
 	QDEL_LIST(SSeconomy.treasury_requests)
 	SSeconomy.treasury_requests = saved_treasury_requests
 	SSeconomy.tax_rate = saved_tax_rate
+	deltimer(SSeconomy.tax_mood_timer)
+	SSeconomy.tax_mood_timer = null
+	SSeconomy.tax_band = saved_tax_band
+	SSeconomy.tax_band_held = saved_tax_band_held
+	SSeconomy.tax_band_checked = saved_tax_band_checked
+	SSeconomy.tax_mood = saved_tax_mood
 	var/datum/bank_account/treasury = SSeconomy.treasury()
 	treasury.audit_outflows = saved_treasury_audit[1]
 	treasury.audit_watch = saved_treasury_audit[2]
@@ -92,6 +106,92 @@
 	var/list/hop_data = console.program.treasury_data(hop)
 	TEST_ASSERT(hop_data["can_manage"], "ГП управляет")
 	TEST_ASSERT_EQUAL(length(hop_data["accounts"]), length(SSeconomy.bank_accounts), "ГП видит все личные счета")
+
+/// Налог выше порога дольше tax_mood_minutes - недовольство: оплата работы отделам и премия ниже, NT забирает большую долю налога, об этом объявляют; до порога довольства - премия выше. Время в полосе копится: сброс налога на минуту отсчёт не обнуляет. Вернули налог в обычные пределы - настроение проходит сразу. Без прибавки к премии довольства нет.
+/datum/unit_test/economy_ui_treasury/tax_mood/Run()
+	var/datum/economy_settings/settings = SSeconomy.settings
+	var/obj/machinery/computer/account_database/console = allocate(/obj/machinery/computer/account_database)
+	var/mob/living/carbon/human/captain = make_person(ACCOUNT_SEC, list(ACCESS_CAPTAIN))
+	var/mob/living/carbon/human/doctor = make_person(ACCOUNT_MED)
+	var/datum/bank_account/doctor_account = econ_account_of(doctor)
+	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)
+	var/price = settings.work_prices[WORK_MED_REVIVE]
+	var/above = settings.tax_unrest_above
+	var/minutes = settings.tax_mood_minutes
+	SSeconomy.set_tax_rate(above)
+	SSeconomy.tax_band_held = list(TAX_MOOD_UNREST = 0, TAX_MOOD_GOODWILL = 0)
+	SSeconomy.update_tax_mood()
+
+	var/answer = press(captain, console, "set_tax", list("rate" = "[above + 1]"))
+	TEST_ASSERT_EQUAL(answer, "Налог: [above + 1]%.", "Ответ на установку налога - не только ставка")
+	var/hint = SSeconomy.tax_mood_hint()
+	TEST_ASSERT(findtext(hint, "Если налог продержится выше [above]% ещё [minutes] мин., экипаж станет недоволен"), "Капитана не предупредили о недовольстве: [hint]")
+	TEST_ASSERT_EQUAL(console.program.treasury_data(captain)["tax_mood_hint"], hint, "Окно казны не показывает предупреждение")
+	TEST_ASSERT_EQUAL(SSeconomy.tax_mood, TAX_MOOD_NONE, "Недовольство сразу после установки налога")
+	TEST_ASSERT_NOTNULL(SSeconomy.tax_mood_timer, "Нет таймера проверки настроения")
+
+	SSeconomy.tax_band_checked -= (minutes - 1) MINUTES
+	press(captain, console, "set_tax", list("rate" = "[above]"))
+	press(captain, console, "set_tax", list("rate" = "[above + 1]"))
+	TEST_ASSERT_EQUAL(SSeconomy.tax_mood, TAX_MOOD_NONE, "Недовольство раньше срока")
+	var/progress = SSeconomy.tax_mood_progress()
+	TEST_ASSERT(findtext(progress, "держится [minutes - 1] из [minutes] мин."), "Сброс налога на минуту обнулил отсчёт: [progress]")
+	SSeconomy.tax_band_checked -= 1 MINUTES
+	var/announced = SSeconomy.update_tax_mood()
+	TEST_ASSERT_EQUAL(SSeconomy.tax_mood, TAX_MOOD_UNREST, "Налог выше порога набрал срок, а недовольства нет")
+	TEST_ASSERT(findtext(announced, "Налог выше [above]% держится уже [minutes] мин. (сейчас [above + 1]%)"), "Объявление не называет порог и ставку: [announced]")
+	TEST_ASSERT(findtext(announced, "на [settings.tax_unrest_work_cut]% меньше"), "Объявление не называет цену недовольства: [announced]")
+	TEST_ASSERT(findtext(console.program.treasury_data(captain)["tax_mood_note"], "недоволен"), "Окно казны не показывает недовольство")
+	TEST_ASSERT_EQUAL(SSeconomy.tax_mood_progress(), "", "При действующем недовольстве отсчёт ещё идёт")
+
+	var/before = medical.account.account_balance
+	var/personal_before = doctor_account.account_balance
+	var/paid = SSeconomy.record_work(ACCOUNT_MED, WORK_MED_REVIVE, 1, doctor)
+	TEST_ASSERT_EQUAL(paid, round(price * (100 - settings.tax_unrest_work_cut) / 100), "Оплата работы при недовольстве не снижена")
+	TEST_ASSERT_EQUAL(medical.account.account_balance - before, paid, "Бюджет получил не столько")
+	var/premium = round(paid * settings.work_personal_share / 100)
+	TEST_ASSERT_EQUAL(doctor_account.account_balance - personal_before, premium - round(premium * SSeconomy.tax_rate / 100), "Премия при недовольстве не от сниженной оплаты")
+	var/datum/bank_account/treasury = SSeconomy.treasury()
+	var/treasury_before = treasury.account_balance
+	doctor_account.credit(1000, ECON_WORK_PREMIUM)
+	SSeconomy.collect_tax(doctor_account, 1000, ECON_WORK_PREMIUM)
+	var/tax = round(1000 * SSeconomy.tax_rate / 100)
+	TEST_ASSERT_EQUAL(treasury.account_balance - treasury_before, tax - round(tax * settings.tax_unrest_nt_share / 100), "При недовольстве NT забирает не tax_unrest_nt_share налога")
+
+	press(captain, console, "set_tax", list("rate" = "[above + 2]"))
+	TEST_ASSERT_EQUAL(SSeconomy.tax_mood, TAX_MOOD_UNREST, "Смена налога выше порога сняла недовольство")
+	press(captain, console, "set_tax", list("rate" = "[above]"))
+	TEST_ASSERT_EQUAL(SSeconomy.tax_mood, TAX_MOOD_NONE, "Возврат налога в обычные пределы не снял недовольство")
+	TEST_ASSERT_NULL(SSeconomy.tax_mood_timer, "Таймер настроения остался в обычной полосе")
+	TEST_ASSERT_EQUAL(console.program.treasury_data(captain)["tax_mood_note"], "", "Окно казны всё ещё показывает недовольство")
+	TEST_ASSERT_EQUAL(SSeconomy.record_work(ACCOUNT_MED, WORK_MED_REVIVE, 1, doctor), price, "Оплата работы не вернулась")
+
+	press(captain, console, "set_tax", list("rate" = "[settings.tax_goodwill_upto]"))
+	hint = SSeconomy.tax_mood_hint()
+	TEST_ASSERT(findtext(hint, "премия за работу вырастет до [settings.work_personal_share + settings.tax_goodwill_premium_bonus]%"), "Капитана не предупредили о довольстве: [hint]")
+	SSeconomy.tax_band_checked -= minutes MINUTES
+	announced = SSeconomy.update_tax_mood()
+	TEST_ASSERT_EQUAL(SSeconomy.tax_mood, TAX_MOOD_GOODWILL, "Низкий налог держится, а довольства нет")
+	TEST_ASSERT(findtext(announced, "Налог не выше [settings.tax_goodwill_upto]% держится уже [minutes] мин. (сейчас [settings.tax_goodwill_upto]%)"), "Нет объявления о довольстве: [announced]")
+	personal_before = doctor_account.account_balance
+	TEST_ASSERT_EQUAL(SSeconomy.record_work(ACCOUNT_MED, WORK_MED_REVIVE, 1, doctor), price, "Довольство меняет оплату отделу")
+	premium = round(price * (settings.work_personal_share + settings.tax_goodwill_premium_bonus) / 100)
+	TEST_ASSERT_EQUAL(doctor_account.account_balance - personal_before, premium - round(premium * SSeconomy.tax_rate / 100), "Премия при довольстве не выросла")
+	press(captain, console, "set_tax", list("rate" = "[settings.tax_goodwill_upto + 1]"))
+	TEST_ASSERT_EQUAL(SSeconomy.tax_mood, TAX_MOOD_NONE, "Повышение налога не сняло довольство")
+	TEST_ASSERT_EQUAL(SSeconomy.work_premium_share(), settings.work_personal_share, "Премия не вернулась к обычной")
+
+	var/saved_bonus = settings.tax_goodwill_premium_bonus
+	settings.tax_goodwill_premium_bonus = 0
+	press(captain, console, "set_tax", list("rate" = "[settings.tax_goodwill_upto]"))
+	var/silent_hint = SSeconomy.tax_mood_hint()
+	SSeconomy.tax_band_checked -= minutes MINUTES
+	announced = SSeconomy.update_tax_mood()
+	var/silent_note = SSeconomy.tax_mood_note()
+	settings.tax_goodwill_premium_bonus = saved_bonus
+	TEST_ASSERT_EQUAL(silent_hint, "", "Без прибавки к премии капитану обещают довольство")
+	TEST_ASSERT_NULL(announced, "Без прибавки к премии объявили довольство")
+	TEST_ASSERT_EQUAL(silent_note, "", "Без прибавки к премии окна показывают довольство")
 
 /// Перевод из казны в бюджет и между бюджетами: только отделам, сумма из строки, без новых денег, без казны как отдела.
 /datum/unit_test/economy_ui_treasury/budgets/Run()
@@ -244,7 +344,7 @@
 	TEST_ASSERT_NOTNULL(summary, "Сводка напечатана")
 	allocated += summary
 	var/list/static_data = console.program.treasury_static_data()
-	var/static/list/expected = list("tax_max", "grades", "holder_max", "economy_minutes", "wage_minutes", "wage_floor", "owed_cap", "tax_nt_share", "cap_share", "grace_minutes", "treasury_max", "treasury_pending_max", "stall_fee", "stall_minutes", "rich_per_capita", "poor_per_capita", "audit_rights", "unowned_max")
+	var/static/list/expected = list("tax_max", "grades", "holder_max", "economy_minutes", "wage_minutes", "wage_floor", "owed_cap", "tax_nt_share", "cap_share", "grace_minutes", "treasury_max", "treasury_pending_max", "stall_fee", "stall_minutes", "rich_per_capita", "poor_per_capita", "audit_rights", "unowned_max", "tax_unrest_above", "tax_unrest_cut", "tax_unrest_nt_share", "tax_goodwill_upto", "tax_goodwill_premium", "work_premium_base", "tax_mood_minutes")
 	TEST_ASSERT_EQUAL(length(static_data), length(expected), "Лишние или недостающие поля правил")
 	for(var/key in expected)
 		TEST_ASSERT(key in static_data, "Нет поля [key]")
@@ -332,18 +432,76 @@
 	var/datum/orbital_objective/saved_objective
 	var/saved_cargo_points
 	var/saved_cargo_mult
+	var/saved_shift_cap
+	var/saved_orbital_paid
+	var/saved_overcap_share
 
 /datum/unit_test/economy_ui_treasury/orbital/New()
 	. = ..()
 	saved_objective = SSorbits.current_objective
 	saved_cargo_points = GLOB.cargo_objective_points
 	saved_cargo_mult = SSeconomy.settings.orbital_cargo_mult
+	saved_shift_cap = SSeconomy.settings.orbital_shift_cap
+	saved_orbital_paid = SSeconomy.orbital_paid
+	saved_overcap_share = SSeconomy.settings.orbital_overcap_share
+	SSeconomy.orbital_paid = 0
+	SSeconomy.settings.orbital_shift_cap = 0
 
 /datum/unit_test/economy_ui_treasury/orbital/Destroy()
 	SSorbits.current_objective = saved_objective
 	GLOB.cargo_objective_points = saved_cargo_points
 	SSeconomy.settings.orbital_cargo_mult = saved_cargo_mult
+	SSeconomy.settings.orbital_shift_cap = saved_shift_cap
+	SSeconomy.orbital_paid = saved_orbital_paid
+	SSeconomy.settings.orbital_overcap_share = saved_overcap_share
 	return ..()
+
+/// Мягкий потолок: пока задания смены вместе с долей снабжения выпустили меньше orbital_shift_cap, задание платит полную награду (и то, что потолок перешагнёт), дальше - orbital_overcap_share процентов; консоль заданий показывает остаток и сколько оплатится.
+/datum/unit_test/economy_ui_treasury/orbital/shift_cap/Run()
+	var/mob/living/carbon/human/hop = make_person(ACCOUNT_SRV, job_type = /datum/job/hop)
+	var/datum/bank_account/crew = econ_account_of(hop)
+	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	var/obj/machinery/computer/objective/computer = allocate(/obj/machinery/computer/objective)
+	SSeconomy.tax_rate = 0
+	SSeconomy.settings.orbital_cargo_mult = 0.5
+	SSeconomy.settings.orbital_shift_cap = 2250
+	SSeconomy.settings.orbital_overcap_share = 50
+	// Третье задание закрыто после потолка, четвёртое - при доле 0
+	var/list/expected_cargo = list(500, 500, 250, 0)
+	var/list/expected_payable = list(1000, 1000, 500, 0)
+	for(var/number in 1 to 4)
+		if(number == 4)
+			SSeconomy.settings.orbital_overcap_share = 0
+		var/cargo_before = cargo.account_balance
+		var/crew_before = crew.account_balance
+		var/datum/orbital_objective/objective = new
+		objective.payout = 1000
+		SSorbits.current_objective = objective
+		TEST_ASSERT_EQUAL(computer.ui_data(hop)["payable"]["[objective.id]"], expected_payable[number], "Консоль заданий: сколько оплатится за задание [number]")
+		objective.complete_objective()
+		TEST_ASSERT_EQUAL(cargo.account_balance - cargo_before, expected_cargo[number], "Снабжению за задание [number]")
+		if(number < 4)
+			TEST_ASSERT(crew.account_balance > crew_before, "Экипажу доля за задание [number]")
+		else
+			TEST_ASSERT_EQUAL(crew.account_balance, crew_before, "При доле 0 сверх потолка экипажу заплатили")
+	TEST_ASSERT_EQUAL(SSeconomy.orbital_paid, 3750, "Выпущено за смену вместе с долей снабжения")
+	TEST_ASSERT_EQUAL(computer.ui_data(hop)["shift_left"], 0, "Консоль заданий не показывает пройденный потолок")
+
+/// Одно задание дороже всего потолка (охота за головами) платит полную награду, если до него потолок не пройден.
+/datum/unit_test/economy_ui_treasury/orbital/shift_cap_single/Run()
+	var/obj/machinery/computer/objective/computer = allocate(/obj/machinery/computer/objective)
+	var/mob/living/carbon/human/hop = make_person(ACCOUNT_SRV, job_type = /datum/job/hop)
+	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	SSeconomy.settings.orbital_cargo_mult = 0.5
+	SSeconomy.settings.orbital_shift_cap = 2250
+	SSeconomy.settings.orbital_overcap_share = 50
+	var/datum/orbital_objective/objective = new
+	objective.payout = 5000
+	SSorbits.current_objective = objective
+	TEST_ASSERT_EQUAL(computer.ui_data(hop)["payable"]["[objective.id]"], 5000, "Первое задание дороже потолка оплатится полностью")
+	var/cargo_before = cargo.account_balance
+	objective.complete_objective()
+	TEST_ASSERT_EQUAL(cargo.account_balance - cargo_before, 2500, "Снабжению доля полной награды")
 
 /// Орбитальная доля, эмиссионная раздача всем счетам, не достаётся пустому счёту, открытому из казны.
 /datum/unit_test/economy_ui_treasury/orbital/needs_owner/Run()

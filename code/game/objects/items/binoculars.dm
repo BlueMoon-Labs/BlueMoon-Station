@@ -8,8 +8,7 @@
 	slot_flags = ITEM_SLOT_BELT
 	w_class = WEIGHT_CLASS_SMALL
 	var/mob/listeningTo
-	var/zoom_out_amt = 6
-	var/zoom_amt = 10
+	var/scope_range = 4
 
 /obj/item/binoculars/Initialize(mapload)
 	. = ..()
@@ -19,44 +18,45 @@
 /obj/item/binoculars/ComponentInitialize()
 	. = ..()
 	AddComponent(/datum/component/two_handed, force_unwielded=8, force_wielded=12)
+	AddComponent(/datum/component/scope, range_modifier = scope_range, category = "scope_binoculars", severity = 0)
 
 /obj/item/binoculars/Destroy()
+	if(listeningTo)
+		unwield(listeningTo)
 	listeningTo = null
 	return ..()
 
 /obj/item/binoculars/proc/on_wield(obj/item/source, mob/user)
+	if(!user?.client)
+		return
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_walk))
-	RegisterSignal(user, COMSIG_ATOM_DIR_CHANGE, PROC_REF(rotate))
 	listeningTo = user
 	user.visible_message("<span class='notice'>[user] holds [src] up to [user.ru_ego()] eyes.</span>", "<span class='notice'>You hold [src] up to your eyes.</span>")
 	item_state = "binoculars_wielded"
 	user.regenerate_icons()
-	user.client.view_size.zoomOut(zoom_out_amt, zoom_amt, user.dir)
-
-/obj/item/binoculars/proc/rotate(atom/thing, old_dir, new_dir)
-	if(ismob(thing))
-		var/mob/lad = thing
-		lad.regenerate_icons()
-		lad.client.view_size.zoomOut(zoom_out_amt, zoom_amt, new_dir)
+	var/datum/component/scope/scope = GetComponent(/datum/component/scope)
+	scope?.zoom(user)
 
 /obj/item/binoculars/proc/on_walk()
-	attack_self(listeningTo) //Yes I have sinned, why do you ask?
+	attack_self(listeningTo)
 
 /obj/item/binoculars/proc/on_unwield(obj/item/source, mob/user)
 	unwield(user)
 
 /obj/item/binoculars/proc/unwield(mob/user)
+	if(!user)
+		listeningTo = null
+		return
 	if(listeningTo)
 		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
-		UnregisterSignal(user, COMSIG_ATOM_DIR_CHANGE)
 		listeningTo = null
 	user.visible_message("<span class='notice'>[user] lowers [src].</span>", "<span class='notice'>You lower [src].</span>")
 	item_state = "binoculars"
 	user.regenerate_icons()
-	user.client.view_size.zoomIn()
+	var/datum/component/scope/scope = GetComponent(/datum/component/scope)
+	scope?.stop_zooming(user)
 
 /obj/item/binoculars/strong
 	name = "advanced binoculars"
 	desc = "A high-grade pair of binoculars with reinforced titanium optics, granting significantly better magnification."
-	zoom_out_amt = 6
-	zoom_amt = 13
+	scope_range = 6

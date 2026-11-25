@@ -213,7 +213,7 @@
 		if(length(slot_names_cache) == max_save_slots)
 			slot_names_cache[default_slot] = real_name
 		if(length(slot_custom_names_cache) == max_save_slots)
-			slot_custom_names_cache[default_slot] = character_slot_name
+			slot_custom_names_cache[default_slot] = player_save_slot_name(character_slot_name)
 		character_setup_ui?.record_saved_state()
 	if(parent && !silent && !export)
 		to_chat(parent, span_notice("Персонаж сохранён!"))

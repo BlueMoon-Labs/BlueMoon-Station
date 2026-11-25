@@ -155,6 +155,7 @@ GLOBAL_LIST_INIT(heretic_void_mark_burst_sounds, list(
 /obj/effect/heretic_field_edge/Initialize(mapload, list/field, tint)
 	. = ..()
 	color = color_matrix_multiply(color_matrix_saturation(0), color_hex2color_matrix(tint))
+	alpha = initial(alpha)
 	refresh_edges(field)
 
 /obj/effect/heretic_field_edge/proc/refresh_edges(list/field)

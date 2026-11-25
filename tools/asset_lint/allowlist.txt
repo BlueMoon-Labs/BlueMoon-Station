@@ -7,6 +7,7 @@ unused icons/effects/parallax/goon/weather/clouds_1.dmi  # маски без ц�
 unused icons/effects/parallax/goon/weather/clouds_2.dmi  # то же
 unused modular_bluemoon/sound/items/frying_pan.ogg  # для сковороды, закомментированной в fluffs/code/items.dm
 unused modular_bluemoon/fluffs/icons/obj/melee_inventory.dmi  # то же
+unused icons/mob/mam_tails.dmi  # одиночный state shadekin-хвоста из #4419, ещё не подключённый к справочнику аксессуаров
 
 duplicate modular_sand/icons/hud/screen_*/*.dmi  # ui_style_modular() собирает путь из каталога стиля, одинаковые листы у стилей нормальны
 duplicate modular_bluemoon/fluffs/icons/mob/inhands/security_*hand.dmi  # правую руку не дорисовали, это копия левой

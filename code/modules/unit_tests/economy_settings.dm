@@ -1,11 +1,21 @@
 /// economy.json из репозитория грузится без ошибок и задаёт ненулевые основные числа.
 /datum/unit_test/economy_settings_repo_config/Run()
 	var/datum/economy_settings/settings = new
-	var/list/errors = settings.load(ECONOMY_CONFIG_PATH)
+	var/list/errors = settings.load(ECONOMY_REPO_CONFIG_PATH)
 	TEST_ASSERT(!length(errors), "economy.json: [jointext(errors, "; ")]")
 	TEST_ASSERT(settings.wage_floor > 0, "wage_floor не задан")
 	TEST_ASSERT_EQUAL(length(settings.wages), 6, "Шесть грейдов зарплаты")
 	TEST_ASSERT(islist(settings.raw), "Сырой JSON сохранён для секций рынка")
+
+/// Числа секции market в economy.json из репозитория совпадают с дефолтами кода: без файла в папке конфига рынок играет по тем же числам.
+/datum/unit_test/economy_settings_repo_market_matches_defaults/Run()
+	var/datum/economy_settings/loaded = new
+	TEST_ASSERT(!length(loaded.load(ECONOMY_REPO_CONFIG_PATH)), "economy.json грузится без ошибок")
+	var/list/market = loaded.raw["market"]
+	TEST_ASSERT(islist(market), "В economy.json есть секция market")
+	for(var/key in market)
+		if(!ECON_CONFIG_COMMENT_KEY(key) && isnum(market[key]) && (key in SSmarket.vars))
+			TEST_ASSERT_EQUAL(market[key], initial(SSmarket.vars[key]), "market.[key] в economy.json расходится с дефолтом кода")
 
 /// Неверный тип и неизвестный ключ отвергаются, дефолт остаётся.
 /datum/unit_test/economy_settings_rejects_bad_keys/Run()

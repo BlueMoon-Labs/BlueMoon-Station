@@ -239,7 +239,7 @@
 	var/saved_tax = SSeconomy.tax_rate
 	SSeconomy.set_tax_rate(SSeconomy.settings.tax_max + 5)
 	var/capped_tax = SSeconomy.tax_rate
-	SSeconomy.tax_rate = saved_tax
+	SSeconomy.set_tax_rate(saved_tax)
 	TEST_ASSERT_EQUAL(capped_tax, SSeconomy.settings.tax_max, "Ставка выше потолка")
 	var/datum/economy_department/command = SSeconomy.get_department(ACCOUNT_CMD)
 	var/datum/economy_department/medical = SSeconomy.get_department(ACCOUNT_MED)

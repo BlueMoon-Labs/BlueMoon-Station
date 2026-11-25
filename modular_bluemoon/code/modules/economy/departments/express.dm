@@ -8,7 +8,7 @@
 /datum/economy_department/proc/express_price(datum/supply_pack/pack)
 	return round(econ_pack_price(pack) * (100 + SSeconomy.settings.department_express_markup) / 100)
 
-/// Свободный пол для капсулы рядом с заказавшим: станция, то же помещение, не под ним самим.
+/// Свободный пол для капсулы рядом с заказавшим: станция, то же помещение, не под ним самим и не за стеклом или стеной.
 /proc/econ_express_landing(mob/living/user)
 	var/turf/center = get_turf(user)
 	if(!center || !is_station_level(center.z))
@@ -16,12 +16,40 @@
 	var/area/room = get_area(center)
 	if(!room || istype(room, /area/space))
 		return null
-	var/list/candidates = list()
-	for(var/turf/open/floor/floor in RANGE_TURFS(ECON_EXPRESS_LANDING_RANGE, center))
-		if(floor == center || get_area(floor) != room || floor.is_blocked_turf())
-			continue
-		candidates += floor
+	var/list/candidates = econ_landing_spots(center)
 	return length(candidates) ? pick(candidates) : null
+
+/// Свободный пол не дальше ECON_EXPRESS_LANDING_RANGE шагов от center по его помещению: стекло, шлюз и прочее плотное или пограничное (окна, виндоры) путь закрывают.
+/proc/econ_landing_spots(turf/center)
+	. = list()
+	var/area/room = get_area(center)
+	var/list/steps = list()
+	steps[center] = 0
+	var/list/queue = list(center)
+	var/index = 1
+	while(index <= length(queue))
+		var/turf/current = queue[index++]
+		if(steps[current] >= ECON_EXPRESS_LANDING_RANGE)
+			continue
+		for(var/direction in GLOB.cardinals)
+			var/turf/open/next = get_step(current, direction)
+			if(!istype(next) || !isnull(steps[next]))
+				continue
+			if(get_area(next) != room || !current.Adjacent(next) || !econ_turf_passable(next))
+				continue
+			steps[next] = steps[current] + 1
+			queue += next
+			if(isfloorturf(next) && !next.is_blocked_turf())
+				. += next
+
+/// Через клетку можно пройти: она и её плотное содержимое, кроме людей и пограничного (его проверяет Adjacent), не мешают.
+/proc/econ_turf_passable(turf/spot)
+	if(spot.density)
+		return FALSE
+	for(var/atom/movable/thing as anything in spot)
+		if(thing.density && !ismob(thing) && !(thing.flags_1 & ON_BORDER_1))
+			return FALSE
+	return TRUE
 
 /// Пак из каталога отдела капсулой сразу, мимо шаттла снабжения. Возвращает null при успехе или причину отказа.
 /datum/economy_department/proc/express_pack(datum/supply_pack/pack, mob/living/user)

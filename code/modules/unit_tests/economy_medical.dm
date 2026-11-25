@@ -30,6 +30,10 @@
 	patient.forceMove(get_step(performer, EAST))
 
 /datum/unit_test/economy_work/proc/defib_patient()
+	// Реанимация ждёт секунды: грант или зарплата на тике экономики сдвинули бы бюджет мимо работы
+	if(isnull(economy_could_fire))
+		economy_could_fire = SSeconomy.can_fire
+	SSeconomy.can_fire = FALSE
 	var/obj/item/defibrillator/loaded/defib = allocate(/obj/item/defibrillator/loaded)
 	TEST_ASSERT(performer.equip_to_slot_if_possible(defib, ITEM_SLOT_BACK), "Дефибриллятор на спине")
 	usr = performer

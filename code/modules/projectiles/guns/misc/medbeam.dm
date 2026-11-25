@@ -136,15 +136,22 @@
 			if(!AM.CanPass(dummy, get_dir(next_step, previous_step)))
 				qdel(dummy)
 				return FALSE
-		for(var/obj/effect/ebeam/medical/B in next_step)// Don't cross the str-beams!
+		for(var/obj/effect/ebeam/medical/B in next_step)// Don't cross the medical streams!
 			if(QDELETED(current_beam))
 				break
 			if(QDELETED(B))
 				continue
 			if(!B.owner)
 				stack_trace("beam without an owner! [B]")
-			if(B.owner.origin != current_beam.origin)
-				explosion(B.loc, 0, 3, 5, 8)
+				continue
+			// BLUEMOON FIX - сравниваем сам объект луча, а не его источник.
+			// Иначе два луча из одного меха/игрока (общий origin) пересекались без взрыва.
+			if(B.owner != current_beam)
+				// BLUEMOON: гражданская версия рвёт владельца, остальные - тайл пересечения.
+				var/atom/explosion_epicenter = B.loc
+				if(istype(src, /obj/item/gun/medbeam/weak))
+					explosion_epicenter = loc
+				explosion(explosion_epicenter, 0, 3, 5, 8)
 				qdel(dummy)
 				return FALSE
 		previous_step = next_step

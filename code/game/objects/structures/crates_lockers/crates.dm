@@ -20,7 +20,7 @@
 	delivery_icon = "deliverycrate"
 	material_drop = /obj/item/stack/sheet/plasteel
 	material_drop_amount = 5
-	var/obj/item/paper/fluff/jobs/cargo/manifest/manifest
+	var/obj/item/paper/manifest
 
 /obj/structure/closet/crate/Initialize(mapload)
 	. = ..()
@@ -79,7 +79,7 @@
 /obj/structure/closet/crate/open(mob/living/user, force = FALSE)
 	. = ..()
 	if(. && manifest)
-		var/obj/item/paper/fluff/jobs/cargo/manifest/torn_manifest = manifest
+		var/obj/item/paper/torn_manifest = manifest
 		set_manifest(null)
 		to_chat(user, "<span class='notice'>The manifest is torn off [src].</span>")
 		playsound(src, 'sound/items/poster_ripped.ogg', 75, TRUE)
@@ -95,7 +95,7 @@
 /obj/structure/closet/crate/proc/tear_manifest(mob/user)
 	if(!manifest)
 		return
-	var/obj/item/paper/fluff/jobs/cargo/manifest/torn_manifest = manifest
+	var/obj/item/paper/torn_manifest = manifest
 	set_manifest(null)
 	to_chat(user, "<span class='notice'>You tear the manifest off of [src].</span>")
 	playsound(src, 'sound/items/poster_ripped.ogg', 75, TRUE)
@@ -107,7 +107,7 @@
 /// Накладная лежит в contents ящика и умирает вместе с ним от взрыва - ссылка на неё
 /// обязана опускаться сама, иначе open()/tear_manifest() двигали qdel-нутую бумагу
 /// (прод-раунд 10150).
-/obj/structure/closet/crate/proc/set_manifest(obj/item/paper/fluff/jobs/cargo/manifest/new_manifest)
+/obj/structure/closet/crate/proc/set_manifest(obj/item/paper/new_manifest)
 	if(manifest == new_manifest)
 		return
 	if(manifest)
@@ -209,6 +209,7 @@
 /obj/structure/closet/crate/freezer/blood
 	name = "blood freezer"
 	desc = "A freezer containing packs of blood."
+	icon = 'icons/obj/crates.dmi'
 	icon_state = "surgery"
 
 /obj/structure/closet/crate/freezer/blood/fake

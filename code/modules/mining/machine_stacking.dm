@@ -64,6 +64,12 @@
 			machine.unload_mineral(out)
 			return TRUE
 
+/obj/machinery/mineral/stacking_unit_console/Destroy()
+	if(machine)
+		machine.CONSOLE = null
+		machine = null
+	return ..()
+
 /**********************Mineral stacking unit**************************/
 
 
@@ -116,8 +122,9 @@
 	if(materials.silo && !materials.on_hold())
 		var/matlist = inp.custom_materials & materials.mat_container.materials
 		if (length(matlist))
-			var/inserted = materials.mat_container.insert_item(inp)
-			materials.silo_log(src, "collected", inserted, "sheets", matlist)
+			var/sheet_count = inp.amount
+			materials.mat_container.insert_item(inp)
+			materials.silo_log(src, "collected", sheet_count, "sheets", matlist)
 			qdel(inp)
 			return
 

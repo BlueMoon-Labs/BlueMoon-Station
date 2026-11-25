@@ -69,6 +69,8 @@
 	var/eject_dir = dir
 	var/turf/eject_target = target
 	var/range = eject_range
+	var/area/output_area = get_area(src)
+	var/safe_virtual = output_area?.area_flags & VIRTUAL_AREA
 
 	// Слитые в трубе пачки бывают по сотне предметов, и каждый бросок на общий турф дороже
 	// предыдущего: выброс идёт кусками по тикам. Холдер в это время могут слить с новым.
@@ -78,8 +80,11 @@
 		if(AM.loc != H)
 			continue
 		AM.forceMove(T)
-		AM.pipe_eject(eject_dir)
-		AM.throw_at(eject_target, range, 1)
+		if(safe_virtual)
+			AM.pipe_eject(0)
+		else
+			AM.pipe_eject(eject_dir)
+			AM.throw_at(eject_target, range, 1)
 		CHECK_TICK
 
 	if(QDELETED(H))

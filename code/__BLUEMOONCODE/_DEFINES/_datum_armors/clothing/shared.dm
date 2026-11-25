@@ -376,9 +376,9 @@
 	wound = 0
 
 /datum/armor/military
-	melee = 20
-	bullet = 40
-	laser = 40
+	melee = 30
+	bullet = 60
+	laser = 60
 	energy = 50
 	bomb = 25
 	bio = 0

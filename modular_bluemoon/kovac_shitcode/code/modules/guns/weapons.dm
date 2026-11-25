@@ -16,8 +16,7 @@
 	fire_delay = 3
 	inaccuracy_modifier = 0.5
 	zoomable = TRUE
-	zoom_amt = 8 //Long range, enough to see in front of you, but no tiles behind you.
-	zoom_out_amt = 5
+	scope_range = 3
 	fire_sound = 'modular_bluemoon/kovac_shitcode/sound/weapons/vss_shoot.ogg'
 
 /obj/item/gun/ballistic/automatic/vss/update_icon_state()

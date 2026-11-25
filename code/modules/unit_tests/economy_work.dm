@@ -6,6 +6,8 @@
 	var/datum/bank_account/department/budget
 	var/saved_budget
 	var/list/stashed_contracts
+	/// SSeconomy.can_fire до паузы тиков; null - тики не останавливались
+	var/economy_could_fire
 
 /// В тестовом мире клиентов нет, а медицина оживляет только тело с игроком: пациент проходит ту же проверку, что учебная цель полигона.
 /mob/living/carbon/human/econ_test_patient
@@ -31,6 +33,8 @@
 	saved_budget = budget.account_balance
 
 /datum/unit_test/economy_work/Destroy()
+	if(!isnull(economy_could_fire))
+		SSeconomy.can_fire = economy_could_fire
 	econ_test_restore_contracts(stashed_contracts)
 	if(budget)
 		budget.debit(max(budget.account_balance, 0), ECON_ADMIN)
@@ -91,7 +95,7 @@
 /datum/unit_test/economy_work/prices_config/Run()
 	var/datum/economy_settings/defaults = new
 	var/datum/economy_settings/settings = new
-	TEST_ASSERT(!length(settings.load(ECONOMY_CONFIG_PATH)), "economy.json грузится без ошибок")
+	TEST_ASSERT(!length(settings.load(ECONOMY_REPO_CONFIG_PATH)), "economy.json грузится без ошибок")
 	for(var/work_type in GLOB.econ_work_names)
 		TEST_ASSERT(isnum(defaults.work_prices[work_type]), "Нет цены у работы [work_type]")
 	var/list/overrides = settings.raw["settings"] || list()

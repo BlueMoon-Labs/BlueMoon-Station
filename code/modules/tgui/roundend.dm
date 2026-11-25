@@ -181,3 +181,35 @@
 	if(!data)
 		return
 	WRITE_FILE(path, json_encode(data))
+
+/**
+ * Отдельный payload для tgui, когда структурированный снимок отчёта отсутствует
+ * (отчёт остался от версии до появления tgui).
+ *
+ * Не используем build_roundend_tgui_data(): он берёт данные текущего раунда
+ * (ID, длительность, статистику, статус выживания) и смешал бы их с архивным HTML.
+ * Здесь все структурированные показатели недоступны, а само содержимое старого
+ * отчёта, если оно сохранилось, отдаётся во вкладку "Подробный отчёт".
+ */
+/proc/build_legacy_roundend_tgui_data(client/C, report_type = null)
+	var/server_report = (report_type == SERVER_LAST_ROUND)
+	var/filename = server_report ? "data/server_last_roundend_report.html" : C?.roundend_report_file()
+	var/has_saved_report = filename && fexists(filename)
+
+	var/list/data = list()
+	data["survival"] = list("status" = "unknown", "message" = "")
+	data["round_info"] = list("id" = "", "stats_url" = "", "duration" = "", "knottings" = 0)
+	data["station_info"] = list("nuked" = FALSE, "integrity" = 0)
+	data["personnel"] = list("total" = 0, "dead" = 0, "alive" = 0, "dead_percent" = 0, "alive_percent" = 0, "evacuated" = FALSE)
+	data["first_death"] = null
+	data["dynamic"] = null
+
+	if(has_saved_report)
+		data["common_report_html"] = file2text(filename)
+		data["personal_extra_html"] = "<div class='panel stationborder'>Структурированные данные этого отчёта недоступны: он был сохранён до появления tgui. Полное содержимое — во вкладке <b>Подробный отчёт</b>.</div>"
+	else
+		// Оба источника пусты — явно сообщаем об отсутствии сохранённого отчёта.
+		data["common_report_html"] = "<i>Сохранённый отчёт отсутствует.</i>"
+		data["personal_extra_html"] = "<div class='panel stationborder'>Сохранённый отчёт не найден. Возможно, он был удалён или создан до перехода на tgui.</div>"
+
+	return data

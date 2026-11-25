@@ -365,10 +365,10 @@
 		/obj/item/gun/ballistic/automatic/ak12/r = 0, // ПОШЁЛ НАХУЙ НОКС!!!
 		/obj/item/gun/ballistic/automatic/pistol/sigsauer = 0,
 		//biomass
-		/obj/item/broken/terror_spider_egg/tier1 = 2500,
-		/obj/item/broken/terror_spider_egg/tier2 = 3750,
-		/obj/item/broken/terror_spider_egg/tier3 = 5000,
-		/obj/item/broken/terror_spider_egg/tier4 = 8000,
+		/obj/item/broken/terror_spider_egg/tier1 = 4500,
+		/obj/item/broken/terror_spider_egg/tier2 = 5750,
+		/obj/item/broken/terror_spider_egg/tier3 = 7000,
+		/obj/item/broken/terror_spider_egg/tier4 = 12000,
 		/obj/item/broken/necromorph_biomass = 2500,
 		/obj/item/broken/necromorph_biomass/dense = 4500,
 		//Mechs

@@ -525,6 +525,13 @@
 	. = ..()
 	medigun = new(src)
 
+/obj/item/mecha_parts/mecha_equipment/medical/mechmedbeam/can_attach(obj/vehicle/sealed/mecha/M)
+	if(!..())
+		return FALSE
+	if(locate(/obj/item/mecha_parts/mecha_equipment/medical/mechmedbeam) in M.equipment)
+		to_chat(loc, span_warning("На [M] уже установлен медицинский луч."))
+		return FALSE
+	return TRUE
 
 /obj/item/mecha_parts/mecha_equipment/medical/mechmedbeam/Destroy()
 	qdel(medigun)
@@ -536,6 +543,12 @@
 	medigun.process()
 
 /obj/item/mecha_parts/mecha_equipment/medical/mechmedbeam/action(mob/source, atom/movable/target, params)
+	if(chassis)
+		for(var/obj/item/mecha_parts/mecha_equipment/medical/mechmedbeam/other in chassis.equipment)
+			if(other != src)
+				medigun.LoseTarget()
+				to_chat(chassis.occupants, span_warning("На [chassis] установлено два медицинских луча: второй заблокирован."))
+				return
 	medigun.process_fire(target, loc)
 
 

@@ -52,6 +52,9 @@
 /datum/econ_contract/crew_request/rotation_due_at()
 	return null
 
+/datum/econ_contract/crew_request/repeat_key()
+	return null
+
 /datum/econ_contract/crew_request/has_progress()
 	return reported
 

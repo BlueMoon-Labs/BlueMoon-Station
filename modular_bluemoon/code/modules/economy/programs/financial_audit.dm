@@ -56,6 +56,7 @@
 	data["rules"] = list(
 		"siphon_threshold" = settings.audit_bonus_threshold,
 		"siphon_minutes" = settings.audit_siphon_minutes,
+		"siphon_bonus_limit" = SSeconomy.audit_bonus_allowance(),
 		"structuring_count" = settings.audit_structuring_count,
 		"structuring_minutes" = settings.audit_structuring_minutes,
 		"insider_threshold" = settings.audit_insider_threshold,
@@ -66,6 +67,7 @@
 		"trace_minutes" = settings.audit_trace_minutes,
 		"trace_depth" = settings.audit_trace_depth,
 		"fee_percent" = settings.audit_case_fee_percent,
+		"cash_deposit_threshold" = settings.audit_cash_deposit_threshold,
 		"owed_cap" = settings.owed_wages_cap_paychecks,
 		"reason_max" = AUDIT_REASON_MAX,
 		"search_max" = AUDIT_SEARCH_MAX,

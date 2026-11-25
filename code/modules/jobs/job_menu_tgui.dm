@@ -2,6 +2,7 @@
 // В этот раз без пидор_бэк дефайнов.
 #define JOB_MENU_LATEJOIN "latejoin"
 #define JOB_MENU_PREFS "prefs"
+#define JOB_MENU_GHOST "ghost"
 
 /mob/dead/new_player
 	var/datum/job_menu/job_menu
@@ -48,6 +49,9 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 	prefs = null
 	return ..()
 
+/datum/job_menu/ghost/New(datum/preferences/new_prefs)
+	..(JOB_MENU_GHOST, new_prefs)
+
  // заменяет тело старого на новый
 /mob/dead/new_player/proc/open_job_menu()
 	if(QDELETED(job_menu))
@@ -61,16 +65,22 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 
 // Основные стейты для УИ, подсасывает старые значения не меняя их
 /datum/job_menu/ui_state(mob/user)
-	if(mode == JOB_MENU_LATEJOIN)
-		return GLOB.new_player_state
+	switch(mode)
+		if(JOB_MENU_LATEJOIN)
+			return GLOB.new_player_state
+		if(JOB_MENU_GHOST)
+			return GLOB.observer_state
 	return GLOB.always_state
 
 /datum/job_menu/ui_status(mob/user, datum/ui_state/state)
 	if(!user?.client)
 		return UI_CLOSE
 	// Вот эту логику копируйте для всех переходящих в обсерв гостов если у нас появится подобие такой же менюшки, например для мини-игр или типа того.
-	if(mode == JOB_MENU_LATEJOIN)
-		return GLOB.new_player_state.can_use_topic(src, user)
+	switch(mode)
+		if(JOB_MENU_LATEJOIN)
+			return GLOB.new_player_state.can_use_topic(src, user)
+		if(JOB_MENU_GHOST)
+			return GLOB.observer_state.can_use_topic(src, user)
 	return (user.client.prefs == prefs) ? UI_INTERACTIVE : UI_CLOSE // на всякий случай я ебу
 
 /datum/job_menu/ui_interact(mob/user, datum/tgui/ui)
@@ -82,7 +92,11 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 		if(!preview_screen)
 			preview_screen = new
 			preview_screen.generate_view("job_menu_[REF(src)]_map")
-		var/window_title = (mode == JOB_MENU_LATEJOIN) ? "Выберите профессию" : "Настройка профессий"
+		var/window_title = "Настройка профессий"
+		if(mode == JOB_MENU_LATEJOIN)
+			window_title = "Выберите профессию"
+		else if(mode == JOB_MENU_GHOST)
+			window_title = "Гост-роли"
 		ui = new(user, src, "JobMenu", window_title)
 		ui.open()
 		ui.set_autoupdate(FALSE)
@@ -129,9 +143,10 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 	data["previewShown"] = !!preview_screen?.shown_appearance
 	data["previewTiles"] = preview_screen?.shown_tiles
 
-	data["departments"] = build_departments(user)
+	if(mode != JOB_MENU_GHOST)
+		data["departments"] = build_departments(user)
 
-	if(mode == JOB_MENU_LATEJOIN)
+	if(mode == JOB_MENU_LATEJOIN || mode == JOB_MENU_GHOST)
 		data["ghostRoles"] = build_ghost_roles()
 		// Описания тянем только для выбранной роли, всё остальное описано в списке
 		if(selected_ghost)
@@ -290,25 +305,43 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 /// Гост роли список
 /datum/job_menu/proc/build_ghost_roles()
 	. = list()
+	var/ghost_mode = (mode == JOB_MENU_GHOST)
+	if(ghost_mode && QDELETED(GLOB.antag_training_spawner))
+		GLOB.antag_training_spawner = new /obj/effect/mob_spawn/antag_training(null)
+	var/list/empty_keys = list()
 	for(var/spawner_key in GLOB.mob_spawners)
 		var/list/spawner_list = GLOB.mob_spawners[spawner_key]
+		if(ghost_mode && islist(spawner_list))
+			listclearnulls(spawner_list)
 		if(!length(spawner_list))
+			if(ghost_mode)
+				empty_keys += spawner_key
 			continue
 
 		var/list/usable = list()
-		for(var/candidate in spawner_list)
-			if(!istype(candidate, /obj/effect/mob_spawn))
+		for(var/obj/candidate in spawner_list)
+			if(QDELETED(candidate))
 				continue
-			var/obj/effect/mob_spawn/check = candidate
-			if(check.can_latejoin())
-				usable += check
+			if(!ghost_mode)
+				if(!istype(candidate, /obj/effect/mob_spawn))
+					continue
+				var/obj/effect/mob_spawn/latejoin_check = candidate
+				if(!latejoin_check.can_latejoin())
+					continue
+			usable += candidate
 		if(!length(usable))
 			continue
 
-		var/obj/effect/mob_spawn/first = usable[1]
+		var/obj/effect/mob_spawn/first_spawn
+		for(var/obj/effect/mob_spawn/check in usable)
+			first_spawn = check
+			break
+		var/obj/first = first_spawn
+		if(!first)
+			first = usable[1]
 		var/list/entry = list(
 			"name" = spawner_key,
-			"category" = first.category,
+			"category" = first_spawn ? first_spawn.category : "misc",
 			"group" = ghost_role_group(usable),
 			"amount" = length(usable),
 		)
@@ -339,7 +372,7 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 			entry["infinite"] = TRUE
 		if(is_antag)
 			entry["antag"] = TRUE
-		if(ghost_previewable(first))
+		if(first_spawn ? ghost_previewable(first_spawn) : ghost_obj_previewable(first))
 			entry["previewable"] = TRUE
 		if(is_silicon)
 			entry["kind"] = "silicon"
@@ -348,6 +381,9 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 		else if(!is_human && !is_animal && !is_silicon)
 			entry["kind"] = "other"
 		. += list(entry)
+
+	if(length(empty_keys))
+		GLOB.mob_spawners -= empty_keys
 
 /// Явно враждебный спавнер?
 /datum/job_menu/proc/ghost_role_is_antag(obj/effect/mob_spawn/spawn_landmark)
@@ -370,6 +406,11 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 	if(!icon_file || !icon_state)
 		return FALSE
 	return (icon_state in icon_states(icon_file))
+
+/datum/job_menu/proc/ghost_obj_previewable(obj/spawn_obj)
+	if(!isfile(spawn_obj.icon) || !istext(spawn_obj.icon_state))
+		return FALSE
+	return (spawn_obj.icon_state in icon_states(spawn_obj.icon))
 
 /// подстатус гост-роли внутри её категории DS-1, Тарков, Гост-Кафе и т.п.
 /// ключ в GLOB.mob_spawners склеивает сразу несколько путей спавнеров job_description,
@@ -423,9 +464,12 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 		"syndicate" = "Синдикат",
 		"syndicatesoldier" = "Синдикат",
 		"black_mesa" = "Black Mesa",
-		"hlscientist" = "Black Mesa",
-		"hlguard" = "Black Mesa",
-		"deadhecu" = "Black Mesa",
+		"hlscientist" = "Mesa",
+		"hlguard" = "Mesa",
+		"deadhecu" = "Mesa",
+		"virtual_domain" = "Bitrun",
+		"bitrunner" = "Bitrun",
+		"cyber_police" = "Bitrun",
 		"hotel_staff" = "Космический Отель",
 		"ash_walker" = "Пеплоходцы",
 		"ash_walkers_slave" = "Пеплоходцы",
@@ -471,21 +515,16 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 
 /// Описание выбранной гост-роли
 /datum/job_menu/proc/build_ghost_info(spawner_key)
-	var/list/spawner_list = GLOB.mob_spawners[spawner_key]
-	if(!length(spawner_list))
+	var/atom/spawn_target = find_ghost_spawner(spawner_key)
+	if(!spawn_target)
 		return null
+	if(!istype(spawn_target, /obj/effect/mob_spawn))
+		var/obj/spawn_obj = spawn_target
+		return list(
+			"flavour" = clean_ghost_text(spawn_obj.desc, 2000),
+		)
 
-	var/obj/effect/mob_spawn/spawn_landmark
-	for(var/candidate in spawner_list)
-		if(!istype(candidate, /obj/effect/mob_spawn))
-			continue
-		var/obj/effect/mob_spawn/check = candidate
-		if(check.can_latejoin())
-			spawn_landmark = check
-			break
-	if(!spawn_landmark)
-		return null
-
+	var/obj/effect/mob_spawn/spawn_landmark = spawn_target
 	var/list/info = list(
 		"short" = clean_ghost_text(spawn_landmark.short_desc, 700),
 		"flavour" = clean_ghost_text(spawn_landmark.flavour_text, 6000),
@@ -498,6 +537,31 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 		info["addition"] = clean_ghost_text(spawn_landmark.addition_warning, 900)
 
 	return info
+
+/datum/job_menu/proc/collect_ghost_spawners(spawner_key)
+	var/list/spawner_list = GLOB.mob_spawners[spawner_key]
+	if(!length(spawner_list))
+		return
+	var/ghost_mode = (mode == JOB_MENU_GHOST)
+	var/list/spawners = list()
+	var/list/others = list()
+	for(var/obj/candidate in spawner_list)
+		if(QDELETED(candidate))
+			continue
+		if(istype(candidate, /obj/effect/mob_spawn))
+			var/obj/effect/mob_spawn/check = candidate
+			if(ghost_mode || check.can_latejoin())
+				spawners += check
+			continue
+		if(ghost_mode)
+			others += candidate
+	. = spawners + others
+
+/datum/job_menu/proc/find_ghost_spawner(spawner_key)
+	var/list/usable = collect_ghost_spawners(spawner_key)
+	if(!length(usable))
+		return null
+	return usable[1]
 
 /// Чистим описания
 /datum/job_menu/proc/clean_ghost_text(text, limit)
@@ -526,11 +590,12 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 				if(!SSshuttle.canRecall())
 					info["shuttle"] = "Станция сейчас проводит процедуру эвакуации экипажа."
 
-	var/datum/director_vacancies/vacancies = SSdirector.vacancies
-	for(var/dept in GLOB.director_vacancy_departments)
-		if(vacancies?.is_vacant(dept))
-			info["relief"] = "Отделы с пометкой «нужны» сейчас пусты. Вход туда до вызова эвакуации принесёт [METADOLLARS_RELIEF_BONUS] М$ в конце раунда, если продержитесь в смене [METADOLLARS_RELIEF_MIN_TIME / (1 MINUTES)] минут или до эвакуации."
-			break
+	if(mode != JOB_MENU_GHOST)
+		var/datum/director_vacancies/vacancies = SSdirector.vacancies
+		for(var/dept in GLOB.director_vacancy_departments)
+			if(vacancies?.is_vacant(dept))
+				info["relief"] = "Отделы с пометкой «нужны» сейчас пусты. Вход туда до вызова эвакуации принесёт [METADOLLARS_RELIEF_BONUS] М$ в конце раунда, если продержитесь в смене [METADOLLARS_RELIEF_MIN_TIME / (1 MINUTES)] минут или до эвакуации."
+				break
 
 	return info
 
@@ -637,20 +702,16 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 
 /// Превью гост роли
 /datum/job_menu/proc/build_ghost_preview(spawner_key, mob/user)
-	var/list/spawner_list = GLOB.mob_spawners[spawner_key]
-	if(!length(spawner_list))
+	var/atom/spawn_target = find_ghost_spawner(spawner_key)
+	if(!spawn_target)
 		return null
-	var/obj/effect/mob_spawn/spawn_landmark
-	for(var/candidate in spawner_list)
-		if(!istype(candidate, /obj/effect/mob_spawn))
-			continue
-		var/obj/effect/mob_spawn/check = candidate
-		if(check.can_latejoin())
-			spawn_landmark = check
-			break
-	if(!spawn_landmark)
-		return null
+	if(!istype(spawn_target, /obj/effect/mob_spawn))
+		var/obj/spawn_obj = spawn_target
+		if(!ghost_obj_previewable(spawn_obj))
+			return null
+		return mutable_appearance(spawn_obj.icon, spawn_obj.icon_state, pixel_x = spawn_obj.pixel_x, pixel_y = spawn_obj.pixel_y)
 
+	var/obj/effect/mob_spawn/spawn_landmark = spawn_target
 	var/datum/preferences/preview_prefs = prefs || user?.client?.prefs
 
 	// Синтетики
@@ -733,32 +794,50 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 			return
 
 		if("join_ghost")
-			if(mode != JOB_MENU_LATEJOIN || !isnewplayer(ui_user))
+			var/spawner_key = params["spawner"]
+			if(!istext(spawner_key))
+				return
+			if(mode == JOB_MENU_LATEJOIN)
+				if(!isnewplayer(ui_user))
+					return
+				if(!entry_allowed(ui_user))
+					return
+			else if(mode == JOB_MENU_GHOST)
+				if(!isobserver(ui_user))
+					return
+			else
+				return
+			var/list/usable_spawns = collect_ghost_spawners(spawner_key)
+			if(!length(usable_spawns))
+				to_chat(ui_user, "<span class='warning'>Эта роль больше недоступна.</span>")
+				return
+			var/atom/spawn_target = pick(usable_spawns)
+			if(!istype(spawn_target, /obj/effect/mob_spawn))
+				spawn_target.attack_ghost(ui_user)
+				return
+			var/obj/effect/mob_spawn/spawn_landmark = spawn_target
+			if(spawn_landmark.attack_ghost(ui_user, latejoinercalling = (mode == JOB_MENU_LATEJOIN)))
+				if(mode == JOB_MENU_LATEJOIN)
+					SSticker.queued_players -= ui_user
+					SSticker.queue_delay = 4
+					qdel(ui_user)
+			return
+
+		if("jump")
+			if(mode != JOB_MENU_GHOST || !isobserver(ui_user))
 				return
 			var/spawner_key = params["spawner"]
 			if(!istext(spawner_key))
 				return
-			if(!entry_allowed(ui_user))
+			var/atom/spawn_target = find_ghost_spawner(spawner_key)
+			if(!spawn_target)
 				return
-			var/list/spawner_list = GLOB.mob_spawners[spawner_key]
-			if(!length(spawner_list))
-				to_chat(ui_user, "<span class='warning'>Эта роль больше недоступна.</span>")
-				return
-			var/list/usable_spawns = list()
-			for(var/candidate in spawner_list)
-				if(!istype(candidate, /obj/effect/mob_spawn))
-					continue
-				var/obj/effect/mob_spawn/check = candidate
-				if(check.can_latejoin())
-					usable_spawns += check
-			if(!length(usable_spawns))
-				to_chat(ui_user, "<span class='warning'>Эта роль больше недоступна.</span>")
-				return
-			var/obj/effect/mob_spawn/spawn_landmark = pick(usable_spawns)
-			if(spawn_landmark.attack_ghost(ui_user, latejoinercalling = TRUE))
-				SSticker.queued_players -= ui_user
-				SSticker.queue_delay = 4
-				qdel(ui_user)
+			var/turf/destination = get_turf(spawn_target)
+			if(istype(spawn_target, /obj/effect/mob_spawn/antag_training))
+				var/datum/antag_training_arena/shared = GLOB.antag_training_arenas["shared"]
+				destination = shared?.ready ? shared.entry_turf : null
+			if(destination)
+				ui_user.forceMove(destination)
 			return
 
 		if("set_priority")
@@ -878,3 +957,4 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 
 #undef JOB_MENU_LATEJOIN
 #undef JOB_MENU_PREFS
+#undef JOB_MENU_GHOST

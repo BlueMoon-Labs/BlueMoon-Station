@@ -768,7 +768,8 @@ This is here to make the tiles around the station mininuke change when it's arme
 
 /obj/item/disk/nuclear/examine_more(mob/user)
 	. = ..()
-	if(HAS_TRAIT(user?.mind, TRAIT_DISK_VERIFIER))
+	var/datum/mind/viewer_mind = user?.mind
+	if(viewer_mind && HAS_TRAIT(viewer_mind, TRAIT_DISK_VERIFIER))
 		. += span_notice("The serial numbers on [src] are [fake ? "in" : ""]correct.")
 	else
 		. += span_notice("It has a serial number on it, but it doesn't mean anything to you.")

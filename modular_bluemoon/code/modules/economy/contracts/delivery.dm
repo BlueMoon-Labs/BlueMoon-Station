@@ -15,27 +15,36 @@
 	QDEL_NULL(bounty)
 	return ..()
 
-/// Награда заказа с учётом спроса: особые заказы ЦК от повторов не дешевеют.
+/// Награда заказа с учётом спроса: особые заказы ЦК от повторов не дешевеют. Гражданские поделки дешевле: их сдают чаще всего.
 /datum/econ_contract/delivery/payout()
 	. = ..() * SSeconomy.bounty_modifier * SSeconomy.settings.contract_delivery_mult
 	if(owner)
 		. *= SSeconomy.settings.contract_personal_reward / 100
-	if(!pinned && bounty)
+	if(department_id == ACCOUNT_CIV)
+		. *= SSeconomy.settings.contract_civilian_mult
+	if(counts_demand() && bounty)
 		. *= SSeconomy.contract_demand_mult(bounty.type)
 	return round(.)
+
+/datum/econ_contract/delivery/repeat_key()
+	return bounty?.type
+
+/// Сдачи этого заказа снижают награду повторов: особые заказы ЦК и заказы аванпостов спрос станции не трогают.
+/datum/econ_contract/delivery/proc/counts_demand()
+	return !pinned
 
 /datum/econ_contract/delivery/complete(mob/performer)
 	if(completed)
 		return
 	var/bounty_type = bounty.type
-	var/repeats = !pinned
+	var/repeats = counts_demand()
 	..()
 	if(repeats)
 		SSeconomy.note_contract_demand(bounty_type)
 
 /datum/econ_contract/delivery/ui_entry()
 	. = ..()
-	.["demand"] = pinned ? 100 : round(SSeconomy.contract_demand_mult(bounty.type) * 100)
+	.["demand"] = counts_demand() ? round(SSeconomy.contract_demand_mult(bounty.type) * 100) : 100
 
 /datum/econ_contract/delivery/has_progress()
 	var/datum/bounty/item/item_bounty = bounty
@@ -55,7 +64,11 @@
 /datum/econ_contract/delivery/proc/wants(atom/movable/thing)
 	if(owner && !taker)
 		return FALSE
-	return !completed && !is_expired() && !thing.econ_imported && bounty.applies_to(thing)
+	return !completed && !is_expired() && !refuses_bought(thing) && bounty.applies_to(thing)
+
+/// Купленное не засчитывается, кроме тары, которую заказ ценит за то, что в неё вложил игрок.
+/datum/econ_contract/delivery/proc/refuses_bought(atom/movable/thing)
+	return thing.econ_imported && !bounty.econ_accepts_bought(thing)
 
 /datum/econ_contract/delivery/proc/ship(atom/movable/thing, mob/performer)
 	note_contribution(performer)
@@ -94,7 +107,7 @@
 /obj/machinery/vending/examine(mob/user)
 	. = ..()
 	. += econ_price_examine()
-	. += span_notice("Купленное здесь NT выкупает не дороже [round(econ_import_resale_factor() * 100)]% уплаченного, реагенты из автомата не оплачивает, контракты и спецзаказы такое не засчитывают.")
+	. += span_notice("Купленное здесь NT выкупает не дороже [round(econ_import_resale_factor() * 100)]% уплаченного, реагенты из автомата не оплачивает, контракты и спецзаказы такое не засчитывают. Пустую тару отсюда контракт и спецзаказ примут, если наполнили её вы: стакан со своим коктейлем, шприц со своей кровью.")
 
 /// Цены по индексу и куда уходит выручка; у кастомного автомата свои правила в rent_examine().
 /obj/machinery/vending/proc/econ_price_examine()
@@ -122,9 +135,21 @@
 		if(!item.econ_imported)
 			continue
 		for(var/datum/econ_contract/delivery/contract as anything in contracts)
-			if(!contract.completed && contract.bounty.applies_to(item))
+			if(!contract.completed && contract.refuses_bought(item) && contract.bounty.applies_to(item))
 				.++
 				break
+
+/// Купленную вещь заказ берёт, только если ему нужна не она, а то, что в неё вложил игрок: наполненный презерватив, свой коктейль в стакане из автомата.
+/datum/bounty/proc/econ_accepts_bought(atom/movable/thing)
+	return FALSE
+
+/// Пустую тару из автомата можно наполнить своим, а купленное уже с нужным реагентом не засчитывается.
+/datum/bounty/reagent/econ_accepts_bought(atom/movable/thing)
+	var/reagent_type = ispath(wanted_reagent) ? wanted_reagent : wanted_reagent.type
+	return thing.econ_vended && !thing.econ_print_reagents?[reagent_type]
+
+/datum/bounty/virus/econ_accepts_bought(atom/movable/thing)
+	return thing.econ_vended && !thing.econ_print_reagents?[/datum/reagent/blood]
 
 /// Почему предмет почти подходит под контракт, но не принят: "баллон: трития 8 из 20 моль". null - не о чем сказать.
 /datum/bounty/proc/econ_shortfall(atom/movable/thing)
@@ -198,12 +223,13 @@
 /// Засчитывает предмет и его содержимое по контрактам поставки и удаляет засчитанное. TRUE, если засчитано хоть что-то.
 /proc/econ_contracts_ship(atom/movable/thing, mob/shipper)
 	. = FALSE
-	var/list/contracts = econ_delivery_contracts_for(econ_account_of(shipper))
+	var/datum/bank_account/shipper_account = econ_account_of(shipper)
+	var/list/contracts = econ_delivery_contracts_for(shipper_account)
 	if(!length(contracts))
 		return
 	for(var/atom/movable/item as anything in econ_contract_candidates(thing))
 		for(var/datum/econ_contract/delivery/contract as anything in contracts)
-			if(QDELETED(contract) || !contract.wants(item))
+			if(QDELETED(contract) || contract.refuses_contribution(shipper_account) || !contract.wants(item))
 				continue
 			contract.ship(item, shipper)
 			. = TRUE

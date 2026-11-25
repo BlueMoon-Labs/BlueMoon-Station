@@ -264,7 +264,8 @@
 
 /obj/machinery/shuttle_scrambler/proc/dump_loot(mob/user)
 	if(credits_stored) // Prevents spamming empty holochips
-		new /obj/item/holochip(drop_location(), credits_stored)
+		var/obj/item/holochip/loot = new(drop_location(), credits_stored)
+		econ_cash_mark_withdrawn(loot, SSeconomy.get_dep_account(ACCOUNT_CAR), user)
 		to_chat(user,"<span class='notice'>You retrieve the siphoned credits!</span>")
 		credits_stored = 0
 	else

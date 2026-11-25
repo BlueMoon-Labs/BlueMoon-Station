@@ -125,10 +125,9 @@
 //ITEMS THAT IT USES
 
 /obj/structure/closet/crate/trashcart/moneywish
-	desc = "A heavy, metal trashcart with wheels. Filled with cash."
+	desc = "Тяжёлая металлическая тележка на колёсах, доверху набитая наличными."
 	name = "loaded trash cart"
 
 /obj/structure/closet/crate/trashcart/moneywish/PopulateContents()	//25*20*1000=500,000
 	for(var/i in 1 to 25)
-		var/obj/item/stack/spacecash/c1000/lodsamoney = new /obj/item/stack/spacecash/c1000(src)
-		lodsamoney.amount = lodsamoney.max_amount
+		new /obj/item/stack/spacecash/c1000(src, 20, FALSE)

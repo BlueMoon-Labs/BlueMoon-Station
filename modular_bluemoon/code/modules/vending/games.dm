@@ -45,6 +45,8 @@
 			"products" = list(
 				/obj/item/camera = 3,
 				/obj/item/camera_film = 5,
+				/obj/item/broadcast_camera = 3, // BLUEMOON FINK ADD
+				/obj/item/radio/microphone = 3, // BLUEMOON FINK ADD
 				/obj/item/toy/crayon/spraycan = 6,
 				/obj/item/clothing/neck/link_scryer/loaded = 6,
 				/obj/item/cardpack/series_one = 100,

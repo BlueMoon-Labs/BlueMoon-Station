@@ -219,6 +219,82 @@ test('чужие свободные объявления экипажа видн
   expect(viewer.queryByText('Показать')).toBeNull();
 });
 
+test('свободные чужие объявления экипажа стоят в списке первыми', () => {
+  const crew = (uid, extra = {}) => contract(uid, { kind: 'crew', department_name: 'Экипаж', poster: 'Заказчик', poster_id: 333, ...extra });
+  const ui = setup({ rank, contracts: [contract(1), crew(31, { taken_by: 'Другой', taker_id: 222 }), crew(30)] });
+  const titles = Array.from(ui.container.querySelectorAll('.NtTerm__contractTitle')).map((node) => node.textContent);
+  expect(titles[0]).toContain('Контракт 30');
+  expect(titles[1]).toContain('Контракт 1');
+});
+
+test('эстафета, серия с потолком, авария и массовые пострадавшие объяснены на доске, аварию не берут', () => {
+  const ui = setup({
+    team_share: 25,
+    contracts: [
+      contract(40, {
+        kind: 'relay',
+        stage: 1,
+        stages: 3,
+        relay_title: 'От грядки до бокала',
+        relay_label: 'ботаника',
+        relay_next: 'кухня, бар',
+        relay_minutes: 60,
+        rotates_in: 2400,
+        chain_bonus: 50,
+        chain_cap: 15000,
+      }),
+      contract(41, { kind: 'chain', stage: 3, stages: 3, chain_bonus: 50, chain_cap: 15000, taken_by: 'Другой', taker_id: 222 }),
+      contract(42, { kind: 'incident', takeable: 0, title: 'Авария питания', progress: '2 / 6' }),
+      contract(43, {
+        kind: 'incident',
+        takeable: 0,
+        title: 'Массовые пострадавшие',
+        incident_team: 'Выписавшим медикам по вкладу',
+        incident_note: 'Брать не нужно: контракт закроется, когда медики выпишут пострадавших.',
+      }),
+    ],
+  });
+  expect(ui.getByText('Эстафета: этап 1 из 3')).toBeTruthy();
+  expect(ui.container.textContent).toContain('«От грядки до бокала»: сейчас ботаника, дальше - кухня, бар. На этап - 60 мин., потом эстафета оборвётся.');
+  expect(ui.getByText('Не выполните за 40:00 - эстафета оборвётся')).toBeTruthy();
+  expect(ui.queryByText('Срыв срока оборвёт эстафету')).toBeNull();
+  const text = (ui.container.textContent || '').replace(/\u00a0/g, ' ');
+  expect(text).toContain('Каждый этап оплачивается сразу своему отделу, за последний - премия 50% от суммы этапов, всего не больше 15 000 кр.0/1');
+  expect(text).toContain('Каждый этап оплачивается сразу, за последний - премия 50% от суммы этапов, всего не больше 15 000 кр.0/1');
+  expect(ui.getAllByText('Авария')).toHaveLength(2);
+  expect(ui.getAllByText('Брать не нужно')).toHaveLength(2);
+  expect(ui.queryByText('Срочный')).toBeNull();
+  expect(ui.getByText('Инженерам на смене поровну 25%, остальное - бюджету')).toBeTruthy();
+  expect(ui.getByText('Брать не нужно: контракт закроется сам, когда станция будет в порядке.')).toBeTruthy();
+  expect(ui.getByText('Выписавшим медикам по вкладу 25%, остальное - бюджету')).toBeTruthy();
+  expect(ui.getByText('Брать не нужно: контракт закроется, когда медики выпишут пострадавших.')).toBeTruthy();
+  fireEvent.click(ui.getByText('Взять'));
+  expect(sent(ui.topic, 'take')).toEqual([{ uid: 40 }]);
+});
+
+test('у взятого и срочного этапа эстафеты карточка показывает его срок, а не срок этапа', () => {
+  const relay = { kind: 'relay', stage: 2, stages: 3, relay_title: 'От грядки до бокала', relay_label: 'кухня', relay_next: 'бар', chain_bonus: 50, chain_cap: 15000 };
+  const ui = setup({
+    contracts: [
+      contract(60, { ...relay, taken_by: 'Другой', taker_id: 222, time_left: 1500, relay_minutes: 25 }),
+      contract(61, { ...relay, title: 'Срочный этап', urgent: 1, time_left: 900, rotates_in: 2400, relay_minutes: 15 }),
+    ],
+  });
+  expect(ui.getByText('Осталось 25:00')).toBeTruthy();
+  expect(ui.getByText('Осталось 15:00')).toBeTruthy();
+  expect(ui.getAllByText('Срыв срока оборвёт эстафету')).toHaveLength(2);
+  expect(ui.queryByText(/Не выполните за/)).toBeNull();
+  expect(ui.container.textContent).not.toContain('На этап - 25 мин.');
+  expect(ui.container.textContent).toContain('На этап - 15 мин., потом эстафета оборвётся.');
+});
+
+test('заказ, выполненный за смену до лимита на человека, не взять', () => {
+  const ui = setup({ rank, repeat_limit: 2, contracts: [contract(50, { repeat_capped: 1 })] });
+  fireEvent.click(ui.getByText('Взять'));
+  expect(sent(ui.topic, 'take')).toEqual([]);
+  expect(ui.getByText('Взять').closest('.Button')?.className).toContain('Button--disabled');
+});
+
 test('без ранга в данных (бюджет отдела) панели подрядчика нет', () => {
   const ui = setup({ crew_request: crewRules });
   expect(ui.queryByText('Дать объявление')).toBeNull();

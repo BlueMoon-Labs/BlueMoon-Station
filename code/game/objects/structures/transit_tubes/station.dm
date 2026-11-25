@@ -229,16 +229,50 @@
 	return FALSE
 
 /obj/structure/transit_tube/station/dispenser/Bumped(atom/movable/AM)
+	if(istype(AM, /obj/structure/closet/crate/secure/bitrunning/encrypted))
+		try_dispense(AM)
+		return
+
 	if(!isliving(AM) || AM.dir != boarding_dir || AM.anchored)
 		return
 
-	var/obj/structure/transit_tube_pod/pod = new(loc)
-	pod.setDir(turn(src.dir, -90))
-	if(!has_exit(pod.dir))
-		pod.setDir(tube_dirs[1])
+	try_dispense(AM)
+
+/obj/structure/transit_tube/station/dispenser/Crossed(atom/movable/AM, old_loc)
+	. = ..()
+	if(istype(AM, /obj/structure/closet/crate/secure/bitrunning/encrypted) && !istype(AM.loc, /obj/structure/transit_tube_pod))
+		try_dispense(AM)
+
+/obj/structure/transit_tube/station/dispenser/MouseDrop_T(atom/movable/AM, mob/living/user)
+	if(istype(AM, /obj/structure/closet/crate/secure/bitrunning/encrypted))
+		if(!istype(user) || !CHECK_MOBILITY(user, MOBILITY_USE) || get_dist(user, src) > 1 || get_dist(src, AM) > 1)
+			return
+		try_dispense(AM)
+		return
+
+	return ..()
+
+/obj/structure/transit_tube/station/dispenser/proc/try_dispense(atom/movable/AM)
+	if(QDELETED(AM) || AM.anchored)
+		return FALSE
+
+	var/obj/structure/transit_tube_pod/pod
+	for(var/obj/structure/transit_tube_pod/existing in loc)
+		if(existing.moving)
+			return FALSE
+		pod = existing
+		break
+
+	if(isnull(pod))
+		pod = new(loc)
+		pod.setDir(turn(src.dir, -90))
+		if(!has_exit(pod.dir))
+			pod.setDir(tube_dirs[1])
+
 	AM.forceMove(pod)
 	pod.update_icon()
 	launch_pod()
+	return TRUE
 
 /obj/structure/transit_tube/station/dispenser/pod_stopped(obj/structure/transit_tube_pod/pod, from_dir)
 	playsound(src, 'sound/machines/ding.ogg', 50, TRUE)

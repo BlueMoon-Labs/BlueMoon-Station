@@ -17,6 +17,8 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	var/unit_price
 	/// До взятия - когда спецзаказ снимут, после - срок выполнения
 	var/deadline = 0
+	/// world.time выставления
+	var/posted_at = 0
 	var/accepted = FALSE
 	/// Выплачено по базовой цене за принятые штуки
 	var/paid = 0
@@ -40,6 +42,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	src.wanted_reagent = wanted_reagent
 	src.wanted_volume = wanted_volume || 0
 	src.wanted_subtypes = wanted_subtypes
+	posted_at = world.time
 	deadline = world.time + SSmarket.offer_minutes * MARKET_OFFER_UNTAKEN_LIFETIME MINUTES
 
 /datum/market_offer/Destroy()
@@ -84,6 +87,8 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	if(!outpost)
 		station_involved = TRUE
 	deadline = world.time + SSmarket.offer_deadline_minutes MINUTES
+	var/datum/trade_partner/partner = get_partner()
+	partner.note_offer_accepted()
 	log_econ("[user ? key_name(user) : "Снабжение"] взял спецзаказ #[uid] партнёра [partner_name()][outpost ? " сканером аванпоста" : ""]: [quantity] x [wanted_name] по [unit_reward()] кр.")
 	return TRUE
 
@@ -99,7 +104,13 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 
 /// Предмет подходит: нужного типа, не куплен через снабжение, с нужным реагентом не из лейта.
 /datum/market_offer/proc/matches(atom/movable/thing)
-	if(thing.econ_imported || !istype(thing, wanted_type))
+	return econ_offer_item_matches(thing, wanted_type, wanted_subtypes, wanted_reagent, wanted_volume)
+
+/// Купленное не засчитывается, кроме тары из автомата, если нужный реагент в неё налили уже после покупки: правило контрактов поставки.
+/proc/econ_offer_item_matches(atom/movable/thing, wanted_type, wanted_subtypes, wanted_reagent, wanted_volume)
+	if(!istype(thing, wanted_type))
+		return FALSE
+	if(thing.econ_imported && !(wanted_reagent && thing.econ_vended && !thing.econ_print_reagents?[wanted_reagent]))
 		return FALSE
 	if(!wanted_subtypes)
 		var/obj/item/stack/stack = thing
@@ -151,6 +162,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	add_premium(SSeconomy.get_dep_account(ACCOUNT_CAR), premium)
 	var/datum/trade_partner/partner = get_partner()
 	partner.note_sale(.)
+	partner.note_offer_delivery(src)
 	log_econ("Спецзаказ #[uid] партнёра [partner.name]: принято [units] x [wanted_name] ([delivered]/[quantity]), выплата [.] кр., премия к выполнению [premium] кр.")
 	add_note(report, "Спецзаказ [partner.name]: принято [units] шт. \"[wanted_name]\" ([delivered] из [quantity]), [.] кр.")
 	if(delivered >= quantity)
@@ -190,7 +202,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	SEND_SIGNAL(SSmarket, COMSIG_MARKET_OFFER_RESOLVED, src, TRUE)
 	qdel(src)
 
-/// Провал: без премии и с потерей репутации. Спецзаказ, который брали и сдавали только аванпосты, станцию не штрафует.
+/// Провал: без премии и с потерей репутации, а партнёр реже просит этот товар. Спецзаказ, который брали и сдавали только аванпосты, станцию не штрафует.
 /datum/market_offer/proc/fail()
 	var/datum/trade_partner/partner = get_partner()
 	if(!station_involved)
@@ -199,12 +211,13 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 		qdel(src)
 		return
 	partner?.add_reputation(-MARKET_OFFER_REPUTATION_FAIL)
+	var/weight = partner?.lower_offer_interest(src)
 	var/notice = "Спецзаказ [partner?.name] \"[wanted_name]\" провален: срок вышел, принято [delivered] из [quantity], маржи не будет. Репутация у партнёра -[MARKET_OFFER_REPUTATION_FAIL][partner?.company ? ", оценка акций [partner.company] -[MARKET_OFFER_FAIL_STOCK_SHOCK * 100]%" : ""]."
 	if(contraband())
 		SSmarket.contraband_message = SSmarket.contraband_message ? "[SSmarket.contraband_message] [notice]" : notice
 	else
 		SSshuttle.centcom_message = SSshuttle.centcom_message ? "[SSshuttle.centcom_message] [notice]" : notice
-	log_econ("Спецзаказ #[uid] партнёра [partner?.name] провален: принято [delivered] из [quantity].")
+	log_econ("Спецзаказ #[uid] партнёра [partner?.name] провален: принято [delivered] из [quantity], вес товара [weight].")
 	SEND_SIGNAL(SSmarket, COMSIG_MARKET_OFFER_RESOLVED, src, FALSE)
 	qdel(src)
 
@@ -233,6 +246,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 	take(thing, units, thing.drop_location())
 	var/datum/trade_partner/partner = get_partner()
 	partner.note_sale(revenue)
+	partner.note_offer_delivery(src)
 	var/memo = "Спецзаказ: [partner.name]"
 	var/datum/bank_account/account = econ_account_of(shipper)
 	var/share = (account && account != budget) ? round(revenue * SSeconomy.settings.contract_team_share / 100) : 0
@@ -248,7 +262,7 @@ GLOBAL_VAR_INIT(market_offer_uid, 0)
 		log_econ("Спецзаказ #[uid] партнёра [partner.name]: с пада подработки принято [units] x [wanted_name] ([delivered]/[quantity]) от [key_name(shipper)], выплата [revenue] кр. ([department.name], лично [share])")
 	if(share > 0)
 		var/net = SSeconomy.pay_personal(budget, account, share, ECON_CONTRACT, shipper, memo)
-		account.bank_card_talk("Спецзаказ [partner.name]: [share] кр. до налога, на руки [net] кр.", balloon = net ? "спецзаказ +[net] кр" : null)
+		account.bank_card_talk(net == share ? "Спецзаказ [partner.name]: вам [net] кр." : "Спецзаказ [partner.name]: [share] кр. до налога, на руки [net] кр.", balloon = net ? "спецзаказ +[net] кр" : null)
 	add_premium(payee, units * (full - base))
 	if(delivered >= quantity)
 		complete()

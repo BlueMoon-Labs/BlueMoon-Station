@@ -30,8 +30,8 @@ GLOBAL_VAR(economy_config_reloaded_at)
 	panel.ui_interact(mob)
 
 /datum/economy_panel
-	/// Файл, который перечитывает reload_config
-	var/config_path = ECONOMY_CONFIG_PATH
+	/// Файл, который перечитывает reload_config; null - economy.json из папки конфига мира
+	var/config_path
 	var/message = ""
 
 /datum/economy_panel/ui_state(mob/user)
@@ -261,12 +261,12 @@ GLOBAL_VAR(economy_config_reloaded_at)
 	amount = round(amount)
 	var/done = amount > 0 ? account.credit(amount, ECON_ADMIN, user) : account.debit(-amount, ECON_ADMIN, user)
 	if(!done)
-		message = "Не списано: на счёте [account.account_balance] кр."
+		message = "Не списано: на счёте [num2text(account.account_balance, ECON_TEXT_DIGITS)] кр."
 		return
 	var/signed = "[amount > 0 ? "+" : ""][amount]"
 	if(account in SSeconomy.bank_accounts)
 		account.bank_card_talk("[econ_reason_name(ECON_ADMIN)]: [signed] кр.")
-	message = "Счёт [account.account_holder] №[account.account_id]: [signed] кр., на счёте [account.account_balance] кр."
+	message = "Счёт [account.account_holder] №[account.account_id]: [signed] кр., на счёте [num2text(account.account_balance, ECON_TEXT_DIGITS)] кр."
 	log_action(user, "скорректировал счёт [account.account_holder] №[account.account_id] на [signed] кр.", comment)
 
 /datum/economy_panel/proc/set_frozen(mob/user, list/params, comment, freeze)
@@ -358,7 +358,7 @@ GLOBAL_VAR(economy_config_reloaded_at)
 
 /datum/economy_panel/proc/reload_config(mob/user, comment)
 	var/datum/economy_settings/fresh = new
-	var/list/errors = fresh.load(config_path)
+	var/list/errors = fresh.load(config_path || ECONOMY_CONFIG_PATH)
 	GLOB.economy_config_reloaded_at = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)
 	for(var/error in errors)
 		log_config("economy.json: [error]")

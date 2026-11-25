@@ -119,6 +119,16 @@
 
 #define REEBE list('sound/ambience/ambireebe1.ogg', 'sound/ambience/ambireebe2.ogg', 'sound/ambience/ambireebe3.ogg')
 
+#define BEACH list('sound/ambience/shore.ogg', 'sound/ambience/seag1.ogg', 'sound/ambience/seag2.ogg')
+
+#define ICEMOON list('sound/ambience/icemoon/ambiicetheme.ogg', 'sound/ambience/icemoon/ambiicemelody1.ogg', \
+										'sound/ambience/icemoon/ambiicemelody2.ogg', 'sound/ambience/icemoon/ambiicemelody3.ogg', \
+										'sound/ambience/icemoon/ambiicemelody4.ogg', 'sound/ambience/icemoon/ambiicesting1.ogg', \
+										'sound/ambience/icemoon/ambiicesting2.ogg', 'sound/ambience/icemoon/ambiicesting3.ogg', \
+										'sound/ambience/icemoon/ambiicesting4.ogg', 'sound/ambience/icemoon/ambiicesting5.ogg')
+
+#define VAPOR_AMBIENCE list('sound/ambience/ambivapor1.ogg')
+
 #define SHUTTLE list('modular_bluemoon/kovac_shitcode/sound/ambience/enc/alarm_radio.ogg', 'modular_bluemoon/kovac_shitcode/sound/ambience/enc/alarm_small_09.ogg', 'modular_bluemoon/kovac_shitcode/sound/ambience/enc/engine_ignit_int.ogg',\
 							'modular_bluemoon/kovac_shitcode/sound/ambience/enc/env_ship_down.ogg', 'modular_bluemoon/kovac_shitcode/sound/ambience/enc/gear_loop.ogg', 'modular_bluemoon/kovac_shitcode/sound/ambience/enc/gear_start.ogg',\
 							'modular_bluemoon/kovac_shitcode/sound/ambience/enc/gear_stop.ogg', 'modular_bluemoon/kovac_shitcode/sound/ambience/enc/intercom_loop.ogg', 'modular_bluemoon/kovac_shitcode/sound/ambience/enc/morse.ogg' )

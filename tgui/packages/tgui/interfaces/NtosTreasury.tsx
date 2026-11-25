@@ -91,7 +91,17 @@ export type TreasuryData = {
   wage_floor: number;
   owed_cap: number;
   treasury_grant: number;
+  /** До этой суммы грант NT доливает казну */
+  treasury_grant_level?: number;
   tax_nt_share?: number;
+  tax_unrest_above?: number;
+  tax_unrest_cut?: number;
+  /** Какую долю налога NT забирает при недовольстве */
+  tax_unrest_nt_share?: number;
+  tax_goodwill_upto?: number;
+  tax_goodwill_premium?: number;
+  work_premium_base?: number;
+  tax_mood_minutes?: number;
   treasury_cap?: number;
   treasury_return_due?: number;
   cap_share?: number;
@@ -108,6 +118,9 @@ export type TreasuryData = {
   can_manage: BooleanLike;
   treasury: number;
   tax_rate: number;
+  tax_mood?: '' | 'unrest' | 'goodwill';
+  tax_mood_note?: string;
+  tax_mood_hint?: string;
   ledger: { minted: number; burned: number; state: EconomyState; money_history: number[] };
   departments: DepartmentRow[];
   requests: (TreasuryRequestEntry & { department_name: string })[];
@@ -194,6 +207,7 @@ export const NtosTreasuryContent = () => {
 const TreasuryTab = () => {
   const { act, data } = useBackend<TreasuryData>();
   const [rate, setRate] = useState(data.tax_rate);
+  const goodwill = (data.tax_goodwill_premium ?? 0) > (data.work_premium_base ?? 0);
   return (
     <>
       <Section title="Казна станции">
@@ -224,13 +238,34 @@ const TreasuryTab = () => {
           выручка прилавков налогом не облагаются.
         </Box>
         <Box color="label" mt={1}>
-          Казна получает налог, аренду прилавков и грант NT <Credits amount={data.treasury_grant} /> раз в{' '}
-          {data.economy_minutes} мин. Из казны пополняются бюджеты отделов и открываются счета. Акциями из казны
+          Экипаж замечает налог, который держится дольше {data.tax_mood_minutes ?? 0} мин.: время копится, и короткий сброс налога
+          отсчёт не обнуляет. Выше {data.tax_unrest_above ?? 0}% - недовольство: отделы получают за работу на{' '}
+          {data.tax_unrest_cut ?? 0}% меньше, премии за работу тоже ниже, а NT забирает {data.tax_unrest_nt_share ?? 0}% налога.{' '}
+          {goodwill
+            ? `До ${data.tax_goodwill_upto ?? 0}% - довольство: премия за работу ${data.tax_goodwill_premium ?? 0}% вместо ${data.work_premium_base ?? 0}%, но казна получает меньше. `
+            : ''}
+          Вернули налог в обычные пределы ({goodwill ? `от ${(data.tax_goodwill_upto ?? 0) + 1}% ` : ''}до {data.tax_unrest_above ?? 0}%)
+          - настроение проходит сразу.
+        </Box>
+        {!!data.tax_mood_note && (
+          <NoticeBox success={data.tax_mood === 'goodwill'} mt={1}>
+            {data.tax_mood_note}
+          </NoticeBox>
+        )}
+        {!!data.tax_mood_hint && (
+          <NoticeBox info mt={1}>
+            {data.tax_mood_hint}
+          </NoticeBox>
+        )}
+        <Box color="label" mt={1}>
+          Казна получает налог и аренду прилавков, а грант NT раз в {data.economy_minutes} мин. доливает её до{' '}
+          <Credits amount={data.treasury_grant_level ?? 0} />, не больше <Credits amount={data.treasury_grant} /> за раз. Из казны пополняются бюджеты отделов и открываются счета. Акциями из казны
           торгует только капитан в приложении биржи.
         </Box>
         <Box color="label" mt={1}>
           Сверх <Credits amount={data.treasury_cap ?? 0} /> казна раз в {data.economy_minutes} мин. возвращает NT{' '}
-          {data.cap_share ?? 0}% излишка. Бюджеты отделов тоже, пороги - в таблице ниже. Перевод из казны в бюджет первые{' '}
+          {data.cap_share ?? 0}% излишка. Бюджеты отделов тоже, пороги - в таблице ниже. Этот излишек сначала доливает ещё не набранные цели
+          накопления отделов, остальное забирает NT. Перевод из казны в бюджет первые{' '}
           {data.grace_minutes ?? 0} мин. излишком не считается, перевод между отделами такой защиты не получает. При красном
           коде и выше NT излишек не забирает.
         </Box>

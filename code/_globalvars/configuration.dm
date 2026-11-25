@@ -21,7 +21,7 @@ GLOBAL_VAR_INIT(tinted_weldhelh, TRUE)
 // Временное ограничение переключения формата медицинских отчётов; кнопка «Текстом» в окне остаётся доступна.
 GLOBAL_VAR_INIT(health_analyzer_allow_chat_mode, FALSE)
 
-// Временно скрывает панель эмоций в чате на время тестирования.
+// Определяет, открывает ли звёздочка панель эмоций в чате или показывает подсказку.
 GLOBAL_VAR_INIT(chat_emote_panel_enabled, FALSE)
 
 

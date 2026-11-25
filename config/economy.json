@@ -1,9 +1,7 @@
 {
 	"_comment": "Числа баланса экономики. Перечитывается админом из панели \"Экономика\".",
 	"settings": {
-		"_comment": "Встроенные числа баланса - в modular_bluemoon/code/modules/economy/core/settings.dm. Здесь только то, что сервер перекрывает: ключ с тем же именем, у work_prices - отдельные работы, например {\"tax_default\": 15, \"work_prices\": {\"sci_node\": 25}}.",
-		"contract_delivery_mult": 0.5,
-		"orbital_cargo_mult": 0.5
+		"_comment": "Встроенные числа баланса - в modular_bluemoon/code/modules/economy/core/settings.dm. Здесь только то, что сервер перекрывает: ключ с тем же именем, у work_prices - отдельные работы, например {\"tax_default\": 15, \"work_prices\": {\"sci_node\": 25}}."
 	},
 	"market": {
 		"_comment": "Сдвиг цен раз в shift_minutes (±90 с). hot_chance - шанс в процентах, что товар станет горячим за сдвиг. Товары: volatility - сигма шага тренда, consumer - в корзине индекса цен, links - доля отклонения тренда, передаваемая связанным товарам (сумма долей, входящих в один товар, не больше 1), demand_capacity - сумма продаж, выбивающая весь спрос, demand_recovery - восстановление спроса за сдвиг.",
@@ -38,10 +36,15 @@
 		"partner_restock_minutes": 7,
 		"partner_stock_default": 5,
 		"reputation_per_credit": 0.01,
-		"_offers_comment": "Спецзаказы: раз в offer_minutes открытый партнёр, у которого меньше offers_max спецзаказов, с шансом offer_chance (%) выставляет новый из своих offer_items (path - тип предмета, name - как его называть, min..max - количество, unit_price - цена штуки до множителя 1.5-2.5, reagent и volume - нужный реагент в каждой штуке). Невзятый снимается через два интервала, взятый нужно выполнить за offer_deadline_minutes.",
+		"_offers_comment": "Спецзаказы: раз в offer_minutes открытый партнёр, у которого меньше offers_max спецзаказов, с шансом offer_chance (%) выставляет новый из своих offer_items (path - тип предмета, name - как его называть, min..max - количество, unit_price - цена штуки до множителя 1.5-2.5, reagent и volume - нужный реагент в каждой штуке). Невзятый снимается через два интервала, взятый нужно выполнить за offer_deadline_minutes. Невзятых спецзаказов у всех неконтрабандных партнёров вместе (кроме партнёров под эмбарго) не больше offers_board_max, первыми место получают партнёры без невзятых. Каждый снятый невзятым умножает шанс партнёра на offer_ignored_factor (не ниже offer_ignored_chance_min %, то же у скупки), первый взятый сбрасывает. Вес товара в выборе: 1; сданный станцией по спецзаказу или проданный партнёру обычным порядком - offer_delivered_weight; невзятый или проваленный станцией умножается на offer_ignored_factor, но не ниже offer_ignored_weight_min (больше 0, иначе товар перестанет выпадать). offer_ignored_chance_min - от 1, при 0 игнорируемый партнёр замолчал бы навсегда.",
 		"offer_minutes": 15,
 		"offers_max": 2,
 		"offer_chance": 50,
+		"offers_board_max": 5,
+		"offer_ignored_factor": 0.5,
+		"offer_ignored_chance_min": 15,
+		"offer_ignored_weight_min": 0.25,
+		"offer_delivered_weight": 3,
 		"offer_deadline_minutes": 30,
 		"_news_comment": "Канал \"Сводка сектора\" на ньюскастерах: сводка рынка раз в digest_minutes; срочные новости (события компаний, горячие товары, открытие партнёров, обвал и бум, блюдо дня) копятся и выходят одной статьёй. Между любыми двумя статьями канала проходит не меньше news_flash_minutes (не больше половины digest_minutes); сводка без перемен не выходит.",
 		"digest_minutes": 15,
@@ -101,7 +104,7 @@
 			"med_revive": {"VYMD": 0.1},
 			"med_surgery": {"BSHP": 0.1, "VYMD": 0.05},
 			"eng_power_export": {"NKMR": 0.04},
-			"sci_node": {"EINS": 0.3},
+			"sci_node": {"EINS": 0.3, "CYBS": 0.01},
 			"sci_slime_discovery": {"EINS": 0.02},
 			"sci_artifact": {"SOLX": 0.1},
 			"mining_ore": {"PRSP": 0.04},
@@ -110,7 +113,7 @@
 			"srv_drink": {"AGRO": 0.1},
 			"srv_new_plant": {"AGRO": 0.1},
 			"srv_cleaning": {"NTRN": 0.05},
-			"sec_contraband": {"HEPH": 0.1, "CYBS": -0.1},
+			"sec_contraband": {"HEPH": 0.1, "CYBS": -0.05},
 			"contracts": {"NTRN": 0.005}
 		}
 	}

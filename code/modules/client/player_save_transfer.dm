@@ -385,7 +385,11 @@
 					if(!islist(entries) || entries.len > 100)
 						throw EXCEPTION("Слишком много предметов экипировки")
 					for(var/list/entry as anything in entries)
-						if(!islist(entry) || !istext(entry[LOADOUT_ITEM]) || !ispath(text2path(entry[LOADOUT_ITEM]), /datum/gear))
+						if(!islist(entry) || !istext(entry[LOADOUT_ITEM]))
+							throw EXCEPTION("Неизвестный предмет экипировки")
+						// Несуществующий путь (вещь переименовали или убрали) отсеивается при сборке набора.
+						var/gear_path = text2path(entry[LOADOUT_ITEM])
+						if(gear_path && !ispath(gear_path, /datum/gear))
 							throw EXCEPTION("Неизвестный предмет экипировки")
 	if(mode == "interactions")
 		var/list/result = list()
@@ -439,7 +443,11 @@
 			var/value
 			source[key] >> value
 			var/encoded = player_transfer_encode_field(mode, value)
-			player_transfer_validate_value(encoded, budget)
+			// Без имени поля игрок не поймёт, какую настройку поправить.
+			try
+				player_transfer_validate_value(encoded, budget)
+			catch(var/exception/field_failure)
+				throw EXCEPTION("[field_failure.name] (поле [key])")
 			fields[key] = encoded
 		var/text = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = fields))
 		if(length(text) > PLAYER_TRANSFER_MAX_BYTES)
@@ -740,6 +748,7 @@
 			points += (IS_CKEY_DONATOR_GROUP(recipient, DONATOR_GROUP_TIER_2) ? CONFIG_GET(number/sponsor_extra_gear_points) : 0)
 		// Недоступное аккаунту и не влезающее в бюджет убирается из набора, а не отклоняет весь файл.
 		var/list/dropped = list()
+		var/unknown = 0
 		for(var/slot in staged.loadout_data)
 			var/list/entries = staged.loadout_data[slot]
 			if(!islist(entries))
@@ -754,7 +763,10 @@
 					var/list/categories = GLOB.loadout_items[initial(gear_type.category)]
 					var/list/subcategories = categories?[initial(gear_type.subcategory)]
 					gear = subcategories?[initial(gear_type.name)]
-				if(!gear || (gear_type in seen))
+				if(!gear)
+					unknown++
+					continue
+				if(gear_type in seen)
 					continue
 				seen += gear_type
 				if((gear.donoritem && (!recipient || !gear.donator_ckey_check(recipient))) || (istype(gear, /datum/gear/unlockable) && !can_use_unlockable(gear)) || gear.cost > remaining)
@@ -765,6 +777,8 @@
 			staged.loadout_data[slot] = kept
 		if(length(dropped))
 			player_transfer_notices += "из экипировки убрано: [jointext(dropped, ", ")]"
+		if(unknown)
+			player_transfer_notices += "из экипировки убраны вещи, которых больше нет в игре: [unknown]"
 
 
 /proc/player_transfer_escape_list(value)
