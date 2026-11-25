@@ -134,6 +134,32 @@
 		return FALSE
 	return TRUE
 
+/datum/preferences/proc/save_nif_persistent_data(character_slot, list/saved_data)
+	if(!path || !isnum(character_slot) || character_slot < 1 || character_slot > max_save_slots)
+		return FALSE
+	var/datum/player_save_json/account/storage = get_player_save_storage()
+	if(!storage || player_save_blocked || !ensure_player_save_migrated())
+		return FALSE
+	var/character_key = "character[character_slot]"
+	var/datum/player_save_document/root = storage.snapshot()
+	if(!root || !islist(root.directories) || !(character_key in root.tree) || !(character_key in root.directories))
+		return FALSE
+	var/datum/player_save_character_transaction/transaction = storage.character_transaction(character_key)
+	if(!transaction)
+		player_save_error(storage.error)
+		return FALSE
+	var/encoded_data = safe_json_encode(islist(saved_data) ? saved_data : list())
+	if(!transaction.character.write("nif_persistent_data", encoded_data))
+		if(character_slot == default_slot)
+			nif_persistent_data = islist(saved_data) ? saved_data.Copy() : list()
+		return TRUE
+	if(!transaction.commit())
+		player_save_error(storage.error)
+		return FALSE
+	if(character_slot == default_slot)
+		nif_persistent_data = islist(saved_data) ? saved_data.Copy() : list()
+	return TRUE
+
 /// Модульные расширения дописывают тот же документ в памяти, затем идёт одна запись.
 /datum/preferences/proc/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
 	var/blocking_started_ms = blocking_call_start()

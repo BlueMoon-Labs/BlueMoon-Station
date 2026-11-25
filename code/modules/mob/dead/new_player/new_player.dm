@@ -562,6 +562,7 @@
 	client.prefs.apply_persistent_scars(H)
 
 	client.prefs.copy_to(H, initial_spawn = TRUE)
+	client.prefs.apply_persistent_nif(H)
 
 	// BLUEMOON ADD START - загрузка татуировок (после copy_to, чтобы regenerate_limbs() не уничтожил данные)
 	client.prefs.apply_tattoos_to_human(H)
@@ -573,7 +574,7 @@
 			player_mind.late_joiner = TRUE
 		player_mind.active = 0					//we wish to transfer the key manually
 		// Навык движения задаётся до входа в исходное тело, чтобы хвост не считался непривычным.
-		player_mind.set_original_character(H)
+		player_mind.set_original_character(H, client.prefs.default_slot)
 		player_mind.transfer_to(H)					//won't transfer key since the mind is not active
 
 	H.name = real_name
