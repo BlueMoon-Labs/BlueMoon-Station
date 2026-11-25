@@ -166,6 +166,8 @@
 
 	var/damage = 10
 	var/simple_mob_damage_multiplier = 1
+	/// Плоский бонус урона по симпл-мобам без разума (ИИ)
+	var/simple_mob_no_mind_damage_bonus = 0
 	var/damage_type = BRUTE //BRUTE, BURN, TOX, OXY, CLONE are the only things that should be in here
 	var/nodamage = 0 //Determines if the projectile will skip any damage inflictions
 	var/flag = BULLET //Defines what armor to use when it hits things.  Must be set to bullet, laser, energy,or bomb
