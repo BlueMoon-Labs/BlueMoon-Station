@@ -80,8 +80,32 @@ SUBSYSTEM_DEF(vote)
 		else if(end_time < world.time) //BLUEMOON CHANGES
 			result()
 			SSpersistence.SaveSavedVotes()
-			if(end_time < world.time) // result() can change this
-				reset()
+			// BLUEMOON ADD - Hard Team Runoff Ballot
+			// If flag is set, determine next mode based on vote result
+			if(roundtype_hard_team_runoff_ballot)
+				// Check which dynamic mode won the vote
+				var/option/W = null
+				for(var/option/O in choices)
+					if(O == ROUNDTYPE_DYNAMIC_TEAMBASED)
+						W = O
+						break
+				if(W)
+					// Team-Base won - force Medium-Dynamic next round
+					mode = "roundtype"
+					question = "Повторный раунд: выбор режима"
+					choices = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD)
+					choice_descs = list(
+						ROUNDTYPE_DYNAMIC_MEDIUM: "Средний динамик",
+						ROUNDTYPE_DYNAMIC_HARD: "Хард динамик"
+					)
+				else
+					// Hard-Dynamic won - force Medium-Dynamic as per design
+					mode = "roundtype"
+					question = "Повторный раунд: выбор режима"
+					choices = list(ROUNDTYPE_DYNAMIC_MEDIUM)
+					choice_descs = list(ROUNDTYPE_DYNAMIC_MEDIUM: "Средний динамик")
+			reset()
+//BLUEMOON CHANGES
 
 /datum/controller/subsystem/vote/proc/reset()
 	initiator = null
