@@ -187,7 +187,7 @@
 	board_icon = "hoverboard_nt"
 
 // Длительность трека в секундах для синхронизации новых слушателей.
-#define FLYING_CARPET_MUSIC_LENGTH (2178048 / 44100)
+#define FLYING_CARPET_MUSIC_LENGTH 49.388844
 
 /obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet
 	name = "flying carpet"
