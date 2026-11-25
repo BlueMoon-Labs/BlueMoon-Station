@@ -2,14 +2,14 @@
 //////////Cybernetic Implants////////////
 /////////////////////////////////////////
 /datum/design/ai_link_implant
-    name = "Neural AI Link Implant"
-    id = "ai_link_implant"
-    build_type = MECHFAB | PROTOLATHE
-    build_path = /obj/item/organ/cyberimp/brain/ai_link
-    materials = list(/datum/material/iron = 3000, /datum/material/glass = 1000, /datum/material/silver = 2000, /datum/material/gold = 1500, /datum/material/diamond = 1500)
-    construction_time = 200
-    category = list("Implants", "Biotech")
-    departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_MEDICAL
+	name = "Neural AI Link Implant"
+	id = "ai_link_implant"
+	build_type = MECHFAB | PROTOLATHE
+	build_path = /obj/item/organ/cyberimp/brain/ai_link
+	materials = list(/datum/material/iron = 3000, /datum/material/glass = 1000, /datum/material/silver = 2000, /datum/material/gold = 1500, /datum/material/diamond = 1500)
+	construction_time = 200
+	category = list("Implants", "Biotech")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/cyberimp_breather
 	name = "Breathing Tube Implant"
@@ -196,7 +196,7 @@
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 500, /datum/material/gold = 500)
 	build_path = /obj/item/organ/cyberimp/eyes/hud/diagnostic
 	category = list("Implants")
-    departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/cyberimp_antidrop
 	name = "Corporate Anti-Drop Implant"
