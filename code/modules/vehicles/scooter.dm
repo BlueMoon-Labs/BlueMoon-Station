@@ -186,6 +186,9 @@
 	icon_state = "hoverboard_nt"
 	board_icon = "hoverboard_nt"
 
+// Длительность трека в секундах для синхронизации новых слушателей.
+#define FLYING_CARPET_MUSIC_LENGTH (2178048 / 44100)
+
 /obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet
 	name = "flying carpet"
 	desc = "Ковёр с золотистым узором. Плавно парит над полом, когда на нём едут."
@@ -193,12 +196,21 @@
 	board_icon = "flying_carpet"
 	layer = OBJ_LAYER
 	board_item_type = /obj/item/melee/skateboard/hoverboard/flying_carpet
+	var/music_channel
+	var/music_update_timer
+	var/music_start_time
+	// Слабые ссылки на клиентов и последняя отправленная громкость для каждого.
+	var/list/music_listeners
 
 /obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/Initialize(mapload)
 	. = ..()
 	var/datum/component/riding/riding = GetComponent(/datum/component/riding)
 	riding.set_vehicle_dir_layer(SOUTH, OBJ_LAYER)
 	riding.set_riding_offsets(RIDING_OFFSET_ALL, list(TEXT_NORTH = list(0), TEXT_SOUTH = list(0), TEXT_EAST = list(0), TEXT_WEST = list(2)))
+
+/obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/Destroy()
+	stop_carpet_music()
+	return ..()
 
 /obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/post_buckle_mob(mob/living/M)
 	. = ..()
@@ -207,11 +219,78 @@
 	for(var/atom/movable/riding_atom in list(src, M))
 		animate(riding_atom, pixel_z = 4, time = 1 SECONDS, loop = -1, easing = SINE_EASING, flags = ANIMATION_RELATIVE, tag = "flying_carpet")
 		animate(pixel_z = -4, time = 1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
+	RegisterSignal(M, COMSIG_MOB_CLIENT_LOGIN, PROC_REF(start_carpet_music))
+	RegisterSignal(M, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(stop_carpet_music))
+	if(M.client)
+		start_carpet_music()
 
 /obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/post_unbuckle_mob(mob/living/M)
+	UnregisterSignal(M, list(COMSIG_MOB_CLIENT_LOGIN, COMSIG_MOB_CLIENT_LOGOUT))
+	stop_carpet_music()
 	animate(src, tag = "flying_carpet")
 	animate(M, tag = "flying_carpet")
 	return ..()
+
+/obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/proc/start_carpet_music()
+	SIGNAL_HANDLER
+	if(music_channel)
+		return
+	music_channel = SSsounds.reserve_sound_channel(src)
+	if(!music_channel)
+		return
+	music_start_time = REALTIMEOFDAY
+	music_update_timer = addtimer(CALLBACK(src, PROC_REF(update_carpet_music)), 0.25 SECONDS, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
+	update_carpet_music()
+
+/obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/proc/stop_carpet_music()
+	SIGNAL_HANDLER
+	if(!music_channel)
+		return
+	deltimer(music_update_timer)
+	music_update_timer = null
+	for(var/datum/weakref/listener_ref as anything in music_listeners)
+		stop_carpet_music_for(listener_ref)
+	music_listeners = null
+	SSsounds.free_sound_channel(music_channel)
+	music_channel = null
+	music_start_time = null
+
+/obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/proc/stop_carpet_music_for(datum/weakref/listener_ref)
+	var/client/listener = listener_ref.resolve()
+	if(listener)
+		SEND_SOUND(listener, sound(null, repeat = FALSE, wait = FALSE, channel = music_channel))
+
+/obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/proc/update_carpet_music()
+	if(!music_channel)
+		return
+	var/list/current_listeners
+	var/sound/track
+	for(var/mob/listener in get_hearers_in_view(3, src, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS))
+		var/client/listener_client = listener.client
+		var/datum/preferences/listener_prefs = listener_client?.prefs
+		if(!(listener_prefs?.toggles & SOUND_INSTRUMENTS) || !listener.can_hear())
+			continue
+		var/volume = CEILING(listener_prefs.get_sound_volume("instruments") * 0.5, 1)
+		if(volume <= 0)
+			continue
+		var/datum/weakref/listener_ref = WEAKREF(listener_client)
+		var/previous_volume = music_listeners?[listener_ref]
+		LAZYSET(current_listeners, listener_ref, volume)
+		if(isnull(previous_volume))
+			if(!track)
+				track = sound('sound/vehicles/indian_meme_song.ogg', repeat = TRUE, wait = FALSE, channel = music_channel)
+				var/elapsed_seconds = jukebox_catchup_seconds(music_start_time)
+				track.offset = elapsed_seconds - FLOOR(elapsed_seconds, FLYING_CARPET_MUSIC_LENGTH)
+			track.volume = volume
+			SEND_SOUND(listener_client, track)
+		else if(previous_volume != volume)
+			listener.set_sound_channel_volume(music_channel, volume)
+	for(var/datum/weakref/listener_ref as anything in music_listeners)
+		if(!current_listeners?[listener_ref])
+			stop_carpet_music_for(listener_ref)
+	music_listeners = current_listeners
+
+#undef FLYING_CARPET_MUSIC_LENGTH
 
 //CONSTRUCTION
 /obj/item/scooter_frame
