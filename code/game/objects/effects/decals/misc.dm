@@ -139,5 +139,5 @@
 	if(STR)
 		STR.max_combined_w_class = 60
 		STR.max_items = 14
-		max_w_class = WEIGHT_CLASS_BULKY
+		STR.max_w_class = WEIGHT_CLASS_BULKY
 		STR.insert_preposition = "in"
