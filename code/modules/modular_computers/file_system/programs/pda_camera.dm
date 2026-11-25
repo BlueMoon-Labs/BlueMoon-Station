@@ -13,7 +13,7 @@
 	tgui_id = "NtosCamera"
 	program_icon = "camera"
 	var/list/datum/picture/local_photos
-	var/flash_enabled = TRUE
+	var/flash_enabled = FALSE
 	var/capturing = FALSE
 	COOLDOWN_DECLARE(shutter_cooldown)
 	var/datum/weakref/viewer_ref
@@ -42,6 +42,7 @@
 	var/previous_cursor
 	var/previous_mouse_up
 	var/previous_mouse_down
+	var/aim_time_zone
 
 /datum/computer_file/program/pda_camera/Destroy()
 	close_camera_window()
@@ -134,6 +135,7 @@
 		"captionLimit" = PHOTO_CAPTION_LIMIT,
 		"printDuration" = PDA_CAMERA_PRINT_UPLOAD_TIME * 100,
 		"maxFrameSize" = PDA_CAMERA_MAX_RADIUS * 2 + 1,
+		"serverUtcOffset" = rustg_formatted_timestamp("%z"),
 	)
 
 /datum/computer_file/program/pda_camera/ui_data(mob/user)
@@ -168,6 +170,9 @@
 			data["printerError"] = (!print_upload_timer && printer) ? printer.pda_photo_print_error() : null
 		else
 			photo["uploaded"] = (tab == "local" && is_uploaded(selected_id))
+			photo["stationCaptureTime"] = selected.station_capture_time
+			photo["captureTimeZone"] = selected.capture_time_zone
+			photo["serverCaptureTime"] = selected.server_capture_time
 			photo += selected.photo_ui_media()
 		data["photo"] = photo
 	else
@@ -202,6 +207,10 @@
 			else if(COOLDOWN_FINISHED(src, shutter_cooldown))
 				aim_requested = TRUE
 				if(can_aim(user))
+					var/static/regex/time_zone_pattern = regex("^\[a-zA-Z0-9_+/-\]+$")
+					var/time_zone = params["timeZone"]
+					if(istext(time_zone) && length(time_zone) <= 64 && time_zone_pattern.Find(time_zone))
+						aim_time_zone = time_zone
 					start_aiming(user)
 		if("tab")
 			var/destination = params["tab"]
@@ -297,6 +306,7 @@
 
 /datum/computer_file/program/pda_camera/proc/stop_aiming()
 	aim_requested = FALSE
+	aim_time_zone = null
 	if(!aiming)
 		return
 	aiming = FALSE
@@ -350,15 +360,19 @@
 	var/turf/center = get_turf(target)
 	if(!camera_can_target(center, user, flash_enabled))
 		return COMSIG_MOB_CANCEL_CLICKON
+	var/time_zone = aim_time_zone
 	stop_aiming()
 	capturing = TRUE
 	COOLDOWN_START(src, shutter_cooldown, 1 SECONDS)
-	INVOKE_ASYNC(src, PROC_REF(take_picture), center, user, flash_enabled, frame_radius_x, frame_radius_y)
+	INVOKE_ASYNC(src, PROC_REF(take_picture), center, user, flash_enabled, frame_radius_x, frame_radius_y, time_zone)
 	return COMSIG_MOB_CANCEL_CLICKON
 
-/datum/computer_file/program/pda_camera/proc/take_picture(turf/center, mob/user, use_flash, radius_x, radius_y)
+/datum/computer_file/program/pda_camera/proc/take_picture(turf/center, mob/user, use_flash, radius_x, radius_y, time_zone)
 	if(QDELETED(src) || QDELETED(computer))
 		return
+	var/id = rustg_generate_uuid_v7()
+	var/station_capture_time = "[time2text(world.timeofday, "DD.MM")].[GLOB.year_integer] [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)]"
+	var/server_capture_time = rustg_formatted_timestamp("%d.%m.%Y %H:%M:%S")
 	var/turf/device_turf = get_turf(computer)
 	if(use_flash && device_turf)
 		device_turf.flash_lighting_fx(8)
@@ -367,8 +381,10 @@
 	if(QDELETED(src))
 		qdel(picture)
 		return
-	var/id = rustg_generate_uuid_v7()
 	picture.picture_name = "Фотография №[length(local_photos) + 1]"
+	picture.station_capture_time = station_capture_time
+	picture.capture_time_zone = time_zone
+	picture.server_capture_time = server_capture_time
 	LAZYINITLIST(local_photos)
 	local_photos.Insert(1, id)
 	local_photos[id] = picture

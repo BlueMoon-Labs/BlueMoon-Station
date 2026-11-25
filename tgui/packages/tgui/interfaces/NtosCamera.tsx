@@ -30,6 +30,9 @@ type GalleryPhoto = {
 type SelectedPhoto = GalleryPhoto & PhotoMedia & {
   description: string;
   caption: string;
+  stationCaptureTime?: string | null;
+  captureTimeZone?: string | null;
+  serverCaptureTime?: string | null;
 };
 
 type CameraData = {
@@ -56,6 +59,7 @@ type CameraData = {
   printDuration: number;
   printMessage: string | null;
   printTransferred: ByondFlag;
+  serverUtcOffset: string;
 };
 
 const CameraSettings = () => {
@@ -103,22 +107,24 @@ const CameraSettings = () => {
           position="absolute"
           left={0}
           bottom="calc(100% + 0.35rem)"
-          width="16rem"
+          width="20rem"
           style={{ zIndex: 10, boxShadow: '0 0.25rem 0.75rem #0008' }}>
           <Section title="Размер кадра">
             <LabeledList>
               {dimensions.map(({ label, action, value }) => (
                 <LabeledList.Item key={action} label={label}>
-                  {sizes.map(size => (
-                    <Button
-                      key={size}
-                      selected={value === size}
-                      aria-pressed={value === size}
-                      disabled={!!capturing}
-                      onClick={() => act(action, { size })}>
-                      {size}
-                    </Button>
-                  ))}
+                  <Box nowrap>
+                    {sizes.map(size => (
+                      <Button
+                        key={size}
+                        selected={value === size}
+                        aria-pressed={value === size}
+                        disabled={!!capturing}
+                        onClick={() => act(action, { size })}>
+                        {size}
+                      </Button>
+                    ))}
+                  </Box>
                 </LabeledList.Item>
               ))}
             </LabeledList>
@@ -183,7 +189,11 @@ const Viewfinder = () => {
               bold
               lineHeight="2.8rem"
               textAlign="center"
-              onClick={() => act('shutter')}>
+              onClick={() => act('shutter', {
+                timeZone: typeof Intl === 'undefined'
+                  ? null
+                  : Intl.DateTimeFormat().resolvedOptions().timeZone,
+              })}>
               {capturing ? 'Съёмка…' : aiming || blocked ? 'Отменить' : 'Фото'}
             </Button>
           </Stack.Item>
@@ -399,6 +409,60 @@ const PrintPhoto = ({ photo }: { photo: SelectedPhoto }) => {
   );
 };
 
+const formatCaptureTime = (time: number, timeZone: string) =>
+  new Date(time).toLocaleString('ru-RU', {
+    timeZone,
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+
+const PhotoCaptureTime = ({ photo }: { photo: SelectedPhoto }) => {
+  const { data } = useBackend<CameraData>();
+  // Первые 48 бит UUIDv7 хранят время создания в миллисекундах.
+  const capturedAt = parseInt(photo.id.slice(0, 8) + photo.id.slice(9, 13), 16);
+  let clientTime: string | undefined;
+  if (photo.captureTimeZone && Number.isFinite(capturedAt)) {
+    try {
+      clientTime = formatCaptureTime(capturedAt, photo.captureTimeZone);
+    } catch {
+      // Часовой пояс мог быть записан в другой версии WebView.
+    }
+  }
+
+  if (data.tab === 'cloud') {
+    let captureTime = clientTime || photo.serverCaptureTime;
+    if (!captureTime && Number.isFinite(capturedAt)) {
+      // Для старых снимков восстанавливаем дату по UUID.
+      const offset = /^([+-])(\d{2})(\d{2})$/.exec(data.serverUtcOffset);
+      const minutes = offset ? Number(offset[2]) * 60 + Number(offset[3]) : 0;
+      const sign = offset?.[1] === '-' ? -1 : 1;
+      captureTime = formatCaptureTime(capturedAt + sign * minutes * 60_000, 'UTC');
+    }
+    return captureTime && (
+      <Box mt={1}>
+        <LabeledList>
+          <LabeledList.Item label="Дата съёмки">{captureTime}</LabeledList.Item>
+        </LabeledList>
+      </Box>
+    );
+  }
+
+  return (
+    <Box mt={1}>
+      <LabeledList>
+        {!!photo.stationCaptureTime && (
+          <LabeledList.Item label="По станции">{photo.stationCaptureTime}</LabeledList.Item>
+        )}
+        {!!clientTime && <LabeledList.Item label="По местному времени">{clientTime}</LabeledList.Item>}
+      </LabeledList>
+    </Box>
+  );
+};
+
 const PhotoDetails = ({ photo }: { photo: SelectedPhoto }) => {
   const { act, data } = useBackend<CameraData>();
   if (data.printOpen) {
@@ -438,6 +502,7 @@ const PhotoDetails = ({ photo }: { photo: SelectedPhoto }) => {
         <Box mx="auto" style={{ maxWidth: '19rem' }}>
           <PhotoPreview {...photo} />
         </Box>
+        <PhotoCaptureTime photo={photo} />
         {!data.editMode && (
           <>
             {!!photo.description && <Box mt={1} style={{ overflowWrap: 'anywhere' }}>{photo.description}</Box>}

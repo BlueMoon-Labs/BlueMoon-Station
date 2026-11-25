@@ -19,6 +19,9 @@
 	var/base64_cache
 	var/icon/base64_cache_source
 	var/id							//this var is NOT protected because the worst you can do with this that you couldn't do otherwise is overwrite photos, and photos aren't going to be used as attack logs/investigations anytime soon.
+	var/station_capture_time
+	var/capture_time_zone
+	var/server_capture_time
 
 /datum/picture/New(name, desc, image, icon, size_x, size_y, bp, caption_, autogenerate_icon)
 	if(!isnull(name))
@@ -104,6 +107,12 @@
 	.["pixel_size_y"] = psize_y
 	.["blueprints"] = has_blueprints
 	.["logpath"] = logpath
+	if(station_capture_time)
+		.["station_capture_time"] = station_capture_time
+	if(capture_time_zone)
+		.["capture_time_zone"] = capture_time_zone
+	if(server_capture_time)
+		.["server_capture_time"] = server_capture_time
 
 /datum/picture/deserialize_list(list/input, list/options)
 	if(!input["logpath"] || !fexists(input["logpath"]) || !input["id"] || !input["pixel_size_x"] || !input["pixel_size_y"])
@@ -116,6 +125,9 @@
 	id = input["id"]
 	psize_x = input["pixel_size_x"]
 	psize_y = input["pixel_size_y"]
+	station_capture_time = input["station_capture_time"]
+	capture_time_zone = input["capture_time_zone"]
+	server_capture_time = input["server_capture_time"]
 	if(input["blueprints"])
 		has_blueprints = input["blueprints"]
 	if(input["caption"])
@@ -207,6 +219,9 @@
 	P.picture_name = picture_name
 	P.picture_desc = picture_desc
 	P.caption = caption
+	P.station_capture_time = station_capture_time
+	P.capture_time_zone = capture_time_zone
+	P.server_capture_time = server_capture_time
 	if(picture_image)
 		P.picture_image = icon(picture_image)	//Copy, not reference.
 	if(picture_icon)
