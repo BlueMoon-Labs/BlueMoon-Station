@@ -201,6 +201,7 @@
 	var/music_start_time
 	// Слабые ссылки на клиентов и последняя отправленная громкость для каждого.
 	var/list/music_listeners
+	var/music_enabled = FALSE
 
 /obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/Initialize(mapload)
 	. = ..()
@@ -211,6 +212,10 @@
 /obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/Destroy()
 	stop_carpet_music()
 	return ..()
+
+/obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/generate_actions()
+	. = ..()
+	initialize_controller_action_type(/datum/action/vehicle/ridden/scooter/skateboard/toggle_carpet_music, VEHICLE_CONTROL_DRIVE)
 
 /obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/post_buckle_mob(mob/living/M)
 	. = ..()
@@ -225,15 +230,17 @@
 		start_carpet_music()
 
 /obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/post_unbuckle_mob(mob/living/M)
+	var/datum/action/music_action = LAZYACCESSASSOC(occupant_actions, M, /datum/action/vehicle/ridden/scooter/skateboard/toggle_carpet_music)
 	UnregisterSignal(M, list(COMSIG_MOB_CLIENT_LOGIN, COMSIG_MOB_CLIENT_LOGOUT))
 	stop_carpet_music()
 	animate(src, tag = "flying_carpet")
 	animate(M, tag = "flying_carpet")
-	return ..()
+	. = ..()
+	qdel(music_action)
 
 /obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/proc/start_carpet_music()
 	SIGNAL_HANDLER
-	if(music_channel)
+	if(!music_enabled || music_channel)
 		return
 	music_channel = SSsounds.reserve_sound_channel(src)
 	if(!music_channel)
