@@ -81,7 +81,7 @@
 	name = "Corporate Riot Shield implant"
 	desc = "An implanted riot shield, designed to be installed on subject's arm."
 	id = "ci-shield"
-	build_type = PROTOLATHE | MECHFAB
+	build_type = PROTOLATHE
 	materials = list (/datum/material/iron = 8500, /datum/material/glass = 8500, /datum/material/silver = 1800, /datum/material/titanium = 600)
 	construction_time = 200
 	build_path = /obj/item/organ/cyberimp/arm/shield/sec_level
@@ -99,7 +99,7 @@
 	name = "Corporate Blood pump implant"
 	desc = "An emergency blood pump that injects regenerative compounds into the bloodstream when critically injured."
 	id = "ci-bloodpump"
-	build_type = PROTOLATHE | MECHFAB
+	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 5000, /datum/material/gold = 1000)
 	construction_time = 120
 	build_path = /obj/item/organ/cyberimp/chest/blood_pump/sec_level
@@ -117,7 +117,7 @@
 	name = "Corporate chemical sequencer implant"
 	desc = "An emergency blood pump that injects regenerative compounds into the bloodstream when critically injured."
 	id = "ci-chemseq"
-	build_type = PROTOLATHE | MECHFAB
+	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 5000, /datum/material/gold = 1000)
 	construction_time = 120
 	build_path = /obj/item/organ/cyberimp/chest/chem_implant/sec_level
@@ -202,7 +202,7 @@
 	name = "Corporate Anti-Drop Implant"
 	desc = "This cybernetic brain implant will allow you to force your hand muscles to contract, preventing item dropping. Twitch ear to toggle."
 	id = "ci-antidrop"
-	build_type = PROTOLATHE | MECHFAB
+	build_type = PROTOLATHE
 	construction_time = 60
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 400, /datum/material/gold = 400)
 	build_path = /obj/item/organ/cyberimp/brain/anti_drop/sec_level
@@ -220,7 +220,7 @@
 	name = "Corporate CNS Rebooter Implant"
 	desc = "This implant will automatically give you back control over your central nervous system, reducing downtime when stunned."
 	id = "ci-antistun"
-	build_type = PROTOLATHE | MECHFAB
+	build_type = PROTOLATHE
 	construction_time = 60
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 500, /datum/material/gold = 1000)
 	build_path = /obj/item/organ/cyberimp/brain/anti_stun/sec_level
@@ -271,7 +271,7 @@
 	name = "Corporate Reviver Implant"
 	desc = "This implant will attempt to revive you if you lose consciousness. For the faint of heart!"
 	id = "ci-reviver"
-	build_type = PROTOLATHE | MECHFAB
+	build_type = PROTOLATHE
 	construction_time = 60
 	materials = list(/datum/material/iron = 800, /datum/material/glass = 800, /datum/material/gold = 300, /datum/material/uranium = 500)
 	build_path = /obj/item/organ/cyberimp/chest/reviver/sec_level
@@ -333,7 +333,7 @@
 	name = "Corporate Sandevistan"
 	desc = "A corporate-issued neural overclocking implant, tuned for security use. Offers a balanced burst of speed with a reasonable cooldown."
 	id = "ci-sandevistan-corp"
-	build_type = PROTOLATHE | MECHFAB
+	build_type = PROTOLATHE
 	construction_time = 120
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 3000, /datum/material/gold = 2000)
 	build_path = /obj/item/organ/cyberimp/brain/sandevistan/sec_level
@@ -351,7 +351,7 @@
 	name = "Corporate Berserker"
 	desc = "A combat implant that floods the user's system with stimulants, greatly enhancing melee combat at the cost of temporarily disabling ranged weapon use. Mutually exclusive with the sandvistan."
 	id = "ci-berserker-corp"
-	build_type = PROTOLATHE | MECHFAB
+	build_type = PROTOLATHE
 	construction_time = 100
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 3000, /datum/material/silver = 2000)
 	build_path = /obj/item/organ/cyberimp/brain/berserker/sec_level
@@ -402,7 +402,7 @@
 	name = "Corporate Monowire Implant"
 	desc = "A thin monomolecular filament concealed in the forearm, designed to deploy as a razor wire garrote. Occupies both arms when installed."
 	id = "ci-monostring"
-	build_type = PROTOLATHE | MECHFAB
+	build_type = PROTOLATHE
 	construction_time = 120
 	materials = list(/datum/material/iron = 4000, /datum/material/glass = 1500, /datum/material/silver = 2000, /datum/material/diamond = 500)
 	build_path = /obj/item/organ/cyberimp/arm/monostring/sec_level
@@ -420,7 +420,7 @@
 	name = "Corporate Gorilla Arms Implant"
 	desc = "Reinforced myomer actuators integrated into both arms. Passively enhances punch damage, allows forcing airlocks open with an alt-click, and stabilizes your arms to fully negate weapon recoil. Occupies both arms when installed."
 	id = "ci-gorilla-arms"
-	build_type = PROTOLATHE | MECHFAB
+	build_type = PROTOLATHE
 	construction_time = 150
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 2000, /datum/material/silver = 3000, /datum/material/gold = 2000)
 	build_path = /obj/item/organ/cyberimp/arm/gorilla/sec_level
@@ -438,7 +438,7 @@
 	name = "Corporate Integrated Hand Cannon Implant"
 	desc = "A compact, arm-integrated explosive launcher. The barrel deploys from the forearm and retracts when not in use."
 	id = "ci-handcannon"
-	build_type = PROTOLATHE | MECHFAB
+	build_type = PROTOLATHE
 	construction_time = 120
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 3000, /datum/material/silver = 3000, /datum/material/gold = 2000)
 	build_path = /obj/item/organ/cyberimp/arm/handgun/sec_level
@@ -479,7 +479,7 @@
 	name = "Corporate Mantis Blade Implant"
 	desc = "A long, sharp, mantis-like blade installed within the forearm, acting as a deadly self defense weapon."
 	id = "ci-mantis"
-	build_type = PROTOLATHE | MECHFAB
+	build_type = PROTOLATHE
 	materials = list (/datum/material/iron = 3500, /datum/material/glass = 1500, /datum/material/silver = 1500)
 	construction_time = 200
 	build_path = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level
