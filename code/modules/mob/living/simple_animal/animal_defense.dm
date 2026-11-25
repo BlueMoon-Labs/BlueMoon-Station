@@ -134,7 +134,7 @@
 	if(simple_mob_flags & SIMPLE_MOB_PROJECTILE_ARMOR)
 		blocked = max(blocked, run_armor_check(def_zone, Proj.flag, armour_penetration = Proj.armour_penetration, silent = TRUE))
 	var/damage = Proj.damage
-	if(!mind) // бонусы по симпл-мобам не должны работать на тела, занятые игроками
+	if(!client) // активный игрок отсутствует: mind может остаться после SSD, но тело уже не управляется
 		damage = damage * Proj.simple_mob_damage_multiplier + Proj.simple_mob_no_mind_damage_bonus
 	apply_damage(damage, Proj.damage_type, 0, blocked)
 	Proj.on_hit(src)

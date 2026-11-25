@@ -147,7 +147,7 @@
 		new /datum/data/mining_equipment("С-02 Permit",						/obj/item/clothing/accessory/permit/special/c_02,				5000,		"Elite"),
 		new /datum/data/mining_equipment("Budget tactical first aid",		/obj/item/storage/firstaid/tactical/vanguard,					10000,		"Elite"),
 		new /datum/data/mining_equipment("WT-550 PDW",						/obj/item/gun/ballistic/automatic/wt550/vanguard,				12000,		"Elite"),
-		new /datum/data/mining_equipment("Department Prototlathe beacon",	/obj/item/choice_beacon/departmental_protholate,				15000,		"Elite"),
+		new /datum/data/mining_equipment("Department Prototlathe beacon",	/obj/item/choice_beacon/departmental_protholate,				20000,		"Elite"),
 		new /datum/data/mining_equipment("Vanguard AEG",					/obj/item/gun/energy/e_gun/nuclear/vanguard,					25000,		"Elite"),
 		new /datum/data/mining_equipment("Civillian Syndicate ID card",		/obj/item/card/id/syndicate/one_access_copy,					25000,		"Elite"),
 //		new /datum/data/mining_equipment("ERT MOD Suit",					/obj/item/mod/control/pre_equipped/responsory,					50000,		"Elite"),

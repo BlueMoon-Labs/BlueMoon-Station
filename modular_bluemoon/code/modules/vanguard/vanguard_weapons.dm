@@ -401,7 +401,7 @@
 /obj/item/ammo_box/magazine/wt550m9/wthunt
 	name = "wt550 magazine (Hunting rounds 4.6x30mm)"
 	icon_state = "46x30mmt-20"
-	ammo_type = /obj/item/projectile/bullet/c46x30mm/hunt
+	ammo_type = /obj/item/ammo_casing/c46x30mm/hunting
 
 /obj/item/gun/energy/e_gun/nuclear/vanguard
 	pin = /obj/item/firing_pin/explorer

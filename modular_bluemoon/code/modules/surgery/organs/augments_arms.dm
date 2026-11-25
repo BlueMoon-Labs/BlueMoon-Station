@@ -797,7 +797,7 @@
 /obj/item/projectile/bullet/implanthandgun
 	name = "explosive charge"
 	icon_state = "missile"
-	damage = 35
+	damage = 50
 	range = 15
 	knockdown = 0
 	stun = 0
