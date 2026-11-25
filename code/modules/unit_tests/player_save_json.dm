@@ -403,6 +403,119 @@
 	TEST_ASSERT_EQUAL(consent, FALSE, "миграция стёрла дополнительную настройку Sand")
 	prefs.path = null
 
+/datum/unit_test/player_save_json/pda_album_migration
+	var/fixture_directory
+
+/datum/unit_test/player_save_json/pda_album_migration/Destroy()
+	. = ..()
+	if(fixture_directory)
+		fdel(fixture_directory)
+
+/datum/unit_test/player_save_json/pda_album_migration/proc/write_album(path, entries)
+	var/savefile/album = new(path)
+	album["photos"] << entries
+	album.Flush()
+
+/datum/unit_test/player_save_json/pda_album_migration/Run()
+	var/account_key = "ztestpda[ckey(rustg_generate_uuid_v4())]"
+	fixture_directory = "data/player_saves/z/[account_key]/"
+	test_path = "[fixture_directory]preferences.sav"
+	var/datum/player_save_json/account/account = new(test_path)
+	var/datum/player_save_document/root = account.snapshot()
+	TEST_ASSERT_NOTNULL(root, "не удалось открыть тестовые настройки")
+	root.write("version", 88)
+	TEST_ASSERT(root.commit(), "не записаны настройки версии 88")
+
+	var/album_path = personal_photo_album_path(account_key)
+	var/cloud = pda_photo_cloud_path(account_key)
+	var/list/photo_data = list("name" = "Исходное название", "pixel_size_x" = 32, "pixel_size_y" = 32)
+	var/list/entry = list(
+		"picture" = photo_data,
+		"image" = icon('icons/obj/items_and_weapons.dmi', "photo"),
+		"name" = "Подписанный снимок",
+		"desc" = "Описание снимка",
+		"scribble" = "Надпись на обороте",
+	)
+	var/list/entries = list(entry, entry.Copy(), list("picture" = photo_data))
+	write_album(album_path, entries)
+	var/source_hash = rustg_hash_file(RUSTG_HASH_SHA256, album_path)
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.load_preferences(TRUE), "ошибка одного снимка помешала загрузке настроек")
+	TEST_ASSERT_EQUAL(prefs.open_player_document()?.read("version"), 88, "версия обновилась до завершения переноса")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_SHA256, album_path), source_hash, "перенос изменил альбом")
+	var/list/ids = pda_photo_cloud_ids(cloud)
+	TEST_ASSERT_EQUAL(length(ids), 2, "не перенесены оба одинаковых отпечатка")
+	var/edited_path = "[cloud][ids[1]].sav"
+	var/datum/picture/photo = read_pda_cloud_photo(edited_path, TRUE)
+	TEST_ASSERT_NOTNULL(photo, "снимок не читается из облака")
+	allocated += photo
+	TEST_ASSERT(isicon(photo.picture_image), "при переносе потерялось изображение")
+	TEST_ASSERT_EQUAL(photo.picture_name, "Подписанный снимок", "потеряно название отпечатка")
+	TEST_ASSERT_EQUAL(photo.picture_desc, "Описание снимка", "потеряно описание отпечатка")
+	TEST_ASSERT_EQUAL(photo.caption, "Надпись на обороте", "потеряна надпись на обороте")
+	TEST_ASSERT(read_pda_cloud_photo(edited_path)?["thumbnail"], "при переносе не создана миниатюра")
+	photo.caption = "Изменено в облаке"
+	TEST_ASSERT(save_pda_cloud_photo(edited_path, photo, null), "не сохранено изменение в облаке")
+
+	entries[3] = list("picture" = photo_data, "url" = "https://example.invalid/photo.png")
+	write_album("[album_path].bak", entries)
+	write_album(album_path, "повреждённый архив")
+	TEST_ASSERT(prefs.load_preferences(TRUE), "перенос из резервного архива сорвал загрузку")
+	TEST_ASSERT_EQUAL(prefs.open_player_document()?.read("version"), current_save_version(), "после переноса версия не обновилась")
+	var/list/retried_ids = pda_photo_cloud_ids(cloud)
+	TEST_ASSERT_EQUAL(length(retried_ids), 3, "повторный перенос создал дубликаты или пропустил снимок по ссылке")
+	var/datum/picture/edited = read_pda_cloud_photo(edited_path, TRUE)
+	TEST_ASSERT_NOTNULL(edited, "повторный перенос потерял изменённый снимок")
+	allocated += edited
+	TEST_ASSERT_EQUAL(edited.caption, "Изменено в облаке", "повторный перенос перезаписал изменения в облаке")
+	var/list/new_ids = retried_ids - ids
+	var/url_path = "[cloud][new_ids[1]].sav"
+	var/datum/picture/url_photo = read_pda_cloud_photo(url_path, TRUE)
+	TEST_ASSERT_NOTNULL(url_photo, "снимок по ссылке не читается")
+	allocated += url_photo
+	TEST_ASSERT_EQUAL(url_photo.picture_url, "https://example.invalid/photo.png", "потеряна ссылка")
+	TEST_ASSERT(delete_pda_cloud_photo(url_path), "не удалён снимок из облака")
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не читаются настройки после переноса")
+	TEST_ASSERT_EQUAL(length(pda_photo_cloud_ids(cloud)), 2, "удалённый снимок вернулся после завершения переноса")
+
+/datum/unit_test/player_save_json/pda_legacy_album_migration
+	var/fixture_directory
+	var/log_directory
+
+/datum/unit_test/player_save_json/pda_legacy_album_migration/Destroy()
+	. = ..()
+	if(fixture_directory)
+		fdel(fixture_directory)
+	if(log_directory)
+		fdel(log_directory)
+
+/datum/unit_test/player_save_json/pda_legacy_album_migration/Run()
+	var/account_key = "ztestpda[ckey(rustg_generate_uuid_v4())]"
+	fixture_directory = "data/player_saves/z/[account_key]/"
+	test_path = "[fixture_directory]preferences.sav"
+	log_directory = "data/picture_logs/[account_key]/"
+	var/id = "O_[account_key]_1"
+	var/image_path = "[log_directory]1.png"
+	TEST_ASSERT(fcopy(icon('icons/obj/items_and_weapons.dmi', "photo"), image_path), "не записано изображение для старого альбома")
+	var/list/metadata = list()
+	metadata[id] = json_encode(list("id" = id, "logpath" = image_path, "name" = "Старый снимок", "pixel_size_x" = 32, "pixel_size_y" = 32))
+	TEST_ASSERT(text2file(json_encode(metadata), "[log_directory]metadata.json"), "не записаны метаданные старого альбома")
+	var/list/albums = list()
+	albums["personal_[uppertext(account_key)]"] = list(id)
+	albums["personal_[account_key]"] = list(id)
+	albums["Captain"] = list("чужая фотография")
+	var/list/ids = personal_photo_album_legacy_ids(account_key, albums)
+	TEST_ASSERT_EQUAL(length(ids), 1, "старый список потерял снимок, задвоил его или включил общий альбом")
+	var/cloud = pda_photo_cloud_path(account_key)
+	TEST_ASSERT(import_pda_legacy_album(cloud, ids), "не перенесён снимок из старого журнала")
+	var/list/cloud_ids = pda_photo_cloud_ids(cloud)
+	TEST_ASSERT_EQUAL(length(cloud_ids), 1, "в облаке отсутствует снимок из старого журнала")
+	var/datum/picture/photo = read_pda_cloud_photo("[cloud][cloud_ids[1]].sav", TRUE)
+	TEST_ASSERT_NOTNULL(photo, "снимок из старого журнала не открывается")
+	allocated += photo
+	TEST_ASSERT_EQUAL(photo.picture_name, "Старый снимок", "потеряны метаданные снимка")
+	TEST_ASSERT(isicon(photo.picture_image), "потеряно изображение снимка")
+
 /datum/unit_test/player_save_json/partial_write_preserves_hidden_slots/Run()
 	var/savefile/source = prepare()
 	source["version"] << 80

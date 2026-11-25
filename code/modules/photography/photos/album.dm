@@ -120,20 +120,12 @@
 		if(!previous.save_contents())
 			return
 
-	var/path = "data/player_saves/[owner_ckey[1]]/[owner_ckey]/photo_album.sav"
+	var/path = personal_photo_album_path(owner_ckey)
 	if(fexists(path) || fexists("[path].bak"))
 		if(!restore_contents(path) && !restore_contents("[path].bak"))
 			return
 	else
-		var/list/legacy_data = SSpersistence.GetPhotoAlbums()
-		var/list/legacy_ids = legacy_data?["personal_[player_key]"]
-		if(isnull(legacy_ids))
-			// В старом файле использовался key с исходным регистром, а не ckey.
-			for(var/legacy_key in legacy_data)
-				if(findtext(legacy_key, "personal_", 1, 10) && ckey(copytext(legacy_key, 10)) == owner_ckey)
-					legacy_ids = legacy_data[legacy_key]
-					break
-		populate_from_id_list(legacy_ids)
+		populate_from_id_list(personal_photo_album_legacy_ids(owner_ckey, SSpersistence.GetPhotoAlbums()))
 
 	if(previous)
 		previous.account_key = null
@@ -144,16 +136,31 @@
 	if(!fexists(path) && length(contents))
 		queue_save()
 
-/obj/item/storage/photo_album/personal/proc/restore_contents(path)
+/proc/personal_photo_album_path(owner_ckey)
+	return "data/player_saves/[owner_ckey[1]]/[owner_ckey]/photo_album.sav"
+
+/proc/personal_photo_album_legacy_ids(owner_ckey, list/albums)
+	var/list/ids = list()
+	// В старом файле для одного аккаунта могли сохраниться разные варианты написания key.
+	for(var/album_key in albums)
+		if(findtext(album_key, "personal_", 1, 10) && ckey(copytext(album_key, 10)) == owner_ckey && islist(albums[album_key]))
+			ids |= albums[album_key]
+	return ids
+
+/proc/read_personal_photo_album(path)
 	if(!fexists(path))
-		return FALSE
+		return null
 	var/list/entries
 	try
 		var/savefile/archive = new(path)
 		archive["photos"] >> entries
 	catch(var/exception/error)
 		stack_trace("Не удалось прочитать личный фотоальбом [path]: [error]")
-		return FALSE
+		return null
+	return entries
+
+/obj/item/storage/photo_album/personal/proc/restore_contents(path)
+	var/list/entries = read_personal_photo_album(path)
 	if(!islist(entries))
 		return FALSE
 	for(var/list/entry as anything in entries)

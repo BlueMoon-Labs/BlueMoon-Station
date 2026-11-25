@@ -5,7 +5,10 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	88
+#define SAVEFILE_VERSION_MAX	89
+
+/datum/preferences
+	var/tmp/pending_savefile_version
 
 /// Обычная запись идёт прямо в документ; экспорт и миграции сохраняют путь через savefile.
 
@@ -174,6 +177,14 @@
 
 	if(current_version < 88)
 		dynamic_window_size = initial(dynamic_window_size)
+
+	if(current_version < 89 && path)
+		pending_savefile_version = null
+		var/account_key = player_save_ckey()
+		if(!migrate_personal_album_to_pda_cloud(account_key))
+			// Остальные настройки сохраняются штатно, а перенос повторится при следующей загрузке.
+			pending_savefile_version = 88
+			log_game("Не завершён перенос личного фотоальбома в облако ПДА для [account_key].")
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -1295,7 +1306,7 @@ GLOBAL_VAR(player_save_migration_timer)
 		S.cd = "/"
 	write_pending_single_prefs(S, document)
 
-	WRITE_PLAYER_SAVE(S, document, "version" , SAVEFILE_VERSION_MAX)		//updates (or failing that the sanity checks) will ensure data is not invalid at load. Assume up-to-date
+	WRITE_PLAYER_SAVE(S, document, "version", (pending_savefile_version || SAVEFILE_VERSION_MAX))
 
 	//general preferences
 	WRITE_PLAYER_SAVE(S, document, "ooccolor", ooccolor)
