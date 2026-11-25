@@ -1,3 +1,16 @@
+#define PDA_PHOTO_THUMBNAIL_SIZE 96
+
+/proc/pda_photo_thumbnail(icon/source)
+	if(!source)
+		return null
+	var/icon/thumbnail = icon(source)
+	var/width = thumbnail.Width()
+	var/height = thumbnail.Height()
+	var/scale = PDA_PHOTO_THUMBNAIL_SIZE / max(width, height)
+	if(scale < 1)
+		thumbnail.Scale(max(1, round(width * scale)), max(1, round(height * scale)))
+	return icon2base64(thumbnail)
+
 /proc/pda_photo_cloud_path(account_key)
 	var/player_key = ckey(account_key)
 	if(player_key)
@@ -25,9 +38,17 @@
 		archive["photo"] >> metadata
 		if(!islist(metadata))
 			return null
-		if(!with_image)
-			return metadata
 		var/image_data
+		if(!with_image)
+			var/thumbnail
+			archive["thumbnail"] >> thumbnail
+			if(!istext(thumbnail) || !length(thumbnail))
+				// Старые сохранения содержат только полноразмерный снимок.
+				archive["image"] >> image_data
+				if(isicon(image_data))
+					thumbnail = pda_photo_thumbnail(image_data)
+			metadata["thumbnail"] = thumbnail
+			return metadata
 		archive["image"] >> image_data
 		if(!isicon(image_data))
 			return null
@@ -39,13 +60,14 @@
 		stack_trace("Не удалось прочитать облачную фотографию [path]: [error]")
 		return null
 
-/proc/save_pda_cloud_photo(path, datum/picture/picture)
+/proc/save_pda_cloud_photo(path, datum/picture/picture, thumbnail)
 	var/temp_path = "[path].tmp"
 	fdel(temp_path)
 	try
 		var/savefile/archive = new(temp_path)
 		archive["photo"] << picture.serialize_list()
 		archive["image"] << picture.picture_image
+		archive["thumbnail"] << (thumbnail || pda_photo_thumbnail(picture.picture_image))
 		archive.Flush()
 	catch(var/exception/error)
 		stack_trace("Не удалось записать облачную фотографию [path]: [error]")
@@ -59,3 +81,5 @@
 /proc/delete_pda_cloud_photo(path)
 	var/backup = "[path].bak"
 	return (!fexists(backup) || fdel(backup)) && (!fexists(path) || fdel(path))
+
+#undef PDA_PHOTO_THUMBNAIL_SIZE

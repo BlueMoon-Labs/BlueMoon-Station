@@ -1,6 +1,6 @@
-#define PDA_CAMERA_PAGE_SIZE 8
-#define PDA_CAMERA_PRINT_TIME (2.5 SECONDS)
-#define PDA_CAMERA_SIZE 3
+#define PDA_CAMERA_PAGE_SIZE 12
+#define PDA_CAMERA_PRINT_UPLOAD_TIME (2.5 SECONDS)
+#define PDA_CAMERA_MAX_RADIUS 3
 
 /datum/computer_file/program/pda_camera
 	filename = "Camera"
@@ -31,14 +31,18 @@
 	var/print_open = FALSE
 	var/print_message
 	var/datum/weakref/printer_ref
-	var/print_timer
+	var/print_upload_timer
 	var/print_job = 0
-	var/print_completed = FALSE
+	var/print_transferred = FALSE
+	var/frame_radius_x = PDA_CAMERA_MAX_RADIUS
+	var/frame_radius_y = PDA_CAMERA_MAX_RADIUS
+	var/list/local_thumbnails
 
 /datum/computer_file/program/pda_camera/Destroy()
 	close_camera_window()
 	QDEL_LIST_ASSOC_VAL(local_photos)
 	local_photos = null
+	local_thumbnails = null
 	return ..()
 
 /datum/computer_file/program/pda_camera/kill_program(forced = FALSE)
@@ -110,10 +114,10 @@
 	tab = "camera"
 
 /datum/computer_file/program/pda_camera/proc/clear_selection()
-	cancel_print()
+	cancel_print_upload()
 	print_open = FALSE
 	print_message = null
-	print_completed = FALSE
+	print_transferred = FALSE
 	edit_mode = null
 	selected_id = null
 	QDEL_NULL(cloud_selection)
@@ -123,7 +127,8 @@
 		"nameLimit" = PHOTO_NAME_LIMIT,
 		"descriptionLimit" = PHOTO_DESCRIPTION_LIMIT,
 		"captionLimit" = PHOTO_CAPTION_LIMIT,
-		"printDuration" = PDA_CAMERA_PRINT_TIME * 100,
+		"printDuration" = PDA_CAMERA_PRINT_UPLOAD_TIME * 100,
+		"maxFrameSize" = PDA_CAMERA_MAX_RADIUS * 2 + 1,
 	)
 
 /datum/computer_file/program/pda_camera/ui_data(mob/user)
@@ -132,6 +137,8 @@
 		return data
 	data["tab"] = tab
 	data["flash"] = flash_enabled
+	data["frameWidth"] = frame_radius_x * 2 + 1
+	data["frameHeight"] = frame_radius_y * 2 + 1
 	data["viewfinder"] = aiming ? "aiming" : (aim_requested ? "blocked" : "idle")
 	data["capturing"] = capturing
 	data["localCount"] = length(local_photos)
@@ -140,8 +147,8 @@
 	data["editMode"] = edit_mode
 	data["printOpen"] = print_open
 	data["printMessage"] = print_message
-	data["printJob"] = print_timer ? print_job : null
-	data["printCompleted"] = print_completed
+	data["printJob"] = print_upload_timer ? print_job : null
+	data["printTransferred"] = print_transferred
 	var/datum/picture/selected = get_selection()
 	if(selected)
 		var/list/photo = list(
@@ -151,9 +158,9 @@
 			"caption" = selected.caption ? html_decode(selected.caption) : "",
 		)
 		if(print_open)
-			var/obj/machinery/photocopier/printer = print_timer ? printer_ref?.resolve() : find_printer(user)
+			var/obj/machinery/photocopier/printer = print_upload_timer ? printer_ref?.resolve() : find_printer(user)
 			data["printerNearby"] = !!printer
-			data["printerError"] = (!print_timer && printer) ? printer.pda_photo_print_error() : null
+			data["printerError"] = (!print_upload_timer && printer) ? printer.pda_photo_print_error() : null
 		else
 			photo["uploaded"] = (tab == "local" && is_uploaded(selected_id))
 			photo += selected.photo_ui_media()
@@ -173,6 +180,15 @@
 			if(tab != "camera" || capturing)
 				return FALSE
 			flash_enabled = !flash_enabled
+		if("set_width", "set_height")
+			var/size = params["size"]
+			if(tab != "camera" || capturing || !isnum(size))
+				return FALSE
+			var/radius = clamp(round(size / 2), 0, PDA_CAMERA_MAX_RADIUS)
+			if(action == "set_width")
+				frame_radius_x = radius
+			else
+				frame_radius_y = radius
 		if("shutter")
 			if(tab != "camera" || capturing)
 				return FALSE
@@ -241,15 +257,15 @@
 			print_open = TRUE
 			ui.set_autoupdate(TRUE)
 		if("start_print")
-			if(!print_open || print_timer || params["id"] != selected_id)
+			if(!print_open || print_upload_timer || params["id"] != selected_id)
 				return FALSE
 			if(!start_print(user))
 				return FALSE
 		if("cancel_print")
-			cancel_print()
+			cancel_print_upload()
 			print_open = FALSE
 			print_message = null
-			print_completed = FALSE
+			print_transferred = FALSE
 			ui.set_autoupdate(FALSE)
 		else
 			return FALSE
@@ -302,17 +318,17 @@
 	stop_aiming()
 	capturing = TRUE
 	COOLDOWN_START(src, shutter_cooldown, 1 SECONDS)
-	INVOKE_ASYNC(src, PROC_REF(take_picture), center, user, flash_enabled)
+	INVOKE_ASYNC(src, PROC_REF(take_picture), center, user, flash_enabled, frame_radius_x, frame_radius_y)
 	return COMSIG_MOB_CANCEL_CLICKON
 
-/datum/computer_file/program/pda_camera/proc/take_picture(turf/center, mob/user, use_flash)
+/datum/computer_file/program/pda_camera/proc/take_picture(turf/center, mob/user, use_flash, radius_x, radius_y)
 	if(QDELETED(src) || QDELETED(computer))
 		return
 	var/turf/device_turf = get_turf(computer)
 	if(use_flash && device_turf)
 		device_turf.flash_lighting_fx(8)
 	play_camera_shutter(computer)
-	var/datum/picture/picture = capture_camera_picture(center, user, PDA_CAMERA_SIZE, PDA_CAMERA_SIZE, use_flash)
+	var/datum/picture/picture = capture_camera_picture(center, user, radius_x, radius_y, use_flash)
 	if(QDELETED(src))
 		qdel(picture)
 		return
@@ -349,15 +365,27 @@
 	for(var/index = start to min(start + PDA_CAMERA_PAGE_SIZE - 1, length(gallery_ids)))
 		var/id = gallery_ids[index]
 		var/photo_name
+		var/thumbnail
 		if(tab == "cloud")
 			var/list/metadata = read_pda_cloud_photo(cloud_photo_path(id))
 			if(!metadata)
 				continue
 			photo_name = metadata["name"]
+			thumbnail = metadata["thumbnail"]
 		else
 			var/datum/picture/photo = local_photos[id]
 			photo_name = photo.picture_name
-		gallery_rows += list(list("id" = id, "name" = html_decode(photo_name), "uploaded" = (tab == "local" && is_uploaded(id))))
+			thumbnail = local_thumbnails?[id]
+			if(!thumbnail)
+				thumbnail = pda_photo_thumbnail(photo.picture_image)
+				LAZYINITLIST(local_thumbnails)
+				local_thumbnails[id] = thumbnail
+		gallery_rows += list(list(
+			"id" = id,
+			"name" = html_decode(photo_name),
+			"thumbnail" = thumbnail,
+			"uploaded" = (tab == "local" && is_uploaded(id)),
+		))
 
 /datum/computer_file/program/pda_camera/proc/save_selection(list/params, mob/user)
 	var/datum/picture/selected = get_selection()
@@ -374,7 +402,7 @@
 	if(params["description"] != html_decode(selected.picture_desc))
 		edited.picture_desc = html_encode_readable(trim(strip_control_chars(params["description"]), PHOTO_DESCRIPTION_LIMIT + 1))
 	edited.caption = html_encode_readable(trim(strip_control_chars(params["caption"]), PHOTO_CAPTION_LIMIT + 1))
-	var/saved = save_pda_cloud_photo(cloud_photo_path(selected_id), edited)
+	var/saved = save_pda_cloud_photo(cloud_photo_path(selected_id), edited, local_thumbnails?[selected_id])
 	if(saved)
 		selected.picture_name = edited.picture_name
 		selected.picture_desc = edited.picture_desc
@@ -415,35 +443,33 @@
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_print_moved))
 	RegisterSignal(computer, COMSIG_MOVABLE_MOVED, PROC_REF(on_print_moved))
 	print_message = null
-	print_completed = FALSE
+	print_transferred = FALSE
 	print_job++
-	print_timer = addtimer(CALLBACK(src, PROC_REF(finish_print), print_job), PDA_CAMERA_PRINT_TIME, TIMER_STOPPABLE)
-	printer.start_pda_photo_print()
+	print_upload_timer = addtimer(CALLBACK(src, PROC_REF(finish_print_upload), print_job), PDA_CAMERA_PRINT_UPLOAD_TIME, TIMER_STOPPABLE)
+	computer.play_ping()
 	return TRUE
 
 /datum/computer_file/program/pda_camera/proc/on_print_moved(datum/source)
 	SIGNAL_HANDLER
 	if(in_printer_range(printer_ref?.resolve(), viewer_ref?.resolve()))
 		return
-	cancel_print("Печать отменена. Подойдите вплотную к принтеру.")
+	cancel_print_upload("Передача отменена. Подойдите вплотную к принтеру.")
 	INVOKE_ASYNC(src, PROC_REF(push_update))
 
 /datum/computer_file/program/pda_camera/proc/on_printer_deleted(obj/machinery/photocopier/printer)
 	SIGNAL_HANDLER
-	cancel_print("Печать отменена. Принтер уничтожен.", printer)
+	cancel_print_upload("Передача отменена. Принтер уничтожен.", printer)
 	INVOKE_ASYNC(src, PROC_REF(push_update))
 
-/datum/computer_file/program/pda_camera/proc/cancel_print(message, obj/machinery/photocopier/deleted_printer)
-	if(!print_timer)
+/datum/computer_file/program/pda_camera/proc/cancel_print_upload(message, obj/machinery/photocopier/deleted_printer)
+	if(!print_upload_timer)
 		return
-	deltimer(print_timer)
-	print_timer = null
+	deltimer(print_upload_timer)
+	print_upload_timer = null
 	var/obj/machinery/photocopier/printer = deleted_printer || printer_ref?.resolve()
 	printer_ref = null
 	if(printer)
 		UnregisterSignal(printer, list(COMSIG_PARENT_QDELETING, COMSIG_MOVABLE_MOVED))
-		if(!QDELETED(printer))
-			printer.reset_busy()
 	var/mob/viewer = viewer_ref?.resolve()
 	if(viewer)
 		UnregisterSignal(viewer, COMSIG_MOVABLE_MOVED)
@@ -451,8 +477,8 @@
 		UnregisterSignal(computer, COMSIG_MOVABLE_MOVED)
 	print_message = message
 
-/datum/computer_file/program/pda_camera/proc/finish_print(job)
-	if(!print_timer || job != print_job)
+/datum/computer_file/program/pda_camera/proc/finish_print_upload(job)
+	if(!print_upload_timer || job != print_job)
 		return
 	var/mob/viewer = viewer_ref?.resolve()
 	var/datum/tgui/ui = viewer_ui_ref?.resolve()
@@ -460,16 +486,13 @@
 	var/datum/picture/selected = get_selection()
 	ui?.process_status()
 	if(!viewer?.client || !ui || ui.closing || ui.status != UI_INTERACTIVE || !selected || !in_printer_range(printer, viewer))
-		cancel_print("Печать отменена.")
+		cancel_print_upload("Передача отменена.")
 	else
-		var/error_message = printer.pda_photo_print_error(FALSE)
-		if(!error_message && printer.finish_pda_photo_print(selected))
-			cancel_print("Фотография напечатана.")
-			print_completed = TRUE
-		else
-			cancel_print(error_message || "Печать отменена.")
+		var/error_message = printer.start_pda_photo_print(selected)
+		print_transferred = !error_message
+		cancel_print_upload(error_message || "Фотография передана на принтер.")
 	push_update()
 
 #undef PDA_CAMERA_PAGE_SIZE
-#undef PDA_CAMERA_PRINT_TIME
-#undef PDA_CAMERA_SIZE
+#undef PDA_CAMERA_PRINT_UPLOAD_TIME
+#undef PDA_CAMERA_MAX_RADIUS

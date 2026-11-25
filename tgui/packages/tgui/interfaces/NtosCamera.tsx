@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useBackend } from '../backend';
 import {
@@ -6,6 +6,7 @@ import {
   Button,
   Icon,
   Input,
+  LabeledList,
   NoticeBox,
   ProgressBar,
   Section,
@@ -22,6 +23,7 @@ type ByondFlag = boolean | 0 | 1;
 type GalleryPhoto = {
   id: string;
   name: string;
+  thumbnail?: string | null;
   uploaded?: ByondFlag;
 };
 
@@ -33,6 +35,9 @@ type SelectedPhoto = GalleryPhoto & PhotoMedia & {
 type CameraData = {
   tab: CameraTab;
   flash: ByondFlag;
+  frameWidth: number;
+  frameHeight: number;
+  maxFrameSize: number;
   viewfinder: 'idle' | 'aiming' | 'blocked';
   capturing: ByondFlag;
   localCount: number;
@@ -50,7 +55,78 @@ type CameraData = {
   printJob: number | null;
   printDuration: number;
   printMessage: string | null;
-  printCompleted: ByondFlag;
+  printTransferred: ByondFlag;
+};
+
+const CameraSettings = () => {
+  const { act, data } = useBackend<CameraData>();
+  const { frameWidth, frameHeight, maxFrameSize, capturing } = data;
+  const [open, setOpen] = useState(false);
+  const container = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const closeOutside = (event: MouseEvent) => {
+      if (!container.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('click', closeOutside, true);
+    return () => document.removeEventListener('click', closeOutside, true);
+  }, [open]);
+
+  const dimensions = [
+    { label: 'Ширина, м', action: 'set_width', value: frameWidth },
+    { label: 'Высота, м', action: 'set_height', value: frameHeight },
+  ];
+  const sizes = Array.from({ length: Math.ceil(maxFrameSize / 2) }, (_, index) => index * 2 + 1);
+
+  return (
+    <div ref={container} style={{ position: 'relative' }}>
+      <Button
+        icon="cog"
+        selected={open}
+        disabled={!!capturing}
+        aria-label="Настройки кадра"
+        aria-expanded={open}
+        width="3.5rem"
+        lineHeight="2.8rem"
+        textAlign="center"
+        onClick={() => setOpen(true)}
+      />
+      {open && (
+        <Box
+          role="dialog"
+          aria-label="Размер кадра"
+          position="absolute"
+          left={0}
+          bottom="calc(100% + 0.35rem)"
+          width="16rem"
+          style={{ zIndex: 10, boxShadow: '0 0.25rem 0.75rem #0008' }}>
+          <Section title="Размер кадра">
+            <LabeledList>
+              {dimensions.map(({ label, action, value }) => (
+                <LabeledList.Item key={action} label={label}>
+                  {sizes.map(size => (
+                    <Button
+                      key={size}
+                      selected={value === size}
+                      aria-pressed={value === size}
+                      disabled={!!capturing}
+                      onClick={() => act(action, { size })}>
+                      {size}
+                    </Button>
+                  ))}
+                </LabeledList.Item>
+              ))}
+            </LabeledList>
+          </Section>
+        </Box>
+      )}
+    </div>
+  );
 };
 
 const Viewfinder = () => {
@@ -95,6 +171,9 @@ const Viewfinder = () => {
               onClick={() => act('toggle_flash')}
             />
           </Stack.Item>
+          <Stack.Item>
+            <CameraSettings />
+          </Stack.Item>
           <Stack.Item grow>
             <Button
               fluid
@@ -135,33 +214,55 @@ const GalleryGrid = () => {
         <Box
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(8rem, 1fr))',
+            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
             gap: '0.5rem',
           }}>
-          {gallery.map(({ id, name, uploaded }) => (
-            <Button
+          {gallery.map(({ id, name, thumbnail, uploaded }) => (
+            <button
               key={id}
-              fluid
-              height="6rem"
-              lineHeight="normal"
-              textAlign="center"
-              tooltip={name}
+              type="button"
+              title={name}
+              aria-label={name}
               style={{
+                position: 'relative',
                 display: 'grid',
-                placeContent: 'center',
+                placeItems: 'center',
+                aspectRatio: '1 / 1',
                 minWidth: 0,
-                overflowWrap: 'anywhere',
-                whiteSpace: 'normal',
+                overflow: 'hidden',
+                padding: 0,
+                border: '1px solid #ffffff40',
+                background: '#181c23',
+                color: '#aeb8c2',
+                cursor: 'pointer',
               }}
               onClick={() => act('select', { id })}>
-              <Box mb={0.5}>
+              {thumbnail ? (
+                <img
+                  src={`data:image/png;base64,${thumbnail}`}
+                  alt=""
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    imageRendering: 'pixelated',
+                  }}
+                />
+              ) : (
                 <Icon name="image" size={1.75} />
-              </Box>
-              <Box>
-                {name}
-                {!!uploaded && <Icon name="check" color="blue" ml={0.5} />}
-              </Box>
-            </Button>
+              )}
+              {!!uploaded && (
+                <Box
+                  position="absolute"
+                  top={0.25}
+                  right={0.25}
+                  px={0.25}
+                  backgroundColor="#000b"
+                  style={{ borderRadius: '0.2rem' }}>
+                  <Icon name="check" color="blue" />
+                </Box>
+              )}
+            </button>
           ))}
         </Box>
       ) : (
@@ -175,6 +276,7 @@ const GalleryGrid = () => {
             <Button
               icon="chevron-left"
               tooltip="Предыдущая страница"
+              aria-label="Предыдущая страница"
               disabled={page <= 1}
               onClick={() => act('page', { page: page - 1 })}
             />
@@ -184,6 +286,7 @@ const GalleryGrid = () => {
             <Button
               icon="chevron-right"
               tooltip="Следующая страница"
+              aria-label="Следующая страница"
               disabled={page >= pages}
               onClick={() => act('page', { page: page + 1 })}
             />
@@ -262,16 +365,19 @@ const PrintProgress = ({ duration }: { duration: number }) => {
 
 const PrintPhoto = ({ photo }: { photo: SelectedPhoto }) => {
   const { act, data } = useBackend<CameraData>();
-  const { printJob, printCompleted, printDuration, printMessage, printerNearby, printerError } = data;
+  const { printJob, printTransferred, printDuration, printMessage, printerNearby, printerError } = data;
 
   return (
     <Section title={photo.name}>
       {printMessage && <NoticeBox>{printMessage}</NoticeBox>}
       {printJob ? (
-        <PrintProgress key={printJob} duration={printDuration} />
+        <>
+          <Box mb={0.5}>Передача на принтер</Box>
+          <PrintProgress key={printJob} duration={printDuration} />
+        </>
       ) : (
         <>
-          {!!printCompleted && <ProgressBar value={100} maxValue={100} color="good" />}
+          {!!printTransferred && <ProgressBar value={100} maxValue={100} color="good" />}
           {!printerNearby && !printMessage && <NoticeBox>Подойдите вплотную к принтеру.</NoticeBox>}
           {!!printerNearby && (
             <>
@@ -287,7 +393,7 @@ const PrintPhoto = ({ photo }: { photo: SelectedPhoto }) => {
         </>
       )}
       <Button onClick={() => act('cancel_print')}>
-        {printJob ? 'Отменить печать' : 'Назад к фотографии'}
+        {printJob ? 'Отменить передачу' : 'Назад к фотографии'}
       </Button>
     </Section>
   );
