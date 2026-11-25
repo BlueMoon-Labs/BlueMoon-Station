@@ -82,6 +82,7 @@
 		new /datum/data/mining_equipment("Empty Vanguard belt",			/obj/item/storage/belt/avangard_belt/empty,							1500,	"Ammo"),
 		new /datum/data/mining_equipment("Military belt",				/obj/item/storage/belt/military/green,								2500,	"Ammo"),
 		new /datum/data/mining_equipment("9mm ammo box",				/obj/item/ammo_box/c9mm,											750,	"Ammo"),
+		new /datum/data/mining_equipment("Empty ammo pouch",			/obj/item/storage/bag/ammo,											1500,	"Ammo"),
 
 		// ============ ОРУЖИЕ БЛИЖНЕГО БОЯ ============
 		new /datum/data/mining_equipment("Combat knife",				/obj/item/kitchen/knife/combat,					        			100,	"Melee"),
