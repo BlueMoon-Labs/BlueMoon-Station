@@ -209,6 +209,10 @@
 	antagonist_type = /datum/antagonist/ghost_role/hecu
 	faction = list(FACTION_HECU)
 	restricted_species = "human"
+	can_take_damage = TRUE
+	obj_flags = CAN_BE_HIT
+	resistance_flags = LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
+	max_integrity = 80
 
 // Пятиминутный кулдаун после смерти для всех HECU-спавнеров. Дезертир
 // (/hecu/lost, faction = null) и Black Ops (/hecu/blackops, FACTION_BLACKOPS)
@@ -384,6 +388,9 @@
 	category = "blackmesa"
 	antagonist_type = /datum/antagonist/ghost_role/losthecu
 	restricted_species = "human"
+	can_take_damage = FALSE
+	obj_flags = 0
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
 
 /obj/effect/mob_spawn/human/black_mesa/hecu/lost/special(mob/living/carbon/human/spawned_human)
 	. = ..()

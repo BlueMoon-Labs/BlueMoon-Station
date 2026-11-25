@@ -457,6 +457,19 @@
 	item_state = "defibcombat"
 	mesa_defib = TRUE
 	cell_removable = FALSE
+	var/mesa_used = FALSE
+
+/obj/item/defibrillator/compact/combat/mesa/make_paddles()
+	var/obj/item/shockpaddles/mesa/P = new /obj/item/shockpaddles/mesa(src)
+	P.mesa_defib = src
+	return P
+
+/obj/item/defibrillator/compact/combat/mesa/update_power()
+	if(mesa_used)
+		powered = FALSE
+		update_icon()
+		return
+	..()
 
 /obj/item/defibrillator/proc/mesa_zone_active(atom/A)
 	if(!A || QDELETED(A))
@@ -464,6 +477,21 @@
 	if(SSblackmesa_events && SSblackmesa_events.mesa_actor_in_zone(A))
 		return TRUE
 	return istype(get_area(A), /area/awaymission/ihategordon)
+
+// Медицинские запреты Mesa-дефиба: те же, что у can_be_medically_revived(),
+// но без требования живого клиента/души - пустые спящие куклы Сектора H тоже
+// должны реанимироваться. DNR (can_reenter_corpse = FALSE) по-прежнему блокирует.
+/obj/item/defibrillator/proc/mesa_can_revive(mob/living/carbon/H)
+	if(!H || QDELETED(H))
+		return FALSE
+	if(H.suiciding || H.hellbound || !H.owns_soul())
+		return FALSE
+	if(HAS_TRAIT_NOT_FROM(H, TRAIT_NOCLONE, CHANGELING_DRAIN))
+		return FALSE
+	var/mob/dead/observer/ghost = H.get_ghost(even_if_they_cant_reenter = TRUE)
+	if(ghost && !ghost.can_reenter_corpse)
+		return FALSE
+	return TRUE
 
 /obj/item/defibrillator/proc/mesa_restore_patient(mob/living/carbon/H)
 	if(!H || QDELETED(H))
@@ -475,22 +503,94 @@
 	if(!H.getorganslot(ORGAN_SLOT_BRAIN))
 		var/obj/item/organ/brain/BR = new /obj/item/organ/brain()
 		BR.Insert(H)
-	// Доставляем остальные недостающие органы и лечим повреждённые.
+	// Доставляем остальные недостающие органы. fully_heal снимает повреждения
+	// органов, травмы мозга, раны/кровотечения и восстанавливает кровь.
 	H.regenerate_organs()
-	for(var/obj/item/organ/O in H.internal_organs)
-		if(O && (O.organ_flags & ORGAN_FAILING))
-			O.setOrganDamage(0)
-	var/obj/item/organ/heart/existing_heart = H.getorganslot(ORGAN_SLOT_HEART)
-	if(existing_heart)
-		existing_heart.setOrganDamage(0)
-	var/obj/item/organ/brain/existing_brain = H.getorganslot(ORGAN_SLOT_BRAIN)
-	if(existing_brain)
-		existing_brain.setOrganDamage(0)
-	// can_be_revived() требует health выше порога смерти - восстанавливаем все пулы урона.
-	H.setToxLoss(0, 0)
-	H.setOxyLoss(0, 0)
-	H.heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, FALSE, forced = TRUE)
-	H.updatehealth()
+	H.fully_heal(admin_revive = FALSE)
+
+// Лопатки особого дефибриллятора Сектора H. Полностью переопределяют do_help:
+// реанимация не зависит от состояния органов, давности смерти и повреждений,
+// но блокируется DNR/адскими контрактами. Одноразовость обеспечивает mesa_used.
+/obj/item/shockpaddles/mesa
+	name = "paddles of the Sector H defibrillator"
+	desc = "A pair of paddles wired into the unique Sector H combat defibrillator. Delivers a full medical reboot to the patient."
+	combat = TRUE
+	icon = 'icons/obj/defibrillators.dmi'
+	icon_state = "syndiepaddles0"
+	item_state = "syndiepaddles0"
+	base_icon_state = "syndiepaddles"
+	var/obj/item/defibrillator/compact/combat/mesa/mesa_defib
+
+/obj/item/shockpaddles/mesa/do_help(mob/living/carbon/H, mob/living/user)
+	if(!mesa_defib || QDELETED(mesa_defib))
+		return ..()
+	user.visible_message("<span class='warning'>[user] begins to place [src] on [H]'s chest.</span>", "<span class='warning'>You begin to place [src] on [H]'s chest...</span>")
+	busy = TRUE
+	update_icon()
+
+	var/primetimer = 30 - defib.primetime
+	var/primetimer2 = 20 - defib.primetime
+
+	if(do_after(user, primetimer, H))
+		user.visible_message("<span class='notice'>[user] places [src] on [H]'s chest.</span>", "<span class='warning'>You place [src] on [H]'s chest.</span>")
+		playsound(src, 'sound/machines/defib_charge.ogg', 75, 0)
+		if(do_after(user, primetimer2, H))
+			if(H.stat == DEAD)
+				var/failed
+				if(H.hellbound || !H.owns_soul())
+					failed = span_warning("[defib] жужжит: Реанимация не удалась - кажется, душа пациента находится на другом плане существования. Дальнейшие попытки бесполезны.")
+				else if(!defib.mesa_can_revive(H))
+					failed = span_warning("[defib] жужжит: Реанимация не удалась - возвращение пациента к жизни невозможно. Дальнейшие попытки бесполезны.")
+				else if(!mesa_defib.mesa_zone_active(H))
+					failed = "<span class='warning'>[defib] жужжит: Устройство работает только в пределах Сектора H. Операция прервана.</span>"
+				if(failed)
+					user.visible_message(failed)
+					playsound(src, 'sound/machines/defib_failed.ogg', 50, 0)
+				else
+					user.visible_message("<span class='notice'>[defib] пищит: Реанимация прошла успешно.</span>")
+					playsound(src, 'sound/machines/defib_success.ogg', 50, 0)
+					H.set_heartattack(FALSE)
+					mesa_defib.mesa_restore_patient(H)
+					var/revived = H.revive(post_revive_effects = TRUE, medical_revive = FALSE)
+					if(revived)
+						mesa_defib.mesa_used = TRUE
+						mesa_defib.update_power()
+						H.notify_ghost_cloning("Your heart is being defibrillated!")
+						H.grab_ghost()
+					H.emote("gasp")
+					H.Jitter(100)
+					SEND_SIGNAL(H, COMSIG_LIVING_MINOR_SHOCK)
+					log_combat(user, H, "revived", defib)
+					econ_record_revive(user, H)
+					H.mind?.revival_handle_memory("defibrillator")
+			else if(H.undergoing_cardiac_arrest())
+				var/obj/item/organ/heart = H.getorgan(/obj/item/organ/heart)
+				if(heart && !(heart.organ_flags & ORGAN_FAILING))
+					H.set_heartattack(FALSE)
+					user.visible_message("<span class='notice'>[defib] pings: Patient's heart is now beating again.</span>")
+				else
+					user.visible_message("<span class='warning'>[defib] buzzes: Resuscitation failed, heart damage detected.</span>")
+				playsound(src, 'sound/machines/defib_zap.ogg', 50, 1, -1)
+			else if(H.has_status_effect(/datum/status_effect/heretic_dance_earworm))
+				H.remove_status_effect(/datum/status_effect/heretic_dance_earworm)
+				user.visible_message("<span class='notice'>[defib] pings: Arrhythmia corrected.</span>")
+				playsound(src, 'sound/machines/defib_zap.ogg', 50, 1, -1)
+			else
+				user.visible_message("<span class='warning'>[defib] buzzes: Patient is not in a valid state. Operation aborted.</span>")
+				playsound(src, 'sound/machines/defib_failed.ogg', 50, 0)
+
+			if(req_defib)
+				defib.deductcharge(revivecost)
+				cooldown = 1
+			update_icon()
+			if(SEND_SIGNAL(src, COMSIG_DEFIBRILLATOR_SUCCESS) & COMPONENT_DEFIB_STOP)
+				return
+			if(req_defib)
+				defib.cooldowncheck(user)
+			else
+				recharge(60)
+	busy = FALSE
+	update_icon()
 
 /obj/item/reagent_containers/hypospray/medipen/mesa_robot/update_icon_state()
 	if(reagents.total_volume > 0)

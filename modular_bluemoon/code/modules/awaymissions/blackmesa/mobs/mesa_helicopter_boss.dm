@@ -88,7 +88,7 @@
 /obj/item/projectile/bullet/a84mm/helicopter_rocket
 	name = "unguided rocket"
 	icon_state = "missile"
-	damage = 40
+	damage = 20
 	pixels_per_second = TILES_TO_PIXELS(45)
 	range = 45
 	allow_crit_gib = FALSE
@@ -154,6 +154,12 @@
 	icon_state = "apache"
 	pixel_x = -69
 	pixel_y = -59
+	// 3x3 hitbox: tile under the mob is the bottom-middle tile of the box
+	// (bounds cover x-1..x+1, y-2..y relative to the mob's turf).
+	bound_x = -32
+	bound_y = 0
+	bound_width = 96
+	bound_height = 96
 	maptext_height = 64
 	maptext_width = 64
 	health = 5000
@@ -694,6 +700,10 @@
 		heli_attack_done()
 		return
 	visible_message("<span class='bolddanger'>[src] is spooling its rocket pods - incoming fire!</span>")
+	for(var/atom/T in get_mesa_targets())
+		if(isliving(T))
+			var/mob/living/L = T
+			L.visible_message("<span class='danger big'><b>[src] берёт [L] на ракетный прицел!</b></span>", "<span class='danger big'><b>Apache берёт вас на ракетный прицел!</b></span>")
 
 	for(var/i in 1 to 3)
 		if(QDELETED(src) || stat != CONSCIOUS)
@@ -722,9 +732,6 @@
 	var/turf/target_turf = get_turf(targeted_atom)
 	if(!startloc || !target_turf || target_turf.z != startloc.z)
 		return
-	if(isliving(targeted_atom))
-		var/mob/living/L = targeted_atom
-		L.visible_message(span_bolddanger("[src] выпускает по вам ракету!"), span_bolddanger("Apache выпускает по вам ракету!"))
 	var/obj/item/projectile/P = new /obj/item/projectile/bullet/a84mm/helicopter_rocket(startloc)
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/apache/apacheshot.ogg', 70, TRUE, -4)
 	P.firer = src
