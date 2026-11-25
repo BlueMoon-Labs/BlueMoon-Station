@@ -132,6 +132,7 @@ export interface InsideState {
   pred?: string;
   absorbed?: boolean;
   belly_name?: string;
+  display_name?: string;
   belly_mode?: string;
   desc?: string;
   contents?: VoreContent[];

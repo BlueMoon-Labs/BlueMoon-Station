@@ -61,7 +61,7 @@ const BellyList = (props: {
   const filtered = bellies.filter(
     (belly) =>
       !search ||
-      (belly.display_name || belly.name).toLowerCase().includes(search.toLowerCase()),
+      (belly.name || belly.display_name).toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -105,9 +105,9 @@ const BellyList = (props: {
               ellipsis
               selected={belly.selected}
               textColor={belly.selected ? MODE_COLOR[belly.digest_mode] : undefined}
-              tooltip={`${belly.display_name || belly.name} — ${MODE_RU[belly.digest_mode] || belly.digest_mode}; содержимое: ${belly.contents}`}
+              tooltip={`${belly.name || belly.display_name} — ${MODE_RU[belly.digest_mode] || belly.digest_mode}; содержимое: ${belly.contents}`}
               onClick={() => act('bellypick', { bellypick: belly.ref })}>
-              {belly.display_name || belly.name} ({belly.contents})
+              {belly.name || belly.display_name} ({belly.contents})
             </Button>
           </Stack.Item>
         ))}
@@ -1174,13 +1174,13 @@ const BellyEditor = (props: { belly: BellyState }) => {
             bold
             fontSize={1.2}
             textColor={MODE_COLOR[belly.digest_mode] || undefined}
-            title={belly.display_name || belly.name}
+            title={belly.name || belly.display_name}
             style={{
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
             }}>
-            {belly.display_name || belly.name}
+            {belly.name || belly.display_name}
           </Box>
         </Stack.Item>
         <Stack.Item>

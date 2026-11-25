@@ -54,7 +54,7 @@ const InsideSection = () => {
         {inside.pred}
       </Box>{' '}
       <Box inline color="red">
-        {inside.belly_name}
+        {inside.display_name || inside.belly_name}
       </Box>
       {inside.absorbed ? (
         <>
@@ -97,7 +97,7 @@ const InsideTab = () => {
         <Section title="Ты внутри">
           <LabeledList>
             <LabeledList.Item label="Хищник">{inside.pred || '—'}</LabeledList.Item>
-            <LabeledList.Item label="Нутро">{inside.belly_name || '—'}</LabeledList.Item>
+            <LabeledList.Item label="Нутро">{inside.display_name || inside.belly_name || '—'}</LabeledList.Item>
             <LabeledList.Item label="Режим">
               {MODE_RU[inside.belly_mode || ''] || '—'}
             </LabeledList.Item>

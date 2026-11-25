@@ -287,6 +287,7 @@
 			"pred" = inside_belly.owner?.name || "кто-то",
 			"absorbed" = !!(host.vore_flags & ABSORBED),
 			"belly_name" = inside_belly.name,
+			"display_name" = inside_belly.display_name,
 			"belly_mode" = inside_belly.digest_mode,
 			"desc" = inside_belly.desc || "Описание отсутствует.",
 			"contents" = build_content_list(inside_belly, skip = host),
