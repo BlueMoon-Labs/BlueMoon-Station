@@ -15,6 +15,7 @@ type GameplayData = {
   damage_screenshake: number;
   recoil_push: number;
   action_buttons_hide: boolean;
+  amplify_department_radio: boolean;
   autostand: boolean;
   long_strip_menu: boolean;
   shift_invites: boolean;
@@ -34,6 +35,7 @@ const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boo
   { key: 'arrivalrattle', label: 'Уведомления о прибытии игроков', flag: 'arrivalrattle', tooltip: 'Уведомлять о появлении новых игроков поблизости' },
   { key: 'intent_style', label: 'Прямой выбор интента', flag: 'intent_style', tooltip: 'Переключать интенты (помощь/захват/удар/толчок) последовательно, а не через веерное меню' },
   { key: 'action_buttons_hide', label: 'Скрыть кнопки действий при спавне', flag: 'action_buttons_hide', tooltip: 'Не показывать кнопки способностей и предметов в интерфейсе при старте раунда' },
+  { key: 'amplify_department_radio', label: 'Крупный текст канала отдела при спавне', flag: 'amplify_department_radio', tooltip: 'Включать крупный текст для входящих сообщений канала :р на стартовой гарнитуре' },
   { key: 'disable_combat_cursor', label: 'Отключить курсор боя', flag: 'disable_combat_cursor', tooltip: 'Не менять курсор при входе в боевой режим (harm intent)' },
   { key: 'disable_combat_mouse_lock', label: 'Отключить захват мыши в бою', flag: 'disable_combat_mouse_lock', tooltip: 'Не блокировать курсор мыши в пределах окна при входе в боевой режим' },
   { key: 'smartlink', label: 'Смартлинк (боевой HUD)', flag: 'smartlink', tooltip: 'Показывать боевой HUD со счётчиком патронов и зарядом энергии при удержании оружия в руках' },

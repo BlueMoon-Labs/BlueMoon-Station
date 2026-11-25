@@ -124,6 +124,7 @@
 	.["action_buttons_hide"] = action_buttons_hide_on_spawn
 	.["autostand"] = autostand
 	.["long_strip_menu"] = long_strip_menu
+	.["amplify_department_radio"] = amplify_department_radio
 	.["right_click_mode"] = right_click_mode()
 	.["shift_right_click_mode"] = shift_right_click_mode()
 	var/list/menu_style = list()
@@ -517,6 +518,9 @@
 				if("long_strip_menu")
 					long_strip_menu = !long_strip_menu
 					dirty_var = "long_strip_menu"
+				if("amplify_department_radio")
+					amplify_department_radio = !amplify_department_radio
+					dirty_var = "amplify_department_radio"
 				if("nearsigh_darkening")
 					nearsigh_darkening = !nearsigh_darkening
 					dirty_var = "nearsigh_darkening"

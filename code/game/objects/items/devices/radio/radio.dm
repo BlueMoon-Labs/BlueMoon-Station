@@ -222,6 +222,10 @@
 			else
 				channels[channel] |= FREQ_LISTENING
 			. = TRUE
+		if("amplify")
+			var/obj/item/radio/headset/headset = src
+			if(istype(headset))
+				return headset.toggle_receive_amplification(params)
 		if("command")
 			use_command = !use_command
 			. = TRUE
@@ -263,13 +267,7 @@
 		return
 
 	if(use_command)
-		// BLUEMOON ADD START - чтобы работал большой текст у больших и маленький персонажей
-		if(spans & SPAN_BIG)
-			spans &= ~SPAN_BIG
-		if(spans & SPAN_SMALL)
-			spans &= ~SPAN_SMALL
-		// BLUEMOON ADD END
-		spans |= commandspan
+		amplify_radio_spans(spans, commandspan)
 
 	/*
 	Roughly speaking, radios attempt to make a subspace transmission (which
