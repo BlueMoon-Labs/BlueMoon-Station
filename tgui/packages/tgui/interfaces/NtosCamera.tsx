@@ -418,7 +418,7 @@ const formatCaptureTime = (time: number, timeZone: string) =>
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-  });
+  }).replace(',', '');
 
 const PhotoCaptureTime = ({ photo }: { photo: SelectedPhoto }) => {
   const { data } = useBackend<CameraData>();
@@ -502,13 +502,13 @@ const PhotoDetails = ({ photo }: { photo: SelectedPhoto }) => {
         <Box mx="auto" style={{ maxWidth: '19rem' }}>
           <PhotoPreview {...photo} />
         </Box>
-        <PhotoCaptureTime photo={photo} />
         {!data.editMode && (
           <>
             {!!photo.description && <Box mt={1} style={{ overflowWrap: 'anywhere' }}>{photo.description}</Box>}
             {!!photo.caption && <Box mt={1} italic style={{ overflowWrap: 'anywhere' }}>{photo.caption}</Box>}
           </>
         )}
+        <PhotoCaptureTime photo={photo} />
       </Section>
       {!!data.editMode && <EditPhoto key={photo.id} photo={photo} />}
     </>

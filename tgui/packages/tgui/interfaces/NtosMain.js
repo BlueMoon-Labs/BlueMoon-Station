@@ -19,6 +19,7 @@ export const NtosMain = (props) => {
     security_level,
     security_level_color,
   } = data;
+  const camera = programs.find(program => program.name === 'Camera');
 
   return (
     <NtosWindow
@@ -107,7 +108,7 @@ export const NtosMain = (props) => {
               fill
               style={{ margin: '8px 10px' }}>
               <Stack vertical>
-                {programs.map(program => (
+                {programs.map(program => program !== camera && (
                   <Stack.Item key={program.name}>
                     <Button
                       fluid
@@ -170,6 +171,15 @@ export const NtosMain = (props) => {
                     Цвет
                   </Button>
                 </>
+              )}
+              {camera && (
+                <Button
+                  icon={camera.icon}
+                  color={camera.alert ? 'yellow' : 'transparent'}
+                  selected={!!camera.running}
+                  onClick={() => act('PC_runprogram', { name: camera.name })}>
+                  {camera.desc}
+                </Button>
               )}
               <Button
                 icon="palette"
