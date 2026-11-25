@@ -16,14 +16,15 @@
 	if(player_key)
 		return "data/player_saves/[player_key[1]]/[player_key]/pda_photos/"
 
-/proc/pda_photo_cloud_ids(directory)
+/proc/pda_photo_cloud_ids(directory, sort_ids = TRUE)
 	var/static/regex/photo_file = regex("^(\[0-9a-f\]{8}-\[0-9a-f\]{4}-7\[0-9a-f\]{3}-\[0-9a-f\]{4}-\[0-9a-f\]{12})\\.sav(\\.bak)?$")
 	var/list/ids = list()
 	if(directory)
 		for(var/filename in flist(directory))
 			if(photo_file.Find(filename))
 				ids[photo_file.group[1]] = TRUE
-	sortTim(ids, GLOBAL_PROC_REF(cmp_text_dsc), associative = TRUE)
+	if(sort_ids)
+		sortTim(ids, GLOBAL_PROC_REF(cmp_text_dsc), associative = TRUE)
 	return ids
 
 /proc/read_pda_cloud_photo(path, with_image = FALSE)

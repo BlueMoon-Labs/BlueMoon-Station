@@ -6,6 +6,7 @@
 	var/list/played_names = list() //List of names this key played under this round
 	var/byond_version = "Unknown"
 	var/datum/achievement_data/achievements
+	COOLDOWN_DECLARE(pda_photo_upload_cooldown)
 
 /datum/player_details/New(key)
 	achievements = new(key)
