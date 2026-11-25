@@ -31,6 +31,12 @@
 			name = "photo - [P.picture_name]"
 	if(setdesc && P.picture_desc)
 		desc = P.picture_desc
+	update_personal_album()
+
+/obj/item/photo/proc/update_personal_album()
+	var/obj/item/storage/photo_album/personal/album = loc
+	if(istype(album))
+		album.queue_save()
 
 /obj/item/photo/update_icon_state()
 	if(!istype(picture) || !picture.picture_image)
@@ -60,6 +66,7 @@
 		var/txt = stripped_input(user, "What would you like to write on the back?", "Photo Writing", "", 128)
 		if(txt && user.canUseTopic(src, BE_CLOSE))
 			scribble = txt
+			update_personal_album()
 		return
 	if(istype(P, /obj/item/modular_computer/pda))
 		var/obj/item/modular_computer/pda/pda_device = P
@@ -86,8 +93,12 @@
 		img_body = headshot_preview_html(picture.picture_url, 480, 480)
 	else
 		var/rsc_name = "tmp_photo[REF(src)].png"
-		user << browse_rsc(icon(picture.picture_image, dir = SOUTH, frame = 1), rsc_name)
-		img_body = "<img src='[rsc_name]' width='480' style='image-rendering:pixelated' />"
+		var/icon/preview = icon(picture.picture_image, dir = SOUTH, frame = 1)
+		user << browse_rsc(preview, rsc_name)
+		var/preview_width = preview.Width()
+		var/preview_height = preview.Height()
+		var/preview_scale = 480 / max(1, preview_width, preview_height)
+		img_body = "<img src='[rsc_name]' width='[max(1, round(preview_width * preview_scale))]' height='[max(1, round(preview_height * preview_scale))]' style='image-rendering:pixelated' />"
 	user << browse("<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>[name]</title>[zoom_head]</head>" \
 		+ "<body style='overflow:hidden;margin:0;text-align:center'>" \
 		+ "[img_body]" \
@@ -108,6 +119,7 @@
 	//loc.loc check is for making possible renaming photos in clipboards
 	if(n_name && (loc == usr || loc.loc && loc.loc == usr) && CHECK_MOBILITY(L, MOBILITY_USE))
 		name = "photo[(n_name ? text("- '[n_name]'") : null)]"
+		update_personal_album()
 	add_fingerprint(usr)
 
 /obj/item/photo/old

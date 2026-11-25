@@ -1,8 +1,5 @@
-// Regression test for the camera "no background" bug: a photo taken in a shaded
-// (dynamic-lit, non-fully-bright) area must still render the floor/scene, not a
-// solid black tile. Root cause was camera_get_icon cloning the turf's
-// lighting_object (which lives in turf.contents) — its dark color matrix painted
-// every floor tile black. See camera_image_capturing.dm.
+// Камера должна рисовать пол и в затенённом помещении. Служебная маска освещения
+// из turf.contents прежде перекрывала фон чёрным цветом.
 
 /// Returns TRUE if the pixel at (px,py) is present and not pure/near-black.
 /datum/unit_test/proc/camera_pixel_is_lit(icon/ico, px, py)
@@ -40,9 +37,8 @@
 			turfs += T
 
 	var/obj/item/camera/cam = allocate(/obj/item/camera, center)
-	var/datum/turf_reservation/clone_area = SSmapping.RequestBlockReservation(3, 3)
 	var/psize = 3 * world.icon_size
-	var/icon/result = cam.camera_get_icon(turfs, center, psize, psize, clone_area, 1, 1, 3, 3)
+	var/icon/result = cam.camera_get_icon(turfs, center, psize, psize)
 
 	TEST_ASSERT_NOTNULL(result, "camera_get_icon returned null")
 
@@ -60,7 +56,6 @@
 
 	log_test("camera_photo_shaded_background: tiles=[report.Join(" | ")]")
 
-	qdel(clone_area)
 	for(var/atom/movable/lighting_object/lo as anything in created_los)
 		if(!QDELETED(lo))
 			qdel(lo, force = TRUE)

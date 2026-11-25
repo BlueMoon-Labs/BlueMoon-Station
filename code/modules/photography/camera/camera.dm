@@ -19,17 +19,17 @@
 	var/flash_enabled = TRUE
 	var/state_on = "camera"
 	var/state_off = "camera_off"
-	var/pictures_max = 10
-	var/pictures_left = 10
+	var/pictures_max = 30
+	var/pictures_left = -1 // -1 = pictures_max
 	var/on = TRUE
-	var/cooldown = 64
+	var/cooldown = 6 SECONDS
 	var/blending = FALSE		//lets not take pictures while the previous is still processing!
 	var/see_ghosts = CAMERA_NO_GHOSTS //for the spoop of it
 	var/obj/item/disk/holodisk/disk
 	var/sound/custom_sound
 	var/silent = FALSE
-	var/picture_size_x = 2
-	var/picture_size_y = 2
+	var/picture_size_x = 4
+	var/picture_size_y = 4
 	var/picture_size_x_min = 1
 	var/picture_size_y_min = 1
 	var/picture_size_x_max = 4
@@ -37,16 +37,15 @@
 	var/can_customise = TRUE
 	var/default_picture_name
 
-/obj/item/camera/attack_self(mob/user)
-	if(!disk)
-		return
-	to_chat(user, "<span class='notice'>You eject [disk] out the back of [src].</span>")
-	user.put_in_hands(disk)
-	disk = null
+/obj/item/camera/Initialize(mapload)
+	. = ..()
+	if(pictures_left < 0)
+		pictures_left = pictures_max
 
 /obj/item/camera/examine(mob/user)
 	. = ..()
 	. += "<span class='notice'>Alt-click to change its focusing, allowing you to set how big of an area it will capture.</span>"
+	. += "It has [pictures_left] photos left."
 
 /obj/item/camera/AltClick(mob/user)
 	. = ..()
@@ -57,6 +56,13 @@
 	picture_size_x = min(clamp(desired_x, picture_size_x_min, picture_size_x_max), CAMERA_PICTURE_SIZE_HARD_LIMIT)
 	picture_size_y = min(clamp(desired_y, picture_size_y_min, picture_size_y_max), CAMERA_PICTURE_SIZE_HARD_LIMIT)
 	return TRUE
+
+/obj/item/camera/attack_self(mob/user)
+	if(!disk)
+		return
+	to_chat(user, "<span class='notice'>You eject [disk] out the back of [src].</span>")
+	user.put_in_hands(disk)
+	disk = null
 
 /obj/item/camera/attack(mob/living/carbon/human/M, mob/user)
 	return
@@ -83,10 +89,6 @@
 			to_chat(user, "<span class='warning'>There's already a disk inside [src].</span>")
 		return TRUE //no afterattack
 	..()
-
-/obj/item/camera/examine(mob/user)
-	. = ..()
-	. += "It has [pictures_left] photos left."
 
 //user can be atom or mob
 /obj/item/camera/proc/can_target(atom/target, mob/user, prox_flag)
@@ -158,7 +160,7 @@
 		return FALSE
 	size_x = clamp(size_x, 0, CAMERA_PICTURE_SIZE_HARD_LIMIT)
 	size_y = clamp(size_y, 0, CAMERA_PICTURE_SIZE_HARD_LIMIT)
-	var/list/desc = list("This is a photo of an area of [size_x*2 + 1] meters by [size_y*2 + 1] meters.")
+	var/list/photo_description = list("На снимке участок размером [size_x * 2 + 1] × [size_y * 2 + 1] м.")
 	var/ai_user = isAI(user)
 	var/list/seen
 	var/list/viewlist = user?.client ? getviewsize(user.client.view) : getviewsize(world.view)
@@ -169,8 +171,9 @@
 	var/list/turfs = list()
 	var/list/mobs = list()
 	var/blueprints = FALSE
-	var/clone_area = SSmapping.RequestBlockReservation(size_x * 2 + 1, size_y * 2 + 1)
-	for(var/turf/T in block(locate(target_turf.x - size_x, target_turf.y - size_y, target_turf.z), locate(target_turf.x + size_x, target_turf.y + size_y, target_turf.z)))
+	var/turf/bottom_left = locate(max(1, target_turf.x - size_x), max(1, target_turf.y - size_y), target_turf.z)
+	var/turf/top_right = locate(min(world.maxx, target_turf.x + size_x), min(world.maxy, target_turf.y + size_y), target_turf.z)
+	for(var/turf/T in block(bottom_left, top_right))
 		if((ai_user && GLOB.cameranet.checkTurfVis(T)) || (T in seen))
 			turfs += T
 			for(var/mob/M in T)
@@ -181,19 +184,16 @@
 		turfs += target_turf
 	for(var/i in mobs)
 		var/mob/M = i
-		desc += M.get_photo_description(src)
+		photo_description += M.get_photo_description(src)
 
 	var/psize_x = (size_x * 2 + 1) * world.icon_size
 	var/psize_y = (size_y * 2 + 1) * world.icon_size
-	var/get_icon = camera_get_icon(turfs, target_turf, psize_x, psize_y, clone_area, size_x, size_y, (size_x * 2 + 1), (size_y * 2 + 1))
-	qdel(clone_area)
-	var/icon/temp = icon('icons/effects/camera_image_base.dmi',"")
-	temp.Blend("#000", ICON_OVERLAY)
-	temp.Scale(psize_x, psize_y)
-	temp.Blend(get_icon, ICON_OVERLAY)
-
-	var/datum/picture/P = new("picture", desc.Join(" "), temp, null, psize_x, psize_y, blueprints)
-	P.subjects_seen = photo_subjects_seen(mobs)
+	var/list/subjects = photo_subjects_seen(mobs)
+	var/icon/captured = camera_get_icon(turfs, target_turf, psize_x, psize_y)
+	if(QDELETED(src))
+		return FALSE
+	var/datum/picture/P = new("picture", photo_description.Join(" "), captured, null, psize_x, psize_y, blueprints)
+	P.subjects_seen = subjects
 	after_picture(user, P, flag)
 	blending = FALSE
 
@@ -223,6 +223,7 @@
 			if(default_picture_name)
 				picture.picture_name = default_picture_name
 
-		p.set_picture(picture, TRUE, TRUE)
+		if(!QDELETED(p))
+			p.set_picture(picture, TRUE, TRUE)
 		if(CONFIG_GET(flag/picture_logging_camera))
 			picture.log_to_file()

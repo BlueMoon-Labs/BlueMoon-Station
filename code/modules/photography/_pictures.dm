@@ -78,6 +78,9 @@
 	if(!input["logpath"] || !fexists(input["logpath"]) || !input["id"] || !input["pixel_size_x"] || !input["pixel_size_y"])
 		return
 	picture_image = icon(file(input["logpath"]))
+	return deserialize_metadata(input)
+
+/datum/picture/proc/deserialize_metadata(list/input)
 	logpath = input["logpath"]
 	id = input["id"]
 	psize_x = input["pixel_size_x"]
@@ -110,12 +113,13 @@
 	var/json_path = file("[dir]/metadata.json")
 	if(!fexists(json_path))
 		return
-	var/list/json = json_decode(file2text(json_path))
-	if(!json[id])
+	var/list/json = safe_json_decode(file2text(json_path))
+	if(!json?[id])
 		return
 	var/datum/picture/P = new
-	P.deserialize_json(json[id])
-	return P
+	if(P.deserialize_json(json[id]))
+		return P
+	qdel(P)
 
 /proc/log_path_from_picture_ID(id)
 	if(!istext(id))
@@ -137,7 +141,7 @@
 			. += "[year]/[month]/[day]/round-[round]"
 		if("O")
 			var/list/path = data.Copy(2, data.len)
-			. += path.Join("")
+			. += path.Join("_")
 		else
 			return null
 	var/n = data[data.len]

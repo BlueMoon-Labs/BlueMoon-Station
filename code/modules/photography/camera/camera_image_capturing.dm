@@ -1,106 +1,133 @@
-/obj/effect/appearance_clone
+/datum/camera_frame_entry
+	var/image/visual
+	var/pixel_left
+	var/pixel_bottom
+	var/render_plane
 
-/obj/effect/appearance_clone/New(loc, atom/A)			//Intentionally not Initialize(), to make sure the clone assumes the intended appearance in time for the camera getFlatIcon.
-	if(istype(A))
-		appearance = A.appearance
-		dir = A.dir
-		if(ismovable(A))
-			var/atom/movable/AM = A
-			step_x = AM.step_x
-			step_y = AM.step_y
-	. = ..()
+/datum/camera_frame_entry/New(atom/subject, tile_left, tile_bottom)
+	visual = subject.appearance
+	pixel_left = tile_left + subject.pixel_x + subject.pixel_w
+	pixel_bottom = tile_bottom + subject.pixel_y + subject.pixel_z
+	if(ismovable(subject))
+		var/atom/movable/movable_subject = subject
+		pixel_left += movable_subject.step_x
+		pixel_bottom += movable_subject.step_y
+	var/plane = visual.plane
+	render_plane = plane == FLOAT_PLANE ? 0 : PLANE_TO_TRUE(plane)
 
-/obj/item/camera/proc/camera_get_icon(list/turfs, turf/center, psize_x = 96, psize_y = 96, datum/turf_reservation/clone_area, size_x, size_y, total_x, total_y)
-	var/list/atoms = list()
-	var/skip_normal = FALSE
-	var/wipe_atoms = FALSE
+/proc/cmp_camera_frame_entry(datum/camera_frame_entry/left, datum/camera_frame_entry/right)
+	if(left.render_plane != right.render_plane)
+		return left.render_plane - right.render_plane
+	return left.visual.layer - right.visual.layer
 
-	if(istype(clone_area) && total_x == clone_area.width && total_y == clone_area.height && size_x >= 0 && size_y > 0)
-		var/cloned_center_x = round(clone_area.bottom_left_coords[1] + ((total_x - 1) / 2))
-		var/cloned_center_y = round(clone_area.bottom_left_coords[2] + ((total_y - 1) / 2))
-		for(var/t in turfs)
-			var/turf/T = t
-			var/offset_x = T.x - center.x
-			var/offset_y = T.y - center.y
-			var/turf/newT = locate(cloned_center_x + offset_x, cloned_center_y + offset_y, clone_area.bottom_left_coords[3])
-			if(!(newT in clone_area.reserved_turfs))		//sanity check so we don't overwrite other areas somehow
+/obj/item/camera/proc/camera_get_icon(list/turf/turfs, turf/center, psize_x = 96, psize_y = 96)
+	var/list/entries = list()
+	var/x_origin = round((psize_x - world.icon_size) / 2) + 1
+	var/y_origin = round((psize_y - world.icon_size) / 2) + 1
+	// Снимаем внешность и координаты до первого CHECK_TICK, чтобы кадр не менялся при сборке.
+	for(var/turf/tile as anything in turfs)
+		var/tile_left = (tile.x - center.x) * world.icon_size + x_origin
+		var/tile_bottom = (tile.y - center.y) * world.icon_size + y_origin
+		entries += new /datum/camera_frame_entry(tile, tile_left, tile_bottom)
+		if(tile.loc.icon_state)
+			entries += new /datum/camera_frame_entry(tile.loc, tile_left, tile_bottom)
+		for(var/atom/movable/subject as anything in tile.contents)
+			if(!subject.alpha || (subject.invisibility && !(see_ghosts && isobserver(subject))))
 				continue
-			atoms += new /obj/effect/appearance_clone(newT, T)
-			if(T.loc.icon_state)
-				atoms += new /obj/effect/appearance_clone(newT, T.loc)
-			for(var/i in T.contents)
-				var/atom/A = i
-				// Lighting objects live in turf.contents (hybrid render: loc for client update
-				// delivery + vis_contents). Cloning one renders a solid black tile on
-				// LIGHTING_LAYER, painting the floor black in shaded areas - always skip.
-				if(istype(A, /atom/movable/lighting_object))
-					continue
-				if(!A.invisibility || (see_ghosts && isobserver(A)))
-					atoms += new /obj/effect/appearance_clone(newT, A)
-		skip_normal = TRUE
-		wipe_atoms = TRUE
-		center = locate(cloned_center_x, cloned_center_y, clone_area.bottom_left_coords[3])
+			// Служебные маски и объекты освещения нельзя накладывать на кадр как обычные спрайты.
+			if(istype(subject, /atom/movable/lighting_object) || (subject.appearance_flags & PLANE_MASTER) || (subject.render_target && copytext(subject.render_target, 1, 2) == "*"))
+				continue
+			entries += new /datum/camera_frame_entry(subject, tile_left, tile_bottom)
 
-	if(!skip_normal)
-		for(var/i in turfs)
-			var/turf/T = i
-			atoms += T
-			for(var/atom/movable/A in T)
-				if(istype(A, /atom/movable/lighting_object))
-					continue // see clone path above - lighting objects paint the floor black
-				if(A.invisibility)
-					if(!(see_ghosts && isobserver(A)))
-						continue
-				atoms += A
-			CHECK_TICK
+	var/icon/result = icon('icons/effects/camera_image_base.dmi', "")
+	result.Scale(psize_x, psize_y)
+	result.DrawBox("#000000", 1, 1, psize_x, psize_y)
+	sortTim(entries, GLOBAL_PROC_REF(cmp_camera_frame_entry))
 
-	var/icon/res = icon('icons/effects/camera_image_base.dmi', "")
-	res.Scale(psize_x, psize_y)
-
-	var/list/sorted = list()
-	var/j
-	for(var/i in 1 to atoms.len)
-		var/atom/c = atoms[i]
-		for(j = sorted.len, j > 0, --j)
-			var/atom/c2 = sorted[j]
-			if(c2.layer <= c.layer)
-				break
-		sorted.Insert(j+1, c)
-		CHECK_TICK
-
-	var/xcomp = FLOOR(psize_x / 2, 1) - 15
-	var/ycomp = FLOOR(psize_y / 2, 1) - 15
-
-	// Per-capture flat-icon dedup. A photo with N atoms often has only K<<N unique
-	// appearances (walls, floors, identical items), so cache by appearance ref to
-	// skip the recursive getFlatIcon for repeats. Local list — no cross-call state,
-	// no GC concerns.
+	// У одинаковых внешностей общие растр и смещение, даже если спрайты стоят на разных тайлах.
 	var/list/flat_icon_cache = list()
-
-	for(var/atom/A in sorted)
-		var/xo = (A.x - center.x) * world.icon_size + A.pixel_x + xcomp
-		var/yo = (A.y - center.y) * world.icon_size + A.pixel_y + ycomp
-		if(ismovable(A))
-			var/atom/movable/AM = A
-			xo += AM.step_x
-			yo += AM.step_y
-		var/appearance_key = "\ref[A.appearance]"
-		var/icon/img = flat_icon_cache[appearance_key]
-		if(!img)
-			img = getFlatIcon(A)
-			if(img)
-				flat_icon_cache[appearance_key] = img
-		if(img)
-			res.Blend(img, blendMode2iconMode(A.blend_mode), xo, yo)
+	for(var/datum/camera_frame_entry/entry as anything in entries)
+		var/image/visual = entry.visual
+		var/appearance_key = "\ref[visual]"
+		var/list/rendered = flat_icon_cache[appearance_key]
+		if(!rendered)
+			rendered = list()
+			rendered["icon"] = getFlatIcon(visual, no_anim = TRUE, icon_offsets = rendered, apply_photo_transform = TRUE)
+			flat_icon_cache[appearance_key] = rendered
+		var/icon/flattened = rendered["icon"]
+		if(flattened)
+			result.Blend(flattened, blendMode2iconMode(visual.blend_mode), entry.pixel_left - rendered["x"], entry.pixel_bottom - rendered["y"])
 		CHECK_TICK
 
-	if(!silent)
-		if(istype(custom_sound))				//This is where the camera actually finishes its exposure.
-			playsound(loc, custom_sound, 75, 1, -3)
-		else
-			playsound(loc, pick('sound/items/polaroid1.ogg', 'sound/items/polaroid2.ogg'), 75, 1, -3)
+	if(!QDELETED(src) && !silent)
+		playsound(loc, custom_sound || pick('sound/items/polaroid1.ogg', 'sound/items/polaroid2.ogg'), 75, TRUE, -3)
+	return result
 
-	if(wipe_atoms)
-		QDEL_LIST(atoms)
+/proc/transform_camera_icon(icon/source, matrix/pose, list/offsets, pivot_x, pivot_y)
+	var/source_x = -offsets["x"] - pivot_x
+	var/source_y = -offsets["y"] - pivot_y
+	var/width = source.Width()
+	var/height = source.Height()
+	var/a = pose.a
+	var/b = pose.b
+	var/d = pose.d
+	var/e = pose.e
+	var/determinant = a * e - b * d
+	if(!determinant)
+		return null
 
-	return res
+	var/translate_x = pivot_x + pose.c + a * source_x + b * source_y
+	var/translate_y = pivot_y + pose.f + d * source_x + e * source_y
+	var/x_from_width = a * width
+	var/x_from_height = b * height
+	var/y_from_width = d * width
+	var/y_from_height = e * height
+	var/x_min = translate_x + min(0, x_from_width) + min(0, x_from_height)
+	var/y_min = translate_y + min(0, y_from_width) + min(0, y_from_height)
+	var/new_width = round(abs(x_from_width) + abs(x_from_height) + 0.5)
+	var/new_height = round(abs(y_from_width) + abs(y_from_height) + 0.5)
+	if(!new_width || !new_height)
+		return null
+	var/left = round(x_min + 0.5)
+	var/bottom = round(y_min + 0.5)
+	offsets["x"] = -left
+	offsets["y"] = -bottom
+
+	// Перенос и масштабирование без поворота обрабатываем средствами /icon.
+	if(!b && !d && new_width <= 2048 && new_height <= 2048)
+		if(a == 1 && e == 1)
+			return source
+		var/icon/scaled = icon(source)
+		scaled.Scale(new_width, new_height)
+		if(a < 0)
+			scaled.Flip(EAST)
+		if(e < 0)
+			scaled.Flip(NORTH)
+		return scaled
+
+	// Ограничиваем растр для экстремальных матриц. Обратное преобразование сохраняет
+	// исходные цвета и избегает дыр между пикселями при повороте или сдвиге.
+	new_width = min(new_width, 2048)
+	new_height = min(new_height, 2048)
+	var/icon/result = icon('icons/effects/camera_image_base.dmi', "")
+	result.Scale(new_width, new_height)
+	for(var/y in 1 to new_height)
+		var/delta_y = bottom + y - 0.5 - translate_y
+		var/run_start = 1
+		var/run_color
+		for(var/x in 1 to new_width)
+			var/delta_x = left + x - 0.5 - translate_x
+			var/sample_x = round((e * delta_x - b * delta_y) / determinant) + 1
+			var/sample_y = round((a * delta_y - d * delta_x) / determinant) + 1
+			var/sample_color
+			if(sample_x >= 1 && sample_x <= width && sample_y >= 1 && sample_y <= height)
+				sample_color = source.GetPixel(sample_x, sample_y)
+			if(sample_color != run_color)
+				if(run_color)
+					result.DrawBox(run_color, run_start, y, x - 1, y)
+				run_start = x
+				run_color = sample_color
+		if(run_color)
+			result.DrawBox(run_color, run_start, y, new_width, y)
+		CHECK_TICK
+	return result

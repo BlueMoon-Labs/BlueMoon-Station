@@ -23,6 +23,7 @@ SUBSYSTEM_DEF(persistence)
 	var/list/obj/item/storage/photo_album/photo_albums
 	var/list/obj/structure/sign/painting/painting_frames = list()
 	var/list/paintings = list()
+	var/list/personal_photo_albums = list()
 
 /datum/controller/subsystem/persistence/Initialize()
 	LoadServerPersistence()
@@ -42,6 +43,10 @@ SUBSYSTEM_DEF(persistence)
 	return "data/persistence/[ckey(SSmapping.config.persistence_key)]"
 
 /datum/controller/subsystem/persistence/proc/CollectData()
+	for(var/owner_ckey in personal_photo_albums)
+		var/datum/weakref/album_ref = personal_photo_albums[owner_ckey]
+		var/obj/item/storage/photo_album/personal/album = album_ref.resolve()
+		album?.save_contents()
 	SaveServerPersistence()
 	if(station_persistence_save_disabled)
 		return
@@ -178,7 +183,7 @@ SUBSYSTEM_DEF(persistence)
 /datum/controller/subsystem/persistence/proc/GetPhotoAlbums()
 	var/album_path = file("data/photo_albums.json")
 	if(fexists(album_path))
-		return json_decode(file2text(album_path))
+		return safe_json_decode(file2text(album_path))
 
 /datum/controller/subsystem/persistence/proc/GetPhotoFrames()
 	var/frame_path = file("data/photo_frames.json")
