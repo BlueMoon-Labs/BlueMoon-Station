@@ -937,6 +937,17 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	item_state = "hoverboard_nt"
 	board_item_type = /obj/vehicle/ridden/scooter/skateboard/hoverboard/admin
 
+/obj/item/melee/skateboard/hoverboard/flying_carpet
+	name = "flying carpet"
+	desc = "Свёрнутый ковёр с золотистым узором. Разверните его, чтобы прокатиться."
+	icon_state = "flying_carpet-item"
+	item_state = "flying_carpet-item"
+	force = 0
+	throwforce = 0
+	board_item_type = /obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet
+	custom_premium_price = /obj/item/melee/skateboard/hoverboard::custom_premium_price*1.5
+	attack_verb = null
+
 /obj/item/melee/baseball_bat
 	name = "baseball bat"
 	desc = "There ain't a skull in the league that can withstand a swatter."

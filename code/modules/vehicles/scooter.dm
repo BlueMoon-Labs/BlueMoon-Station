@@ -186,6 +186,33 @@
 	icon_state = "hoverboard_nt"
 	board_icon = "hoverboard_nt"
 
+/obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet
+	name = "flying carpet"
+	desc = "Ковёр с золотистым узором. Плавно парит над полом, когда на нём едут."
+	icon_state = "flying_carpet"
+	board_icon = "flying_carpet"
+	layer = OBJ_LAYER
+	board_item_type = /obj/item/melee/skateboard/hoverboard/flying_carpet
+
+/obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/Initialize(mapload)
+	. = ..()
+	var/datum/component/riding/riding = GetComponent(/datum/component/riding)
+	riding.set_vehicle_dir_layer(SOUTH, OBJ_LAYER)
+	riding.set_riding_offsets(RIDING_OFFSET_ALL, list(TEXT_NORTH = list(0), TEXT_SOUTH = list(0), TEXT_EAST = list(0), TEXT_WEST = list(2)))
+
+/obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/post_buckle_mob(mob/living/M)
+	. = ..()
+	if(M.buckled != src)
+		return
+	for(var/atom/movable/riding_atom in list(src, M))
+		animate(riding_atom, pixel_z = 4, time = 1 SECONDS, loop = -1, easing = SINE_EASING, flags = ANIMATION_RELATIVE, tag = "flying_carpet")
+		animate(pixel_z = -4, time = 1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
+
+/obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/post_unbuckle_mob(mob/living/M)
+	animate(src, tag = "flying_carpet")
+	animate(M, tag = "flying_carpet")
+	return ..()
+
 //CONSTRUCTION
 /obj/item/scooter_frame
 	name = "scooter frame"
