@@ -236,6 +236,26 @@
 	TEST_ASSERT(!findtext(heretic_evolution_test_seen(user, near), third_line), "У трупа облик не виден.")
 	user.remove_status_effect(/datum/status_effect/heretic_ascended)
 
+/// У каждого пути, кроме Сумрака, три ступени осмотра; до вознесения они не выдают ни роль, ни путь.
+/datum/unit_test/heretic_evolution_texts/Run()
+	var/list/parts = list(HERETIC_EVOLUTION_EYES, HERETIC_EVOLUTION_FACE, HERETIC_EVOLUTION_HAIR, HERETIC_EVOLUTION_HANDS, HERETIC_EVOLUTION_ANY)
+	for(var/path_id in GLOB.heretic_paths)
+		if(path_id == PATH_DUSK)
+			continue
+		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		TEST_ASSERT_EQUAL(length(path.evolution_examine), 3, "У пути [path_id] три ступени осмотра.")
+		for(var/level in 1 to 3)
+			var/list/lines = path.evolution_examine[level]
+			TEST_ASSERT(length(lines), "У пути [path_id] есть строки ступени [level].")
+			for(var/part in lines)
+				TEST_ASSERT(part in parts, "Часть тела [part] пути [path_id] известна каркасу.")
+				var/line = lines[part]
+				TEST_ASSERT(length(line), "Строка ступени [level] пути [path_id] не пустая.")
+				if(level < 3)
+					TEST_ASSERT(part != HERETIC_EVOLUTION_ANY, "До вознесения приметы пути [path_id] видны только на открытых частях.")
+					TEST_ASSERT(!findtextEx(line, "еретик") && !findtextEx(line, "Еретик") && !findtextEx(line, path.name), "Ступень [level] пути [path_id] не выдаёт роль и путь.")
+		TEST_ASSERT(path.evolution_examine[3][HERETIC_EVOLUTION_ANY], "Вознёсшегося пути [path_id] видно и в одежде.")
+
 /// Сброс пути, снятие роли, смерть, гиб и смена тела снимают облик или переносят его.
 /datum/unit_test/heretic_evolution_removal/Run()
 	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_ASH)
@@ -272,3 +292,19 @@
 	heretic.clear_heretic()
 	TEST_ASSERT_NULL(heretic.evolution, "Снятие роли убирает облик.")
 	TEST_ASSERT(!("ash_evo1" in heretic_evolution_test_looks(user)), "Снятая роль не оставляет слоёв.")
+
+/// Мутация Сумрака лежит на общем каркасе, но остаётся своей: с первой ступени и без общих слоёв.
+/datum/unit_test/heretic_evolution_dusk/Run()
+	var/datum/eldritch_knowledge/base_dusk/dusk = allocate_dusk()
+	var/datum/antagonist/heretic/heretic = dusk.owner_heretic()
+	var/mob/living/carbon/human/user = dusk.dusk_body
+	dusk_light(user, 1)
+	dusk_tick(dusk)
+	TEST_ASSERT_EQUAL(heretic.evolution?.body, user, "Каркас облика держит тело Сумрака с первой ступени.")
+	var/list/looks = heretic_evolution_test_looks(user)
+	TEST_ASSERT("dusk_mut_cracks" in looks, "Трещины Сумрака лежат на теле через каркас.")
+	for(var/state in looks)
+		TEST_ASSERT(!findtext(state, "_evo"), "Общих слоёв облика у Сумрака нет: [state].")
+	for(var/stage in list(3, 4, 6, 7))
+		heretic.path_stage = stage
+		TEST_ASSERT_EQUAL(dusk.mutation_level_now(), stage >= 7 ? 3 : (stage >= 4 ? 2 : 1), "Ступени мутации Сумрака прежние на ступени пути [stage].")

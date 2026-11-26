@@ -260,6 +260,9 @@
 /datum/unit_test/antag_training_blood_lesson/Run()
 	check_training_path_lesson(PATH_BLOOD, "blood", 4)
 
+/datum/unit_test/antag_training_dusk_lesson/Run()
+	check_training_path_lesson(PATH_DUSK, "dusk", 10)
+
 /// После урока подготовка пути доводит его до девятой ступени: ступени, выданные уроком, не запирают следующие.
 /datum/unit_test/proc/check_lesson_path_stage(path_id, lesson_id)
 	var/datum/antag_training_session/session = allocate_training_session()
@@ -287,6 +290,9 @@
 
 /datum/unit_test/antag_training_blood_lesson_stage/Run()
 	check_lesson_path_stage(PATH_BLOOD, "blood")
+
+/datum/unit_test/antag_training_dusk_lesson_stage/Run()
+	check_lesson_path_stage(PATH_DUSK, "dusk")
 
 /datum/unit_test/antag_training_sand_lesson_stage/Run()
 	check_lesson_path_stage(PATH_SAND, "sand")

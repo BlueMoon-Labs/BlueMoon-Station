@@ -121,6 +121,13 @@
 			/obj/effect/proc_holder/spell/pointed/heretic_lead/tripwire,
 			/obj/effect/proc_holder/spell/pointed/heretic_lead/powder_charge,
 		),
+		PATH_DUSK = list(
+			/obj/effect/proc_holder/spell/self/heretic_dusk/form,
+			/obj/effect/proc_holder/spell/pointed/heretic_dusk/beam,
+			/obj/effect/proc_holder/spell/self/heretic_dusk/covenant,
+			/obj/effect/proc_holder/spell/self/heretic_dusk/noon,
+			/obj/effect/proc_holder/spell/self/heretic_dusk/desecrate,
+		),
 	)
 	for(var/knowledge_type in subtypesof(/datum/eldritch_knowledge/spell))
 		var/datum/eldritch_knowledge/spell/knowledge = knowledge_type

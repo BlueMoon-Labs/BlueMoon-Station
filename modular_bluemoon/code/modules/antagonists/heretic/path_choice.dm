@@ -12,7 +12,7 @@ GLOBAL_LIST_INIT(heretic_playstyle_labels, list(
 GLOBAL_LIST_INIT(heretic_path_choice_order, list(
 	PATH_RUST, PATH_GLASS, PATH_ASH,
 	PATH_TIDE, PATH_COSMIC, PATH_WAX, PATH_BLADE, PATH_LEAD, PATH_ECHO, PATH_VOID,
-	PATH_LOCK, PATH_FLESH, PATH_BLOOD, PATH_MOON, PATH_SAND, PATH_SPIRIT, PATH_DANCE,
+	PATH_LOCK, PATH_FLESH, PATH_BLOOD, PATH_MOON, PATH_DUSK, PATH_SAND, PATH_SPIRIT, PATH_DANCE,
 ))
 
 /datum/heretic_path
@@ -163,6 +163,15 @@ GLOBAL_LIST_INIT(heretic_path_choice_order, list(
 		"Копии бесплатные: «Лунное отражение» ставит их рядом, они бьют врага и ловят пули за вас.",
 		"Хваткой в «Помощи» ставьте двойника там, где его увидит экипаж нового отдела.",
 		"Помутите Хваткой и усыпите Сомнамбулой: цель сама дойдёт до вашей копии, там её и уводите.",
+	)
+
+/datum/heretic_path/dusk
+	difficulty = 3
+	playstyle = list("melee")
+	first_steps = list(
+		"Сумрак копит Лик на освещённой клетке и Крыло в тени: держите облик под свет и меняйте его.",
+		"Хваткой в «Помощи» заговорите лампу: её мигание на экипаже в новом отделе идёт в дело.",
+		"Хватка тени в Крыле прибивает цель к полу: в тени на 10 секунд, на свету на 5; уводит её сердце.",
 	)
 
 /datum/heretic_path/sand

@@ -5,6 +5,35 @@
 			return TRUE
 	return FALSE
 
+/// Кнопка выбора Школы и приём Школы - среди способностей кодекса и на горячей клавише; выбранный приём встаёт на клавишу выбора. Выбор завета Сумрака тоже на клавише.
+/datum/unit_test/heretic_lead_school_hotkeys/Run()
+	var/datum/eldritch_knowledge/base_lead/lead = heretic_lead_test_school(null, heretic_lead_test_spot(1, 1))
+	var/mob/living/carbon/human/user = lead.lead_body
+	var/datum/antagonist/heretic/heretic = lead.owner_heretic()
+	var/datum/eldritch_knowledge/lead_mark/mark = heretic.get_knowledge(/datum/eldritch_knowledge/lead_mark)
+	var/list/spells = list()
+	heretic.collect_combat_spells(spells)
+	TEST_ASSERT(!QDELETED(mark.choice_power) && (mark.choice_power in spells), "Кнопка «Школа стрельбы» среди способностей кодекса.")
+	var/slot = heretic.ability_hotkey_types.Find(mark.choice_power.type)
+	TEST_ASSERT(slot > 0 && slot <= ABILITY_HOTKEY_SLOTS, "Кнопка выбора Школы на горячей клавише: [slot].")
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book)
+	var/found = FALSE
+	for(var/list/entry as anything in book.combat_ability_data(heretic))
+		if(entry["name"] == mark.choice_power.name)
+			found = TRUE
+	TEST_ASSERT(found, "Кодекс показывает кнопку выбора Школы в «Способностях».")
+	TEST_ASSERT(lead.choose_school(user, HERETIC_LEAD_SCHOOL_GUNSLINGER), "Школа Стрелка: [lead.lead_failure]")
+	spells = list()
+	heretic.collect_combat_spells(spells)
+	TEST_ASSERT(!QDELETED(mark.school_power) && (mark.school_power in spells), "Приём Школы среди способностей кодекса.")
+	TEST_ASSERT_EQUAL(heretic.ability_hotkey_types.Find(mark.school_power.type), slot, "Приём Школы встаёт на клавишу кнопки выбора.")
+	var/datum/antagonist/heretic/dusk_heretic = allocate_deed_heretic(PATH_DUSK)
+	dusk_heretic.gain_knowledge(/datum/eldritch_knowledge/spell/dusk_covenant)
+	var/datum/eldritch_knowledge/spell/dusk_covenant/covenant = dusk_heretic.get_knowledge(/datum/eldritch_knowledge/spell/dusk_covenant)
+	spells = list()
+	dusk_heretic.collect_combat_spells(spells)
+	TEST_ASSERT(!QDELETED(covenant.choice_power) && !(covenant.choice_power in spells), "Одноразовый выбор Завета не занимает слот способностей.")
+
 /// Канонир получает Свинцовый дождь сразу с выбором Школы, дождь стоит единицу; девятая ступень не даёт второй кнопки. Другие Школы раннего дождя не получают.
 /datum/unit_test/heretic_lead_cannoneer_early_rain/Run()
 	var/datum/eldritch_knowledge/base_lead/lead = heretic_lead_test_school(null, heretic_lead_test_spot(0, 2))

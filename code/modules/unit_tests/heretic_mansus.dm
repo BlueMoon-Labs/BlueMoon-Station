@@ -1300,6 +1300,31 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	TEST_ASSERT_EQUAL(visit.hits_taken, 1, "Мишень приняла выстрел.")
 	TEST_ASSERT(!QDELETED(hunter), "Тени пули не страшны.")
 
+/// Сумрак: лампы Дома гаснут по очереди, в темноте тени отнимают силы, у горящей лампы безопасно.
+/datum/unit_test/heretic_mansus_rule_dusk/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_DUSK)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/dusk/rule = visit.rule
+	TEST_ASSERT(length(rule.lamps), "В зале стоят лампы.")
+	for(var/obj/effect/heretic_mansus_dusk_lamp/each as anything in rule.lamps)
+		TEST_ASSERT(each in visit.scenery, "Лампа убирается вместе с Домом.")
+		each.set_lit(FALSE)
+	var/obj/effect/heretic_mansus_dusk_lamp/lamp = rule.lamps[1]
+	lamp.forceMove(mansus_tile(visit, 2, 2))
+	victim.forceMove(mansus_tile(visit, 5, 13))
+	var/stamina = victim.getStaminaLoss()
+	TEST_ASSERT(rule.grasp(), "В темноте тени хватают.")
+	TEST_ASSERT(victim.getStaminaLoss() > stamina, "Тени отнимают силы.")
+	lamp.forceMove(mansus_tile(visit, 4, 14))
+	lamp.set_lit(TRUE)
+	victim.forceMove(mansus_tile(visit, 5, 14))
+	stamina = victim.getStaminaLoss()
+	TEST_ASSERT(!rule.grasp(), "У горящей лампы безопасно.")
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), stamina, "У горящей лампы силы не уходят.")
+	rule.cycle()
+	TEST_ASSERT(!lamp.lit, "Лампы гаснут по очереди.")
+
 /// Клетка фикстурной раскладки: столбец и строка от 1 до 33, строки с севера.
 /datum/unit_test/proc/mansus_tile(datum/heretic_mansus_visit/visit, column, row)
 	return visit.local_turf(column, row)

@@ -88,6 +88,7 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 	"dance_invite" = 'modular_bluemoon/sound/heretic/capture/dance_latch.ogg',
 	"dance_lead" = 'modular_bluemoon/sound/heretic/capture/dance_latch.ogg',
 	"dance_partner" = 'modular_bluemoon/sound/heretic/capture/dance_latch.ogg',
+	"dusk_grip" = 'modular_bluemoon/sound/heretic/capture/dusk_latch.ogg',
 	"lead_named" = 'modular_bluemoon/sound/heretic/capture/lead_latch.ogg',
 ))
 

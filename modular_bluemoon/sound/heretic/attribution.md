@@ -176,6 +176,12 @@ CC BY-SA 3.0 согласно README каждого источника.
 | `lead_crucible_quench_1.ogg` | `sound/machines/grill/grillsizzle.ogg` |
 | `book_lead_open.ogg` | `sound/effects/pageturn3.ogg` |
 
+## Сумрак
+
+Все звуки пути Сумрака (`dusk_*.ogg`, `book_dusk_*.ogg`, `capture/dusk_latch.ogg`, `mansus/dusk_*.ogg`, `sky/dusk_*.ogg`, `ascend_dusk.ogg`, `ascend_dusk_climax.ogg`) - оригинальные, без чужих записей. Шумовая фактура (дыхание, хрип, рык, крик, кости, плоть, ткань, крылья и перья, гул и мигание ламп, выключатель, стекло, искры, шипение, кислота, пар, вспышка, удар ножа, страницы, шаг, гул и ветер) и голосовые слои (шёпоты, хоры, бурдоны, стоны) - синтез. Голоса сломаны: перестановка и разворот слогов, заикания, формантный сдвиг, вокодер на хрипе и шуме, кольцевая модуляция, перегруз и обрывы. Колокол и нимб - модальный синтез. Обработка и синтез слоёв (давление, удары, треск) - своя обработка, CC BY-SA 3.0. `dusk_slash_light.ogg`, `dusk_tether.ogg`, `dusk_lamp_out_1.ogg`, `dusk_lamp_out_2.ogg`, `dusk_stance_wing.ogg`, `dusk_drag_done.ogg`, `dusk_lamp_beam.ogg`, `dusk_flicker_3.ogg`, `dusk_wing_twitch_1.ogg`, `dusk_wing_twitch_2.ogg`, `dusk_rot_spread_1.ogg`, `dusk_rot_spread_2.ogg`, `dusk_rot_lamp.ogg`, `dusk_covenant_rot.ogg`, `dusk_eclipse_warn.ogg`, `dusk_holy_burn_2.ogg`, `dusk_mutate_2.ogg`, `mansus/dusk_ambience.ogg`, `mansus/dusk_warning.ogg`, `sky/dusk_loop.ogg`, `sky/dusk_event.ogg`, `dusk_flicker_1.ogg`, `dusk_flicker_2.ogg`, `dusk_holy_burn_1.ogg`, `dusk_mutate_1.ogg`, `dusk_mutate_3.ogg`, `dusk_mark_burst.ogg`, `dusk_step_1.ogg`, `dusk_step_2.ogg`, `capture/dusk_latch.ogg`, `mansus/dusk_pickup.ogg`, `dusk_covenant_seraph.ogg`, `dusk_covenant_fallen.ogg`, `dusk_light_burn.ogg`, `dusk_shade_servant_burst.ogg` и `dusk_rot_cleanse.ogg` - синтез без голосовых слоёв, CC BY-SA 3.0.
+
+Звуки Заветов `dusk_shade_servant_1.ogg` и `dusk_shade_servant_2.ogg` собраны из той же библиотеки фактур Сумрака (шипение, дыхание, хрип, стон, рык, шёпоты, перья и ткань, всплеск) - синтез и своя обработка, CC BY-SA 3.0.
+
 ## Ресурсы BlueMoon
 
 CC BY-SA 3.0.

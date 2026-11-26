@@ -63,6 +63,10 @@
 		if(istype(knowledge, /datum/eldritch_knowledge/base_tide))
 			var/datum/eldritch_knowledge/base_tide/tide = knowledge
 			spells |= tide.dive_power
+		if(istype(knowledge, /datum/eldritch_knowledge/base_dusk))
+			var/datum/eldritch_knowledge/base_dusk/dusk = knowledge
+			if(!QDELETED(dusk.beam_power))
+				spells |= dusk.beam_power
 		if(istype(knowledge, /datum/eldritch_knowledge/base_echo))
 			var/datum/eldritch_knowledge/base_echo/echo = knowledge
 			spells |= echo.listen_spell

@@ -4,6 +4,7 @@ GLOBAL_LIST_INIT(heretic_robe_armor, list(
 	PATH_BLOOD = /datum/armor/heretic_blood,
 	PATH_COSMIC = /datum/armor/heretic_cosmic,
 	PATH_DANCE = /datum/armor/heretic_dance,
+	PATH_DUSK = /datum/armor/heretic_dusk,
 	PATH_ECHO = /datum/armor/heretic_echo,
 	PATH_FLESH = /datum/armor/heretic_flesh,
 	PATH_GLASS = /datum/armor/heretic_glass,

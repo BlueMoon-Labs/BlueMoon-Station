@@ -1054,6 +1054,104 @@
 	darkness = 0
 	update_overlay()
 
+// Сумрак: лампы гаснут по кругу, в темноте тени хватают.
+
+#define HERETIC_MANSUS_DUSK_CYCLE (5 SECONDS)
+#define HERETIC_MANSUS_DUSK_CHECK (2 SECONDS)
+#define HERETIC_MANSUS_DUSK_REACH 2
+#define HERETIC_MANSUS_DUSK_STAMINA 12
+#define HERETIC_MANSUS_DUSK_STRIKES 3
+
+/datum/heretic_mansus_rule/dusk
+	hint = "Это Сумеречный зал. Лампы Дома гаснут и зажигаются по очереди: у горящей лампы безопасно, а в темноте тени хватают вас и отнимают силы. Перебегайте от лампы к лампе, пока свет держится."
+	reminder = "Держитесь у горящей лампы."
+	var/list/obj/effect/heretic_mansus_dusk_lamp/lamps = list()
+	var/phase = FALSE
+	var/dark_strikes = 0
+
+/datum/heretic_mansus_rule/dusk/on_generate()
+	var/index = 0
+	for(var/cell in ordinary_cells())
+		var/turf/position = free_spot(cell)
+		if(position)
+			index++
+			lamps += spawn_object(/obj/effect/heretic_mansus_dusk_lamp, position, visit, ISODD(index))
+
+/datum/heretic_mansus_rule/dusk/on_danger()
+	schedule(CALLBACK(src, PROC_REF(cycle)), HERETIC_MANSUS_DUSK_CYCLE)
+	schedule(CALLBACK(src, PROC_REF(grasp)), HERETIC_MANSUS_DUSK_CHECK)
+
+/// Половина ламп гаснет, другая зажигается.
+/datum/heretic_mansus_rule/dusk/proc/cycle()
+	if(!active())
+		return
+	schedule(CALLBACK(src, PROC_REF(cycle)), HERETIC_MANSUS_DUSK_CYCLE)
+	phase = !phase
+	var/index = 0
+	for(var/obj/effect/heretic_mansus_dusk_lamp/lamp as anything in lamps)
+		index++
+		lamp.set_lit(ISODD(index) != phase)
+	playsound(visit.victim, visit.theme["warning"], 40, FALSE)
+
+/datum/heretic_mansus_rule/dusk/proc/near_light(turf/position)
+	for(var/obj/effect/heretic_mansus_dusk_lamp/lamp as anything in lamps)
+		if(lamp.lit && get_dist(lamp, position) <= HERETIC_MANSUS_DUSK_REACH)
+			return TRUE
+	return FALSE
+
+/// В темноте тени отнимают силы; третий захват подряд сбивает с ног, как разлом.
+/datum/heretic_mansus_rule/dusk/proc/grasp()
+	if(!active())
+		return FALSE
+	schedule(CALLBACK(src, PROC_REF(grasp)), HERETIC_MANSUS_DUSK_CHECK)
+	var/turf/position = get_turf(visit.victim)
+	if(!visit.contains(position) || visit.is_safe(position) || near_light(position))
+		dark_strikes = 0
+		return FALSE
+	visit.victim.adjustStaminaLoss(HERETIC_MANSUS_DUSK_STAMINA)
+	new /obj/effect/temp_visual/heretic_mansus_dusk_grasp(position)
+	dark_strikes++
+	to_chat(visit.victim, span_warning("Тени с крыльями хватают вас в темноте! Бегите к горящей лампе."))
+	if(dark_strikes >= HERETIC_MANSUS_DUSK_STRIKES)
+		dark_strikes = 0
+		visit.suffer_hazard(visit.victim)
+	return TRUE
+
+/datum/heretic_mansus_rule/dusk/cleanup()
+	lamps.Cut()
+
+/obj/effect/temp_visual/heretic_mansus_dusk_grasp
+	icon = HERETIC_MANSUS_RULES_ICON
+	icon_state = "dusk_grasp"
+	duration = 1 SECONDS
+	randomdir = FALSE
+	layer = ABOVE_MOB_LAYER
+
+/obj/effect/heretic_mansus_dusk_lamp
+	name = "lamp of the House"
+	desc = "Высокая лампа на кованой ноге. Она то гаснет, то вспыхивает снова; рядом с горящей тени не подходят."
+	icon = HERETIC_MANSUS_RULES_ICON
+	icon_state = "dusk_lamp"
+	anchored = TRUE
+	layer = ABOVE_MOB_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	var/lit = FALSE
+
+/obj/effect/heretic_mansus_dusk_lamp/Initialize(mapload, datum/heretic_mansus_visit/visit, lit_now)
+	. = ..()
+	set_lit(lit_now)
+
+/obj/effect/heretic_mansus_dusk_lamp/proc/set_lit(value)
+	lit = !!value
+	icon_state = lit ? "dusk_lamp" : "dusk_lamp_off"
+	set_light(lit ? HERETIC_MANSUS_DUSK_REACH + 1 : 0, 1, "#e0b25a")
+
+#undef HERETIC_MANSUS_DUSK_CYCLE
+#undef HERETIC_MANSUS_DUSK_CHECK
+#undef HERETIC_MANSUS_DUSK_REACH
+#undef HERETIC_MANSUS_DUSK_STAMINA
+#undef HERETIC_MANSUS_DUSK_STRIKES
+
 // Пляска: в бальном зале слышен каждый шаг мимо музыки.
 
 /datum/heretic_mansus_rule/dance

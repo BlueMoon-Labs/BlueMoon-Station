@@ -170,6 +170,18 @@
 	TEST_ASSERT_EQUAL(round(lead.body.getStaminaLoss(), DAMAGE_PRECISION), 22, "Пуля в Свинец восстанавливает выносливость.")
 	heretic_lead_test_shot(gunner, lead.body)
 	TEST_ASSERT_EQUAL(round(lead.body.getStaminaLoss(), DAMAGE_PRECISION), 22, "Тугое ухо срабатывает раз в 6 секунд.")
+	var/datum/heretic_innate/dusk/dusk_innate = create_path(PATH_DUSK)
+	var/datum/eldritch_knowledge/base_dusk/dusk = dusk_innate.knowledge_ref.resolve()
+	dusk_light(dusk_innate.body, 0)
+	dusk.refresh_light()
+	dusk_innate.next_tick = 0
+	dusk_innate.tick()
+	TEST_ASSERT(HAS_TRAIT(dusk_innate.body, TRAIT_SILENT_STEP), "В тени шаги Сумрака беззвучны.")
+	dusk_light(dusk_innate.body, 1)
+	dusk.refresh_light()
+	dusk_innate.next_tick = 0
+	dusk_innate.tick()
+	TEST_ASSERT(!HAS_TRAIT(dusk_innate.body, TRAIT_SILENT_STEP), "На свету шаги Сумрака слышны.")
 
 /// Перенос тела, смерть и снятие роли не оставляют черты и заряды прежнему телу.
 /datum/unit_test/heretic_innates/lifecycle/Run()

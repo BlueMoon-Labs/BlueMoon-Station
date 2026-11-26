@@ -2216,6 +2216,56 @@
 	TEST_ASSERT(neighbor.IsKnockdown(), "Хлопок Пороховой пули Канонира сбивает с ног соседа.")
 	TEST_ASSERT(!user.IsKnockdown(), "Хозяина хлопок не трогает.")
 
+/// Пороховая закладка Канонира: до 2 закладок, наступивший слышит щелчок, через полсекунды хлопок валит и поджигает всех в 1 клетке; выстрел подрывает, вода и руки обезвреживают.
+/datum/unit_test/heretic_lead_powder_charge/Run()
+	var/datum/eldritch_knowledge/base_lead/lead = heretic_lead_test_school(HERETIC_LEAD_SCHOOL_CANNONEER, heretic_lead_test_spot(0, 2))
+	var/mob/living/carbon/human/user = lead.lead_body
+	var/datum/antagonist/heretic/heretic = lead.owner_heretic()
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/proc_holder/spell/pointed/heretic_lead/powder_charge) in user.mind.spell_list, "У Канонира есть кнопка «Пороховая закладка».")
+	lead.combat_resource = HERETIC_LEAD_CAPACITY
+	var/obj/structure/heretic_lead_charge/first = lead.place_charge(user, heretic_lead_test_spot(1, 2))
+	TEST_ASSERT(first && lead.combat_resource == HERETIC_LEAD_CAPACITY - HERETIC_LEAD_TRAP_COST, "Закладка стоит [HERETIC_LEAD_TRAP_COST] Свинца: [lead.lead_failure]")
+	var/obj/structure/heretic_lead_charge/stepped = lead.place_charge(user, heretic_lead_test_spot(1, 3))
+	var/obj/structure/heretic_lead_charge/wet = lead.place_charge(user, heretic_lead_test_spot(1, 1))
+	TEST_ASSERT(QDELETED(first) && length(lead.charges) == HERETIC_LEAD_CHARGE_LIMIT, "Закладок не больше [HERETIC_LEAD_CHARGE_LIMIT], новая снимает самую старую.")
+	var/mob/living/carbon/human/walker = heretic_lead_test_crew(heretic_lead_test_spot(2, 4))
+	var/mob/living/carbon/human/beside = heretic_lead_test_crew(heretic_lead_test_spot(2, 3))
+	walker.forceMove(heretic_lead_test_spot(1, 3))
+	TEST_ASSERT(stepped.icon_state == "lead_powder_charge_armed" && !walker.IsKnockdown(), "Наступивший слышит щелчок, хлопок не сразу.")
+	TEST_ASSERT(wait_for_qdeleted(stepped, HERETIC_LEAD_CHARGE_DELAY + 2 SECONDS), "Закладка хлопнула.")
+	TEST_ASSERT(walker.IsKnockdown() && walker.on_fire && beside.IsKnockdown() && beside.on_fire, "Хлопок валит и поджигает всех в клетке вокруг.")
+	TEST_ASSERT(!user.IsKnockdown() && !user.on_fire, "Хозяина свой хлопок не трогает.")
+	var/mob/living/carbon/human/bystander = heretic_lead_test_crew(heretic_lead_test_spot(2, 1))
+	dusk_reagent_splash(wet, /datum/reagent/water)
+	TEST_ASSERT(wait_for_qdeleted(wet, 1 SECONDS), "Вода гасит закладку.")
+	TEST_ASSERT(!bystander.IsKnockdown() && !bystander.on_fire, "Залитая закладка не хлопает.")
+	var/obj/structure/heretic_lead_charge/picked = lead.place_charge(user, heretic_lead_test_spot(0, 1))
+	var/mob/living/carbon/human/picker = heretic_lead_test_crew(heretic_lead_test_spot(0, 0))
+	INVOKE_ASYNC(picked, TYPE_PROC_REF(/atom, attack_hand), picker)
+	TEST_ASSERT(!QDELETED(picked), "Собрать закладку - не мгновенно.")
+	TEST_ASSERT(wait_for_qdeleted(picked, HERETIC_LEAD_CHARGE_DEFUSE_TIME + 2 SECONDS), "Руками закладку собирают за [HERETIC_LEAD_CHARGE_DEFUSE_TIME / (1 SECONDS)] секунды.")
+	TEST_ASSERT(!picker.IsKnockdown(), "Собранная закладка не хлопает.")
+	var/obj/structure/heretic_lead_charge/shot = lead.place_charge(user, heretic_lead_test_spot(1, 2))
+	var/mob/living/carbon/human/target_side = heretic_lead_test_crew(heretic_lead_test_spot(2, 2))
+	var/obj/item/heretic_path_relic/lead_revolver/revolver = heretic_lead_test_revolver(heretic, user)
+	lead.combat_resource = 2
+	heretic_lead_test_fly(revolver.fire_at(shot, user))
+	TEST_ASSERT(wait_for_qdeleted(shot, 1 SECONDS), "Выстрел подрывает закладку.")
+	TEST_ASSERT(target_side.IsKnockdown(), "Подорванная выстрелом закладка валит стоящих рядом.")
+	var/obj/structure/heretic_lead_charge/left = lead.place_charge(user, heretic_lead_test_spot(0, 3))
+	user.death()
+	heretic.handle_death(user)
+	TEST_ASSERT(QDELETED(left) && !length(lead.charges), "Смерть хозяина снимает закладки.")
+
+/// Урок не ждёт выбора Школы, если она уже выбрана.
+/datum/unit_test/heretic_lead_lesson_school_chosen/Run()
+	var/datum/eldritch_knowledge/base_lead/lead = heretic_lead_test_school(HERETIC_LEAD_SCHOOL_HUNTER, heretic_lead_test_spot(0, 2))
+	var/mob/living/carbon/human/target = heretic_lead_test_crew(heretic_lead_test_spot(2, 4))
+	var/datum/heretic_lead_lesson/lesson = new(null, lead, lead.lead_body, target)
+	allocated += lesson
+	lesson.set_stage(8)
+	TEST_ASSERT(heretic_lead_test_wait(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(heretic_dusk_test_stage_past), lesson, 8), 2 SECONDS, "шаг Школы"), "Выбранная Школа засчитывает шаг сам.")
+
 /// Числа Школ в кодексе, кнопках и заклинаниях совпадают с дефайнами.
 /datum/unit_test/heretic_lead_school_texts/Run()
 	var/list/expected = list(
