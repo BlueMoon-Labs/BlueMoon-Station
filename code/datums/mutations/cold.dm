@@ -1,6 +1,6 @@
 /datum/mutation/human/geladikinesis
 	name = "Geladikinesis"
-	desc = "Allows the user to concentrate moisture and sub-zero forces into snow."
+	desc = "Позволяет носителю превращать влагу и силы холода в снег."
 	quality = POSITIVE
 	text_gain_indication = "<span class='notice'>Your hand feels cold.</span>"
 	instability = 10
@@ -19,7 +19,7 @@
 
 /datum/mutation/human/cryokinesis
 	name = "Cryokinesis"
-	desc = "Draws negative energy from the sub-zero void to freeze surrounding temperatures at subject's will."
+	desc = "Черпает отрицательную энергию из ледяной пустоты, чтобы по желанию носителя замораживать температуру вокруг."
 	quality = POSITIVE //upsides and downsides
 	mutator_security_level = CRYOKINESIS_PRINT_CODE
 	text_gain_indication = "<span class='notice'>Your hand feels cold.</span>"
