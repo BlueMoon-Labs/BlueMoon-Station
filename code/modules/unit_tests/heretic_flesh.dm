@@ -421,3 +421,221 @@
 	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, place)
 	heretic_flesh_expel_fx(body, list())
 	TEST_ASSERT("[file('modular_bluemoon/sound/heretic/flesh_expel.ogg')]" in ear.heard, "Выплюнутое тело слышно вокруг.")
+
+/// Пустой гуль и пророк вдвое слабее и зовут призраков; вселившаяся душа возвращает слуге полную силу, а ушедшая - снова делает его пустым.
+/datum/unit_test/heretic_flesh_hollow_servant/Run()
+	var/datum/antagonist/heretic/heretic = flesh_latch_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_flesh/flesh = heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+	var/datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe/probe = allocate(/datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe)
+	heretic.researched_knowledge[probe.type] = probe
+	var/mob/living/carbon/human/corpse = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	corpse.death()
+	flesh.combat_resource = 2
+	var/list/saved_notes = GLOB.unit_test_ghost_notifications
+	GLOB.unit_test_ghost_notifications = list()
+	var/raised = probe.on_mansus_grasp(corpse, user, TRUE)
+	var/list/notes = GLOB.unit_test_ghost_notifications
+	GLOB.unit_test_ghost_notifications = saved_notes
+	TEST_ASSERT(raised, "Хватка поднимает пустого гуля.")
+	allocated += corpse.mind
+	var/datum/antagonist/heretic_monster/ghoul/role = corpse.mind.has_antag_datum(/datum/antagonist/heretic_monster/ghoul)
+	var/datum/component/heretic_flesh_puppet/puppet = corpse.GetComponent(/datum/component/heretic_flesh_puppet)
+	TEST_ASSERT_NOTNULL(puppet, "Гуль без души пустой.")
+	STOP_PROCESSING(SSfastprocess, puppet)
+	TEST_ASSERT_EQUAL(corpse.maxHealth, round(role.health_cap * HERETIC_FLESH_HOLLOW_RATIO), "Пустой гуль вдвое слабее гуля с душой.")
+	TEST_ASSERT(length(notes) == 1 && findtext(notes[1], "пустой слуга"), "Призраков зовут вселиться в пустого слугу: [english_list(notes)]")
+	TEST_ASSERT(!role.show_in_roundend, "Пустой гуль не числится игроком.")
+	SEND_SIGNAL(corpse, COMSIG_MOB_LOGIN)
+	TEST_ASSERT(!QDELETED(puppet) && !puppet.hollow, "Вошедшая душа отпускает голод, но тело ещё помнит хозяина.")
+	TEST_ASSERT_EQUAL(corpse.maxHealth, role.health_cap, "Гуль с душой встаёт в полную силу.")
+	TEST_ASSERT(role.show_in_roundend, "Гуль с душой числится игроком.")
+	TEST_ASSERT(!findtext(jointext(corpse.examine(user), " "), "Пустой слуга"), "Слуга с душой не выглядит пустым.")
+	corpse.key = "unit_test_flesh_servant"
+	GLOB.unit_test_ghost_notifications = list()
+	var/mob/dead/observer/ghost = corpse.ghostize(TRUE)
+	TEST_ASSERT(!puppet.hollow && puppet.abandon_timer, "Тело проверяют после ответа игрока, а не в момент сигнала.")
+	deltimer(puppet.abandon_timer)
+	puppet.left_body()
+	notes = GLOB.unit_test_ghost_notifications
+	GLOB.unit_test_ghost_notifications = saved_notes
+	if(ghost)
+		ghost.key = null
+		allocated += ghost
+	STOP_PROCESSING(SSfastprocess, puppet)
+	TEST_ASSERT(puppet.hollow, "Душа вышла из слуги: голод снова правит телом.")
+	TEST_ASSERT_EQUAL(corpse.maxHealth, round(role.health_cap * HERETIC_FLESH_HOLLOW_RATIO), "Брошенный слуга снова вдвое слабее.")
+	TEST_ASSERT(length(notes) == 1 && findtext(notes[1], "пустой слуга"), "Призраков снова зовут в брошенного слугу: [english_list(notes)]")
+	corpse.key = "unit_test_flesh_servant"
+	TEST_ASSERT(puppet.body_free(), "Ключ отключившегося игрока не мешает призраку вселиться.")
+	SEND_SIGNAL(corpse, COMSIG_MOB_LOGIN)
+	TEST_ASSERT(!puppet.hollow, "Вернувшаяся душа снова поднимает слугу в полную силу.")
+	SEND_SIGNAL(corpse, COMSIG_MOB_LOGOUT)
+	TEST_ASSERT(!puppet.hollow && puppet.abandon_timer, "Отключившемуся игроку дают время вернуться.")
+	puppet.left_body()
+	STOP_PROCESSING(SSfastprocess, puppet)
+	TEST_ASSERT(puppet.hollow, "Не вернулся - слуга снова пустой.")
+	SEND_SIGNAL(corpse, COMSIG_MOB_LOGIN)
+	probe.release_flesh_servants()
+	corpse.key = "unit_test_flesh_servant"
+	ghost = corpse.ghostize(TRUE)
+	corpse.key = null
+	deltimer(puppet.abandon_timer)
+	puppet.left_body()
+	if(ghost)
+		ghost.key = null
+		allocated += ghost
+	TEST_ASSERT(QDELETED(puppet), "Отпущенный из свиты слуга не становится пустым снова.")
+	heretic.researched_knowledge -= probe.type
+	var/datum/eldritch_knowledge/summon/raw_prophet/ghost_poll_probe/summon = allocate(/datum/eldritch_knowledge/summon/raw_prophet/ghost_poll_probe)
+	heretic.researched_knowledge[summon.type] = summon
+	var/turf/rune_turf = get_step(user, NORTH)
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch, rune_turf)
+	var/obj/item/paper/ingredient = allocate(/obj/item/paper, rune_turf)
+	flesh_rune_reserve(rune, ingredient)
+	TEST_ASSERT(summon.on_finished_recipe(user, list(ingredient), rune_turf), "Пророк встаёт пустым.")
+	var/mob/living/simple_animal/hostile/eldritch/raw_prophet/prophet = locate() in rune_turf
+	allocated += prophet
+	var/datum/component/heretic_flesh_puppet/prophet_puppet = prophet.GetComponent(/datum/component/heretic_flesh_puppet)
+	STOP_PROCESSING(SSfastprocess, prophet_puppet)
+	TEST_ASSERT_EQUAL(prophet.maxHealth, round(initial(prophet.maxHealth) * HERETIC_FLESH_HOLLOW_RATIO), "Пустой пророк вдвое слабее.")
+	TEST_ASSERT_EQUAL(prophet.melee_damage_upper, round(initial(prophet.melee_damage_upper) * HERETIC_FLESH_HOLLOW_RATIO), "Пустой пророк бьёт вдвое слабее.")
+	SEND_SIGNAL(prophet, COMSIG_MOB_LOGIN)
+	TEST_ASSERT(!prophet_puppet.hollow, "Душа отпускает пустого пророка.")
+	TEST_ASSERT_EQUAL(prophet.maxHealth, initial(prophet.maxHealth), "Пророк с душой в полную силу.")
+	TEST_ASSERT_EQUAL(prophet.melee_damage_upper, initial(prophet.melee_damage_upper), "Пророк с душой бьёт в полную силу.")
+	heretic.researched_knowledge -= summon.type
+
+/// Слуга с душой под присмотром голода: отменённый «Ghost» и админский призрак его не пустят, ушедший игрок оставляет пустого, а раненое тело от пустоты не падает.
+/datum/unit_test/heretic_flesh_servant_soul_leaves/Run()
+	var/datum/antagonist/heretic/heretic = flesh_latch_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_flesh/flesh = heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+	var/datum/eldritch_knowledge/flesh_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/flesh_grasp)
+	var/mob/living/carbon/human/corpse = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	corpse.death()
+	corpse.mind_initialize()
+	allocated += corpse.mind
+	corpse.mock_client = new /datum/client_interface()
+	corpse.key = "unit_test_flesh_soul"
+	flesh.combat_resource = 1
+	TEST_ASSERT(grasp.raise_ghoul(user, corpse), "Гуль встаёт с душой.")
+	var/datum/antagonist/heretic_monster/ghoul/role = corpse.mind.has_antag_datum(/datum/antagonist/heretic_monster/ghoul)
+	var/datum/component/heretic_flesh_puppet/puppet = corpse.GetComponent(/datum/component/heretic_flesh_puppet)
+	TEST_ASSERT_NOTNULL(puppet, "Гуль с душой тоже опустеет, если игрок уйдёт.")
+	TEST_ASSERT(!puppet.hollow && !(puppet in SSfastprocess.processing), "Пока в теле игрок, голод им не водит.")
+	TEST_ASSERT_EQUAL(corpse.maxHealth, role.health_cap, "Гуль с душой в полную силу.")
+	SEND_SIGNAL(corpse, COMSIG_MOB_GHOSTIZE, FALSE, FALSE, 0, FALSE)
+	TEST_ASSERT(!puppet.hollow, "Нажатый «Ghost» не пустит слугу до ответа игрока.")
+	deltimer(puppet.abandon_timer)
+	puppet.left_body()
+	TEST_ASSERT(!puppet.hollow, "Игрок отменил выход и остался в полном теле.")
+	corpse.mock_client = null
+	corpse.key = "@unit_test_flesh_soul"
+	SEND_SIGNAL(corpse, COMSIG_MOB_GHOSTIZE, TRUE, FALSE, FALSE)
+	SEND_SIGNAL(corpse, COMSIG_MOB_LOGOUT)
+	deltimer(puppet.abandon_timer)
+	puppet.left_body()
+	TEST_ASSERT(!puppet.hollow && !puppet.body_free(), "Тело вышедшего призраком администратора не отдают духам.")
+	corpse.key = "unit_test_flesh_soul"
+	corpse.adjustBruteLoss(role.health_cap * 0.6)
+	var/damage = corpse.maxHealth - corpse.health
+	puppet.left_body()
+	STOP_PROCESSING(SSfastprocess, puppet)
+	corpse.key = null
+	TEST_ASSERT(puppet.hollow, "Ушедший игрок оставляет пустого слугу.")
+	TEST_ASSERT(corpse.stat != DEAD && corpse.health > HEALTH_THRESHOLD_CRIT, "Раненый слуга не падает от пустоты: [corpse.health] из [corpse.maxHealth] при [damage] урона.")
+	TEST_ASSERT_EQUAL(corpse.maxHealth, CEILING(damage, 1) + 1, "Предел здоровья опустевшего слуги чуть выше полученного урона.")
+	SEND_SIGNAL(corpse, COMSIG_MOB_LOGIN)
+	TEST_ASSERT_EQUAL(corpse.maxHealth, role.health_cap, "Вернувшаяся душа возвращает полную силу.")
+	var/datum/eldritch_knowledge/summon/raw_prophet/summon = allocate(/datum/eldritch_knowledge/summon/raw_prophet)
+	var/mob/living/simple_animal/hostile/eldritch/raw_prophet/prophet = allocate(/mob/living/simple_animal/hostile/eldritch/raw_prophet, get_step(user, NORTH))
+	summon.summon_ensouled(prophet, heretic)
+	var/datum/component/heretic_flesh_puppet/prophet_puppet = prophet.GetComponent(/datum/component/heretic_flesh_puppet)
+	TEST_ASSERT(prophet_puppet && !prophet_puppet.hollow, "Призванный с душой пророк тоже под присмотром голода.")
+	TEST_ASSERT_EQUAL(prophet.maxHealth, initial(prophet.maxHealth), "Пророк с душой в полную силу.")
+
+/// Сбросить кожу: за биомассу и секунду еретик меняется местами со слугой даже из чужой хватки, оставляя кожу со своей кровью; оглушение срывает уход.
+/datum/unit_test/heretic_flesh_shed_skin/Run()
+	var/datum/antagonist/heretic/heretic = flesh_latch_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_flesh/flesh = heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+	var/datum/eldritch_knowledge/flesh_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/flesh_grasp)
+	var/obj/effect/proc_holder/spell/pointed/heretic_flesh_shed/shed = flesh.shed_spell
+	TEST_ASSERT_NOTNULL(shed, "У Плоти свой уход.")
+	TEST_ASSERT(shed in user.mind.spell_list, "Уход выдан еретику.")
+	for(var/fact in list("в [HERETIC_FLESH_SHED_RANGE] клетках", "За [HERETIC_FLESH_SHED_COST] биомассу", "Перезарядка [HERETIC_FLESH_SHED_COOLDOWN / (1 SECONDS)] секунд"))
+		TEST_ASSERT(findtext(shed.desc, fact), "Описание ухода называет «[fact]».")
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/ghoul = oldpath_servant(heretic, grasp, /datum/antagonist/heretic_monster/ghoul, locate(origin.x + 3, origin.y + 2, origin.z))
+	var/turf/ghoul_spot = get_turf(ghoul)
+	flesh.combat_resource = 0
+	TEST_ASSERT(!shed.can_target(ghoul, user, TRUE), "Без биомассы кожу не сбросить.")
+	flesh.combat_resource = HERETIC_FLESH_SHED_COST
+	TEST_ASSERT(shed.can_target(ghoul, user, TRUE), "Слуга в пределах досягаем.")
+	oldpath_door_cuff(ghoul)
+	TEST_ASSERT(!shed.can_target(ghoul, user, TRUE), "В скованного слугу не уйти.")
+	ghoul.uncuff()
+	oldpath_door_cuff(user)
+	TEST_ASSERT(!shed.can_target(user, user, TRUE), "В наручниках кожу не сбросить.")
+	user.uncuff()
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, get_step(origin, NORTH))
+	crew.start_pulling(user)
+	TEST_ASSERT_EQUAL(user.pulledby, crew, "Экипаж держит еретика.")
+	user.ranged_ability = shed
+	user.click_intercept = shed
+	shed.ranged_ability_user = user
+	shed.active = TRUE
+	var/started = world.time
+	shed.InterceptClickOn(user, "", user)
+	TEST_ASSERT(world.time - started >= HERETIC_FLESH_SHED_CHANNEL - 1, "Уход занимает секунду: [world.time - started] дс.")
+	TEST_ASSERT_EQUAL(get_turf(user), ghoul_spot, "Указав на себя, еретик уходит в своего слугу.")
+	TEST_ASSERT_EQUAL(get_turf(ghoul), origin, "Слуга встаёт на место еретика.")
+	TEST_ASSERT(crew.pulling != user, "Хватка экипажа остаётся с пустой кожей.")
+	var/obj/effect/decal/cleanable/heretic_flesh_skin/skin = locate() in origin
+	TEST_ASSERT_NOTNULL(skin, "На старом месте лежит сброшенная кожа.")
+	TEST_ASSERT(skin?.icon_state in icon_states(skin?.icon), "Кожа нарисована.")
+	TEST_ASSERT(skin?.blood_DNA?[user.dna.unique_enzymes], "Кровь на коже выдаёт еретика криминалисту.")
+	TEST_ASSERT_EQUAL(flesh.combat_resource, 0, "Уход стоит биомассу.")
+	TEST_ASSERT(shed.charge_counter < shed.charge_max, "Уход уходит на перезарядку.")
+	flesh.combat_resource = HERETIC_FLESH_SHED_COST
+	var/turf/second_origin = get_turf(user)
+	INVOKE_ASYNC(flesh, TYPE_PROC_REF(/datum/eldritch_knowledge/base_flesh, shed_skin), user, ghoul)
+	user.Paralyze(3 SECONDS)
+	var/list/budget = new_wait_budget(HERETIC_FLESH_SHED_CHANNEL + 1 SECONDS, "сорванный уход")
+	while(!flesh.shed_failure)
+		if(!wait_budget_tick(budget))
+			break
+	TEST_ASSERT_EQUAL(get_turf(user), second_origin, "Оглушённый еретик остаётся на месте.")
+	TEST_ASSERT_EQUAL(flesh.combat_resource, HERETIC_FLESH_SHED_COST, "Сорванный уход не тратит биомассу.")
+	TEST_ASSERT(findtext(flesh.shed_failure, "оглушени"), "Отказ объясняет причину: [flesh.shed_failure]")
+
+/// Значок биомассы называет, что хватка сделает на текущем намерении; значок свиты считает слуг и пропадает без них.
+/datum/unit_test/heretic_flesh_intent_and_retinue/Run()
+	var/datum/antagonist/heretic/heretic = flesh_latch_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_flesh/flesh = heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+	var/datum/eldritch_knowledge/flesh_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/flesh_grasp)
+	user.a_intent = INTENT_DISARM
+	flesh.on_life(user)
+	var/atom/movable/screen/alert/resource = user.alerts["heretic_path_resource"]
+	TEST_ASSERT_NOTNULL(resource, "Значок биомассы показан.")
+	TEST_ASSERT(findtext(resource?.name, "вскрывает"), "На «Разоружении» значок говорит о вскрытии: [resource?.name]")
+	TEST_ASSERT(findtext(resource?.desc, "шьёт ползуна"), "На «Разоружении» описание говорит о ползуне: [resource?.desc]")
+	user.a_intent = INTENT_HELP
+	flesh.on_life(user)
+	TEST_ASSERT(findtext(resource?.name, "поднимает"), "Смена намерения меняет подпись: [resource?.name]")
+	TEST_ASSERT(findtext(resource?.desc, "поднимает гуля"), "На «Помощи» описание говорит о гуле: [resource?.desc]")
+	TEST_ASSERT_NULL(user.alerts[HERETIC_FLESH_RETINUE_ALERT], "Без слуг значка свиты нет.")
+	var/mob/living/carbon/human/ghoul = oldpath_servant(heretic, grasp, /datum/antagonist/heretic_monster/ghoul, get_step(user, EAST))
+	var/atom/movable/screen/alert/heretic_flesh_retinue/retinue = user.alerts[HERETIC_FLESH_RETINUE_ALERT]
+	TEST_ASSERT_NOTNULL(retinue, "Новый слуга показывает значок свиты.")
+	TEST_ASSERT(findtext(retinue?.maptext, "1/[heretic.servant_limit()]"), "Значок считает слуг: [retinue?.maptext]")
+	TEST_ASSERT(retinue?.icon_state in icon_states(retinue?.icon), "Значок свиты нарисован.")
+	TEST_ASSERT(findtext(retinue?.desc, ghoul.name), "Описание свиты называет слугу: [retinue?.desc]")
+	ghoul.death()
+	var/list/budget = new_wait_budget(2 SECONDS, "значок свиты после смерти слуги")
+	while(user.alerts[HERETIC_FLESH_RETINUE_ALERT])
+		if(!wait_budget_tick(budget))
+			break
+	TEST_ASSERT_NULL(user.alerts[HERETIC_FLESH_RETINUE_ALERT], "Без живых слуг значок свиты пропадает.")

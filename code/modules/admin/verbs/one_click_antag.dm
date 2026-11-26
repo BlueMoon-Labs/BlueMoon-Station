@@ -86,7 +86,7 @@
 	return FALSE
 
 /datum/admins/proc/makeHeretics()
-
+	warn_admin_about_heretic_count(usr)
 	var/datum/game_mode/heretics/temp = new
 	if(CONFIG_GET(flag/protect_roles_from_antagonist))
 		temp.restricted_jobs += temp.protected_jobs

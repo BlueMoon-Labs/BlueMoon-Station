@@ -7,6 +7,9 @@
 #define HERETIC_ASCENSION_TURN_TIME (0.15 SECONDS)
 #define HERETIC_ASCENSION_MANIFEST_TIME (1.5 SECONDS)
 #define HERETIC_ASCENSION_RISE 8
+#define HERETIC_ASCENSION_ECHO_RISE 12
+#define HERETIC_ASCENSION_ECHO_SCALE 2
+#define HERETIC_ASCENSION_ECHO_TIME (3 SECONDS)
 #define HERETIC_ASCENSION_CLIMAX_RADIUS 7
 #define HERETIC_ASCENSION_CLIMAX_FLASH_POWER 3
 #define HERETIC_ASCENSION_CLIMAX_FLASH_TIME (0.6 SECONDS)
@@ -288,8 +291,11 @@
 	if(!path || !center)
 		return
 	ascension_climax_at = world.time
-	heretic_vfx_flash(center, path.book_ink, HERETIC_ASCENSION_CLIMAX_RADIUS, HERETIC_ASCENSION_CLIMAX_FLASH_POWER, HERETIC_ASCENSION_CLIMAX_FLASH_TIME)
-	heretic_vfx_shockwave(center, path.book_ink, HERETIC_ASCENSION_CLIMAX_RADIUS, HERETIC_ASCENSION_CLIMAX_WAVE_TIME)
+	heretic_vfx_flash(center, path.climax_ink || path.book_ink, HERETIC_ASCENSION_CLIMAX_RADIUS, HERETIC_ASCENSION_CLIMAX_FLASH_POWER, HERETIC_ASCENSION_CLIMAX_FLASH_TIME)
+	if(path.wave_type)
+		new path.wave_type(center)
+	else
+		heretic_vfx_shockwave(center, path.book_ink, HERETIC_ASCENSION_CLIMAX_RADIUS, HERETIC_ASCENSION_CLIMAX_WAVE_TIME)
 	heretic_vfx_burst(center, path.vfx_particles)
 	heretic_vfx_rays(user, path.book_ink, HERETIC_ASCENSION_CLIMAX_RAYS_TIME)
 	heretic_vfx_quake(center, HERETIC_ASCENSION_CLIMAX_RADIUS, HERETIC_ASCENSION_CLIMAX_QUAKE, HERETIC_ASCENSION_CLIMAX_QUAKE_TIME)
@@ -417,10 +423,11 @@
 	animate(src, transform = matrix(0.1, 0, 0, 0, 1, 0), time = HERETIC_ASCENSION_TURN_TIME, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
 	animate(transform = target, time = HERETIC_ASCENSION_TURN_TIME, easing = SINE_EASING | EASE_OUT)
 
+/// Знамение вознесения: нимб пути вдвое ровно, без сглаживания, вспыхивает за спинами и уходит вверх, не закрывая людей.
 /obj/effect/temp_visual/heretic_ascension_echo
-	layer = ABOVE_MOB_LAYER
+	layer = BELOW_MOB_LAYER
 	appearance_flags = TILE_BOUND | PIXEL_SCALE
-	duration = 3 SECONDS
+	duration = HERETIC_ASCENSION_ECHO_TIME
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 /obj/effect/temp_visual/heretic_ascension_echo/Initialize(mapload, path_id)
@@ -434,7 +441,8 @@
 	add_overlay(emissive_appearance(icon, "[path.ascension_aura_state]_glow", offset_spokesman = src))
 	pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
 	pixel_y = pixel_x
-	animate(src, transform = matrix(3, 0, 0, 0, 3, 0), alpha = 0, pixel_y = pixel_y + 12, time = duration, easing = CUBIC_EASING | EASE_OUT)
+	transform = matrix(HERETIC_ASCENSION_ECHO_SCALE, 0, 0, 0, HERETIC_ASCENSION_ECHO_SCALE, 0)
+	animate(src, alpha = 0, pixel_y = pixel_y + HERETIC_ASCENSION_ECHO_RISE, time = duration, easing = CUBIC_EASING | EASE_OUT)
 
 /// Потерянный нимб оседает в пол и гаснет на месте тела.
 /obj/effect/temp_visual/heretic_ascension_fade
@@ -486,11 +494,11 @@
 	to_chat(owner, span_eldritch(path.ascension_omen))
 	owner.playsound_local(get_turf(owner), omen_sound, HERETIC_ASCENSION_OMEN_VOLUME, FALSE)
 	var/atom/movable/screen/fullscreen/surge = owner.overlay_fullscreen(surge_key, /atom/movable/screen/fullscreen/scaled/heretic_omen_surge)
-	surge.color = heretic_vfx_ink_fill(path.book_ink)
+	surge.color = heretic_vfx_ink_fill(path.climax_ink || path.book_ink)
 	animate(surge, alpha = HERETIC_ASCENSION_SURGE_ALPHA, time = HERETIC_ASCENSION_SURGE_RISE, easing = SINE_EASING | EASE_OUT)
 	animate(alpha = 0, time = HERETIC_ASCENSION_SURGE_FALL, easing = SINE_EASING | EASE_IN)
 	var/atom/movable/screen/fullscreen/omen = owner.overlay_fullscreen(fullscreen_key, /atom/movable/screen/fullscreen/heretic_omen)
-	omen.color = path.book_ink
+	omen.color = path.climax_ink || path.book_ink
 	animate(omen, alpha = 0, time = HERETIC_ASCENSION_SURGE_RISE)
 	animate(alpha = 35, time = 4 SECONDS)
 	animate(alpha = 20, time = 18 SECONDS)
@@ -502,18 +510,19 @@
 	if(owner.client && owner.stat != DEAD)
 		echo_viewer_ref = REF(owner.client)
 		owner.client.images += build_echo()
-		animate(personal_echo, transform = matrix(3, 0, 0, 0, 3, 0), alpha = 0, pixel_y = personal_echo.pixel_y + 12, time = 3 SECONDS)
 
 /datum/status_effect/heretic_ascension_omen/proc/build_echo()
 	var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
 	echo_anchor ||= heretic_vfx_image_anchor(owner)
-	personal_echo = image(path.ascension_aura_icon, echo_anchor, "[path.ascension_aura_state]_back", ABOVE_MOB_LAYER)
+	personal_echo = image(path.ascension_aura_icon, echo_anchor, "[path.ascension_aura_state]_back", BELOW_MOB_LAYER)
 	personal_echo.overlays += mutable_appearance(path.ascension_aura_icon, "[path.ascension_aura_state]_front")
 	personal_echo.overlays += emissive_appearance(path.ascension_aura_icon, "[path.ascension_aura_state]_glow", offset_spokesman = owner)
 	personal_echo.appearance_flags = PIXEL_SCALE | RESET_COLOR
 	personal_echo.pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
 	personal_echo.pixel_y = personal_echo.pixel_x
 	personal_echo.alpha = 200
+	personal_echo.transform = matrix(HERETIC_ASCENSION_ECHO_SCALE, 0, 0, 0, HERETIC_ASCENSION_ECHO_SCALE, 0)
+	animate(personal_echo, alpha = 0, pixel_y = personal_echo.pixel_y + HERETIC_ASCENSION_ECHO_RISE, time = HERETIC_ASCENSION_ECHO_TIME, easing = CUBIC_EASING | EASE_OUT)
 	return personal_echo
 
 /datum/status_effect/heretic_ascension_omen/proc/clear_echo()
@@ -707,6 +716,9 @@
 #undef HERETIC_ASCENSION_TURN_TIME
 #undef HERETIC_ASCENSION_MANIFEST_TIME
 #undef HERETIC_ASCENSION_RISE
+#undef HERETIC_ASCENSION_ECHO_RISE
+#undef HERETIC_ASCENSION_ECHO_SCALE
+#undef HERETIC_ASCENSION_ECHO_TIME
 #undef HERETIC_ASCENSION_CLIMAX_RADIUS
 #undef HERETIC_ASCENSION_CLIMAX_FLASH_POWER
 #undef HERETIC_ASCENSION_CLIMAX_FLASH_TIME

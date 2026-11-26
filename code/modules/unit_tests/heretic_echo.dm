@@ -900,9 +900,13 @@
 	var/datum/eldritch_knowledge/base_echo/echo = fixture["echo"]
 	var/datum/eldritch_knowledge/final_eldritch/echo_final/finale = fixture["finale"]
 	user.Paralyze(10 SECONDS, ignore_canstun = TRUE)
-	TEST_ASSERT(user.incapacitated(), "Парализованный еретик не способен действовать.")
-	TEST_ASSERT(!echo.reprise(user, finale), "Беспомощный еретик не отвечает отзвуком.")
+	TEST_ASSERT(echo.reprise(user, finale), "Вознёсшегося оглушение не лишает отзвука.")
 	user.SetParalyzed(0)
+	QDEL_LIST(echo.attacks)
+	user.handcuffed = allocate(/obj/item/restraints/handcuffs, user)
+	user.update_handcuffed()
+	TEST_ASSERT(!echo.reprise(user, finale), "Скованный еретик не отвечает отзвуком.")
+	user.uncuff()
 	var/started = 0
 	while(started < 10 && echo.reprise(user, finale))
 		started++
@@ -1931,3 +1935,212 @@
 	TEST_ASSERT(victim.IsSleeping(), "Цель спит.")
 	TEST_ASSERT_EQUAL(victim.heretic_capture_mark, mark, "Сон держит ту же метку захвата, без второй защёлки.")
 	TEST_ASSERT(!mark.fading, "Метка не гаснет между напевом и сном.")
+
+/// Имя цели охоты во фразе Чужого голоса за единицу резонанса оставляет на ней звон, и Колыбельная берёт её без касания; чужое имя, глухота, защита от магии и пустой запас звона не дают.
+/datum/unit_test/heretic_echo_call_by_name/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_voice)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_lullaby)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/turf/origin = get_turf(user)
+	var/obj/item/radio/intercom/intercom = allocate(/obj/item/radio/intercom, locate(origin.x + 3, origin.y, origin.z))
+	TEST_ASSERT(echo.tap(intercom, user), "Прослушка стоит.")
+	var/mob/living/carbon/human/prey = allocate_hunt_victim(heretic, locate(origin.x + 4, origin.y + 1, origin.z))
+	prey.real_name = "Ivan Petrov"
+	echo.combat_resource = 2
+	TEST_ASSERT(echo.fake_voice(user, intercom, "Капитан", "Все в бар."), "Фраза без имени звучит.")
+	TEST_ASSERT_NULL(prey.has_status_effect(/datum/status_effect/heretic_echo_ringing), "Фраза без имени цели звона не даёт.")
+	TEST_ASSERT_EQUAL(echo.combat_resource, 2, "Фраза без имени бесплатна.")
+	ADD_TRAIT(prey, TRAIT_DEAF, "echo_call_test")
+	TEST_ASSERT(echo.fake_voice(user, intercom, "Капитан", "ivan, подойди к интеркому."), "Фраза с именем звучит и для глухого.")
+	TEST_ASSERT_NULL(prey.has_status_effect(/datum/status_effect/heretic_echo_ringing), "Глухая цель своего имени не слышит.")
+	REMOVE_TRAIT(prey, TRAIT_DEAF, "echo_call_test")
+	var/datum/component/anti_magic/protection = prey.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	TEST_ASSERT(echo.fake_voice(user, intercom, "Капитан", "ivan, подойди к интеркому."), "Фраза звучит и при защите.")
+	TEST_ASSERT_NULL(prey.has_status_effect(/datum/status_effect/heretic_echo_ringing), "Защита от магии не даёт звону лечь.")
+	TEST_ASSERT_EQUAL(echo.combat_resource, 2, "Отражённый зов резонанс не тратит.")
+	qdel(protection)
+	TEST_ASSERT(echo.lullaby_block_reason(user, prey), "Без звона Колыбельная цель не берёт.")
+	TEST_ASSERT(echo.fake_voice(user, intercom, "Капитан", "ivan, подойди к интеркому."), "Зов по имени звучит.")
+	TEST_ASSERT_NOTNULL(prey.has_status_effect(/datum/status_effect/heretic_echo_ringing), "Цель охоты, услышав своё имя, звенит.")
+	TEST_ASSERT(echo.rung_by_me(prey), "Это звон самого еретика.")
+	TEST_ASSERT_EQUAL(echo.combat_resource, 2 - HERETIC_ECHO_CALL_COST, "Зов стоит [HERETIC_ECHO_CALL_COST] резонанса.")
+	echo.combat_resource = 2
+	TEST_ASSERT_NULL(echo.lullaby_block_reason(user, prey), "После зова Колыбельная берёт цель без касания: [echo.lullaby_block_reason(user, prey)]")
+	qdel(prey.has_status_effect(/datum/status_effect/heretic_echo_ringing))
+	echo.combat_resource = 0
+	TEST_ASSERT(echo.fake_voice(user, intercom, "Капитан", "ivan, подойди к интеркому."), "Фраза звучит и без резонанса.")
+	TEST_ASSERT_NULL(prey.has_status_effect(/datum/status_effect/heretic_echo_ringing), "Без резонанса зов не звенит.")
+	prey.real_name = "Иван Петров"
+	echo.combat_resource = HERETIC_ECHO_CALL_COST
+	TEST_ASSERT(echo.fake_voice(user, intercom, "Капитан", "Петров, к динамику."), "Зов по фамилии звучит.")
+	TEST_ASSERT_NOTNULL(prey.has_status_effect(/datum/status_effect/heretic_echo_ringing), "Фамилия кириллицей тоже зовёт.")
+	qdel(prey.has_status_effect(/datum/status_effect/heretic_echo_ringing))
+	prey.real_name = "Liam O'Hara"
+	echo.combat_resource = HERETIC_ECHO_CALL_COST
+	TEST_ASSERT(echo.fake_voice(user, intercom, "Капитан", "O'Hara, к динамику."), "Зов с апострофом звучит.")
+	TEST_ASSERT_NOTNULL(prey.has_status_effect(/datum/status_effect/heretic_echo_ringing), "Фамилия с апострофом узнаётся, хотя фраза в эфире экранирована.")
+
+/// Тишина стряхивает слабую хватку бесплатно, из крепкой вырывает за 2 резонанса, в Тишине не схватить; эфир из крепкой хватки не уводит, а кнопка в ней включает Тишину.
+/datum/unit_test/heretic_echo_hush_grab/Run()
+	var/turf/origin = run_loc_floor_bottom_left
+	var/datum/antagonist/heretic/heretic = allocate_heretic(origin)
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_ether)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/datum/eldritch_knowledge/spell/echo_ether/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/echo_ether)
+	var/obj/effect/proc_holder/spell/self/heretic_echo/ether/spell = knowledge.granted_spell
+	var/mob/living/carbon/human/grabber = allocate(/mob/living/carbon/human, get_step(origin, NORTH))
+	grabber.start_pulling(user)
+	TEST_ASSERT(user.pulledby == grabber, "Еретика держат слабой хваткой.")
+	echo.combat_resource = 0
+	TEST_ASSERT(echo.hush(user), "Тишина работает в слабой хватке бесплатно: [echo.echo_failure]")
+	TEST_ASSERT_NULL(user.pulledby, "Тишина стряхивает слабую хватку.")
+	grabber.start_pulling(user)
+	TEST_ASSERT_NULL(user.pulledby, "В Тишине еретика не схватить.")
+	qdel(user.has_status_effect(/datum/status_effect/heretic_echo_hush))
+	TEST_ASSERT(!HAS_TRAIT(user, TRAIT_UNPULLABLE), "После Тишины еретика снова можно схватить.")
+	var/obj/item/radio/intercom/near_tap = allocate(/obj/item/radio/intercom, get_step(origin, EAST))
+	var/obj/item/radio/intercom/far_tap = allocate(/obj/item/radio/intercom, locate(origin.x + 4, origin.y + 4, origin.z))
+	TEST_ASSERT(echo.tap(near_tap, user) && echo.tap(far_tap, user), "Оба интеркома прослушаны.")
+	grabber.start_pulling(user)
+	grabber.setGrabState(GRAB_AGGRESSIVE)
+	TEST_ASSERT(user.incapacitated(), "Крепкая хватка держит еретика.")
+	echo.combat_resource = 3
+	TEST_ASSERT(!echo.ether(user, near_tap, far_tap), "Из крепкой хватки эфир не уводит.")
+	TEST_ASSERT(findtext(echo.echo_failure, "крепко"), "Отказ называет хватку: [echo.echo_failure]")
+	echo.combat_resource = HERETIC_ECHO_HUSH_GRAB_COST - 1
+	TEST_ASSERT(!echo.hush(user), "Без резонанса из крепкой хватки не выскользнуть.")
+	TEST_ASSERT(findtext(echo.echo_failure, "[HERETIC_ECHO_HUSH_GRAB_COST] резонанса"), "Отказ называет цену: [echo.echo_failure]")
+	TEST_ASSERT(user.pulledby == grabber, "Отказ хватку не разрывает.")
+	echo.combat_resource = HERETIC_ECHO_HUSH_GRAB_COST + 1
+	TEST_ASSERT(spell.cast_check(FALSE, user), "Кнопка эфира нажимается в крепкой хватке.")
+	spell.perform(list(user), user = user)
+	TEST_ASSERT_NOTNULL(user.has_status_effect(/datum/status_effect/heretic_echo_hush), "В крепкой хватке кнопка включает Тишину.")
+	TEST_ASSERT_EQUAL(get_turf(user), origin, "Эфир из хватки не увёл.")
+	TEST_ASSERT_NULL(user.pulledby, "Тишина вырывает из крепкой хватки.")
+	TEST_ASSERT_EQUAL(echo.combat_resource, 1, "Рывок стоит [HERETIC_ECHO_HUSH_GRAB_COST] резонанса.")
+	qdel(user.has_status_effect(/datum/status_effect/heretic_echo_hush))
+	user.handcuffed = allocate(/obj/item/restraints/handcuffs, user)
+	user.update_handcuffed()
+	TEST_ASSERT(!echo.hush(user), "В наручниках Тишина недоступна и в хватке.")
+	user.uncuff()
+
+/// Долгое послезвучие: прослушка в 7 клетках по открытой линии повторяет крест Последнего удара вокруг себя с полным уроном; без знания и после снятия прослушки - нет.
+/datum/unit_test/heretic_echo_sustain_speaker/Run()
+	var/turf/origin = run_loc_floor_bottom_left
+	var/datum/antagonist/heretic/heretic = allocate_heretic(origin)
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/obj/item/radio/intercom/intercom = allocate(/obj/item/radio/intercom, locate(origin.x + 4, origin.y + 2, origin.z))
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, locate(origin.x + 5, origin.y + 2, origin.z))
+	TEST_ASSERT(echo.tap(intercom, user), "Прослушка стоит.")
+	echo.combat_resource = 2
+	TEST_ASSERT(echo.release(user), "Последний удар звучит.")
+	var/datum/heretic_echo_attack/attack = echo.attacks[1]
+	attack.resolve()
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Без Долгого послезвучия интерком молчит.")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/echo_sustain)
+	echo.combat_resource = 2
+	TEST_ASSERT(echo.release(user), "Последний удар звучит с послезвучием.")
+	attack = echo.attacks[1]
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_echo/warning) in get_turf(victim), "Крест у интеркома отмечен заранее.")
+	attack.resolve()
+	TEST_ASSERT(abs(victim.getBruteLoss() - 24) <= DAMAGE_PRECISION, "Интерком повторяет крест с полным уроном: [victim.getBruteLoss()].")
+	TEST_ASSERT_NOTNULL(victim.has_status_effect(/datum/status_effect/heretic_echo_ringing), "Повтор у интеркома оставляет звон.")
+	echo.combat_resource = 2
+	TEST_ASSERT(echo.release(user), "Последний удар звучит снова.")
+	attack = echo.attacks[1]
+	echo.untap(intercom)
+	attack.resolve()
+	TEST_ASSERT(abs(victim.getBruteLoss() - 24) <= DAMAGE_PRECISION, "Снятая прослушка обрывает повтор.")
+
+/// Хор вознесения: поющий интерком рядом повторяет первую волну Последней службы, выключенный динамик и откручённый интерком молчат; через поющий интерком без прослушки можно уйти в эфир; осмотр подсказывает, как заглушить хор; потеря тела гасит хор.
+/datum/unit_test/heretic_echo_choir/Run()
+	var/list/fixture = ascend_echo_fixture(get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST))
+	var/turf/center = fixture["center"]
+	var/mob/living/carbon/human/user = fixture["user"]
+	var/datum/eldritch_knowledge/base_echo/echo = fixture["echo"]
+	var/datum/eldritch_knowledge/final_eldritch/echo_final/finale = fixture["finale"]
+	var/datum/antagonist/heretic/heretic = fixture["heretic"]
+	TEST_ASSERT(echo.choir_on && (echo in GLOB.heretic_echo_choirs), "Вознесение поднимает хор.")
+	var/obj/item/radio/intercom/voice = allocate(/obj/item/radio/intercom, locate(center.x + 3, center.y + 3, center.z))
+	voice.on = TRUE
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, locate(center.x + 3, center.y + 2, center.z))
+	TEST_ASSERT(voice in echo.choir_intercoms(), "Запитанный интерком с динамиком поёт в хоре.")
+	TEST_ASSERT(echo.final_chorus(user), "Последняя служба начинается.")
+	var/datum/heretic_echo_attack/attack = echo.attacks[1]
+	attack.resolve()
+	TEST_ASSERT(abs(victim.getBruteLoss() - 32) <= DAMAGE_PRECISION, "Поющий интерком повторяет первую волну: [victim.getBruteLoss()].")
+	qdel(attack)
+	voice.listening = FALSE
+	TEST_ASSERT(!(voice in echo.choir_intercoms()), "Выключенный динамик выходит из хора.")
+	TEST_ASSERT(echo.final_chorus(user), "Служба начинается снова.")
+	attack = echo.attacks[1]
+	attack.resolve()
+	TEST_ASSERT(abs(victim.getBruteLoss() - 32) <= DAMAGE_PRECISION, "Молчащий интерком волну не повторяет.")
+	qdel(attack)
+	voice.listening = TRUE
+	voice.unfastened = TRUE
+	TEST_ASSERT(!(voice in echo.choir_intercoms()), "Откручённый интерком не поёт.")
+	voice.unfastened = FALSE
+	var/list/hint = voice.examine(victim)
+	TEST_ASSERT(findtext(jointext(hint, " "), "отвёрткой"), "Осмотр поющего интеркома подсказывает, как заглушить хор.")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_ether)
+	var/obj/item/radio/intercom/near = allocate(/obj/item/radio/intercom, get_step(center, WEST))
+	near.on = TRUE
+	var/list/choices = echo.ether_choices(user)
+	TEST_ASSERT(length(choices) && findtext(choices[1], "Хор - "), "Поющий интерком без прослушки - выход эфира: [jointext(choices, ", ")]")
+	TEST_ASSERT(echo.ether(user, near, voice), "Регент уходит в эфир через поющие интеркомы: [echo.echo_failure]")
+	TEST_ASSERT_EQUAL(get_turf(user), get_turf(voice), "Регент выходит у поющего интеркома.")
+	finale.on_body_lose(user)
+	TEST_ASSERT(!echo.choir_on && !(echo in GLOB.heretic_echo_choirs), "Потеря тела гасит хор.")
+	TEST_ASSERT_EQUAL(length(echo.choir_intercoms()), 0, "Без хора интеркомы не поют.")
+	TEST_ASSERT(!length(echo.ether_choices(user)), "Без хора чужой интерком выходом не служит.")
+
+/// Эфир ведёт на связанную палубу станции за 3 секунды и 2 резонанса и подписывает такой выход; несвязанный уровень закрыт.
+/datum/unit_test/heretic_echo_ether_deck
+	var/list/saved_stacks
+
+/datum/unit_test/heretic_echo_ether_deck/Run()
+	var/turf/origin = run_loc_floor_bottom_left
+	var/datum/antagonist/heretic/heretic = allocate_heretic(origin)
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_ether)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/obj/item/radio/intercom/near_tap = allocate(/obj/item/radio/intercom, get_step(origin, EAST))
+	var/turf/deck = locate(origin.x, origin.y, origin.z > 1 ? origin.z - 1 : origin.z + 1)
+	var/obj/item/radio/intercom/deck_tap = allocate(/obj/item/radio/intercom, locate(origin.x + 4, origin.y + 4, origin.z))
+	TEST_ASSERT(echo.tap(near_tap, user) && echo.tap(deck_tap, user), "Оба интеркома прослушаны.")
+	deck_tap.forceMove(deck)
+	TEST_ASSERT(!length(echo.ether_choices(user)), "Несвязанный уровень выходом не служит.")
+	var/list/stacks = SSmapping.z_level_to_stack
+	TEST_ASSERT(length(stacks) >= max(origin.z, deck.z), "Уровни учтены картой связок.")
+	saved_stacks = list("[origin.z]" = stacks[origin.z], "[deck.z]" = stacks[deck.z])
+	var/list/joined = list(min(origin.z, deck.z), max(origin.z, deck.z))
+	stacks[origin.z] = joined
+	stacks[deck.z] = joined
+	var/list/choices = echo.ether_choices(user)
+	TEST_ASSERT_EQUAL(length(choices), 1, "Интерком на связанной палубе - выход эфира.")
+	TEST_ASSERT(findtext(choices[1], "другая палуба"), "Выход на другую палубу подписан: [choices[1]]")
+	TEST_ASSERT_EQUAL(echo.ether_time(user, deck_tap), HERETIC_ECHO_ETHER_DECK_TIME, "Переход на другую палубу идёт дольше.")
+	TEST_ASSERT_EQUAL(HERETIC_ECHO_ETHER_DECK_TIME, 3 SECONDS, "Переход на другую палубу - 3 секунды.")
+	TEST_ASSERT_EQUAL(echo.ether_cost(user, deck_tap), HERETIC_ECHO_ETHER_DECK_COST, "Переход на другую палубу стоит [HERETIC_ECHO_ETHER_DECK_COST] резонанса.")
+	TEST_ASSERT_EQUAL(echo.ether_cost(user, near_tap), HERETIC_ECHO_ETHER_COST, "Переход по своей палубе стоит [HERETIC_ECHO_ETHER_COST].")
+	TEST_ASSERT_EQUAL(echo.ether_time(user, near_tap), HERETIC_ECHO_ETHER_TIME, "Переход по своей палубе не дольше прежнего.")
+
+/datum/unit_test/heretic_echo_ether_deck/Destroy()
+	var/list/stacks = SSmapping.z_level_to_stack
+	for(var/level in saved_stacks)
+		stacks[text2num(level)] = saved_stacks[level]
+	saved_stacks = null
+	return ..()

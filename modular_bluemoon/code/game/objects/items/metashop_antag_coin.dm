@@ -198,11 +198,15 @@
 	antag_type = /datum/antagonist/heretic
 	metashop_refund_amount = METASHOP_TRAITOR_TOKEN_REFUND_COST
 	activation_verb_text = "стать еретиком"
+	/// Игрок видит нейтральный отказ, точная причина уходит в лог один раз, пока не сменится.
+	var/last_logged_block
 
 /obj/item/coin/antagtoken/metashop/heretic/examine(mob/user)
 	. = ..()
 	. += span_notice("Активация: <b>Alt+ЛКМ</b> — [activation_verb_text].")
 	. += span_notice("Возврат: <b>Ctrl+ЛКМ</b> — обменять на [metashop_refund_amount] М$ (пока не активирован).")
+	. += span_notice("Не сработает после вызова эвакуации, при живом вознёсшемся и если еретиков уже хватает: на станции допускается один на каждые [HERETIC_CREW_PER_HERETIC] живого экипажа, но хотя бы один.")
+	. += span_notice("От полученной роли можно отказаться в кодексе в первые минуты, но М$ за активированный жетон не возвращаются.")
 
 /obj/item/coin/antagtoken/metashop/heretic/activation_extra_block_reason(mob/living/carbon/human/user)
 	if(jobban_isbanned(user, ROLE_HERETIC) || jobban_isbanned(user, ROLE_INTEQ))
@@ -217,9 +221,17 @@
 		return "Ваша должность не позволяет активировать жетон еретика."
 	if(HAS_TRAIT(user, TRAIT_MINDSHIELD))
 		return "Щит разума не пускает зов Мансуса: с имплантом защиты разума жетон еретика не активировать."
+	var/limit_reason = heretic_injection_block_reason(heretic_limit_living_crew())
+	if(limit_reason)
+		if(limit_reason != last_logged_block)
+			last_logged_block = limit_reason
+			log_game("Metashop antag token: [key_name(user)] не активировал жетон еретика: [limit_reason].")
+		return "Монета молчит: Мансус сейчас никого не зовёт. Жетон можно вернуть в казначейство (Ctrl+ЛКМ) или попробовать позже."
 	return null
 
 /obj/item/coin/antagtoken/metashop/heretic/on_activation_success(mob/living/carbon/human/user, datum/antagonist/antagonist)
+	var/datum/antagonist/heretic/heretic = antagonist
+	heretic.granted_by_token = TRUE
 	to_chat(user, span_bolddanger("Шёпот монеты складывается в слова. Запретное знание открывается вам."))
 	message_admins("[key_name_admin(user)] активировал метамагазинный жетон еретика.")
 	log_game("Metashop antag token: [key_name(user)] became heretic via coin.")

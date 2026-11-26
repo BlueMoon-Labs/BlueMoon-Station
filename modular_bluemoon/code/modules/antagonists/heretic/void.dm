@@ -25,7 +25,7 @@
 
 /datum/status_effect/heretic_void_chill
 	id = "heretic_void_chill"
-	duration = 4 SECONDS
+	duration = HERETIC_VOID_CHILL_DURATION
 	tick_interval = -1
 	status_type = STATUS_EFFECT_REFRESH
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_void_chill
@@ -468,6 +468,16 @@
 	var/cooldown_text = COOLDOWN_FINISHED(upgrade, blink_cooldown) ? "Ищущий клинок: сдвиг готов." : "Ищущий клинок: сдвиг восстановится через [DisplayTimeText(COOLDOWN_TIMELEFT(upgrade, blink_cooldown))]."
 	. += span_notice(cooldown_text)
 
+/// Почему пространство не пустит перенос Пустоты; проверяется до применения, чтобы щелчок не пропал впустую.
+/proc/heretic_void_teleport_lock(atom/movable/mover, turf/destination, mob/user)
+	if(HAS_TRAIT(mover, TRAIT_NO_TELEPORT))
+		return "Пространство вокруг [mover == user ? "вас" : "[mover]"] закреплено: перенос не сработает, пока держится запрет телепортации."
+	for(var/turf/place in list(get_turf(mover), destination))
+		var/area/zone = get_area(place)
+		if(zone.area_flags & NOTELEPORT)
+			return "Пространство в зоне «[zone.name]» закреплено: здесь не работает никакая телепортация, как и на ЦентКоме."
+	return null
+
 /proc/heretic_void_overheated(mob/living/owner)
 	return owner.on_fire || owner.bodytemperature > BODYTEMP_NORMAL + HERETIC_VOID_HEAT_MARGIN
 
@@ -513,7 +523,7 @@
 
 /datum/component/heretic_void_storm/proc/deflect(mob/living/source, real_attack, atom/object, damage, attack_text, attack_type, armour_penetration, mob/living/attacker, def_zone, list/return_list, attack_direction)
 	SIGNAL_HANDLER
-	if(heretic_void_overheated(source))
+	if(return_list?[HERETIC_BLOCK_ABSORBED] || heretic_void_overheated(source))
 		return BLOCK_NONE
 	var/obj/item/projectile/projectile = heretic_try_deflect(source, real_attack, object, attack_type, deflect_chance)
 	if(!projectile)
@@ -524,6 +534,7 @@
 	if(COOLDOWN_FINISHED(src, deflect_visual) && heretic_vfx_watched(source))
 		COOLDOWN_START(src, deflect_visual, HERETIC_VOID_DEFLECT_THROTTLE)
 		show_deflect(source, projectile.Angle)
+	return_list?[HERETIC_BLOCK_ABSORBED] = TRUE
 	return BLOCK_SUCCESS | BLOCK_REDIRECTED
 
 /// Пространство рябит в точке попадания, иней сыплется по новому курсу снаряда, воздух вспыхивает холодом.

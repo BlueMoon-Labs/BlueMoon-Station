@@ -429,7 +429,10 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 			log_game("DYNAMIC: No more rules can be applied, stopping with [round_start_budget_left] left.")
 			break
 
-		var/cost = (ruleset in rulesets_picked) ? ruleset.scaling_cost : ruleset.cost
+		var/cost = roundstart_pick_cost(ruleset, rulesets_picked[ruleset], rulesets_picked)
+		if (isnull(cost))
+			drafted_rules[ruleset] = 0
+			continue
 		if (cost == 0)
 			stack_trace("[ruleset] cost 0, this is going to result in an infinite loop.")
 			drafted_rules[ruleset] = 0
@@ -465,12 +468,32 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 
 	update_log()
 
+/// Цена очередного выбора рулсета в стартовой жеребьёвке или null, если масштабировать его дальше
+/// некуда. Повтор сверх лимита кандидатов и онлайна съедал scaling_cost, хотя scale_up роль не добавлял
+/// (10667: один еретик, а на трейторов бюджета уже не хватило). Тот же scale_up не добавит роль,
+/// если антагов уже DYNAMIC_SCALE_UP_ANTAG_FRACTION от готовых игроков.
+/datum/game_mode/dynamic/proc/roundstart_pick_cost(datum/dynamic_ruleset/roundstart/ruleset, times_picked, list/rulesets_picked)
+	if(!times_picked)
+		return ruleset.cost
+	if(times_picked > ruleset.max_scaled_times(roundstart_pop_ready))
+		return null
+	if(roundstart_antag_fraction(rulesets_picked) >= DYNAMIC_SCALE_UP_ANTAG_FRACTION)
+		return null
+	return ruleset.scaling_cost
+
+/// Доля антагов среди готовых игроков, если каждый выбранный рулсет получит все свои масштабы.
+/datum/game_mode/dynamic/proc/roundstart_antag_fraction(list/rulesets_picked)
+	if(roundstart_pop_ready <= 0)
+		return 0
+	. = 0
+	for(var/datum/dynamic_ruleset/picked as anything in rulesets_picked)
+		. += rulesets_picked[picked] * picked.get_antag_cap(roundstart_pop_ready) / roundstart_pop_ready
+
 /// Initializes the round start ruleset provided to it. Returns how much threat to spend.
 /datum/game_mode/dynamic/proc/picking_roundstart_rule(datum/dynamic_ruleset/roundstart/ruleset, scaled_times = 0, forced = FALSE)
-	log_game("DYNAMIC: Picked a ruleset: [ruleset.name], scaled [scaled_times] times")
-
 	ruleset.trim_candidates()
 	var/added_threat = ruleset.scale_up(roundstart_pop_ready, scaled_times)
+	log_game("DYNAMIC: Picked a ruleset: [ruleset.name], scaled [ruleset.scaled_times] times[ruleset.scaled_times != scaled_times ? " (requested [scaled_times])" : ""]")
 
 	if(ruleset.pre_execute(roundstart_pop_ready))
 		ruleset.director_pending_cost += ruleset.cost + added_threat

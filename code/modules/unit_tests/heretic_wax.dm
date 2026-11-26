@@ -90,9 +90,11 @@
 	TEST_ASSERT_EQUAL(behind.getBruteLoss(), 0, "Веер сохраняет выбранное направление.")
 	TEST_ASSERT_EQUAL(protected.getBruteLoss(), 0, "Антимагия останавливает осколки.")
 	TEST_ASSERT_EQUAL(protection.charges, 2, "На защищённую цель потрачен один заряд.")
-	TEST_ASSERT(!wax.release(user, consume_shell = TRUE), "Повторный выброс без оболочки отклоняется.")
-	TEST_ASSERT(findtext(wax.wax_failure, "оболочки"), "Отказ выброса называет причину.")
-	TEST_ASSERT_EQUAL(wax.combat_resource, 1, "Отказ не расходует воск.")
+	TEST_ASSERT(wax.release(user, consume_shell = TRUE), "Без оболочки «Разоружение» выпускает обычную волну.")
+	TEST_ASSERT_EQUAL(wax.combat_resource, 0, "Волна вместо выброса стоит единицу воска.")
+	TEST_ASSERT(!wax.release(user, consume_shell = TRUE), "Без оболочки и воска выброса нет.")
+	TEST_ASSERT(findtext(wax.wax_failure, "Оболочки для выброса нет") && findtext(wax.wax_failure, "Погребальная оболочка"), "Отказ объясняет, где взять оболочку: [wax.wax_failure]")
+	TEST_ASSERT_EQUAL(wax.combat_resource, 0, "Отказ не расходует воск.")
 	wax.combat_resource = 2
 	wax.raise_shell(user)
 	shell = user.has_status_effect(/datum/status_effect/heretic_wax/shell)
@@ -347,6 +349,78 @@
 	TEST_ASSERT(user.mob_run_block(weapon, 15, "удар", ATTACK_TYPE_MELEE, 0, attacker, BODY_ZONE_CHEST, list()) & BLOCK_SUCCESS, "Существующая оболочка защищает оглушённого носителя.")
 	TEST_ASSERT_EQUAL(shell.capacity, 0, "Защита при оглушении расходует оставшуюся ёмкость.")
 
+/// Тройной фитиль: оболочка, разбитая ударами, ставит печать и замедление всем врагам вплотную; без фитиля осколки не липнут.
+/datum/unit_test/heretic_wax_temper_shatter/Run()
+	for(var/with_temper in list(FALSE, TRUE))
+		var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST))
+		heretic.selected_path = PATH_WAX
+		heretic.gain_knowledge(/datum/eldritch_knowledge/base_wax)
+		heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_shell)
+		if(with_temper)
+			heretic.gain_knowledge(/datum/eldritch_knowledge/wax_temper)
+		var/mob/living/user = heretic.owner.current
+		var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+		var/mob/living/attacker = allocate(/mob/living/carbon/human, get_step(user, EAST))
+		attacker.mind = allocate_mind()
+		attacker.mind.current = attacker
+		var/mob/living/bystander = allocate(/mob/living/carbon/human, get_step(user, WEST))
+		var/mob/living/far = allocate(/mob/living/carbon/human, get_step(get_step(user, NORTH), NORTH))
+		var/obj/item/kitchen/knife/weapon = allocate(/obj/item/kitchen/knife)
+		TEST_ASSERT(wax.raise_shell(user), "Оболочка создана.")
+		var/datum/status_effect/heretic_wax/shell/shell = user.has_status_effect(/datum/status_effect/heretic_wax/shell)
+		user.mob_run_block(weapon, 10, "удар", ATTACK_TYPE_MELEE, 0, attacker, BODY_ZONE_CHEST, list())
+		TEST_ASSERT(!attacker.has_status_effect(/datum/status_effect/heretic_wax/seal), "Целая оболочка осколков не даёт.")
+		user.mob_run_block(weapon, 100, "удар", ATTACK_TYPE_MELEE, 0, attacker, BODY_ZONE_CHEST, list())
+		TEST_ASSERT_EQUAL(shell.capacity, 0, "Оболочка разбита.")
+		if(with_temper)
+			TEST_ASSERT(attacker.has_status_effect(/datum/status_effect/heretic_wax/seal) && attacker.has_movespeed_modifier(/datum/movespeed_modifier/heretic_wax_clinging), "Осколки липнут к обидчику.")
+			TEST_ASSERT(bystander.has_status_effect(/datum/status_effect/heretic_wax/seal), "Осколки липнут ко всем вплотную.")
+		else
+			TEST_ASSERT(!attacker.has_status_effect(/datum/status_effect/heretic_wax/seal), "Без Тройного фитиля осколки не липнут.")
+		TEST_ASSERT(!far.has_status_effect(/datum/status_effect/heretic_wax/seal), "Осколки не долетают дальше клетки.")
+		qdel(shell)
+		qdel(attacker)
+		qdel(bystander)
+		qdel(far)
+
+/// Взрыв Метки Воска бесплатно снимает оттиск: двойник без траты воска, печать Хватки делает его крепче.
+/datum/unit_test/heretic_wax_mark_imprint/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST))
+	heretic.selected_path = PATH_WAX
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_wax)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/wax_grasp)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/wax_mark)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	victim.mind = allocate_mind()
+	victim.mind.current = victim
+	var/obj/item/melee/sickly_blade/wax/blade = allocate(/obj/item/melee/sickly_blade/wax)
+	user.put_in_hands(blade)
+	user.a_intent = INTENT_HARM
+	TEST_ASSERT_NOTNULL(victim.apply_status_effect(/datum/status_effect/eldritch/wax, wax), "Метка поставлена.")
+	wax.combat_resource = 1
+	blade.melee_attack_chain(user, victim, attackchain_flags = ATTACK_IGNORE_CLICKDELAY)
+	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/eldritch/wax), "Удар клинком взрывает метку.")
+	TEST_ASSERT(wax.combat_resource >= 1, "Взрыв метки не тратит воск: [wax.combat_resource].")
+	TEST_ASSERT_NOTNULL(wax.active_effigy, "Взрыв метки ставит двойника.")
+	TEST_ASSERT_EQUAL(wax.active_effigy.effigy.max_integrity, 30, "Без печати двойник обычный.")
+	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_wax_clinging), "Взрыв замедляет цель.")
+	TEST_ASSERT(get_turf(wax.active_effigy.effigy) != get_turf(victim) && user.Adjacent(wax.active_effigy.effigy), "Двойник встаёт рядом с вами, а не на самой цели.")
+	victim.adjustBruteLoss(-victim.getBruteLoss())
+	var/datum/status_effect/eldritch/wax/mark
+	wax.seal(victim)
+	mark = victim.apply_status_effect(/datum/status_effect/eldritch/wax, wax)
+	var/wax_before = wax.combat_resource
+	mark.on_effect()
+	TEST_ASSERT_EQUAL(wax.active_effigy.effigy.max_integrity, 45, "Печать Хватки делает двойника крепче.")
+	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/heretic_wax/seal), "Крепкий двойник тратит печать.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 8) <= DAMAGE_PRECISION, "Взрыв наносит 8 ушибов, печать урона не добавляет: [victim.getBruteLoss()].")
+	TEST_ASSERT(wax.combat_resource >= wax_before, "Второй взрыв тоже бесплатен.")
+	var/datum/status_effect/heretic_wax/effigy/effect = wax.active_effigy
+	qdel(heretic.get_knowledge(/datum/eldritch_knowledge/wax_mark))
+	TEST_ASSERT(QDELETED(effect), "Утрата метки гасит её двойника.")
+
 /// Свеча следует за шагом, но её разрушение, перенос или телепортация снимают защиту.
 /datum/unit_test/heretic_wax_candle_counterplay/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
@@ -430,9 +504,17 @@
 	var/datum/component/anti_magic/protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 3)
 	var/obj/effect/proc_holder/spell/pointed/heretic_wax/imprint/spell = allocate(/obj/effect/proc_holder/spell/pointed/heretic_wax/imprint)
 	TEST_ASSERT(!spell.can_target(victim, user, TRUE), "Выбор отклоняет защищённую цель.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "защитой от магии"), "Отказ называет антимагию: [spell.heretic_failure_reason]")
 	TEST_ASSERT(!wax.imprint(user, victim), "Прямой вызов тоже проверяет защиту.")
 	TEST_ASSERT_EQUAL(protection.charges, 3, "Неисполненный удар не расходует антимагию.")
 	TEST_ASSERT_EQUAL(wax.combat_resource, 1, "Защищённая цель не расходует воск.")
+	qdel(protection)
+	var/obj/blocker = allocate(/obj, get_turf(victim))
+	blocker.density = TRUE
+	TEST_ASSERT(!spell.can_target(victim, user, TRUE) && findtext(spell.heretic_failure_reason, "стена"), "Отказ называет преграду: [spell.heretic_failure_reason]")
+	qdel(blocker)
+	wax.combat_resource = 0
+	TEST_ASSERT(!spell.can_target(victim, user, TRUE) && findtext(spell.heretic_failure_reason, "сейчас 0"), "Отказ называет нехватку воска: [spell.heretic_failure_reason]")
 
 /// Процессия имеет конечное число импульсов и пересчитывает положение носителя.
 /datum/unit_test/heretic_wax_procession/Run()
@@ -577,7 +659,7 @@
 	TEST_ASSERT(findtext(jointext(effigy.examine(user), " "), "30 переносимого"), "Осмотр показывает первоначальный запас урона.")
 	user.a_intent = INTENT_DISARM
 	resource = wax.get_combat_resource_data()
-	TEST_ASSERT_EQUAL(resource["name"], "Воск: выброс оболочки", "Режим разоружения явно предупреждает о расходе оболочки.")
+	TEST_ASSERT_EQUAL(resource["name"], "Воск: волна", "Без оболочки «Разоружение» не обещает выброс.")
 	user.a_intent = INTENT_HARM
 	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_wax_clinging), "Снятие оттиска сразу мешает отступлению.")
 	victim.remove_status_effect(/datum/status_effect/heretic_wax/clinging)
@@ -1366,6 +1448,93 @@
 	TEST_ASSERT(wax.on_mansus_grasp(second_pen, user, TRUE), "После паузы новый человек лепится.")
 	allocated += wax.puppets[length(wax.puppets)]
 	TEST_ASSERT_EQUAL(length(heretic.deed.counted_keys), 2, "Оба человека засчитаны по разу.")
+
+/// С общей вещи кукла цели охоты лепится первой, даже во время паузы дела; без цели охоты - первый новый человек.
+/datum/unit_test/heretic_wax_puppet_hunt_first/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/first = allocate_wax_crew(locate(origin.x, origin.y + 2, origin.z))
+	var/mob/living/carbon/human/hunted = allocate_wax_crew(locate(origin.x + 2, origin.y + 2, origin.z))
+	var/mob/living/carbon/human/other = allocate_wax_crew(locate(origin.x + 3, origin.y + 2, origin.z))
+	var/obj/item/pen/shared = wax_touched_item(first, get_step(user, EAST))
+	shared.add_fingerprint(hunted)
+	heretic.set_hunt_target(hunted.mind)
+	user.a_intent = INTENT_HELP
+	TEST_ASSERT(wax.on_mansus_grasp(shared, user, TRUE), "Кукла слеплена с общей вещи.")
+	var/obj/item/heretic_wax_puppet/puppet = wax.puppets[length(wax.puppets)]
+	allocated += puppet
+	TEST_ASSERT_EQUAL(puppet.model_ref?.resolve(), hunted, "Первой лепится кукла цели охоты.")
+	TEST_ASSERT(md5(hunted.dna.uni_identity) in heretic.deed.counted_keys, "Цель охоты засчитана в дело.")
+	TEST_ASSERT("puppet" in wax.taught_hints, "Первая кукла объясняет, что с ней делать.")
+	qdel(puppet)
+	heretic.set_hunt_target(other.mind)
+	var/obj/item/pen/waiting = wax_touched_item(first, get_step(user, EAST))
+	waiting.add_fingerprint(other)
+	TEST_ASSERT(!COOLDOWN_FINISHED(heretic.deed, progress_cooldown), "Дело на паузе.")
+	TEST_ASSERT(wax.on_mansus_grasp(waiting, user, TRUE), "Пауза дела не мешает слепить цель охоты.")
+	puppet = wax.puppets[length(wax.puppets)]
+	allocated += puppet
+	TEST_ASSERT_EQUAL(puppet.model_ref?.resolve(), other, "Во время паузы лепится цель охоты, а не новый человек.")
+	TEST_ASSERT(!(md5(other.dna.uni_identity) in heretic.deed.counted_keys), "Во время паузы цель охоты в дело не идёт.")
+	heretic.set_hunt_target(null)
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	var/obj/item/pen/plain = wax_touched_item(hunted, get_step(user, EAST))
+	plain.add_fingerprint(first)
+	TEST_ASSERT(wax.on_mansus_grasp(plain, user, TRUE), "Без цели охоты кукла тоже лепится.")
+	puppet = wax.puppets[length(wax.puppets)]
+	allocated += puppet
+	TEST_ASSERT_EQUAL(puppet.model_ref?.resolve(), first, "Без цели охоты первым идёт человек, которого ещё нет в деле.")
+
+/// Растопить куклу сама берёт куклу из сумки или с соседней клетки, сначала куклу цели охоты; с занятыми руками объясняет отказ.
+/datum/unit_test/heretic_wax_puppet_sleep_reach/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_puppet_sleep)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	TEST_ASSERT(!wax.melt_puppet(user), "Без кукол сна нет.")
+	TEST_ASSERT(findtext(wax.wax_failure, "слепите её Хваткой"), "Отказ объясняет, откуда взять куклу: [wax.wax_failure]")
+	var/mob/living/carbon/human/model = allocate_wax_crew(locate(origin.x + 3, origin.y + 3, origin.z))
+	var/mob/living/carbon/human/hunted = allocate_wax_crew(locate(origin.x + 2, origin.y + 3, origin.z))
+	var/obj/item/heretic_wax_puppet/other_puppet = make_wax_puppet(wax, user, model)
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	var/obj/item/heretic_wax_puppet/hunted_puppet = make_wax_puppet(wax, user, hunted)
+	var/obj/item/storage/backpack/bag = allocate(/obj/item/storage/backpack)
+	TEST_ASSERT(user.equip_to_slot_if_possible(bag, ITEM_SLOT_BACK, disable_warning = TRUE), "Рюкзак надет.")
+	TEST_ASSERT(SEND_SIGNAL(bag, COMSIG_TRY_STORAGE_INSERT, hunted_puppet, user, TRUE), "Кукла цели охоты убрана в рюкзак.")
+	heretic.set_hunt_target(hunted.mind)
+	var/obj/item/filler = allocate(/obj/item/pen)
+	user.put_in_hands(filler)
+	TEST_ASSERT(user.is_holding(other_puppet) && !length(user.get_empty_held_indexes()), "Обе руки заняты.")
+	TEST_ASSERT(wax.melt_puppet(user), "С занятыми руками тает кукла, которая уже в руке: [wax.wax_failure]")
+	TEST_ASSERT(model.has_status_effect(/datum/status_effect/heretic_wax_melting) && !hunted.has_status_effect(/datum/status_effect/heretic_wax_melting), "Кукла цели охоты в сумке не мешает растопить ту, что в руке.")
+	qdel(model.has_status_effect(/datum/status_effect/heretic_wax_melting))
+	for(var/datum/status_effect/heretic_capture_immunity/immunity in model.status_effects)
+		qdel(immunity)
+	user.dropItemToGround(other_puppet)
+	TEST_ASSERT(user.put_in_hands(allocate(/obj/item/pen)), "Вторая рука снова занята.")
+	TEST_ASSERT(!wax.melt_puppet(user), "С занятыми руками куклу из сумки не достать.")
+	TEST_ASSERT(findtext(wax.wax_failure, "Освободите руку"), "Отказ просит освободить руку: [wax.wax_failure]")
+	TEST_ASSERT(!hunted.has_status_effect(/datum/status_effect/heretic_wax_melting), "Отказ не начинает жар.")
+	user.drop_all_held_items()
+	TEST_ASSERT(user.put_in_hands(other_puppet), "Кукла снова в руке.")
+	TEST_ASSERT(wax.melt_puppet(user), "Кукла из рюкзака тает.")
+	TEST_ASSERT(user.is_holding(hunted_puppet), "Кукла цели охоты сама легла в руку.")
+	TEST_ASSERT(hunted.has_status_effect(/datum/status_effect/heretic_wax_melting) && !model.has_status_effect(/datum/status_effect/heretic_wax_melting), "Тает кукла цели охоты, а не кукла в руке.")
+	qdel(hunted.has_status_effect(/datum/status_effect/heretic_wax_melting))
+	qdel(hunted_puppet)
+	heretic.set_hunt_target(null)
+	user.dropItemToGround(other_puppet)
+	other_puppet.forceMove(get_step(user, EAST))
+	TEST_ASSERT(wax.melt_puppet(user), "Кукла с соседней клетки тает.")
+	TEST_ASSERT(user.is_holding(other_puppet), "Кукла с пола легла в руку.")
+	qdel(model.has_status_effect(/datum/status_effect/heretic_wax_melting))
+	user.dropItemToGround(other_puppet)
+	other_puppet.forceMove(locate(origin.x, origin.y + 3, origin.z))
+	TEST_ASSERT(!wax.melt_puppet(user), "Дальняя кукла не тает.")
+	TEST_ASSERT(findtext(wax.wax_failure, "нет при вас"), "Отказ говорит, что куклы нет рядом: [wax.wax_failure]")
 
 /// Куклу уничтожают нулевой жезл, зажигалка, сварка и огонь; смерть и смена тела её не трогают, удаление основы убирает.
 /datum/unit_test/heretic_wax_puppet_removal/Run()

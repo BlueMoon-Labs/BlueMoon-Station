@@ -98,7 +98,7 @@
 	QDEL_LIST(barriers)
 	ADD_TRAIT(user, TRAIT_NO_TELEPORT, TRAIT_SOURCE_UNIT_TESTS)
 	TEST_ASSERT(!upgrade.on_ranged_attack_eldritch_blade(victim, user), "Запрет телепортации останавливает сдвиг.")
-	TEST_ASSERT(findtext(upgrade.blink_failure_reason, "Перемещение заблокировано"), "Отказ объясняет запрет перемещения.")
+	TEST_ASSERT(findtext(upgrade.blink_failure_reason, "закреплено"), "Отказ объясняет запрет перемещения: [upgrade.blink_failure_reason]")
 	TEST_ASSERT(COOLDOWN_FINISHED(upgrade, blink_cooldown), "Отказы не расходуют перезарядку.")
 	TEST_ASSERT_EQUAL(get_turf(user), origin, "Отказы не перемещают владельца.")
 	TEST_ASSERT_EQUAL(victim.getBruteLoss() + victim.getFireLoss(), 0, "Отказы не ранят цель.")

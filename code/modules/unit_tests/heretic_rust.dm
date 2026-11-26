@@ -337,7 +337,7 @@
 	TEST_ASSERT(isfile(GLOB.heretic_capture_latch_sounds[HERETIC_RUST_CAPTURE]), "У корней свой звук защёлкивания.")
 	TEST_ASSERT_EQUAL(heretic_fx_capture_path(victim, HERETIC_RUST_CAPTURE), PATH_RUST, "Метка захвата корней относится к Ржавчине.")
 
-/// Ржавая формация встаёт только из ржавого пола, отбрасывает и роняет врага, пропускает еретика и разбирается ломом за 2 секунды.
+/// Ржавая формация не встаёт с пола вдали от ржавчины, отбрасывает и роняет врага, пропускает еретика и разбирается ломом за 2 секунды.
 /datum/unit_test/heretic_rust_formation/Run()
 	var/turf/start = run_loc_floor_bottom_left
 	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_RUST)
@@ -562,3 +562,225 @@
 	TEST_ASSERT_EQUAL(count_plume_swirls(victim), 1, "Пыль кружит, пока длится амок.")
 	victim.remove_status_effect(STATUS_EFFECT_AMOK)
 	TEST_ASSERT_EQUAL(count_plume_swirls(victim), 0, "С концом амока пыль оседает.")
+
+/// Формация встаёт и из клетки вплотную к ржавому полу, сначала ржавя её; дальше от ржавчины и на траве - нет. Подсветка обводит ровно годные клетки и снимается с выбора.
+/datum/unit_test/heretic_rust_formation_beside_rust/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_RUST)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/rust_formation)
+	var/datum/eldritch_knowledge/spell/rust_formation/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/rust_formation)
+	var/obj/effect/proc_holder/spell/pointed/rust_formation/spell = knowledge.granted_spell
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/turf/rust = locate(start.x + 2, start.y, start.z)
+	rust = rust.ChangeTurf(/turf/open/floor/plating/rust)
+	var/turf/beside = locate(start.x + 3, start.y, start.z)
+	beside = beside.ChangeTurf(/turf/open/floor/plasteel)
+	var/turf/grass = locate(start.x + 2, start.y + 1, start.z)
+	grass = grass.ChangeTurf(/turf/open/floor/grass)
+	var/turf/far = locate(start.x + 2, start.y + 2, start.z)
+	far = far.ChangeTurf(/turf/open/floor/plasteel)
+	TEST_ASSERT_NULL(heretic_rust_formation_block_reason(user, beside), "Клетка вплотную к ржавчине годится.")
+	TEST_ASSERT(findtext(heretic_rust_formation_block_reason(user, far), "ржавого пола"), "Клетка в двух шагах от ржавчины не годится.")
+	TEST_ASSERT(findtext(heretic_rust_formation_block_reason(user, grass), "ржавого пола"), "Трава у ржавчины не годится.")
+	var/list/hinted = spell.hint_tiles(user)
+	TEST_ASSERT((rust in hinted) && (beside in hinted), "Подсветка отмечает ржавую и соседнюю клетки.")
+	TEST_ASSERT(!(far in hinted) && !(grass in hinted), "Негодные клетки не подсвечены.")
+	spell.on_activation(user)
+	spell.on_activation(user)
+	TEST_ASSERT_EQUAL(length(spell.hint_images), length(hinted), "По одной метке на годную клетку, повторный выбор не удваивает.")
+	for(var/image/hint as anything in spell.hint_images)
+		TEST_ASSERT(hint.loc in hinted, "Метка стоит на годной клетке.")
+	spell.on_deactivation(null)
+	TEST_ASSERT(!length(spell.hint_images), "Снятие выбора убирает подсветку.")
+	var/obj/structure/heretic_rust_formation/wall = heretic_rust_raise_formation(user, beside)
+	TEST_ASSERT(istype(wall), "Стена встаёт у ржавчины.")
+	TEST_ASSERT(istype(beside, /turf/open/floor/plating/rust) && wall.loc == beside, "Клетка под стеной сначала ржавеет.")
+
+/// Отказ корней различает нержавый пол, ржавчину за каймой очага и отсутствие очага.
+/datum/unit_test/heretic_rust_roots_reasons/Run()
+	var/list/fixture = list()
+	rust_roots_fixture(fixture)
+	var/datum/antagonist/heretic/heretic = fixture["heretic"]
+	var/datum/eldritch_knowledge/base_rust/rust = fixture["rust"]
+	var/turf/spot = fixture["spot"]
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/mob/living/carbon/human/user = heretic.owner.current
+	victim.DefaultCombatKnockdown(5 SECONDS, override_stamdmg = 0)
+	var/turf/outside = get_step(spot, EAST)
+	outside = outside.ChangeTurf(/turf/open/floor/plating/rust)
+	victim.forceMove(outside)
+	TEST_ASSERT(findtext(rust.roots_block_reason(user, victim), "за рыжей каймой"), "Ржавчина за каймой очага называется прямо.")
+	victim.forceMove(get_step(spot, NORTH))
+	TEST_ASSERT(findtext(rust.roots_block_reason(user, victim), "не на ржавчине"), "Нержавый пол называется прямо.")
+	QDEL_NULL(rust.combat_zone)
+	victim.forceMove(spot)
+	TEST_ASSERT(findtext(rust.roots_block_reason(user, victim), "Укоренением"), "Без очага подсказка ведёт к Укоренению.")
+
+/// Отказ Истории кузнеца перечисляет годный мусор и называет лежащий рядом негодный, осмотр мусора еретиком подсказывает обряд.
+/datum/unit_test/heretic_rust_trash_hint/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_rust/recipe = allocate(/datum/eldritch_knowledge/base_rust)
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, get_turf(user))
+	allocate(/obj/item/kitchen/knife, get_turf(user))
+	allocate(/obj/item/cigbutt, get_turf(user))
+	allocate(/obj/item/reagent_containers/food/drinks/soda_cans/cola, get_turf(user))
+	var/reason = rune.recipe_failure_reason(recipe, user)
+	TEST_ASSERT(findtext(reason, "Мусор ×1"), "Отказ называет мусор: [reason]")
+	TEST_ASSERT(findtext(reason, "обёртка от съеденной закуски"), "Отказ перечисляет годный мусор: [reason]")
+	TEST_ASSERT(findtext(reason, "окурок"), "Отказ называет окурок: [reason]")
+	TEST_ASSERT(findtext(reason, "сомните"), "Отказ объясняет, как смять банку: [reason]")
+	var/obj/item/trash/chips/wrapper = allocate(/obj/item/trash/chips, get_turf(user))
+	TEST_ASSERT(findtext(jointext(wrapper.examine(user), " "), "История кузнеца"), "Еретик узнаёт в обёртке мусор для обряда.")
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, run_loc_floor_top_right)
+	TEST_ASSERT(!findtext(jointext(wrapper.examine(crew), " "), "История кузнеца"), "Экипажу осмотр обряд не выдаёт.")
+	TEST_ASSERT(!findtext(rune.recipe_failure_reason(recipe, user), "Мусор"), "С обёрткой на руне мусор больше не требуется.")
+
+/datum/unit_test/proc/rust_chain_fixture(list/out, victim_offset = 4)
+	var/turf/start = run_loc_floor_bottom_left
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_RUST)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/turf/footing = get_turf(user)
+	footing.ChangeTurf(/turf/open/floor/plating/rust)
+	out["user"] = user
+	out["victim"] = allocate(/mob/living/carbon/human, locate(start.x + victim_offset, start.y, start.z))
+	out["hand"] = allocate(/obj/item/melee/touch_attack/grasp_of_decay)
+
+/datum/unit_test/proc/await_chain_end(obj/item/melee/touch_attack/grasp_of_decay/hand, mob/living/victim, mob/living/user)
+	var/list/budget = new_wait_budget(3 SECONDS, "рывок Ржавой цепи")
+	while(!QDELETED(hand) && hand.chain_target)
+		if(!wait_budget_tick(budget))
+			return
+
+/// Хватка распада издалека: стоя на ржавчине, еретик цепью подтаскивает врага вплотную, путь ржавеет, враг падает и гниёт, рука тратится; с обычного пола цепь не бросить.
+/datum/unit_test/heretic_rust_decay_chain/Run()
+	var/list/fixture = list()
+	rust_chain_fixture(fixture)
+	var/mob/living/carbon/human/user = fixture["user"]
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/obj/item/melee/touch_attack/grasp_of_decay/hand = fixture["hand"]
+	var/turf/footing = get_turf(user)
+	footing.ChangeTurf(/turf/open/floor/plasteel)
+	hand.afterattack(victim, user, FALSE)
+	TEST_ASSERT(!QDELETED(hand) && !hand.chain_target, "С обычного пола цепь не бросается, хватка цела.")
+	footing.ChangeTurf(/turf/open/floor/plating/rust)
+	hand.afterattack(victim, user, FALSE)
+	TEST_ASSERT(hand.chain_target == victim, "Цепь цепляет врага.")
+	TEST_ASSERT_EQUAL(get_dist(user, victim), 4, "Сначала цепь только звенит: враг на месте.")
+	await_chain_end(hand, victim, user)
+	var/list/budget = new_wait_budget(2 SECONDS, "цепь подтаскивает врага")
+	while(get_dist(user, victim) > 1)
+		if(!wait_budget_tick(budget))
+			break
+	TEST_ASSERT_EQUAL(get_dist(user, victim), 1, "Цепь подтащила врага вплотную.")
+	TEST_ASSERT(victim.IsKnockdown(), "Подтащенный враг на полу.")
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/corrosion_curse/lesser), "Подтащенный враг гниёт.")
+	var/turf/path = locate(user.x + 3, user.y, user.z)
+	TEST_ASSERT(istype(path, /turf/open/floor/plating/rust), "Путь цепи ржавеет.")
+	TEST_ASSERT(QDELETED(hand), "Хватка потрачена.")
+
+/// Цепь не берут товарищ, держащий цель, и разрыв опоры до рывка; защита от магии гасит её, а сброшенная рука отменяет.
+/datum/unit_test/heretic_rust_decay_chain_counters/Run()
+	var/list/fixture = list()
+	rust_chain_fixture(fixture)
+	var/mob/living/carbon/human/user = fixture["user"]
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/obj/item/melee/touch_attack/grasp_of_decay/hand = fixture["hand"]
+	var/turf/victim_spot = get_turf(victim)
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, get_step(victim, NORTH))
+	crew.start_pulling(victim)
+	TEST_ASSERT(victim.pulledby == crew, "Товарищ держит цель.")
+	hand.afterattack(victim, user, FALSE)
+	TEST_ASSERT(!hand.chain_target, "Удерживаемую цель цепь не берёт.")
+	crew.stop_pulling()
+	hand.afterattack(victim, user, FALSE)
+	TEST_ASSERT(hand.chain_target == victim, "Свободную цель цепь берёт.")
+	var/turf/footing = get_turf(user)
+	user.forceMove(get_step(footing, NORTH))
+	await_chain_end(hand, victim, user)
+	TEST_ASSERT(victim.loc == victim_spot, "Сойдя с ржавчины, еретик рвёт цепь.")
+	TEST_ASSERT(!QDELETED(hand), "Лопнувшая цепь не тратит хватку.")
+	user.forceMove(footing)
+	hand.afterattack(victim, user, FALSE)
+	TEST_ASSERT(hand.chain_target == victim, "Цепь снова берёт цель.")
+	qdel(hand)
+	var/datum/component/anti_magic/protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	var/obj/item/melee/touch_attack/grasp_of_decay/probe = allocate(/obj/item/melee/touch_attack/grasp_of_decay)
+	probe.afterattack(victim, user, FALSE)
+	TEST_ASSERT(probe.chain_target == victim, "Защита не видна заранее: цепь цепляет.")
+	await_chain_end(probe, victim, user)
+	TEST_ASSERT(victim.loc == victim_spot, "Ни сброшенная рука, ни цепь сквозь защиту не подтаскивают.")
+	TEST_ASSERT_EQUAL(protection.charges, 4, "Защита расходует один заряд: сброшенная рука цепь не довела.")
+	TEST_ASSERT(QDELETED(probe), "Погашенная цепь тратит хватку.")
+
+/// Рывок цепи кончается у края лавы, пропасти или провала вниз: цель не сбрасывают туда.
+/datum/unit_test/heretic_rust_decay_chain_hazard/Run()
+	var/list/fixture = list()
+	rust_chain_fixture(fixture, 3)
+	var/mob/living/carbon/human/user = fixture["user"]
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/turf/edge = get_turf(victim)
+	var/turf/gap = locate(user.x + 2, user.y, user.z)
+	var/original_type = gap.type
+	for(var/hazard_type in list(/turf/open/lava/smooth, /turf/open/chasm, /turf/open/openspace/unit_test_survives_no_bottom))
+		gap = gap.ChangeTurf(hazard_type, flags = CHANGETURF_INHERIT_AIR)
+		TEST_ASSERT(heretic_rust_chain_hazard(gap), "[hazard_type] - опасный край для цепи.")
+		heretic_rust_chain_drag(user, victim, HERETIC_RUST_CHAIN_RANGE)
+		TEST_ASSERT_EQUAL(get_turf(victim), edge, "Цепь не тащит цель на [hazard_type].")
+	gap = gap.ChangeTurf(original_type, flags = CHANGETURF_INHERIT_AIR)
+	TEST_ASSERT(!heretic_rust_chain_hazard(gap), "Обычный пол цепь проходит.")
+
+/datum/unit_test_move_probe
+	var/list/visited = list()
+
+/datum/unit_test_move_probe/proc/on_moved(atom/movable/source)
+	SIGNAL_HANDLER
+	visited += source.loc
+
+/// Диагональный рывок цепи Move делит на два прямых шага: цепь обходит опасную промежуточную клетку, а между двумя опасными стоит.
+/datum/unit_test/heretic_rust_decay_chain_diagonal_hazard/Run()
+	var/list/fixture = list()
+	rust_chain_fixture(fixture)
+	var/mob/living/carbon/human/user = fixture["user"]
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/turf/origin = get_turf(user)
+	var/turf/start = locate(origin.x + 2, origin.y + 2, origin.z)
+	var/turf/vertical = locate(origin.x + 2, origin.y + 1, origin.z)
+	var/turf/horizontal = locate(origin.x + 1, origin.y + 2, origin.z)
+	var/vertical_type = vertical.type
+	var/horizontal_type = horizontal.type
+	var/datum/unit_test_move_probe/probe = allocate(/datum/unit_test_move_probe)
+	probe.RegisterSignal(victim, COMSIG_MOVABLE_MOVED, TYPE_PROC_REF(/datum/unit_test_move_probe, on_moved))
+	victim.forceMove(start)
+	probe.visited.Cut()
+	vertical = vertical.ChangeTurf(/turf/open/lava/smooth, flags = CHANGETURF_INHERIT_AIR)
+	heretic_rust_chain_drag(user, victim, 1)
+	TEST_ASSERT(!(vertical in probe.visited), "Цепь не протаскивает цель через лаву на диагонали.")
+	TEST_ASSERT_EQUAL(get_turf(victim), horizontal, "Цепь обходит лаву прямым шагом через безопасную клетку.")
+	victim.forceMove(start)
+	horizontal = horizontal.ChangeTurf(/turf/open/chasm, flags = CHANGETURF_INHERIT_AIR)
+	probe.visited.Cut()
+	heretic_rust_chain_drag(user, victim, 1)
+	TEST_ASSERT_EQUAL(length(probe.visited), 0, "Между двумя опасными клетками цепь стоит.")
+	probe.UnregisterSignal(victim, COMSIG_MOVABLE_MOVED)
+	vertical.ChangeTurf(vertical_type, flags = CHANGETURF_INHERIT_AIR)
+	horizontal.ChangeTurf(horizontal_type, flags = CHANGETURF_INHERIT_AIR)
+
+/// Тексты Хватки распада и Длани называют числа из кода.
+/datum/unit_test/heretic_rust_reworked_texts/Run()
+	var/obj/effect/proc_holder/spell/targeted/touch/grasp_of_decay/decay = /obj/effect/proc_holder/spell/targeted/touch/grasp_of_decay
+	var/obj/item/projectile/magic/spell/rust_wave/bolt = /obj/item/projectile/magic/spell/rust_wave
+	var/obj/effect/proc_holder/spell/aimed/rust_wave/patron = /obj/effect/proc_holder/spell/aimed/rust_wave
+	var/datum/status_effect/corrosion_curse/lesser/decay_effect = /datum/status_effect/corrosion_curse/lesser
+	var/windup = replacetext("[HERETIC_RUST_CHAIN_WINDUP / (1 SECONDS)]", ".", ",")
+	var/list/facts = list(
+		list(heretic_codex_text(/datum/eldritch_knowledge/spell/grasp_of_decay), "до [HERETIC_RUST_CHAIN_RANGE] клеток", "Через [windup] секунды", "на [HERETIC_RUST_CHAIN_KNOCKDOWN / (1 SECONDS)] секунды"),
+		list(initial(decay.desc), "до [HERETIC_RUST_CHAIN_RANGE] клеток", "через [windup] секунды", "на [HERETIC_RUST_CHAIN_KNOCKDOWN / (1 SECONDS)] секунды", "[initial(decay_effect.duration) / (1 SECONDS)] секунд гниёт", "лаву", "Перезарядка [initial(decay.charge_max) / (1 MINUTES)] минуты"),
+		list(initial(decay.summary), "из [HERETIC_RUST_CHAIN_RANGE] клеток", "[HERETIC_RUST_CHAIN_KNOCKDOWN / (1 SECONDS)] секунды на полу", "[initial(decay_effect.duration) / (1 SECONDS)] секунд распада"),
+		list(initial(patron.desc), "на [initial(bolt.range)] клеток", "[initial(bolt.damage)] отравления", "Перезарядка [initial(patron.charge_max) / (1 SECONDS)] секунд"),
+		list(initial(patron.summary), "[initial(bolt.damage)] отравления"),
+	)
+	for(var/list/fact_line as anything in facts)
+		for(var/index in 2 to length(fact_line))
+			TEST_ASSERT(findtext(fact_line[1], fact_line[index]), "Текст называет «[fact_line[index]]»: [fact_line[1]]")
+	TEST_ASSERT(initial(bolt.damage) <= 30, "Длань бьёт не сильнее 30 отравления.")

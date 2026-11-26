@@ -51,7 +51,7 @@
 	INVOKE_ASYNC(influence, TYPE_PROC_REF(/obj/effect/reality_smash, harvest), user, src)
 
 /obj/item/forbidden_book/proc/can_draw_rune(turf/center, mob/living/user)
-	if(QDELETED(src) || !center || !IS_HERETIC(user) || user.incapacitated() || !user.is_holding(src) || !user.Adjacent(center) || !rune_site_allowed(center, user))
+	if(QDELETED(src) || !center || !IS_HERETIC(user) || heretic_incapacitated(user) || !user.is_holding(src) || !user.Adjacent(center) || !rune_site_allowed(center, user))
 		return FALSE
 	var/turf_count = 0
 	for(var/turf/tile in range(1, center))
@@ -186,19 +186,22 @@
 		return catalog
 	var/list/data = list("paths" = list(), "knowledge" = list(), "rituals" = list())
 	var/list/entries = list()
-	for(var/path_id in GLOB.heretic_paths)
-		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+	for(var/datum/heretic_path/path as anything in heretic_paths_in_choice_order())
 		var/datum/heretic_innate/innate = path.innate_type
 		data["paths"] += list(list(
 			"id" = path.id,
 			"name" = path.name,
 			"desc" = path.desc,
 			"tagline" = path.tagline,
+			"difficulty" = path.difficulty,
+			"playstyle" = path.playstyle_labels(),
+			"first_steps" = path.first_steps?.Copy() || list(),
 			"craft" = path.craft_summary,
 			"capture" = path.capture_summary,
 			"escape" = path.escape_summary,
 			"strength_points" = path.strength_points?.Copy() || list(),
 			"weakness_points" = path.weakness_points?.Copy() || list(),
+			"robe_armor" = capitalize(heretic_robe_armor_traits(path.id)) + ".",
 			"practice" = path.combat_practice,
 			"innate_name" = initial(innate.name),
 			"innate_desc" = initial(innate.desc),
@@ -241,7 +244,7 @@
 		"book" = list(
 			"name" = book_style?.book_name || "Codex Cicatrix",
 			"title" = book_style?.book_title || "Кодекс Рубцов",
-			"subtitle" = book_style?.book_subtitle || "Пятнадцать дорог за одну завесу",
+			"subtitle" = book_style?.book_subtitle || "Шестнадцать дорог за одну завесу",
 			"path" = book_style?.id,
 			"cover_state" = book_style?.book_cover || "codex",
 		),
@@ -258,6 +261,7 @@
 		"ability_hotkey_help" = heretic.format_ability_hotkey_help(user.client?.prefs),
 		"deed" = heretic.deed_data(),
 		"preparation" = preparation_data(heretic),
+		"role_exit" = heretic.role_exit_data(),
 	)
 	if(book_style)
 		var/datum/eldritch_knowledge/base_knowledge = heretic.get_knowledge(book_style.knowledge[1])
@@ -283,6 +287,10 @@
 		"sacrifices_required" = HERETIC_ASCENSION_SACRIFICES,
 		"deed_tiers" = HERETIC_DEED_TIERS,
 		"ascension_bodies" = HERETIC_ASCENSION_BODIES,
+		"emergence_seconds" = HERETIC_ASCENDED_EMERGENCE_SECONDS,
+		"emergence_damage_cut" = HERETIC_ASCENDED_EMERGENCE_DAMAGE_CUT,
+		"blade_limit" = HERETIC_BLADE_LIMIT,
+		"escape_cooldown" = HERETIC_BLADE_ESCAPE_SECONDS,
 		"influences_harvested" = heretic.influences_harvested,
 		"influence_limit" = HERETIC_INFLUENCE_LIMIT,
 		"influence_initial_count" = HERETIC_INFLUENCE_INITIAL_COUNT,
@@ -296,6 +304,7 @@
 			"hold" = HERETIC_POCKET_ENTRY_HOLD / (1 SECONDS),
 			"grip" = HERETIC_POCKET_DOOR_GRIP / (1 SECONDS),
 			"shake" = HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS),
+			"breach" = HERETIC_POCKET_BREACH_STUN / (1 SECONDS),
 		),
 	)
 	return data
@@ -404,18 +413,23 @@
 		if("research")
 			if(!istext(params["id"]))
 				return FALSE
-			if(!heretic.research_knowledge(text2path(params["id"]), user))
+			var/datum/eldritch_knowledge/learned = text2path(params["id"])
+			if(!heretic.research_knowledge(learned, user))
 				return FALSE
-			user.playsound_local(get_turf(user), 'sound/effects/magic.ogg', 25, TRUE)
+			user.playsound_local(get_turf(user), HERETIC_CODEX_LEARN_SFX, 25, TRUE)
 			return TRUE
 		if("retarget")
 			return heretic.ensure_hunt_target(user, force_replace = TRUE)
+		if("reset_path")
+			return heretic.reset_path(user)
+		if("abandon_role")
+			return heretic.abandon_role(user)
 		if("upgrade_passive")
 			if(!istext(params["id"]) || !isnum(params["level"]))
 				return FALSE
 			if(!heretic.upgrade_passive(text2path(params["id"]), user, params["level"]))
 				return FALSE
-			user.playsound_local(get_turf(user), 'sound/effects/magic.ogg', 25, TRUE)
+			user.playsound_local(get_turf(user), HERETIC_CODEX_UPGRADE_SFX, 25, TRUE)
 			return TRUE
 	return FALSE
 

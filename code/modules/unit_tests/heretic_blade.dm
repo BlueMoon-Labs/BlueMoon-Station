@@ -123,7 +123,7 @@
 	var/obj/item/melee/sickly_blade/duelist/blade = allocate(/obj/item/melee/sickly_blade/duelist, run_loc_floor_bottom_left)
 	blade.bound_mind = user_mind
 	user.put_in_hands(blade)
-	knowledge.created_blades += WEAKREF(blade)
+	LAZYADD(knowledge.created_blades, WEAKREF(blade))
 	var/mob/living/carbon/human/attacker = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
 	return list("user" = user, "heretic" = heretic, "knowledge" = knowledge, "blade" = blade, "attacker" = attacker)
 
@@ -1030,9 +1030,10 @@
 		qdel(thing)
 		TEST_ASSERT(QDELETED(thing), "[thing_type] удаляется без ошибок.")
 
-/datum/unit_test/proc/blade_test_crew(turf/place)
+/datum/unit_test/proc/blade_test_crew(turf/place, opt_in = ANTAG_OPT_IN_TEMPORARY)
 	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, place)
 	var/datum/mind/crew_mind = allocate_mind()
+	crew_mind.antag_opt_in_level = opt_in
 	crew_mind.current = crew
 	crew.mind = crew_mind
 	return crew
@@ -1145,6 +1146,8 @@
 	var/datum/eldritch_knowledge/base_blade/blade = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
 	var/mob/living/carbon/human/first = blade_test_crew(get_step(get_step(user, EAST), EAST))
 	var/mob/living/carbon/human/second = blade_test_crew(get_step(get_step(user, NORTH), NORTH))
+	first.mock_client = new /datum/client_interface()
+	second.mock_client = new /datum/client_interface()
 	blade.open_challenge(user, first)
 	TEST_ASSERT_EQUAL(blade.challenged_ref?.resolve(), first, "Вызов ждёт ответа.")
 	var/datum/timedevent/timer = SStimer.timer_id_dict[blade.challenge_timer]
@@ -1176,6 +1179,7 @@
 	far_rival.forceMove(locate(user.x + HERETIC_BLADE_CHALLENGE_RANGE + 1, user.y, user.z))
 	TEST_ASSERT(blade.decline_duel(far_rival, "отказ"), "Отказ ушедшего принят.")
 	TEST_ASSERT(!far_rival.IsKnockdown(), "Ушедшего дальше 5 клеток клинок не достаёт.")
+	first.mock_client = null
 	blade.open_challenge(user, first)
 	TEST_ASSERT(blade.decline_duel(first, "в теле нет игрока", counts = FALSE), "Отказ пустого тела принят.")
 	TEST_ASSERT(!first.IsKnockdown(), "Тело без игрока за отказ не наказывается.")
@@ -1379,7 +1383,7 @@
 	reset_blade_duelist(heretic, home)
 	rival = start_blade_duel(heretic, rival_spot)
 	duel = blade.active_duel
-	for(var/allowed_type in list(/obj/effect/proc_holder/spell/self/heretic_blade/parry, /obj/effect/proc_holder/spell/self/heretic_summon/heart, /obj/effect/proc_holder/spell/pointed/heretic_lunge, /obj/effect/proc_holder/spell/pointed/heretic_feint, /obj/effect/proc_holder/spell/self/heretic_blade/dance, /obj/effect/proc_holder/spell/self/heretic_blade/recall, /obj/effect/proc_holder/spell/self/heretic_blade/storm))
+	for(var/allowed_type in list(/obj/effect/proc_holder/spell/self/heretic_blade/parry, /obj/effect/proc_holder/spell/self/heretic_summon/heart, /obj/effect/proc_holder/spell/pointed/heretic_lunge, /obj/effect/proc_holder/spell/pointed/heretic_feint, /obj/effect/proc_holder/spell/self/heretic_blade/dance, /obj/effect/proc_holder/spell/pointed/heretic_last_thrust, /obj/effect/proc_holder/spell/self/heretic_blade/storm))
 		SEND_SIGNAL(user, COMSIG_MOB_CAST_SPELL, allocate(allowed_type))
 		TEST_ASSERT(!QDELETED(duel), "Приём клинка [allowed_type] в дуэли разрешён.")
 	var/obj/effect/proc_holder/spell/pointed/void_blink/foreign = allocate(/obj/effect/proc_holder/spell/pointed/void_blink)
@@ -1897,13 +1901,13 @@
 	for(var/fragment in list("[HERETIC_BLADE_DISARM_DISTANCE] клетки", "[HERETIC_BLADE_DISARM_COOLDOWN / (1 SECONDS)] секунд", "[HERETIC_BLADE_THROAT_WINDOW / (1 SECONDS)] секунды"))
 		TEST_ASSERT(findtext(disarm.desc, fragment), "Описание Обезоруживания называет «[fragment]».")
 	var/obj/effect/proc_holder/spell/pointed/heretic_blade_challenge/challenge = /obj/effect/proc_holder/spell/pointed/heretic_blade_challenge
-	for(var/fragment in list("не дальше [HERETIC_BLADE_CHALLENGE_RANGE] клеток", "[HERETIC_BLADE_CHALLENGE_CALM / (1 SECONDS)] секунд должны быть без урона", "ответ у него [HERETIC_BLADE_CHALLENGE_TIMEOUT / (1 SECONDS)] секунд", "изнанку на [HERETIC_BLADE_DUEL_DURATION / (1 SECONDS)] секунд", "клятвой на [HERETIC_BLADE_OATH_HOLD / (1 SECONDS)] секунд", "на [HERETIC_BLADE_BRAND_DURATION / (1 MINUTES)] минут оставляет на шее", "закрывает вызовы на [HERETIC_BLADE_DUEL_LOCKOUT / (1 MINUTES)] минут", "вызвать его можно через [HERETIC_BLADE_CHALLENGE_REPEAT / (1 MINUTES)] минут", "сбивают его с ног на [HERETIC_BLADE_REFUSAL_KNOCKDOWN / (1 SECONDS)] секунды", "призыв сердца или кодекса разрешены", "только там, где может открыться изнанка", "вырвавшийся из изнанки, проиграл", "сразу примет его целью охоты"))
+	for(var/fragment in list("не дальше [HERETIC_BLADE_CHALLENGE_RANGE] клеток", "[HERETIC_BLADE_CHALLENGE_CALM / (1 SECONDS)] секунд должны быть без урона", "ответ у него [HERETIC_BLADE_CHALLENGE_TIMEOUT / (1 SECONDS)] секунд", "изнанку на [HERETIC_BLADE_DUEL_DURATION / (1 SECONDS)] секунд", "клятвой на [HERETIC_BLADE_OATH_HOLD / (1 SECONDS)] секунд", "на [HERETIC_BLADE_BRAND_DURATION / (1 MINUTES)] минут оставляет на шее", "закрывает вызовы на [HERETIC_BLADE_DUEL_LOCKOUT / (1 MINUTES)] минут", "вызвать его можно через [HERETIC_BLADE_CHALLENGE_REPEAT / (1 MINUTES)] минут", "согласного на антаг-события сбивают с ног на [HERETIC_BLADE_REFUSAL_KNOCKDOWN / (1 SECONDS)] секунды", "призыв сердца или кодекса разрешены", "только там, где может открыться изнанка", "вырвавшийся из изнанки, проиграл", "сразу примет его целью охоты"))
 		TEST_ASSERT(findtext(initial(challenge.desc), fragment), "Кнопка Вызова называет «[fragment]».")
 	var/obj/effect/proc_holder/spell/pointed/heretic_blade_throat/throat_spell = /obj/effect/proc_holder/spell/pointed/heretic_blade_throat
 	for(var/fragment in list("за [door_time] секунды", "растолкать за [HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды", "Перезарядка [HERETIC_BLADE_THROAT_COOLDOWN / (1 SECONDS)] секунд", "обряд сердцем над ней работает"))
 		TEST_ASSERT(findtext(initial(throat_spell.desc), fragment), "Кнопка Клинка у горла называет «[fragment]».")
 	TEST_ASSERT(findtext(base.desc, "закрывает вызовы на [HERETIC_BLADE_DUEL_LOCKOUT / (1 MINUTES)] минут"), "База называет срок запрета после поражения.")
-	TEST_ASSERT(findtext(base.desc, "снова вызвать его можно через [HERETIC_BLADE_CHALLENGE_REPEAT / (1 MINUTES)] минут") && findtext(base.desc, "сбивают его с ног на [HERETIC_BLADE_REFUSAL_KNOCKDOWN / (1 SECONDS)] секунды"), "База называет наказание за отказ и срок до повторного вызова того же человека.")
+	TEST_ASSERT(findtext(base.desc, "снова - через [HERETIC_BLADE_CHALLENGE_REPEAT / (1 MINUTES)] минут") && findtext(base.desc, "согласного на антаг-события валят на [HERETIC_BLADE_REFUSAL_KNOCKDOWN / (1 SECONDS)] секунды"), "База называет наказание за отказ, кого оно валит, и срок до повторного вызова того же человека.")
 	var/datum/action/innate/heretic_blade_surrender/surrender = /datum/action/innate/heretic_blade_surrender
 	TEST_ASSERT(findtext(initial(surrender.desc), "[HERETIC_BLADE_OATH_HOLD / (1 SECONDS)] секунд"), "Кнопка «Сдаться» называет срок клятвы.")
 	var/datum/heretic_path/path = GLOB.heretic_paths[PATH_BLADE]
@@ -2106,11 +2110,10 @@
 	TEST_ASSERT(wait_for_qdeleted(steel), "Клинок у шеи гаснет вместе с захватом.")
 	TEST_ASSERT(!(steel in victim.vis_contents), "На шее не остаётся клинка.")
 
-/// Танец граней оставляет на каждой покинутой клетке тающего призрака, Зов клинка ведёт клинок по дуге в руку.
+/// Танец граней оставляет на каждой покинутой клетке тающего призрака, Выжидание без клинка в руке ведёт клинок по дуге в руку.
 /datum/unit_test/heretic_blade_motion_trails/Run()
 	var/list/fixture = make_blade_fixture()
 	var/mob/living/carbon/human/user = fixture["user"]
-	var/datum/antagonist/heretic/heretic = fixture["heretic"]
 	var/obj/item/blade = fixture["blade"]
 	qdel(fixture["attacker"])
 	user.apply_status_effect(/datum/status_effect/heretic_blade_dance)
@@ -2123,16 +2126,16 @@
 	var/turf/second = get_turf(user)
 	user.Move(get_step(user, EAST), EAST)
 	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/heretic_afterimage) in second, "Без танца призраков нет.")
-	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/blade_recall)
 	var/turf/lying_at = locate(user.x + 2, user.y, user.z)
 	user.dropItemToGround(blade)
 	blade.forceMove(lying_at)
-	var/obj/effect/proc_holder/spell/self/heretic_blade/recall/recall = allocate(/obj/effect/proc_holder/spell/self/heretic_blade/recall)
+	var/obj/effect/proc_holder/spell/self/heretic_blade/parry/recall = allocate(/obj/effect/proc_holder/spell/self/heretic_blade/parry)
 	recall.cast(list(user), user)
 	TEST_ASSERT(blade in user.held_items, "Зов возвращает клинок в руку.")
 	var/obj/effect/temp_visual/heretic_blade_streak/streak = locate() in lying_at
 	TEST_ASSERT_NOTNULL(streak, "Клинок летит по дуге от места, где лежал.")
 	TEST_ASSERT(wait_for_qdeleted(streak), "След полёта гаснет.")
+	release_view_cache()
 
 /// Вызов вешает над вызванным знак поединка до ответа; у клятвы дуэли свой звук защёлкивания.
 /datum/unit_test/heretic_blade_challenge_feedback/Run()
@@ -2171,3 +2174,284 @@
 	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/heretic_path_feedback) in get_turf(user), "Кольца Пустоты нет.")
 	TEST_ASSERT(wait_for_qdeleted(hum), "Дуги гаснут с концом настройки.")
 	TEST_ASSERT(wait_for_var(knowledge, "combat_resource", 1), "Настройка дала Темп.")
+
+/// Шаг дела идёт за принятый вызов и за отказ рядом с еретиком; отказ ушедшего дальше 5 клеток в дело не идёт.
+/datum/unit_test/heretic_blade_refusal_deed/Run()
+	allocated += new /datum/heretic_test_station_level(run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_BLADE)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blade/blade = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
+	var/mob/living/carbon/human/far_rival = blade_test_crew(locate(user.x + 2, user.y + 2, user.z))
+	blade.open_challenge(user, far_rival)
+	far_rival.forceMove(locate(user.x + HERETIC_BLADE_CHALLENGE_RANGE + 1, user.y, user.z))
+	TEST_ASSERT(blade.decline_duel(far_rival, "отказ"), "Отказ ушедшего принят.")
+	TEST_ASSERT(!far_rival.IsKnockdown(), "Ушедшего клинок не достаёт.")
+	TEST_ASSERT(!("challenge:[blade.challenge_key(far_rival)]" in heretic.deed.counted_keys), "Отказ издали не идёт в дело.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 0, "Прогресс дела не вырос.")
+	var/mob/living/carbon/human/near_rival = blade_test_crew(get_step(get_step(user, NORTH), NORTH))
+	near_rival.mock_client = new /datum/client_interface()
+	blade.open_challenge(user, near_rival)
+	TEST_ASSERT(blade.decline_duel(near_rival, "отказ"), "Отказ рядом принят.")
+	TEST_ASSERT(near_rival.IsKnockdown(), "Отказавшийся рядом сбит с ног.")
+	TEST_ASSERT("challenge:[blade.challenge_key(near_rival)]" in heretic.deed.counted_keys, "Отказ рядом идёт в дело.")
+	release_view_cache()
+
+/// Выжидание без клинка в руке зовёт свой клинок с пола на виду, не тратя перезарядку стойки; зов ждёт 10 секунд, нужна свободная рука, из ящика клинок не откликается.
+/datum/unit_test/heretic_blade_parry_recall/Run()
+	var/list/fixture = make_blade_fixture()
+	var/mob/living/carbon/human/user = fixture["user"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	var/obj/item/blade = fixture["blade"]
+	qdel(fixture["attacker"])
+	knowledge.grant_combat_power(user)
+	var/obj/effect/proc_holder/spell/self/heretic_blade/parry/parry = knowledge.combat_power
+	var/turf/lying_at = locate(user.x + 3, user.y, user.z)
+	user.dropItemToGround(blade)
+	blade.forceMove(lying_at)
+	TEST_ASSERT(parry.can_cast(user, TRUE, TRUE), "Без клинка в руке Выжидание готово позвать его.")
+	parry.charge_counter = 0
+	parry.cast(list(user), user)
+	TEST_ASSERT(blade in user.held_items, "Выжидание без клинка зовёт его с пола в руку.")
+	TEST_ASSERT_EQUAL(parry.charge_counter, parry.charge_max, "Зов не тратит перезарядку Выжидания.")
+	TEST_ASSERT(QDELETED(knowledge.active_parry), "Зов сам стойку не поднимает.")
+	user.dropItemToGround(blade)
+	blade.forceMove(lying_at)
+	TEST_ASSERT(!parry.can_cast(user, TRUE, TRUE) && findtext(parry.heretic_failure_reason, "не откликнется"), "Повторный зов ждёт [HERETIC_BLADE_RECALL_COOLDOWN / (1 SECONDS)] секунд.")
+	COOLDOWN_RESET(knowledge, recall_cooldown)
+	var/obj/structure/closet/locker = allocate(/obj/structure/closet, lying_at)
+	blade.forceMove(locker)
+	TEST_ASSERT(!parry.can_cast(user, TRUE, TRUE), "Клинок в ящике не откликается.")
+	blade.forceMove(lying_at)
+	var/obj/item/left = allocate(/obj/item, get_turf(user))
+	var/obj/item/right = allocate(/obj/item, get_turf(user))
+	user.put_in_hands(left)
+	user.put_in_hands(right)
+	TEST_ASSERT(!parry.can_cast(user, TRUE, TRUE) && findtext(parry.heretic_failure_reason, "Освободите руку"), "Клинку нужна свободная рука.")
+	user.dropItemToGround(right)
+	parry.cast(list(user), user)
+	TEST_ASSERT(blade in user.held_items, "Со свободной рукой зов срабатывает.")
+	user.dropItemToGround(left)
+	parry.cast(list(user), user)
+	TEST_ASSERT(!QDELETED(knowledge.active_parry), "С клинком в руке Выжидание снова поднимает стойку.")
+	release_view_cache()
+
+/// В Танце граней каждое попадание клинком даёт Темп без паузы в 4 секунды.
+/datum/unit_test/heretic_blade_dance_tempo/Run()
+	var/list/fixture = make_blade_fixture()
+	var/mob/living/user = fixture["user"]
+	var/mob/living/attacker = fixture["attacker"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	user.apply_status_effect(/datum/status_effect/heretic_blade_dance)
+	knowledge.on_eldritch_blade(attacker, user, TRUE)
+	knowledge.on_eldritch_blade(attacker, user, TRUE)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 2, "В танце каждое попадание даёт Темп.")
+	user.remove_status_effect(/datum/status_effect/heretic_blade_dance)
+	knowledge.on_eldritch_blade(attacker, user, TRUE)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 2, "Без танца быстрые удары ждут паузу.")
+
+/// Буря клинков выбивает оружие из руки каждого поражённого.
+/datum/unit_test/heretic_blade_storm_disarm/Run()
+	var/list/fixture = make_blade_fixture()
+	var/mob/living/carbon/human/attacker = fixture["attacker"]
+	var/datum/antagonist/heretic/heretic = fixture["heretic"]
+	heretic.gain_knowledge(/datum/eldritch_knowledge/blade_disarm)
+	var/datum/eldritch_knowledge/final_eldritch/blade_final/finale = ascend_blade_fixture(fixture)
+	var/obj/effect/proc_holder/spell/self/heretic_blade/storm/storm = locate() in finale.ascension_spell_instances
+	var/obj/item/weapon = allocate(/obj/item/kitchen/knife, get_turf(attacker))
+	attacker.put_in_active_hand(weapon)
+	storm.cast(list(fixture["user"]), fixture["user"])
+	TEST_ASSERT(abs(attacker.getBruteLoss() - HERETIC_BLADE_STORM_BRUTE) < DAMAGE_PRECISION, "Буря ранит врага.")
+	TEST_ASSERT(!(weapon in attacker.held_items), "Буря выбивает оружие из руки.")
+	release_view_cache()
+
+/// BYOND держит атомы последнего view() до следующего вызова: тихий тестовый мир иначе не соберёт объекты теста.
+/datum/unit_test/proc/release_view_cache()
+	pass(view(0, run_loc_floor_top_right))
+
+/datum/unit_test/proc/blade_thrust_fixture()
+	var/list/fixture = make_blade_fixture()
+	var/datum/antagonist/heretic/heretic = fixture["heretic"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	var/mob/living/user = fixture["user"]
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/blade_last_thrust)
+	knowledge.combat_resource = knowledge.combat_resource_max
+	fixture["thrust"] = locate(/obj/effect/proc_holder/spell/pointed/heretic_last_thrust) in user.mind.spell_list
+	fixture["start"] = get_turf(user)
+	return fixture
+
+/// Последний выпад: замах, затем рывок по прямой на 5 клеток сквозь двоих; третий враг останавливает, еретик за спинами пронзённых, Темп и выносливость потрачены.
+/datum/unit_test/heretic_blade_last_thrust/Run()
+	var/list/fixture = blade_thrust_fixture()
+	var/mob/living/user = fixture["user"]
+	var/mob/living/first = fixture["attacker"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	var/obj/effect/proc_holder/spell/pointed/heretic_last_thrust/thrust = fixture["thrust"]
+	var/turf/start = fixture["start"]
+	TEST_ASSERT_NOTNULL(thrust, "Знание выдаёт Последний выпад.")
+	var/mob/living/carbon/human/second = allocate(/mob/living/carbon/human, locate(start.x + 2, start.y, start.z))
+	var/mob/living/carbon/human/third = allocate(/mob/living/carbon/human, locate(start.x + 4, start.y, start.z))
+	knowledge.combat_resource = HERETIC_BLADE_THRUST_COST - 1
+	TEST_ASSERT(!thrust.can_cast(user, TRUE, TRUE), "Без [HERETIC_BLADE_THRUST_COST] Темпа выпад недоступен.")
+	knowledge.combat_resource = HERETIC_BLADE_THRUST_COST + 1
+	TEST_ASSERT(thrust.can_cast(user, TRUE, TRUE) && thrust.can_target(first, user, TRUE), "С Темпом выпад наводится на ближнего врага.")
+	thrust.cast(list(first), user)
+	TEST_ASSERT(knowledge.thrust_timer, "Сначала идёт замах.")
+	TEST_ASSERT(locate(/obj/effect/temp_visual/heretic_vfx/thread) in start, "Замах виден линией по полу.")
+	TEST_ASSERT_EQUAL(first.getBruteLoss(), 0, "Замах ещё не ранит.")
+	TEST_ASSERT(wait_for_var(knowledge, "thrust_timer", null), "Замах заканчивается рывком.")
+	for(var/mob/living/victim as anything in list(first, second))
+		TEST_ASSERT(victim.getBruteLoss() > HERETIC_BLADE_THRUST_BRUTE - DAMAGE_PRECISION, "Пронзённый получает [HERETIC_BLADE_THRUST_BRUTE] ушибов, а не [victim.getBruteLoss()]; еретик на [get_dist(start, user)] клетке, Темп [knowledge.combat_resource].")
+		TEST_ASSERT(victim.IsKnockdown(), "Пронзённый падает.")
+	TEST_ASSERT_EQUAL(third.getBruteLoss(), 0, "Третий враг не задет.")
+	TEST_ASSERT_EQUAL(get_turf(user), locate(start.x + 3, start.y, start.z), "Третий враг останавливает рывок, еретик за спинами пронзённых.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Рывок стоит [HERETIC_BLADE_THRUST_COST] Темпа.")
+	TEST_ASSERT(user.getStaminaLoss() > 0, "Рывок отнимает выносливость у самого еретика.")
+	release_view_cache()
+
+/// Контригра Последнего выпада: сошедший с места еретик сохраняет Темп и перезарядку, сошедшая с линии цель уходит от удара, а Темп сгорает; стена обрывает рывок; защищённого от магии не выбрать и клинок его минует.
+/datum/unit_test/heretic_blade_last_thrust_counters/Run()
+	var/list/fixture = blade_thrust_fixture()
+	var/mob/living/user = fixture["user"]
+	var/mob/living/target = fixture["attacker"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	var/obj/effect/proc_holder/spell/pointed/heretic_last_thrust/thrust = fixture["thrust"]
+	var/turf/start = fixture["start"]
+	target.forceMove(locate(start.x + 2, start.y, start.z))
+	thrust.charge_counter = 0
+	thrust.cast(list(target), user)
+	user.forceMove(get_step(start, NORTH))
+	TEST_ASSERT(wait_for_var(knowledge, "thrust_timer", null), "Сорванный замах заканчивается.")
+	TEST_ASSERT_EQUAL(thrust.charge_counter, thrust.charge_max, "Сошедший с места сохраняет перезарядку.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, knowledge.combat_resource_max, "Сошедший с места сохраняет Темп.")
+	TEST_ASSERT_EQUAL(target.getBruteLoss(), 0, "Сорванный выпад не ранит.")
+	user.forceMove(start)
+	thrust.cast(list(target), user)
+	target.forceMove(locate(start.x + 2, start.y + 1, start.z))
+	TEST_ASSERT(wait_for_var(knowledge, "thrust_timer", null), "Выпад сорвался в рывок.")
+	TEST_ASSERT_EQUAL(target.getBruteLoss(), 0, "Сошедшая с линии цель уходит от удара.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, knowledge.combat_resource_max - HERETIC_BLADE_THRUST_COST, "Промах сжигает Темп.")
+	TEST_ASSERT_EQUAL(get_turf(user), locate(start.x + HERETIC_BLADE_THRUST_LENGTH, start.y, start.z), "Пустой рывок проносит на всю длину.")
+	user.forceMove(start)
+	user.adjustStaminaLoss(-200)
+	knowledge.combat_resource = knowledge.combat_resource_max
+	target.forceMove(locate(start.x + 2, start.y, start.z))
+	var/obj/barrier = allocate(/obj, locate(start.x + 3, start.y, start.z))
+	barrier.density = TRUE
+	barrier.anchored = TRUE
+	thrust.cast(list(target), user)
+	TEST_ASSERT(wait_for_var(knowledge, "thrust_timer", null), "Выпад у стены сорвался в рывок.")
+	TEST_ASSERT(target.getBruteLoss() > 0, "Цель перед стеной пронзена.")
+	TEST_ASSERT_EQUAL(get_turf(user), locate(start.x + 1, start.y, start.z), "Стена обрывает рывок, на цель еретик не встаёт.")
+	qdel(barrier)
+	user.forceMove(start)
+	user.adjustStaminaLoss(-200)
+	target.fully_heal()
+	target.SetKnockdown(0)
+	knowledge.combat_resource = knowledge.combat_resource_max
+	var/mob/living/carbon/human/warded = allocate(/mob/living/carbon/human, locate(start.x + 1, start.y, start.z))
+	warded.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	TEST_ASSERT(!thrust.can_target(warded, user, TRUE), "Защищённого от магии не выбрать целью.")
+	thrust.cast(list(target), user)
+	TEST_ASSERT(wait_for_var(knowledge, "thrust_timer", null), "Выпад сквозь защищённого сорвался в рывок.")
+	TEST_ASSERT_EQUAL(warded.getBruteLoss(), 0, "Защищённого клинок минует.")
+	TEST_ASSERT(target.getBruteLoss() > 0, "Цель за защищённым пронзена.")
+	release_view_cache()
+
+/// Разрез ведёт на пол в 5-9 клетках от входа, но не в свободную клетку резерва: оттуда изнанка вернула бы еретика ко входу.
+/datum/unit_test/heretic_blade_slash_exit_reserve/Run()
+	allocated += new /datum/heretic_test_station_level(run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_BLADE)
+	var/datum/eldritch_knowledge/base_blade/blade = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
+	var/turf/origin = run_loc_floor_bottom_left
+	var/turf/entry = locate(origin.x + 4, origin.y + 2, origin.z)
+	var/turf/void_floor = locate(origin.x - 1, origin.y + 2, origin.z)
+	for(var/turf/open/floor/spot in RANGE_TURFS(HERETIC_BLADE_SLASH_MAX, entry))
+		if(spot != void_floor && get_dist(spot, entry) >= HERETIC_BLADE_SLASH_MIN)
+			var/obj/structure/barrier = allocate(/obj/structure, spot)
+			barrier.density = TRUE
+			barrier.anchored = TRUE
+	TEST_ASSERT_EQUAL(blade.slash_exit(entry), void_floor, "Единственный свободный пол в 5-9 клетках - выход разрезом.")
+	var/datum/turf_reservation/owner_reservation = SSmapping.used_turfs[void_floor]
+	SSmapping.used_turfs -= void_floor
+	var/turf/picked = blade.slash_exit(entry)
+	SSmapping.used_turfs[void_floor] = owner_reservation
+	TEST_ASSERT_NULL(picked, "Разрез не ведёт в свободную клетку резерва.")
+
+/// Последний выпад не проходит сквозь направленное окно на своей клетке, не тратит места пронзённых на мышей и не приземляет в провал.
+/datum/unit_test/heretic_blade_last_thrust_terrain/Run()
+	var/list/fixture = blade_thrust_fixture()
+	var/mob/living/user = fixture["user"]
+	var/mob/living/first = fixture["attacker"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	var/turf/start = fixture["start"]
+	var/obj/structure/window/pane = allocate(/obj/structure/window, start)
+	pane.setDir(EAST)
+	TEST_ASSERT(findtext(knowledge.thrust_block_reason(user, first), "перекрыт"), "Окно на своей клетке закрывает выпад: [knowledge.thrust_block_reason(user, first)]")
+	pane.setDir(NORTH)
+	TEST_ASSERT_NULL(knowledge.thrust_block_reason(user, first), "Окно на другой грани выпаду не мешает.")
+	qdel(pane)
+	var/mob/living/carbon/human/second = allocate(/mob/living/carbon/human, locate(start.x + 4, start.y, start.z))
+	for(var/offset in 2 to 3)
+		var/mob/living/simple_animal/mouse/mouse = allocate(/mob/living/simple_animal/mouse, locate(start.x + offset, start.y, start.z))
+		mouse.toggle_ai(AI_OFF)
+	knowledge.combat_resource = knowledge.combat_resource_max
+	knowledge.release_thrust(user, start, heretic_blade_thrust_path(start, get_turf(first)))
+	TEST_ASSERT(first.getBruteLoss() > 0, "Первый враг пронзён.")
+	TEST_ASSERT(second.getBruteLoss() > 0, "Мыши под ногами не занимают места второго пронзённого.")
+	TEST_ASSERT_EQUAL(get_turf(user), locate(start.x + HERETIC_BLADE_THRUST_LENGTH, start.y, start.z), "Мыши не останавливают рывок.")
+	user.forceMove(start)
+	user.adjustStaminaLoss(-200)
+	knowledge.combat_resource = knowledge.combat_resource_max
+	var/turf/pit = locate(start.x + HERETIC_BLADE_THRUST_LENGTH, start.y, start.z)
+	var/pit_type = pit.type
+	pit = pit.ChangeTurf(/turf/open/space)
+	knowledge.release_thrust(user, start, heretic_blade_thrust_path(start, get_turf(first)))
+	var/turf/landed = get_turf(user)
+	pit = pit.ChangeTurf(pit_type)
+	TEST_ASSERT_EQUAL(landed, locate(start.x + HERETIC_BLADE_THRUST_LENGTH - 1, start.y, start.z), "Над космосом рывок проносит, но встаёт еретик на последнем полу.")
+	release_view_cache()
+
+/// Отказ рядом от несогласного на антаг-события не валит его с ног, но идёт в дело; дело, не принявшее шаг, вызов не засчитывает.
+/datum/unit_test/heretic_blade_refusal_consent/Run()
+	allocated += new /datum/heretic_test_station_level(run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_BLADE)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blade/blade = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
+	var/mob/living/carbon/human/refuser = blade_test_crew(get_step(get_step(user, NORTH), NORTH), ANTAG_OPT_IN_NOT_TARGET)
+	blade.open_challenge(user, refuser)
+	TEST_ASSERT(blade.decline_duel(refuser, "отказ"), "Отказ принят.")
+	TEST_ASSERT(!refuser.IsKnockdown() && !refuser.IsStun(), "Несогласного на антаг-события клинок не валит.")
+	TEST_ASSERT("challenge:[blade.challenge_key(refuser)]" in heretic.deed.counted_keys, "Трусость несогласного всё равно идёт в дело.")
+	var/mob/living/carbon/human/second = blade_test_crew(get_step(get_step(user, EAST), EAST), ANTAG_OPT_IN_NOT_TARGET)
+	TEST_ASSERT(!COOLDOWN_FINISHED(heretic.deed, progress_cooldown), "Дело ждёт перед следующим шагом.")
+	TEST_ASSERT(!blade.count_challenge(user, second, FALSE), "Пока дело ждёт, вызов не засчитан.")
+	TEST_ASSERT(!("challenge:[blade.challenge_key(second)]" in heretic.deed.counted_keys), "Незасчитанный вызов не записан.")
+	release_view_cache()
+
+/// Согласный на антаг-события, ушедший из тела, пока вызов ждал ответа, за молчание с ног не падает.
+/datum/unit_test/heretic_blade_refusal_left_body/Run()
+	allocated += new /datum/heretic_test_station_level(run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_BLADE)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blade/blade = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
+	var/mob/living/carbon/human/sleeper = blade_test_crew(get_step(get_step(user, EAST), EAST), ANTAG_OPT_IN_KILL)
+	blade.open_challenge(user, sleeper)
+	blade.challenge_expired(blade.challenge_serial)
+	TEST_ASSERT_NULL(blade.challenged_ref, "Молчание закрывает вызов.")
+	TEST_ASSERT(!sleeper.IsKnockdown() && !sleeper.IsStun(), "Тело, из которого ушёл игрок, клинок не валит.")
+	release_view_cache()
+
+/// Тексты новых приёмов Клинка называют числа из правил.
+/datum/unit_test/heretic_blade_thrust_texts/Run()
+	var/datum/eldritch_knowledge/spell/blade_last_thrust/knowledge = allocate(/datum/eldritch_knowledge/spell/blade_last_thrust)
+	var/obj/effect/proc_holder/spell/pointed/heretic_last_thrust/spell = /obj/effect/proc_holder/spell/pointed/heretic_last_thrust
+	for(var/text in list(knowledge.desc, initial(spell.desc)))
+		for(var/fragment in list("[HERETIC_BLADE_THRUST_COST] Темпа", "[HERETIC_BLADE_THRUST_RANGE] клеток", "[HERETIC_BLADE_THRUST_LENGTH] клеток", "[HERETIC_BLADE_THRUST_BRUTE] ушибов", "[HERETIC_BLADE_THRUST_STAMINA] урона выносливости", "[HERETIC_BLADE_THRUST_KNOCKDOWN / (1 SECONDS)] секунду", "[HERETIC_BLADE_THRUST_SELF_STAMINA] выносливости", "[HERETIC_BLADE_THRUST_COOLDOWN / (1 SECONDS)] секунд"))
+			TEST_ASSERT(findtext(text, fragment), "Последний выпад называет «[fragment]»: [text]")
+	var/obj/effect/proc_holder/spell/self/heretic_blade/parry/parry = /obj/effect/proc_holder/spell/self/heretic_blade/parry
+	for(var/fragment in list("[HERETIC_BLADE_RECALL_RANGE] клеток", "раз в [HERETIC_BLADE_RECALL_COOLDOWN / (1 SECONDS)] секунд"))
+		TEST_ASSERT(findtext(initial(parry.desc), fragment), "Выжидание называет «[fragment]».")
+	var/datum/eldritch_knowledge/base_blade/base = allocate(/datum/eldritch_knowledge/base_blade)
+	TEST_ASSERT(findtext(base.desc, "клинок, до [HERETIC_BLADE_LIMIT].") && findtext(base.desc, "в [HERETIC_BLADE_RECALL_RANGE] клетках"), "База называет предел клинков и дальность зова.")
+	var/datum/heretic_path/path = GLOB.heretic_paths[PATH_BLADE]
+	TEST_ASSERT_EQUAL(path.knowledge[8], /datum/eldritch_knowledge/spell/blade_last_thrust, "Последний выпад на восьмой ступени.")

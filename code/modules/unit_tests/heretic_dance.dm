@@ -591,6 +591,31 @@
 	dance.on_dance_step(user, NORTH, from)
 	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_dance_bone_steps) in from, "Шаг в долю оставил костяной след.")
 
+/// Диагональный шаг Move делит на два прямых: ни подшаг к цели, ни шатание не проводят танцора через лаву на углу.
+/datum/unit_test/heretic_dance_diagonal_hazard/Run()
+	var/turf/origin = run_loc_floor_bottom_left
+	var/turf/start = locate(origin.x + 2, origin.y + 2, origin.z)
+	var/mob/living/carbon/human/walker = allocate(/mob/living/carbon/human, start)
+	var/datum/unit_test_move_probe/probe = allocate(/datum/unit_test_move_probe)
+	probe.RegisterSignal(walker, COMSIG_MOVABLE_MOVED, TYPE_PROC_REF(/datum/unit_test_move_probe, on_moved))
+	var/list/lava = list()
+	var/list/old_types = list()
+	for(var/direction in GLOB.cardinals)
+		var/turf/side = get_step(start, direction)
+		old_types += side.type
+		lava += side.ChangeTurf(/turf/open/lava/smooth, flags = CHANGETURF_INHERIT_AIR)
+	var/staggered = heretic_dance_stagger(walker)
+	var/stepped = heretic_dance_step_toward(walker, origin)
+	var/crossed_lava = length(probe.visited & lava)
+	probe.UnregisterSignal(walker, COMSIG_MOVABLE_MOVED)
+	for(var/index in 1 to length(lava))
+		var/turf/side = lava[index]
+		side.ChangeTurf(old_types[index], flags = CHANGETURF_INHERIT_AIR)
+	TEST_ASSERT(!crossed_lava, "Танцор не проходит через лаву на углу диагонали.")
+	TEST_ASSERT(!staggered, "Шатание не уводит по диагонали между лавой.")
+	TEST_ASSERT(!stepped, "Шаг к цели не режет угол через лаву.")
+	TEST_ASSERT_EQUAL(get_turf(walker), start, "Танцор остался на месте.")
+
 /// После двух верных шагов прощается один сбой - пропущенная доля или шаг не по рисунку; следующий шаг подсказан.
 /datum/unit_test/heretic_dance_figure_slip/Run()
 	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
@@ -1256,6 +1281,7 @@
 	TEST_ASSERT(drum.beat(user), "Барабан бьёт.")
 	var/atom/movable/screen/heretic_dance_heartbeat/heart = dance.heartbeat_of(victim)
 	TEST_ASSERT_NOTNULL(heart, "Еретик слышит сердце заражённого за стеной.")
+	TEST_ASSERT_NULL(heart.get_mob(), "Зритель сердца не принят за его HUD.")
 	TEST_ASSERT_EQUAL(heart.screen_loc, "CENTER+3,CENTER+0:[HERETIC_DANCE_HEARTBEAT_LIFT]", "Сердце стоит на экране над заражённым.")
 	TEST_ASSERT(heart.icon_state in icon_states(heart.icon), "Рисунок сердца есть в листе.")
 	victim.forceMove(locate(user.x + 3, user.y + 1, user.z))
@@ -1326,3 +1352,155 @@
 	TEST_ASSERT(islist(tint) && length(tint) >= 12, "Шлейф перекрашен матрицей.")
 	for(var/index in 1 to 12)
 		TEST_ASSERT(abs(tint[index] - expected[index]) < 0.01, "Шлейф в цвете Канкана: элемент [index] [tint[index]] вместо [expected[index]].")
+
+/// Па-де-де, собранное настоящим шагом: ведение снимается посреди того же шага, и его обработчик не трогает удалённого владельца.
+/datum/unit_test/heretic_dance_lead_released_mid_step/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/dance_grasp)
+	var/mob/living/carbon/human/victim = allocate_dance_victim(get_step(user, SOUTH))
+	start_dance_music(dance)
+	dance_figure(dance, user, list(NORTH, EAST, SOUTH, WEST))
+	dance_link(dance, user, HERETIC_DANCE_STYLE_TANGO)
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/heretic_dance/lead), "Квадрат повёл соседа.")
+	dance_figure(dance, user, list(EAST, WEST))
+	set_dance_beat(dance, 3)
+	TEST_ASSERT(user.Move(get_step(user, EAST), EAST), "Последний шаг очо сделан ногами.")
+	TEST_ASSERT_NOTNULL(victim.has_status_effect(/datum/status_effect/heretic_dance/partner), "Очо шагом опрокинуло ведомого в кортэ.")
+	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/heretic_dance/lead), "Ведение снято тем же шагом.")
+
+/// Ранний удар в барабан говорит, сколько ждать доли, а кнопка не держит удар в окне готовой доли.
+/datum/unit_test/heretic_dance_drum_early_feedback/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/dance_drum)
+	var/obj/item/heretic_path_relic/dance/drum = allocate(/obj/item/heretic_path_relic/dance, get_turf(user))
+	drum.creator = WEAKREF(heretic.owner)
+	drum.knowledge_ref = WEAKREF(heretic.get_knowledge(/datum/eldritch_knowledge/spell/dance_drum))
+	TEST_ASSERT(user.put_in_hands(drum), "Барабан берётся в руку.")
+	var/obj/effect/proc_holder/spell/self/heretic_dance/drum/button = locate() in heretic.owner.spell_list
+	TEST_ASSERT_NOTNULL(button, "Знание даёт кнопку барабана.")
+	set_dance_beat(dance, 1, HERETIC_DANCE_BEAT_WINDOW)
+	button.cast(list(user), user)
+	TEST_ASSERT_EQUAL(drum.ready_beat, dance.beat_total + HERETIC_DANCE_DRUM_BEATS, "Удар на краю окна доли засчитан.")
+	TEST_ASSERT(button.charge_max <= HERETIC_DANCE_DRUM_BEATS * dance.beat_ds - 2 * HERETIC_DANCE_BEAT_WINDOW, "Кнопка остывает до окна готовой доли, даже если прошлый удар был на краю окна: [button.charge_max] дс.")
+	drum.ready_beat = dance.beat_total + 1
+	set_dance_beat(dance, 2, -4)
+	button.cast(list(user), user)
+	TEST_ASSERT(findtext(button.heretic_failure_reason, "Рано"), "Ранний удар объяснён: [button.heretic_failure_reason].")
+	TEST_ASSERT(findtext(button.heretic_failure_reason, "0,4 с"), "Ждать до доли 0,4 с, а не «0 секунд»: [button.heretic_failure_reason].")
+
+/// Напев вне боя: шаги складываются в фигуру без Такта, сосед узнаёт мотив при осмотре, смерть напев обрывает.
+/datum/unit_test/heretic_dance_hum/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	var/mob/living/carbon/human/neighbour = allocate_dance_victim(get_step(user, EAST))
+	TEST_ASSERT(dance.music_silent(), "Вне боя музыка молчит.")
+	ADD_TRAIT(user, TRAIT_MUTE, "dance_test")
+	TEST_ASSERT(!dance.toggle_hum(user), "Немой не напевает.")
+	REMOVE_TRAIT(user, TRAIT_MUTE, "dance_test")
+	TEST_ASSERT(dance.toggle_hum(user), "Напев включается.")
+	TEST_ASSERT(!dance.music_silent(), "Под Напев шаги идут в фигуру.")
+	TEST_ASSERT(dance.music_idle(), "Напев не будит музыку боя.")
+	set_dance_beat(dance, 1)
+	dance.on_dance_step(user, NORTH)
+	TEST_ASSERT_EQUAL(length(dance.figure_steps), 1, "Шаг под Напев начинает фигуру.")
+	TEST_ASSERT_EQUAL(dance.combat_resource, 0, "Напев не даёт Такта.")
+	TEST_ASSERT(findtext(jointext(user.examine(neighbour), " "), "напевает"), "Сосед замечает напев при осмотре.")
+	var/mob/living/carbon/human/stranger = allocate_dance_victim(locate(user.x + 3, user.y, user.z))
+	TEST_ASSERT(!findtext(jointext(user.examine(stranger), " "), "напевает"), "Издалека напев при осмотре не слышен.")
+	TEST_ASSERT(dance.toggle_hum(user), "Напев выключается.")
+	TEST_ASSERT(!findtext(jointext(user.examine(neighbour), " "), "напевает"), "Без напева осмотр молчит.")
+	TEST_ASSERT(dance.toggle_hum(user), "Напев включается снова.")
+	user.Sleeping(5 SECONDS)
+	dance.play_bar(dance.current_style())
+	TEST_ASSERT(!dance.humming, "Во сне напев стихает.")
+	user.SetSleeping(0)
+	TEST_ASSERT(dance.toggle_hum(user), "Проснувшись, можно напевать снова.")
+	dance.on_death(user)
+	TEST_ASSERT(!dance.humming, "Смерть обрывает напев.")
+
+/datum/unit_test/heretic_dance_progressive
+	var/list/tip_counts = list()
+	var/list/unlocked = list()
+
+/datum/unit_test/heretic_dance_progressive/proc/on_dance_event(datum/source, event, atom/subject, value)
+	SIGNAL_HANDLER
+	if(event == "tip")
+		tip_counts[value] = (tip_counts[value] || 0) + 1
+	if(event == "style_unlocked")
+		unlocked += value
+
+/datum/unit_test/heretic_dance_progressive/proc/rules_start(list/rules, prefix)
+	for(var/rule in rules)
+		if(findtext(rule, prefix) == 1)
+			return TRUE
+	return FALSE
+
+/// Путь раскрывается по мере изучения: правила Такта, стили и номера в кодексе, объявление стиля, советы первого раза - по разу.
+/datum/unit_test/heretic_dance_progressive/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	RegisterSignal(dance, COMSIG_HERETIC_DANCE_EVENT, PROC_REF(on_dance_event))
+	var/list/data = dance.get_combat_resource_data()
+	TEST_ASSERT(!rules_start(data["rules"], "Смена стиля"), "С одним стилем правило смены стиля скрыто.")
+	TEST_ASSERT(!rules_start(data["rules"], "Колокол"), "Без Колокола его правило скрыто.")
+	TEST_ASSERT(findtext(data["state"], "Стили: Вальс."), "Кодекс называет выученные стили: [data["state"]].")
+	TEST_ASSERT(findtext(data["state"], "Танго, откроет «Хватка в долю»"), "Кодекс подсказывает, что откроет следующий стиль: [data["state"]].")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/dance_grasp)
+	TEST_ASSERT(HERETIC_DANCE_STYLE_TANGO in unlocked, "Изученный стиль объявлен.")
+	data = dance.get_combat_resource_data()
+	TEST_ASSERT(rules_start(data["rules"], "Смена стиля"), "Со вторым стилем правило смены стиля открыто.")
+	TEST_ASSERT(findtext(data["state"], "«Па-де-де»"), "Кодекс называет открытый номер: [data["state"]].")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/dance_bell)
+	data = dance.get_combat_resource_data()
+	TEST_ASSERT_EQUAL(length(data["rules"]), length(dance.resource_rules), "Со всеми знаниями видны все правила Такта.")
+	start_dance_music(dance)
+	for(var/attempt in 1 to 2)
+		dance.figure_steps.Cut()
+		set_dance_beat(dance, attempt)
+		dance.on_dance_step(user, NORTH)
+	TEST_ASSERT_EQUAL(tip_counts["figure_step"], 1, "Совет о первом шаге фигуры звучит один раз.")
+	dance.beat_hints = FALSE
+	TEST_ASSERT(!dance.tip(user, "zz_test", "текст"), "Скрытые подсказки глушат и советы.")
+	UnregisterSignal(dance, COMSIG_HERETIC_DANCE_EVENT)
+
+/// В Болеро каждая маска Маскарада принимает один выстрел в еретика: сперва маски заражённых, потом его собственная; вне Болеро - нет.
+/datum/unit_test/heretic_dance_bolero_masks/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/dance_masquerade)
+	var/mob/living/carbon/human/dancer = allocate_dance_victim(get_step(user, EAST))
+	var/mob/living/carbon/human/shooter = allocate_dance_victim(get_step(user, WEST))
+	dance.infect(user, dancer)
+	dance.start_bolero()
+	TEST_ASSERT(dance.start_masquerade(user), "Маскарад в Болеро начинается.")
+	TEST_ASSERT(dancer.has_status_effect(/datum/status_effect/heretic_dance/masked), "Заражённый под маской.")
+	var/obj/item/projectile/beam/laser/shot = allocate(/obj/item/projectile/beam/laser, get_turf(shooter))
+	shot.firer = shooter
+	user.bullet_act(shot)
+	TEST_ASSERT_EQUAL(user.getFireLoss(), 0, "Первый выстрел приняла маска.")
+	TEST_ASSERT(!dancer.has_status_effect(/datum/status_effect/heretic_dance/masked), "Первой разбита маска заражённого.")
+	TEST_ASSERT_EQUAL(user.name_override, "танцор в маске", "Своя маска ещё цела.")
+	shot = allocate(/obj/item/projectile/beam/laser, get_turf(shooter))
+	shot.firer = shooter
+	user.bullet_act(shot)
+	TEST_ASSERT_EQUAL(user.getFireLoss(), 0, "Второй выстрел приняла своя маска.")
+	TEST_ASSERT_NULL(user.name_override, "Своя маска разбита последней.")
+	shot = allocate(/obj/item/projectile/beam/laser, get_turf(shooter))
+	shot.firer = shooter
+	user.bullet_act(shot)
+	TEST_ASSERT(user.getFireLoss() > 0, "Без масок выстрел попадает.")
+	user.remove_status_effect(/datum/status_effect/heretic_dance/masquerade)
+	dance.stop_bolero()
+	user.setFireLoss(0)
+	TEST_ASSERT(dance.start_masquerade(user), "Маскарад вне Болеро начинается.")
+	shot = allocate(/obj/item/projectile/beam/laser, get_turf(shooter))
+	shot.firer = shooter
+	user.bullet_act(shot)
+	TEST_ASSERT(user.getFireLoss() > 0, "Вне Болеро маска пулю не принимает.")

@@ -84,7 +84,7 @@
 
 /// Независимые пути укладываются в бюджет охоты.
 /datum/unit_test/heretic_knowledge/Run()
-	TEST_ASSERT_EQUAL(length(GLOB.heretic_paths), 16, "В каталоге должны быть все шестнадцать путей.")
+	TEST_ASSERT_EQUAL(length(GLOB.heretic_paths), 19, "В каталоге должны быть все девятнадцать путей.")
 	var/list/registered = GLOB.heretic_start_knowledge.Copy()
 	registered |= GLOB.heretic_side_knowledge
 	for(var/path_id in GLOB.heretic_paths)

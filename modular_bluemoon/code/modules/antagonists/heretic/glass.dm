@@ -6,7 +6,6 @@
 #define HERETIC_GLASS_PANE_CLUE "В стекле отражается не эта комната."
 #define HERETIC_GLASS_PANE_ALPHA 60
 #define HERETIC_GLASS_CAPTURE "glass"
-#define HERETIC_GLASS_MARK_BLIND (1 SECONDS)
 #define HERETIC_GLASS_STORM_BLIND (3 SECONDS)
 #define HERETIC_GLASS_STORM_PANE_RANGE 7
 #define HERETIC_GLASS_BARRIER_COOLDOWN (8 SECONDS)
@@ -66,6 +65,29 @@
 #define HERETIC_GLASS_VOLLEY_QUAKE_TIME (0.35 SECONDS)
 #define HERETIC_GLASS_VOLLEY_QUAKE_RADIUS 7
 #define HERETIC_GLASS_CRACK_VOLUME 30
+#define HERETIC_GLASS_DODGE_OFFSET 0.7
+#define HERETIC_GLASS_DODGE_MULTIPLIER 0.5
+#define HERETIC_GLASS_MARK_DAMAGE 8
+#define HERETIC_GLASS_PRISM_LIMIT 3
+#define HERETIC_GLASS_PRISM_LIMIT_ASCENDED 5
+#define HERETIC_GLASS_TEMPER_BULLET_REFLECTIONS 1
+#define HERETIC_GLASS_GAZE_SHOT_DELAY (1 SECONDS)
+#define HERETIC_GLASS_GAZE_SHOT_COST 1
+#define HERETIC_GLASS_GAZE_SHOT_STATION "Луч из стекла бьёт, только когда и вы, и стекло на палубах станции или на одном полигоне: из изнанки и с других уровней свет не доходит."
+#define HERETIC_GLASS_TRAVEL_FAR_COST 2
+#define HERETIC_GLASS_TRAVEL_FAR_TIME (2 SECONDS)
+#define HERETIC_GLASS_MIRROR_TIME (30 SECONDS)
+#define HERETIC_GLASS_MIRROR_COUNT 8
+#define HERETIC_GLASS_MIRROR_SEARCH 7
+#define HERETIC_GLASS_MIRROR_BREAK_DAMAGE 15
+#define HERETIC_GLASS_MIRROR_BREAKS 4
+#define HERETIC_GLASS_MIRROR_PUBLIC_MIN 4
+#define HERETIC_GLASS_MIRROR_COOLDOWN (2 MINUTES)
+#define HERETIC_GLASS_MIRROR_STRIKE_DELAY (1 SECONDS)
+#define HERETIC_GLASS_MIRROR_ALPHA 150
+#define HERETIC_GLASS_MIRROR_VOLLEY_PAUSE (1.5 SECONDS)
+#define HERETIC_GLASS_MIRROR_VOLLEY_TIME (20 SECONDS)
+#define HERETIC_GLASS_SHATTERED_TIME (60 SECONDS)
 
 GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	"grasp" = list('modular_bluemoon/sound/heretic/glass_grasp.ogg'),
@@ -95,24 +117,24 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	id = PATH_GLASS
 	deed_type = /datum/heretic_deed/glass
 	name = "Стекло"
-	tagline = "Луч доворачивает за целью, трещины валят с ног, Витраж запирает; уходит сквозь стёкла."
+	tagline = "Смотрит сквозь окна станции, бьёт светом из-за угла и запирает жертву в витраж."
 	craft_summary = "Хваткой настройте окно или зеркало: до 6 стёкол смотрят, стреляют и связаны переходами."
 	capture_summary = "Три трещины валят с ног, Витраж держит цель 10 секунд; сердце уводит её прямо сквозь саркофаг."
 	escape_summary = "Шаг сквозь своё окно или касание своего стекла - и вы у другого своего стекла; из изнанки - к ним же."
 	strength_points = list(
-		"Луч по живой цели доворачивает за ней до выстрела: уйти можно только за укрытие.",
-		"Хватка, луч и метка копят трещины, третья раскалывает цель и валит с ног.",
+		"Луч по живой цели доворачивает за ней: целиком спасает только укрытие, бег поперёк - вдвое.",
+		"Хватка и луч копят трещины, третья раскалывает цель и валит с ног; взрыв метки раскалывает сразу.",
 		"Витраж держит цель 10 секунд, и сердце уводит её в изнанку прямо сквозь саркофаг.",
-		"Касание своего стекла переносит к любому другому своему стеклу на уровне.",
+		"Касание своего стекла переносит к другому своему стеклу, на другой этаж станции - за 2 грани.",
 		"Призмы стреляют из-за угла, преграды пропускают ваши лучи и возвращают лазеры.",
 		"Если цель охоты у вашего стекла одна или в трещинах, её утянет в изнанку «Помощь» по другому вашему стеклу.",
 	)
 	weakness_points = list(
 		"Нулевой жезл снимает настройку, а вставленное заново окно уже не ваше.",
-		"Прицел луча виден заранее: цель, нырнувшая за угол или дверь, уходит из-под него.",
+		"Прицел луча виден заранее: за углом цель цела, а перебежавшая поперёк луча получает вдвое меньше.",
 		"Саркофаг отражает лазеры, но удары и броски бьют его в полтора раза сильнее.",
-		"Призмы и преграды разбиваются, пули преграда не отражает.",
-		"Переход оставляет трещины на обоих стёклах и ждёт 15 секунд; без настроенных стёкол уходить некуда.",
+		"Призмы и преграды разбиваются; пули отражает лишь закалённая преграда, и только первую.",
+		"Крепкий захват, наручники и щит разума не пускают сквозь стекло; переход ждёт 15 с и оставляет трещины.",
 		"Кражу видно 2 секунды: стекло рябит, цель предупреждена; схватите её или уведите от стекла.",
 	)
 	knowledge = list(
@@ -134,7 +156,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	details = list(
 		"Нож и лист стекла на руне дают стеклянный клинок.",
 		"Хватка по окну или зеркалу настраивает его, не разбивая; до 6 стёкол, каждый отдел идёт в дело один раз.",
-		"Луч по живому через 0,5 секунды бьёт туда, где цель стоит к выстрелу: 30 ушибов, спасает только укрытие.",
+		"Луч по живому через 0,5 секунды бьёт туда, где цель стоит: 30 ушибов; укрытие спасает, бег поперёк - вдвое.",
 		"Луч по клетке бьёт ровно в неё. Бесплатно, перезарядка 5 секунд; ваши призмы стреляют вместе с лучом.",
 		"Экипаж видит в настроенном стекле чужую комнату, нулевой жезл снимает настройку.",
 		"«Помощь» по своему стеклу утянет в изнанку цель охоты у другого стекла, если она одна или в трещинах: 2 с, раз в 90 с.",
@@ -149,8 +171,8 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	resource_rules = list(
 		"Начальный запас 2 из 4, одна грань возвращается каждые 4 секунды.",
 		"Взрыв Метки Стекла клинком даёт ещё одну грань.",
-		"Призма, преграда, шаг и переход сквозь стекло стоят 1 грань, Витраж - 2.",
-		"Лучи бесплатны, их ограничивает только перезарядка.",
+		"Призма, преграда, шаг, переход и луч из линзы стоят 1 грань; Витраж и переход на другой этаж - 2.",
+		"Лучи из рук и залпы бесплатны, их ограничивает только перезарядка.",
 		"Смерть и смена тела рассыпают грани, призмы и саркофаги; настроенные стёкла остаются.",
 	)
 	combat_resource_action = /obj/effect/proc_holder/spell/pointed/heretic_glass/release
@@ -172,6 +194,8 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	var/glass_generation = 0
 	var/ascension_active = FALSE
 	var/glass_failure
+	/// Намерение, под которое уже перерисован значок граней.
+	var/shown_intent
 	COOLDOWN_DECLARE(facet_regeneration)
 	COOLDOWN_DECLARE(barrier_cooldown)
 	COOLDOWN_DECLARE(theft_cooldown)
@@ -245,7 +269,18 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /datum/eldritch_knowledge/base_glass/proc/can_use(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return !QDELETED(src) && isliving(user) && user == glass_body && !user.incapacitated() && isturf(user.loc) && heretic?.selected_path == PATH_GLASS && !heretic.role_removed && heretic.get_knowledge(type) == src
+	return !QDELETED(src) && isliving(user) && user == glass_body && !heretic_incapacitated(user) && isturf(user.loc) && heretic?.selected_path == PATH_GLASS && !heretic.role_removed && heretic.get_knowledge(type) == src
+
+/// Почему Стекло не отзывается этому телу: крепкий захват и оглушение называются прямо.
+/proc/heretic_glass_unusable_reason(mob/living/user)
+	if(isliving(user) && IS_HERETIC(user))
+		if(heretic_incapacitated(user, TRUE))
+			return "Вы оглушены или скованы: стекло не отзывается."
+		if(heretic_incapacitated(user))
+			return "Вас держат крепким захватом: стекло не отзывается, пока не вырветесь."
+		if(!isturf(user.loc))
+			return "Стекло отзывается, только когда вы стоите на полу."
+	return "Способность недоступна вашему пути или текущему телу."
 
 /datum/eldritch_knowledge/base_glass/proc/update_temper(ignore_temper = FALSE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(glass_body)
@@ -263,13 +298,48 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	notify_resource_changed()
 
 /datum/eldritch_knowledge/base_glass/combat_resource_state()
-	return "Призм: [length(prisms)] из [ascension_active ? 5 : 3]. Настроено стёкол: [length(attuned_panes)] из [HERETIC_GLASS_ATTUNE_LIMIT]."
+	. = "Призм: [length(prisms)] из [prism_limit()]. Настроено стёкол: [length(attuned_panes)] из [HERETIC_GLASS_ATTUNE_LIMIT]."
+	if(!barrier_mode_known())
+		return
+	. += barrier_mode() ? " Сейчас «Поставить преграду» ставит преграду от лазеров. Чтобы ставить призмы, смените намерение «Разоружить»." : " Сейчас «Поставить призму» ставит призму. В намерении «Разоружить» вместо неё встаёт преграда."
+
+/datum/eldritch_knowledge/base_glass/get_combat_resource_data()
+	var/list/data = ..()
+	if(barrier_mode_known())
+		data["name"] = barrier_mode() ? "Грани: преграда" : "Грани: призма"
+	return data
+
+/datum/eldritch_knowledge/base_glass/proc/barrier_mode_known()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(glass_body)
+	var/datum/eldritch_knowledge/shards = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	return !QDELETED(shards)
+
+/datum/eldritch_knowledge/base_glass/proc/barrier_mode()
+	return glass_body?.a_intent == INTENT_DISARM
+
+/// Кнопка «Оправы для света» и значок граней называют то, что поставит заклинание в текущем намерении.
+/datum/eldritch_knowledge/base_glass/proc/refresh_mode_labels()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(glass_body)
+	var/datum/eldritch_knowledge/spell/glass_shards/shards = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/obj/effect/proc_holder/spell/spell = shards?.granted_spell
+	if(!QDELETED(spell) && spell.action)
+		var/label = barrier_mode() ? "Поставить преграду" : spell.name
+		if(spell.action.name != label)
+			spell.action.name = label
+			spell.action.UpdateButtons()
+	var/shown = "[glass_body?.a_intent]:[barrier_mode_known()]"
+	if(shown == shown_intent)
+		return
+	shown_intent = shown
+	heretic?.update_combat_resource_alert(FALSE, glass_body)
 
 /datum/eldritch_knowledge/base_glass/on_mark_detonated(mob/living/user, mob/living/target)
 	if(can_use(user) && isturf(target?.loc) && heretic_can_affect(user, target, chargecost = 0))
 		gain_combat_resource()
 
 /datum/eldritch_knowledge/base_glass/on_life(mob/user)
+	if(user && user == glass_body)
+		refresh_mode_labels()
 	if(!can_use(user) || !COOLDOWN_FINISHED(src, facet_regeneration))
 		return
 	gain_combat_resource()
@@ -308,6 +378,28 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 		return victim.apply_status_effect(/datum/status_effect/heretic_glass_fracture, src)
 	fracture.add_crack()
 	return fracture
+
+/// Раскол сразу, без счёта трещин и передышки: так взрывается Метка Стекла.
+/datum/eldritch_knowledge/base_glass/proc/shatter_now(mob/living/victim)
+	var/datum/status_effect/heretic_glass_fracture/fracture = victim.has_status_effect(/datum/status_effect/heretic_glass_fracture)
+	if(fracture?.glass_ref?.resolve() != src)
+		fracture = victim.apply_status_effect(/datum/status_effect/heretic_glass_fracture, src)
+	fracture?.shatter()
+	return fracture
+
+/// На сколько клеток цель ушла вбок от оси, по которой луч целился в начале наводки.
+/proc/heretic_glass_axis_offset(turf/axis_start, turf/axis_end, turf/position)
+	if(!axis_start || !axis_end || !position)
+		return 0
+	var/delta_x = axis_end.x - axis_start.x
+	var/delta_y = axis_end.y - axis_start.y
+	var/axis_length = sqrt(delta_x * delta_x + delta_y * delta_y)
+	if(!axis_length)
+		return 0
+	return abs(delta_x * (position.y - axis_start.y) - delta_y * (position.x - axis_start.x)) / axis_length
+
+/datum/eldritch_knowledge/base_glass/proc/prism_limit()
+	return ascension_active ? HERETIC_GLASS_PRISM_LIMIT_ASCENDED : HERETIC_GLASS_PRISM_LIMIT
 
 /datum/eldritch_knowledge/base_glass/proc/fractured_by_me(mob/living/victim)
 	var/datum/status_effect/heretic_glass_fracture/fracture = victim?.has_status_effect(/datum/status_effect/heretic_glass_fracture)
@@ -363,6 +455,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	log_game("[key_name(user)] настраивает стекло [pane] ([pane.type]) под ремесло Стекла в [AREACOORD(pane)].")
 	heretic.advance_deed(heretic.deed_key_for(pane), get_turf(user))
 	notify_resource_changed()
+	lesson_event("attune", pane)
 	return TRUE
 
 /datum/eldritch_knowledge/base_glass/on_craft_removed(atom/crafted, craft_id)
@@ -433,7 +526,14 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 		return FALSE
 	return steal_through(user, through, choice)
 
-/// Подпись -> своё стекло на том же уровне, к которому можно перейти от стекла под рукой.
+/// Своё стекло на том же уровне или на другом этаже станции; другой этаж дороже и дольше.
+/datum/eldritch_knowledge/base_glass/proc/travel_reachable(obj/structure/through, obj/structure/destination)
+	return through.z == destination.z || (is_station_level(through.z) && is_station_level(destination.z))
+
+/datum/eldritch_knowledge/base_glass/proc/travel_cost(obj/structure/through, obj/structure/destination)
+	return through.z == destination.z ? 1 : HERETIC_GLASS_TRAVEL_FAR_COST
+
+/// Подпись -> своё стекло, к которому можно перейти от стекла под рукой.
 /datum/eldritch_knowledge/base_glass/proc/travel_choices(mob/living/user, obj/structure/through)
 	. = list()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -441,8 +541,10 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	if(QDELETED(passage) || !(through in attuned_panes))
 		return
 	for(var/obj/structure/pane as anything in attuned_panes)
-		if(pane != through && pane_usable(pane) && pane.z == through.z)
-			.[heretic_unique_label(., "Перейти к стеклу - [get_area_name(pane, TRUE)]")] = pane
+		if(pane == through || !pane_usable(pane) || !travel_reachable(through, pane))
+			continue
+		var/far = pane.z != through.z ? " (другой этаж, [HERETIC_GLASS_TRAVEL_FAR_COST] грани)" : ""
+		.[heretic_unique_label(., "Перейти к стеклу - [get_area_name(pane, TRUE)][far]")] = pane
 
 /datum/eldritch_knowledge/base_glass/proc/travel_failure(mob/living/user, obj/structure/through, obj/structure/destination)
 	var/containment = heretic_containment_reason(user)
@@ -451,15 +553,16 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/passage = heretic?.get_knowledge(/datum/eldritch_knowledge/glass_passage)
 	if(!can_use(user) || QDELETED(passage))
-		return "Способность недоступна вашему пути или текущему телу."
+		return heretic_glass_unusable_reason(user)
 	if(!(through in attuned_panes) || !pane_usable(through) || through.z != user.z || get_dist(user, through) > 1)
 		return "Встаньте вплотную к своему настроенному стеклу."
-	if(!(destination in attuned_panes) || !pane_usable(destination) || destination.z != through.z)
+	if(!(destination in attuned_panes) || !pane_usable(destination) || !travel_reachable(through, destination))
 		return "Того стекла больше нет в вашей сети."
 	if(!COOLDOWN_FINISHED(src, travel_cooldown))
 		return "Стекло ещё не отзывается на переход: осталось [heretic_capture_seconds_left(travel_cooldown)] с."
-	if(combat_resource < 1)
-		return "Для перехода нужна 1 грань."
+	var/cost = travel_cost(through, destination)
+	if(combat_resource < cost)
+		return cost > 1 ? "Для перехода на другой этаж нужно [cost] грани." : "Для перехода нужна 1 грань."
 	if(!heretic_pocket_landing(get_turf(destination)))
 		return "У того стекла некуда выйти."
 	return null
@@ -467,24 +570,26 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 /datum/eldritch_knowledge/base_glass/proc/travel_ready(mob/living/user, obj/structure/through, obj/structure/destination)
 	return !travel_failure(user, through, destination)
 
-/// Переход между своими стёклами: полсекунды у стекла, грань, свежие трещины на обоих стёклах.
+/// Переход между своими стёклами: полсекунды у стекла (на другой этаж дольше), грани, свежие трещины на обоих стёклах.
 /datum/eldritch_knowledge/base_glass/proc/travel(mob/living/user, obj/structure/through, obj/structure/destination)
 	glass_failure = travel_failure(user, through, destination)
 	if(glass_failure)
 		return FALSE
+	var/cost = travel_cost(through, destination)
+	var/channel = cost > 1 ? HERETIC_GLASS_TRAVEL_FAR_TIME : HERETIC_GLASS_PASSAGE_TIME
 	user.visible_message(span_warning("[user] прижимает ладонь к [through], и стекло подаётся, как вода."), span_notice("Стекло тянет вас к другому стеклу."))
 	new /obj/effect/temp_visual/heretic_glass/grasp(get_turf(through), src)
 	heretic_glass_sound(through, "passage_in", 40)
-	if(!do_after(user, HERETIC_GLASS_PASSAGE_TIME, target = through, extra_checks = CALLBACK(src, PROC_REF(travel_ready), user, through, destination)))
-		glass_failure = travel_failure(user, through, destination) || "Переход прерван: полсекунды стойте у стекла."
+	if(!do_after(user, channel, target = through, extra_checks = CALLBACK(src, PROC_REF(travel_ready), user, through, destination)))
+		glass_failure = travel_failure(user, through, destination) || "Переход прерван: стойте у стекла [DisplayTimeText(channel)]."
 		return FALSE
 	glass_failure = travel_failure(user, through, destination)
-	if(glass_failure || !spend_combat_resource())
+	if(glass_failure || !spend_combat_resource(cost))
 		return FALSE
 	var/turf/origin = get_turf(user)
 	var/turf/exit = heretic_pocket_landing(get_turf(destination))
 	if(!do_teleport(user, exit, channel = TELEPORT_CHANNEL_MAGIC) || get_turf(user) != exit)
-		gain_combat_resource()
+		gain_combat_resource(cost)
 		glass_failure = "Стекло не пропустило: здесь что-то мешает переходу."
 		return FALSE
 	COOLDOWN_START(src, travel_cooldown, HERETIC_GLASS_TRAVEL_COOLDOWN)
@@ -493,6 +598,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	new /obj/effect/temp_visual/heretic_glass/burst(exit, src)
 	heretic_glass_sound(exit, "passage_out", 40)
 	log_game("[key_name(user)] переходит между своими стёклами из [AREACOORD(origin)] в [AREACOORD(exit)].")
+	lesson_event("travel", destination)
 	return TRUE
 
 /// Цель охоты у своих стёкол на уровне стекла, которого коснулся еретик: подпись -> list("victim", "pane").
@@ -540,6 +646,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	if(!heretic.pocket_pull(user, victim, entry, HERETIC_GLASS_THEFT_TIME, check, "Стекло рядом идёт рябью, из него тянется рука.", hold_on_entry = FALSE, victim_text = "Стекло рядом с вами идёт рябью - из него тянется рука!", grip = FALSE))
 		return FALSE
 	COOLDOWN_START(src, theft_cooldown, HERETIC_GLASS_THEFT_COOLDOWN)
+	lesson_event("theft", victim)
 	return TRUE
 
 /// Каждое настроенное стекло рядом бьёт лучом в сторону заклинателя.
@@ -656,6 +763,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 		return FALSE
 	var/mob/living/tracked = isliving(target) && target != user ? target : null
 	new /datum/heretic_glass_attack(src, cells, HERETIC_GLASS_RELEASE_DELAY, src, tracked_target = tracked)
+	lesson_event("aim", tracked)
 	return TRUE
 
 /// Лучи по живой цели к выстрелу: от еретика туда, где цель стоит сейчас, и через связанные призмы.
@@ -666,6 +774,59 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 		return null
 	var/turf/aim = get_turf(target)
 	return trace_ray(get_turf(user), get_dir(user, target), aimed_turf = aim, reach = max(HERETIC_GLASS_RANGE, get_dist(user, aim))) + relay_cells(user, aimed_turf = aim)
+
+/// Линия из стекла: клетку самого стекла луч не проверяет, он из неё выходит.
+/datum/eldritch_knowledge/base_glass/proc/pane_line_clear(obj/structure/pane, atom/target, max_distance = HERETIC_GLASS_RANGE)
+	var/turf/origin = get_turf(pane)
+	var/turf/destination = get_turf(target)
+	if(!origin || !destination || origin == destination || origin.z != destination.z || get_dist(origin, destination) > max_distance)
+		return FALSE
+	for(var/turf/tile as anything in get_line(origin, destination))
+		if(tile != origin && !ray_tile_open(tile))
+			return FALSE
+	return TRUE
+
+/// Стекло целится только в того, кто в сознании, виден и сидит у экрана: спящих, невидимых и ушедших из игры не трогает.
+/datum/eldritch_knowledge/base_glass/proc/pane_target_ok(mob/living/user, mob/living/victim, notify = FALSE)
+	if(!isliving(victim) || victim.stat != CONSCIOUS || victim.invisibility > SEE_INVISIBLE_LIVING)
+		return FALSE
+	if(victim.mind?.key && !victim.client)
+		return FALSE
+	return heretic_can_affect(user, victim, chargecost = 0, notify = notify)
+
+/// Луч из линзы - только со станции в стекло на её же палубах, на полигоне - в его же стекло: из изнанки и с чужих уровней стекло не стреляет.
+/datum/eldritch_knowledge/base_glass/proc/remote_pane_reachable(mob/living/user, obj/structure/pane)
+	var/turf/here = get_turf(user)
+	var/turf/there = get_turf(pane)
+	if(!here || !there)
+		return FALSE
+	if(istype(get_area(here), /area/antag_training) && istype(get_area(there), /area/antag_training))
+		return here.z == there.z
+	if(!is_station_level(here.z) || !is_station_level(there.z))
+		return FALSE
+	return here.z == there.z || (there.z in SSmapping.get_connected_levels(here.z))
+
+/datum/eldritch_knowledge/base_glass/proc/pane_cells_at(obj/structure/pane, mob/living/target)
+	if(QDELETED(pane) || QDELETED(target) || !isturf(target.loc) || !pane_line_clear(pane, target, HERETIC_GLASS_TRACK_RANGE))
+		return null
+	var/turf/start = get_turf(pane)
+	var/turf/aim = get_turf(target)
+	var/list/cells = trace_ray(start, get_dir(start, aim), aimed_turf = aim, reach = max(HERETIC_GLASS_RANGE, get_dist(start, aim)))
+	for(var/list/cell as anything in cells)
+		var/list/path = cell["path"]
+		path.Cut(1, 2)
+	return cells
+
+/// Луч из стекла по живой цели: стекло вспыхивает, цель слышит предупреждение и успевает уйти с линии.
+/datum/eldritch_knowledge/base_glass/proc/pane_strike(obj/structure/pane, mob/living/target, delay, datum/eldritch_knowledge/required = src)
+	if(!can_use(glass_body) || length(attacks) >= HERETIC_GLASS_ATTACK_LIMIT || !length(pane_cells_at(pane, target)))
+		return null
+	var/datum/heretic_glass_attack/attack = new(src, list(), delay, required, tracked_target = target, source_pane = pane)
+	heretic_vfx_flash(get_turf(pane), HERETIC_GLASS_PRISM_WHITE, HERETIC_GLASS_FLASH_RANGE, HERETIC_GLASS_FLASH_POWER, delay)
+	pane.visible_message(span_danger("[pane] вспыхивает белым: из стекла в [target] целится свет!"))
+	to_chat(target, span_userdanger("[pane] рядом вспыхивает и целится в вас - уйдите с линии стекла!"))
+	log_combat(glass_body, target, "целится лучом из стекла [pane] в [AREACOORD(pane)]")
+	return attack
 
 /datum/eldritch_knowledge/base_glass/proc/relay_cells(mob/living/user, turf/aimed_turf, obj/structure/heretic_glass_prism/source_prism)
 	var/list/cells = list()
@@ -706,11 +867,9 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /datum/eldritch_knowledge/base_glass/proc/prism_placement_failure(mob/living/user, turf/place)
 	if(!can_use(user))
-		return "Способность недоступна вашему пути или текущему телу."
+		return heretic_glass_unusable_reason(user)
 	if(!isopenturf(place) || isspaceturf(place) || istype(place, /turf/open/lava))
 		return "Выберите клетку открытого пола; космос, стены и лава не подходят."
-	if(length(prisms) >= (ascension_active ? 5 : 3))
-		return "Достигнут предел призм: [ascension_active ? 5 : 3]. Уберите одну или дождитесь её исчезновения."
 	if(!ray_tile_open(place, FALSE))
 		return "Клетка занята плотным предметом или призмой. Выберите свободную клетку."
 	for(var/mob/living/occupant in place)
@@ -732,9 +891,15 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 		return TRUE
 	if(!isturf(target) || !valid_prism_turf(user, target) || !spend_combat_resource())
 		return FALSE
+	while(length(prisms) >= prism_limit())
+		var/obj/structure/heretic_glass_prism/oldest = prisms[1]
+		to_chat(user, span_notice("Старейшая призма рассыпается: одновременно держится не больше [prism_limit()]."))
+		prisms -= oldest
+		qdel(oldest)
 	var/obj/structure/heretic_glass_prism/prism = new(target, src)
 	prism.face_user(user)
 	notify_resource_changed()
+	lesson_event("prism", prism)
 	return TRUE
 
 /datum/eldritch_knowledge/base_glass/proc/valid_barrier_turf(mob/living/user, turf/place)
@@ -750,8 +915,12 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	if(QDELETED(required) || !valid_barrier_turf(user, place) || !spend_combat_resource())
 		return null
 	var/obj/structure/heretic_glass_barrier/barrier = new(place, src)
+	var/datum/eldritch_knowledge/glass_temper/temper = heretic.get_knowledge(/datum/eldritch_knowledge/glass_temper)
+	if(!QDELETED(temper))
+		barrier.bullet_reflections_left = HERETIC_GLASS_TEMPER_BULLET_REFLECTIONS
 	update_temper()
 	heretic_glass_sound(place, "prism", 45)
+	lesson_event("barrier", barrier)
 	return barrier
 
 /datum/eldritch_knowledge/base_glass/proc/radial_cells(mob/living/user)
@@ -783,6 +952,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 		return FALSE
 	active_network = new(src, required)
 	GLOB.heretic_sky.event(required)
+	required.show_reflections(user, src)
 	return TRUE
 
 /// Незрячие от квирка или повязки сами по себе не в счёт, как сон и добровольный отдых.
@@ -798,7 +968,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/glass_casket)
 	if(!can_use(user) || QDELETED(required))
-		return "Способность недоступна вашему пути или текущему телу."
+		return heretic_glass_unusable_reason(user)
 	var/reason = heretic_capture_block_reason(user, target, HERETIC_GLASS_CAPTURE)
 	if(reason)
 		return reason
@@ -859,9 +1029,11 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/glass_passage)
 	if(!can_use(user) || QDELETED(required))
-		return "Способность недоступна вашему пути или текущему телу."
+		return heretic_glass_unusable_reason(user)
+	if(istype(pane, /obj/structure/mirror))
+		return "Сквозь зеркало не шагнуть: шаг ведёт только сквозь окно. К другим своим стёклам ведёт «Помощь» по зеркалу."
 	if(!istype(pane) || QDELETED(pane) || pane.obj_integrity <= 0 || !isturf(pane.loc))
-		return "Укажите целое окно."
+		return "Укажите целое окно вплотную к себе."
 	if(!(pane in attuned_panes))
 		return "Сквозь стекло ведёт только ваше настроенное окно: сначала коснитесь его Хваткой."
 	var/turf/exit = passage_exit(user, pane)
@@ -921,15 +1093,22 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	/// Живая цель, за которой луч доворачивает до выстрела.
 	var/datum/weakref/tracked_ref
 	var/obj/effect/temp_visual/heretic_glass/beam/sight/sight
+	/// Ось первой наводки: цель, перебежавшая поперёк неё, получает меньше.
+	var/turf/aim_start
+	var/turf/aim_end
+	/// Стекло, из которого бьёт луч вместо тела еретика.
+	var/datum/weakref/pane_ref
 	/// Залп Перекрёстного света или Вечного витража: вспышка на всю округу.
 	var/volley = FALSE
 
-/datum/heretic_glass_attack/New(datum/eldritch_knowledge/base_glass/glass, list/beam_cells, delay, datum/eldritch_knowledge/required, must_stay = FALSE, datum/heretic_glass_network/network, bonus_damage = 0, blind_time = 0, mob/living/tracked_target, is_volley = FALSE)
+/datum/heretic_glass_attack/New(datum/eldritch_knowledge/base_glass/glass, list/beam_cells, delay, datum/eldritch_knowledge/required, must_stay = FALSE, datum/heretic_glass_network/network, bonus_damage = 0, blind_time = 0, mob/living/tracked_target, is_volley = FALSE, obj/structure/source_pane)
 	. = ..()
 	glass_ref = WEAKREF(glass)
 	knowledge_ref = WEAKREF(required)
 	body_ref = WEAKREF(glass.glass_body)
-	origin = get_turf(glass.glass_body)
+	origin = get_turf(source_pane || glass.glass_body)
+	if(source_pane)
+		pane_ref = WEAKREF(source_pane)
 	cells = beam_cells
 	generation = glass.glass_generation
 	stationary = must_stay
@@ -947,8 +1126,10 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	release_timer = addtimer(CALLBACK(src, PROC_REF(resolve)), delay, TIMER_STOPPABLE)
 	if(tracked_target)
 		tracked_ref = WEAKREF(tracked_target)
+		aim_start = origin
+		aim_end = get_turf(tracked_target)
 		sight = new(origin, glass, delay + HERETIC_GLASS_BEAM_FADE)
-		sight.follow(glass.glass_body, tracked_target, delay)
+		sight.follow(source_pane || glass.glass_body, tracked_target, delay)
 		return
 	var/list/warned = list()
 	for(var/list/cell as anything in cells)
@@ -1063,16 +1244,21 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 		qdel(src)
 		return FALSE
 	QDEL_LIST(warnings)
+	var/mob/living/dodger
 	if(tracked_ref)
-		var/list/tracked = glass.tracked_cells(user, tracked_ref.resolve())
+		var/mob/living/target = tracked_ref.resolve()
+		var/obj/structure/pane = pane_ref?.resolve()
+		var/list/tracked = pane_ref ? (glass.pane_usable(pane) ? glass.pane_cells_at(pane, target) : null) : glass.tracked_cells(user, target)
 		sight?.fizzle()
 		if(!length(tracked))
 			to_chat(user, span_warning("Свет разбился о преграду: цель ушла из-под луча."))
 			qdel(src)
 			return FALSE
-		origin = get_turf(user)
+		origin = pane_ref ? get_turf(pane) : get_turf(user)
 		cells = tracked
 		show_strike(glass)
+		if(heretic_glass_axis_offset(aim_start, aim_end, get_turf(target)) >= HERETIC_GLASS_DODGE_OFFSET)
+			dodger = target
 	var/datum/eldritch_knowledge/crack_source = heretic.get_knowledge(/datum/eldritch_knowledge/glass_grasp)
 	var/cracks_on_hit = !QDELETED(crack_source)
 	var/eternal = !isnull(network_ref)
@@ -1113,8 +1299,14 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	for(var/mob/living/victim as anything in hit_damage)
 		if(!heretic_can_affect(user, victim))
 			continue
+		var/damage = hit_damage[victim]
+		if(victim == dodger)
+			damage *= HERETIC_GLASS_DODGE_MULTIPLIER
+			to_chat(victim, span_notice("Вы ушли с линии луча: свет лишь чиркнул по вам."))
+			to_chat(user, span_warning("Цель ушла с линии луча: свет лишь задел её."))
 		var/damage_before = victim.getBruteLoss()
-		victim.adjustBruteLoss(hit_damage[victim])
+		victim.adjustBruteLoss(damage)
+		glass.lesson_event("beam", victim, victim == dodger)
 		if((victim in refracted_targets) && victim.getBruteLoss() > damage_before)
 			heretic.advance_combat_deed(victim, PATH_GLASS)
 		if(blinded[victim])
@@ -1148,6 +1340,9 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 		sight.fizzle()
 	sight = null
 	tracked_ref = null
+	pane_ref = null
+	aim_start = null
+	aim_end = null
 	for(var/obj/effect/temp_visual/heretic_glass/beam/beam as anything in beams)
 		if(!QDELETED(beam))
 			beam.fizzle()
@@ -1285,6 +1480,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 /// Третья трещина раскалывает цель: она падает, на ней остаётся одна трещина.
 /datum/status_effect/heretic_glass_fracture/proc/shatter()
 	var/datum/eldritch_knowledge/base_glass/glass = glass_ref?.resolve()
+	duration = world.time + initial(duration)
 	stacks = 1
 	shatter_ready_at = world.time + HERETIC_GLASS_SHATTER_REST
 	owner.Knockdown(HERETIC_GLASS_SHATTER_KNOCKDOWN)
@@ -1390,10 +1586,10 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 /datum/status_effect/eldritch/glass/on_effect()
 	var/datum/eldritch_knowledge/base_glass/glass = glass_ref?.resolve()
 	if(glass?.can_use(glass.glass_body) && heretic_can_affect(glass.glass_body, owner, chargecost = 0))
-		owner.adjustBruteLoss(8)
-		glass.fracture(owner)
-		glass.blind(owner, HERETIC_GLASS_MARK_BLIND)
+		owner.adjustBruteLoss(HERETIC_GLASS_MARK_DAMAGE)
+		glass.shatter_now(owner)
 		new /obj/effect/temp_visual/heretic_glass/burst(get_turf(owner), glass)
+		glass.lesson_event("mark", owner)
 	return ..()
 
 /obj/structure/heretic_glass_prism
@@ -1491,7 +1687,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /obj/structure/heretic_glass_barrier
 	name = "refracted pane"
-	desc = "Острое стекло застыло поперёк прохода. Оно задерживает всех, включая создателя, но пропускает его стеклянные лучи. Первые два отражаемых энергетических выстрела возвращаются по обратной траектории, повреждая стекло. Пули не отражаются. Разбейте преграду или коснитесь её нулевым жезлом. Создатель может убрать её рукой."
+	desc = "Острое стекло застыло поперёк прохода. Оно задерживает всех, включая создателя, но пропускает его стеклянные лучи. Первые два отражаемых энергетических выстрела возвращаются по обратной траектории, повреждая стекло. Пули отражает только закалённая преграда, и лишь первую. Разбейте преграду или коснитесь её нулевым жезлом. Создатель может убрать её рукой."
 	icon = 'modular_bluemoon/icons/obj/heretic_glass_effects.dmi'
 	icon_state = "glass_barrier"
 	anchored = TRUE
@@ -1499,6 +1695,8 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	opacity = FALSE
 	max_integrity = 45
 	var/reflections_left = HERETIC_GLASS_BARRIER_REFLECTIONS
+	/// Закалённая преграда возвращает и пулю, но только первую.
+	var/bullet_reflections_left = 0
 	var/datum/weakref/glass_ref
 	var/datum/weakref/knowledge_ref
 	var/expires_at
@@ -1525,12 +1723,19 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 /obj/structure/heretic_glass_barrier/examine(mob/user)
 	. = ..()
 	. += span_notice("Осталось отражений: [reflections_left].")
+	if(bullet_reflections_left)
+		. += span_warning("Стекло закалено: следующую пулю оно тоже вернёт.")
 
 /obj/structure/heretic_glass_barrier/bullet_act(obj/item/projectile/projectile)
 	var/datum/eldritch_knowledge/base_glass/glass = glass_ref?.resolve()
-	if(!reflections_left || !glass || QDELETED(glass.glass_body) || glass.glass_body.stat == DEAD || world.time >= expires_at || !heretic_glass_reflectable(projectile))
+	if(!glass || QDELETED(glass.glass_body) || glass.glass_body.stat == DEAD || world.time >= expires_at)
 		return ..()
-	reflections_left--
+	if(bullet_reflections_left && istype(projectile, /obj/item/projectile/bullet))
+		bullet_reflections_left--
+	else if(reflections_left && heretic_glass_reflectable(projectile))
+		reflections_left--
+	else
+		return ..()
 	heretic_glass_reflect(src, projectile, glass)
 	take_damage(max(HERETIC_GLASS_REFLECTION_WEAR, projectile.damage), BRUTE, sound_effect = FALSE)
 	return BULLET_ACT_FORCE_PIERCE
@@ -1758,7 +1963,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /obj/item/heretic_path_relic/glass
 	name = "widow's prism"
-	desc = "Ручная линза в потемневшей оправе. Примените её в руке и выберите одно из настроенных стёкол: до 20 секунд вы смотрите его глазами, а собственное тело не видит окружения. Движение, любой урон (и по выносливости), оглушение, беспамятство, выпавшая из рук линза или снятая со стекла настройка обрывают взгляд. Перезарядка 20 секунд после взгляда."
+	desc = "Ручная линза в потемневшей оправе. Примените её в руке и выберите одно из настроенных стёкол: до 20 секунд вы смотрите его глазами, а собственное тело не видит окружения. Применив линзу ещё раз, за грань ударите лучом из этого стекла: оно вспыхнет за секунду, и цель успеет уйти с линии. Луч бьёт, только когда и вы, и стекло на палубах станции, а цель в сознании. Движение, любой урон (и по выносливости), оглушение, беспамятство, выпавшая из рук линза или снятая со стекла настройка обрывают взгляд. Перезарядка 20 секунд после взгляда."
 	icon = 'modular_bluemoon/icons/obj/heretic_glass.dmi'
 	icon_state = "glass_relic"
 	var/mob/living/gazer
@@ -1767,8 +1972,12 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	var/gaze_health
 	var/gaze_stamina
 	var/gaze_timer
+	/// За один взгляд из стекла можно выпустить один луч.
+	var/gaze_shot_ready = FALSE
 
 /obj/item/heretic_path_relic/glass/attack_self(mob/living/user)
+	if(gazer && gazer == user)
+		return offer_gaze_shot(user)
 	var/list/choices = gaze_choices(user)
 	if(!length(choices))
 		to_chat(user, span_warning("Нет настроенного стекла, сквозь которое можно смотреть."))
@@ -1797,6 +2006,55 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 		choices[label] = pane
 	return choices
 
+/// Подпись -> живая цель, по которой стекло, куда вы смотрите, может ударить лучом.
+/obj/item/heretic_path_relic/glass/proc/gaze_targets(mob/living/user)
+	. = list()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/turf/place = get_turf(gaze_pane)
+	if(!glass || !place || gazer != user)
+		return
+	for(var/mob/living/victim in range(HERETIC_GLASS_RANGE, place))
+		if(glass.pane_target_ok(user, victim) && glass.pane_line_clear(gaze_pane, victim))
+			.[heretic_unique_label(., "[victim.name]")] = victim
+
+/obj/item/heretic_path_relic/glass/proc/offer_gaze_shot(mob/living/user)
+	if(!gaze_shot_ready)
+		to_chat(user, span_warning("Это стекло уже выпустило свой луч: посмотрите сквозь стекло заново."))
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	if(!glass?.remote_pane_reachable(user, gaze_pane))
+		to_chat(user, span_warning(HERETIC_GLASS_GAZE_SHOT_STATION))
+		return FALSE
+	var/list/targets = gaze_targets(user)
+	if(!length(targets))
+		to_chat(user, span_warning("Из этого стекла не видно цели на открытой линии в [HERETIC_GLASS_RANGE] клетках."))
+		return FALSE
+	var/choice = tgui_input_list(user, "В кого ударить лучом из стекла? Цель увидит вспышку и успеет уйти с линии.", name, targets)
+	if(!choice || QDELETED(src))
+		return FALSE
+	return gaze_shot(user, targets[choice])
+
+/// Один луч за взгляд из стекла, за грань; предупреждение длиннее обычного.
+/obj/item/heretic_path_relic/glass/proc/gaze_shot(mob/living/user, mob/living/target)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	if(!gaze_shot_ready || gazer != user || !glass?.can_use(user) || !(gaze_pane in glass.attuned_panes) || !glass.pane_target_ok(user, target, notify = TRUE))
+		return FALSE
+	if(!glass.remote_pane_reachable(user, gaze_pane))
+		to_chat(user, span_warning(HERETIC_GLASS_GAZE_SHOT_STATION))
+		return FALSE
+	if(glass.combat_resource < HERETIC_GLASS_GAZE_SHOT_COST)
+		to_chat(user, span_warning("Для луча из стекла нужна [HERETIC_GLASS_GAZE_SHOT_COST] грань."))
+		return FALSE
+	if(!glass.pane_strike(gaze_pane, target, HERETIC_GLASS_GAZE_SHOT_DELAY))
+		to_chat(user, span_warning("Свет не находит пути к цели из этого стекла."))
+		return FALSE
+	glass.spend_combat_resource(HERETIC_GLASS_GAZE_SHOT_COST)
+	gaze_shot_ready = FALSE
+	return TRUE
+
 /obj/item/heretic_path_relic/glass/proc/gaze(mob/living/user, atom/pane)
 	if(gazer || !authorized(user) || !COOLDOWN_FINISHED(src, relic_cooldown))
 		return FALSE
@@ -1808,6 +2066,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	gazer = user
 	gaze_pane = pane
 	gaze_craft = craft
+	gaze_shot_ready = TRUE
 	gaze_health = user.health
 	gaze_stamina = user.getStaminaLoss()
 	RegisterSignal(user, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING), PROC_REF(on_gaze_broken))
@@ -1819,7 +2078,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	RegisterSignal(craft, COMSIG_PARENT_QDELETING, PROC_REF(on_gaze_broken))
 	user.reset_perspective(pane)
 	gaze_timer = addtimer(CALLBACK(src, PROC_REF(end_gaze)), HERETIC_GLASS_GAZE_DURATION, TIMER_STOPPABLE)
-	to_chat(user, span_eldritch("Вы смотрите сквозь [pane]: [get_area_name(pane, TRUE)]. Движение, урон или оглушение вернут взгляд в тело."))
+	to_chat(user, span_eldritch("Вы смотрите сквозь [pane]: [get_area_name(pane, TRUE)]. Примените линзу ещё раз, чтобы ударить лучом из стекла. Движение, урон или оглушение вернут взгляд в тело."))
 	log_game("[key_name(user)] смотрит сквозь настроенное стекло [pane] в [AREACOORD(pane)].")
 	return TRUE
 
@@ -1829,7 +2088,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /obj/item/heretic_path_relic/glass/proc/on_gazer_health(mob/living/source)
 	SIGNAL_HANDLER
-	if(source.health < gaze_health || source.getStaminaLoss() > gaze_stamina || source.incapacitated() || source.stat != CONSCIOUS)
+	if(source.health < gaze_health || source.getStaminaLoss() > gaze_stamina || heretic_incapacitated(source) || source.stat != CONSCIOUS)
 		end_gaze()
 		return
 	gaze_health = source.health
@@ -1863,6 +2122,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	gazer = null
 	gaze_pane = null
 	gaze_craft = null
+	gaze_shot_ready = FALSE
 	COOLDOWN_START(src, relic_cooldown, HERETIC_GLASS_GAZE_COOLDOWN)
 	if(QDELETED(viewer))
 		return
@@ -2054,7 +2314,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	summary = "Хватка и ваши лучи оставляют трещины; третья раскалывает цель и валит её с ног."
 	details = list(
 		"На цели до трёх трещин - на теле и на полу под ногами; сходят через 12 секунд после последней.",
-		"Третья трещина сбивает с ног на 1,5 секунды; та же цель снова раскалывается не раньше чем через 8 секунд.",
+		"Третья трещина сбивает с ног на 1,5 секунды; снова трещинами - не раньше чем через 8 секунд, меткой - сразу.",
 		"Ваш луч ослепляет треснувшую цель на 2 секунды без прибавки урона; Вечный витраж не слепит, а бьёт на 14 сильнее.",
 		"Треснувшую цель Витраж запирает, даже если она стоит на ногах.",
 	)
@@ -2075,12 +2335,12 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	name = "Оправа для света"
 	summary = "Ставит призмы, которые стреляют вместе с вами, и прозрачные преграды от лазеров."
 	details = list(
-		"За грань ставит призму в 5 клетках: 75 прочности, живёт 2 минуты, одновременно до 3.",
+		"За грань ставит призму в 5 клетках: 75 прочности, живёт 2 минуты; четвёртая сменяет самую старую.",
 		"Призмы на свободной линии до 5 клеток стреляют в вашу цель и добавляют лучу 6 ушибов.",
 		"Выстрел в свою призму пускает залп по её стрелкам - так бьют из-за угла.",
 		"Повторный выбор поворачивает стрелку, касание рукой переключает один луч или два.",
-		"В намерении разоружения за грань встаёт преграда на 12 секунд: прочность 45, не больше двух, перезарядка 8 секунд.",
-		"Преграда держит всех, пропускает ваши лучи и возвращает до 2 лазеров; пули не отражает.",
+		"В намерении «Разоружить» встаёт преграда на 12 с: прочность 45, не больше двух, перезарядка 8 с; кнопка это покажет.",
+		"Преграда держит всех, пропускает ваши лучи и возвращает до 2 лазеров; пули - только после Закалки.",
 		"Нулевой жезл сразу разрушает призму и преграду.",
 	)
 	role = HERETIC_ROLE_ATTACK
@@ -2097,10 +2357,10 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /datum/eldritch_knowledge/glass_mark
 	name = "Метка Стекла"
-	summary = "Хватка ставит метку на 15 секунд, удар стеклянным клинком её взрывает."
+	summary = "Хватка ставит метку на 15 секунд, удар стеклянным клинком её взрывает и сразу раскалывает цель."
 	details = list(
-		"Взрыв наносит 8 ушибов и ослепляет на 1 секунду.",
-		"Взрыв добавляет трещину: лучи по ней ослепляют, Витраж запирает даже стоящую, третья трещина валит.",
+		"Взрыв наносит 8 ушибов и валит цель на 1,5 секунды, даже если её недавно раскалывали трещины.",
+		"После взрыва на цели одна трещина: лучи по ней ослепляют, Витраж запирает её и поверженную.",
 		"Взрыв по живому врагу возвращает одну грань.",
 	)
 	role = HERETIC_ROLE_MARK
@@ -2149,10 +2409,13 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /datum/eldritch_knowledge/glass_relic
 	name = "Вдовья призма"
-	summary = "Линза из листа стекла и слитка серебра: 20 секунд смотрите глазами настроенного стекла."
+	summary = "Линза из листа стекла и слитка серебра: 20 секунд смотрите сквозь своё стекло и бьёте из него лучом."
 	details = list(
 		"Примените линзу в руке и выберите стекло по названию отдела.",
 		"Пока вы смотрите, своё тело не видит окружения.",
+		"Примените линзу ещё раз: стекло за 1 грань ударит лучом по цели в 5 клетках, один луч за взгляд.",
+		"Луч бьёт, только когда и вы, и стекло на палубах станции; спящих и невидимых стекло не видит.",
+		"Стекло вспыхивает за секунду до луча, цель предупреждена и может уйти с линии.",
 		"Взгляд обрывается, если вы двинетесь, получите любой урон или оглушение, выроните линзу или со стекла снимут настройку.",
 		"Перезарядка 20 секунд. Линзу могут отнять, а новую не собрать, пока цела старая.",
 	)
@@ -2174,10 +2437,10 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	summary = "За грань шагаете сквозь своё окно, а касанием своего стекла переходите к другому своему стеклу."
 	details = list(
 		"Шаг: вплотную к своему окну (к полноклеточному - сбоку), полсекунды - и вы по ту сторону. Перезарядка 2 с.",
-		"Переход: «Помощь» по своему стеклу открывает список других ваших стёкол на уровне; полсекунды - и вы у выбранного.",
-		"Переход ждёт 15 секунд, шаг и переход стоят по грани; окна остаются целыми.",
+		"Переход: «Помощь» по своему стеклу открывает список других ваших стёкол; полсекунды - и вы у выбранного.",
+		"Переход ждёт 15 секунд, шаг и переход стоят по грани; на другой этаж станции - 2 секунды и 2 грани.",
 		"Чужое или ненастроенное стекло не пускает, как и стена или плотный предмет за окном.",
-		"Наручники и щит разума закрывают проход.",
+		"Крепкий захват, наручники и щит разума закрывают проход; окна остаются целыми.",
 		"30 секунд на стёклах видна свежая трещина.",
 	)
 	role = HERETIC_ROLE_ESCAPE
@@ -2194,17 +2457,18 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /datum/eldritch_knowledge/glass_temper
 	name = "Закалка"
-	summary = "Запас граней растёт до 5, прочность преград - до 60."
+	summary = "Запас граней растёт до 5, прочность преград - до 60, новая преграда возвращает первую пулю."
 	details = list(
 		"Новая вместимость не заполняет запас: грани набираются как обычно.",
 		"Уже стоящие преграды получают новую прочность, полученный урон сохраняется.",
+		"Преграда, поставленная после Закалки, возвращает первую пулю, как лазер, и так же изнашивается.",
 	)
 	role = HERETIC_ROLE_PASSIVE
 	gain_text = "Огонь не расплавил стекло. Он выжег из него право гнуться."
 	cost = 2
 	route = PATH_GLASS
 	passive_values = list(5, 6, 7)
-	passive_desc = "Вместимость составляет 5 / 6 / 7 граней, прочность преград — 60 / 75 / 90. Вознесение даёт вместимость 8. Улучшение не заполняет запас, не чинит прежний урон и не восстанавливает отражения."
+	passive_desc = "Вместимость составляет 5 / 6 / 7 граней, прочность преград — 60 / 75 / 90. Вознесение даёт вместимость 8. Новая преграда возвращает одну пулю. Улучшение не заполняет запас, не чинит прежний урон и не восстанавливает отражения."
 	var/datum/weakref/glass_ref
 
 /datum/eldritch_knowledge/glass_temper/on_body_gain(mob/living/user)
@@ -2255,15 +2519,15 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /datum/eldritch_knowledge/final_eldritch/glass_final
 	name = "Расколоть небосвод"
-	summary = "Тело становится витражом, лучи бьют дальше, открывается Вечный витраж."
+	summary = "Тело становится витражом, Вечный витраж бьёт волнами, а окна станции показывают ваше отражение."
 	details = list(
 		"Нужны 3 назначенные души и 3 человеческих трупа на руне станции; обряд длится 30 секунд.",
-		"До 5 призм, запас 8 граней, грань возвращается каждые 2 секунды.",
-		"Луч преломляется до 5 раз вместо 3 и проходит 18 клеток вместо 12.",
-		"35% лазеров и энергетических лучей отлетают от вас назад веером.",
+		"До 5 призм, 8 граней, грань каждые 2 с; луч преломляется до 5 раз и проходит 18 клеток.",
+		"35% лазеров и энергетических лучей отлетают от вас назад веером; пули проходят, удары оружием - на четверть больнее.",
 		"Вечный витраж: 3 волны раз в 4 секунды, 44 урона, через призму 50, по трещинам +14 без слепоты; перезарядка 45 секунд.",
-		"Цена: пули не преломляются, удары оружием в ближнем бою бьют на четверть сильнее.",
-		"Разбитая призма гасит только идущие через неё лучи.",
+		"Тысяча отражений: при вознесении и с Вечным витражом (раз в 2 минуты) 30 с вас показывают ваши окна и окна у 8 человек.",
+		"Каждое разбитое отражение - 15 ушибов вам; 4 разбитых раскалывают витраж на минуту: без преломления, удары вдвое.",
+		"Уцелевшие потом бьют лучом, до 3 разом. Окна - из общих отсеков, а где их меньше 4 - любые, кроме охраняемых и опасных.",
 	)
 	role = HERETIC_ROLE_ASCENSION
 	gain_text = "Небо раскололось без звука. Осколки остановились передо мной, ожидая, какую форму я придам пустоте."
@@ -2271,6 +2535,9 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
 	ascension_spells = list(/obj/effect/proc_holder/spell/self/heretic_glass/crown)
 	var/datum/weakref/glass_knowledge_ref
+	var/datum/heretic_glass_reflections/reflections
+	var/reflections_shown = FALSE
+	COOLDOWN_DECLARE(reflections_cooldown)
 
 /datum/eldritch_knowledge/final_eldritch/glass_final/on_body_gain(mob/living/user)
 	. = ..()
@@ -2283,8 +2550,25 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 		glass.ascension_active = TRUE
 		glass.update_temper()
 	user.AddComponent(/datum/component/heretic_glass_stained)
+	if(glass && !reflections_shown)
+		reflections_shown = TRUE
+		show_reflections(user, glass)
+
+/// Тысяча отражений: окна станции 30 секунд показывают вознёсшегося, у экипажа есть что разбить.
+/datum/eldritch_knowledge/final_eldritch/glass_final/proc/show_reflections(mob/living/user, datum/eldritch_knowledge/base_glass/glass)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(simulated || heretic?.simulated || reflections || !COOLDOWN_FINISHED(src, reflections_cooldown))
+		return FALSE
+	var/datum/heretic_glass_reflections/event = new(glass, src, user)
+	if(!length(event.panes))
+		qdel(event)
+		return FALSE
+	reflections = event
+	COOLDOWN_START(src, reflections_cooldown, HERETIC_GLASS_MIRROR_COOLDOWN)
+	return TRUE
 
 /datum/eldritch_knowledge/final_eldritch/glass_final/on_body_lose(mob/living/user)
+	QDEL_NULL(reflections)
 	var/mob/living/body = applied_body || user
 	qdel(body?.GetComponent(/datum/component/heretic_glass_stained))
 	var/datum/eldritch_knowledge/base_glass/glass = glass_knowledge_ref?.resolve()
@@ -2295,6 +2579,224 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 		glass.update_temper()
 	return ..()
 
+/datum/eldritch_knowledge/final_eldritch/glass_final/Destroy()
+	QDEL_NULL(reflections)
+	return ..()
+
+/datum/heretic_glass_reflections
+	var/datum/weakref/glass_ref
+	var/datum/weakref/final_ref
+	var/datum/weakref/hero_ref
+	var/list/obj/structure/window/panes = list()
+	var/mutable_appearance/reflection
+	var/breaks = 0
+	var/end_timer
+	/// Окна, которые ещё ждут своего луча после конца срока.
+	var/list/obj/structure/window/strike_queue = list()
+	var/strike_timer
+	var/strike_deadline = 0
+
+/// Окна общих отсеков станции, найденные за раунд; null - ещё не считали.
+GLOBAL_VAR(heretic_glass_public_panes)
+
+/datum/heretic_glass_reflections/New(datum/eldritch_knowledge/base_glass/glass, datum/eldritch_knowledge/final_eldritch/glass_final/final_knowledge, mob/living/hero)
+	. = ..()
+	glass_ref = WEAKREF(glass)
+	final_ref = WEAKREF(final_knowledge)
+	hero_ref = WEAKREF(hero)
+	reflection = new /mutable_appearance(hero)
+	reflection.plane = FLOAT_PLANE
+	reflection.layer = FLOAT_LAYER
+	reflection.pixel_x = 0
+	reflection.pixel_y = 0
+	reflection.alpha = HERETIC_GLASS_MIRROR_ALPHA
+	reflection.color = HERETIC_GLASS_INK
+	reflection.appearance_flags = RESET_COLOR | RESET_ALPHA | KEEP_APART
+	for(var/obj/structure/window/pane as anything in pick_panes(glass, hero))
+		watch(pane)
+	if(!length(panes))
+		return
+	end_timer = addtimer(CALLBACK(src, PROC_REF(finish)), HERETIC_GLASS_MIRROR_TIME, TIMER_STOPPABLE)
+	announce(hero)
+	log_game("[key_name(hero)] запускает Тысячу отражений: [length(panes)] окон станции.")
+
+/// Свои настроенные окна и по окну рядом с каждым живым членом экипажа на станции; берутся окна общих отсеков, чтобы их разбивали без разгерметизации и не вскрывали камеры и лаборатории.
+/datum/heretic_glass_reflections/proc/pick_panes(datum/eldritch_knowledge/base_glass/glass, mob/living/hero)
+	. = list()
+	var/scarce = heretic_glass_public_scarce(glass)
+	for(var/obj/structure/window/pane in glass.attuned_panes)
+		if(heretic_glass_reflection_spot(glass, pane, scarce))
+			. += pane
+	var/extra = 0
+	for(var/mob/living/carbon/human/witness as anything in shuffle(GLOB.human_list.Copy()))
+		if(extra >= HERETIC_GLASS_MIRROR_COUNT)
+			break
+		if(witness == hero || !witness.mind || witness.stat == DEAD || !isturf(witness.loc) || !is_station_level(witness.z) || IS_HERETIC(witness) || IS_HERETIC_MONSTER(witness))
+			continue
+		var/obj/structure/window/best
+		for(var/obj/structure/window/candidate in range(HERETIC_GLASS_MIRROR_SEARCH, witness))
+			if((candidate in .) || !heretic_glass_reflection_spot(glass, candidate, scarce))
+				continue
+			if(!best || get_dist(witness, candidate) < get_dist(witness, best))
+				best = candidate
+		if(best)
+			. += best
+			extra++
+
+/// На станциях почти без окон в общих отсеках отражения берут окна и вне их; считается раз за раунд.
+/proc/heretic_glass_public_scarce(datum/eldritch_knowledge/base_glass/glass)
+	if(isnull(GLOB.heretic_glass_public_panes))
+		var/found = 0
+		for(var/obj/structure/window/pane in world)
+			if(is_station_level(pane.z) && heretic_glass_reflection_spot(glass, pane) && ++found >= HERETIC_GLASS_MIRROR_PUBLIC_MIN)
+				break
+		GLOB.heretic_glass_public_panes = found
+	return GLOB.heretic_glass_public_panes < HERETIC_GLASS_MIRROR_PUBLIC_MIN
+
+/// Отсек для отражения: общий, а при нехватке общих окон - любой, кроме охраняемых и тех, где разбитое окно выпустит газ, слизней или заразу.
+/proc/heretic_glass_reflection_area(area/place, scarce)
+	var/static/list/closed_types = typecacheof(list(
+		/area/security,
+		/area/ai_monitored,
+		/area/command/bridge,
+		/area/shuttle,
+		/area/space,
+		/area/engineering/supermatter,
+		/area/engineering/atmos,
+		/area/engineering/atmospherics_engine,
+		/area/science/xenobiology,
+		/area/science/mixing,
+		/area/science/test_area,
+		/area/medical/virology,
+	))
+	if(heretic_station_public_area(place))
+		return TRUE
+	return scarce && istype(place) && !place.outdoors && !is_type_in_typecache(place, closed_types)
+
+/// Окно для отражения: целое, на станции, в годном отсеке, не плазменное и не шаттловое, по сторонам ни космоса, ни планеты, ни закрытых отсеков.
+/proc/heretic_glass_reflection_spot(datum/eldritch_knowledge/base_glass/glass, obj/structure/window/pane, scarce = FALSE)
+	if(!glass.pane_usable(pane) || !is_station_level(pane.z) || !heretic_glass_reflection_area(get_area(pane), scarce))
+		return FALSE
+	if(istype(pane, /obj/structure/window/plasma) || istype(pane, /obj/structure/window/plastitanium) || istype(pane, /obj/structure/window/shuttle) || istype(pane, /obj/structure/window/reinforced/survival_pod))
+		return FALSE
+	for(var/direction in GLOB.cardinals)
+		var/turf/side = get_step(pane, direction)
+		if(!side || isspaceturf(side) || isgroundlessturf(side))
+			return FALSE
+		var/area/side_area = get_area(side)
+		if(side_area.outdoors)
+			return FALSE
+		if(!isopenturf(side))
+			continue
+		var/turf/open/open_side = side
+		if(open_side.planetary_atmos || !heretic_glass_reflection_area(side_area, scarce))
+			return FALSE
+	return TRUE
+
+/datum/heretic_glass_reflections/proc/watch(obj/structure/window/pane)
+	panes += pane
+	pane.add_overlay(reflection)
+	RegisterSignal(pane, COMSIG_PARENT_QDELETING, PROC_REF(on_pane_broken))
+	RegisterSignal(pane, COMSIG_PARENT_EXAMINE, PROC_REF(on_pane_examine))
+	heretic_glass_sound(pane, "prism", 35)
+
+/datum/heretic_glass_reflections/proc/unwatch(obj/structure/window/pane)
+	panes -= pane
+	UnregisterSignal(pane, list(COMSIG_PARENT_QDELETING, COMSIG_PARENT_EXAMINE))
+	pane.cut_overlay(reflection)
+
+/datum/heretic_glass_reflections/proc/announce(mob/living/hero)
+	for(var/mob/living/listener as anything in GLOB.alive_mob_list)
+		if(!listener.client || listener == hero || !is_station_level(listener.z))
+			continue
+		to_chat(listener, span_userdanger("В окнах станции застывает чужое отражение: [hero.name] смотрит из стекла. Разбейте или разберите окна с отражением за [DisplayTimeText(HERETIC_GLASS_MIRROR_TIME)] - каждое такое окно ранит его, а уцелевшие по очереди, по [HERETIC_GLASS_ATTACK_LIMIT] разом, ударят светом по ближайшим, кто в сознании."))
+	to_chat(hero, span_eldritch("Ваше отражение смотрит из [length(panes)] окон станции [DisplayTimeText(HERETIC_GLASS_MIRROR_TIME)]. Каждое разбитое ранит вас на [HERETIC_GLASS_MIRROR_BREAK_DAMAGE], [HERETIC_GLASS_MIRROR_BREAKS] разбитых раскалывают витраж. Уцелевшие ударят лучом по ближайшим по очереди: не больше [HERETIC_GLASS_ATTACK_LIMIT] лучей разом, считая ваши."))
+
+/datum/heretic_glass_reflections/proc/on_pane_examine(atom/source, mob/user, list/examine_list)
+	SIGNAL_HANDLER
+	examine_list += span_warning("Из стекла смотрит чужое отражение. Разбейте или разберите окно, и трещина пройдёт по тому, кто в нём отражается.")
+
+/datum/heretic_glass_reflections/proc/on_pane_broken(obj/structure/window/source)
+	SIGNAL_HANDLER
+	if(!(source in panes))
+		return
+	unwatch(source)
+	var/mob/living/hero = hero_ref?.resolve()
+	if(QDELETED(hero) || hero.stat == DEAD)
+		return
+	breaks++
+	hero.adjustBruteLoss(HERETIC_GLASS_MIRROR_BREAK_DAMAGE)
+	var/datum/component/heretic_glass_stained/stained = hero.GetComponent(/datum/component/heretic_glass_stained)
+	stained?.show_fragility()
+	hero.visible_message(span_danger("По витражу на [hero] бежит трещина: где-то разбили его отражение!"), span_userdanger("Ваше отражение разбито в [get_area_name(source, TRUE)]: трещина проходит по вам."))
+	log_combat(hero, hero, "получает трещину от разбитого отражения в [AREACOORD(source)]")
+	if(breaks < HERETIC_GLASS_MIRROR_BREAKS)
+		return
+	stained?.shatter(HERETIC_GLASS_SHATTERED_TIME)
+	hero.visible_message(span_userdanger("Витраж на [hero] раскалывается: свет больше не отскакивает от него, а удары колют вдвое сильнее!"), span_userdanger("Отражения разбиты - витраж расколот на [DisplayTimeText(HERETIC_GLASS_SHATTERED_TIME)]."))
+	INVOKE_ASYNC(src, PROC_REF(end_early))
+
+/datum/heretic_glass_reflections/proc/end_early()
+	var/datum/eldritch_knowledge/final_eldritch/glass_final/final_knowledge = final_ref?.resolve()
+	if(final_knowledge?.reflections == src)
+		final_knowledge.reflections = null
+	qdel(src)
+
+/// Срок вышел: уцелевшие отражения встают в очередь и бьют лучом по ближайшим, не больше предела лучей разом.
+/datum/heretic_glass_reflections/proc/finish()
+	end_timer = null
+	strike_queue = shuffle(panes.Copy())
+	strike_deadline = world.time + HERETIC_GLASS_MIRROR_VOLLEY_TIME
+	fire_queue()
+
+/// Каждое окно из очереди бьёт один раз и гаснет; занятые лучами слоты ждут паузу, срок очереди ограничен.
+/datum/heretic_glass_reflections/proc/fire_queue()
+	strike_timer = null
+	var/datum/eldritch_knowledge/base_glass/glass = glass_ref?.resolve()
+	var/datum/eldritch_knowledge/final_eldritch/glass_final/final_knowledge = final_ref?.resolve()
+	if(!glass || !final_knowledge)
+		end_early()
+		return
+	if(!glass.can_use(glass.glass_body))
+		if(world.time < strike_deadline)
+			strike_timer = addtimer(CALLBACK(src, PROC_REF(fire_queue)), HERETIC_GLASS_MIRROR_VOLLEY_PAUSE, TIMER_STOPPABLE)
+		else
+			end_early()
+		return
+	while(length(strike_queue) && length(glass.attacks) < HERETIC_GLASS_ATTACK_LIMIT)
+		var/obj/structure/window/pane = strike_queue[1]
+		strike_queue.Cut(1, 2)
+		if(!(pane in panes))
+			continue
+		var/mob/living/victim = nearest_target(glass, pane)
+		if(victim)
+			glass.pane_strike(pane, victim, HERETIC_GLASS_MIRROR_STRIKE_DELAY, final_knowledge)
+		unwatch(pane)
+	if(length(strike_queue) && world.time < strike_deadline)
+		strike_timer = addtimer(CALLBACK(src, PROC_REF(fire_queue)), HERETIC_GLASS_MIRROR_VOLLEY_PAUSE, TIMER_STOPPABLE)
+		return
+	end_early()
+
+/datum/heretic_glass_reflections/proc/nearest_target(datum/eldritch_knowledge/base_glass/glass, obj/structure/window/pane)
+	var/mob/living/hero = hero_ref?.resolve()
+	for(var/mob/living/carbon/human/victim in range(HERETIC_GLASS_RANGE, pane))
+		if(!glass.pane_target_ok(hero, victim) || !glass.pane_line_clear(pane, victim))
+			continue
+		if(!. || get_dist(pane, victim) < get_dist(pane, .))
+			. = victim
+
+/datum/heretic_glass_reflections/Destroy()
+	deltimer(end_timer)
+	deltimer(strike_timer)
+	strike_queue = null
+	for(var/obj/structure/window/pane as anything in panes.Copy())
+		unwatch(pane)
+	reflection = null
+	glass_ref = null
+	final_ref = null
+	hero_ref = null
+	return ..()
+
 /// Витраж вознесения: часть энергетических лучей преломляется, а удары оружием бьют сильнее.
 /datum/component/heretic_glass_stained
 	dupe_mode = COMPONENT_DUPE_UNIQUE
@@ -2303,12 +2805,30 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	var/crack_armed_at = -1
 	var/crack_brute_before = 0
 	var/datum/weakref/crack_attacker
+	var/shatter_timer
 	COOLDOWN_DECLARE(refract_flash)
 	COOLDOWN_DECLARE(crack_flash)
 
 /datum/component/heretic_glass_stained/Initialize()
 	if(!isliving(parent))
 		return COMPONENT_INCOMPATIBLE
+
+/datum/component/heretic_glass_stained/Destroy(force, silent)
+	deltimer(shatter_timer)
+	crack_attacker = null
+	return ..()
+
+/// Разбитые отражения раскалывают витраж: лучи больше не отскакивают, удары оружием колют вдвое сильнее.
+/datum/component/heretic_glass_stained/proc/shatter(duration)
+	refract_chance = 0
+	melee_fragility = HERETIC_GLASS_MELEE_FRAGILITY * 2
+	shatter_timer = addtimer(CALLBACK(src, PROC_REF(mend)), duration, TIMER_STOPPABLE | TIMER_UNIQUE | TIMER_OVERRIDE)
+
+/datum/component/heretic_glass_stained/proc/mend()
+	shatter_timer = null
+	refract_chance = HERETIC_GLASS_REFRACT_CHANCE
+	melee_fragility = HERETIC_GLASS_MELEE_FRAGILITY
+	to_chat(parent, span_eldritch("Витраж на вас срастается: свет снова отскакивает."))
 
 /datum/component/heretic_glass_stained/RegisterWithParent()
 	RegisterSignal(parent, COMSIG_LIVING_RUN_BLOCK, PROC_REF(refract))
@@ -2320,9 +2840,12 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /datum/component/heretic_glass_stained/proc/refract(mob/living/source, real_attack, atom/object, damage, attack_text, attack_type, armour_penetration, mob/living/attacker, def_zone, list/return_list, attack_direction)
 	SIGNAL_HANDLER
+	if(return_list?[HERETIC_BLOCK_ABSORBED])
+		return BLOCK_NONE
 	var/obj/item/projectile/projectile = heretic_try_deflect(source, real_attack, object, attack_type, refract_chance, list(ENERGY, LASER))
 	if(!projectile)
 		return BLOCK_NONE
+	return_list?[HERETIC_BLOCK_ABSORBED] = TRUE
 	. = BLOCK_SUCCESS | BLOCK_REDIRECTED
 	heretic_glass_sound(source, "reflect", 40)
 	source.visible_message(span_warning("[projectile] преломляется в стеклянном теле [source] и отлетает назад!"), span_notice("Витраж преломляет [projectile]."))
@@ -2381,7 +2904,10 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /datum/component/heretic_glass_stained/proc/on_examine(mob/living/source, mob/user, list/examine_list)
 	SIGNAL_HANDLER
-	examine_list += span_warning("Кожа отливает витражом: часть лазеров и энергетических лучей преломляется, но пули проходят, а удары оружием колют это тело как стекло.")
+	if(shatter_timer)
+		examine_list += span_warning("Витраж на коже расколот: лазеры больше не отскакивают, а удары оружием колют это тело вдвое сильнее прежнего.")
+		return
+	examine_list += span_warning("Кожа отливает витражом: часть лазеров и энергетических лучей преломляется, но пули проходят, а удары оружием колют это тело как стекло. Если разбить окна, в которых оно отражается, витраж треснет.")
 
 /mob/living/carbon/human/check_weakness(obj/item/weapon, mob/living/attacker)
 	. = ..()
@@ -2403,7 +2929,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 /obj/effect/proc_holder/spell/pointed/heretic_glass/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
-	return ..() && heretic_check(user, glass?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
+	return ..() && heretic_check(user, glass?.can_use(user), silent, heretic_glass_unusable_reason(user))
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -2412,8 +2938,8 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/release
 	name = "Преломлённый луч"
-	desc = "Выберите цель или клетку в 5 клетках. По живой цели луч через 0,5 секунды бьёт туда, где она стоит к выстрелу, по клетке - ровно в неё; призмы стреляют вместе. Бесплатно, перезарядка 5 секунд."
-	summary = "Луч через 0,5 секунды: по живому доворачивает за целью, 30 ушибов, призмы стреляют вместе."
+	desc = "Выберите цель или клетку в 5 клетках. По живой цели луч через 0,5 секунды бьёт туда, где она стоит к выстрелу, но перебежавшую поперёк луча ранит вдвое слабее; по клетке - ровно в неё; призмы стреляют вместе. Бесплатно, перезарядка 5 секунд."
+	summary = "Луч через 0,5 секунды доворачивает за целью: 30 ушибов, бегущей поперёк - вдвое меньше."
 	action_icon_state = "glass_release"
 	charge_max = HERETIC_GLASS_RELEASE_COOLDOWN
 
@@ -2421,7 +2947,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/turf/destination = get_turf(target)
-	if(!heretic_check(user, glass?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу."))
+	if(!heretic_check(user, glass?.can_use(user), silent, heretic_glass_unusable_reason(user)))
 		return FALSE
 	if(!heretic_check(user, destination && destination != get_turf(user) && destination.z == user.z && get_dist(user, destination) <= range, silent, "Выберите цель или клетку не дальше пяти клеток от вас. Грани для луча не нужны."))
 		return FALSE
@@ -2435,7 +2961,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/shards
 	name = "Поставить призму"
-	desc = "За грань ставит призму на свободный пол в 5 клетках, повторный выбор поворачивает её стрелку. В намерении разоружения вместо призмы встаёт преграда на 12 секунд."
+	desc = "За грань ставит призму на свободный пол в 5 клетках, повторный выбор поворачивает её стрелку, четвёртая призма сменяет самую старую. В намерении «Разоружить» вместо призмы встаёт преграда на 12 секунд, и кнопка называется «Поставить преграду»."
 	summary = "Призма за грань; в намерении разоружения - преграда от лазеров."
 	action_icon_state = "glass_shards"
 	charge_max = 2 SECONDS
@@ -2444,20 +2970,27 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	if(!glass?.can_use(user))
-		return heretic_check(user, FALSE, silent, "Способность недоступна вашему пути или текущему телу.")
+		return heretic_check(user, FALSE, silent, heretic_glass_unusable_reason(user))
 	if(user.a_intent == INTENT_DISARM)
-		return can_target_barrier(glass, target, user, silent)
+		return can_target_barrier(glass, placement_turf(target), user, silent)
 	if(istype(target, /obj/structure/heretic_glass_prism))
 		var/obj/structure/heretic_glass_prism/prism = target
 		if(!heretic_check(user, prism.glass_ref?.resolve() == glass, silent, "Поворачивать можно только собственную призму."))
 			return FALSE
 		return heretic_check(user, glass.line_clear(user, prism, allow_prisms = TRUE), silent, "До своей призмы нужна свободная линия не длиннее пяти клеток.")
-	if(!heretic_check(user, isturf(target), silent, "Для новой призмы укажите саму клетку пола."))
+	target = placement_turf(target)
+	if(!heretic_check(user, isturf(target), silent, "Для новой призмы укажите клетку пола."))
 		return FALSE
 	var/reason = glass.prism_placement_failure(user, target)
 	if(!heretic_check(user, !reason, silent, reason))
 		return FALSE
 	return heretic_check(user, glass.combat_resource >= 1, silent, "Для новой призмы нужна 1 грань. Дождитесь восстановления запаса; поворот своей призмы бесплатен.")
+
+/// Клик по предмету или существу на полу ставит постройку на его клетку; призмы выбираются как есть.
+/obj/effect/proc_holder/spell/pointed/heretic_glass/shards/proc/placement_turf(atom/target)
+	if(isturf(target) || istype(target, /obj/structure/heretic_glass_prism) || !ismovable(target))
+		return target
+	return isturf(target.loc) ? target.loc : target
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/shards/proc/can_target_barrier(datum/eldritch_knowledge/base_glass/glass, atom/target, mob/user, silent)
 	if(!heretic_check(user, COOLDOWN_FINISHED(glass, barrier_cooldown), silent, "Преграда восстанавливается: осталось [CEILING(COOLDOWN_TIMELEFT(glass, barrier_cooldown) / (1 SECONDS), 1)] с."))
@@ -2474,11 +3007,12 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 	if(!length(targets) || !glass)
 		heretic_revert_cast(user)
 		return
+	var/atom/target = placement_turf(targets[1])
 	if(user.a_intent != INTENT_DISARM)
-		if(!glass.shards(user, targets[1]))
+		if(!glass.shards(user, target))
 			heretic_revert_cast(user)
 		return
-	if(!isturf(targets[1]) || !glass.create_barrier(user, targets[1]))
+	if(!isturf(target) || !glass.create_barrier(user, target))
 		heretic_revert_cast(user)
 		return
 	COOLDOWN_START(glass, barrier_cooldown, HERETIC_GLASS_BARRIER_COOLDOWN)
@@ -2494,7 +3028,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 /obj/effect/proc_holder/spell/pointed/heretic_glass/casket/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
-	if(!heretic_check(user, glass?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу."))
+	if(!heretic_check(user, glass?.can_use(user), silent, heretic_glass_unusable_reason(user)))
 		return FALSE
 	var/reason = glass.casket_block_reason(user, target)
 	return heretic_check(user, !reason, silent, reason, target = target)
@@ -2517,7 +3051,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 /obj/effect/proc_holder/spell/pointed/heretic_glass/passage/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
-	if(!heretic_check(user, glass?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу."))
+	if(!heretic_check(user, glass?.can_use(user), silent, heretic_glass_unusable_reason(user)))
 		return FALSE
 	var/reason = glass.passage_failure(user, target)
 	return heretic_check(user, !reason, silent, reason)
@@ -2549,7 +3083,7 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 
 /obj/effect/proc_holder/spell/self/heretic_glass/crown
 	name = "Вечный витраж"
-	desc = "Три волны: восемь лучей вокруг вас и свет из призм, каждая предупреждает за секунду. Урон 44 напрямую и 50 через призму, по вашим трещинам на 14 больше и без слепоты. Перезарядка 45 секунд."
+	desc = "Три волны: восемь лучей вокруг вас и свет из призм, каждая предупреждает за секунду. Урон 44 напрямую и 50 через призму, по вашим трещинам на 14 больше и без слепоты; разбитая призма гасит только свои лучи. Раз в 2 минуты будит отражения в окнах станции. Перезарядка 45 секунд."
 	summary = "Три волны света вокруг вас с перерывом 4 секунды, 44 ушиба за луч."
 	action_icon_state = "glass_ascend"
 	charge_max = 45 SECONDS
@@ -2573,7 +3107,6 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 #undef HERETIC_GLASS_PANE_CLUE
 #undef HERETIC_GLASS_PANE_ALPHA
 #undef HERETIC_GLASS_CAPTURE
-#undef HERETIC_GLASS_MARK_BLIND
 #undef HERETIC_GLASS_STORM_BLIND
 #undef HERETIC_GLASS_STORM_PANE_RANGE
 #undef HERETIC_GLASS_BARRIER_COOLDOWN
@@ -2633,3 +3166,26 @@ GLOBAL_LIST_INIT(heretic_glass_sounds, list(
 #undef HERETIC_GLASS_VOLLEY_QUAKE_TIME
 #undef HERETIC_GLASS_VOLLEY_QUAKE_RADIUS
 #undef HERETIC_GLASS_CRACK_VOLUME
+#undef HERETIC_GLASS_DODGE_OFFSET
+#undef HERETIC_GLASS_DODGE_MULTIPLIER
+#undef HERETIC_GLASS_MARK_DAMAGE
+#undef HERETIC_GLASS_PRISM_LIMIT
+#undef HERETIC_GLASS_PRISM_LIMIT_ASCENDED
+#undef HERETIC_GLASS_TEMPER_BULLET_REFLECTIONS
+#undef HERETIC_GLASS_GAZE_SHOT_DELAY
+#undef HERETIC_GLASS_GAZE_SHOT_COST
+#undef HERETIC_GLASS_GAZE_SHOT_STATION
+#undef HERETIC_GLASS_TRAVEL_FAR_COST
+#undef HERETIC_GLASS_TRAVEL_FAR_TIME
+#undef HERETIC_GLASS_MIRROR_TIME
+#undef HERETIC_GLASS_MIRROR_COUNT
+#undef HERETIC_GLASS_MIRROR_SEARCH
+#undef HERETIC_GLASS_MIRROR_BREAK_DAMAGE
+#undef HERETIC_GLASS_MIRROR_BREAKS
+#undef HERETIC_GLASS_MIRROR_PUBLIC_MIN
+#undef HERETIC_GLASS_MIRROR_COOLDOWN
+#undef HERETIC_GLASS_MIRROR_STRIKE_DELAY
+#undef HERETIC_GLASS_MIRROR_ALPHA
+#undef HERETIC_GLASS_MIRROR_VOLLEY_PAUSE
+#undef HERETIC_GLASS_MIRROR_VOLLEY_TIME
+#undef HERETIC_GLASS_SHATTERED_TIME

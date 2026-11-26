@@ -1,0 +1,12 @@
+// Ключи наборов звуков еретика для playsound(): вариант выбирается случайно, см. /datum/sound_effect/heretic_*.
+#define HERETIC_CODEX_LEARN_SFX "heretic_codex_learn"
+#define HERETIC_CODEX_UPGRADE_SFX "heretic_codex_upgrade"
+#define HERETIC_HEART_SUMMON_SFX "heretic_heart_summon"
+#define HERETIC_HEART_HIDE_SFX "heretic_heart_hide"
+#define HERETIC_EMERGENCE_HIT_SFX "heretic_emergence_hit"
+#define HERETIC_CRUCIBLE_BUBBLE_SFX "heretic_crucible_bubble"
+#define HERETIC_TRAP_GRASP_SFX "heretic_trap_grasp"
+#define HERETIC_SIPHON_SFX "heretic_siphon"
+#define HERETIC_VOID_BLINK_OUT_SFX "heretic_void_blink_out"
+#define HERETIC_VOID_BLINK_IN_SFX "heretic_void_blink_in"
+#define HERETIC_ASH_PRINT_FLARE_SFX "heretic_ash_print_flare"

@@ -49,7 +49,7 @@
 	TEST_ASSERT(!spell.can_target(ally.owner.current, user, TRUE), "Оглушённый пользователь не может атаковать.")
 	TEST_ASSERT(findtext(spell.heretic_failure_reason, "не можете действовать"), "Оглушение имеет приоритет перед иммунитетом цели.")
 
-/// Руна показывает срок своего холода и предупреждает, когда каналу уже не хватит времени.
+/// Руна показывает, чем заплатит за клинок, срок своего холода и предупреждает, когда каналу уже не хватит времени.
 /datum/unit_test/heretic_void_preparation_feedback/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/user = heretic.owner.current
@@ -57,14 +57,14 @@
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_void)
 	var/datum/eldritch_knowledge/base_void/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_void)
 	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch, get_turf(user))
-	TEST_ASSERT(findtext(rune.preparation_hint(user), "сначала накройте"), "Тёплая руна подсказывает способ подготовки.")
+	TEST_ASSERT(findtext(rune.preparation_hint(user), "возьмёт [HERETIC_VOID_RUNE_COST] осколок"), "Тёплая руна говорит, что клинок возьмёт осколок.")
 	var/obj/effect/heretic_combat_zone/void/winter = allocate(/obj/effect/heretic_combat_zone/void, get_turf(user), heretic.owner)
 	STOP_PROCESSING(SSprocessing, winter)
 	winter.refresh_boundary(list(get_turf(rune)))
 	knowledge.combat_zone = winter
 	TEST_ASSERT(findtext(rune.preparation_hint(user), "ещё"), "Своё поле показывает оставшийся срок.")
 	winter.expires_at = world.time + 1 SECONDS
-	TEST_ASSERT(findtext(rune.preparation_hint(user), "недостаточно"), "Короткого остатка недостаточно для нового клинка.")
+	TEST_ASSERT(findtext(rune.preparation_hint(user), "меньше, чем длится обряд"), "Короткий остаток поля предупреждает, что его не хватит.")
 
 /area/hallway/primary/heretic_public_fixture
 	requires_power = FALSE

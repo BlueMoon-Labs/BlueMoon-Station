@@ -27,14 +27,24 @@
 	. += "<br><b>Горячая клавиша:</b> [html_encode(binding.format_keys(preferences))] (Способность [slot])."
 	. += "<br><b>Отмена подготовки:</b> [html_encode(cancel.format_keys(preferences))] или [html_encode(drop.format_keys(preferences))]. Клавиши можно переназначить в настройках управления."
 
+/// Кнопки знания помимо combat_power и granted_spell: выбор внутри пути и выбранный приём.
+/datum/eldritch_knowledge/proc/extra_combat_spells()
+	return null
+
 /datum/antagonist/heretic/proc/collect_combat_spells(list/spells)
 	for(var/knowledge_type in researched_knowledge)
 		var/datum/eldritch_knowledge/knowledge = researched_knowledge[knowledge_type]
 		if(!QDELETED(knowledge.combat_power))
 			spells |= knowledge.combat_power
+		for(var/obj/effect/proc_holder/spell/extra as anything in knowledge.extra_combat_spells())
+			if(!QDELETED(extra))
+				spells |= extra
 		if(istype(knowledge, /datum/eldritch_knowledge/base_moon))
 			var/datum/eldritch_knowledge/base_moon/moon = knowledge
 			spells |= moon.reflection_spell
+		if(istype(knowledge, /datum/eldritch_knowledge/base_flesh))
+			var/datum/eldritch_knowledge/base_flesh/flesh = knowledge
+			spells |= flesh.shed_spell
 		if(istype(knowledge, /datum/eldritch_knowledge/base_cosmic))
 			var/datum/eldritch_knowledge/base_cosmic/cosmic = knowledge
 			spells |= cosmic.manifest_spell
@@ -63,6 +73,12 @@
 			continue
 		ability_hotkey_types |= spell.type
 
+/// Выбранный приём встаёт на клавишу кнопки выбора, а не в конец списка.
+/datum/antagonist/heretic/proc/swap_ability_hotkey(old_type, new_type)
+	var/slot = ability_hotkey_types.Find(old_type)
+	if(slot && !(new_type in ability_hotkey_types))
+		ability_hotkey_types[slot] = new_type
+
 /datum/antagonist/heretic/activate_ability_hotkey(mob/living/user, slot)
 	if(role_removed || owner?.current != user || user.mind != owner)
 		return FALSE
@@ -80,7 +96,7 @@
 		if(user.ranged_ability == spell)
 			spell.remove_ranged_ability(span_notice("Прицеливание отменено."))
 			return TRUE
-		if(user.incapacitated(ignore_grab = TRUE))
+		if(heretic_incapacitated(user, ignore_grab = TRUE))
 			to_chat(user, span_warning("Сейчас вы не можете использовать способность."))
 			return TRUE
 		spell.Trigger(user, FALSE)

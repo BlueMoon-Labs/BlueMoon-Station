@@ -27,7 +27,7 @@
 		return FALSE
 	applied = TRUE
 	dance.add_dancer(owner)
-	RegisterSignal(dance, COMSIG_HERETIC_DANCE_BEAT, PROC_REF(on_dance_beat))
+	RegisterSignal(dance, COMSIG_HERETIC_DANCE_BEAT, PROC_REF(beat_received))
 	return TRUE
 
 /datum/status_effect/heretic_dance/on_remove()
@@ -39,8 +39,14 @@
 		dance.remove_dancer(owner)
 	return ..()
 
-/datum/status_effect/heretic_dance/proc/on_dance_beat(datum/source, index, strong)
+/// Слушатели доли вызываются по снимку: эффект, снятый на этой же доле другим, её пропускает.
+/datum/status_effect/heretic_dance/proc/beat_received(datum/source, index, strong)
 	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
+	on_dance_beat(source, index, strong)
+
+/datum/status_effect/heretic_dance/proc/on_dance_beat(datum/source, index, strong)
 	heretic_dance_hop(owner, strong)
 
 /datum/status_effect/heretic_dance/proc/dance()
@@ -56,7 +62,7 @@
 		return FALSE
 	for(var/direction in shuffle(GLOB.alldirs.Copy()))
 		var/turf/next = get_step(walker, direction)
-		if(!next || isgroundlessturf(next) || next.is_blocked_turf(exclude_mobs = TRUE))
+		if(!next || isgroundlessturf(next) || !heretic_diagonal_step_safe(get_turf(walker), direction) || next.is_blocked_turf(exclude_mobs = TRUE))
 			continue
 		if(walker.Move(next, direction))
 			return TRUE
@@ -196,12 +202,12 @@
 
 /datum/status_effect/heretic_dance_earworm/proc/on_shocked(datum/source, shock_damage, shock_source, siemens_coeff, flags)
 	SIGNAL_HANDLER
-	if(shock_damage > 0)
+	if(!QDELETED(src) && shock_damage > 0)
 		cure()
 
 /datum/status_effect/heretic_dance_earworm/proc/on_attackby(datum/source, obj/item/item, mob/living/user, params)
 	SIGNAL_HANDLER
-	if(!istype(item, /obj/item/nullrod))
+	if(QDELETED(src) || !istype(item, /obj/item/nullrod))
 		return NONE
 	cure("[user] касается [owner] нулевым жезлом, и навязчивая мелодия стихает.")
 	return NONE
@@ -232,7 +238,7 @@
 	duration = -1
 	tick_interval = -1
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_dance_invited
-	examine_text = span_warning("SUBJECTPRONOUN танцует против воли, ноги сами несут SUBJECTOBJECT. Можно схватить, повалить, пристегнуть, растолкать за 2 секунды или коснуться нулевым жезлом.")
+	examine_text = span_warning("SUBJECTPRONOUN танцует против воли: ноги сами пускаются в пляс. Можно схватить, повалить, пристегнуть, растолкать за 2 секунды или коснуться нулевым жезлом.")
 	var/style_id
 	var/beats_left = HERETIC_DANCE_INVITE_BEATS
 	var/started = FALSE
@@ -322,7 +328,7 @@
 	var/turf/here = get_turf(owner)
 	if(length(route))
 		var/turf/next = route[1]
-		if(next.z == here.z && get_dist(here, next) == 1 && !isgroundlessturf(next) && owner.Move(next, get_dir(here, next)))
+		if(next.z == here.z && get_dist(here, next) == 1 && !isgroundlessturf(next) && heretic_diagonal_step_safe(here, get_dir(here, next)) && owner.Move(next, get_dir(here, next)))
 			route.Cut(1, 2)
 			route_misses = 0
 			return
@@ -395,25 +401,29 @@
 
 /datum/status_effect/heretic_dance/invited/proc/on_shaken(datum/source, mob/living/helper)
 	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
 	rescued = TRUE
 	heretic_dance_rescue_fx(owner, helper)
 	stop("[helper] растолкал цель")
 
 /datum/status_effect/heretic_dance/invited/proc/on_attackby(datum/source, obj/item/item, mob/living/user, params)
 	SIGNAL_HANDLER
-	if(!istype(item, /obj/item/nullrod))
+	if(QDELETED(src) || !istype(item, /obj/item/nullrod))
 		return NONE
 	stop("нулевой жезл оборвал мелодию")
 	return COMPONENT_NO_AFTERATTACK
 
 /datum/status_effect/heretic_dance/invited/proc/on_interrupt(datum/source)
 	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
 	stopped = TRUE
 	qdel(src)
 
 /datum/status_effect/heretic_dance/invited/proc/on_stat_change(datum/source, new_stat)
 	SIGNAL_HANDLER
-	if(new_stat != CONSCIOUS)
+	if(!QDELETED(src) && new_stat != CONSCIOUS)
 		stop("цель без сознания")
 
 /datum/status_effect/heretic_dance/invited/on_remove()
@@ -476,6 +486,8 @@
 
 /datum/status_effect/heretic_dance/partner/proc/on_shaken(datum/source, mob/living/helper)
 	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
 	heretic_dance_rescue_fx(owner, helper)
 	var/datum/eldritch_knowledge/base_dance/dance = dance()
 	if(dance)
@@ -484,7 +496,7 @@
 
 /datum/status_effect/heretic_dance/partner/proc/on_attackby(datum/source, obj/item/item, mob/living/user, params)
 	SIGNAL_HANDLER
-	if(!istype(item, /obj/item/nullrod))
+	if(QDELETED(src) || !istype(item, /obj/item/nullrod))
 		return NONE
 	qdel(src)
 	return COMPONENT_NO_AFTERATTACK
@@ -530,6 +542,8 @@
 
 /datum/status_effect/heretic_dance/lead/proc/on_leader_moved(atom/movable/source, atom/old_loc, movement_dir, forced)
 	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
 	if(forced || !isturf(old_loc) || owner.buckled || (owner.pulledby && owner.pulledby != source) || owner.stat != CONSCIOUS)
 		qdel(src)
 		return
@@ -541,6 +555,8 @@
 
 /datum/status_effect/heretic_dance/lead/proc/on_shaken(datum/source, mob/living/helper)
 	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
 	heretic_dance_rescue_fx(owner, helper)
 	qdel(src)
 
@@ -595,7 +611,7 @@
 
 /datum/status_effect/heretic_dance/horovod/proc/on_leader_moved(atom/movable/source, atom/old_loc, movement_dir, forced)
 	SIGNAL_HANDLER
-	if(forced || !movement_dir)
+	if(QDELETED(src) || forced || !movement_dir)
 		return
 	var/mob/living/user = source
 	if(!heretic_dance_can_sway(user, owner))
@@ -603,7 +619,7 @@
 		qdel(src)
 		return
 	var/turf/next = get_step(owner, movement_dir)
-	if(next && !isgroundlessturf(next))
+	if(next && !isgroundlessturf(next) && heretic_diagonal_step_safe(get_turf(owner), movement_dir))
 		new /obj/effect/temp_visual/heretic_dance_bone_steps(get_turf(owner), movement_dir)
 		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(heretic_dance_move), owner, next, movement_dir)
 	var/drain = min(stamina_per_step, HERETIC_DANCE_HOROVOD_STAMINA_CAP - stamina_dealt)
@@ -744,6 +760,7 @@
 			count++
 	owner.pulledby?.stop_pulling()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/heretic_dance_masquerade)
+	RegisterSignal(owner, COMSIG_LIVING_RUN_BLOCK, PROC_REF(mask_takes_shot))
 	playsound(owner, pick('modular_bluemoon/sound/heretic/dance/masquerade_1.ogg', 'modular_bluemoon/sound/heretic/dance/masquerade_2.ogg', 'modular_bluemoon/sound/heretic/dance/masquerade_3.ogg'), 70, FALSE)
 	new /obj/effect/temp_visual/heretic_dance/confetti(get_turf(owner))
 	return TRUE
@@ -772,11 +789,11 @@
 	if(broken && isturf(wearer.loc))
 		new /obj/effect/temp_visual/heretic_dance_mask_shards(wearer.loc)
 		playsound(wearer, 'modular_bluemoon/sound/heretic/dance/mask_break.ogg', 50, TRUE)
-		wearer.visible_message(span_warning("Фарфоровая маска на [wearer] трескается и осыпается: это [wearer.real_name]!"))
+		wearer.visible_message(span_warning("Фарфоровая маска трескается и осыпается: под ней [wearer]!"))
 
 /datum/status_effect/heretic_dance/masquerade/proc/on_mask_hit(mob/living/source, damage, damagetype)
 	SIGNAL_HANDLER
-	if(damage <= 0 || !(damagetype in list(BRUTE, BURN)))
+	if(QDELETED(src) || damage <= 0 || !(damagetype in list(BRUTE, BURN)))
 		return
 	if(source == owner)
 		take_mask(source, TRUE)
@@ -787,8 +804,42 @@
 			return
 	take_mask(source, TRUE)
 
+/// В Болеро выстрел в еретика разбивает одну маску бала вместо него: сперва маски заражённых, последней - его собственную.
+/datum/status_effect/heretic_dance/masquerade/proc/mask_takes_shot(mob/living/source, real_attack, atom/object, damage, attack_text, attack_type, armour_penetration, mob/living/attacker, def_zone, list/return_list, attack_direction)
+	SIGNAL_HANDLER
+	if(QDELETED(src) || !real_attack || return_list?[HERETIC_BLOCK_ABSORBED] || !(attack_type & ATTACK_TYPE_PROJECTILE) || !istype(object, /obj/item/projectile))
+		return BLOCK_NONE
+	var/obj/item/projectile/shot = object
+	var/datum/eldritch_knowledge/base_dance/dance = dance()
+	if(!dance?.bolero_on || shot.firer == owner || owner.stat == DEAD)
+		return BLOCK_NONE
+	var/mob/living/shield
+	for(var/mob/living/wearer as anything in masked)
+		if(wearer != owner && !QDELETED(wearer) && wearer.stat != DEAD)
+			shield = wearer
+			break
+	if(!shield && (owner in masked))
+		shield = owner
+	if(!shield)
+		return BLOCK_NONE
+	return_list?[HERETIC_BLOCK_ABSORBED] = TRUE
+	if(isturf(owner.loc))
+		new /obj/effect/temp_visual/heretic_dance_mask_shards(owner.loc)
+	owner.visible_message(span_warning("[shot] разбивает фарфоровую маску на лету: Болеро заслоняет танцора!"), span_eldritch("Маска бала приняла выстрел на себя. Масок осталось: [length(masked) - 1]."))
+	if(shot.firer)
+		log_combat(shot.firer, owner, "попадает в маску Болеро вместо", shot)
+	if(shield == owner)
+		take_mask(owner, TRUE)
+		return BLOCK_SUCCESS
+	for(var/datum/status_effect/heretic_dance/masked/dancer in shield.status_effects)
+		if(dancer.masquerade == src)
+			qdel(dancer)
+	take_mask(shield, TRUE)
+	return BLOCK_SUCCESS
+
 /datum/status_effect/heretic_dance/masquerade/on_remove()
 	var/datum/eldritch_knowledge/base_dance/dance = dance()
+	UnregisterSignal(owner, COMSIG_LIVING_RUN_BLOCK)
 	if(applied)
 		for(var/mob/living/wearer as anything in masked.Copy())
 			take_mask(wearer)
@@ -805,7 +856,7 @@
 
 /atom/movable/screen/alert/status_effect/heretic_dance_masquerade
 	name = "Маскарад"
-	desc = "Вы и заражённые рядом выглядите одинаковыми танцорами в масках. Попадание разбивает маску."
+	desc = "Вы и заражённые рядом выглядите одинаковыми танцорами в масках. Попадание разбивает маску. В Болеро каждая маска принимает на себя один выстрел в вас."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "dance_masquerade"
 

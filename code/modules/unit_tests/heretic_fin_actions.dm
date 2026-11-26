@@ -42,6 +42,7 @@
 		),
 		PATH_FLESH = list(
 			/obj/effect/proc_holder/spell/self/heretic_power/flesh,
+			/obj/effect/proc_holder/spell/pointed/heretic_flesh_shed,
 			/obj/effect/proc_holder/spell/targeted/shed_human_form,
 			/obj/effect/proc_holder/spell/targeted/worm_contract,
 			/obj/effect/proc_holder/spell/targeted/emplosion/eldritch,
@@ -99,7 +100,7 @@
 		),
 		PATH_SAND = list(
 			/obj/effect/proc_holder/spell/self/heretic_sand/release,
-			/obj/effect/proc_holder/spell/pointed/heretic_sand/final,
+			/obj/effect/proc_holder/spell/self/heretic_sand/final,
 		),
 		PATH_WAX = list(
 			/obj/effect/proc_holder/spell/self/heretic_wax/release,

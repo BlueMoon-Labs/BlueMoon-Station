@@ -159,6 +159,11 @@
 	held_offset_x = 0
 	held_offset_y = 0
 
+	inhand_x_dimension = 32
+	inhand_y_dimension = 32
+	held_offset_x = 0
+	held_offset_y = 0
+
 /obj/item/melee/sickly_blade/wax
 	lefthand_file = 'modular_bluemoon/icons/obj/heretic_blades_wax_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/obj/heretic_blades_wax_righthand.dmi'
@@ -196,6 +201,7 @@
 /obj/item/clothing/suit/hooded/cultrobes/eldritch/proc/attune_robes(mob/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/heretic_path/path = GLOB.heretic_paths[heretic?.selected_path]
+	set_path_armor(path?.id)
 	if(!path?.robe_state || robe_path == path.id)
 		return FALSE
 	robe_path = path.id

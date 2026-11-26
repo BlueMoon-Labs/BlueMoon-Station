@@ -1,3 +1,17 @@
+/// Голос неба уходит 6-8 секунд: настоящий обряд на станционном уровне снимает его сразу, иначе он остаётся в следующих тестах.
+/datum/unit_test/proc/heretic_release_sky(datum/eldritch_knowledge/final_eldritch/final)
+	for(var/datum/heretic_sky_voice/voice as anything in GLOB.heretic_sky.voices.Copy())
+		if(final && voice.source?.resolve() == final)
+			GLOB.heretic_sky.remove_voice(voice)
+
+/datum/unit_test/heretic_ascension_warning_gate
+	var/datum/eldritch_knowledge/final_eldritch/sky_source
+
+/datum/unit_test/heretic_ascension_warning_gate/Destroy()
+	heretic_release_sky(sky_source)
+	sky_source = null
+	return ..()
+
 /// Повторный обряд нельзя завершить, пока оповещение о его начале находится на задержке.
 /datum/unit_test/heretic_ascension_warning_gate/Run()
 	allocate(/datum/heretic_test_station_level, run_loc_floor_bottom_left.z)
@@ -8,6 +22,7 @@
 	heretic.total_sacrifices = HERETIC_ASCENSION_SACRIFICES
 	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, run_loc_floor_bottom_left)
 	var/datum/eldritch_knowledge/final_eldritch/blade_final/final_knowledge = allocate(/datum/eldritch_knowledge/final_eldritch/blade_final)
+	sky_source = final_knowledge
 	final_knowledge.ritual_time = 0
 	heretic.researched_knowledge[final_knowledge.type] = final_knowledge
 	var/list/bodies = list()
@@ -255,6 +270,10 @@
 		var/obj/effect/temp_visual/heretic_ascension_echo/echo = allocate(/obj/effect/temp_visual/heretic_ascension_echo, run_loc_floor_bottom_left, path_id)
 		var/icon/echo_icon = icon(echo.icon, echo.icon_state)
 		TEST_ASSERT_EQUAL(echo.pixel_x + echo_icon.Width() / 2, world.icon_size / 2, "[path_id]: вспышка растёт из центра клетки.")
+		TEST_ASSERT(echo.layer < MOB_LAYER, "[path_id]: знамение встаёт за спиной и не закрывает людей.")
+		var/matrix/echo_shape = echo.transform
+		TEST_ASSERT(echo_shape.a == 2 && echo_shape.e == 2 && !echo_shape.b && !echo_shape.d, "[path_id]: знамение крупное, вдвое ровно, без мыла.")
+		TEST_ASSERT(echo.appearance_flags & PIXEL_SCALE, "[path_id]: знамение увеличено без сглаживания.")
 
 /// Передний и задний слои нимба переносятся и удаляются вместе с телом.
 /datum/unit_test/heretic_ascension_layered_presence/Run()
@@ -363,6 +382,10 @@
 	TEST_ASSERT_EQUAL(anchor.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "Опора не ловит клики.")
 	omen.build_echo()
 	TEST_ASSERT_EQUAL(omen.personal_echo.loc, anchor, "Следующий отголосок берёт ту же опору.")
+	TEST_ASSERT(omen.personal_echo.layer < MOB_LAYER, "Отголосок встаёт за свидетелем и не закрывает людей.")
+	var/matrix/echo_shape = omen.personal_echo.transform
+	TEST_ASSERT(echo_shape.a == 2 && echo_shape.e == 2 && !echo_shape.b && !echo_shape.d, "Отголосок крупный, вдвое ровно.")
+	TEST_ASSERT(omen.personal_echo.appearance_flags & PIXEL_SCALE, "Отголосок увеличен без сглаживания.")
 	qdel(omen)
 	TEST_ASSERT(QDELETED(anchor), "Конец знамения удаляет опору.")
 	TEST_ASSERT(!(anchor in witness.vis_contents), "Удалённая опора уходит из vis_contents свидетеля.")

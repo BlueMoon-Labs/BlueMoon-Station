@@ -1,4 +1,4 @@
-/// Взыскание восполняет кровь при целых конечностях и делит предел между частичными взысканиями.
+/// Взыскание восполняет кровь на четверть урона каждого частичного взыскания.
 /datum/unit_test/heretic_blood_recovery/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
@@ -19,7 +19,7 @@
 		TEST_ASSERT(blood.release(user, victim, partial = TRUE), "Начато частичное взыскание.")
 		seal.collection_ready_at = world.time
 		TEST_ASSERT(seal.detonate(), "Частичное взыскание завершено.")
-		TEST_ASSERT(abs(user.blood_volume - (BLOOD_VOLUME_NORMAL - 40 + min(index * 5, 10))) <= DAMAGE_PRECISION, "Кровь восстанавливается на четверть урона, не более десяти за связь.")
+		TEST_ASSERT(abs(user.blood_volume - (BLOOD_VOLUME_NORMAL - 40 + list(5, 10, 12.5)[index])) <= DAMAGE_PRECISION, "Каждое взыскание восполняет кровь на четверть своего урона: 10, 10 и 5 долга.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss() + user.getFireLoss(), 0, "Пассивка работает без ушибов и ожогов.")
 	TEST_ASSERT_EQUAL(user.physiology.bleed_mod, 0.375, "Свёртывание и врождённая черта перемножаются; повторные взыскания не усиливают эффект.")
 	var/obj/item/bodypart/arm = user.get_bodypart(BODY_ZONE_L_ARM)
@@ -178,7 +178,7 @@
 		TEST_ASSERT_EQUAL(seal.expires_at, expiry, "Частичное взыскание не обновляет срок.")
 		TEST_ASSERT_EQUAL(seal.seal_overlay.icon_state, "blood_seal", "Предупреждение уступает место обычной печати связи.")
 		TEST_ASSERT(!seal.detonate(), "Завершённый таймер не взыскивает остаток повторно.")
-	TEST_ASSERT(abs(user.getBruteLoss() - 20) <= DAMAGE_PRECISION, "Две части исчерпали общий предел десять лечения.")
+	TEST_ASSERT(abs(user.getBruteLoss() - 20) <= DAMAGE_PRECISION, "Каждая часть лечит четверть своего урона.")
 	seal.expires_at = world.time + 0.5 SECONDS
 	var/short_expiry = seal.expires_at
 	spell.charge_counter = 0
@@ -199,9 +199,9 @@
 	spell.cast(list(victim), user)
 	TEST_ASSERT(seal.collecting && seal.expires_at > short_expiry, "Полное взыскание сохраняет продление до конца предупреждения.")
 	seal.collection_ready_at = world.time
-	TEST_ASSERT(seal.detonate() && seal.spent, "Обычное взыскание закрывает остаток связи: остаётся пустая печать.")
+	TEST_ASSERT(seal.detonate() && QDELETED(seal), "Обычное взыскание выплачивает остаток и закрывает связь.")
 	TEST_ASSERT(abs(victim.getBruteLoss() - 50) <= DAMAGE_PRECISION, "Двадцать пять долга дали ровно пятьдесят ушибов.")
-	TEST_ASSERT(abs(user.getBruteLoss() - 20) <= DAMAGE_PRECISION, "Последняя часть не обходит общий предел лечения.")
+	TEST_ASSERT(abs(user.getBruteLoss() - 17.5) <= DAMAGE_PRECISION, "Последняя часть лечит четверть своих десяти ушибов.")
 	TEST_ASSERT_EQUAL(blood.combat_resource, 0, "Взысканный долг полностью удалён из учёта.")
 
 /// Короткая перезарядка позволяет повторно указать должника; настоящий таймер взыскивает только после решения владельца.
@@ -236,10 +236,10 @@
 	TEST_ASSERT(seal.collecting, "Повторное применение осознанно начинает взыскание.")
 	TEST_ASSERT(!spell.can_target(victim, user, FALSE), "Уже взыскиваемый долг нельзя выбрать повторно; подсказка отказа безопасна.")
 	TEST_ASSERT(!seal.detonate(), "Прямой вызов не обходит секунду предупреждения.")
-	TEST_ASSERT(wait_for_var(seal, "spent", TRUE, 5 SECONDS), "Настоящий таймер завершает взыскание.")
+	TEST_ASSERT(wait_for_qdeleted(seal, 5 SECONDS), "Настоящий таймер завершает взыскание и закрывает связь.")
 	TEST_ASSERT(abs(victim.getBruteLoss() - 20) < 0.01, "Начальный долг взыскивается двадцатью ушибами.")
 	TEST_ASSERT_EQUAL(blood.combat_resource, 0, "Взысканная связь больше не числится в долге.")
-	TEST_ASSERT(blood.release(user, victim), "Перед смертельным взысканием пустая печать снова становится связью.")
+	TEST_ASSERT(blood.release(user, victim), "Перед смертельным взысканием цель связана заново.")
 	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	victim.setToxLoss(victim.getToxLoss() + victim.health - (HEALTH_THRESHOLD_DEAD + 3), forced = TRUE)
 	TEST_ASSERT(abs(victim.health - (HEALTH_THRESHOLD_DEAD + 3)) < 0.1 && victim.stat != DEAD, "Должник жив и находится в трёх единицах здоровья от порога смерти.")
@@ -248,12 +248,11 @@
 	TEST_ASSERT(seal.detonate(), "Смерть должника во время урона не обрывает завершение взыскания.")
 	TEST_ASSERT_EQUAL(victim.stat, DEAD, "Взыскание действительно стало смертельным.")
 
-/// Клинок и метка накапливают долг без саморанения, а промах не даёт ресурса.
-/datum/unit_test/heretic_blood_blade_and_mark/Run()
+/// Клинок и Хватка копят долг без саморанения, промах не даёт ресурса; общие пополнения долг не создают.
+/datum/unit_test/heretic_blood_blade_and_grasp/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/blood_mark)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/blood_grasp)
 	var/mob/living/user = heretic.owner.current
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
@@ -264,19 +263,15 @@
 	TEST_ASSERT(blood.release(user, victim), "Первая привязка создаёт долг.")
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	seal.expires_at = world.time + 2 SECONDS
-	var/datum/eldritch_knowledge/blood_mark/mark = heretic.get_knowledge(/datum/eldritch_knowledge/blood_mark)
-	TEST_ASSERT(mark.on_mansus_grasp(victim, user, TRUE, null), "Хватка помечает должника.")
 	var/debt_before = seal.debt
 	blade.afterattack(victim, user, TRUE, null)
 	TEST_ASSERT_EQUAL(seal.debt, debt_before, "Afterattack без ранения не создаёт долга.")
 	user.a_intent = INTENT_HARM
 	blade.attack(victim, user)
-	TEST_ASSERT_EQUAL(seal.debt, 20, "Клинок и метка заполняют долг до предела.")
-	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Попадание и метка не ранят владельца.")
-	TEST_ASSERT_EQUAL(seal.expires_at, world.time + 15 SECONDS, "Попадание обновляет короткую связь после срабатывания метки.")
-	TEST_ASSERT(abs(victim.getBruteLoss() - blade.force) < 0.01, "Метка не добавляет универсального урона клинку.")
-	blade.attack(victim, user)
-	TEST_ASSERT_EQUAL(seal.debt, 20, "Повторное попадание не обходит предел долга.")
+	TEST_ASSERT_EQUAL(seal.debt, 16, "Удар клинком добавляет шесть долга.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Попадание не ранит владельца.")
+	TEST_ASSERT_EQUAL(seal.expires_at, world.time + 15 SECONDS, "Попадание обновляет срок связи.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - blade.force) < 0.01, "Связь не добавляет урона клинку.")
 	seal.debt = 10
 	var/datum/eldritch_knowledge/blood_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/blood_grasp)
 	TEST_ASSERT(grasp.on_mansus_grasp(victim, user, TRUE, null), "Изученная хватка усиливает существующую связь.")
@@ -287,6 +282,60 @@
 	TEST_ASSERT(!blood.spend_combat_resource(), "Долг нельзя расходовать как обычные заряды.")
 	user.adjustBruteLoss(5)
 	TEST_ASSERT_EQUAL(blood.combat_resource, 16, "Внешний урон не увеличивает долг.")
+
+/// Метка Крови: при занятой связи Хватка по новому врагу даёт вторую связь на 15 секунд; клинок копит на ней долг, но срок не продлевает и метку не взрывает; одна метка за раз.
+/datum/unit_test/heretic_blood_mark_link/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/blood_grasp)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/first = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/mob/living/second = allocate(/mob/living/carbon/human, get_step(user, NORTH))
+	var/mob/living/third = allocate(/mob/living/carbon/human, get_step(user, SOUTH))
+	var/obj/item/melee/touch_attack/mansus_fist/hand = allocate(/obj/item/melee/touch_attack/mansus_fist, user)
+	TEST_ASSERT(blood.release(user, first), "Первая связь занимает единственное место.")
+	hand.try_grasp(second, user, TRUE, null)
+	TEST_ASSERT_NULL(second.has_status_effect(/datum/status_effect/heretic_blood_seal), "Второй враг не связан.")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/blood_mark)
+	TEST_ASSERT(hand.try_grasp(second, user, TRUE, null), "Хватка ставит Метку Крови.")
+	var/datum/status_effect/heretic_blood_seal/mark/mark_seal = second.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	TEST_ASSERT(istype(mark_seal), "На втором враге связь Метки.")
+	TEST_ASSERT(blood.mark_seal == mark_seal && (mark_seal in blood.seals), "Метка - вторая связь еретика.")
+	TEST_ASSERT_EQUAL(blood.link_limit, 1, "Предел обычных связей не изменился.")
+	TEST_ASSERT_EQUAL(mark_seal.debt, 10, "Метка даёт начальный долг.")
+	TEST_ASSERT_EQUAL(blood.combat_resource_max, 2 * blood.debt_cap, "Индикатор вмещает долг Метки.")
+	TEST_ASSERT_NOTNULL(second.has_status_effect(/datum/status_effect/eldritch/blood), "На враге видна Метка Крови.")
+	TEST_ASSERT(findtext(blood.combat_resource_state(), "Метка Крови на"), "Индикатор называет помеченного.")
+	hand.try_grasp(third, user, TRUE, null)
+	TEST_ASSERT_NULL(third.has_status_effect(/datum/status_effect/heretic_blood_seal), "Третий враг не связан.")
+	var/expiry = mark_seal.expires_at
+	TEST_ASSERT(abs(expiry - world.time - 15 SECONDS) < 1, "Метка держится 15 секунд.")
+	var/obj/item/melee/sickly_blade/blood/blade = allocate(/obj/item/melee/sickly_blade/blood)
+	blade.wound_bonus = CANT_WOUND
+	blade.bare_wound_bonus = CANT_WOUND
+	user.a_intent = INTENT_HARM
+	blade.attack(second, user)
+	TEST_ASSERT_EQUAL(mark_seal.debt, 16, "Клинок копит долг на Метке.")
+	TEST_ASSERT_EQUAL(mark_seal.expires_at, expiry, "Удар не продлевает Метку.")
+	TEST_ASSERT_NOTNULL(second.has_status_effect(/datum/status_effect/eldritch/blood), "Удар клинком не взрывает Метку.")
+	var/brute_before = second.getBruteLoss()
+	TEST_ASSERT(blood.release(user, second), "С Метки можно взыскать.")
+	mark_seal.collection_ready_at = world.time
+	TEST_ASSERT(mark_seal.detonate() && QDELETED(mark_seal), "Взыскание закрывает Метку.")
+	TEST_ASSERT(abs(second.getBruteLoss() - brute_before - 32) < 0.1, "Метка бьёт как обычная связь.")
+	TEST_ASSERT_NULL(blood.mark_seal, "Место Метки освободилось.")
+	TEST_ASSERT_NULL(second.has_status_effect(/datum/status_effect/eldritch/blood), "Метка сошла с тела.")
+	TEST_ASSERT(hand.try_grasp(third, user, TRUE, null), "Новая Метка ложится после старой.")
+	var/datum/status_effect/heretic_blood_seal/mark/next_mark = third.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	next_mark.expires_at = world.time
+	next_mark.tick()
+	TEST_ASSERT(QDELETED(next_mark), "Метка гаснет по сроку.")
+	TEST_ASSERT_NULL(third.has_status_effect(/datum/status_effect/eldritch/blood), "Погасшая Метка не остаётся на теле.")
+	TEST_ASSERT_EQUAL(blood.combat_resource, 10, "Погасшая Метка не оставляет долга.")
+	var/datum/status_effect/heretic_blood_seal/first_seal = first.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	TEST_ASSERT(first_seal && !QDELETED(first_seal), "Обычная связь всё это время держится.")
 
 /// Антимагия, стены, дистанция и истечение срока уничтожают долг без автоматического удара.
 /datum/unit_test/heretic_blood_counterplay/Run()
@@ -313,7 +362,7 @@
 	seal.tick()
 	TEST_ASSERT(!QDELETED(seal), "Новая преграда оставляет две секунды для восстановления контакта.")
 	TEST_ASSERT(!blood.release(user, victim), "Через преграду нельзя создать новую связь.")
-	seal.contact_lost_at = world.time - 2 SECONDS
+	seal.contact_lost_at = world.time - 2 SECONDS - 1
 	seal.tick()
 	TEST_ASSERT(QDELETED(seal), "Две секунды за преградой уничтожают долг.")
 	qdel(blocker)
@@ -395,21 +444,24 @@
 	TEST_ASSERT(chalice.drink(user, victim), "Чаша лечит владельца за счёт врага.")
 	TEST_ASSERT(abs(user.getBruteLoss() - 10) <= DAMAGE_PRECISION, "Чаша лечит двадцать ушибов.")
 	TEST_ASSERT(abs(victim.getBruteLoss() - 20) <= DAMAGE_PRECISION, "Лечение сопровождается настоящим уроном врагу.")
-	TEST_ASSERT(seal.spent && !(seal in blood.seals), "Полный глоток расходует десять долга и освобождает связь.")
+	TEST_ASSERT(QDELETED(seal) && !length(blood.seals), "Полный глоток расходует десять долга и освобождает связь.")
 	TEST_ASSERT(!chalice.drink(user, victim), "Повторное питьё ограничено перезарядкой.")
 	COOLDOWN_RESET(chalice, relic_cooldown)
-	TEST_ASSERT(blood.release(user, victim), "Перед следующим глотком пустая печать снова становится связью.")
-	TEST_ASSERT_EQUAL(victim.has_status_effect(/datum/status_effect/heretic_blood_seal), seal, "Связь с той же целью - прежняя печать.")
+	TEST_ASSERT(blood.release(user, victim), "Перед следующим глотком цель связана заново.")
+	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	seal.debt = 5
 	blood.update_debt()
+	TEST_ASSERT(!chalice.drink(user, victim), "За минуту цель уже отдала весь запас лечения.")
+	TEST_ASSERT_EQUAL(seal.debt, 5, "Отказ по запасу цели не тратит долг.")
+	blood.heal_ledger.Cut()
 	TEST_ASSERT(chalice.drink(user, victim), "Остаток долга можно потратить после перезарядки.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Остаток долга залечивает последние ушибы.")
 	TEST_ASSERT_EQUAL(seal.debt, 0, "Долг нельзя потратить дважды.")
-	TEST_ASSERT(seal.spent, "Исчерпанная чашей связь становится пустой печатью.")
-	TEST_ASSERT_EQUAL(length(blood.seals), 0, "Пустая связь не занимает лимит.")
+	TEST_ASSERT(QDELETED(seal), "Исчерпанная чашей связь закрыта.")
+	TEST_ASSERT_EQUAL(length(blood.seals), 0, "Закрытая связь не занимает лимит.")
 	TEST_ASSERT(blood.release(user, victim), "Цель можно связать снова без пустого взыскания.")
-	TEST_ASSERT_EQUAL(victim.has_status_effect(/datum/status_effect/heretic_blood_seal), seal, "Первый выбор после чаши продлевает прежнюю печать.")
-	TEST_ASSERT(!seal.spent && !seal.collecting, "Продлённая связь не начинает взыскание сама.")
+	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	TEST_ASSERT(!seal.collecting, "Новая связь не начинает взыскание сама.")
 	COOLDOWN_RESET(chalice, relic_cooldown)
 	TEST_ASSERT(!chalice.drink(user, victim), "Здоровый владелец не расходует долг на питьё.")
 	var/datum/antagonist/heretic/other = allocate_heretic(get_step(user, NORTH))
@@ -760,7 +812,7 @@
 	TEST_ASSERT(seal.validate_link(), "После короткого оглушения можно продолжить бой.")
 	blocker.density = TRUE
 	seal.validate_link()
-	seal.contact_lost_at = world.time - 2 SECONDS
+	seal.contact_lost_at = world.time - 2 SECONDS - 1
 	blocker.density = FALSE
 	TEST_ASSERT(!seal.validate_link() && QDELETED(seal), "Возвращение после двух секунд не оживляет просроченную связь.")
 	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Потеря контакта не взыскивает долг автоматически.")
@@ -792,7 +844,7 @@
 		else
 			user.Stun(5 SECONDS)
 			TEST_ASSERT(!seal.validate_link() && !QDELETED(seal), "Контроль сначала отменяет взыскание с сохранением долга.")
-			seal.contact_lost_at = world.time - 2 SECONDS
+			seal.contact_lost_at = world.time - 2 SECONDS - 1
 		TEST_ASSERT(!seal.validate_link() && QDELETED(seal), "Укрытие или истечение отсрочки уничтожает связь.")
 		TEST_ASSERT(!seal.detonate(), "Отменённый таймер не наносит запоздалый урон.")
 		qdel(blocker)
@@ -841,9 +893,9 @@
 			TEST_ASSERT_EQUAL(seal.debt, 6, "Частичное взыскание сохраняет остаток долга.")
 			qdel(seal)
 		else
-			TEST_ASSERT(seal.spent && !(seal in blood.seals), "Полное взыскание освобождает связь, оставляя пустую печать.")
+			TEST_ASSERT(QDELETED(seal) && !(seal in blood.seals), "Полное взыскание освобождает связь.")
 
-/// Взыскание лечит оба вида ран, с одной цели не больше десяти за все связи и не высасывает здоровье из неуязвимой цели.
+/// Взыскание лечит оба вида ран на четверть урона, не больше десяти за одно взыскание, и не высасывает здоровье из неуязвимой цели.
 /datum/unit_test/heretic_blood_collection_siphon/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
@@ -861,19 +913,26 @@
 	TEST_ASSERT(user.getBruteLoss() <= DAMAGE_PRECISION && abs(user.getFireLoss() - 30) <= DAMAGE_PRECISION, "Пять лечения распределяются между ушибами и ожогами без удвоения.")
 	TEST_ASSERT(blood.release(user, victim), "После взыскания цель можно связать снова.")
 	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	blood.add_debt(seal, 10)
-	TEST_ASSERT(blood.release(user, victim), "Полный долг готов к взысканию.")
+	seal.debt = 30
+	blood.update_debt()
+	TEST_ASSERT(blood.release(user, victim), "Большой долг готов к взысканию.")
 	seal.collection_ready_at = world.time
-	TEST_ASSERT(seal.detonate(), "Взыскание полного долга завершается.")
-	TEST_ASSERT(abs(victim.getBruteLoss() - 60) <= DAMAGE_PRECISION, "Двадцать долга наносят ещё сорок ушибов.")
-	TEST_ASSERT(abs(user.getFireLoss() - 25) <= DAMAGE_PRECISION, "С одной цели лечится не больше десяти и за новую связь: [user.getFireLoss()].")
+	TEST_ASSERT(seal.detonate(), "Взыскание большого долга завершается.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 80) <= DAMAGE_PRECISION, "Тридцать долга наносят ещё шестьдесят ушибов.")
+	TEST_ASSERT(abs(user.getFireLoss() - 20) <= DAMAGE_PRECISION, "Одно взыскание лечит не больше десяти: [user.getFireLoss()].")
+	TEST_ASSERT(blood.release(user, victim), "Та же цель связана снова.")
+	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	TEST_ASSERT(blood.release(user, victim), "Повторное взыскание с той же цели начато.")
+	seal.collection_ready_at = world.time
+	TEST_ASSERT(seal.detonate(), "Повторное взыскание завершено.")
+	TEST_ASSERT(abs(user.getFireLoss() - 15) <= DAMAGE_PRECISION, "Повторное взыскание с той же цели снова лечит четверть урона: [user.getFireLoss()].")
 	TEST_ASSERT(blood.release(user, victim) && blood.release(user, victim), "Подготовлено взыскание с защищённой цели.")
 	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	victim.status_flags |= GODMODE
 	seal.collection_ready_at = world.time
 	TEST_ASSERT(seal.detonate(), "Неуязвимость не оставляет вечную подготовку.")
-	TEST_ASSERT(abs(user.getFireLoss() - 25) <= DAMAGE_PRECISION, "Без фактического урона лечения нет.")
-	TEST_ASSERT(abs(victim.getBruteLoss() - 60) <= DAMAGE_PRECISION, "Неуязвимая цель не получает урон.")
+	TEST_ASSERT(abs(user.getFireLoss() - 15) <= DAMAGE_PRECISION, "Без фактического урона лечения нет.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 100) <= DAMAGE_PRECISION, "Неуязвимая цель не получает урон.")
 
 /// Чаша лечит ожоги через предмет, расходуя только нужную долю долга и соблюдая перезарядку.
 /datum/unit_test/heretic_blood_chalice_burns/Run()
@@ -1171,6 +1230,16 @@
 	user.forceMove(burn_turf)
 	TEST_ASSERT(abs(burn - user.getFireLoss() - HERETIC_BLOOD_TIDE_POOL_HEAL) <= DAMAGE_PRECISION, "Без ушибов лужа лечит ожоги.")
 	TEST_ASSERT(QDELETED(burn_pool), "Лужа для ожогов выпита.")
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/turf/sign_turf = locate(start.x + 4, start.y, start.z)
+	var/obj/effect/decal/cleanable/blood/sign = blood_tide_stain(sign_turf)
+	TEST_ASSERT(blood.mark_sign(user, sign), "Чужая кровь стала меткой.")
+	user.adjustBruteLoss(10, forced = TRUE)
+	brute = user.getBruteLoss()
+	COOLDOWN_RESET(blood_tide, pool_heal)
+	user.forceMove(sign_turf)
+	TEST_ASSERT(!QDELETED(sign) && (sign in blood.signs), "Вознёсшийся не выпивает свою метку.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), brute, "Своя метка не лечит.")
 	finale.on_body_lose(user)
 	var/obj/effect/decal/cleanable/blood/late = blood_tide_stain(start)
 	burn = user.getFireLoss()
@@ -1689,6 +1758,28 @@
 	drain.pull_close()
 	TEST_ASSERT_EQUAL(get_dist(victim, user), HERETIC_BLOOD_DRAIN_LEASH, "На полу нить подтягивает цель на три клетки.")
 
+/// Диагональный рывок нити Move делит на два прямых: если первый прямой шаг ведёт в лаву, нить цель не тянет.
+/datum/unit_test/heretic_blood_drain_diagonal_hazard/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/datum/antagonist/heretic/heretic = blood_drain_heretic(start)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/turf/far_spot = locate(start.x + 2, start.y + 4, start.z)
+	var/mob/living/carbon/human/victim = blood_debtor(blood, far_spot)
+	TEST_ASSERT(blood.drain(user, victim), "Кровопускание начато.")
+	var/datum/status_effect/heretic_blood_drain/drain = victim.has_status_effect(/datum/status_effect/heretic_blood_drain)
+	var/turf/corner = locate(start.x + 2, start.y + 3, start.z)
+	var/corner_type = corner.type
+	corner = corner.ChangeTurf(/turf/open/lava/smooth, flags = CHANGETURF_INHERIT_AIR)
+	var/datum/unit_test_move_probe/probe = allocate(/datum/unit_test_move_probe)
+	probe.RegisterSignal(victim, COMSIG_MOVABLE_MOVED, TYPE_PROC_REF(/datum/unit_test_move_probe, on_moved))
+	drain.start_channel()
+	var/crossed_lava = (corner in probe.visited)
+	probe.UnregisterSignal(victim, COMSIG_MOVABLE_MOVED)
+	corner.ChangeTurf(corner_type, flags = CHANGETURF_INHERIT_AIR)
+	TEST_ASSERT(!crossed_lava, "Нить не протаскивает цель через лаву на углу диагонали.")
+	TEST_ASSERT_EQUAL(get_turf(victim), far_spot, "В обход по прямой нить дальше трёх клеток не тянет: цель стоит.")
+
 /// Хоткей Скользкой крови срабатывает в агрессивном захвате, а адресная способность в захвате по-прежнему отказывает по своим правилам.
 /datum/unit_test/heretic_blood_slip_hotkey/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
@@ -1841,6 +1932,9 @@
 	warnings++
 	return ..()
 
+/datum/unit_test/proc/blood_cleanbot_target(atom/movable/thing)
+	return thing.important_recursive_contents && (thing in thing.important_recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS])
+
 /datum/unit_test/proc/blood_minded_victim(turf/place)
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, place)
 	var/datum/mind/soul = allocate_mind()
@@ -1848,8 +1942,8 @@
 	victim.mind = soul
 	return victim
 
-/// После полного взыскания или разрыва контакта пустая печать 15 секунд помнит, сколько вылечено с цели: связь и удар клинком по ней продлевают печать, лечение с цели не больше 10; по сроку печать уходит; цель без разума не лечит ни взысканием, ни чашей.
-/datum/unit_test/heretic_blood_spent_seal/Run()
+/// Взыскание лечит четверть урона, не больше 10 за раз: новая связь с той же целью снова лечит, пока цель не отдала 20 за минуту, а связь, порванная до взыскания, ничего не даёт; цель без разума не лечит ни взысканием, ни чашей.
+/datum/unit_test/heretic_blood_heal_rule/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
@@ -1857,57 +1951,27 @@
 	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	var/mob/living/carbon/human/victim = blood_minded_victim(get_step(user, EAST))
 	user.adjustBruteLoss(60)
-	var/healed_total = 0
-	var/datum/status_effect/heretic_blood_seal/first
 	for(var/cycle in 1 to 3)
+		victim.fully_heal()
 		TEST_ASSERT(blood.release(user, victim), "Цель связана, круг [cycle].")
 		var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-		first ||= seal
-		TEST_ASSERT_EQUAL(seal, first, "Связь с той же целью - прежняя печать, круг [cycle].")
-		TEST_ASSERT(!seal.spent && (seal in blood.seals), "Продлённая печать снова занимает связь.")
 		seal.debt = blood.debt_cap
 		blood.update_debt()
 		var/brute_before = user.getBruteLoss()
 		TEST_ASSERT(blood.release(user, victim), "Взыскание начато, круг [cycle].")
 		seal.collection_ready_at = world.time
 		TEST_ASSERT(seal.detonate(), "Взыскание завершено, круг [cycle].")
-		healed_total += brute_before - user.getBruteLoss()
-		TEST_ASSERT(!QDELETED(seal) && seal.spent, "После полного взыскания остаётся пустая печать.")
-		TEST_ASSERT(!(seal in blood.seals) && (seal in blood.spent_seals), "Пустая печать не занимает связь.")
-		TEST_ASSERT(abs(seal.expires_at - world.time - HERETIC_BLOOD_SPENT_LIFETIME) < 1, "Пустая печать живёт [HERETIC_BLOOD_SPENT_LIFETIME / (1 SECONDS)] секунд.")
-	TEST_ASSERT(victim.getBruteLoss() > 100, "Урон взысканием остаётся каждый круг: [victim.getBruteLoss()].")
-	TEST_ASSERT(abs(healed_total - 10) <= DAMAGE_PRECISION, "С одной цели лечится не больше 10 за все круги: [healed_total].")
-	TEST_ASSERT_EQUAL(HERETIC_BLOOD_SPENT_LIFETIME, 15 SECONDS, "Пустая печать держится 15 секунд.")
-	victim.fully_heal()
-	TEST_ASSERT(blood.release(user, victim) && !first.spent, "Пустая печать снова стала связью.")
-	first.contact_lost_at = world.time - HERETIC_BLOOD_CONTACT_GRACE
-	TEST_ASSERT(!first.validate_link(), "Без контакта 2 секунды связь рвётся.")
-	TEST_ASSERT(!QDELETED(first) && first.spent, "Разорванная связь, с которой лечились, остаётся пустой печатью.")
-	TEST_ASSERT(first.siphoned >= 10, "Разрыв контакта не обнуляет вылеченное с цели: [first.siphoned].")
-	TEST_ASSERT(abs(first.expires_at - world.time - HERETIC_BLOOD_SPENT_LIFETIME) < 1, "После разрыва печать помнит цель [HERETIC_BLOOD_SPENT_LIFETIME / (1 SECONDS)] секунд.")
-	COOLDOWN_RESET(blood, resource_harvest)
-	blood.on_eldritch_blade(victim, user, TRUE, null)
-	TEST_ASSERT_EQUAL(victim.has_status_effect(/datum/status_effect/heretic_blood_seal), first, "Удар клинком продлевает пустую печать, а не создаёт новую связь.")
-	TEST_ASSERT(!first.spent && first.debt == 16, "Продлённая ударом печать получает долг новой связи и удара: [first.debt].")
-	TEST_ASSERT(first.siphoned >= 10, "Счётчик лечения с цели сохранён: [first.siphoned].")
-	first.debt = blood.debt_cap
-	var/brute_capped = user.getBruteLoss()
-	TEST_ASSERT(blood.release(user, victim), "Взыскание начато.")
-	first.collection_ready_at = world.time
-	TEST_ASSERT(first.detonate() && first.spent, "Печать снова пуста.")
-	TEST_ASSERT_EQUAL(user.getBruteLoss(), brute_capped, "После разрыва и новой связи предел лечения с цели всё ещё исчерпан.")
-	first.expires_at = world.time
-	first.tick()
-	TEST_ASSERT(QDELETED(first), "По сроку пустая печать уходит.")
-	TEST_ASSERT(blood.release(user, victim), "Через 15 секунд цель связывается заново.")
-	var/datum/status_effect/heretic_blood_seal/fresh = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	TEST_ASSERT(fresh != first && fresh.siphoned == 0, "Новая связь начинает счёт лечения заново.")
-	qdel(fresh)
+		TEST_ASSERT(QDELETED(seal) && !length(blood.seals), "Выплаченная связь закрыта и не занимает место, круг [cycle].")
+		var/expected = cycle < 3 ? 10 : 0
+		TEST_ASSERT(abs(brute_before - user.getBruteLoss() - expected) <= DAMAGE_PRECISION, "Сорок ушибов возвращают [expected] лечения, круг [cycle]: [brute_before - user.getBruteLoss()].")
+	TEST_ASSERT(blood.release(user, victim), "Цель связана перед разрывом.")
+	var/datum/status_effect/heretic_blood_seal/broken = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	broken.contact_lost_at = world.time - HERETIC_BLOOD_CONTACT_GRACE
+	var/brute_broken = user.getBruteLoss()
+	TEST_ASSERT(!broken.validate_link() && QDELETED(broken), "Без контакта 2 секунды связь рвётся и исчезает.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), brute_broken, "Порванная связь не лечит.")
 	var/datum/status_effect/heretic_blood_seal/warn_probe/probe = victim.apply_status_effect(/datum/status_effect/heretic_blood_seal/warn_probe, blood)
 	TEST_ASSERT_EQUAL(probe?.warnings, 1, "Новая связь предупреждает цель о кровяной жиле.")
-	probe.spend()
-	TEST_ASSERT(probe.revive(10), "Пустая печать снова стала связью.")
-	TEST_ASSERT_EQUAL(probe.warnings, 2, "Возвращённая связь снова предупреждает цель о кровяной жиле.")
 	qdel(probe)
 
 	var/mob/living/carbon/human/mindless = allocate(/mob/living/carbon/human, get_step(user, NORTH))
@@ -1924,13 +1988,70 @@
 	TEST_ASSERT(mindless.getBruteLoss() > 0, "Цель без разума получает урон.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), brute_before, "Цель без разума не лечит.")
 	TEST_ASSERT_EQUAL(user.blood_volume, BLOOD_VOLUME_NORMAL - 40, "Цель без разума не восполняет кровь.")
-	qdel(empty)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/blood_relic)
 	TEST_ASSERT(blood.release(user, mindless), "Цель без разума связана снова.")
 	TEST_ASSERT(!blood.refund(user, mindless), "Чаша не пьёт из цели без разума.")
 	var/datum/status_effect/heretic_blood_seal/kept = mindless.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	TEST_ASSERT_EQUAL(kept.debt, 10, "Отказ чаши не тратит 10 долга новой связи: [kept.debt].")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), brute_before, "Отказ чаши не лечит.")
+
+/// Одна цель лечит не больше 20 за минуту - взысканием и чашей вместе; другая цель лечит своим запасом, по прошествии минуты запас возвращается.
+/datum/unit_test/heretic_blood_target_heal_limit/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/blood_relic)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/victim = blood_minded_victim(get_step(user, EAST))
+	var/mob/living/carbon/human/other = blood_minded_victim(get_step(user, NORTH))
+	user.adjustBruteLoss(80)
+	var/brute = user.getBruteLoss()
+	var/healed = blood.siphon(user, 40, victim)
+	TEST_ASSERT(abs(healed - 10) <= DAMAGE_PRECISION && abs(brute - user.getBruteLoss() - 10) <= DAMAGE_PRECISION, "Первое взыскание лечит 10: [healed].")
+	brute = user.getBruteLoss()
+	TEST_ASSERT(blood.release(user, victim), "Цель связана для чаши.")
+	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	seal.debt = 10
+	TEST_ASSERT(blood.refund(user, victim), "Чаша пьёт из цели.")
+	TEST_ASSERT(abs(brute - user.getBruteLoss() - 10) <= DAMAGE_PRECISION, "Чаша дала только остаток запаса цели - 10: [brute - user.getBruteLoss()].")
+	brute = user.getBruteLoss()
+	var/debt_before = seal.debt
+	TEST_ASSERT(!blood.refund(user, victim), "Исчерпанная цель чашей не лечит.")
+	TEST_ASSERT_EQUAL(seal.debt, debt_before, "Отказ чаши не тратит долг.")
+	TEST_ASSERT_EQUAL(blood.siphon(user, 40, victim), 0, "Исчерпанная цель взысканием не лечит.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), brute, "Раны не затянулись.")
+	TEST_ASSERT(abs(blood.siphon(user, 40, other) - 10) <= DAMAGE_PRECISION, "Другая цель лечит своим запасом.")
+	var/list/entry = blood.heal_ledger[REF(victim)]
+	entry[1] = world.time - 60 SECONDS - 1
+	TEST_ASSERT(abs(blood.siphon(user, 40, victim) - 10) <= DAMAGE_PRECISION, "Через минуту цель снова лечит.")
+
+/// Взыскание у целого еретика ничего не лечит и не тратит запас лечения от этой цели.
+/datum/unit_test/heretic_blood_heal_ledger_counts_healed/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/victim = blood_minded_victim(get_step(user, EAST))
+	user.blood_volume = BLOOD_VOLUME_NORMAL * user.blood_ratio
+	var/full_room = blood.target_heal_room(victim)
+	TEST_ASSERT_EQUAL(blood.siphon(user, 40, victim), 0, "Целому еретику взыскание нечего лечить.")
+	TEST_ASSERT_EQUAL(blood.target_heal_room(victim), full_room, "Запас лечения от цели не потрачен впустую.")
+	user.adjustBruteLoss(4)
+	blood.siphon(user, 40, victim)
+	TEST_ASSERT(abs(blood.target_heal_room(victim) - (full_room - 4)) <= DAMAGE_PRECISION, "Запас тратится на вылеченное: [blood.target_heal_room(victim)].")
+
+/// Сердца прилива проступают только в общих отсеках станции.
+/datum/unit_test/heretic_blood_tide_hearts_public/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/list/spots = blood.tide_heart_spots()
+	TEST_ASSERT(length(spots), "На карте нашлись места для сердец.")
+	for(var/turf/spot as anything in spots)
+		TEST_ASSERT(heretic_station_public_area(get_area(spot)), "Сердце прилива в общем отсеке, а не в [get_area(spot)].")
 
 /// Дверь Крови открывается со второй секунды Кровопускания, если еретик в трёх клетках; в изнанке связь цела, цель немая, и канал доигрывает до обморока внутри.
 /datum/unit_test/heretic_blood_pocket_drain/Run()
@@ -1974,8 +2095,8 @@
 	TEST_ASSERT(heretic.pocket_holds(victim), "Цель в обмороке остаётся в изнанке.")
 	heretic.pocket.collapse("проверка")
 
-/// Пустая печать одного еретика не мешает другому еретику связать ту же цель.
-/datum/unit_test/heretic_blood_spent_seal_foreign/Run()
+/// Выплаченная связь одного еретика сразу освобождает цель для другого.
+/datum/unit_test/heretic_blood_paid_seal_foreign/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
@@ -1984,19 +2105,18 @@
 	var/mob/living/carbon/human/victim = blood_minded_victim(get_step(user, EAST))
 	user.adjustBruteLoss(20)
 	TEST_ASSERT(blood.release(user, victim) && blood.release(user, victim), "Взыскание начато.")
-	var/datum/status_effect/heretic_blood_seal/spent = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	spent.collection_ready_at = world.time
-	TEST_ASSERT(spent.detonate() && spent.spent, "После взыскания на цели пустая печать.")
+	var/datum/status_effect/heretic_blood_seal/paid = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	paid.collection_ready_at = world.time
+	TEST_ASSERT(paid.detonate() && QDELETED(paid), "После взыскания связи на цели нет.")
 	var/datum/antagonist/heretic/rival = allocate_heretic(get_step(victim, EAST))
 	rival.selected_path = PATH_BLOOD
 	rival.gain_knowledge(/datum/eldritch_knowledge/base_blood)
 	var/datum/eldritch_knowledge/base_blood/rival_blood = rival.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	var/obj/effect/proc_holder/spell/pointed/heretic_blood/release/spell = rival_blood.combat_power
-	TEST_ASSERT(spell.can_target(victim, rival.owner.current, TRUE), "Чужая пустая печать не мешает выбрать цель.")
-	TEST_ASSERT(rival_blood.release(rival.owner.current, victim), "Другой еретик связывает цель поверх чужой пустой печати.")
+	TEST_ASSERT(spell.can_target(victim, rival.owner.current, TRUE), "Выплаченная чужая связь не мешает выбрать цель.")
+	TEST_ASSERT(rival_blood.release(rival.owner.current, victim), "Другой еретик связывает цель.")
 	var/datum/status_effect/heretic_blood_seal/rival_seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	TEST_ASSERT(rival_seal != spent && rival_seal.blood_ref?.resolve() == rival_blood && !rival_seal.spent, "На цели связь другого еретика.")
-	TEST_ASSERT(!length(blood.spent_seals), "Пустая печать первого еретика снята.")
+	TEST_ASSERT(rival_seal.blood_ref?.resolve() == rival_blood, "На цели связь другого еретика.")
 
 /// В изнанке оглушение еретика по-прежнему рвёт Кровопускание и взыскание: пропускаются только дальность и линия.
 /datum/unit_test/heretic_blood_pocket_stun/Run()
@@ -2058,16 +2178,8 @@
 	TEST_ASSERT(blood.read_blood(user, pool), "После паузы то же пятно читается.")
 	TEST_ASSERT(second.dna.unique_enzymes in heretic.deed.counted_keys, "После паузы новый человек засчитан.")
 
-/datum/unit_test/heretic_blood_cap_survives_death/proc/collect_all(datum/eldritch_knowledge/base_blood/blood, mob/living/user, mob/living/victim, datum/status_effect/heretic_blood_seal/seal)
-	seal.debt = blood.debt_cap
-	blood.update_debt()
-	if(!blood.release(user, victim))
-		return FALSE
-	seal.collection_ready_at = world.time
-	return seal.detonate()
-
-/// Предел лечения с цели переживает смерть и оживление цели, смену тела и смерть еретика: печать пустеет, а не пропадает.
-/datum/unit_test/heretic_blood_cap_survives_death/Run()
+/// Добивающее взыскание лечит по фактическому урону, а связь с умершим закрывается.
+/datum/unit_test/heretic_blood_killing_blow/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
@@ -2079,35 +2191,17 @@
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	victim.adjustOxyLoss(victim.health - HEALTH_THRESHOLD_DEAD - 20)
 	TEST_ASSERT(victim.stat != DEAD, "До взыскания цель жива.")
+	seal.debt = blood.debt_cap
+	blood.update_debt()
 	var/brute_before = user.getBruteLoss()
-	TEST_ASSERT(collect_all(blood, user, victim, seal), "Взыскание завершено.")
-	TEST_ASSERT(victim.stat == DEAD, "Взыскание добило цель: здоровье [victim.health], ушибы [victim.getBruteLoss()], удушье [victim.getOxyLoss()].")
-	TEST_ASSERT(!QDELETED(seal) && seal.spent, "Смерть должника оставляет пустую печать.")
+	TEST_ASSERT(blood.release(user, victim), "Взыскание начато.")
+	seal.collection_ready_at = world.time
+	TEST_ASSERT(seal.detonate(), "Взыскание завершено.")
+	TEST_ASSERT(victim.stat == DEAD, "Взыскание добило цель: здоровье [victim.health].")
+	TEST_ASSERT(QDELETED(seal) && !length(blood.seals), "Связь с умершим закрыта.")
 	var/healed = brute_before - user.getBruteLoss()
-	TEST_ASSERT(healed > 0 && abs(seal.siphoned - healed) <= DAMAGE_PRECISION, "Пустая печать помнит лечение с добивающего удара: [seal.siphoned] из [healed].")
-	seal.tick()
-	TEST_ASSERT(!QDELETED(seal), "На трупе пустая печать доживает свой срок.")
-	victim.revive(full_heal = TRUE)
-	TEST_ASSERT(blood.release(user, victim), "Оживлённая цель связывается снова.")
-	TEST_ASSERT_EQUAL(victim.has_status_effect(/datum/status_effect/heretic_blood_seal), seal, "Связь с оживлённой целью - прежняя печать.")
-	brute_before = user.getBruteLoss()
-	TEST_ASSERT(collect_all(blood, user, victim, seal), "Взыскание с оживлённой цели завершено.")
-	TEST_ASSERT_EQUAL(user.getBruteLoss(), brute_before, "Смерть и оживление цели не обнуляют предел лечения.")
-	victim.fully_heal()
-	TEST_ASSERT(blood.release(user, victim) && !seal.spent, "Цель связана перед сменой тела.")
-	blood.clear_blood()
-	TEST_ASSERT(!QDELETED(seal) && seal.spent, "Смена тела еретика оставляет пустую печать.")
-	TEST_ASSERT(blood.release(user, victim) && !seal.spent, "После смены тела та же печать снова становится связью.")
-	user.death()
-	heretic.handle_death(user)
-	TEST_ASSERT(!QDELETED(seal) && seal.spent, "Смерть еретика оставляет пустую печать.")
-	user.revive(full_heal = TRUE)
-	user.adjustBruteLoss(40)
-	TEST_ASSERT(blood.release(user, victim), "Оживлённый еретик связывает цель снова.")
-	TEST_ASSERT_EQUAL(victim.has_status_effect(/datum/status_effect/heretic_blood_seal), seal, "Связь после смерти еретика - прежняя печать.")
-	brute_before = user.getBruteLoss()
-	TEST_ASSERT(collect_all(blood, user, victim, seal), "Взыскание после смерти еретика завершено.")
-	TEST_ASSERT_EQUAL(user.getBruteLoss(), brute_before, "Смерть еретика не обнуляет предел лечения.")
+	TEST_ASSERT(healed > 0 && healed <= 10 + DAMAGE_PRECISION, "Добивающий удар лечит, но не больше десяти: [healed].")
+	TEST_ASSERT_EQUAL(blood.combat_resource, 0, "Долг с умершего не остаётся.")
 
 /// «Связать / взыскать» в «Захвате» по своему должнику тратит 8 долга на путы: 3 секунды должник не отходит от еретика, но может подойти; без долга и поверх пут отказ; путы кончаются по сроку и с потерей связи.
 /datum/unit_test/heretic_blood_tether/Run()
@@ -2154,7 +2248,7 @@
 	blood.update_debt()
 	TEST_ASSERT(blood.release(user, victim, tether = TRUE), "Путы накладываются снова.")
 	TEST_ASSERT_EQUAL(seal.debt, 0, "Последние 8 долга уходят в путы.")
-	TEST_ASSERT(!seal.spent && (seal in blood.seals), "Связь без долга после пут держится.")
+	TEST_ASSERT(!QDELETED(seal) && (seal in blood.seals), "Связь без долга после пут держится.")
 	tether = victim.has_status_effect(/datum/status_effect/heretic_blood_tether)
 	qdel(seal)
 	TEST_ASSERT(wait_for_qdeleted(tether, 1 SECONDS), "Без кровной связи путы спадают.")
@@ -2225,7 +2319,7 @@
 	for(var/state in list("blood_grasp", "blood_mark", "blood_seal", "blood_lance", "blood_pact", "blood_burst", "blood_warning", "blood_reckoning", "blood_link", "blood_slick", "blood_snare"))
 		TEST_ASSERT(state in states, "В листе эффектов Крови есть [state].")
 
-/// Метка отсрочки лежит поверх фигуры своим рисунком, а печать кровной связи остаётся своей.
+/// Метка Крови лежит поверх фигуры своим рисунком, а печать кровной связи остаётся своей.
 /datum/unit_test/heretic_blood_mark_on_body/Run()
 	var/datum/status_effect/eldritch/blood/mark = /datum/status_effect/eldritch/blood
 	TEST_ASSERT_EQUAL(initial(mark.effect_sprite_layer), ABOVE_MOB_LAYER, "Метка Крови лежит поверх тела.")
@@ -2239,6 +2333,100 @@
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	TEST_ASSERT_EQUAL(seal.seal_overlay.icon_state, "blood_seal", "Связь рисуется печатью связи.")
 	TEST_ASSERT(initial(mark.effect_sprite) != seal.seal_overlay.icon_state, "Метка и связь рисуются разными стейтами.")
+
+/// Подпись значка долга и сообщение прицела называют, что сделает «Связать / взыскать» при текущем намерении.
+/datum/unit_test/heretic_blood_intent_label/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/atom/movable/screen/alert/heretic_resource/indicator = heretic.update_combat_resource_alert(FALSE, user)
+	TEST_ASSERT(findtext(indicator.name, "связать") && !findtext(indicator.name, "взыскать"), "Без связей значок только связывает: [indicator.name]")
+	TEST_ASSERT(blood.release(user, victim), "Цель связана.")
+	var/list/expected = list(INTENT_HELP = "взыскать всё", INTENT_HARM = "взыскать всё", INTENT_DISARM = "взыскать до 10", INTENT_GRAB = "путы за [HERETIC_BLOOD_TETHER_COST]")
+	for(var/intent in expected)
+		user.a_intent = intent
+		blood.on_life(user)
+		TEST_ASSERT(findtext(indicator.name, expected[intent]), "В намерении [intent] значок подписан «[expected[intent]]»: [indicator.name]")
+		TEST_ASSERT(findtext(blood.combat_resource_state(), expected[intent]), "Описание значка называет режим [intent].")
+	var/obj/effect/proc_holder/spell/pointed/heretic_blood/release/spell = blood.combat_power
+	user.a_intent = INTENT_GRAB
+	spell.Trigger(user)
+	TEST_ASSERT(findtext(spell.active_msg, "путы"), "Прицел в «Захвате» говорит о путах: [spell.active_msg]")
+	spell.remove_ranged_ability()
+	user.a_intent = INTENT_DISARM
+	spell.Trigger(user)
+	TEST_ASSERT(findtext(spell.active_msg, "до 10"), "Прицел в «Разоружении» говорит о частичном взыскании: [spell.active_msg]")
+	spell.remove_ranged_ability()
+
+/// Вознесение поднимает сердца прилива на станции один раз; швабра и нулевой жезл гасят их, и с последним прилив перестаёт удваивать кровотечение.
+/datum/unit_test/heretic_blood_tide_hearts/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	allocated += new /datum/heretic_test_station_level(start.z)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(start)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/turf/open/first_spot = locate(start.x + 4, start.y + 4, start.z)
+	var/turf/open/second_spot = locate(start.x + 4, start.y + 2, start.z)
+	TEST_ASSERT(blood.raise_tide_hearts(list(first_spot, second_spot)), "Сердца прилива поднялись.")
+	TEST_ASSERT_EQUAL(length(blood.tide_hearts), 2, "Два сердца на двух клетках.")
+	var/obj/effect/decal/cleanable/blood/first_heart = locate() in first_spot
+	var/obj/effect/decal/cleanable/blood/second_heart = locate() in second_spot
+	TEST_ASSERT(first_heart in blood.tide_hearts, "Сердце лежит на полу.")
+	TEST_ASSERT_NOTNULL(heretic_craft_on(first_heart, "blood_heart"), "Сердце - ремесло Крови с уликой для экипажа.")
+	TEST_ASSERT_NOTNULL(first_heart.get_filter(HERETIC_BLOOD_SIGN_FILTER), "Сердце пульсирует.")
+	TEST_ASSERT(first_heart.cap_exempt, "Новая грязь на клетке не вытесняет сердце.")
+	TEST_ASSERT(!blood_cleanbot_target(first_heart), "Уборщик-бот не ищет сердце прилива.")
+	TEST_ASSERT(!blood.raise_tide_hearts(list(start)), "Сердца поднимаются один раз за роль.")
+	var/list/exits = blood.pocket_exits(user)
+	TEST_ASSERT_EQUAL(length(exits), 2, "Из изнанки можно выйти к каждому сердцу.")
+	var/mob/living/carbon/human/debtor = allocate(/mob/living/carbon/human, second_spot)
+	TEST_ASSERT(blood.release(user, debtor) && blood.release(user, debtor), "Взыскание с должника на сердце начато.")
+	var/datum/status_effect/heretic_blood_seal/seal = debtor.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	seal.collection_ready_at = world.time
+	TEST_ASSERT(seal.detonate() && debtor.IsImmobilized(), "Сердце бьёт шипом, как лужа.")
+	TEST_ASSERT(!QDELETED(second_heart) && (second_heart in blood.tide_hearts), "Шип еретика не выпивает его сердце.")
+	qdel(debtor)
+	var/datum/eldritch_knowledge/final_eldritch/blood_final/finale = ascend_blood_tide(heretic)
+	TEST_ASSERT_EQUAL(length(blood.tide_hearts), 2, "Повторное вознесение не множит сердца.")
+	second_heart.add_blood_DNA(list("tide heart donor" = "O+"))
+	var/datum/component/heretic_blood_tide/blood_tide = user.GetComponent(/datum/component/heretic_blood_tide)
+	user.adjustBruteLoss(10, forced = TRUE)
+	var/brute_before_heart = user.getBruteLoss()
+	COOLDOWN_RESET(blood_tide, pool_heal)
+	user.forceMove(second_spot)
+	TEST_ASSERT(!QDELETED(second_heart) && (second_heart in blood.tide_hearts), "Вознёсшийся не выпивает своё сердце прилива.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), brute_before_heart, "Своё сердце не лечит.")
+	user.forceMove(start)
+	var/mob/living/carbon/human/crew = blood_tide_bleeder(locate(start.x + 2, start.y + 2, start.z))
+	var/rate = crew.get_total_bleed_rate() * crew.physiology.bleed_mod
+	var/crew_blood = crew.blood_volume
+	SEND_SIGNAL(user, COMSIG_LIVING_LIFE, 2, 1)
+	TEST_ASSERT(abs(crew.blood_volume - (crew_blood - rate)) <= DAMAGE_PRECISION, "Пока сердца бьются, кровотечение рядом удвоено.")
+	var/mob/living/carbon/human/janitor = allocate(/mob/living/carbon/human, get_step(first_spot, WEST))
+	var/obj/item/mop/mop = allocate(/obj/item/mop)
+	mop.reagents.add_reagent(/datum/reagent/water, 10)
+	mop.clean(first_spot, janitor)
+	TEST_ASSERT(QDELETED(first_heart) && !(first_heart in blood.tide_hearts), "Швабра смывает сердце.")
+	TEST_ASSERT(!blood.tide_receded, "Пока бьётся второе сердце, прилив не отступил.")
+	var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
+	janitor.put_in_hands(rod)
+	rod.melee_attack_chain(janitor, second_heart)
+	TEST_ASSERT(!(second_heart in blood.tide_hearts) && !second_heart.get_filter(HERETIC_BLOOD_SIGN_FILTER), "Нулевой жезл гасит сердце.")
+	TEST_ASSERT(!second_heart.cap_exempt && blood_cleanbot_target(second_heart), "Погашенное сердце - обычная кровь для уборки.")
+	TEST_ASSERT(blood.tide_receded, "С последним сердцем прилив отступает.")
+	crew_blood = crew.blood_volume
+	SEND_SIGNAL(user, COMSIG_LIVING_LIFE, 2, 2)
+	TEST_ASSERT_EQUAL(crew.blood_volume, crew_blood, "Отступивший прилив не удваивает кровотечение.")
+	var/list/examine_lines = list()
+	SEND_SIGNAL(user, COMSIG_PARENT_EXAMINE, crew, examine_lines)
+	TEST_ASSERT(findtext(jointext(examine_lines, " "), "вычищены"), "Осмотр говорит, что прилив отступил.")
+	finale.on_body_lose(user)
+	TEST_ASSERT(blood.raise_tide_hearts() == FALSE, "Отступивший прилив не поднимается снова.")
 
 /// Телеграф взыскания, удар приговора, разрыв связи и выпитая лужа звучат своими файлами, не повторяя другие звуки Крови.
 /datum/unit_test/heretic_blood_cue_sounds/Run()

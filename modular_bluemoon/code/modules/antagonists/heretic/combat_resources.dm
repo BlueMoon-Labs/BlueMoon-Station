@@ -32,6 +32,13 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 		update_mouse_pointer()
 		to_chat(src, span_notice("Режим броска выключен для подготовки способности."))
 
+/// Вознёсшегося оглушение, стамкрит и чужая хватка не останавливают; сон, путы и стазис - да.
+/proc/heretic_incapacitated(mob/living/user, ignore_grab = FALSE)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic?.ascended)
+		return user.incapacitated(ignore_grab = ignore_grab)
+	return user.stat != CONSCIOUS || user.IsUnconscious() || user.restrained(ignore_grab = TRUE) || IS_IN_STASIS(user)
+
 /obj/effect/proc_holder/spell/proc/heretic_check(mob/user, condition, silent, reason, mob/living/target)
 	if(condition)
 		heretic_failure_reason = null
@@ -39,7 +46,7 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 	var/containment_reason = heretic_containment_reason(user)
 	if(containment_reason)
 		reason = containment_reason
-	else if(user?.incapacitated(ignore_grab = usable_while_grabbed))
+	else if(isliving(user) && heretic_incapacitated(user, usable_while_grabbed))
 		reason = "Вы не можете действовать: дождитесь окончания оглушения или освободитесь."
 	else if(user && !isturf(user.loc))
 		reason = "Сначала выйдите из контейнера или укрытия на пол."
@@ -63,7 +70,7 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 /obj/effect/proc_holder/spell/proc/heretic_require_knowledge(mob/user, silent, knowledge_type, resource_cost = 0)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/knowledge = heretic?.get_knowledge(knowledge_type)
-	if(!heretic_check(user, isliving(user) && knowledge && !heretic.role_removed && heretic.owner?.current == user && !user.incapacitated(), silent, "Нужно изучить соответствующее знание своего пути."))
+	if(!heretic_check(user, isliving(user) && knowledge && !heretic.role_removed && heretic.owner?.current == user && !heretic_incapacitated(user), silent, "Нужно изучить соответствующее знание своего пути."))
 		return FALSE
 	return heretic_check(user, knowledge.combat_resource >= resource_cost, silent, "Нужно [resource_cost] ед. ресурса «[knowledge.combat_resource_name]»; сейчас [knowledge.combat_resource].")
 
@@ -234,7 +241,7 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 /// Дверь старого пути открывает еретик этого знания в своём теле, на полу и не скованный.
 /datum/eldritch_knowledge/proc/door_user_ready(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return !QDELETED(src) && isliving(user) && heretic && !heretic.role_removed && heretic.owner?.current == user && heretic.get_knowledge(type) == src && !user.incapacitated() && isturf(user.loc)
+	return !QDELETED(src) && isliving(user) && heretic && !heretic.role_removed && heretic.owner?.current == user && heretic.get_knowledge(type) == src && !heretic_incapacitated(user) && isturf(user.loc)
 
 /datum/eldritch_knowledge/proc/door_zone_under(mob/living/victim, zone_type)
 	for(var/obj/effect/heretic_combat_zone/zone in list(combat_zone, relic_zone))
@@ -361,10 +368,22 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 
 /datum/eldritch_knowledge/base_flesh/on_body_gain(mob/living/user)
 	grant_combat_power(user)
+	if(ishuman(user) && user.mind && QDELETED(shed_spell))
+		shed_spell = new
+		if(shed_ready_at > world.time)
+			shed_spell.charge_counter = max(0, shed_spell.charge_max - (shed_ready_at - world.time))
+			shed_spell.start_recharge()
+		user.mind.AddSpell(shed_spell)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	heretic?.update_flesh_retinue_alert(user)
 
 /datum/eldritch_knowledge/base_flesh/on_body_lose(mob/living/user)
 	QDEL_NULL(fleshling)
 	remove_combat_power()
+	if(!QDELETED(shed_spell) && shed_spell.recharging)
+		shed_ready_at = world.time + max(0, shed_spell.charge_max - shed_spell.charge_counter)
+	QDEL_NULL(shed_spell)
+	user?.clear_alert(HERETIC_FLESH_RETINUE_ALERT)
 
 /datum/eldritch_knowledge/base_void/on_body_gain(mob/living/user)
 	grant_combat_power(user)

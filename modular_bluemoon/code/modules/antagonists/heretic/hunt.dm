@@ -15,6 +15,7 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 	desc = "Призывает или прячет своё живое сердце. Потерянное сердце возвращается, если 5 секунд стоять на месте."
 	summary = "Достаёт или прячет живое сердце."
 	var/recovery_in_progress = FALSE
+	var/recovery_time = 5 SECONDS
 
 /obj/effect/proc_holder/spell/self/heretic_summon/heart/can_cast(mob/user, skipcharge, silent)
 	return heretic_check(user, !recovery_in_progress, silent, "Возвращение сердца уже началось. Стойте неподвижно до его завершения.") && ..()
@@ -32,13 +33,13 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 		revert_cast(user)
 		return TRUE
 	recovery_in_progress = TRUE
-	to_chat(user, span_notice("Вы зовёте потерянное сердце. Не двигайтесь 5 секунд."))
-	var/completed = do_after(user, 5 SECONDS, target = user, timed_action_flags = IGNORE_HELD_ITEM)
+	to_chat(user, span_notice("Вы зовёте потерянное сердце. Не двигайтесь [DisplayTimeText(recovery_time)]."))
+	var/completed = do_after(user, recovery_time, target = user, timed_action_flags = IGNORE_HELD_ITEM | IGNORE_INCAPACITATED, extra_checks = CALLBACK(src, PROC_REF(recovery_allowed), user, heretic, TRUE))
 	if(QDELETED(src))
 		return TRUE
 	recovery_in_progress = FALSE
 	if(!completed || !recovery_allowed(user, heretic))
-		heretic_revert_cast(user, "Возвращение сердца прервано: нужно 5 секунд стоять на месте в сознании, а сердце не должно быть у другого существа или в обряде.")
+		heretic_revert_cast(user, "Возвращение сердца прервано: нужно [DisplayTimeText(recovery_time)] стоять на месте в сознании и без пут, а сердце не должно быть у другого существа или в обряде.")
 		return TRUE
 	var/obj/item/living_heart/heart
 	for(var/obj/item/living_heart/candidate as anything in GLOB.living_heart_cache)
@@ -57,15 +58,16 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 	log_game("[key_name(user)] восстанавливает потерянное живое сердце в [AREACOORD(user)].")
 	return TRUE
 
-/obj/effect/proc_holder/spell/self/heretic_summon/heart/proc/recovery_allowed(mob/living/user, datum/antagonist/heretic/heretic)
-	if(QDELETED(user) || QDELETED(heretic) || heretic.role_removed || IS_HERETIC(user) != heretic || heretic.owner?.current != user || user.incapacitated() || !(src in user.mind.spell_list))
+/obj/effect/proc_holder/spell/self/heretic_summon/heart/proc/recovery_allowed(mob/living/user, datum/antagonist/heretic/heretic, silent = FALSE)
+	if(QDELETED(user) || QDELETED(heretic) || heretic.role_removed || IS_HERETIC(user) != heretic || heretic.owner?.current != user || heretic_incapacitated(user) || !(src in user.mind.spell_list))
 		return FALSE
 	for(var/obj/item/living_heart/heart as anything in GLOB.living_heart_cache)
 		if(QDELETED(heart) || heart.owner_mind != heretic.owner)
 			continue
 		var/atom/movable/holder = get_atom_on_turf(heart, /mob)
 		if(GLOB.heretic_ritual_reservations[heart] || (ismob(holder) && holder != user))
-			to_chat(user, span_warning("Сердце сейчас в чужой руке или в идущем обряде. Сначала освободите его."))
+			if(!silent)
+				to_chat(user, span_warning("Сердце сейчас в чужой руке или в идущем обряде. Сначала освободите его."))
 			return FALSE
 	return TRUE
 
@@ -89,6 +91,7 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 	COOLDOWN_DECLARE(hunt_refresh_cooldown)
 	COOLDOWN_DECLARE(hunt_downed_alert_cooldown)
 	COOLDOWN_DECLARE(hunt_claim_hint_cooldown)
+	COOLDOWN_DECLARE(hunt_heartbeat_cooldown)
 
 /datum/antagonist/heretic/proc/clear_hunt()
 	set_hunt_target(null)
@@ -166,6 +169,15 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 		log_game("[key_name(owner)] получает цель охоты: [key_name(new_target)].")
 	refresh_book_ui()
 
+/// Сжатое рядом сердце изредка отзывается в груди самой цели: она знает, что её ищут, но не кто и откуда.
+/datum/antagonist/heretic/proc/hunt_heartbeat_notice(mob/living/carbon/human/target, distance)
+	if(simulated || distance > HERETIC_HUNT_HEARTBEAT_RANGE || target.stat != CONSCIOUS || !COOLDOWN_FINISHED(src, hunt_heartbeat_cooldown))
+		return FALSE
+	COOLDOWN_START(src, hunt_heartbeat_cooldown, HERETIC_HUNT_HEARTBEAT_COOLDOWN)
+	SEND_SOUND(target, sound(GLOB.heretic_heart_sounds["track"], volume = 35))
+	to_chat(target, span_warning("Под рёбрами на миг отзывается чужое сердце - не ваше, оно бьётся где-то совсем рядом. Кажется, кто-то ищет именно вас."))
+	return TRUE
+
 /datum/antagonist/heretic/proc/watch_hunt_body(mob/living/body)
 	unwatch_hunt_body()
 	if(QDELETED(body))
@@ -242,7 +254,7 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 
 /// Поверженный член экипажа становится целью охоты от касания живым сердцем.
 /datum/antagonist/heretic/proc/claim_hunt_target(mob/living/user, mob/living/carbon/human/victim)
-	if(role_removed || QDELETED(user) || user.mind != owner || user.incapacitated() || hunt_selection_open || QDELETED(victim))
+	if(role_removed || QDELETED(user) || user.mind != owner || heretic_incapacitated(user) || hunt_selection_open || QDELETED(victim))
 		return FALSE
 	if(victim.mind && victim.mind == hunt_target)
 		to_chat(user, span_notice("Сердце уже бьётся в такт этой душе. Обезвредьте цель и коснитесь её сердцем или перенесите на руну."))
@@ -268,7 +280,7 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 
 /// Обряд возвращения без начерченной руны: круг проступает под поверженной целью, канал тот же, что на руне.
 /datum/antagonist/heretic/proc/begin_heart_rite(mob/living/user, mob/living/carbon/human/victim, obj/item/living_heart/heart)
-	if(role_removed || QDELETED(user) || user.mind != owner || user.incapacitated() || QDELETED(victim) || QDELETED(heart) || !user.is_holding(heart))
+	if(role_removed || QDELETED(user) || user.mind != owner || heretic_incapacitated(user) || QDELETED(victim) || QDELETED(heart) || !user.is_holding(heart))
 		return FALSE
 	var/datum/eldritch_knowledge/spell/basic/ritual = get_knowledge(/datum/eldritch_knowledge/spell/basic)
 	var/reason = heretic_containment_reason(user) || heart_rite_refusal_reason(victim, ritual)
@@ -284,8 +296,9 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 	user.visible_message(span_danger("[user] опускает бьющееся сердце на [victim], и под телом проступает круг знаков!"), span_notice("Вы опускаете живое сердце на [victim]. Мансус чертит круг прямо под телом."))
 	log_game("[key_name(user)] проводит обряд живым сердцем над [key_name(victim)] в [AREACOORD(rite_turf)].")
 	. = circle.do_ritual(user, ritual)
-	if(!QDELETED(heart) && isturf(heart.loc) && !user.incapacitated() && user.Adjacent(heart))
-		user.put_in_hands(heart)
+	// Связанному или с занятыми руками сердце ложится под ноги, а не остаётся у ушедшей в Мансус цели.
+	if(!QDELETED(heart) && isturf(heart.loc) && !QDELETED(user) && user.Adjacent(heart) && (heretic_incapacitated(user) || !user.put_in_hands(heart)))
+		heart.forceMove(user.drop_location())
 	if(!QDELETED(circle))
 		qdel(circle)
 
@@ -400,7 +413,7 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 	return "<a href='byond://?src=[REF(heart)];retarget=1'>Сменить цель</a> (или Alt+ЛКМ по сердцу, или кнопка в кодексе)."
 
 /datum/antagonist/heretic/proc/ensure_hunt_target(mob/living/user, force_replace = FALSE)
-	if(role_removed || QDELETED(user) || user.mind != owner || !IS_HERETIC(user) || user.incapacitated() || hunt_selection_open)
+	if(role_removed || QDELETED(user) || user.mind != owner || !IS_HERETIC(user) || heretic_incapacitated(user) || hunt_selection_open)
 		return FALSE
 	if(hunt_target_available(hunt_target))
 		if(!force_replace)
@@ -415,7 +428,7 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 	hunt_selection_open = TRUE
 	var/choice = prompt_hunt_target(user, choices)
 	hunt_selection_open = FALSE
-	if(QDELETED(src) || role_removed || QDELETED(user) || user.mind != owner || !IS_HERETIC(user) || user.incapacitated())
+	if(QDELETED(src) || role_removed || QDELETED(user) || user.mind != owner || !IS_HERETIC(user) || heretic_incapacitated(user))
 		return FALSE
 	if(!choice)
 		return FALSE
@@ -556,7 +569,7 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 		to_chat(user, span_notice("Мансус принял угасшую душу. Жертвоприношение засчитано: вы получили 1 очко знаний без побочного. [drop ? "Мансус выбросил тело в [get_area_name(drop, TRUE)], где его найдут и смогут реанимировать." : "Тело остаётся на месте; его ещё можно реанимировать."] Сердце готово выбрать следующую цель."))
 	else
 		user.log_message("принёс [key_name(victim)] в жертву Мансусу", LOG_ATTACK)
-		to_chat(user, span_notice("Мансус принял подношение. Жертва пройдёт испытание Дома памяти: в лабиринте комнат, где действует особое правило вашего пути, ей нужно доставить три осколка на печать перед вратами, избегая тени и разломов. Через три минуты Дом отпустит её сам; вернувшись, она не вспомнит ни похищения, ни вас. Вы получили 2 очка знаний и 1 очко побочных знаний. Сердце готово выбрать следующую цель."))
+		to_chat(user, span_notice("Мансус принял подношение. Жертва пройдёт испытание Дома памяти: в лабиринте комнат, где действует особое правило вашего пути, ей нужно доставить три осколка на печать перед вратами, избегая тени и разломов. Через три минуты Дом отпустит её сам; вернувшись, она не вспомнит ни похищения, ни вас, но прошедшая испытание запомнит знак вашего пути. Вы получили 2 очка знаний и 1 очко побочных знаний. Сердце готово выбрать следующую цель."))
 	return TRUE
 
 /datum/antagonist/heretic/proc/return_sacrificed_corpse(mob/living/carbon/human/victim)

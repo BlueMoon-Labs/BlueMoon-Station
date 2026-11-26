@@ -166,7 +166,7 @@
 /datum/metadollar_shop_item/item/heretic_token
 	parent_type = /datum/metadollar_shop_item/item/antag_token
 	name = "Жетон «Еретик»"
-	desc = "Монета с запретным знаком. Alt+ЛКМ — стать еретиком; Ctrl+ЛКМ — вернуть 250 М$ до активации. Недоступна в Extended и на защищённых должностях."
+	desc = "Монета с запретным знаком. Alt+ЛКМ — стать еретиком; Ctrl+ЛКМ — вернуть цену до активации, после активации М$ не возвращаются. Не срабатывает в Extended и Dynamic Light, на защищённых должностях, после вызова эвакуации и когда еретиков на станции уже хватает."
 	cost = METASHOP_TRAITOR_TOKEN_REFUND_COST
 	catalog = METADOLLAR_CATALOG_SMUGGLE
 	minimum_players = 50

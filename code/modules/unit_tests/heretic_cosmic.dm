@@ -42,7 +42,7 @@
 	TEST_ASSERT_EQUAL(length(knowledge.stars), 2, "Другие две звезды сохраняются.")
 	TEST_ASSERT_EQUAL(retained.obj_integrity, retained_integrity, "Сохранившаяся звезда не чинится.")
 	TEST_ASSERT_EQUAL(retained.star_expires_at, retained_expiry, "Сохранившаяся звезда не обновляет срок жизни.")
-	TEST_ASSERT(!astrolabe.realign(user), "Вспышка расходует общий откат с поворотом.")
+	TEST_ASSERT(!astrolabe.attack_self(user), "Вспышка уходит на откат и для нажатия в руке.")
 	TEST_ASSERT(!astrolabe.flare(user, retained), "Откат не позволяет сразу взорвать другую звезду.")
 	TEST_ASSERT(!knowledge.flare_star(user, selected, center, list(center)), "Удалённая звезда не запускает отложенную вспышку.")
 	knowledge.on_body_lose(user)
@@ -191,7 +191,7 @@
 	TEST_ASSERT_EQUAL(protection.charges, 4, "Одна цель тратит один заряд на всё схлопывание.")
 	TEST_ASSERT_EQUAL(victim.getFireLoss(), 0, "Антимагия блокирует весь удар созвездия.")
 
-/// Астролябия перемещает существующие звёзды и не восстанавливает их прочность.
+/// Астролябия, сжатая в руке, сжигает ближайшую свою звезду на открытой линии; созвездие не поворачивается, без звезды рядом отказ без отката.
 /datum/unit_test/heretic_cosmic_astrolabe/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/user = heretic.owner.current
@@ -201,33 +201,51 @@
 	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
 	var/datum/eldritch_knowledge/cosmic_resonance/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/cosmic_resonance)
 	var/turf/center = get_step(get_step(get_step(get_step(run_loc_floor_bottom_left, EAST), EAST), NORTH), NORTH)
-	var/turf/east = get_step(get_step(center, EAST), EAST)
-	var/turf/south = get_step(get_step(center, SOUTH), SOUTH)
 	user.forceMove(center)
-	TEST_ASSERT(knowledge.add_star(center, user), "Центральная звезда должна создаться.")
-	user.forceMove(east)
-	TEST_ASSERT(knowledge.add_star(east, user), "Вторая звезда должна создаться.")
-	user.forceMove(center)
-	var/obj/structure/heretic_star/rotated = knowledge.stars[2]
-	var/original_expiry = rotated.star_expires_at
-	rotated.obj_integrity = 25
 	TEST_ASSERT(recipe.on_finished_recipe(user, list(), center), "Обряд должен создать астролябию.")
 	var/obj/item/heretic_path_relic/astrolabe/astrolabe = recipe.new_path_relic_ref.resolve()
 	allocated += astrolabe
 	user.put_in_hands(astrolabe)
 	astrolabe.alignment_time = 0
-	var/obj/blocker = allocate(/obj, south)
-	blocker.density = TRUE
-	TEST_ASSERT(!astrolabe.realign(user), "Препятствие на месте звезды запрещает весь поворот.")
-	TEST_ASSERT_EQUAL(get_turf(rotated), east, "Неудачный поворот оставляет исходное созвездие целым.")
-	qdel(blocker)
-	TEST_ASSERT(astrolabe.realign(user), "Свободное пространство позволяет повернуть созвездие.")
-	TEST_ASSERT_EQUAL(get_turf(rotated), south, "Восточная звезда поворачивается на юг вокруг центральной.")
-	TEST_ASSERT_EQUAL(rotated.obj_integrity, 25, "Поворот не лечит повреждённую звезду.")
-	TEST_ASSERT_EQUAL(rotated.star_expires_at, original_expiry, "Поворот не продлевает жизнь звезды.")
-	TEST_ASSERT_EQUAL(length(knowledge.stars), 2, "Астролябия не создаёт новые звёзды.")
-	TEST_ASSERT(length(knowledge.threads) > 0, "После поворота игровые нити перестраиваются.")
-	TEST_ASSERT(!astrolabe.realign(user), "Повторный поворот ограничен перезарядкой.")
+	TEST_ASSERT(!astrolabe.attack_self(user), "Без звёзд астролябии не на что навестись.")
+	TEST_ASSERT(COOLDOWN_FINISHED(astrolabe, relic_cooldown), "Отказ не тратит откат.")
+	var/turf/near_spot = get_step(center, EAST)
+	var/turf/far_spot = get_step(get_step(get_step(center, WEST), WEST), WEST)
+	TEST_ASSERT(knowledge.add_star(near_spot, user), "Ближняя звезда создана.")
+	TEST_ASSERT(knowledge.add_star(far_spot, user), "Дальняя звезда создана.")
+	var/obj/structure/heretic_star/near = locate() in near_spot
+	var/obj/structure/heretic_star/far = locate() in far_spot
+	var/turf/far_place = get_turf(far)
+	TEST_ASSERT(astrolabe.attack_self(user), "Сжатая астролябия сжигает звезду.")
+	TEST_ASSERT(QDELETED(near), "Сгорает ближайшая звезда.")
+	TEST_ASSERT(!QDELETED(far) && get_turf(far) == far_place, "Дальняя звезда цела и на месте.")
+	TEST_ASSERT(!astrolabe.attack_self(user), "Повтор ограничен перезарядкой.")
+	TEST_ASSERT(!findtext(astrolabe.desc, "поворот") && !findtext(astrolabe.desc, "четверть"), "Описание астролябии не обещает поворот.")
+	var/datum/eldritch_knowledge/cosmic_resonance/fresh = allocate(/datum/eldritch_knowledge/cosmic_resonance)
+	TEST_ASSERT(!findtext(jointext(fresh.details, " "), "поворач") && findtext(jointext(fresh.details, " "), "по ближайшей"), "Неподвижный небосвод описывает только вспышку.")
+
+/// Значок звёзд подписывает, что сделает Хватка в текущем намерении, и обновляется каждый тик жизни.
+/datum/unit_test/heretic_cosmic_grasp_modes/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	heretic.selected_path = PATH_COSMIC
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	user.a_intent = INTENT_HARM
+	knowledge.on_life(user)
+	var/atom/movable/screen/alert/heretic_resource/indicator = user.alerts["heretic_path_resource"]
+	TEST_ASSERT(findtext(indicator?.name, "удар"), "Без Притяжения во вреде Хватка только бьёт: [indicator?.name]")
+	user.a_intent = INTENT_HELP
+	knowledge.on_life(user)
+	indicator = user.alerts["heretic_path_resource"]
+	TEST_ASSERT(findtext(indicator?.name, "путеводная"), "В «Помощи» значок обещает путеводную звезду: [indicator?.name]")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/cosmic_grasp)
+	user.a_intent = INTENT_DISARM
+	knowledge.on_life(user)
+	indicator = user.alerts["heretic_path_resource"]
+	TEST_ASSERT(findtext(indicator?.name, "привязь"), "С Притяжением вне «Помощи» значок обещает привязь: [indicator?.name]")
+	var/list/resource = knowledge.get_combat_resource_data()
+	TEST_ASSERT(findtext(resource["state"], "только в «Помощи»"), "Состояние объясняет, где зажигается путеводная звезда: [resource["state"]]")
 
 /// Предупреждение не проходит через преграды, а изменение звёзд отменяет старый замысел.
 /datum/unit_test/heretic_cosmic_telegraph_snapshot/Run()
@@ -1027,7 +1045,7 @@
 	TEST_ASSERT(!(first in cosmic.stars), "Путеводная звезда не входит в созвездие.")
 	var/list/resource = cosmic.get_combat_resource_data()
 	TEST_ASSERT_EQUAL(resource["value"], 0, "Счётчик созвездия не считает путеводную звезду.")
-	TEST_ASSERT_EQUAL(resource["state"], "Путеводных звёзд: 1 из 4.", "Состояние называет путеводные звёзды.")
+	TEST_ASSERT(findtext(resource["state"], "Путеводных звёзд: 1 из 4."), "Состояние называет путеводные звёзды: [resource["state"]]")
 	COOLDOWN_RESET(heretic.deed, progress_cooldown)
 	TEST_ASSERT(!cosmic.on_mansus_grasp(first_spot, user, TRUE), "На клетку с путеводной звездой вторая не встаёт.")
 	TEST_ASSERT(findtext(cosmic.grasp_failure_reason, "уже горит"), "Отказ называет занятую клетку: [cosmic.grasp_failure_reason]")
@@ -1410,7 +1428,7 @@
 	TEST_ASSERT(!victim.anchored, "Погибший пленник не остаётся прибитым к звезде.")
 	var/mob/living/carbon/human/unheld = allocate(/mob/living/carbon/human, get_step(star_spot, EAST))
 	var/datum/status_effect/heretic_cosmic_orbit/failed = unheld.apply_status_effect(/datum/status_effect/heretic_cosmic_orbit, cosmic, null)
-	TEST_ASSERT(failed && QDELETED(failed), "Орбита без звезды не ложится, а наложение отдаёт удалённый эффект.")
+	TEST_ASSERT_NULL(failed, "Орбита без звезды не ложится, и наложение ничего не возвращает.")
 	TEST_ASSERT(!(failed in cosmic.orbits), "Знание не держит несостоявшуюся орбиту.")
 
 /// Хватка с Меткой Космоса ставит метку на 15 секунд.

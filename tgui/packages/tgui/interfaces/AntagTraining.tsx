@@ -62,8 +62,10 @@ export type AntagTrainingData = SquadData & ScenarioData & PadsData & {
   recipes: (Choice & { ingredients: string; hint: string; components: BooleanLike; result: BooleanLike })[];
   resource: { name: string; value: number; max: number; description: string } | null;
   practice: { id: string; target: string; complete: BooleanLike; hint: string; damage: number; healing: number; last_damage: number; critical_seconds: number | null; steps?: { name: string; done: BooleanLike; current: BooleanLike }[] | null } | null;
+  path_lesson?: { id: string; name: string; icon: string } | null;
   dance_lesson?: BooleanLike;
   spirit_lesson?: BooleanLike;
+  sand_lesson?: BooleanLike;
   exercises: Exercise[];
   duel: { phase: string; first: string; second: string; lethal: BooleanLike; remaining: number; involved: BooleanLike; can_accept: BooleanLike } | null;
   last_duel_result: string | null;
@@ -263,8 +265,10 @@ const TrainingStart = ({ navigate }: { navigate: (tab: string) => void }) => {
           <Stack.Item><Button icon="bullseye" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'combat' })}>Довести цель до крита</Button></Stack.Item>
           <Stack.Item><Button icon="heart-pulse" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'medicine' })}>Вылечить пациента</Button></Stack.Item>
           <Stack.Item><Button icon="book-skull" disabled={blocked || !data.practice_ready || !data.heretic} onClick={() => act('practice', { id: 'hunt' })}>Первое подношение</Button></Stack.Item>
+          {!!data.path_lesson && <Stack.Item><Button icon={data.path_lesson.icon} disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: data.path_lesson?.id })}>{data.path_lesson.name}</Button></Stack.Item>}
           {!!data.dance_lesson && <Stack.Item><Button icon="music" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'dance' })}>Урок Пляски</Button></Stack.Item>}
           {!!data.spirit_lesson && <Stack.Item><Button icon="ghost" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'spirit' })}>Урок Духа</Button></Stack.Item>}
+          {!!data.sand_lesson && <Stack.Item><Button icon="hourglass-half" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'sand' })}>Урок Песка</Button></Stack.Item>}
         </Stack>
         <Box color="label" mt={1}>Человеческая цель стоит на месте. В разделе «Цели» есть бегущий человек, противники с ИИ и кнопки, которые сбивают цель с ног, обессиливают или сковывают.</Box>
       </Section>

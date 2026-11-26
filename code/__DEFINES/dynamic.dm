@@ -6,3 +6,6 @@
 
 /// This ruleset can only be picked once. Anything that does not have a scaling_cost MUST have this.
 #define LONE_RULESET (1 << 2)
+
+/// Roundstart scale_up stops adding antags once they would reach this share of ready players.
+#define DYNAMIC_SCALE_UP_ANTAG_FRACTION 0.25

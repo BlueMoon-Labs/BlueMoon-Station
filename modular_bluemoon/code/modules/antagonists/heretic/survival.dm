@@ -41,8 +41,12 @@
 
 /datum/action/item_action/heretic_escape
 	name = "Разбить клинок и отступить"
-	desc = "Разбейте клинок в руке, чтобы перенестись в случайное безопасное место станции. Клинок будет потерян. Применяйте до оглушения или потери сознания. Между побегами проходит не меньше 10 секунд; запрет телепортации, наручники, смирительная рубашка и щит разума мешают побегу. Вознёсшемуся побег закрыт."
+	desc = "Разбейте клинок в руке, чтобы перенестись в случайное безопасное место станции. Клинок будет потерян. Применяйте до оглушения или потери сознания. Запрет телепортации, наручники, смирительная рубашка и щит разума мешают побегу. Вознёсшемуся побег закрыт."
 	check_flags = AB_CHECK_RESTRAINED|AB_CHECK_STUN|AB_CHECK_CONSCIOUS
+
+/datum/action/item_action/heretic_escape/New(Target)
+	. = ..()
+	desc += " Между побегами проходит не меньше [DisplayTimeText(HERETIC_BLADE_ESCAPE_COOLDOWN)]."
 
 /datum/action/item_action/heretic_escape/Grant(mob/user)
 	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
@@ -53,7 +57,7 @@
 	if(!IsAvailable(TRUE))
 		var/obj/item/melee/sickly_blade/blade = target
 		if(!QDELETED(owner) && !QDELETED(blade))
-			blade.escape_failure(owner, (blade in owner.held_items) ? "Сейчас вы не можете разбить клинок." : "Возьмите клинок в руку.")
+			blade.escape_failure(owner, (blade in owner.held_items) ? "Сейчас вы не можете [blade.escape_verb] [blade.escape_noun]." : "Возьмите [blade.escape_noun] в руку.")
 		return FALSE
 	return ..()
 
@@ -67,7 +71,7 @@
 	COOLDOWN_DECLARE(escape_failure_log_cooldown)
 
 /obj/item/melee/sickly_blade/proc/escape_failure(mob/user, reason)
-	to_chat(user, span_warning("[reason] Клинок остаётся целым."))
+	to_chat(user, span_warning("[reason] [capitalize(escape_noun)] остаётся целым."))
 	if(COOLDOWN_FINISHED(src, escape_failure_log_cooldown))
 		log_game("HERETIC ESCAPE: [key_name(user)] failed with [src] at [AREACOORD(user)]: [reason]")
 		COOLDOWN_START(src, escape_failure_log_cooldown, 5 SECONDS)

@@ -113,9 +113,8 @@
 	requirements = list(101,10,10,10,10,10,10,10,10,10)
 	antag_cap = 1 //BLUEMOON CHANGES
 
-/datum/dynamic_ruleset/roundstart/heretics/scale_up(population, max_scale)
-	var/density_cap = max(0, FLOOR(population / HERETIC_CREW_PER_HERETIC, 1) - 1)
-	return ..(population, min(max_scale, max(0, length(candidates) - 1), density_cap))
+/datum/dynamic_ruleset/roundstart/heretics/max_scaled_times(population)
+	return min(..(), max(0, FLOOR(population / HERETIC_CREW_PER_HERETIC, 1) - 1))
 
 /datum/dynamic_ruleset/roundstart/heretics/pre_execute(population)
 	. = ..()

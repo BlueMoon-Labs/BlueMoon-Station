@@ -103,10 +103,28 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	return heretic?.get_knowledge(/datum/eldritch_knowledge/cosmic_expansion) ? HERETIC_STAR_EXPANDED_LIMIT : HERETIC_STAR_BASE_LIMIT
 
 /datum/eldritch_knowledge/base_cosmic/get_combat_resource_data()
-	return combat_resource_payload("Звёзды", length(stars), star_limit())
+	var/list/mode = grasp_mode()
+	return combat_resource_payload("Звёзды: [mode[1]]", length(stars), star_limit())
 
 /datum/eldritch_knowledge/base_cosmic/combat_resource_state()
-	return "Путеводных звёзд: [length(guide_stars)] из [HERETIC_COSMIC_GUIDE_LIMIT]."
+	var/list/mode = grasp_mode()
+	return "Путеводных звёзд: [length(guide_stars)] из [HERETIC_COSMIC_GUIDE_LIMIT]. [mode[2]]"
+
+/// Что сделает Хватка в текущем намерении: короткая подпись значка и полная строка.
+/datum/eldritch_knowledge/base_cosmic/proc/grasp_mode()
+	var/mob/living/body = astronomer?.current
+	var/datum/antagonist/heretic/heretic = astronomer?.has_antag_datum(/datum/antagonist/heretic)
+	var/leash = heretic?.get_knowledge(/datum/eldritch_knowledge/cosmic_grasp)
+	if(body?.a_intent == INTENT_HELP)
+		return list("путеводная", "Хватка в «Помощи»: по полу зажжёт путеводную звезду[leash ? ", по врагу накинет привязь" : ""].")
+	if(leash)
+		return list("привязь", "Хватка сейчас: по врагу накинет звёздную привязь. Путеводная звезда - только в «Помощи» по полу.")
+	return list("удар", "Хватка сейчас только бьёт. Путеводная звезда - Хваткой в «Помощи» по полу.")
+
+/datum/eldritch_knowledge/base_cosmic/on_life(mob/user)
+	if(user && user.mind == astronomer)
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+		heretic?.update_combat_resource_alert(FALSE, user)
 
 /datum/eldritch_knowledge/base_cosmic/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
 	grasp_failure_reason = null
@@ -173,7 +191,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	return list("name" = "к путеводной звезде", "text" = "Холодная точка света рядом с [victim] раскрывается звёздной воронкой.", "time" = HERETIC_POCKET_PULL_TIME, "check" = CALLBACK(src, PROC_REF(guide_door_holds), user, victim))
 
 /datum/eldritch_knowledge/base_cosmic/door_user_ready(mob/living/user)
-	return user?.mind && user.mind == astronomer && user.stat == CONSCIOUS && !user.incapacitated() && isturf(user.loc)
+	return user?.mind && user.mind == astronomer && user.stat == CONSCIOUS && !heretic_incapacitated(user) && isturf(user.loc)
 
 /// Готовая цель не дальше HERETIC_COSMIC_DOOR_RANGE клеток от своей путеводной звезды, еретик вплотную к цели.
 /datum/eldritch_knowledge/base_cosmic/proc/guide_door_holds(mob/living/user, mob/living/victim)
@@ -227,7 +245,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/cosmic_step)
 	if(user?.mind != astronomer || heretic?.selected_path != PATH_COSMIC || QDELETED(required))
 		return "Способность недоступна вашему пути или текущему телу."
-	if(user.incapacitated(ignore_grab = TRUE))
+	if(heretic_incapacitated(user, TRUE))
 		return "Вы не можете действовать: дождитесь окончания оглушения."
 	if(!isturf(user.loc))
 		return "Сначала выйдите из контейнера или укрытия на пол."
@@ -389,7 +407,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	return TRUE
 
 /datum/eldritch_knowledge/base_cosmic/proc/leash_holds(mob/living/holder, mob/living/victim)
-	if(QDELETED(holder) || QDELETED(victim) || holder.mind != astronomer || holder.stat != CONSCIOUS || holder.incapacitated() || victim.stat == DEAD)
+	if(QDELETED(holder) || QDELETED(victim) || holder.mind != astronomer || holder.stat != CONSCIOUS || heretic_incapacitated(holder) || victim.stat == DEAD)
 		return FALSE
 	if(!isturf(holder.loc) || !isturf(victim.loc) || holder.z != victim.z || get_dist(holder, victim) > HERETIC_COSMIC_LEASH_RANGE)
 		return FALSE
@@ -492,7 +510,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	notify_resource_changed()
 
 /datum/eldritch_knowledge/base_cosmic/proc/add_star(turf/place, mob/living/user)
-	if(user?.mind != astronomer || !IS_HERETIC(user) || !isturf(user.loc) || user.incapacitated() || !safe_star_turf(place))
+	if(user?.mind != astronomer || !IS_HERETIC(user) || !isturf(user.loc) || heretic_incapacitated(user) || !safe_star_turf(place))
 		return FALSE
 	for(var/obj/structure/heretic_star/star as anything in stars)
 		if(star.loc == place)
@@ -515,7 +533,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	return TRUE
 
 /datum/eldritch_knowledge/base_cosmic/proc/manifest(turf/place, mob/living/user)
-	if(user?.mind != astronomer || !IS_HERETIC(user) || !isturf(user.loc) || user.incapacitated() || !(place in view(HERETIC_STAR_RANGE, user)))
+	if(user?.mind != astronomer || !IS_HERETIC(user) || !isturf(user.loc) || heretic_incapacitated(user) || !(place in view(HERETIC_STAR_RANGE, user)))
 		return FALSE
 	for(var/obj/structure/heretic_star/star as anything in stars)
 		if(star.loc == place)
@@ -536,7 +554,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	// Ход обрабатывается раньше таймера в том же тике: ворота снимает finish_collapse, срок - запасной выход.
 	if(collapse_pending_until && world.time <= collapse_pending_until + HERETIC_STAR_COLLAPSE_DELAY)
 		return FALSE
-	if(!ascension_active || user?.mind != astronomer || !IS_HERETIC(user) || !isturf(user.loc) || user.incapacitated() || !safe_star_turf(place))
+	if(!ascension_active || user?.mind != astronomer || !IS_HERETIC(user) || !isturf(user.loc) || heretic_incapacitated(user) || !safe_star_turf(place))
 		return FALSE
 	for(var/obj/structure/heretic_star/star as anything in stars)
 		if(star.loc == place)
@@ -787,7 +805,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	return affected
 
 /datum/eldritch_knowledge/base_cosmic/proc/flare_star(mob/living/user, obj/structure/heretic_star/star, turf/expected_place, list/telegraphed_turfs)
-	if(QDELETED(star) || !(star in stars) || star.constellation != src || star.loc != expected_place || user?.mind != astronomer || !IS_HERETIC(user) || user.incapacitated() || !isturf(user.loc) || !(star in view(HERETIC_STAR_RANGE, user)) || !star_line_clear(user, star))
+	if(QDELETED(star) || !(star in stars) || star.constellation != src || star.loc != expected_place || user?.mind != astronomer || !IS_HERETIC(user) || heretic_incapacitated(user) || !isturf(user.loc) || !(star in view(HERETIC_STAR_RANGE, user)) || !star_line_clear(user, star))
 		return FALSE
 	for(var/mob/living/victim in range(HERETIC_STAR_FLARE_RADIUS, star))
 		if(!isturf(victim.loc) || !(victim.loc in telegraphed_turfs) || !star_line_clear(star, victim) || !can_affect(victim, chargecost = 1))
@@ -803,6 +821,22 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	. = ..()
 	if(istype(target, /obj/structure/heretic_star))
 		flare(user, target)
+
+/// Сжатая в руке астролябия наводится на ближайшую свою звезду.
+/obj/item/heretic_path_relic/astrolabe/attack_self(mob/living/user)
+	if(busy || !authorized(user))
+		return FALSE
+	if(!COOLDOWN_FINISHED(src, relic_cooldown))
+		to_chat(user, span_warning("Астролябия ещё остывает: [CEILING(COOLDOWN_TIMELEFT(src, relic_cooldown) / (1 SECONDS), 1)] с."))
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/obj/structure/heretic_star/star = knowledge?.nearest_star(user)
+	if(!star || !can_flare(user, star, get_turf(star)))
+		to_chat(user, span_warning("Рядом нет вашей звезды на открытой линии: астролябии не на что навестись."))
+		return FALSE
+	playsound(user, 'modular_bluemoon/sound/heretic/cosmic_align.ogg', 35, FALSE)
+	return flare(user, star)
 
 /obj/item/heretic_path_relic/astrolabe/proc/can_flare(mob/living/user, obj/structure/heretic_star/star, turf/expected_place)
 	if(!authorized(user) || !COOLDOWN_FINISHED(src, relic_cooldown) || QDELETED(star) || star.loc != expected_place)
@@ -827,43 +861,6 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	if(!completed || !can_flare(user, star, place) || !knowledge.flare_star(user, star, place, telegraphed_turfs))
 		return FALSE
 	COOLDOWN_START(src, relic_cooldown, HERETIC_STAR_FLARE_COOLDOWN)
-	return TRUE
-
-/// Поворот сохраняет сами звёзды: повреждения и таймеры не сбрасываются.
-/datum/eldritch_knowledge/base_cosmic/proc/rotation_targets(mob/living/user)
-	if(user?.mind != astronomer || !IS_HERETIC(user) || user.incapacitated() || !isturf(user.loc) || length(stars) < 2)
-		return null
-	var/obj/structure/heretic_star/pivot = stars[1]
-	if(!user.Adjacent(pivot))
-		return null
-	var/turf/center = get_turf(pivot)
-	var/list/plan = list()
-	var/list/visible = view(HERETIC_STAR_RANGE, user)
-	for(var/obj/structure/heretic_star/star as anything in stars)
-		if(star.z != user.z || get_dist(star, user) > HERETIC_STAR_RANGE || !(star in visible))
-			return null
-		var/turf/destination = locate(center.x + star.y - center.y, center.y - star.x + center.x, center.z)
-		if(!safe_star_turf(destination) || destination.is_blocked_turf(source_atom = user))
-			return null
-		plan[star] = destination
-	for(var/list/link as anything in star_links())
-		if(!star_line_clear(plan[link[1]], plan[link[2]]))
-			return null
-	return plan
-
-/datum/eldritch_knowledge/base_cosmic/proc/rotate_constellation(mob/living/user, list/expected_plan)
-	var/list/current_plan = rotation_targets(user)
-	if(!length(current_plan) || length(current_plan) != length(expected_plan))
-		return FALSE
-	for(var/obj/structure/heretic_star/star as anything in current_plan)
-		if(current_plan[star] != expected_plan[star])
-			return FALSE
-	for(var/obj/structure/heretic_star/star as anything in current_plan)
-		new /obj/effect/temp_visual/heretic_path_feedback(get_turf(star), "cosmic_cloud", "#88cce8", 8)
-		star.forceMove(current_plan[star])
-		new /obj/effect/temp_visual/heretic_path_feedback(get_turf(star), "cosmic_ring", "#b7e4ff", 8)
-	rebuild_threads()
-	playsound(user, 'modular_bluemoon/sound/heretic/cosmic_ignite.ogg', 45, FALSE)
 	return TRUE
 
 /// Те же клетки используются для предупреждения и проверки области схлопывания.
@@ -971,7 +968,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	return TRUE
 
 /datum/eldritch_knowledge/base_cosmic/proc/travel(mob/living/user, obj/structure/heretic_star/destination)
-	if(QDELETED(destination) || !(destination in stars) || user?.mind != astronomer || user.incapacitated() || !isturf(user.loc) || !nearest_star(user, 1))
+	if(QDELETED(destination) || !(destination in stars) || user?.mind != astronomer || heretic_incapacitated(user) || !isturf(user.loc) || !nearest_star(user, 1))
 		return FALSE
 	var/turf/landing = get_turf(destination)
 	if(user.z != destination.z || !safe_star_turf(landing) || landing.is_blocked_turf(source_atom = user))
@@ -988,7 +985,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	return TRUE
 
 /datum/eldritch_knowledge/base_cosmic/proc/discharge_arrival(mob/living/user, obj/structure/heretic_star/destination)
-	if(QDELETED(destination) || !(destination in stars) || user?.mind != astronomer || user.incapacitated() || get_turf(user) != get_turf(destination))
+	if(QDELETED(destination) || !(destination in stars) || user?.mind != astronomer || heretic_incapacitated(user) || get_turf(user) != get_turf(destination))
 		return FALSE
 	var/discharged = FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -1007,7 +1004,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	return discharged
 
 /datum/eldritch_knowledge/base_cosmic/proc/pulse(mob/living/user, collapse = FALSE, list/telegraphed_turfs)
-	if(user?.mind != astronomer || user.incapacitated() || !length(stars))
+	if(user?.mind != astronomer || heretic_incapacitated(user) || !length(stars))
 		return FALSE
 	var/list/active_stars = list()
 	for(var/obj/structure/heretic_star/star as anything in stars)
@@ -1523,7 +1520,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 /obj/effect/proc_holder/spell/self/cosmic/can_cast(mob/user, skipcharge, silent)
 	. = ..()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return . && heretic_check(user, heretic?.selected_path == PATH_COSMIC && !user.incapacitated(), silent, "Способность недоступна вашему пути или текущему телу.")
+	return . && heretic_check(user, heretic?.selected_path == PATH_COSMIC && !heretic_incapacitated(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/cosmic/manifest
 	parent_type = /obj/effect/proc_holder/spell/pointed
@@ -1545,7 +1542,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 /obj/effect/proc_holder/spell/self/cosmic/manifest/can_cast(mob/user, skipcharge, silent)
 	. = ..()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return . && heretic_check(user, heretic?.selected_path == PATH_COSMIC && !user.incapacitated(), silent, "Способность недоступна вашему пути или текущему телу.")
+	return . && heretic_check(user, heretic?.selected_path == PATH_COSMIC && !heretic_incapacitated(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/cosmic/manifest/intercept_check(mob/user, atom/target, silent = FALSE)
 	return ..(user, get_turf(target), silent)
@@ -1590,9 +1587,9 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	. = ..()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
-	if(!. || !heretic_check(user, heretic?.selected_path == PATH_COSMIC && knowledge && !user.incapacitated(ignore_grab = TRUE), silent, "Способность недоступна вашему пути или текущему телу."))
+	if(!. || !heretic_check(user, heretic?.selected_path == PATH_COSMIC && knowledge && !heretic_incapacitated(user, TRUE), silent, "Способность недоступна вашему пути или текущему телу."))
 		return FALSE
-	if(length(knowledge.guide_stars_on_level(user)) || (knowledge.nearest_star(user, 1) && !user.incapacitated()))
+	if(length(knowledge.guide_stars_on_level(user)) || (knowledge.nearest_star(user, 1) && !heretic_incapacitated(user)))
 		return TRUE
 	if(!silent)
 		to_chat(user, span_warning("Встаньте рядом со своей звездой или зажгите на этом уровне путеводную звезду Хваткой в «Помощи» по полу."))
@@ -1618,7 +1615,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 	var/atom/target = targets[1]
 	if(istype(target, /obj/structure/heretic_star))
 		if(!knowledge.travel(user, target))
-			heretic_revert_cast(user, user.incapacitated() ? "Из чужой хватки дорога ведёт только к путеводной звезде: щёлкните по себе." : null)
+			heretic_revert_cast(user, heretic_incapacitated(user) ? "Из чужой хватки дорога ведёт только к путеводной звезде: щёлкните по себе." : null)
 		return
 	var/obj/structure/heretic_guide_star/guide = target
 	if(target == user)
@@ -1797,7 +1794,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 /obj/effect/proc_holder/spell/self/cosmic/orbit/can_cast(mob/user, skipcharge, silent)
 	. = ..()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return . && heretic_check(user, heretic?.selected_path == PATH_COSMIC && heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic) && !user.incapacitated(), silent, "Способность недоступна вашему пути или текущему телу.")
+	return . && heretic_check(user, heretic?.selected_path == PATH_COSMIC && heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic) && !heretic_incapacitated(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/cosmic/orbit/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -1941,10 +1938,10 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 		"Прочность звёзд созвездия от 70 и сразу восстанавливается; путеводные остаются на 40.",
 		"Ударившего звезду созвездия вплотную она хлещет нитью, не чаще раза в 3 секунды на врага.",
 		"Выстрел, бросок и нулевой жезл звезду не будят.",
-		"Астролябия у первой звезды за 1,5 секунды поворачивает созвездие на четверть оборота.",
-		"Щелчок астролябией по своей звезде в 7 клетках через 1,5 секунды сжигает её: 30 ожогов в 2 клетках.",
+		"Астролябия сжигает одну звезду: щелчок по своей звезде в 7 клетках или нажатие в руке - по ближайшей.",
+		"Полторы секунды область подсвечена, затем 30 ожогов врагам в 2 клетках от звезды.",
 		"Стены закрывают от вспышки, разбитая звезда её отменяет; остальные звёзды целы.",
-		"Поворот и вспышка делят перезарядку 25 секунд; астролябия одна.",
+		"Перезарядка вспышки 25 секунд; астролябия одна.",
 	)
 	role = HERETIC_ROLE_RELIC
 	cost = 2
@@ -2023,7 +2020,7 @@ GLOBAL_LIST_INIT(heretic_cosmic_thread_sounds, list(
 
 /datum/eldritch_knowledge/final_eldritch/cosmic_final/proc/summon_stargazer(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	if(!finished || !heretic || applied_body != user || user.incapacitated() || !isturf(user.loc) || !QDELETED(stargazer))
+	if(!finished || !heretic || applied_body != user || heretic_incapacitated(user) || !isturf(user.loc) || !QDELETED(stargazer))
 		return FALSE
 	var/turf/landing = get_turf(user)
 	for(var/turf/candidate in orange(1, user))

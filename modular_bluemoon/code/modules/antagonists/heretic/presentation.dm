@@ -480,7 +480,7 @@
 		user.playsound_local(get_turf(user), 'modular_bluemoon/sound/heretic/book_close.ogg', 20, FALSE)
 
 /obj/item/forbidden_book/proc/turn_page(mob/user)
-	if(!user?.is_holding(src) || !IS_HERETIC(user) || user.incapacitated() || !COOLDOWN_FINISHED(src, page_turn_cooldown))
+	if(!user?.is_holding(src) || !IS_HERETIC(user) || heretic_incapacitated(user) || !COOLDOWN_FINISHED(src, page_turn_cooldown))
 		return FALSE
 	COOLDOWN_START(src, page_turn_cooldown, 0.3 SECONDS)
 	var/datum/heretic_path/path = GLOB.heretic_paths[book_path]

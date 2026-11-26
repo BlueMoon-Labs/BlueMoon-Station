@@ -1,12 +1,16 @@
 #define HERETIC_VFX_RING_ICON_SIZE 256
 #define HERETIC_VFX_RING_RADIUS 118
-#define HERETIC_VFX_RING_INNER 88
-#define HERETIC_VFX_RING_OUTER 122
 #define HERETIC_VFX_WAVE_START_SCALE 0.08
 #define HERETIC_VFX_WAVE_HOLD 0.35
-#define HERETIC_VFX_RIPPLE_FILTER "heretic_vfx_ripple"
-#define HERETIC_VFX_RIPPLE_SIZE 3
-#define HERETIC_VFX_RIPPLE_REPEAT 12
+#define HERETIC_VFX_RING_FRAMES 'modular_bluemoon/icons/effects/heretic_ring.dmi'
+#define HERETIC_VFX_RING_WIDE_FRAMES 'modular_bluemoon/icons/effects/heretic_ring_wide.dmi'
+#define HERETIC_VFX_RING_CANVAS 128
+#define HERETIC_VFX_RING_WIDE_CANVAS 240
+#define HERETIC_VFX_RING_FINE 62
+#define HERETIC_VFX_RING_COARSE 124
+#define HERETIC_VFX_RING_WIDEST 224
+#define HERETIC_VFX_RING_SMALLEST 2
+#define HERETIC_VFX_RING_FRAME_TIME 0.5
 #define HERETIC_VFX_FLASH_TAIL_POWER 0.5
 #define HERETIC_VFX_FLASH_TAIL_STRETCH 2.5
 #define HERETIC_VFX_RISE_SHARE 0.3
@@ -50,6 +54,12 @@
 	var/vfx_particles
 	/// Второй оттенок пути для его эффектов; без него берутся чернила книги.
 	var/vfx_accent
+	/// Чернила вспышки кульминации и знамения вознесения; без них берутся чернила книги.
+	var/climax_ink
+	/// Своя волна пути (temp_visual на клетке) вместо общего кольца на кульминации и спаде завесы.
+	var/wave_type
+	/// Завеса явления обводит тело контуром и свечением; путь с ручной подсветкой силуэта их выключает.
+	var/emergence_filters = TRUE
 
 /datum/heretic_path/ash
 	vfx_particles = /particles/heretic_ascension/ash
@@ -221,13 +231,15 @@
 	tint += 0
 	return tint
 
-/// Постоянный эмиттер на атоме: частицы идут от носителя, пока его не снимут.
-/proc/heretic_vfx_attach_particles(atom/movable/host, particles_type, glow = TRUE)
+/// Постоянный эмиттер на атоме: частицы идут от носителя, пока его не снимут; behind пускает их за носителем.
+/proc/heretic_vfx_attach_particles(atom/movable/host, particles_type, glow = TRUE, behind = FALSE)
 	if(QDELETED(host))
 		return null
 	var/obj/effect/abstract/heretic_particle_holder/holder = new(null, particles_type, glow)
 	if(QDELETED(holder))
 		return null
+	if(behind)
+		holder.vis_flags |= VIS_UNDERLAY
 	host.add_vis_on_floor(holder)
 	return holder
 
@@ -244,9 +256,12 @@
 		qdel(holder)
 		return
 	holder.particles.spawning = 0
+	var/lifespan = holder.particles.lifespan
 	holder.layer = ABOVE_MOB_LAYER
+	// Клетка может удалить пришедший эмиттер прямо на входе.
 	holder.forceMove(place)
-	QDEL_IN(holder, holder.particles.lifespan)
+	if(!QDELETED(holder))
+		QDEL_IN(holder, lifespan)
 
 /// Опора для image, видимых одному клиенту. Image на самом атоме входит в его хитбокс при любом mouse_opacity, а у объекта в vis_contents mouse_opacity соблюдается.
 /proc/heretic_vfx_image_anchor(atom/movable/host)
@@ -354,7 +369,8 @@
 	plane = EMISSIVE_PLANE
 	layer = FLOAT_LAYER
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	appearance_flags = RESET_TRANSFORM | RESET_COLOR | RESET_ALPHA
+	// Без KEEP_APART копия на теле попадает в общий рисунок тела и ложится на него белой заливкой.
+	appearance_flags = RESET_TRANSFORM | RESET_COLOR | RESET_ALPHA | KEEP_APART
 	vis_flags = NONE
 
 /obj/effect/abstract/heretic_vfx_glow/Initialize(mapload, render_from)
@@ -362,12 +378,12 @@
 	render_source = render_from
 	color = GLOB.emissive_color
 
-/// Эмиттер в vis_contents носителя: цвет и поворот носителя его не трогают, свой поворот работает; прозрачным носителем гаснет вместе с ним.
+/// Эмиттер в vis_contents носителя: цвет, поворот и фильтры носителя его не трогают, свой поворот работает; прозрачным носителем гаснет вместе с ним.
 /obj/effect/abstract/heretic_particle_holder
 	icon = null
 	layer = FLOAT_LAYER
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	appearance_flags = RESET_COLOR | RESET_TRANSFORM | PIXEL_SCALE
+	appearance_flags = RESET_COLOR | RESET_TRANSFORM | PIXEL_SCALE | KEEP_APART
 	vis_flags = VIS_INHERIT_PLANE
 	var/obj/effect/abstract/heretic_vfx_glow/glow
 
@@ -432,6 +448,24 @@
 	icon = null
 	randomdir = FALSE
 	appearance_flags = PIXEL_SCALE
+	/// Пиксельное кольцо волны или стягивания и его светящийся двойник.
+	var/obj/effect/abstract/heretic_vfx_ring/ring
+	var/obj/effect/abstract/heretic_vfx_ring/glow/ring_glow
+
+/obj/effect/temp_visual/heretic_vfx/Destroy()
+	vis_contents -= list(ring, ring_glow)
+	QDEL_NULL(ring)
+	QDEL_NULL(ring_glow)
+	return ..()
+
+/// Кольцо проходит радиусы radii (пиксели экрана) по кадру на шаг; цвет - чернила пути, в темноте светится.
+/obj/effect/temp_visual/heretic_vfx/proc/ring_through(ink, list/radii)
+	ring = new(null)
+	ring.color = heretic_vfx_ink_ramp(ink || COLOR_WHITE)
+	ring_glow = new(null)
+	vis_contents += list(ring, ring_glow)
+	ring.play(radii)
+	ring_glow.play(radii)
 
 /// Вырастает от точки до radius клеток с замедлением и гаснет во второй части пути.
 /obj/effect/temp_visual/heretic_vfx/proc/expand(radius, offset_x = 0, offset_y = 0)
@@ -443,24 +477,24 @@
 	animate(src, alpha = 255, time = duration * HERETIC_VFX_WAVE_HOLD, flags = ANIMATION_PARALLEL)
 	animate(alpha = 0, time = duration * (1 - HERETIC_VFX_WAVE_HOLD), easing = SINE_EASING | EASE_IN)
 
-/// Видимое кольцо волны: пока фронт держит яркость, по полосе кольца бежит рябь, затем стихает вместе с ним.
+/// Видимое кольцо волны: пиксельные кадры от точки до radius клеток с замедлением, во второй части пути гаснет.
 /obj/effect/temp_visual/heretic_vfx/shockwave
-	icon = 'modular_bluemoon/icons/effects/heretic_shockwave.dmi'
-	icon_state = "ring"
 	layer = BELOW_MOB_LAYER
-	appearance_flags = NONE
 
 /obj/effect/temp_visual/heretic_vfx/shockwave/Initialize(mapload, ink, radius = 7, lifetime = 1 SECONDS, offset_x = 0, offset_y = 0)
 	duration = lifetime
 	. = ..()
-	color = heretic_vfx_ink_ramp(ink || COLOR_WHITE)
-	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
-	add_filter(HERETIC_VFX_RIPPLE_FILTER, 1, ripple_filter(radius = HERETIC_VFX_RING_INNER, size = HERETIC_VFX_RIPPLE_SIZE, repeat = HERETIC_VFX_RIPPLE_REPEAT))
-	// Анимация фильтра запоминает облик на момент вызова: сдвиг и масштаб кольца задаются до неё.
-	expand(radius, offset_x, offset_y)
-	var/hold_radius = HERETIC_VFX_RING_INNER + (HERETIC_VFX_RING_OUTER - HERETIC_VFX_RING_INNER) * HERETIC_VFX_WAVE_HOLD
-	animate(get_filter(HERETIC_VFX_RIPPLE_FILTER), radius = hold_radius, time = lifetime * HERETIC_VFX_WAVE_HOLD, flags = ANIMATION_PARALLEL)
-	animate(radius = HERETIC_VFX_RING_OUTER, size = 0, time = lifetime * (1 - HERETIC_VFX_WAVE_HOLD), easing = SINE_EASING | EASE_IN)
+	pixel_x = offset_x
+	pixel_y = offset_y
+	var/finish = radius * world.icon_size
+	var/start = max(HERETIC_VFX_RING_SMALLEST, finish * HERETIC_VFX_WAVE_START_SCALE)
+	var/list/radii = list()
+	var/steps = heretic_vfx_ring_steps(lifetime)
+	for(var/step in 0 to steps)
+		radii += start + (finish - start) * (1 - (1 - step / steps) ** 3)
+	ring_through(ink, radii)
+	animate(src, alpha = 255, time = lifetime * HERETIC_VFX_WAVE_HOLD)
+	animate(alpha = 0, time = lifetime * (1 - HERETIC_VFX_WAVE_HOLD), easing = SINE_EASING | EASE_IN)
 
 /// Та же волна картой смещения: пол и стены гнутся под фронтом и отыгрывают назад за ним.
 /obj/effect/temp_visual/heretic_vfx/warp
@@ -475,24 +509,79 @@
 	expand(radius, offset_x, offset_y)
 
 /obj/effect/temp_visual/heretic_vfx/gather
-	icon = 'modular_bluemoon/icons/effects/heretic_shockwave.dmi'
-	icon_state = "ring"
 	layer = BELOW_MOB_LAYER
-	appearance_flags = NONE
 
 /obj/effect/temp_visual/heretic_vfx/gather/Initialize(mapload, ink, radius = 3, lifetime = 0.8 SECONDS)
 	duration = lifetime
 	. = ..()
-	color = heretic_vfx_ink_ramp(ink || COLOR_WHITE)
-	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
-	pixel_x = (world.icon_size - HERETIC_VFX_RING_ICON_SIZE) / 2
-	pixel_y = pixel_x
-	var/start_scale = radius * world.icon_size / HERETIC_VFX_RING_RADIUS
-	transform = matrix(start_scale, 0, 0, 0, start_scale, 0)
+	var/start = radius * world.icon_size
+	var/finish = max(HERETIC_VFX_RING_SMALLEST, start * HERETIC_VFX_WAVE_START_SCALE)
+	var/list/radii = list()
+	var/steps = heretic_vfx_ring_steps(lifetime)
+	for(var/step in 0 to steps)
+		radii += start + (finish - start) * (step / steps) ** 2
+	ring_through(ink, radii)
 	alpha = 0
-	animate(src, transform = matrix(HERETIC_VFX_WAVE_START_SCALE, 0, 0, 0, HERETIC_VFX_WAVE_START_SCALE, 0), time = lifetime, easing = QUAD_EASING | EASE_IN)
-	animate(src, alpha = 255, time = lifetime * HERETIC_VFX_GATHER_RISE, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
+	animate(src, alpha = 255, time = lifetime * HERETIC_VFX_GATHER_RISE, easing = SINE_EASING | EASE_IN)
 	animate(alpha = 0, time = lifetime * (1 - HERETIC_VFX_GATHER_RISE), easing = SINE_EASING | EASE_IN)
+
+/// Сколько кадров кольца уложится в lifetime.
+/proc/heretic_vfx_ring_steps(lifetime)
+	return max(1, round(lifetime / HERETIC_VFX_RING_FRAME_TIME))
+
+/// Кадр кольца под радиус в пикселях экрана: лист, стейт, масштаб и холст. Мелкие нарисованы в родном размере через 2 px, крупные - вполовину и показываются вдвое без сглаживания.
+/proc/heretic_vfx_ring_frame(radius)
+	if(radius < HERETIC_VFX_RING_FINE + 1)
+		return list(HERETIC_VFX_RING_FRAMES, "ring_[max(HERETIC_VFX_RING_SMALLEST, round(radius, 2))]", 1, HERETIC_VFX_RING_CANVAS)
+	if(radius < HERETIC_VFX_RING_COARSE + 2)
+		return list(HERETIC_VFX_RING_FRAMES, "ring_[clamp(round(radius, 4), HERETIC_VFX_RING_FINE + 2, HERETIC_VFX_RING_COARSE)]", 2, HERETIC_VFX_RING_CANVAS)
+	return list(HERETIC_VFX_RING_WIDE_FRAMES, "ring_[clamp(round(radius, 8), HERETIC_VFX_RING_COARSE + 4, HERETIC_VFX_RING_WIDEST)]", 2, HERETIC_VFX_RING_WIDE_CANVAS)
+
+/// Пиксельное кольцо в vis_contents волны: каждый кадр нарисован под свой радиус, без растяжения и ряби.
+/obj/effect/abstract/heretic_vfx_ring
+	icon = HERETIC_VFX_RING_FRAMES
+	layer = FLOAT_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	appearance_flags = PIXEL_SCALE | KEEP_APART
+	vis_flags = VIS_INHERIT_PLANE
+
+/// Тот же кадр на плоскости свечения: кольцо видно в темноте.
+/obj/effect/abstract/heretic_vfx_ring/glow
+	plane = EMISSIVE_PLANE
+	appearance_flags = PIXEL_SCALE | KEEP_APART | RESET_COLOR
+	vis_flags = NONE
+
+/obj/effect/abstract/heretic_vfx_ring/glow/Initialize(mapload)
+	. = ..()
+	color = GLOB.emissive_color
+
+/// Шаг на кадр; смена листа и масштаба - мгновенным шагом, чтобы кадр не сползал между ними.
+/obj/effect/abstract/heretic_vfx_ring/proc/play(list/radii)
+	var/list/shown
+	var/hold = 0
+	var/chained = FALSE
+	for(var/radius in radii)
+		var/list/frame = heretic_vfx_ring_frame(radius)
+		if(shown && frame[1] == shown[1] && frame[2] == shown[2])
+			hold += HERETIC_VFX_RING_FRAME_TIME
+			continue
+		var/matrix/shape = frame[3] == 1 ? matrix() : matrix(frame[3], 0, 0, 0, frame[3], 0)
+		var/offset = (world.icon_size - frame[4]) / 2
+		if(!shown)
+			icon = frame[1]
+			icon_state = frame[2]
+			transform = shape
+			pixel_x = offset
+			pixel_y = offset
+		else
+			if(chained)
+				animate(time = hold)
+			else
+				animate(src, time = hold)
+			chained = TRUE
+			animate(icon = frame[1], icon_state = frame[2], transform = shape, pixel_x = offset, pixel_y = offset, time = 0)
+		shown = frame
+		hold = HERETIC_VFX_RING_FRAME_TIME
 
 /obj/effect/temp_visual/heretic_vfx/burst
 	layer = ABOVE_MOB_LAYER
@@ -1015,13 +1104,17 @@
 
 #undef HERETIC_VFX_RING_ICON_SIZE
 #undef HERETIC_VFX_RING_RADIUS
-#undef HERETIC_VFX_RING_INNER
-#undef HERETIC_VFX_RING_OUTER
 #undef HERETIC_VFX_WAVE_START_SCALE
 #undef HERETIC_VFX_WAVE_HOLD
-#undef HERETIC_VFX_RIPPLE_FILTER
-#undef HERETIC_VFX_RIPPLE_SIZE
-#undef HERETIC_VFX_RIPPLE_REPEAT
+#undef HERETIC_VFX_RING_FRAMES
+#undef HERETIC_VFX_RING_WIDE_FRAMES
+#undef HERETIC_VFX_RING_CANVAS
+#undef HERETIC_VFX_RING_WIDE_CANVAS
+#undef HERETIC_VFX_RING_FINE
+#undef HERETIC_VFX_RING_COARSE
+#undef HERETIC_VFX_RING_WIDEST
+#undef HERETIC_VFX_RING_SMALLEST
+#undef HERETIC_VFX_RING_FRAME_TIME
 #undef HERETIC_VFX_FLASH_TAIL_POWER
 #undef HERETIC_VFX_FLASH_TAIL_STRETCH
 #undef HERETIC_VFX_RISE_SHARE

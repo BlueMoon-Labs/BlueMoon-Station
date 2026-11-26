@@ -887,6 +887,29 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	visit.finish(exit_reason = "completed")
 	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/heretic_mansus_unreturned), "Пройденное испытание не наказывает жертву.")
 
+/// Прошедший Дом помнит знак пути похитителя, а не его имя: в заметках и на коже; прерванный и просроченный выход знака не дают.
+/datum/unit_test/heretic_mansus_path_sign/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_RUST)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/mind/soul = fixture["soul"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/sign = GLOB.heretic_mansus_themes[PATH_RUST]["title"]
+	visit.memories_found = HERETIC_MANSUS_MEMORIES
+	visit.finish(exit_reason = "completed")
+	TEST_ASSERT(findtext(soul.memory, "знак пути «[sign]»"), "Заметки хранят знак пути: [soul.memory]")
+	TEST_ASSERT(findtext(soul.memory, visit.amnesia_note), "Похититель по-прежнему забыт.")
+	var/mob/living/carbon/human/officer = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	TEST_ASSERT(findtext(jointext(victim.examine(officer), " "), "знак пути: [sign]"), "Знак виден на коже при осмотре.")
+
+	for(var/exit_reason in list("timeout", "interrupted"))
+		fixture = make_mansus_fixture(path_id = PATH_RUST)
+		victim = fixture["victim"]
+		soul = fixture["soul"]
+		visit = fixture["visit"]
+		visit.finish(exit_reason = exit_reason)
+		TEST_ASSERT(!findtext(soul.memory, "знак пути"), "Без прохождения знака в заметках нет ([exit_reason]).")
+		TEST_ASSERT(!findtext(jointext(victim.examine(officer), " "), "знак пути"), "Без прохождения знака на коже нет ([exit_reason]).")
+
 /// Тень видит по прямой; колонна и ниша скрывают жертву, осколок в руках выдаёт её.
 /datum/unit_test/heretic_mansus_hunter_sight/Run()
 	var/list/fixture = make_mansus_fixture()

@@ -7,6 +7,8 @@
 #define HERETIC_BLOOD_REFUND_COOLDOWN (12 SECONDS)
 #define HERETIC_BLOOD_SIPHON_FRACTION 0.25
 #define HERETIC_BLOOD_SIPHON_LIMIT 10
+#define HERETIC_BLOOD_TARGET_HEAL_LIMIT 20
+#define HERETIC_BLOOD_TARGET_HEAL_WINDOW (60 SECONDS)
 #define HERETIC_BLOOD_DAMAGE_PER_DEBT 2
 #define HERETIC_BLOOD_INITIAL_DEBT 10
 #define HERETIC_BLOOD_STRIKE_DEBT 6
@@ -28,8 +30,10 @@
 #define HERETIC_BLOOD_DRAIN_SEAL_MARGIN (1 SECONDS)
 #define HERETIC_BLOOD_EXSANGUINE_SLOWDOWN 0.5
 #define HERETIC_BLOOD_EXSANGUINE_BLUR 2
-#define HERETIC_BLOOD_RECOVERY_FRACTION 0.25
-#define HERETIC_BLOOD_RECOVERY_LIMIT 10
+#define HERETIC_BLOOD_HEART_COUNT 4
+#define HERETIC_BLOOD_HEART_CRAFT "blood_heart"
+#define HERETIC_BLOOD_HEART_CLUE "Кровь не сохнет и бьётся, как сердце: пока такие пятна есть на станции, раны рядом с вознёсшимся еретиком кровоточат вдвое. Швабра, космочист или нулевой жезл гасят это сердце."
+#define HERETIC_BLOOD_HEART_TRIES 40
 #define HERETIC_BLOOD_TIDE_STREAM_TIME (1.2 SECONDS)
 #define HERETIC_BLOOD_DRINK_TIME (0.45 SECONDS)
 #define HERETIC_BLOOD_DRINK_SHRINK 0.1
@@ -113,25 +117,25 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	id = PATH_BLOOD
 	deed_type = /datum/heretic_deed/blood
 	name = "Кровь"
-	tagline = "Долг копится ударами: взыскание бьёт и лечит, путы держат, Кровопускание роняет в обморок."
+	tagline = "Связывает врагов кровным долгом и взыскивает его, пока те не падают без чувств."
 	craft_summary = "Хватка в «Помощи» по чужой крови ведёт к владельцу 3 минуты, пятно на полу становится меткой-ловушкой."
 	capture_summary = "Кровопускание 6 секунд держит немого должника на нити до обморока; со 2-й секунды сердце уводит его в изнанку."
 	escape_summary = "Скользкая кровь за 10 своих ушибов на 5 секунд вырывает из захвата; из изнанки выходите к своей метке."
 	strength_points = list(
-		"Удар клинком сам связывает врага; взыскание бьёт по 2 ушиба за долг и лечит ваши раны.",
+		"Удар клинком сам связывает врага; взыскание бьёт по 2 ушиба за долг и возвращает вам четверть урона.",
+		"Метка Крови - вторая связь на 15 секунд: второй противник не ждёт, пока освободится первая.",
 		"Долг можно тратить на путы: 3 секунды должник не отходит; на крови взыскание прибивает его шипом.",
 		"Чужая кровь ведёт к владельцу 3 минуты, метки на полу сами связывают наступивших.",
 		"Во время Кровопускания цель немая и без рации, а в изнанке нить не рвётся до самого обморока.",
-		"Скользкая кровь работает в чужой хватке: вырывает, ускоряет, валит преследователей.",
-		"Вознёсшийся удваивает кровотечение врагов рядом и пьёт свежую кровь с пола.",
+		"Вознёсшийся удваивает кровотечение врагов рядом, пока на станции бьются сердца прилива.",
 	)
 	weakness_points = list(
 		"Помеченная кровь не засыхает и пульсирует багровой каймой: швабра, космочист или жезл снимают метку.",
 		"Кровопускание рвут стена, уход, антимагия, жезл, переливание, оглушение еретика; цель растолкают за 2 секунды.",
 		"Взыскание требует секунду прямой видимости в 5 клетках; укрытие или оглушение его срывают.",
-		"С одной цели лечения не больше 10, пока держится её пустая печать; цель без разума не лечит.",
+		"Взыскание лечит не больше 10 за раз, цель без разума не лечит; Метка гаснет через 15 секунд.",
 		"Скользкая кровь стоит 10 своих ушибов и не снимает наручники.",
-		"Вознёсшегося держите дальше 3 клеток, перевязывайте раны и убирайте кровь с пола.",
+		"Вознёсшегося держите дальше 3 клеток, перевязывайте раны, вымойте сердца прилива на станции.",
 	)
 	knowledge = list(
 		/datum/eldritch_knowledge/base_blood,
@@ -153,7 +157,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 		"Нож и стеклянный осколок создают багровый клык: удар им связывает врага и даёт 6 долга раз в 2 секунды.",
 		"Взыскание бьёт через секунду предупреждения, 2 ушиба за единицу долга; потом ваше кровотечение 8 секунд вдвое слабее.",
 		"Держите цель в 5 клетках без преград: без контакта связь рвётся через 2 секунды.",
-		"Четверть урона лечит ваши раны, ещё четверть восполняет кровь, до 10 с одной цели; пустая печать помнит это 15 секунд.",
+		"Взыскание возвращает четверть урона, не больше 10 за раз и 20 за 60 с от врага: лечит раны и кровь.",
 		"Хватка в «Помощи» по чужой крови 3 минуты ведёт к владельцу на уровне, след раз в 2 секунды; антимагия его прячет.",
 		"Пятно становится меткой (до 3): наступивший враг получает 6 долга раз в 10 секунд, если вы в 5 клетках и связь свободна.",
 		"Швабра и жезл снимают метку; кровь нового человека продвигает дело пути и лечит 5 ушибов; из изнанки выходите к метке.",
@@ -169,13 +173,14 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	resource_rules = list(
 		"Долг копится на связи: одна связь до 20 долга, Книга обязательств добавляет связи и предел.",
 		"«Связать / взыскать»: новый враг - связь и 10 долга, свой должник - 2 ушиба за долг через секунду.",
+		"Подпись значка долга показывает, что сделает нажатие при текущем намерении.",
 		"В «Разоружении» взыскивается до 10 долга, остаток и срок связи сохраняются.",
 		"Клинок добавляет 6 долга раз в 2 секунды и продлевает связь; метка на полу даёт 6.",
 		"Связь рвётся, если 2 секунды нет контакта: цель дальше 5 клеток, за преградой или вы не можете действовать.",
-		"Взыскание лечит четверть урона и восполняет кровь, до 10 с одной цели; цель без разума не лечит.",
+		"Взыскание возвращает четверть урона, не больше 10 за раз и 20 за 60 с от врага; без разума - ничего.",
 		"Взыскание на 8 секунд вдвое ослабляет ваше кровотечение.",
-		"Когда связь кончилась взысканием, разрывом или смертью, пустая печать 15 секунд хранит пределы лечения с этой цели.",
-		"Чаша тратит долг на лечение, Кровопускание списывает весь долг должника.",
+		"Метка Крови: Хватка по новому врагу при занятых связях - вторая связь на 15 секунд, без продления.",
+		"Чаша сразу, без предупреждения, меняет долг на лечение один к одному; Кровопускание списывает весь долг.",
 		"В «Захвате» «Связать / взыскать» тратит 8 долга на путы: 3 секунды должник не отходит от вас.",
 		"Должника на свежей крови или вашем скользком следе взыскание бьёт шипом из лужи и на секунду прибивает.",
 	)
@@ -186,8 +191,8 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	var/mob/living/blood_body
 	var/ability_failure
 	var/list/datum/status_effect/heretic_blood_seal/seals = list()
-	/// Взысканные до конца связи: слота не занимают, но помнят вылеченное с цели.
-	var/list/datum/status_effect/heretic_blood_seal/spent_seals = list()
+	/// Связь Метки Крови: лежит в seals, но сверх link_limit.
+	var/datum/status_effect/heretic_blood_seal/mark/mark_seal
 	var/list/datum/status_effect/eldritch/blood/marks = list()
 	var/list/obj/effect/temp_visual/heretic_blood/visuals = list()
 	var/blood_generation = 0
@@ -198,6 +203,13 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	var/ascension_active = FALSE
 	/// Помеченные пятна, старейшее первым; значение - ловушка.
 	var/list/obj/effect/decal/cleanable/blood/signs = list()
+	/// Сердца прилива на станции: пока хоть одно цело, Кровавый прилив удваивает кровотечение.
+	var/list/obj/effect/decal/cleanable/blood/tide_hearts = list()
+	var/tide_hearts_raised = FALSE
+	var/tide_receded = FALSE
+	var/shown_intent
+	/// REF(цель) -> list(начало окна, сколько лечения она уже дала): от одного врага лечение ограничено.
+	var/list/heal_ledger = list()
 
 /datum/eldritch_knowledge/base_blood/on_body_gain(mob/living/user)
 	if(!user?.mind || blood_body == user)
@@ -233,13 +245,17 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 
 /datum/eldritch_knowledge/base_blood/on_life(mob/user)
 	validate_links()
+	if(user == blood_body && blood_body.a_intent != shown_intent)
+		shown_intent = blood_body.a_intent
+		var/datum/antagonist/heretic/heretic = combat_resource_owner?.resolve()
+		heretic?.update_combat_resource_alert(FALSE, user)
 
 /datum/eldritch_knowledge/base_blood/on_death(mob/user)
 	clear_blood()
 
 /datum/eldritch_knowledge/base_blood/Destroy()
 	on_body_lose(blood_body)
-	QDEL_LIST(spent_seals)
+	clear_tide_hearts()
 	for(var/obj/effect/decal/cleanable/blood/pool as anything in signs.Copy())
 		unmark_sign(pool)
 	return ..()
@@ -261,7 +277,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	return !QDELETED(src) && !QDELETED(user) && isliving(user) && user == blood_body && user.stat == CONSCIOUS && isturf(user.loc) && heretic?.selected_path == PATH_BLOOD && !heretic.role_removed && heretic.get_knowledge(type) == src
 
 /datum/eldritch_knowledge/base_blood/proc/can_use(mob/living/user, ignore_grab = FALSE)
-	return can_maintain(user) && !user.incapacitated(ignore_grab = ignore_grab)
+	return can_maintain(user) && !heretic_incapacitated(user, ignore_grab)
 
 /datum/eldritch_knowledge/base_blood/proc/can_use_ascension(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -333,28 +349,48 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	if(can_use_ascension(blood_body))
 		link_limit = 3
 		debt_cap = 30
-	while(length(seals) > link_limit)
-		qdel(seals[length(seals)])
+	var/list/regular = seals - mark_seal
+	while(length(regular) > link_limit)
+		var/datum/status_effect/heretic_blood_seal/extra = regular[length(regular)]
+		regular -= extra
+		qdel(extra)
 	for(var/datum/status_effect/heretic_blood_seal/seal as anything in seals)
 		seal.debt = min(seal.debt, debt_cap)
 	update_debt()
+
+/// Обычные связи заняты; связь Метки в предел не входит.
+/datum/eldritch_knowledge/base_blood/proc/links_full()
+	return length(seals) - (mark_seal ? 1 : 0) >= link_limit
 
 /datum/eldritch_knowledge/base_blood/proc/update_debt()
 	combat_resource = 0
 	for(var/datum/status_effect/heretic_blood_seal/seal as anything in seals)
 		combat_resource += seal.debt
-	combat_resource_max = link_limit * debt_cap
+	combat_resource_max = (link_limit + (mark_seal ? 1 : 0)) * debt_cap
 	notify_resource_changed()
 
+/// Что сделает нажатие значка долга при текущем намерении.
+/datum/eldritch_knowledge/base_blood/proc/release_mode()
+	if(!length(seals))
+		return "связать"
+	switch(blood_body?.a_intent)
+		if(INTENT_DISARM)
+			return "связать / взыскать до [HERETIC_BLOOD_PARTIAL_COLLECTION]"
+		if(INTENT_GRAB)
+			return "связать / путы за [HERETIC_BLOOD_TETHER_COST]"
+	return "связать / взыскать всё"
+
 /datum/eldritch_knowledge/base_blood/get_combat_resource_data()
-	return combat_resource_payload(combat_resource_name, round(combat_resource, 0.1), combat_resource_max)
+	return combat_resource_payload("[combat_resource_name] — [release_mode()]", round(combat_resource, 0.1), combat_resource_max)
 
 /datum/eldritch_knowledge/base_blood/combat_resource_state()
-	. = "Связей: [length(seals)]/[link_limit]. Меток крови: [length(signs)] из [HERETIC_BLOOD_SIGN_LIMIT]."
+	. = "Связей: [length(seals) - (mark_seal ? 1 : 0)]/[link_limit][mark_seal ? ", Метка Крови на [html_encode(mark_seal.owner.name)]" : ""]. Меток крови на полу: [length(signs)] из [HERETIC_BLOOD_SIGN_LIMIT]."
 	if(length(seals))
-		. += " Чтобы нанести урон, нажмите индикатор долга и укажите своего должника. Хватка и клинок сами долг не взыскивают. В «Захвате» индикатор опутывает должника за [HERETIC_BLOOD_TETHER_COST] долга."
+		. += " Сейчас по своему должнику значок [release_mode()]: «Вред» и «Помощь» взыскивают весь долг, «Разоружение» - до [HERETIC_BLOOD_PARTIAL_COLLECTION], «Захват» опутывает за [HERETIC_BLOOD_TETHER_COST] долга. Хватка и клинок сами долг не взыскивают."
 	else
 		. += " Нажмите индикатор долга и укажите врага, чтобы создать связь."
+	if(ascension_active && tide_hearts_raised)
+		. += tide_receded ? " Сердца прилива вычищены: кровотечение больше не удваивается." : " Сердец прилива на станции: [length(tide_hearts)]."
 	for(var/datum/status_effect/heretic_blood_seal/seal as anything in seals)
 		var/expected_damage = (seal.collecting ? seal.collection_amount : seal.debt) * HERETIC_BLOOD_DAMAGE_PER_DEBT
 		. += " [html_encode(seal.owner.name)]: [round(seal.debt, 0.1)]/[debt_cap] долга → [round(expected_damage, 0.1)] ушибов[seal.collecting ? "; взыскание началось" : (!isnull(seal.contact_lost_at) ? "; связь слабеет" : "")]."
@@ -368,43 +404,52 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 /datum/eldritch_knowledge/base_blood/spend_combat_resource(amount = 1)
 	return FALSE
 
-/datum/eldritch_knowledge/base_blood/proc/drop_foreign_spent(mob/living/victim)
-	var/datum/status_effect/heretic_blood_seal/seal = victim?.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	if(seal?.spent && seal.blood_ref?.resolve() != src)
-		qdel(seal)
-
 /datum/eldritch_knowledge/base_blood/proc/release(mob/living/user, mob/living/victim, partial = FALSE, tether = FALSE)
 	ability_failure = null
 	if(!valid_victim(user, victim))
 		return FALSE
-	drop_foreign_spent(victim)
 	var/datum/status_effect/heretic_blood_seal/existing = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	if(existing && !existing.spent)
+	if(existing)
 		if(existing.blood_ref?.resolve() != src)
 			return FALSE
 		return tether ? snare_debtor(user, victim, existing) : existing.begin_collection(src, partial ? HERETIC_BLOOD_PARTIAL_COLLECTION : null)
-	if(existing && existing.blood_ref?.resolve() != src)
+	if(links_full())
+		to_chat(user, span_warning("Все кровные связи заняты. Взыщите долг прежнего врага кнопкой «Связать / взыскать» или разорвите связь отходом.[can_mark() ? " Хватка по новому врагу поставит Метку Крови - вторую связь на [DisplayTimeText(HERETIC_BLOOD_LINK_LIFETIME)]." : ""]"))
 		return FALSE
-	if(length(seals) >= link_limit)
-		to_chat(user, span_warning("Все кровные связи заняты. Взыщите долг прежнего врага кнопкой «Связать / взыскать» или разорвите связь отходом."))
-		return FALSE
+	return bind(user, victim)
+
+/datum/eldritch_knowledge/base_blood/proc/bind(mob/living/user, mob/living/victim, seal_type = /datum/status_effect/heretic_blood_seal)
 	if(!heretic_can_affect(user, victim))
 		ability_failure = "Цель защищена от магии: связь не легла, но заряд её защиты сгорел."
 		to_chat(user, span_warning(ability_failure))
 		return TRUE
-	var/datum/status_effect/heretic_blood_seal/seal = existing
-	if(seal)
-		if(!seal.revive(HERETIC_BLOOD_INITIAL_DEBT))
-			return FALSE
-	else
-		seal = victim.apply_status_effect(/datum/status_effect/heretic_blood_seal, src)
-		if(QDELETED(seal))
-			return FALSE
-		seal.debt = min(HERETIC_BLOOD_INITIAL_DEBT, debt_cap)
+	var/datum/status_effect/heretic_blood_seal/seal = victim.apply_status_effect(seal_type, src)
+	if(QDELETED(seal))
+		return FALSE
+	seal.debt = min(HERETIC_BLOOD_INITIAL_DEBT, debt_cap)
 	update_debt()
-	to_chat(user, span_notice("[victim] связан: [seal.debt] долга. Повторное «Связать / взыскать» по этой цели нанесёт урон, в «Захвате» опутает ноги, удары клинком накопят больше долга."))
+	if(seal == mark_seal)
+		to_chat(user, span_notice("На [victim] Метка Крови: вторая связь на [DisplayTimeText(HERETIC_BLOOD_LINK_LIFETIME)], [seal.debt] долга. Удары её не продлевают - взыщите вовремя."))
+		log_combat(user, victim, "ставит Метку Крови на")
+	else
+		to_chat(user, span_notice("[victim] связан: [seal.debt] долга. Повторное «Связать / взыскать» по этой цели нанесёт урон, в «Захвате» опутает ноги, удары клинком накопят больше долга."))
 	playsound(victim, 'modular_bluemoon/sound/heretic/blood_bind.ogg', HERETIC_BLOOD_BIND_VOLUME, TRUE)
+	lesson_event("bind", victim, seal == mark_seal)
 	return TRUE
+
+/datum/eldritch_knowledge/base_blood/proc/can_mark()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(blood_body)
+	var/datum/eldritch_knowledge/blood_mark/mark = heretic?.get_knowledge(/datum/eldritch_knowledge/blood_mark)
+	return !mark_seal && !QDELETED(mark)
+
+/// Хватка по новому врагу: обычная связь, а если они заняты - Метка Крови сверх предела.
+/datum/eldritch_knowledge/base_blood/proc/grasp_bind(mob/living/user, mob/living/victim)
+	if(!links_full())
+		return release(user, victim)
+	if(can_mark())
+		return bind(user, victim, /datum/status_effect/heretic_blood_seal/mark)
+	grasp_failure_reason = mark_seal ? "Связи заняты, а Метка Крови уже горит на [mark_seal.owner]." : "Все кровные связи заняты: взыщите долг прежнего врага."
+	return FALSE
 
 /// Путы вместо удара: часть долга должника уходит в жилы, и он не может отойти от еретика.
 /datum/eldritch_knowledge/base_blood/proc/snare_debtor(mob/living/user, mob/living/victim, datum/status_effect/heretic_blood_seal/seal)
@@ -426,6 +471,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	to_chat(user, span_notice("Жилы оплели ноги [victim]: [DisplayTimeText(HERETIC_BLOOD_TETHER_DURATION)] от вас не отойти. Остаток долга: [round(seal.debt, 0.1)]."))
 	playsound(victim, 'modular_bluemoon/sound/heretic/blood_snare.ogg', HERETIC_BLOOD_SNARE_VOLUME, TRUE)
 	log_combat(user, victim, "оплетает кровяными жилами", addition = "потрачено [HERETIC_BLOOD_TETHER_COST] долга")
+	lesson_event("snare", victim)
 	return TRUE
 
 /datum/eldritch_knowledge/base_blood/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
@@ -433,17 +479,17 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 		return
 	var/mob/living/victim = target
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	if((!seal || seal.spent) && release(user, victim))
+	if(!seal && release(user, victim))
 		seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	if(add_debt(seal, HERETIC_BLOOD_STRIKE_DEBT, renew = TRUE))
 		COOLDOWN_START(src, resource_harvest, HERETIC_BLOOD_HARVEST_TIME)
 
 /datum/eldritch_knowledge/base_blood/proc/add_debt(datum/status_effect/heretic_blood_seal/seal, amount, renew = FALSE)
-	if(QDELETED(seal) || seal.spent || seal.blood_ref?.resolve() != src || seal.collecting || !seal.validate_link())
+	if(QDELETED(seal) || seal.blood_ref?.resolve() != src || seal.collecting || !seal.validate_link())
 		return FALSE
 	var/previous_debt = seal.debt
 	seal.debt = min(debt_cap, seal.debt + amount)
-	if(renew)
+	if(renew && seal.renewable)
 		seal.expires_at = max(seal.expires_at, world.time + HERETIC_BLOOD_LINK_LIFETIME)
 	update_debt()
 	if(previous_debt < debt_cap && seal.debt >= debt_cap)
@@ -456,7 +502,6 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	ability_failure = null
 	if(QDELETED(required) || !valid_victim(user, victim))
 		return FALSE
-	drop_foreign_spent(victim)
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	if(seal && (seal.blood_ref?.resolve() != src || seal.collecting))
 		return FALSE
@@ -465,7 +510,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 		ability_failure = "Цель защищена от магии: жила не натянулась, но заряд её защиты сгорел."
 		to_chat(user, span_warning(ability_failure))
 		return TRUE
-	if((!seal || seal.spent) && release(user, victim))
+	if(!seal && release(user, victim))
 		seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	add_debt(seal, HERETIC_BLOOD_STRIKE_DEBT, renew = TRUE)
 	victim.adjustBruteLoss(HERETIC_BLOOD_LANCE_DAMAGE)
@@ -642,11 +687,86 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 /datum/eldritch_knowledge/base_blood/on_craft_removed(atom/crafted, craft_id)
 	if(craft_id == HERETIC_BLOOD_SIGN_CRAFT)
 		unmark_sign(crafted)
+	else if(craft_id == HERETIC_BLOOD_HEART_CRAFT)
+		lose_tide_heart(crafted)
+
+/// Общие отсеки станции без крови на полу, по одному сердцу на отсек: экипаж дойдёт до каждого без доступа.
+/datum/eldritch_knowledge/base_blood/proc/tide_heart_spots()
+	. = list()
+	var/list/public_areas = list()
+	for(var/area_type in GLOB.the_station_areas)
+		if(heretic_station_public_area(GLOB.areas_by_type[area_type]))
+			public_areas += area_type
+	if(!length(public_areas))
+		return
+	var/list/used_areas = list()
+	for(var/attempt in 1 to HERETIC_BLOOD_HEART_TRIES)
+		if(length(.) >= HERETIC_BLOOD_HEART_COUNT)
+			break
+		var/turf/open/spot = get_safe_random_station_turf(public_areas)
+		var/area/place = get_area(spot)
+		if(!istype(spot) || !is_station_level(spot.z) || !heretic_station_public_area(place) || (place in used_areas) || (locate(/obj/effect/decal/cleanable/blood) in spot))
+			continue
+		used_areas += place
+		. += spot
+
+/// Вознесение поднимает сердца прилива один раз за роль: пока хоть одно цело, Кровавый прилив удваивает кровотечение.
+/datum/eldritch_knowledge/base_blood/proc/raise_tide_hearts(list/spots)
+	if(tide_hearts_raised)
+		return FALSE
+	tide_hearts_raised = TRUE
+	if(isnull(spots))
+		spots = tide_heart_spots()
+	var/list/area_names = list()
+	for(var/turf/open/spot as anything in spots)
+		var/obj/effect/decal/cleanable/blood/heart = new(spot)
+		if(QDELETED(heart))
+			continue
+		heart.AddComponent(/datum/component/heretic_craft, src, HERETIC_BLOOD_HEART_CRAFT, HERETIC_BLOOD_HEART_CLUE)
+		// Сердце моют руками: уборщик-бот его не ищет, а новая грязь на клетке не вытесняет.
+		heart.cap_exempt = TRUE
+		heart.lose_cleanbot_targetable()
+		heretic_blood_pulse(heart)
+		tide_hearts += heart
+		area_names |= get_area_name(heart, TRUE)
+	if(!length(tide_hearts))
+		return FALSE
+	log_game("[key_name(blood_body)] поднимает сердца прилива Крови: [jointext(area_names, ", ")].")
+	priority_announce("Кровавый прилив: в отсеках [jointext(area_names, ", ")] проступила кровь, которая не сохнет и бьётся, как сердце. Пока бьётся хоть одно сердце, раны рядом с вознёсшимся кровоточат вдвое. Вымойте их шваброй или космочистом, коснитесь нулевым жезлом.", "Разрыв завесы — сердца прилива", 'sound/misc/notice1.ogg')
+	to_chat(blood_body, span_eldritch("На станции бьются сердца прилива: [jointext(area_names, ", ")]. Пока цело хоть одно, кровь врагов рядом с вами течёт вдвое; экипаж знает, где они. Из изнанки к ним можно выйти."))
+	notify_resource_changed()
+	return TRUE
+
+/datum/eldritch_knowledge/base_blood/proc/lose_tide_heart(obj/effect/decal/cleanable/blood/heart)
+	if(!(heart in tide_hearts))
+		return
+	tide_hearts -= heart
+	if(!QDELETED(heart))
+		heart.remove_filter(HERETIC_BLOOD_SIGN_FILTER)
+		heart.cap_exempt = FALSE
+		heart.become_cleanbot_targetable()
+	log_game("Сердце прилива Крови ([key_name(blood_body)]) погашено в [AREACOORD(heart)], осталось [length(tide_hearts)].")
+	if(length(tide_hearts) || tide_receded)
+		notify_resource_changed()
+		return
+	tide_receded = TRUE
+	priority_announce("Последнее сердце прилива погасло. Кровь больше не тянется к вознёсшемуся: раны рядом с ним кровоточат как обычно.", "Разрыв завесы — прилив отступил", 'sound/misc/notice2.ogg')
+	to_chat(blood_body, span_warning("Экипаж погасил последнее сердце прилива: кровь врагов рядом больше не течёт вдвое."))
+	notify_resource_changed()
+
+/datum/eldritch_knowledge/base_blood/proc/clear_tide_hearts()
+	tide_receded = TRUE
+	for(var/obj/effect/decal/cleanable/blood/heart as anything in tide_hearts.Copy())
+		tide_hearts -= heart
+		qdel(heretic_craft_on(heart, HERETIC_BLOOD_HEART_CRAFT))
+		qdel(heart)
 
 /datum/eldritch_knowledge/base_blood/pocket_exits(mob/living/user)
 	. = list()
 	for(var/obj/effect/decal/cleanable/blood/pool as anything in signs)
 		heretic_add_pocket_exit(., "Кровь - [get_area_name(pool, TRUE)]", heretic_pocket_landing(get_turf(pool)))
+	for(var/obj/effect/decal/cleanable/blood/heart as anything in tide_hearts)
+		heretic_add_pocket_exit(., "Сердце прилива - [get_area_name(heart, TRUE)]", heretic_pocket_landing(get_turf(heart)))
 
 /datum/eldritch_knowledge/base_blood/pocket_door(mob/living/user, mob/living/victim)
 	if(!door_holds(user, victim))
@@ -680,22 +800,17 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 /datum/eldritch_knowledge/base_blood/proc/spring_sign(obj/effect/decal/cleanable/blood/pool, mob/living/victim)
 	if(!valid_victim(blood_body, victim) || !heretic_can_affect(blood_body, victim, chargecost = 0))
 		return FALSE
-	drop_foreign_spent(victim)
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	if(seal && !seal.spent)
+	if(seal)
 		if(!add_debt(seal, HERETIC_BLOOD_TRAP_DEBT, renew = TRUE))
 			return FALSE
 	else
-		if(length(seals) >= link_limit)
+		if(links_full())
 			return FALSE
-		if(seal)
-			if(seal.blood_ref?.resolve() != src || !seal.revive(HERETIC_BLOOD_TRAP_DEBT))
-				return FALSE
-		else
-			seal = victim.apply_status_effect(/datum/status_effect/heretic_blood_seal, src)
-			if(!seal || QDELETED(seal))
-				return FALSE
-			seal.debt = min(HERETIC_BLOOD_TRAP_DEBT, debt_cap)
+		seal = victim.apply_status_effect(/datum/status_effect/heretic_blood_seal, src)
+		if(!seal || QDELETED(seal))
+			return FALSE
+		seal.debt = min(HERETIC_BLOOD_TRAP_DEBT, debt_cap)
 		update_debt()
 	new /obj/effect/temp_visual/heretic_blood/snare(get_turf(pool), src)
 	heretic_vfx_flash(pool, heretic_path_ink(PATH_BLOOD, TRUE), HERETIC_BLOOD_SNARE_FLASH_RANGE, HERETIC_BLOOD_SNARE_FLASH_POWER, HERETIC_BLOOD_SNARE_FLASH_TIME)
@@ -717,10 +832,10 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	src.blood = blood
 	place = pool.loc
 	RegisterSignal(place, COMSIG_ATOM_ENTERED, PROC_REF(on_entered))
-	pulse()
+	heretic_blood_pulse(pool)
 
-/// Помеченная кровь живая: кромка лужи мерно наливается багровым.
-/datum/heretic_blood_sign/proc/pulse()
+/// Живая кровь: кромка лужи мерно наливается багровым.
+/proc/heretic_blood_pulse(atom/pool)
 	pool.add_filter(HERETIC_BLOOD_SIGN_FILTER, HERETIC_BLOOD_SIGN_PRIORITY, outline_filter(size = 0, color = HERETIC_BLOOD_SIGN_GLOW_COLOR))
 	var/filter = pool.get_filter(HERETIC_BLOOD_SIGN_FILTER)
 	animate(filter, size = HERETIC_BLOOD_SIGN_GLOW, time = HERETIC_BLOOD_SIGN_RISE, loop = -1, easing = SINE_EASING | EASE_OUT)
@@ -823,7 +938,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	if(victim.has_status_effect(/datum/status_effect/heretic_blood_drain))
 		return "Кровь цели уже уходит."
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	if(seal?.blood_ref?.resolve() != src || seal.spent)
+	if(seal?.blood_ref?.resolve() != src)
 		return "Кровопускание берёт только вашего должника: сначала свяжите цель."
 	if(seal.collecting)
 		return "С цели уже взыскивается долг: дождитесь удара."
@@ -1010,8 +1125,16 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 		var/turf/here = get_turf(owner)
 		if(!anchor || !here || here.z != anchor.z || get_dist(here, anchor) <= HERETIC_BLOOD_DRAIN_LEASH)
 			return
-		var/turf/next = get_step_towards(here, anchor)
-		if(!isopenturf(next) || isgroundlessturf(next) || !owner.Move(next, get_dir(here, next)))
+		var/direction = get_dir(here, anchor)
+		var/moved = FALSE
+		for(var/step_direction in list(direction, turn(direction, 45), turn(direction, -45)))
+			var/turf/next = get_step(here, step_direction)
+			if(!isopenturf(next) || isgroundlessturf(next) || !heretic_diagonal_step_safe(here, step_direction) || get_dist(next, anchor) >= get_dist(here, anchor))
+				continue
+			if(owner.Move(next, step_direction))
+				moved = TRUE
+				break
+		if(!moved)
 			return
 
 /datum/status_effect/heretic_blood_drain/proc/on_pre_move(atom/movable/source, atom/newloc)
@@ -1089,7 +1212,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 			log_combat(drainer, owner, "обескровливает до обморока", addition = "потеряно до [round(drained, 0.1)] крови")
 		restore_colour(fainted ? HERETIC_BLOOD_DRAIN_FAINT : HERETIC_BLOOD_PALE_RECOVER)
 		if(!QDELETED(seal) && !seal.collecting)
-			seal.seal_overlay.icon_state = "blood_seal"
+			seal.seal_overlay.icon_state = seal.idle_state
 			owner.update_icon()
 		heretic_capture_release(owner, HERETIC_BLOOD_CAPTURE, fainted ? HERETIC_BLOOD_DRAIN_FAINT : 0, fainted ? INFINITY : heretic_capture_held_for(held_since))
 	seal = null
@@ -1111,7 +1234,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	status_type = STATUS_EFFECT_UNIQUE
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_blood_tether
 	on_remove_on_mob_delete = TRUE
-	examine_text = span_warning("Ноги SUBJECTPRONOUN оплетены кровяными жилами: от еретика не отойти, пока жилы держат.")
+	examine_text = span_warning("Ноги оплетены кровяными жилами: от еретика не отойти, пока жилы держат.")
 	var/datum/weakref/blood_ref
 	var/datum/status_effect/heretic_blood_seal/seal
 	var/obj/effect/abstract/heretic_vfx_attached/snare
@@ -1126,7 +1249,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 /datum/status_effect/heretic_blood_tether/on_apply()
 	. = ..()
 	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
-	if(!. || QDELETED(blood?.blood_body) || QDELETED(seal) || seal.spent || seal.owner != owner)
+	if(!. || QDELETED(blood?.blood_body) || QDELETED(seal) || seal.owner != owner)
 		return FALSE
 	applied = TRUE
 	RegisterSignal(owner, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(on_pre_move))
@@ -1136,7 +1259,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	return TRUE
 
 /datum/status_effect/heretic_blood_tether/tick()
-	if(QDELETED(seal) || seal.spent)
+	if(QDELETED(seal))
 		qdel(src)
 
 /datum/status_effect/heretic_blood_tether/proc/on_pre_move(atom/movable/source, atom/newloc)
@@ -1424,7 +1547,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 			return stain
 	return null
 
-/// Взыскание с должника на крови бьёт шипом из лужи: лужа уходит в шип, кроме помеченной, должник на миг прибит.
+/// Взыскание с должника на крови бьёт шипом из лужи: лужа уходит в шип, кроме меток и сердец прилива, должник на миг прибит.
 /datum/eldritch_knowledge/base_blood/proc/spike_from_pool(mob/living/victim)
 	var/atom/movable/pool = pool_under(victim)
 	if(!pool)
@@ -1433,7 +1556,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	if(victim.stat != DEAD)
 		victim.Immobilize(HERETIC_BLOOD_SPIKE_PIN)
 		to_chat(victim, span_userdanger("Из крови под ногами бьёт шип и прибивает вас к месту!"))
-	if(!(pool in signs))
+	if(!(pool in signs) && !(pool in tide_hearts))
 		qdel(pool)
 	return TRUE
 
@@ -1450,6 +1573,45 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	if(!can_use(user))
 		return 0
 	return healed_brute + max(0, old_burn - user.getFireLoss())
+
+/// Сколько лечения ещё даст эта цель: от одного врага не больше HERETIC_BLOOD_TARGET_HEAL_LIMIT за HERETIC_BLOOD_TARGET_HEAL_WINDOW.
+/datum/eldritch_knowledge/base_blood/proc/target_heal_room(mob/living/victim)
+	var/list/entry = heal_ledger[REF(victim)]
+	if(!entry || world.time >= entry[1] + HERETIC_BLOOD_TARGET_HEAL_WINDOW)
+		return HERETIC_BLOOD_TARGET_HEAL_LIMIT
+	return max(0, HERETIC_BLOOD_TARGET_HEAL_LIMIT - entry[2])
+
+/datum/eldritch_knowledge/base_blood/proc/note_target_heal(mob/living/victim, amount)
+	if(amount <= 0)
+		return
+	var/key = REF(victim)
+	var/list/entry = heal_ledger[key]
+	if(!entry || world.time >= entry[1] + HERETIC_BLOOD_TARGET_HEAL_WINDOW)
+		for(var/old_key in heal_ledger)
+			var/list/old_entry = heal_ledger[old_key]
+			if(world.time >= old_entry[1] + HERETIC_BLOOD_TARGET_HEAL_WINDOW)
+				heal_ledger -= old_key
+		entry = list(world.time, 0)
+		heal_ledger[key] = entry
+	entry[2] += amount
+
+/datum/eldritch_knowledge/base_blood/proc/heal_spent_notice(mob/living/user, mob/living/victim)
+	var/list/entry = heal_ledger[REF(victim)]
+	var/seconds = entry ? max(1, round((entry[1] + HERETIC_BLOOD_TARGET_HEAL_WINDOW - world.time) / (1 SECONDS))) : 0
+	to_chat(user, span_warning("Кровь [victim] больше не лечит вас: от одного врага не больше [HERETIC_BLOOD_TARGET_HEAL_LIMIT] лечения за [HERETIC_BLOOD_TARGET_HEAL_WINDOW / (1 SECONDS)] секунд, ещё [seconds] с."))
+
+/// Взыскание возвращает четверть урона, но не больше HERETIC_BLOOD_SIPHON_LIMIT за раз и остатка лечения от этой цели: столько же лечения и столько же крови.
+/datum/eldritch_knowledge/base_blood/proc/siphon(mob/living/user, damage, mob/living/victim)
+	var/room = target_heal_room(victim)
+	if(room <= 0)
+		heal_spent_notice(user, victim)
+		return 0
+	var/share = min(HERETIC_BLOOD_SIPHON_LIMIT, damage * HERETIC_BLOOD_SIPHON_FRACTION, room)
+	var/healed = mend_wounds(user, share)
+	if(healed > 0)
+		to_chat(user, span_notice("Взысканная кровь залечивает [round(healed, 0.1)] ушибов и ожогов."))
+	note_target_heal(victim, max(healed, recover_blood(user, share)))
+	return healed
 
 /datum/eldritch_knowledge/base_blood/proc/recover_blood(mob/living/user, amount)
 	if(!can_use(user) || !ishuman(user))
@@ -1550,7 +1712,11 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	if(!victim.mind)
 		to_chat(user, span_warning("Кровь без разума не лечит: чаша пьёт только из разумных."))
 		return FALSE
-	var/payment = min(HERETIC_BLOOD_REFUND_LIMIT, seal.debt, (user.getBruteLoss() + user.getFireLoss()) / HERETIC_BLOOD_REFUND_MULTIPLIER)
+	var/room = target_heal_room(victim)
+	if(room <= 0)
+		heal_spent_notice(user, victim)
+		return FALSE
+	var/payment = min(HERETIC_BLOOD_REFUND_LIMIT, seal.debt, (user.getBruteLoss() + user.getFireLoss()) / HERETIC_BLOOD_REFUND_MULTIPLIER, room / HERETIC_BLOOD_REFUND_MULTIPLIER)
 	if(payment <= 0)
 		return FALSE
 	seal.debt -= payment
@@ -1560,14 +1726,16 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	victim.adjustBruteLoss(drain)
 	if(QDELETED(src) || !can_use(user) || blood_generation != expected_generation || QDELETED(victim))
 		return TRUE
-	var/healed = mend_wounds(user, min(drain, max(0, victim.getBruteLoss() - damage_before)))
+	var/heal_amount = min(drain, max(0, victim.getBruteLoss() - damage_before))
+	var/healed = mend_wounds(user, heal_amount)
+	note_target_heal(victim, healed)
 	if(QDELETED(src) || !can_use(user) || blood_generation != expected_generation)
 		return TRUE
 	if(!QDELETED(seal) && seal.debt <= 0)
 		seal.spend()
 	else
 		update_debt()
-	to_chat(user, span_notice("Чаша залечивает [round(healed, 0.1)] ушибов и ожогов.[QDELETED(seal) || seal.spent ? " Долг исчерпан; можно связать новую цель." : " Остаток долга [victim]: [round(seal.debt, 0.1)]."]"))
+	to_chat(user, span_notice("Чаша залечивает [round(healed, 0.1)] ушибов и ожогов.[QDELETED(seal) ? " Долг исчерпан; можно связать новую цель." : " Остаток долга [victim]: [round(seal.debt, 0.1)]."]"))
 	new /obj/effect/temp_visual/heretic_blood/pact(get_turf(user), src)
 	return TRUE
 
@@ -1588,12 +1756,12 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	var/collection_ready_at
 	var/collection_timer
 	var/collection_amount
-	var/siphoned = 0
-	var/blood_recovered = 0
 	var/expected_generation
 	var/contact_lost_at
 	var/link_end_reason = "утрачена связь с владельцем"
-	var/spent = FALSE
+	/// Удары клинком, Хватка и метки на полу продлевают срок связи.
+	var/renewable = TRUE
+	var/idle_state = "blood_seal"
 
 /datum/status_effect/heretic_blood_seal/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_blood/blood)
 	if(QDELETED(blood))
@@ -1602,16 +1770,15 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	blood_ref = WEAKREF(blood)
 	expected_generation = blood.blood_generation
 	expires_at = world.time + HERETIC_BLOOD_LINK_LIFETIME
-	seal_overlay = mutable_appearance('modular_bluemoon/icons/obj/heretic_blood_effects.dmi', "blood_seal", ABOVE_MOB_LAYER)
+	seal_overlay = mutable_appearance('modular_bluemoon/icons/obj/heretic_blood_effects.dmi', idle_state, ABOVE_MOB_LAYER)
 	return ..()
 
 /datum/status_effect/heretic_blood_seal/on_apply()
 	if(!..())
 		return FALSE
 	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
-	if(!blood?.valid_victim(blood.blood_body, owner) || length(blood.seals) >= blood.link_limit)
+	if(!blood?.valid_victim(blood.blood_body, owner) || !claim_slot(blood))
 		return FALSE
-	blood.seals += src
 	RegisterSignal(owner, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(update_seal_overlay))
 	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_owner_death))
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_owner_moved))
@@ -1621,83 +1788,44 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	warn_owner(blood)
 	return TRUE
 
+/datum/status_effect/heretic_blood_seal/proc/claim_slot(datum/eldritch_knowledge/base_blood/blood)
+	if(blood.links_full())
+		return FALSE
+	blood.seals += src
+	return TRUE
+
 /datum/status_effect/heretic_blood_seal/proc/warn_owner(datum/eldritch_knowledge/base_blood/blood)
 	to_chat(owner, span_userdanger("От вас к [blood.blood_body] тянется кровяная жила. Его удары увеличивают долг, а взыскание лечит его! Скройтесь за преградой или отойдите дальше пяти клеток на две секунды. Если взыскание уже началось, потеря контакта сразу его сорвёт."))
 
 /datum/status_effect/heretic_blood_seal/proc/update_seal_overlay(atom/source, list/overlays)
 	SIGNAL_HANDLER
-	if(!spent)
-		overlays += seal_overlay
+	overlays += seal_overlay
 
+/// Смерть посреди взыскания: убивающий удар detonate() уже нанёс, лечение он засчитает по своим локальным.
 /datum/status_effect/heretic_blood_seal/proc/on_owner_death(datum/source)
 	SIGNAL_HANDLER
 	if(source != owner)
 		link_end_reason = "утрачено знание взыскания"
 		qdel(src)
 		return
-	if(spent)
-		return
-	// Смерть посреди взыскания: убивший удар detonate() ещё засчитает лечение, поэтому печать пустеет при любом счёте.
-	if(!collecting)
-		break_link("должник умер")
-		return
-	link_end_reason = "должник умер"
-	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
-	if(blood)
-		announce_loss(blood)
-	spend()
+	reset_collection()
+	break_link("должник умер")
 
 /datum/status_effect/heretic_blood_seal/proc/on_owner_moved(datum/source)
 	SIGNAL_HANDLER
 	validate_link()
 
 /datum/status_effect/heretic_blood_seal/tick()
-	if(!spent)
-		validate_link()
-	else if(world.time >= expires_at)
-		qdel(src)
+	validate_link()
 
-/// Пустая печать после полного взыскания: связи нет, а счётчики лечения и крови с этой цели сохраняются.
+/// Долг выплачен целиком: связь закрывается и освобождает место.
 /datum/status_effect/heretic_blood_seal/proc/spend()
-	if(spent)
-		return
-	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
-	if(!blood || QDELETED(owner))
-		qdel(src)
-		return
-	reset_collection()
-	spent = TRUE
+	link_end_reason = "долг выплачен"
 	debt = 0
-	contact_lost_at = null
-	expires_at = world.time + HERETIC_BLOOD_SPENT_LIFETIME
-	blood.seals -= src
-	blood.spent_seals |= src
-	QDEL_NULL(link_beam)
-	owner.clear_alert(id)
-	linked_alert = null
-	owner.update_icon()
-	blood.update_debt()
-
-/datum/status_effect/heretic_blood_seal/proc/revive(new_debt)
-	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
-	if(!spent || !blood || length(blood.seals) >= blood.link_limit)
-		return FALSE
-	spent = FALSE
-	expected_generation = blood.blood_generation
-	blood.spent_seals -= src
-	blood.seals |= src
-	debt = min(new_debt, blood.debt_cap)
-	expires_at = world.time + HERETIC_BLOOD_LINK_LIFETIME
-	var/atom/movable/screen/alert/status_effect/alert = owner.throw_alert(id, alert_type)
-	if(istype(alert))
-		alert.attached_effect = src
-		linked_alert = alert
-	owner.update_icon()
-	warn_owner(blood)
-	return validate_link()
+	qdel(src)
 
 /datum/status_effect/heretic_blood_seal/proc/validate_link()
-	if(QDELETED(src) || spent)
+	if(QDELETED(src))
 		return FALSE
 	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
 	if(!blood || blood.blood_generation != expected_generation || !blood.can_maintain(blood.blood_body))
@@ -1744,17 +1872,11 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 		link_beam.recalculate_in(0)
 	return TRUE
 
-/// Связь, с которой уже лечились, остаётся пустой печатью: пределы лечения с цели не обнуляются.
 /datum/status_effect/heretic_blood_seal/proc/break_link(reason)
 	link_end_reason = reason
 	if(!QDELETED(owner))
 		playsound(owner, GLOB.heretic_blood_cue_sounds["sever"], HERETIC_BLOOD_SEVER_VOLUME, TRUE)
-	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
-	if(blood && blood.blood_generation == expected_generation && !QDELETED(owner) && (siphoned > 0 || blood_recovered > 0))
-		announce_loss(blood)
-		spend()
-	else
-		qdel(src)
+	qdel(src)
 	return FALSE
 
 /datum/status_effect/heretic_blood_seal/proc/announce_loss(datum/eldritch_knowledge/base_blood/blood)
@@ -1775,7 +1897,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	if(required)
 		UnregisterSignal(required, COMSIG_PARENT_QDELETING)
 	collection_knowledge_ref = null
-	seal_overlay.icon_state = "blood_seal"
+	seal_overlay.icon_state = idle_state
 	owner.update_icon()
 
 /datum/status_effect/heretic_blood_seal/proc/begin_collection(datum/eldritch_knowledge/required, amount)
@@ -1828,17 +1950,10 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	victim.adjustBruteLoss(damage)
 	if(!QDELETED(blood) && blood.blood_generation == generation && !QDELETED(victim))
 		var/actual_damage = min(damage, max(0, victim.getBruteLoss() - damage_before))
-		var/healed = victim.mind ? blood.mend_wounds(user, min(max(0, HERETIC_BLOOD_SIPHON_LIMIT - siphoned), actual_damage * HERETIC_BLOOD_SIPHON_FRACTION)) : 0
 		if(actual_damage > 0)
+			if(victim.mind)
+				blood.siphon(user, actual_damage, victim)
 			heretic.advance_combat_deed(victim, PATH_BLOOD)
-		if(actual_damage > 0 && victim.mind)
-			var/recovered = blood.recover_blood(user, min(max(0, HERETIC_BLOOD_RECOVERY_LIMIT - blood_recovered), actual_damage * HERETIC_BLOOD_RECOVERY_FRACTION))
-			if(!QDELETED(src))
-				blood_recovered += recovered
-		if(!QDELETED(src))
-			siphoned += healed
-		if(healed > 0)
-			to_chat(user, span_notice("Взысканная кровь залечивает [round(healed, 0.1)] ушибов и ожогов."))
 	if(!QDELETED(victim))
 		if(!blood.spike_from_pool(victim))
 			new /obj/effect/temp_visual/heretic_blood/burst(get_turf(victim), blood)
@@ -1850,13 +1965,14 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 		playsound(victim, blood.collect_sound(verdict), verdict ? HERETIC_BLOOD_VERDICT_VOLUME : HERETIC_BLOOD_COLLECT_VOLUME, TRUE)
 		if(!QDELETED(user))
 			log_combat(user, victim, "взыскивает кровный долг с", addition = "заданный урон: [damage]; полученные ушибы: [round(victim.getBruteLoss() - damage_before, 0.1)]")
+	blood.lesson_event("collect", victim, debt)
 	if(QDELETED(src))
 		return TRUE
 	if(debt <= 0)
 		spend()
 		return TRUE
 	if(!validate_link())
-		if(!QDELETED(src) && !spent)
+		if(!QDELETED(src))
 			break_link(link_end_reason)
 		return TRUE
 	reset_collection()
@@ -1867,7 +1983,6 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
 	if(blood)
 		blood.seals.Remove(src)
-		blood.spent_seals.Remove(src)
 		blood.update_debt()
 		announce_loss(blood)
 	var/datum/eldritch_knowledge/required = collection_knowledge_ref?.resolve()
@@ -1896,6 +2011,39 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "blood_bond"
 
+/// Метка Крови: вторая связь сверх предела, гаснет через HERETIC_BLOOD_LINK_LIFETIME и ударами не продлевается.
+/datum/status_effect/heretic_blood_seal/mark
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_blood_seal/mark
+	renewable = FALSE
+
+/datum/status_effect/heretic_blood_seal/mark/claim_slot(datum/eldritch_knowledge/base_blood/blood)
+	if(blood.mark_seal)
+		return FALSE
+	blood.seals += src
+	blood.mark_seal = src
+	return TRUE
+
+/datum/status_effect/heretic_blood_seal/mark/on_apply()
+	. = ..()
+	if(.)
+		owner.apply_status_effect(/datum/status_effect/eldritch/blood, blood_ref?.resolve())
+
+/datum/status_effect/heretic_blood_seal/mark/warn_owner(datum/eldritch_knowledge/base_blood/blood)
+	to_chat(owner, span_userdanger("На вас Метка Крови: [blood.blood_body] держит вас второй кровной жилой. Через [DisplayTimeText(HERETIC_BLOOD_LINK_LIFETIME)] метка погаснет сама; раньше её рвут преграда и отход дальше пяти клеток на две секунды."))
+
+/datum/status_effect/heretic_blood_seal/mark/on_remove()
+	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
+	if(blood?.mark_seal == src)
+		blood.mark_seal = null
+	owner?.remove_status_effect(/datum/status_effect/eldritch/blood)
+	return ..()
+
+/atom/movable/screen/alert/status_effect/heretic_blood_seal/mark
+	name = "Метка Крови"
+	icon = 'modular_bluemoon/icons/obj/heretic_blood_effects.dmi'
+	icon_state = "blood_mark"
+	desc = "Вторая кровная связь еретика: его удары копят на вас долг, но срок метки не продлевают - через 15 секунд она погаснет сама. Скройтесь за преградой или отойдите дальше пяти клеток на две секунды, и метка порвётся раньше. Во время предупреждения взыскания отход рвёт её сразу."
+
 /datum/status_effect/eldritch/blood
 	id = "blood_mark"
 	mark_name = "Метка Крови"
@@ -1905,11 +2053,16 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	effect_sprite_layer = ABOVE_MOB_LAYER
 	detonation_sound = 'modular_bluemoon/sound/heretic/blood_release.ogg'
 	detonation_visual = /obj/effect/temp_visual/heretic_blood/reckoning
+	alert_type = null
+	tick_interval = -1
+	examine_text = span_warning("На коже горит Метка Крови: это вторая кровная связь еретика. Она гаснет через 15 секунд, раньше - за преградой или дальше пяти клеток от него.")
 	var/datum/weakref/blood_ref
 
+/// Метку держит связь Метки: она и снимает её, поэтому своего срока у метки нет.
 /datum/status_effect/eldritch/blood/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_blood/blood)
 	if(blood)
 		blood_ref = WEAKREF(blood)
+	duration = -1
 	return ..()
 
 /datum/status_effect/eldritch/blood/on_apply()
@@ -1926,13 +2079,9 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	blood?.marks.Remove(src)
 	return ..()
 
+/// Клинок метку не взрывает: долг за удар копит сама связь Метки.
 /datum/status_effect/eldritch/blood/on_effect()
-	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
-	var/datum/status_effect/heretic_blood_seal/seal = owner.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	if(blood?.valid_victim(blood.blood_body, owner) && seal?.blood_ref?.resolve() == blood && !seal.collecting && seal.validate_link())
-		blood.add_debt(seal, HERETIC_BLOOD_STRIKE_DEBT)
-		seal.expires_at = min(seal.expires_at + 5 SECONDS, world.time + 20 SECONDS)
-	return ..()
+	return
 
 /obj/item/melee/sickly_blade/blood
 	name = "crimson fang"
@@ -1953,7 +2102,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 
 /obj/item/heretic_path_relic/blood_relic
 	name = "clotted chalice"
-	desc = "Костяная чаша на ножке из сросшихся сосудов. Возьмите в руку и щёлкните по своему связанному врагу: до 10 долга превратится в 20 ушибов врагу и столько же лечения ваших ушибов и ожогов. Расход зависит от ваших ран; из цели без разума чаша не пьёт. Перезарядка — 12 секунд."
+	desc = "Костяная чаша на ножке из сросшихся сосудов. Возьмите в руку и щёлкните по своему связанному врагу: сразу, без секунды предупреждения, до 10 долга превратится в 20 ушибов врагу и столько же лечения ваших ушибов и ожогов. Взыскание бьёт и лечит четверть урона, чаша лечит один к одному. Расход зависит от ваших ран; из цели без разума чаша не пьёт. Один враг вместе со взысканием даёт не больше 20 лечения за 60 секунд. Перезарядка — 12 секунд."
 	icon = 'modular_bluemoon/icons/obj/heretic_blood.dmi'
 	icon_state = "blood_relic"
 
@@ -1976,7 +2125,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 		to_chat(user, span_warning("Щёлкните чашей по живому должнику в пяти клетках без преград."))
 		return FALSE
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	if(seal?.blood_ref?.resolve() != blood || seal.spent)
+	if(seal?.blood_ref?.resolve() != blood)
 		to_chat(user, span_warning("Сначала свяжите эту цель кнопкой «Связать / взыскать» или своим клинком."))
 		return FALSE
 	if(seal.collecting)
@@ -2056,9 +2205,22 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/release
 	name = "Связать / взыскать"
-	desc = "Первый выбор врага - бесплатная связь и 10 долга, повторный - через секунду 2 ушиба за долг, в «Разоружении» до 10 долга, в «Захвате» - путы за 8 долга: 3 секунды должник не отходит от вас. Четверть урона лечит вас, до 10 с одной цели; цель без разума не лечит."
+	desc = "Первый выбор врага - бесплатная связь и 10 долга, повторный - через секунду 2 ушиба за долг, в «Разоружении» до 10 долга, в «Захвате» - путы за 8 долга: 3 секунды должник не отходит от вас. Взыскание возвращает вам четверть урона, не больше 10 за раз; цель без разума не лечит. Подпись значка долга показывает режим текущего намерения."
 	summary = "Нового врага связывает и даёт ему 10 долга; со своего должника через секунду взыскивает по 2 ушиба за долг."
 	active_msg = "Новый враг — связать бесплатно. Свой должник — взыскать весь долг; в намерении «Разоружить» — до 10, сохранив остаток; в «Захвате» — путы за 8 долга."
+
+/obj/effect/proc_holder/spell/pointed/heretic_blood/release/Trigger(mob/user, skip_can_cast = TRUE)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	if(blood)
+		switch(user.a_intent)
+			if(INTENT_DISARM)
+				active_msg = "«Разоружение»: новый враг — связать, свой должник — взыскать до [HERETIC_BLOOD_PARTIAL_COLLECTION] долга, остаток останется."
+			if(INTENT_GRAB)
+				active_msg = "«Захват»: новый враг — связать, свой должник — путы за [HERETIC_BLOOD_TETHER_COST] долга."
+			else
+				active_msg = "Новый враг — связать бесплатно, свой должник — взыскать весь долг. «Разоружение» взыщет до [HERETIC_BLOOD_PARTIAL_COLLECTION], «Захват» опутает."
+	return ..()
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/release/can_target(atom/target, mob/user, silent)
 	if(!..())
@@ -2067,9 +2229,9 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
-	if(!heretic_check(user, (seal && !seal.spent) || length(blood.seals) < blood.link_limit, silent, "Связи заняты: выберите прежнего должника, чтобы взыскать его долг."))
+	if(!heretic_check(user, seal || !blood.links_full(), silent, "Связи заняты: выберите прежнего должника, чтобы взыскать его долг[blood.can_mark() ? ", или коснитесь нового врага Хваткой - она поставит Метку Крови" : ""]."))
 		return FALSE
-	if(!heretic_check(user, !seal || seal.spent || seal.blood_ref?.resolve() == blood, silent, "Эта связь принадлежит другому еретику. Выберите другого противника."))
+	if(!heretic_check(user, !seal || seal.blood_ref?.resolve() == blood, silent, "Эта связь принадлежит другому еретику. Выберите другого противника."))
 		return FALSE
 	return heretic_check(user, !seal?.collecting, silent, "Взыскание уже началось: удержите дистанцию до удара.")
 
@@ -2093,7 +2255,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	var/mob/living/victim = target
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	if(!heretic_check(user, !seal || seal.spent || seal.blood_ref?.resolve() == heretic.get_knowledge(/datum/eldritch_knowledge/base_blood), silent, "Эта связь принадлежит другому еретику. Выберите другого противника."))
+	if(!heretic_check(user, !seal || seal.blood_ref?.resolve() == heretic.get_knowledge(/datum/eldritch_knowledge/base_blood), silent, "Эта связь принадлежит другому еретику. Выберите другого противника."))
 		return FALSE
 	return heretic_check(user, !seal?.collecting, silent, "Взыскание уже началось: дождитесь удара, прежде чем притягивать цель.")
 
@@ -2143,7 +2305,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	if(!heretic_check(user, blood.can_use_ascension(user), silent, "Сначала завершите вознесение пути Крови."))
 		return FALSE
-	if(!heretic_check(user, seal?.blood_ref?.resolve() == blood && !seal.spent, silent, "На цели нет вашей кровной связи. Сначала свяжите её Хваткой или способностью «Связать / взыскать»."))
+	if(!heretic_check(user, seal?.blood_ref?.resolve() == blood, silent, "На цели нет вашей кровной связи. Сначала свяжите её Хваткой или способностью «Связать / взыскать»."))
 		return FALSE
 	return heretic_check(user, !seal.collecting, silent, "Взыскание уже началось: дождитесь удара, прежде чем выносить Кровный приговор.")
 
@@ -2181,7 +2343,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 
 /obj/effect/proc_holder/spell/self/heretic_blood/reckoning
 	name = "Взыскать долги"
-	desc = "6 долга каждой связи и взыскание всех разом: лечит вас за урон каждой цели, взысканные 4 секунды замедлены и видят размыто. У должников есть секунда предупреждения; перезарядка 20 секунд."
+	desc = "6 долга каждой связи, включая Метку, и взыскание всех разом: каждая цель возвращает вам четверть урона, не больше 10; взысканные 4 секунды замедлены и видят размыто. У должников есть секунда предупреждения; перезарядка 20 секунд."
 	summary = "6 долга каждой связи и взыскание всех разом; взысканные обескровлены на 4 секунды."
 	action_icon_state = "blood_reckoning"
 	charge_max = 20 SECONDS
@@ -2203,7 +2365,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	summary = "Хватка бесплатно связывает врага, по должнику добавляет 6 долга."
 	details = list(
 		"По уже связанному врагу обновляет срок связи до 15 секунд.",
-		"Пустую печать после взыскания Хватка продлевает, а не начинает счёт лечения заново.",
+		"Когда связи заняты, нового врага Хватка не свяжет - до Метки Крови.",
 	)
 	role = HERETIC_ROLE_GRASP
 	gain_text = "В моей ладони забился пульс, которого прежде не было."
@@ -2217,7 +2379,11 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 		return FALSE
 	var/mob/living/victim = target
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	return seal && !seal.spent ? blood.add_debt(seal, HERETIC_BLOOD_STRIKE_DEBT, renew = TRUE) : blood.release(user, victim)
+	if(seal)
+		return blood.add_debt(seal, HERETIC_BLOOD_STRIKE_DEBT, renew = TRUE)
+	. = blood.grasp_bind(user, victim)
+	if(!.)
+		grasp_failure_reason = blood.grasp_failure_reason
 
 /datum/eldritch_knowledge/spell/blood_drain
 	name = "Кровопускание"
@@ -2253,30 +2419,23 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_blood/lance
 
 /datum/eldritch_knowledge/blood_mark
-	name = "Метка отсрочки"
-	summary = "Хватка ставит метку на 15 секунд, удар клыком её разбивает и добавляет 6 долга."
+	name = "Метка Крови"
+	summary = "Когда связи заняты, Хватка по новому врагу ставит Метку Крови: вторую связь на 15 секунд."
 	details = list(
-		"Взрыв продлевает связь на 5 секунд, но не дальше 20 секунд от текущего момента.",
-		"Метка работает только по вашему должнику.",
+		"Метка - полная связь: 10 долга сразу, клинок копит долг, взыскание и Кровопускание работают.",
+		"Срок не продлевается ни клинком, ни Хваткой: через 15 секунд метка гаснет вместе с долгом.",
+		"Одна метка за раз; рвут её преграда, отход дальше 5 клеток и антимагия, как обычную связь.",
 	)
 	role = HERETIC_ROLE_MARK
-	gain_text = "Подпись побледнела. Я обвёл её ещё раз."
+	gain_text = "Подпись побледнела. Рядом я поставил вторую, наспех."
 	cost = 2
 	route = PATH_BLOOD
-
-/datum/eldritch_knowledge/blood_mark/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
-	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
-	if(QDELETED(src) || !proximity_flag || !blood?.valid_victim(user, target) || !heretic_can_affect(user, target, chargecost = 0))
-		return FALSE
-	var/mob/living/victim = target
-	victim.apply_status_effect(/datum/status_effect/eldritch/blood, blood)
-	return TRUE
 
 /datum/eldritch_knowledge/blood_mark/on_body_lose(mob/living/user)
 	var/datum/antagonist/heretic/heretic = combat_resource_owner?.resolve()
 	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	if(!QDELETED(blood))
+		qdel(blood.mark_seal)
 		QDEL_LIST(blood.marks)
 
 /datum/eldritch_knowledge/blood_mark/Destroy()
@@ -2285,12 +2444,12 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 
 /datum/eldritch_knowledge/blood_relic
 	name = "Чаша возвращённого"
-	summary = "Стакан и лист серебра дают чашу: долг должника превращается в лечение ваших ран."
+	summary = "Стакан и лист серебра дают чашу: долг должника сразу превращается в лечение один к одному."
 	details = list(
 		"Щёлкните чашей по своему должнику: до 10 долга дают ему до 20 ушибов, вам - столько же лечения.",
+		"Без секунды предупреждения: должник не успеет уйти за стену, как при взыскании.",
 		"Расход ограничен вашими ранами, лечение - фактическим уроном; из цели без разума чаша не пьёт.",
-		"Исчерпанная чашей связь освобождается, пустая печать ещё 15 секунд хранит пределы лечения.",
-		"Одна чаша, перезарядка 12 секунд.",
+		"Исчерпанная чашей связь освобождается. Одна чаша, перезарядка 12 секунд.",
 	)
 	role = HERETIC_ROLE_RELIC
 	gain_text = "На дне осталась одна капля. Я узнал её вкус."
@@ -2333,7 +2492,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	summary = "Две связи вместо одной, в каждой до 20 долга."
 	details = list(
 		"Улучшения: 25 долга, затем третья связь.",
-		"Вознесение даёт три связи по 30. Улучшения не создают долг.",
+		"Вознесение даёт три связи по 30. Метка Крови остаётся сверх них. Улучшения не создают долг.",
 	)
 	role = HERETIC_ROLE_PASSIVE
 	gain_text = "На обороте листа нашлось место для ещё одной подписи."
@@ -2365,7 +2524,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	name = "Взыскать долги"
 	summary = "Все связи получают 6 долга и взыскиваются разом; взысканные обескровлены на 4 секунды."
 	details = list(
-		"Взыскание лечит вас за урон каждой цели в общих пределах лечения.",
+		"Каждая цель возвращает вам четверть урона, не больше 10; Метка Крови тоже взыскивается.",
 		"Обескровленные замедлены и видят размыто.",
 		"Каждая цель получает секунду предупреждения и может порвать связь.",
 		"Посторонние не затрагиваются. Перезарядка 20 секунд.",
@@ -2388,14 +2547,14 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 
 /datum/eldritch_knowledge/final_eldritch/blood_final
 	name = "Венценосец Багровой Чаши"
-	summary = "Кровотечение врагов рядом удваивается, чужая кровь с пола лечит, открывается Кровный приговор."
+	summary = "На станции бьются сердца прилива: пока они целы, кровь врагов рядом течёт вдвое; открыт Кровный приговор."
 	details = list(
 		"Нужны 3 назначенные души и 3 человеческих трупа на руне станции; станция узнаёт место обряда, он длится 30 секунд.",
 		"Общая стойкость вознесения, три связи по 30 долга; смерть снимает усиления, оживление возвращает.",
-		"Враги в 3 клетках в поле зрения каждые 2 секунды теряют ещё столько же крови, сколько от своих ран.",
-		"Перевязанная, зашитая или прижжённая рана не удваивается.",
-		"Пока вы ранены, свежая чужая лужа под ногами впитывается и лечит 3 урона раз в секунду, сначала ушибы.",
-		"Засохшая и своя кровь, следы обуви и кровь ксеноморфов не годятся.",
+		"В 4 общих отсеках станции проступают сердца прилива; объявление их называет, из изнанки к ним можно выйти.",
+		"Пока цело хоть одно, враги в 3 клетках раз в 2 секунды теряют ещё столько крови, сколько от ран; перевязка спасает.",
+		"Швабра, космочист или нулевой жезл гасят сердце; когда погаснет последнее, прилив отступит навсегда.",
+		"Пока вы ранены, свежая чужая лужа под ногами впитывается и лечит 3 урона раз в секунду; свои метки и сердца не пьются.",
 		"Кровный приговор раз в 30 секунд переносит долги других связей в выбранную до 30 и взыскивает её.",
 	)
 	role = HERETIC_ROLE_ASCENSION
@@ -2415,6 +2574,8 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	blood_knowledge_ref = WEAKREF(blood)
 	blood.ascension_active = TRUE
 	user.AddComponent(/datum/component/heretic_blood_tide, blood)
+	if(!simulated && !heretic.simulated)
+		blood.raise_tide_hearts()
 
 /datum/eldritch_knowledge/final_eldritch/blood_final/on_body_lose(mob/living/user)
 	var/was_applied = !isnull(applied_body)
@@ -2473,7 +2634,8 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 
 /datum/component/heretic_blood_tide/proc/on_life(mob/living/source, seconds, times_fired)
 	SIGNAL_HANDLER
-	if(!active())
+	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
+	if(!active() || blood.tide_receded)
 		return
 	var/watched = heretic_vfx_watched(source)
 	for(var/mob/living/carbon/human/victim in heretic_field_view(HERETIC_BLOOD_TIDE_RADIUS, source))
@@ -2526,6 +2688,9 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 /datum/component/heretic_blood_tide/proc/drinkable(obj/effect/decal/cleanable/blood/stain, mob/living/drinker)
 	if(QDELETED(stain) || stain.dried || !is_type_in_typecache(stain, drinkable_blood))
 		return FALSE
+	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
+	if(blood && ((stain in blood.signs) || (stain in blood.tide_hearts)))
+		return FALSE
 	var/own_dna
 	if(iscarbon(drinker))
 		var/mob/living/carbon/carbon_drinker = drinker
@@ -2572,7 +2737,11 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 
 /datum/component/heretic_blood_tide/proc/on_examine(mob/living/source, mob/user, list/examine_list)
 	SIGNAL_HANDLER
-	examine_list += span_warning("Кровь тянется к нему: раны рядом с ним кровоточат вдвое сильнее, а свежие лужи чужой крови у него под ногами исчезают и затягивают его раны. Держитесь дальше трёх клеток, перевязывайте раны и убирайте кровь с пола.")
+	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
+	if(blood?.tide_receded)
+		examine_list += span_warning("Свежие лужи чужой крови у него под ногами исчезают и затягивают его раны. Сердца прилива вычищены: раны рядом с ним кровоточат как обычно. Убирайте кровь с пола.")
+		return
+	examine_list += span_warning("Кровь тянется к нему: раны рядом с ним кровоточат вдвое сильнее, а свежие лужи чужой крови у него под ногами исчезают и затягивают его раны. Держитесь дальше трёх клеток, перевязывайте раны, убирайте кровь с пола и вымойте сердца прилива на станции.")
 
 #undef HERETIC_BLOOD_HARVEST_TIME
 #undef HERETIC_BLOOD_HEALTH_RESERVE
@@ -2583,6 +2752,8 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 #undef HERETIC_BLOOD_REFUND_COOLDOWN
 #undef HERETIC_BLOOD_SIPHON_FRACTION
 #undef HERETIC_BLOOD_SIPHON_LIMIT
+#undef HERETIC_BLOOD_TARGET_HEAL_LIMIT
+#undef HERETIC_BLOOD_TARGET_HEAL_WINDOW
 #undef HERETIC_BLOOD_DAMAGE_PER_DEBT
 #undef HERETIC_BLOOD_INITIAL_DEBT
 #undef HERETIC_BLOOD_STRIKE_DEBT
@@ -2604,8 +2775,10 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 #undef HERETIC_BLOOD_DRAIN_SEAL_MARGIN
 #undef HERETIC_BLOOD_EXSANGUINE_SLOWDOWN
 #undef HERETIC_BLOOD_EXSANGUINE_BLUR
-#undef HERETIC_BLOOD_RECOVERY_FRACTION
-#undef HERETIC_BLOOD_RECOVERY_LIMIT
+#undef HERETIC_BLOOD_HEART_COUNT
+#undef HERETIC_BLOOD_HEART_CRAFT
+#undef HERETIC_BLOOD_HEART_CLUE
+#undef HERETIC_BLOOD_HEART_TRIES
 #undef HERETIC_BLOOD_TIDE_STREAM_TIME
 #undef HERETIC_BLOOD_DRINK_TIME
 #undef HERETIC_BLOOD_DRINK_SHRINK

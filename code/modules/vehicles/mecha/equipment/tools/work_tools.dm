@@ -239,7 +239,7 @@
 		if(reagents.total_volume < 1)
 			return
 		playsound(chassis, 'sound/effects/extinguish.ogg', 75, 1, -3)
-		spray_extinguisher(chassis, target, reagents, precision = TRUE)
+		spray_extinguisher(chassis, target, reagents, precision = TRUE, user = source)
 	return ..()
 
 /obj/item/mecha_parts/mecha_equipment/extinguisher/get_ui_data()

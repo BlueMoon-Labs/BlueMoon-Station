@@ -205,6 +205,36 @@
 		for(var/knowledge_type in path.knowledge)
 			heretic_codex_check_knowledge(allocate(knowledge_type), roles)
 
+/// Карточки выбора: у каждого пути сложность, стиль и три первых шага, а кодекс отдаёт пути в порядке выбора.
+/datum/unit_test/heretic_codex_path_choice/Run()
+	var/list/first_time = list()
+	for(var/path_id in GLOB.heretic_paths)
+		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		TEST_ASSERT(path.difficulty in list(1, 2, 3), "Сложность [path_id] от 1 до 3, а не [path.difficulty].")
+		if(path.difficulty == 1)
+			first_time += path_id
+		TEST_ASSERT(length(path.playstyle) >= 1 && length(path.playstyle) <= 2, "У [path_id] один-два стиля игры.")
+		for(var/style in path.playstyle)
+			TEST_ASSERT(GLOB.heretic_playstyle_labels[style], "Стиль [style] пути [path_id] есть среди меток.")
+		TEST_ASSERT_EQUAL(length(path.first_steps), 3, "У [path_id] три первых шага: сила, дело, цель.")
+		for(var/line in path.first_steps)
+			TEST_ASSERT(istext(line) && length(line) && length_char(line) <= HERETIC_CODEX_FIRST_STEP_LIMIT, "Первый шаг [path_id] пуст или длиннее [HERETIC_CODEX_FIRST_STEP_LIMIT] символов: [line]")
+		TEST_ASSERT(path_id in GLOB.heretic_path_choice_order, "Путь [path_id] стоит в порядке выбора, а не в хвосте.")
+	TEST_ASSERT(length(first_time) >= 2, "Для первого раза предложено хотя бы два пути: [jointext(first_time, ", ")].")
+	var/list/order = heretic_paths_in_choice_order()
+	TEST_ASSERT_EQUAL(length(order), length(GLOB.heretic_paths), "Порядок выбора содержит каждый путь ровно раз.")
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book)
+	var/list/static_data = book.ui_static_data(null)
+	var/list/paths_data = static_data["paths"]
+	TEST_ASSERT_EQUAL(length(paths_data), length(order), "Кодекс отдаёт все пути.")
+	for(var/index in 1 to length(paths_data))
+		var/list/path_data = paths_data[index]
+		var/datum/heretic_path/path = order[index]
+		TEST_ASSERT_EQUAL(path_data["id"], path.id, "Кодекс отдаёт пути в порядке выбора.")
+		TEST_ASSERT_EQUAL(path_data["difficulty"], path.difficulty, "Сложность [path.id] приходит из DM.")
+		TEST_ASSERT_EQUAL(jointext(path_data["playstyle"], "|"), jointext(path.playstyle_labels(), "|"), "Стиль [path.id] приходит русскими метками.")
+		TEST_ASSERT_EQUAL(jointext(path_data["first_steps"], "|"), jointext(path.first_steps, "|"), "Первые шаги [path.id] приходят без изменений.")
+
 /// Стартовые и побочные знания записаны лидом, фактами и ролью, а их описание собирается из этих полей.
 /datum/unit_test/heretic_codex_shared_knowledge/Run()
 	var/list/roles = heretic_codex_roles()
@@ -273,7 +303,7 @@
 		list(heretic_codex_text(/datum/eldritch_knowledge/spell/nightwatchers_rite), "на [initial(rite.range)] клеток", "Перезарядка [initial(rite.charge_max) / (1 SECONDS)] секунд"),
 		list(heretic_codex_text(/datum/eldritch_knowledge/spell/flame_birth), "Перезарядка [initial(rebirth.charge_max) / (1 SECONDS)] секунд"),
 		list(heretic_codex_text(/datum/eldritch_knowledge/spell/cleave), "в [initial(cleave.range)] клетках", "Перезарядка [initial(cleave.charge_max) / (1 SECONDS)] секунд"),
-		list(heretic_codex_text(/datum/eldritch_knowledge/final_eldritch/ash_final), "по [HERETIC_ASH_LORD_HEAL] ожога", "горит [HERETIC_ASH_TRAIL_DURATION / (1 SECONDS)] секунды", "на [HERETIC_ASH_CASCADE_RANGE] клеток", "перезарядка [HERETIC_ASH_FIRE_SWORN_COOLDOWN / (1 MINUTES)] минуты", "на [HERETIC_ASH_WET_DURATION / (1 SECONDS)] секунд"),
+		list(heretic_codex_text(/datum/eldritch_knowledge/final_eldritch/ash_final), "- [HERETIC_ASH_LORD_HEAL] ожога", "след на [HERETIC_ASH_TRAIL_DURATION / (1 SECONDS)] секунды", "на [HERETIC_ASH_CASCADE_RANGE] клеток", "перезарядка [HERETIC_ASH_FIRE_SWORN_COOLDOWN / (1 MINUTES)] минуты", "на [HERETIC_ASH_WET_DURATION / (1 SECONDS)] секунд"),
 		list(jointext(ash_path.weakness_points, " "), "[HERETIC_ASH_WET_DURATION / (1 SECONDS)] секунд"),
 		list(heretic_codex_text(/datum/eldritch_knowledge/base_rust), "очаг на [initial(hearth.duration) / (1 SECONDS)] секунд", "Перезарядка [initial(root.charge_max) / (1 SECONDS)] секунд"),
 		list(heretic_codex_text(/datum/eldritch_knowledge/spell/area_conversion), "к [initial(conversion.range)] клеткам", "Перезарядка [initial(conversion.charge_max) / (1 SECONDS)] секунд"),
@@ -401,7 +431,7 @@
 	TEST_ASSERT(findtext(drain, "долгом от [HERETIC_BLOOD_DRAIN_DEBT]") && findtext(drain, "[heretic_codex_seconds(HERETIC_BLOOD_DRAIN_DURATION)] секунд: до 15% крови") && findtext(drain, "обморок на [heretic_codex_seconds(HERETIC_BLOOD_DRAIN_FAINT)] секунд"), "Кровопускание называет долг, канал и обморок.")
 	TEST_ASSERT(findtext(drain, "Со [heretic_codex_seconds(HERETIC_BLOOD_DRAIN_DOOR_DELAY)]-й секунды") && findtext(drain, "если вы в [HERETIC_BLOOD_DRAIN_DOOR_RANGE] клетках"), "Дверь Крови называет секунду и дальность.")
 	var/datum/eldritch_knowledge/base_blood/blood = allocate(/datum/eldritch_knowledge/base_blood)
-	TEST_ASSERT(findtext(blood.desc, "пустая печать помнит это [heretic_codex_seconds(HERETIC_BLOOD_SPENT_LIFETIME)] секунд") && findtext(blood.combat_resource_desc, "пустая печать [heretic_codex_seconds(HERETIC_BLOOD_SPENT_LIFETIME)] секунд"), "Пустая печать называет свой срок.")
+	TEST_ASSERT(findtext(blood.desc, "четверть урона, не больше 10 за раз") && findtext(blood.combat_resource_desc, "четверть урона, не больше 10 за раз"), "Правило лечения одно и то же в кодексе и описании запаса.")
 	TEST_ASSERT_EQUAL(HERETIC_BLOOD_CLOT_MULTIPLIER, 0.5, "Текст говорит, что кровотечение вдвое слабее.")
 	TEST_ASSERT(findtext(blood.desc, "кровотечение [heretic_codex_seconds(HERETIC_BLOOD_CLOT_DURATION)] секунд вдвое слабее") && findtext(blood.combat_resource_desc, "на [heretic_codex_seconds(HERETIC_BLOOD_CLOT_DURATION)] секунд вдвое ослабляет"), "Взыскание называет срок ослабления кровотечения.")
 	TEST_ASSERT(findtext(blood.desc, "связь рвётся через [heretic_codex_seconds(HERETIC_BLOOD_CONTACT_GRACE)] секунды") && findtext(blood.combat_resource_desc, "если [heretic_codex_seconds(HERETIC_BLOOD_CONTACT_GRACE)] секунды нет контакта"), "Связь называет срок без контакта.")

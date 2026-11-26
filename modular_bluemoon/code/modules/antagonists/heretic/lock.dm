@@ -4,7 +4,6 @@
 #define HERETIC_LOCK_BASE_LIMIT 4
 #define HERETIC_LOCK_UPGRADED_LIMIT 10
 #define HERETIC_LOCK_ASCENDED_LIMIT 16
-#define HERETIC_LOCK_SELECTIVE_RELEASE_COOLDOWN (15 SECONDS)
 #define HERETIC_LOCK_GRASP_BOLT_TIME (20 SECONDS)
 #define HERETIC_LOCK_HARVEST_COOLDOWN (20 SECONDS)
 #define HERETIC_LOCK_KEEPER_SEAL_DELAY (0.2 SECONDS)
@@ -56,6 +55,7 @@
 #define HERETIC_LOCK_HOUSE_GLINT_SWEEP (0.6 SECONDS)
 #define HERETIC_LOCK_HOUSE_GLINT_TIME (0.3 SECONDS)
 #define HERETIC_LOCK_SEAL_SQUASH 0.15
+#define HERETIC_LOCK_SWING_TIME (0.2 SECONDS)
 #define HERETIC_LOCK_DOOR_CRAFT "lock_threshold"
 #define HERETIC_LOCK_DOOR_CLUE "Замок этого шлюза время от времени щёлкает сам по себе."
 #define HERETIC_LOCK_CAPTURE "lock"
@@ -71,14 +71,14 @@
 	id = PATH_LOCK
 	deed_type = /datum/heretic_deed/lock
 	name = "Замок"
-	tagline = "Запирает врагов печатями и комнатами, сковывает замком руки, ходит сквозь свои шлюзы."
+	tagline = "Отпирает шлюзы и шкафы, запирает врагов печатями и шагает от порога к порогу."
 	craft_summary = "Хватка в «Помощи» делает шлюз вашим порогом, всего до 4; порог в новом отделе продвигает дело пути."
-	capture_summary = "Замок на руках: цель охоты скована 12 секунд, прочие 3 секунды в путах; у порога или шкафа - в изнанку."
+	capture_summary = "Замок на руках: наручники на 12 секунд цели охоты и на 3 любому другому; у порога или шкафа - в изнанку."
 	escape_summary = "Постояв секунду у порога с ритуальным ключом, вы за 1 ключ выходите у другого порога в 30 клетках."
 	strength_points = list(
 		"Печати режут коридоры: враги упираются в них, а вы, слуги и Открывающий удар проходите насквозь.",
 		"Ладонь отпирает шлюзы, шкафы, консоли и турели, выкидывает пилота из меха и тащит вещи из рюкзаков.",
-		"Замок на руках держит цель охоты в наручниках 12 секунд, у порога или своего шкафа её уводят в изнанку.",
+		"Замок на руках выбивает оружие у любого на 3 секунды, а цель охоты держит в наручниках 12 секунд.",
 		"Взрыв Метки Замка на 6 секунд опускает болты шлюзов комнаты цели: она заперта с вами.",
 		"Помеченные шлюзы - отходы в 30 клетках и выходы из изнанки: секунда на месте, и вы у другого порога.",
 		"Вознёсшийся выходит из любого шлюза в 15 клетках, а двери за ним сами опускают болты.",
@@ -86,7 +86,7 @@
 	weakness_points = list(
 		"Печати разбиваются, а нулевой жезл снимает и печати, и пометки шлюзов касанием.",
 		"Наручники снимают кусачки и нулевой жезл, товарищ растолкает за 2 секунды, а скованный вырвется за 8 секунд.",
-		"Кроме цели охоты, замок лишь на 3 секунды путает ноги и не обезоруживает: против охраны он слаб.",
+		"Кроме цели охоты, наручники держат лишь 3 секунды: выбитое оружие тут же можно поднять.",
 		"Для перехода нужен ключ, выходной шлюз в 30 клетках без сварки и болтов и свободный проём.",
 		"Осмотрев помеченный шлюз, экипаж может заметить, что его замок щёлкает сам по себе.",
 		"Против запертых комнат работает инженерия: болты Метки и вознёсшегося поднимают ИИ, пульт или мультитул.",
@@ -151,6 +151,7 @@
 	var/list/obj/machinery/door/airlock/marked_doors = list()
 	var/list/datum/status_effect/heretic_lock_shackles/shackles = list()
 	var/lock_failure
+	COOLDOWN_DECLARE(hinge_swing)
 
 /datum/eldritch_knowledge/base_lock/on_body_gain(mob/living/user)
 	if(!user?.mind || lock_body == user)
@@ -198,8 +199,38 @@
 	seals.Cut()
 	marks.Cut()
 
+/datum/eldritch_knowledge/base_lock/get_combat_resource_data()
+	var/list/data = ..()
+	var/list/mode = grasp_mode()
+	data["name"] = "Ключи: [mode[1]]"
+	return data
+
 /datum/eldritch_knowledge/base_lock/combat_resource_state()
-	return "Порогов: [length(marked_doors)] из [HERETIC_LOCK_DOOR_LIMIT]."
+	var/list/mode = grasp_mode()
+	return "Порогов: [length(marked_doors)] из [HERETIC_LOCK_DOOR_LIMIT]. [mode[2]]"
+
+/// Что сделает Хватка в текущем намерении: короткая подпись значка и полная строка.
+/datum/eldritch_knowledge/base_lock/proc/grasp_mode()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(lock_body)
+	var/palm = heretic?.get_knowledge(/datum/eldritch_knowledge/lock_grasp)
+	switch(lock_body?.a_intent)
+		if(INTENT_HELP)
+			return list("порог", "Хватка в «Помощи»: шлюз станет вашим порогом[palm ? ", шкаф откроется" : ""].")
+		if(INTENT_DISARM)
+			if(palm)
+				return list("отпереть, обокрасть", "Хватка в «Обезоружить»: откроет шлюз, шкаф, консоль или мех, а у человека вынет вещь из рюкзака.")
+		if(INTENT_GRAB)
+			if(palm)
+				return list("отпереть", "Хватка в «Захвате»: откроет шлюз, шкаф, консоль или мех.")
+		if(INTENT_HARM)
+			if(palm)
+				return list("запереть", "Хватка во «Вреде»: опустит болты закрытого шлюза на [HERETIC_LOCK_GRASP_BOLT_TIME / (1 SECONDS)] секунд.")
+	return list("удар", "Хватка в этом намерении только бьёт; в «Помощи» шлюз станет порогом.")
+
+/datum/eldritch_knowledge/base_lock/on_life(mob/user)
+	if(user && user == lock_body)
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+		heretic?.update_combat_resource_alert(FALSE, user)
 
 /datum/eldritch_knowledge/base_lock/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
 	grasp_failure_reason = null
@@ -320,8 +351,8 @@
 			return TRUE
 	return FALSE
 
-/// Наручники - только на цели охоты этого еретика, остальным замок ненадолго путает ноги.
-/datum/eldritch_knowledge/base_lock/proc/shackles_on_hands(mob/living/victim)
+/// Цель охоты этого еретика замок держит долго, любого другого - коротко.
+/datum/eldritch_knowledge/base_lock/proc/shackles_long(mob/living/victim)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(lock_body)
 	return victim?.mind && victim.mind == heretic?.hunt_target
 
@@ -348,16 +379,10 @@
 	if(!iscarbon(target))
 		return "Призрачный замок смыкается только на руках гуманоида."
 	var/mob/living/carbon/victim = target
-	if(shackles_on_hands(victim))
-		if(victim.handcuffed)
-			return "Цель уже в наручниках."
-		if(victim.get_num_arms(FALSE) < 2 && !victim.get_arm_ignore())
-			return "У цели нет двух рук: замку не за что взяться."
-	else
-		if(victim.legcuffed)
-			return "Ноги цели уже спутаны."
-		if(victim.get_num_legs(FALSE) < 2)
-			return "У цели нет двух ног: путам не за что взяться."
+	if(victim.handcuffed)
+		return "Цель уже в наручниках."
+	if(victim.get_num_arms(FALSE) < 2 && !victim.get_arm_ignore())
+		return "У цели нет двух рук: замку не за что взяться."
 	if(!isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > HERETIC_LOCK_SHACKLES_RANGE || !can_see(user, victim, HERETIC_LOCK_SHACKLES_RANGE))
 		return "Цель должна стоять на полу у вас на виду не дальше 3 клеток."
 	if(check_ready && !heretic_capture_downed(victim) && !held_by_seals(victim))
@@ -728,7 +753,7 @@
 
 /datum/eldritch_knowledge/base_lock/proc/valid_user(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return user && user == lock_body && heretic?.get_knowledge(type) == src && user.stat == CONSCIOUS && !user.incapacitated() && isturf(user.loc)
+	return user && user == lock_body && heretic?.get_knowledge(type) == src && user.stat == CONSCIOUS && !heretic_incapacitated(user) && isturf(user.loc)
 
 /datum/eldritch_knowledge/base_lock/proc/seal_limit()
 	if(ascension_active)
@@ -979,7 +1004,7 @@
 /obj/structure/heretic_lock_seal
 	var/reclaimable_key = FALSE
 	name = "labyrinth seal"
-	desc = "Золотые зубья перекрывают проход. Печать можно разбить кулаками, оружием или снарядами; нуль-жезл снимает её сразу. Еретики, их слуги и защищённые от магии проходят свободно. Газ и свет проходят сквозь печать. Если еретик знает Петли лабиринта, впервые разбитая печать через 3 секунды захлопывается снова."
+	desc = "Золотые зубья перекрывают проход. Печать можно разбить кулаками, оружием или снарядами; нуль-жезл снимает её сразу. Еретики, их слуги и защищённые от магии проходят свободно. Газ и свет проходят сквозь печать. Если еретик знает Петли лабиринта, впервые разбитая печать через 3 секунды захлопывается снова, а его рука может повернуть печать на соседнюю клетку и оттолкнуть стоящего там."
 	icon = 'modular_bluemoon/icons/obj/heretic_lock_gate.dmi'
 	icon_state = "lock_barrier"
 	density = TRUE
@@ -1050,6 +1075,9 @@
 			knowledge.gain_combat_resource()
 		qdel(src)
 		return
+	if(user == knowledge?.lock_body && act_intent == INTENT_DISARM)
+		knowledge.swing_seal(user, src)
+		return
 	user.do_attack_animation(src, ATTACK_EFFECT_PUNCH)
 	user.changeNext_move(CLICK_CD_MELEE)
 	take_damage(5, BRUTE, MELEE, TRUE)
@@ -1079,6 +1107,52 @@
 	seals += seal
 	seal.visible_message(span_danger("Разбитая печать проворачивается на петлях и захлопывается снова!"))
 	return seal
+
+/datum/eldritch_knowledge/base_lock/proc/swing_failure(mob/living/user, obj/structure/heretic_lock_seal/seal)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic?.get_knowledge(/datum/eldritch_knowledge/lock_hinges))
+		return "Поворачивать печати учат Петли лабиринта."
+	if(!valid_user(user) || QDELETED(seal) || !(seal in seals) || !isturf(seal.loc) || seal.loc == user.loc || !user.Adjacent(seal))
+		return "Встаньте вплотную к своей печати, но не на её клетку."
+	if(seal.rehinged)
+		return "Петли этой печати уже сработали: повернуть её нельзя."
+	if(!COOLDOWN_FINISHED(src, hinge_swing))
+		return "Петли ещё не готовы: [CEILING(COOLDOWN_TIMELEFT(src, hinge_swing) / (1 SECONDS), 1)] с."
+	var/turf/place = get_step(seal, get_dir(user, seal))
+	if(!istype(place, /turf/open/floor) || place.is_blocked_turf(exclude_mobs = TRUE) || (locate(/obj/structure/heretic_lock_seal) in place))
+		return "За печатью нет свободного пола: поворачивать её некуда."
+	if(!heretic_step_open(get_turf(seal), place))
+		return "Окно или угол стен не пускают печать дальше: поворачивать её некуда."
+	return null
+
+/// Петли лабиринта: печать переходит на клетку дальше от еретика и отталкивает врага, стоящего там.
+/datum/eldritch_knowledge/base_lock/proc/swing_seal(mob/living/user, obj/structure/heretic_lock_seal/seal)
+	lock_failure = swing_failure(user, seal)
+	if(lock_failure)
+		to_chat(user, span_warning(lock_failure))
+		return FALSE
+	var/direction = get_dir(user, seal)
+	var/turf/origin = get_turf(seal)
+	var/turf/place = get_step(origin, direction)
+	for(var/mob/living/victim in place)
+		if(!heretic_can_affect(user, victim, chargecost = 0, notify = FALSE))
+			continue
+		var/turf/beyond = get_step(place, direction)
+		if(beyond && !isgroundlessturf(beyond) && heretic_diagonal_step_safe(place, direction) && victim.Move(beyond, direction))
+			to_chat(victim, span_userdanger("Золотая печать проворачивается на петлях и отбрасывает вас!"))
+		else
+			to_chat(victim, span_userdanger("Золотая печать захлопывается прямо вокруг вас!"))
+		log_combat(user, victim, "поворачивает на петлях печать Замка на")
+	seal.rehinged = TRUE
+	seal.forceMove(place)
+	seal.pixel_x = (origin.x - place.x) * world.icon_size
+	seal.pixel_y = (origin.y - place.y) * world.icon_size
+	animate(seal, pixel_x = 0, pixel_y = 0, time = HERETIC_LOCK_SWING_TIME, easing = BACK_EASING | EASE_OUT)
+	heretic_lock_click_fx(place)
+	playsound(place, heretic_lock_sound("ratchet"), 45, TRUE)
+	seal.visible_message(span_danger("Печать со скрежетом проворачивается на петлях!"))
+	COOLDOWN_START(src, hinge_swing, HERETIC_LOCK_HINGE_SWING_COOLDOWN)
+	return TRUE
 
 /obj/effect/temp_visual/heretic_lock
 	icon = HERETIC_LOCK_EFFECTS_ICON
@@ -1115,11 +1189,11 @@
 	summary = "Хватка отпирает шлюзы, шкафы, консоли и мехи, тащит вещи из рюкзаков, а во вреде запирает шлюз."
 	details = list(
 		"В «Обезоружить» и «Захват» Хватка открывает соседний закрытый шлюз, даже на болтах; сварку не берёт.",
-		"В «Помощи» шлюз она помечает порогом; шкаф или ящик открывает в любом намерении.",
+		"В «Помощи» шлюз становится порогом, шкаф открывается в любом намерении; режим подписан на значке ключей.",
 		"Открытый Ладонью шкаф 3 минуты служит дверью захвата: скованную рядом цель сердце уводит в изнанку.",
 		"Во вреде опускает болты закрытого шлюза на 20 секунд; поднятые раньше кем-то болты не трогает.",
-		"Консоль и пульт турелей минуту пускают без доступа; пилоты без защиты от магии выпадают из меха.",
-		"В «Обезоружить» по человеку вынимает случайную вещь из его рюкзака вам в руку; пропажу он заметит.",
+		"В любом намерении консоль и пульт турелей минуту пускают без доступа, а пилот без антимагии выпадает из меха.",
+		"В «Обезоружить» по человеку с игроком в теле вынимает вещь из рюкзака вам в руку: щелчок видят и слышат все рядом.",
 		"Настоящий замок даёт 1 ключ раз в 20 секунд; вскрытый в новом отделе шлюз или шкаф двигает дело.",
 	)
 	role = HERETIC_ROLE_GRASP
@@ -1178,7 +1252,7 @@
 /// Ладонь в «Обезоружить» отпирает рюкзак цели: случайная вещь из него ложится в руку еретика.
 /datum/eldritch_knowledge/base_lock/proc/pick_bag(mob/living/carbon/victim, mob/living/user)
 	var/obj/item/bag = victim.back
-	if(!bag?.GetComponent(/datum/component/storage) || !heretic_can_affect(user, victim, chargecost = 0))
+	if(!GET_CLIENT(victim) || !bag?.GetComponent(/datum/component/storage) || !heretic_can_affect(user, victim, chargecost = 0))
 		return FALSE
 	var/list/contents = list()
 	SEND_SIGNAL(bag, COMSIG_TRY_STORAGE_RETURN_INVENTORY, contents, FALSE)
@@ -1191,9 +1265,10 @@
 	if(!SEND_SIGNAL(bag, COMSIG_TRY_STORAGE_TAKE, loot, user.drop_location(), TRUE))
 		return FALSE
 	user.put_in_hands(loot)
-	playsound(victim, heretic_lock_sound("unlock"), 35, TRUE, SILENCED_SOUND_EXTRARANGE)
-	to_chat(user, span_notice("Застёжка [bag] щёлкает под ладонью: [loot] у вас в руке."))
-	to_chat(victim, span_warning("Застёжка вашего рюкзака сама щёлкает, и из него пропадает [loot]!"))
+	heretic_lock_click_fx(victim)
+	playsound(victim, heretic_lock_sound("unlock"), 50, TRUE)
+	user.visible_message(span_warning("Застёжка [bag] на [victim] громко щёлкает, и из рюкзака выскальзывает [loot] - прямо в ладонь [user]!"), span_notice("Застёжка [bag] щёлкает под ладонью: [loot] у вас в руке."), span_hear("Рядом громко щёлкает расстёгнутая застёжка."), ignored_mobs = victim)
+	to_chat(victim, span_userdanger("Застёжка вашего рюкзака сама щёлкает, и из него выскальзывает [loot] - прямо в ладонь [user]!"))
 	log_combat(user, victim, "вынимает Ладонью Замка [loot] из рюкзака")
 	return TRUE
 
@@ -1334,7 +1409,6 @@
 		"Секунда на месте, и вы выходите в проёме выбранного шлюза. 1 ключ, перезарядка 15 секунд.",
 		"Перехода нет, если выход дальше 30 клеток или на другом уровне, заварен, на болтах, проём занят или телепорт запрещён.",
 		"При пустом запасе ключ в руке даёт 1 ключ за 2 секунды и 8 ушибов, раз в 30 секунд.",
-		"После Размыкания ключ в намерении вреда взрывает одну вашу печать в 5 клетках.",
 	)
 	role = HERETIC_ROLE_RELIC
 	gain_text = "На поясе привратника не осталось места. Последний ключ он носил под кожей."
@@ -1356,7 +1430,6 @@
 	item_flags = NOBLUDGEON
 	var/cutting_time = 2 SECONDS
 	var/door_passage_time = HERETIC_LOCK_DOOR_PASSAGE_TIME
-	var/releasing_time = 1 SECONDS
 	var/passage_failure
 	COOLDOWN_DECLARE(passage_cooldown)
 
@@ -1364,7 +1437,6 @@
 	. = ..()
 	. += span_notice("<b>Переход между порогами:</b> помеченные Хваткой шлюзы - ваши пороги. Встаньте вплотную к одному, включите намерение вреда и нажмите на него ключом, затем выберите другой порог на этом уровне не дальше [HERETIC_LOCK_DOOR_PASSAGE_RANGE] клеток. Секунду стойте на месте: вы выйдете в проёме выбранного шлюза. Переход стоит 1 ключ из запаса пути, перезарядка 15 секунд.")
 	. += span_notice("<b>Получить ключ при пустом запасе:</b> активируйте предмет в руке (по умолчанию Z) и подождите 2 секунды. Цена — 8 ушибов, перезарядка 30 секунд.")
-	. += span_notice("<b>После изучения Размыкания:</b> нажмите ключом на свою печать в пределах 5 клеток на намерении вреда. Через секунду она взорвётся; остальные сохранятся. Потраченный ключ не возвращается. Перезарядка 15 секунд, общая с получением ключа из ладони.")
 	if(user.mind == creator?.resolve() && !COOLDOWN_FINISHED(src, passage_cooldown))
 		. += span_notice("До следующего перехода: [CEILING(COOLDOWN_TIMELEFT(src, passage_cooldown) / (1 SECONDS), 1)] с.")
 
@@ -1372,36 +1444,8 @@
 	. = ..()
 	if(busy || !authorized(user))
 		return
-	if(user.a_intent == INTENT_HARM && istype(target, /obj/structure/heretic_lock_seal))
-		release_seal(user, target)
-		return
 	if(proximity_flag && user.a_intent == INTENT_HARM && istype(target, /obj/machinery/door/airlock))
 		door_passage(user, target)
-
-/obj/item/heretic_path_relic/lock_key/proc/can_release_seal(mob/living/user, obj/structure/heretic_lock_seal/seal, turf/expected_place)
-	if(!authorized(user) || !COOLDOWN_FINISHED(src, relic_cooldown) || QDELETED(seal) || seal.loc != expected_place)
-		return FALSE
-	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	var/datum/eldritch_knowledge/base_lock/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_lock)
-	return knowledge?.valid_user(user) && heretic.get_knowledge(/datum/eldritch_knowledge/spell/lock_release) && (seal in knowledge.seals) && seal.knowledge_ref?.resolve() == knowledge && (seal in view(HERETIC_LOCK_RANGE, user))
-
-/obj/item/heretic_path_relic/lock_key/proc/release_seal(mob/living/user, obj/structure/heretic_lock_seal/seal)
-	var/turf/place = get_turf(seal)
-	if(busy || !can_release_seal(user, seal, place))
-		return FALSE
-	busy = TRUE
-	new /obj/effect/temp_visual/heretic_lock/warning(place)
-	seal.visible_message(span_danger("Зубья печати раздвигаются, готовясь ударить наружу!"))
-	playsound(seal, heretic_lock_sound("ratchet"), 45, TRUE)
-	var/completed = do_after(user, releasing_time, target = user, extra_checks = CALLBACK(src, PROC_REF(can_release_seal), user, seal, place))
-	busy = FALSE
-	if(!completed || !can_release_seal(user, seal, place))
-		return FALSE
-	var/datum/eldritch_knowledge/base_lock/knowledge = seal.knowledge_ref.resolve()
-	if(!knowledge.release_seals(user, seal))
-		return FALSE
-	COOLDOWN_START(src, relic_cooldown, HERETIC_LOCK_SELECTIVE_RELEASE_COOLDOWN)
-	return TRUE
 
 /// Причины отказа, не зависящие от выбранного выхода: их видно до меню выбора.
 /obj/item/heretic_path_relic/lock_key/proc/door_passage_start_failure(mob/living/user, obj/machinery/door/airlock/entry)
@@ -1553,12 +1597,12 @@
 
 /datum/eldritch_knowledge/spell/lock_shackles
 	name = "Замок на руках"
-	summary = "Цели охоты 12 секунд призрачных наручников, прочим 3 секунды пут; цель сбита или стоит в вашей печати."
+	summary = "Наручники: цели охоты на 12 секунд, любому другому на 3; цель сбита или стоит в вашей печати."
 	details = list(
 		"Цель в 3 клетках на виду: сбитая с ног, обессиленная, в клетке вашей печати или в середине Замкнутого двора.",
 		"Полсекунды замок виден заранее: если цель ушла, он рассыпается, а перезарядка возвращается. Сон и отдых не в счёт.",
-		"Цель охоты 12 секунд в наручниках как настоящих: руки скованы, она готова к обряду, вырваться - 8 секунд.",
-		"Любому другому замок на 3 секунды путает ноги: он замедлен, но ничего не роняет. Предметом замок не остаётся.",
+		"Наручники как настоящие: всё из рук падает. Цель охоты скована 12 секунд и готова к обряду, вырваться - 8 секунд.",
+		"Любого другого замок держит 3 секунды: охранник роняет оружие, но может поднять его сразу после.",
 		"Если цель охоты у вашего порога или шкафа, открытого Ладонью, сердце за секунду уводит её в изнанку.",
 		"Кусачки и нулевой жезл снимают замок сразу, товарищ растолкает за 2 секунды; защита от магии спасает от него.",
 		"После выхода цель до минуты невосприимчива к замку и 15 секунд - к любому захвату. Перезарядка 40 секунд.",
@@ -1579,17 +1623,14 @@
 	alert_type = null
 	examine_text = span_warning("SUBJECTPRONOUN не может развести руки: запястья сжимает призрачный золотой замок. Кусачки срезают его, нулевой жезл снимает касанием, а растолкать можно за 2 секунды.")
 	var/datum/weakref/lock_ref
-	var/obj/item/restraints/cuffs
+	var/obj/item/restraints/handcuffs/heretic_lock/cuffs
 	var/mutable_appearance/cuffs_overlay
-	var/on_legs = FALSE
 	var/applied = FALSE
 
 /datum/status_effect/heretic_lock_shackles/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_lock/knowledge)
 	lock_ref = WEAKREF(knowledge)
-	on_legs = !knowledge?.shackles_on_hands(new_owner)
-	if(on_legs)
+	if(!knowledge?.shackles_long(new_owner))
 		duration = HERETIC_LOCK_SHACKLES_OTHER
-		examine_text = span_warning("SUBJECTPRONOUN еле переставляет ноги: лодыжки стягивают призрачные золотые путы. Кусачки срезают их, нулевой жезл снимает касанием, а растолкать можно за 2 секунды.")
 	return ..()
 
 /datum/status_effect/heretic_lock_shackles/on_apply()
@@ -1598,36 +1639,25 @@
 	if(!. || !knowledge || !iscarbon(owner))
 		return FALSE
 	var/mob/living/carbon/prisoner = owner
-	if(on_legs)
-		if(prisoner.legcuffed || HAS_TRAIT(prisoner, TRAIT_NAGA_ANATOMY) || prisoner.get_num_legs(FALSE) < 2)
-			return FALSE
-		var/obj/item/restraints/legcuffs/heretic_lock/fetters = new(prisoner)
-		fetters.hold_ref = WEAKREF(src)
-		cuffs = fetters
-		prisoner.legcuffed = fetters
-		prisoner.update_equipment_speed_mods()
-		prisoner.update_inv_legcuffed()
-	else
-		if(prisoner.handcuffed)
-			return FALSE
-		var/obj/item/restraints/handcuffs/heretic_lock/manacles = new(prisoner)
-		manacles.hold_ref = WEAKREF(src)
-		cuffs = manacles
-		prisoner.handcuffed = manacles
-		prisoner.update_handcuffed()
+	if(prisoner.handcuffed)
+		return FALSE
+	cuffs = new(prisoner)
+	cuffs.hold_ref = WEAKREF(src)
+	prisoner.handcuffed = cuffs
+	prisoner.update_handcuffed()
+	var/atom/movable/screen/alert/restrained/handcuffed/heretic_lock/cuffs_alert = prisoner.alerts["handcuffed"]
+	if(istype(cuffs_alert))
+		cuffs_alert.desc = "Золотой замок сковал ваши руки, пока не рассыплется сам: в них ничего не удержать. Нажмите, чтобы вырваться за [HERETIC_LOCK_SHACKLES_BREAKOUT / (1 SECONDS)] секунд. Кусачки срезают замок, нулевой жезл снимает касанием, товарищ растолкает вас за [HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды."
 	applied = TRUE
 	held_since = world.time
-	cuffs_overlay = mutable_appearance(cuffs.icon, cuffs.icon_state, on_legs ? -LEGCUFF_LAYER : -HANDCUFF_LAYER)
+	cuffs_overlay = mutable_appearance(cuffs.icon, cuffs.icon_state, -HANDCUFF_LAYER)
 	owner.add_overlay(cuffs_overlay)
 	knowledge.shackles += src
 	RegisterSignal(owner, COMSIG_ATOM_ITEM_INTERACTION, PROC_REF(on_tool))
 	RegisterSignals(owner, list(COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN), PROC_REF(end_hold))
 	heretic_capture_hold(owner, HERETIC_LOCK_CAPTURE)
 	heretic_lock_click_fx(owner)
-	if(on_legs)
-		owner.visible_message(span_danger("На лодыжках [owner] защёлкиваются призрачные золотые путы!"), span_userdanger("Ваши ноги спутал призрачный замок!"))
-	else
-		owner.visible_message(span_danger("На руках [owner] защёлкивается призрачный золотой замок!"), span_userdanger("Ваши руки скованы призрачным замком!"))
+	owner.visible_message(span_danger("На руках [owner] защёлкивается призрачный золотой замок!"), span_userdanger("Ваши руки скованы призрачным замком!"))
 
 /datum/status_effect/heretic_lock_shackles/proc/on_tool(mob/living/source, mob/living/user, obj/item/tool, params)
 	SIGNAL_HANDLER
@@ -1653,19 +1683,21 @@
 		cuffs = null
 		if(!QDELETED(held))
 			qdel(held)
-		owner.update_equipment_speed_mods()
 		heretic_capture_release(owner, HERETIC_LOCK_CAPTURE, held_for = heretic_capture_held_for(held_since))
 	var/datum/eldritch_knowledge/base_lock/knowledge = lock_ref?.resolve()
 	knowledge?.shackles -= src
 	lock_ref = null
 	return ..()
 
+/// item_state нет в restraints.dmi: на теле рисуется свой золотой замок, а не штатные наручники.
 /obj/item/restraints/handcuffs/heretic_lock
 	name = "phantom shackles"
-	desc = "Призрачный золотой замок на запястьях. Он рассыпается сам через 12 секунд, кусачки срезают его, нулевой жезл снимает касанием, товарищ растолкает за 2 секунды, а вырваться можно, как из обычных наручников."
+	desc = "Призрачный золотой замок на запястьях. Он рассыпается сам через 3-12 секунд, кусачки срезают его, нулевой жезл снимает касанием, товарищ растолкает за 2 секунды, а вырваться можно, как из обычных наручников."
 	icon = HERETIC_LOCK_EFFECTS_ICON
 	icon_state = "lock_shackles"
 	item_state = "lock_shackles"
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_lock_shackles_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_lock_shackles_righthand.dmi'
 	item_flags = DROPDEL
 	flags_1 = NONE
 	custom_materials = null
@@ -1675,7 +1707,7 @@
 
 /atom/movable/screen/alert/restrained/handcuffed/heretic_lock
 	name = "Призрачные наручники"
-	desc = "Золотой замок сковал ваши руки на 12 секунд: в них ничего не удержать. Нажмите, чтобы вырваться за 8 секунд. Кусачки срезают замок, нулевой жезл снимает касанием, товарищ растолкает вас за 2 секунды."
+	desc = "Золотой замок сковал ваши руки: цель охоты еретика он держит 12 секунд, любого другого - 3. В руках ничего не удержать. Нажмите, чтобы вырваться за 8 секунд. Кусачки срезают замок, нулевой жезл снимает касанием, товарищ растолкает вас за 2 секунды."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "lock_shackled"
 
@@ -1686,39 +1718,12 @@
 	if(!QDELETED(hold))
 		qdel(hold)
 
-/obj/item/restraints/legcuffs/heretic_lock
-	name = "phantom fetters"
-	desc = "Призрачные золотые путы на лодыжках. Они рассыпаются сами через 3 секунды, кусачки срезают их, нулевой жезл снимает касанием, а товарищ растолкает за 2 секунды."
-	icon = HERETIC_LOCK_EFFECTS_ICON
-	icon_state = "lock_fetters"
-	item_state = "lock_fetters"
-	item_flags = DROPDEL
-	flags_1 = NONE
-	custom_materials = null
-	breakouttime = HERETIC_LOCK_SHACKLES_BREAKOUT
-	restrained_alert = /atom/movable/screen/alert/restrained/legcuffed/heretic_lock
-	var/datum/weakref/hold_ref
-
-/atom/movable/screen/alert/restrained/legcuffed/heretic_lock
-	name = "Призрачные путы"
-	desc = "Золотые путы стянули лодыжки на 3 секунды: вы еле переставляете ноги, но руки свободны. Нажмите, чтобы вырваться. Кусачки срезают путы, нулевой жезл снимает касанием, товарищ растолкает вас за 2 секунды."
-	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
-	icon_state = "lock_fettered"
-
-/obj/item/restraints/legcuffs/heretic_lock/Destroy()
-	var/datum/status_effect/heretic_lock_shackles/hold = hold_ref?.resolve()
-	hold_ref = null
-	. = ..()
-	if(!QDELETED(hold))
-		qdel(hold)
-
-
 /obj/effect/proc_holder/spell/pointed/heretic_lock/shackles
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "lock_shackles"
 	name = "Замок на руках"
-	desc = "Наведите на сбитую с ног или обессиленную цель в 3 клетках либо на цель в клетке своей печати или в середине Замкнутого двора. Через полсекунды на руках цели охоты смыкаются призрачные наручники на 12 секунд, а любому другому замок на 3 секунды путает ноги: он замедлен, но ничего не роняет. Кусачки и нулевой жезл снимают замок, товарищ растолкает скованного за 2 секунды, из наручников можно вырваться за 8 секунд. Цель охоты у своего порога или открытого Ладонью шкафа сердце уводит за дверь, в изнанку. Если цель ушла из-под замка, он рассыпается и перезарядка возвращается. Перезарядка 40 секунд."
-	summary = "Цели охоты 12 секунд призрачных наручников, прочим 3 секунды пут; цель сбита или стоит в вашей печати."
+	desc = "Наведите на сбитую с ног или обессиленную цель в 3 клетках либо на цель в клетке своей печати или в середине Замкнутого двора. Через полсекунды на руках цели смыкаются призрачные наручники, и всё из рук падает: цели охоты наручники на 12 секунд, любому другому на 3 секунды. Кусачки и нулевой жезл снимают замок, товарищ растолкает скованного за 2 секунды, из наручников можно вырваться за 8 секунд. Цель охоты у своего порога или открытого Ладонью шкафа сердце уводит за дверь, в изнанку. Если цель ушла из-под замка, он рассыпается и перезарядка возвращается. Перезарядка 40 секунд."
+	summary = "Наручники: цели охоты на 12 секунд, любому другому на 3; цель сбита или стоит в вашей печати."
 	active_msg = "Выберите цель для призрачного замка."
 	deactive_msg = "Замок гаснет в ладони."
 	range = HERETIC_LOCK_SHACKLES_RANGE
@@ -1757,8 +1762,7 @@
 	details = list(
 		"Урон приходит один раз за применение, сколько бы печатей ни стояло рядом.",
 		"Стены закрывают от взрыва; союзники и защищённые от магии не страдают. Перезарядка 25 секунд.",
-		"Ритуальным ключом в намерении вреда можно разомкнуть одну печать: секунда предупреждения, тот же урон.",
-		"Одиночное размыкание не возвращает ключ; его перезарядка 15 секунд, общая с получением ключа за 8 ушибов.",
+		"Одну печать, не трогая остальных, взрывает Открывающий удар по ней: секунда на месте, тот же урон.",
 	)
 	role = HERETIC_ROLE_ATTACK
 	gain_text = "Однажды все засовы отодвинулись разом. Только тогда я услышал, сколько людей стояло у дверей."
@@ -1768,12 +1772,14 @@
 
 /datum/eldritch_knowledge/lock_hinges
 	name = "Петли лабиринта"
-	summary = "Предел печатей растёт с 4 до 10, прочность - с 60 до 90, а разбитая печать захлопывается снова."
+	summary = "Печатей до 10 и прочнее, разбитая захлопывается снова, а рука в «Обезоружить» поворачивает печать на петлях."
 	details = list(
-		"Уже стоящие печати крепнут, сохраняя полученный урон и оставшийся срок.",
-		"Разбитая врагом печать через 3 секунды встаёт на той же клетке, один раз и с прежним сроком.",
-		"Встаёт и под человеком, если есть место в пределе; нулевой жезл и снятие рукой убирают её насовсем.",
-		"Закалка поднимает прочность печатей до 105 и 120.",
+		"Предел печатей растёт с 4 до 10, прочность - с 60 до 90; закалка поднимает её до 105 и 120.",
+		"Разбитая врагом печать через 3 секунды встаёт на той же клетке, один раз и с прежним сроком, даже под человеком.",
+		"Поворот: пустой рукой в «Обезоружить» по своей печати вплотную - она переходит на клетку дальше от вас.",
+		"Стоящего там врага печать отталкивает на клетку; кого толкать некуда, тот остаётся в клетке вашей печати.",
+		"Петли у печати одни: повёрнутая не захлопнется снова, захлопнувшаяся не повернётся. Поворот раз в 6 секунд.",
+		"Нулевой жезл и снятие рукой в «Помощи» убирают печать насовсем.",
 	)
 	role = HERETIC_ROLE_PASSIVE
 	gain_text = "Дом покоился на петлях. Привратник смазывал их тем, что оставалось от непрошеных гостей."
@@ -2052,8 +2058,8 @@
 		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_lock/keeper
-	action_icon = 'modular_bluemoon/icons/obj/heretic_relics.dmi'
-	action_icon_state = "lock_key"
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "lock_keeper"
 	name = "Ключник"
 	summary = "Выход из другого шлюза в 15 клеток на уровне через секунду на месте."
 	desc = "Стоя в шлюзе или рядом с ним, выберите другой шлюз в пятнадцати клетках на этом уровне. Оба шлюза вспыхивают золотой скважиной, и после секунды неподвижности вы выходите из выбранного. Заваренные, сломанные и неразрушимые шлюзы и помещения без телепортации не подходят. Перезарядка 10 секунд."
@@ -2149,7 +2155,6 @@
 #undef HERETIC_LOCK_BASE_LIMIT
 #undef HERETIC_LOCK_UPGRADED_LIMIT
 #undef HERETIC_LOCK_ASCENDED_LIMIT
-#undef HERETIC_LOCK_SELECTIVE_RELEASE_COOLDOWN
 #undef HERETIC_LOCK_GRASP_BOLT_TIME
 #undef HERETIC_LOCK_HARVEST_COOLDOWN
 #undef HERETIC_LOCK_KEEPER_SEAL_DELAY
@@ -2201,6 +2206,7 @@
 #undef HERETIC_LOCK_HOUSE_GLINT_SWEEP
 #undef HERETIC_LOCK_HOUSE_GLINT_TIME
 #undef HERETIC_LOCK_SEAL_SQUASH
+#undef HERETIC_LOCK_SWING_TIME
 #undef HERETIC_LOCK_DOOR_CRAFT
 #undef HERETIC_LOCK_DOOR_CLUE
 #undef HERETIC_LOCK_CAPTURE

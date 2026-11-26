@@ -70,7 +70,7 @@
 	COOLDOWN_DECLARE(relic_cooldown)
 
 /obj/item/heretic_path_relic/proc/authorized(mob/living/user)
-	if(QDELETED(src) || !isliving(user) || !user.mind || user.mind != creator?.resolve() || user.incapacitated() || !user.is_holding(src))
+	if(QDELETED(src) || !isliving(user) || !user.mind || user.mind != creator?.resolve() || heretic_incapacitated(user) || !user.is_holding(src))
 		return FALSE
 	var/datum/eldritch_knowledge/knowledge = knowledge_ref?.resolve()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -197,40 +197,17 @@
 	COOLDOWN_START(src, relic_cooldown, 15 SECONDS)
 	return TRUE
 
-/datum/eldritch_knowledge/moon_shroud/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
+/datum/eldritch_knowledge/spell/moon_exchange/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
 	return new_path_relic_available()
 
-/datum/eldritch_knowledge/moon_shroud/on_finished_recipe(mob/living/user, list/atoms, loc)
+/datum/eldritch_knowledge/spell/moon_exchange/on_finished_recipe(mob/living/user, list/atoms, loc)
 	return make_new_path_relic(user, get_turf(loc), /obj/item/heretic_path_relic/silver_mirror)
 
 /obj/item/heretic_path_relic/astrolabe
 	name = "star astrolabe"
-	desc = "Стоя рядом с первой звездой, сожмите астролябию: после полутора секунд подготовки созвездие повернётся на четверть оборота по часовой стрелке. Все звёзды должны быть в семи клетках; стены, занятые клетки и разорванные линии мешают повороту. Прочность и срок жизни звёзд сохраняются. Щелчок астролябией по своей звезде в пределах 7 клеток вместо поворота сжигает только её после 1,5 секунды предупреждения: 30 ожогов врагам в радиусе 2. Остальное созвездие сохраняется. Общая перезарядка 25 секунд."
+	desc = "Сжигает одну вашу звезду: щёлкните астролябией по своей звезде в семи клетках или сожмите её в руке (по умолчанию Z) - тогда вспыхнет ближайшая к вам звезда. Полторы секунды звезда сжимается в раскалённую точку, область подсвечена, затем 30 ожогов врагам в двух клетках от неё. Стены закрывают от вспышки, остальные звёзды целы. Перезарядка 25 секунд."
 	icon_state = "astrolabe"
 	var/alignment_time = 1.5 SECONDS
-
-/obj/item/heretic_path_relic/astrolabe/attack_self(mob/living/user)
-	return realign(user)
-
-/obj/item/heretic_path_relic/astrolabe/proc/realign(mob/living/user)
-	if(busy || !authorized(user) || !COOLDOWN_FINISHED(src, relic_cooldown))
-		return FALSE
-	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
-	var/list/plan = knowledge?.rotation_targets(user)
-	if(!length(plan))
-		to_chat(user, span_warning("Встаньте рядом с первой звездой. Для поворота нужны свободные клетки и не менее двух звёзд."))
-		return FALSE
-	busy = TRUE
-	for(var/obj/structure/heretic_star/star as anything in plan)
-		new /obj/effect/temp_visual/heretic_path_feedback(plan[star], "cosmic_carpet", "#a7ddeb", alignment_time)
-	playsound(user, 'modular_bluemoon/sound/heretic/cosmic_align.ogg', 35, FALSE)
-	var/completed = do_after(user, alignment_time, target = user, extra_checks = CALLBACK(src, PROC_REF(authorized), user))
-	busy = FALSE
-	if(!completed || !authorized(user) || QDELETED(knowledge) || !knowledge.rotate_constellation(user, plan))
-		return FALSE
-	COOLDOWN_START(src, relic_cooldown, 25 SECONDS)
-	return TRUE
 
 /datum/eldritch_knowledge/cosmic_resonance/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
 	return new_path_relic_available()

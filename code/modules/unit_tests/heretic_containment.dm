@@ -52,6 +52,64 @@
 	var/obj/item/implant/mindshield/crew_shield = allocate(/obj/item/implant/mindshield)
 	TEST_ASSERT(crew_shield.implant(crew, crew, TRUE), "Обычный член экипажа вводит щит себе как раньше.")
 
+/// Отказ под щитом короткий и сразу называет выход, значок с подробностями один и уходит вместе с глушением.
+/datum/unit_test/heretic_mindshield_way_out/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/obj/item/implant/mindshield/shield = allocate(/obj/item/implant/mindshield)
+	TEST_ASSERT(shield.implant(user, null, TRUE), "Щит вводится без оператора.")
+	var/reason = heretic_containment_reason(user)
+	TEST_ASSERT(findtext(reason, "Разум за завесой") && findtext(reason, "извлечь имплант"), "Отказ называет выход: [reason]")
+	var/datum/status_effect/heretic_mindshield/notice = user.has_status_effect(/datum/status_effect/heretic_mindshield)
+	TEST_ASSERT_NOTNULL(notice, "Глушение щитом вешает значок.")
+	var/datum/eldritch_knowledge/unshielded = /datum/eldritch_knowledge/unshielded_mind
+	TEST_ASSERT(findtext(notice.linked_alert?.desc, "с [GLOB.heretic_side_knowledge[unshielded]]-й ступени пути, стоит [initial(unshielded.cost)] очка"), "Значок называет ступень и цену знания: [notice.linked_alert?.desc]")
+	TEST_ASSERT(findtext(notice.linked_alert.desc, "хирургическая операция"), "Значок называет извлечение импланта.")
+	heretic_containment_reason(user)
+	TEST_ASSERT_EQUAL(length(user.has_status_effect_list(/datum/status_effect/heretic_mindshield)), 1, "Повторный отказ не плодит значки.")
+	heretic.gain_knowledge(unshielded)
+	notice.tick()
+	TEST_ASSERT(QDELETED(notice), "Изученное знание снимает значок.")
+	TEST_ASSERT_NULL(user.alerts["heretic_mindshield"], "Значок убран с экрана.")
+
+	var/datum/antagonist/heretic/captive = allocate_heretic()
+	var/mob/living/carbon/human/prisoner = captive.owner.current
+	var/obj/item/implant/mindshield/cell_shield = allocate(/obj/item/implant/mindshield)
+	TEST_ASSERT(cell_shield.implant(prisoner, null, TRUE), "Щит вводится второму еретику.")
+	heretic_containment_reason(prisoner)
+	TEST_ASSERT_NOTNULL(prisoner.has_status_effect(/datum/status_effect/heretic_mindshield), "Значок есть, пока имплант в теле.")
+	cell_shield.removed(prisoner, TRUE)
+	TEST_ASSERT_NULL(prisoner.has_status_effect(/datum/status_effect/heretic_mindshield), "Извлечённый имплант сразу снимает значок.")
+
+/// Оповещение об угрозе подтверждает её, учит закрывать разрыв и не обещает, что щит удержит всех.
+/datum/unit_test/heretic_threat_announcement_text/Run()
+	var/text = heretic_threat_announcement_text()
+	TEST_ASSERT(findtext(text, "Угроза подтверждена"), "Экипаж слышит, что угроза подтверждена.")
+	TEST_ASSERT(findtext(text, "Нулевой жезл или Библия стирают круги и закрывают разрывы"), "Оповещение называет ответ экипажа.")
+	TEST_ASSERT(findtext(text, "руками за [DisplayTimeText(HERETIC_POCKET_TEAR_TIME)]"), "Время разрыва руками берётся из дефайна.")
+	TEST_ASSERT(findtext(text, "не вознёсшихся и не тех, кто изучил защиту от него"), "Совет про щит идёт с оговоркой.")
+	TEST_ASSERT(!findtext(text, " код"), "Коды тревоги оповещение не назначает.")
+
+/// Экипаж при осмотре узнаёт, чем стереть круг и куда нести кристалл завесы; метку видно со стороны, а хватку еретика объясняют один раз.
+/datum/unit_test/heretic_crew_counterplay_hints/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human)
+	var/datum/mind/crew_mind = allocate_mind()
+	crew_mind.current = crew
+	crew.mind = crew_mind
+	var/obj/effect/eldritch/big/rune = allocate(/obj/effect/eldritch/big)
+	var/rune_text = jointext(rune.examine(crew), " ")
+	TEST_ASSERT(findtext(rune_text, "Нулевой жезл сотрёт круг одним касанием") && findtext(rune_text, "держать на нём [DisplayTimeText(HERETIC_RUNE_BIBLE_ERASE_TIME)]"), "Экипаж видит, чем стереть круг и сколько держать Библию: [rune_text]")
+	TEST_ASSERT(!findtext(jointext(rune.examine(user), " "), "сообщить службе безопасности"), "Еретик видит свои подсказки, а не подсказки экипажу.")
+	var/obj/item/heretic_veil_crystal/crystal = allocate(/obj/item/heretic_veil_crystal)
+	TEST_ASSERT(findtext(jointext(crystal.examine(crew), " "), "[HERETIC_VEIL_CRYSTAL_POINTS] очков исследований"), "Экипаж знает цену кристалла для науки.")
+	crew.apply_status_effect(/datum/status_effect/eldritch/ash)
+	TEST_ASSERT(findtext(jointext(crew.examine(user), " "), "знак еретика"), "Метку еретика видно при осмотре.")
+	TEST_ASSERT(heretic_capture_hint_to(crew, user), "Первая хватка объясняется свидетелю.")
+	TEST_ASSERT(!heretic_capture_hint_to(crew, user), "Подсказка о хватке не повторяется.")
+	TEST_ASSERT(!heretic_capture_hint_to(user, crew), "Еретику подсказка о хватке не нужна.")
+
 /// Между побегами клинком проходит перезарядка, наручники и щит побег запрещают.
 /datum/unit_test/heretic_blade_escape_cooldown/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()

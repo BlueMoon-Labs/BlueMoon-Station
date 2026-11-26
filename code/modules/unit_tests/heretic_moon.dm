@@ -3,7 +3,7 @@
 	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
-	var/datum/eldritch_knowledge/moon_shroud/recipe = allocate(/datum/eldritch_knowledge/moon_shroud)
+	var/datum/eldritch_knowledge/spell/moon_exchange/recipe = allocate(/datum/eldritch_knowledge/spell/moon_exchange)
 	heretic.researched_knowledge[recipe.type] = recipe
 	TEST_ASSERT(recipe.on_finished_recipe(user, list(), get_turf(user)), "Создаётся зеркало для приказов.")
 	var/obj/item/heretic_path_relic/silver_mirror/mirror = recipe.new_path_relic_ref.resolve()
@@ -38,11 +38,14 @@
 	TEST_ASSERT(QDELETED(reflection), "Перехват по-прежнему уничтожает ожидающую копию.")
 	TEST_ASSERT(!mirror.pursue(user, victim), "Разрушенной копией больше нельзя командовать.")
 
-/// Утрата знания зеркала отпускает копии и сохраняет чужие причины остановки.
+/// Утрата Зеркального обмена (знания зеркала) отпускает копии и сохраняет чужие причины остановки, утрата покрова снимает покров.
 /datum/unit_test/heretic_moon_mirror_orders/cleanup/Run()
 	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	var/datum/eldritch_knowledge/spell/moon_exchange/exchange = allocate(/datum/eldritch_knowledge/spell/moon_exchange)
+	heretic.researched_knowledge[exchange.type] = exchange
+	exchange.on_body_gain(user)
 	var/datum/eldritch_knowledge/moon_shroud/shroud = allocate(/datum/eldritch_knowledge/moon_shroud)
 	heretic.researched_knowledge[shroud.type] = shroud
 	shroud.on_body_gain(user)
@@ -52,8 +55,11 @@
 	first.hold_position(TRUE)
 	second.hold_position(TRUE)
 	shroud.on_body_lose(user)
-	TEST_ASSERT(!first.holding_position && !second.holding_position, "Потеря тела знанием зеркала отменяет его приказы ожидания.")
+	TEST_ASSERT(first.holding_position && second.holding_position, "Потеря покрова не трогает приказы зеркала.")
 	shroud.on_body_gain(user)
+	exchange.on_body_lose(user)
+	TEST_ASSERT(!first.holding_position && !second.holding_position, "Потеря тела знанием зеркала отменяет его приказы ожидания.")
+	exchange.on_body_gain(user)
 	first.hold_position(TRUE)
 	second.hold_position(TRUE)
 	ADD_TRAIT(first, TRAIT_AI_PAUSED, "moon-shroud-cleanup-test")
@@ -62,6 +68,7 @@
 	user.apply_status_effect(/datum/status_effect/heretic_moon_shroud, 5 SECONDS)
 	TEST_ASSERT(user.has_status_effect(/datum/status_effect/heretic_moon_shroud), "Перед удалением знания действует покров.")
 	user.mind.antag_datums -= heretic
+	qdel(exchange)
 	qdel(shroud)
 	TEST_ASSERT(!first.holding_position && !second.holding_position, "Destroy отпускает копии после отсоединения роли от mind.")
 	TEST_ASSERT(HAS_TRAIT_FROM(first, TRAIT_AI_PAUSED, "moon-shroud-cleanup-test"), "Чужая причина остановки первой копии остаётся.")
@@ -106,6 +113,9 @@
 	TEST_ASSERT_EQUAL(knowledge.reflection_limit(), 3, "Сумеречный покров даёт три отражения.")
 	knowledge.ascension_active = TRUE
 	TEST_ASSERT_EQUAL(knowledge.reflection_limit(), 5, "Вознесение должно давать пять отражений.")
+	knowledge.mirror_broken = TRUE
+	TEST_ASSERT_EQUAL(knowledge.reflection_limit(), 3, "Разбитое Лунное зеркало возвращает предел покрова.")
+	knowledge.mirror_broken = FALSE
 	knowledge.clear_reflections()
 	TEST_ASSERT(QDELETED(second), "Очистка должна удалять оставшиеся отражения.")
 	TEST_ASSERT_EQUAL(length(knowledge.reflections), 0, "После очистки список должен быть пуст.")
@@ -281,7 +291,7 @@
 	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
-	var/datum/eldritch_knowledge/moon_shroud/recipe = allocate(/datum/eldritch_knowledge/moon_shroud)
+	var/datum/eldritch_knowledge/spell/moon_exchange/recipe = allocate(/datum/eldritch_knowledge/spell/moon_exchange)
 	heretic.researched_knowledge[recipe.type] = recipe
 	TEST_ASSERT(recipe.on_finished_recipe(user, list(), get_turf(user)), "Ритуал должен создать серебряное зеркало.")
 	var/obj/item/heretic_path_relic/silver_mirror/mirror = recipe.new_path_relic_ref.resolve()
@@ -442,25 +452,35 @@
 	speeches = null
 	return ..()
 
-/// Шествие заменяет полный набор отражений и оставляет двойника на прежнем месте владельца.
-/datum/unit_test/heretic_moon_mirage/Run()
+/// Зеркальный обмен по пустому полу поднимает там копию и меняет с ней местами, при полном пределе вытесняя старейшую; запрет телепортации не тратит копию.
+/datum/unit_test/heretic_moon_mirror_step/Run()
 	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
-	knowledge.shrouded = TRUE
-	var/mob/living/simple_animal/hostile/illusion/heretic_moon/old = knowledge.create_reflection(user, get_step(user, EAST))
-	knowledge.create_reflection(user, get_step(user, NORTH))
-	knowledge.create_reflection(user, get_step(user, NORTHEAST))
+	var/obj/effect/proc_holder/spell/pointed/heretic_moon/exchange/spell = allocate(/obj/effect/proc_holder/spell/pointed/heretic_moon/exchange)
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/old = knowledge.create_reflection(user, get_step(user, NORTH))
+	knowledge.create_reflection(user, get_step(get_step(user, NORTH), NORTH))
 	var/turf/origin = get_turf(user)
-	TEST_ASSERT(knowledge.create_mirages(user), "Шествие должно работать при полном наборе отражений.")
-	TEST_ASSERT(QDELETED(old), "Старые отражения должны заменяться.")
-	TEST_ASSERT_EQUAL(length(knowledge.reflections), 3, "Шествие должно использовать предел покрова.")
-	TEST_ASSERT_NOTEQUAL(get_turf(user), origin, "Шествие должно менять позицию владельца.")
-	TEST_ASSERT(locate(/mob/living/simple_animal/hostile/illusion/heretic_moon) in origin, "На прежнем месте должна оставаться копия.")
+	var/turf/spot = locate(origin.x + 3, origin.y, origin.z)
+	TEST_ASSERT_EQUAL(spell.assisted_target(user, spot), spot, "Клик по пустому полу вдали от копий выбирает сам пол.")
+	TEST_ASSERT(spell.can_target(spot, user, TRUE), "Пустой видимый пол - цель обмена: [spell.heretic_failure_reason]")
+	spell.cast(list(spot), user)
+	TEST_ASSERT_EQUAL(get_turf(user), spot, "Еретик встаёт на выбранный пол.")
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/left = locate() in origin
+	TEST_ASSERT_NOTNULL(left, "На прежнем месте остаётся новая копия.")
+	TEST_ASSERT(QDELETED(old), "При полном пределе новая копия вытесняет старейшую.")
+	TEST_ASSERT_EQUAL(length(knowledge.reflections), knowledge.reflection_limit(), "Копий не больше предела.")
+	TEST_ASSERT_NOTNULL(user.has_status_effect(/datum/status_effect/heretic_moon_shroud), "После обмена еретик на секунду почти прозрачен и без покрова.")
 	ADD_TRAIT(user, TRAIT_NO_TELEPORT, "moon-test")
-	origin = get_turf(user)
-	TEST_ASSERT(knowledge.create_mirages(user), "Запрет телепортации не должен запрещать создание двойников.")
-	TEST_ASSERT_EQUAL(get_turf(user), origin, "Шествие должно соблюдать запрет телепортации.")
+	var/count_before = length(knowledge.reflections)
+	var/turf/blocked = locate(spot.x, spot.y + 2, spot.z)
+	TEST_ASSERT(!spell.can_target(blocked, user, TRUE), "Запрет телепортации не пускает обмен на пол.")
+	TEST_ASSERT(!knowledge.mirror_step(user, blocked), "Обмен на пол под запретом срывается.")
+	TEST_ASSERT_EQUAL(length(knowledge.reflections), count_before, "Сорванный обмен не тратит копии.")
+	TEST_ASSERT_EQUAL(get_turf(user), spot, "Сорванный обмен не двигает еретика.")
 	REMOVE_TRAIT(user, TRAIT_NO_TELEPORT, "moon-test")
+	TEST_ASSERT(knowledge.mirror_step(user, origin), "Клик по полу с копией меняет с этой копией: [knowledge.moon_failure]")
+	TEST_ASSERT_EQUAL(get_turf(user), origin, "Еретик вернулся на место копии.")
+	TEST_ASSERT_EQUAL(get_turf(left), spot, "Существующая копия встала на место еретика, новой не появилось.")
 
 /// Вспышка разбитой копии бьёт врагов в двух клетках, но не срабатывает при обычной очистке.
 /datum/unit_test/heretic_moon_refraction/Run()
@@ -937,7 +957,7 @@
 	TEST_ASSERT(wait_for_qdeleted(second), "Блики удалённой копии догорают.")
 
 /datum/unit_test/heretic_moon_visual_types_create_and_destroy/Run()
-	for(var/thing_type in list(/obj/effect/temp_visual/heretic_moon_mirror, /obj/effect/temp_visual/heretic_moon_shatter, /obj/effect/abstract/heretic_vfx_attached, /obj/effect/temp_visual/heretic_moon_fx/rise, /obj/effect/temp_visual/heretic_moon_fx/sink, /obj/effect/temp_visual/heretic_moon_fx/pool, /obj/effect/temp_visual/heretic_moon_fx/frame, /obj/effect/temp_visual/heretic_moon_fx/eclipse, /obj/effect/heretic_moon_wisp))
+	for(var/thing_type in list(/obj/effect/temp_visual/heretic_moon_mirror, /obj/effect/temp_visual/heretic_moon_shatter, /obj/effect/abstract/heretic_vfx_attached, /obj/effect/temp_visual/heretic_moon_fx/rise, /obj/effect/temp_visual/heretic_moon_fx/sink, /obj/effect/temp_visual/heretic_moon_fx/pool, /obj/effect/temp_visual/heretic_moon_fx/frame, /obj/effect/temp_visual/heretic_moon_fx/eclipse, /obj/effect/heretic_moon_wisp, /obj/structure/heretic_moon_mirror))
 		var/atom/movable/thing = new thing_type(run_loc_floor_bottom_left)
 		qdel(thing)
 		TEST_ASSERT(QDELETED(thing), "[thing_type] удаляется без ошибок.")
@@ -953,7 +973,16 @@
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_moon)
 	return heretic
 
+/// Игрок в теле, согласный на антаг-события: только его волю Луна забирает целиком.
+/datum/unit_test/proc/moon_willing(mob/living/victim, opt_in = ANTAG_OPT_IN_TEMPORARY)
+	if(!victim.mind)
+		victim.mind_initialize()
+	victim.mind.antag_opt_in_level = opt_in
+	victim.mock_client = new /datum/client_interface()
+	return victim
+
 /datum/unit_test/proc/moon_sleep_now(datum/eldritch_knowledge/base_moon/moon, mob/living/victim)
+	moon_willing(victim)
 	victim.apply_status_effect(/datum/status_effect/heretic_moon_daze)
 	if(!moon.sleepwalk(moon.moon_body, victim))
 		return null
@@ -1219,6 +1248,7 @@
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, locate(user.x + 4, user.y, user.z))
 	var/datum/status_effect/heretic_moon_daze/daze = victim.apply_status_effect(/datum/status_effect/heretic_moon_daze)
 	TEST_ASSERT(abs(daze.duration - world.time - HERETIC_MOON_DAZE_DURATION) < 1, "Помутнение длится 6 секунд.")
+	moon_willing(victim)
 	TEST_ASSERT(moon.sleepwalk(user, victim), "Цель под помутнением засыпает на ходу.")
 	var/datum/status_effect/heretic_moon_sleepwalk/walk = victim.has_status_effect(/datum/status_effect/heretic_moon_sleepwalk)
 	TEST_ASSERT_NOTNULL(walk, "На цели Сомнамбула.")
@@ -1439,6 +1469,7 @@
 	var/turf/origin = get_turf(user)
 	var/mob/living/carbon/human/runner = allocate(/mob/living/carbon/human, locate(origin.x + 5, origin.y + 5, origin.z))
 	runner.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	moon_willing(runner)
 	TEST_ASSERT(moon.sleepwalk(user, runner), "Сомнамбула наведена на цель в пяти клетках.")
 	var/datum/status_effect/heretic_moon_sleepwalk/walk = runner.has_status_effect(/datum/status_effect/heretic_moon_sleepwalk)
 	user.forceMove(locate(origin.x - 1, origin.y - 1, origin.z))
@@ -1471,6 +1502,18 @@
 	var/datum/eldritch_knowledge/exchange_type = /datum/eldritch_knowledge/spell/moon_exchange
 	TEST_ASSERT_EQUAL(initial(sleepwalk_type.cost), 2, "Сомнамбула стоит 2.")
 	TEST_ASSERT_EQUAL(initial(exchange_type.cost), 1, "Обмен стоит 1.")
+	TEST_ASSERT_EQUAL(path.knowledge[7], /datum/eldritch_knowledge/spell/moon_madness, "Лунное безумие на седьмой ступени, на месте Шествия миражей.")
+	var/datum/eldritch_knowledge/madness_type = /datum/eldritch_knowledge/spell/moon_madness
+	TEST_ASSERT_EQUAL(initial(madness_type.cost), 1, "Безумие стоит 1.")
+	var/obj/effect/proc_holder/spell/madness_spell = /obj/effect/proc_holder/spell/pointed/heretic_moon/madness
+	var/datum/eldritch_knowledge/spell/moon_madness/madness_probe = allocate(/datum/eldritch_knowledge/spell/moon_madness)
+	for(var/text in list(initial(madness_spell.desc), madness_probe.desc))
+		for(var/number_text in list("[HERETIC_MOON_MADNESS_DURATION / (1 SECONDS)] секунд", "[HERETIC_MOON_MADNESS_RANGE] клет", "в [HERETIC_MOON_MADNESS_REACH] клетках", "раз в [HERETIC_MOON_MADNESS_STRIKE_DELAY / (1 SECONDS)] секунды", "[HERETIC_MOON_LUNATIC_DURATION / (1 SECONDS)] секунд стреляют", "[HERETIC_MOON_FLASH_RANGE] клетках", "[HERETIC_MOON_MADNESS_IMMUNITY / (1 MINUTES)] минуты", "[HERETIC_MOON_MADNESS_COOLDOWN / (1 SECONDS)] секунд", "согласных на антаг-события"))
+			TEST_ASSERT(findtext(text, number_text), "Текст Лунного безумия называет «[number_text]»: [text]")
+	var/datum/eldritch_knowledge/moon_shroud/shroud_probe = allocate(/datum/eldritch_knowledge/moon_shroud)
+	var/datum/eldritch_knowledge/spell/moon_exchange/exchange_probe = allocate(/datum/eldritch_knowledge/spell/moon_exchange)
+	TEST_ASSERT(!length(shroud_probe.result_atoms), "Сумеречный покров больше не делает зеркало: оно у Зеркального обмена.")
+	TEST_ASSERT(/obj/item/heretic_path_relic/silver_mirror in exchange_probe.result_atoms, "Зеркальный обмен даёт рецепт серебряного зеркала.")
 	var/datum/antagonist/heretic/heretic = make_moon_path_heretic()
 	heretic.gain_knowledge(/datum/eldritch_knowledge/moon_grasp)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/moon_sleepwalk)
@@ -1481,6 +1524,7 @@
 	TEST_ASSERT(grasp.on_mansus_grasp(victim, user, TRUE), "Касание серебра срабатывает.")
 	var/datum/status_effect/heretic_moon_daze/daze = victim.has_status_effect(/datum/status_effect/heretic_moon_daze)
 	TEST_ASSERT(daze && abs(daze.duration - world.time - HERETIC_MOON_DAZE_DURATION) < 1, "Хватка вешает помутнение на 6 секунд.")
+	moon_willing(victim)
 	TEST_ASSERT(moon.sleepwalk(user, victim), "После Хватки Сомнамбула берёт цель: [moon.moon_failure]")
 	TEST_ASSERT(findtext(grasp.desc, "[HERETIC_MOON_DAZE_DURATION / (1 SECONDS)] секунд под лунным помутнением"), "Касание серебра называет помутнение.")
 	var/datum/eldritch_knowledge/sleepwalk_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/moon_sleepwalk)
@@ -1525,6 +1569,7 @@
 	var/mob/living/carbon/human/dozer = allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y + 3, origin.z))
 	dozer.pass_flags |= PASSMOB
 	dozer.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	moon_willing(dozer)
 	TEST_ASSERT(moon.sleepwalk(user, dozer), "Сомнамбула наведена на цель в форме слизи.")
 	qdel(dozer.has_status_effect(/datum/status_effect/heretic_moon_sleepwalk))
 	TEST_ASSERT(dozer.pass_flags & PASSMOB, "Сорванная до сна Сомнамбула не снимает свой проход цели.")
@@ -1687,12 +1732,12 @@
 	qdel(moon.post_double)
 	TEST_ASSERT_EQUAL(length(moon.pocket_exits(user)), 1, "Снятый двойник больше не выход.")
 
-/// Сомнамбула без тела-хозяина не ложится: наложение отдаёт уже удалённый эффект, который нельзя считать удачей.
+/// Сомнамбула без тела-хозяина не ложится, и наложение ничего не возвращает.
 /datum/unit_test/heretic_moon_sleepwalk_failed_apply/Run()
 	var/datum/eldritch_knowledge/base_moon/bodiless = allocate(/datum/eldritch_knowledge/base_moon)
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	var/datum/status_effect/heretic_moon_sleepwalk/walk = victim.apply_status_effect(/datum/status_effect/heretic_moon_sleepwalk, bodiless)
-	TEST_ASSERT(walk && QDELETED(walk), "Несостоявшаяся Сомнамбула возвращается удалённым эффектом.")
+	TEST_ASSERT_NULL(walk, "Несостоявшаяся Сомнамбула не возвращается.")
 	TEST_ASSERT(!(walk in bodiless.sleepwalkers) && !HAS_TRAIT(victim, TRAIT_HERETIC_CAPTURE_HOLD), "Несостоявшаяся Сомнамбула не держит цель.")
 
 /// Клик Зеркальным обменом по врагу рядом со своим двойником выбирает двойника.
@@ -1724,6 +1769,7 @@
 	moon.direct_reflections(victim)
 	TEST_ASSERT(copy.AttackingTarget(), "Копия бьёт соседнюю цель.")
 	TEST_ASSERT_NOTNULL(victim.has_status_effect(/datum/status_effect/heretic_moon_daze), "Удар копии вешает помутнение.")
+	moon_willing(victim)
 	TEST_ASSERT(moon.sleepwalk(user, victim), "Сомнамбула берёт цель после удара копии: [moon.moon_failure]")
 	var/mob/living/carbon/human/reveller = allocate(/mob/living/carbon/human, locate(user.x + 3, user.y + 3, user.z))
 	moon.masquerade_strike(user, reveller)
@@ -1778,9 +1824,9 @@
 	var/mob/living/carbon/human/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_moon/moon = heretic.get_knowledge(/datum/eldritch_knowledge/base_moon)
 	var/turf/origin = get_turf(user)
-	var/mob/living/carbon/human/follower = allocate(/mob/living/carbon/human, locate(origin.x + 1, origin.y + 1, origin.z))
+	var/mob/living/carbon/human/follower = moon_willing(allocate(/mob/living/carbon/human, locate(origin.x + 1, origin.y + 1, origin.z)))
 	follower.apply_status_effect(/datum/status_effect/heretic_moon_daze)
-	var/mob/living/carbon/human/hurt = allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y - 1, origin.z))
+	var/mob/living/carbon/human/hurt = moon_willing(allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y - 1, origin.z)))
 	hurt.apply_status_effect(/datum/status_effect/heretic_moon_daze)
 	var/mob/living/carbon/human/bystander = allocate(/mob/living/carbon/human, locate(origin.x + 3, origin.y, origin.z))
 	var/mob/living/carbon/human/distant = allocate(/mob/living/carbon/human, locate(origin.x + 3, origin.y + 3, origin.z))
@@ -1924,7 +1970,7 @@
 /// Появление и исчезновение копий и двойника, Затмение и зеркало рисуются своими лунными стейтами, а не космическими.
 /datum/unit_test/heretic_moon_own_visuals/Run()
 	var/list/states = icon_states('modular_bluemoon/icons/obj/heretic_moon_fx.dmi')
-	for(var/state in list("mirror_rise", "mirror_sink", "mirror_pool", "mirror_frame", "moon_daze_eyes", "moon_wisp", "wisp", "shatter"))
+	for(var/state in list("mirror_rise", "mirror_sink", "mirror_pool", "mirror_frame", "moon_daze_eyes", "moon_wisp", "wisp", "shatter", "moon_mirror", "moon_mirror_cracked"))
 		TEST_ASSERT(state in states, "Стейт [state] есть в листе Луны.")
 	TEST_ASSERT("eclipse_quarter" in icon_states('modular_bluemoon/icons/obj/heretic_moon_eclipse.dmi'), "Четверть диска Затмения нарисована.")
 	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
@@ -1948,3 +1994,286 @@
 	for(var/turf/tile in range(2, user))
 		TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/heretic_path_feedback) in tile, "Космического ковра нет.")
 	TEST_ASSERT(wait_for_qdeleted(ripple), "Рябь гаснет.")
+
+/datum/unit_test/proc/moon_madness_victim(turf/location, opt_in)
+	return moon_willing(allocate(/mob/living/carbon/human, location), opt_in)
+
+/// Лунное безумие берёт только помутнённую цель; согласная на антаг-события хохочет, идёт к ближайшему и бьёт его кулаком не чаще раза в 2 секунды, безумная одна за раз.
+/datum/unit_test/heretic_moon_madness
+	var/mob/living/last_struck
+
+/datum/unit_test/heretic_moon_madness/proc/record_strike(mob/living/source, atom/target)
+	SIGNAL_HANDLER
+	last_struck = target
+
+/datum/unit_test/heretic_moon_madness/Run()
+	var/datum/antagonist/heretic/heretic = make_moon_path_heretic()
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/moon_madness)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_moon/moon = heretic.get_knowledge(/datum/eldritch_knowledge/base_moon)
+	var/datum/eldritch_knowledge/spell/moon_madness/madness_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/moon_madness)
+	var/obj/effect/proc_holder/spell/pointed/heretic_moon/madness/spell = madness_knowledge.granted_spell
+	TEST_ASSERT(istype(spell), "Знание выдаёт Лунное безумие.")
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/victim = moon_madness_victim(locate(origin.x + 2, origin.y, origin.z), ANTAG_OPT_IN_TEMPORARY)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(origin.x + 4, origin.y, origin.z))
+	TEST_ASSERT(!spell.can_target(victim, user, TRUE), "Без помутнения безумие не берёт цель.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "помутнением"), "Отказ называет помутнение: [spell.heretic_failure_reason]")
+	victim.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	TEST_ASSERT(spell.can_target(victim, user, TRUE), "Помутнённая цель годится: [spell.heretic_failure_reason]")
+	spell.cast(list(victim), user)
+	var/datum/status_effect/heretic_lunatic/madness = victim.has_status_effect(/datum/status_effect/heretic_lunatic)
+	TEST_ASSERT(madness?.frenzy, "Согласная цель впадает в безумие.")
+	TEST_ASSERT(abs(madness.duration - world.time - HERETIC_MOON_MADNESS_DURATION) < 1, "Безумие длится [HERETIC_MOON_MADNESS_DURATION / (1 SECONDS)] секунд.")
+	TEST_ASSERT_EQUAL(madness.linked_alert?.name, "Лунное безумие", "Алерт называет безумие.")
+	TEST_ASSERT(HAS_TRAIT(victim, TRAIT_HERETIC_LUNATIC), "Безумная и стреляет мимо.")
+	TEST_ASSERT_EQUAL(moon.active_madness(), madness, "Еретик помнит свою безумную.")
+	RegisterSignal(victim, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, PROC_REF(record_strike))
+	TEST_ASSERT(madness.rampage(), "Безумная делает шаг к ближайшему.")
+	TEST_ASSERT_EQUAL(get_dist(victim, prey), 1, "Шаг ведёт к ближайшему человеку, а не к еретику.")
+	TEST_ASSERT_NULL(last_struck, "Издали она не бьёт.")
+	TEST_ASSERT(madness.rampage(), "Рядом с целью безумная бьёт.")
+	TEST_ASSERT_EQUAL(last_struck, prey, "Кулак уходит в ближайшего.")
+	last_struck = null
+	TEST_ASSERT(!madness.rampage(), "Второй удар не раньше чем через [HERETIC_MOON_MADNESS_STRIKE_DELAY / (1 SECONDS)] секунды.")
+	TEST_ASSERT_NULL(last_struck, "Без паузы удара нет.")
+	prey.Knockdown(5 SECONDS)
+	madness.next_strike = 0
+	TEST_ASSERT(!madness.rampage(), "Упавшего безумная не бьёт.")
+	TEST_ASSERT_NULL(last_struck, "Лежачий в безопасности.")
+	var/mob/living/carbon/human/second = moon_madness_victim(locate(origin.x, origin.y + 2, origin.z), ANTAG_OPT_IN_TEMPORARY)
+	second.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	TEST_ASSERT(findtext(moon.madness_block_reason(user, second), "уже смеётся"), "Безумная у еретика одна за раз.")
+	var/obj/item/assembly/flash/handheld/flash = allocate(/obj/item/assembly/flash/handheld, locate(victim.x, victim.y + 2, victim.z))
+	TEST_ASSERT(flash.try_use_flash(), "Вспышка срабатывает.")
+	TEST_ASSERT(QDELETED(madness), "Вспышка в трёх клетках приводит безумную в чувство.")
+	TEST_ASSERT(!HAS_TRAIT(victim, TRAIT_HERETIC_LUNATIC), "Конец безумия возвращает меткость.")
+	TEST_ASSERT_NOTNULL(victim.has_status_effect(/datum/status_effect/heretic_moon_madness_rest), "После безумия цель отдыхает от него.")
+	victim.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	TEST_ASSERT(findtext(moon.madness_block_reason(user, victim), "недавно"), "Отдохнувшую рано безумить снова.")
+	TEST_ASSERT_NULL(moon.madness_block_reason(user, second), "После конца безумия можно наслать новое.")
+	UnregisterSignal(victim, COMSIG_HUMAN_MELEE_UNARMED_ATTACK)
+
+/// Несогласный на антаг-события не теряет волю: только 12 секунд промахов и смеха, без ударов; нулевой жезл и смерть еретика обрывают безумие.
+/datum/unit_test/heretic_moon_madness_consent
+	var/mob/living/last_struck
+
+/datum/unit_test/heretic_moon_madness_consent/proc/record_strike(mob/living/source, atom/target)
+	SIGNAL_HANDLER
+	last_struck = target
+
+/datum/unit_test/heretic_moon_madness_consent/Run()
+	var/datum/antagonist/heretic/heretic = make_moon_path_heretic()
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/moon_madness)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_moon/moon = heretic.get_knowledge(/datum/eldritch_knowledge/base_moon)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/refuser = moon_madness_victim(locate(origin.x + 2, origin.y, origin.z), ANTAG_OPT_IN_NOT_TARGET)
+	allocate(/mob/living/carbon/human, locate(origin.x + 3, origin.y, origin.z))
+	refuser.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	TEST_ASSERT(moon.madden(user, refuser), "Чары ложатся и на несогласного: [moon.moon_failure]")
+	var/datum/status_effect/heretic_lunatic/lunatic = refuser.has_status_effect(/datum/status_effect/heretic_lunatic)
+	TEST_ASSERT(lunatic && !lunatic.frenzy, "Несогласный становится лишь лунатиком.")
+	TEST_ASSERT(abs(lunatic.duration - world.time - HERETIC_MOON_LUNATIC_DURATION) < 1, "Лунатик длится [HERETIC_MOON_LUNATIC_DURATION / (1 SECONDS)] секунд.")
+	TEST_ASSERT(HAS_TRAIT(refuser, TRAIT_HERETIC_LUNATIC), "Лунатик стреляет мимо.")
+	RegisterSignal(refuser, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, PROC_REF(record_strike))
+	lunatic.tick()
+	lunatic.tick()
+	TEST_ASSERT_NULL(last_struck, "Несогласный не бьёт никого по чужой воле.")
+	TEST_ASSERT_NULL(moon.active_madness(), "Промахи не занимают место безумной.")
+	UnregisterSignal(refuser, COMSIG_HUMAN_MELEE_UNARMED_ATTACK)
+	var/mob/living/carbon/human/mindless = allocate(/mob/living/carbon/human, locate(origin.x, origin.y + 2, origin.z))
+	mindless.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	TEST_ASSERT(moon.madden(user, mindless), "Тело без разума тоже под чарами.")
+	var/datum/status_effect/heretic_lunatic/mindless_lunatic = mindless.has_status_effect(/datum/status_effect/heretic_lunatic)
+	TEST_ASSERT(!mindless_lunatic.frenzy, "Без разума и согласия безумия нет.")
+	var/mob/living/carbon/human/willing = moon_madness_victim(locate(origin.x + 2, origin.y + 2, origin.z), ANTAG_OPT_IN_KILL)
+	willing.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	TEST_ASSERT(moon.madden(user, willing), "Согласный впадает в безумие: [moon.moon_failure]")
+	var/datum/status_effect/heretic_lunatic/madness = willing.has_status_effect(/datum/status_effect/heretic_lunatic)
+	TEST_ASSERT(madness?.frenzy, "Безумие легло.")
+	var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
+	var/mob/living/carbon/human/chaplain = allocate(/mob/living/carbon/human, get_step(willing, NORTH))
+	chaplain.put_in_hands(rod)
+	rod.melee_attack_chain(chaplain, willing)
+	TEST_ASSERT(QDELETED(madness), "Нулевой жезл приводит в чувство.")
+	TEST_ASSERT_EQUAL(willing.getBruteLoss(), 0, "Жезл лечит безумие, не раня.")
+	var/mob/living/carbon/human/last = moon_madness_victim(locate(origin.x + 1, origin.y + 3, origin.z), ANTAG_OPT_IN_TEMPORARY)
+	last.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	TEST_ASSERT(moon.madden(user, last), "Новое безумие после жезла ложится: [moon.moon_failure]")
+	madness = last.has_status_effect(/datum/status_effect/heretic_lunatic)
+	moon.on_death(user)
+	TEST_ASSERT(QDELETED(madness), "Смерть еретика обрывает безумие.")
+
+/// Безумная сама не ходит: шаги к ближайшему делает Луна; тело без игрока безумием не взять, бить его безумная не идёт, а ушедший из тела игрок безумие обрывает.
+/datum/unit_test/heretic_moon_madness_will/Run()
+	var/datum/antagonist/heretic/heretic = make_moon_path_heretic()
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/moon_madness)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_moon/moon = heretic.get_knowledge(/datum/eldritch_knowledge/base_moon)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/sleeper = allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y, origin.z))
+	sleeper.mind_initialize()
+	sleeper.mind.antag_opt_in_level = ANTAG_OPT_IN_KILL
+	sleeper.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	TEST_ASSERT(moon.madden(user, sleeper), "Чары ложатся и на тело без игрока: [moon.moon_failure]")
+	var/datum/status_effect/heretic_lunatic/sleeper_lunatic = sleeper.has_status_effect(/datum/status_effect/heretic_lunatic)
+	TEST_ASSERT(sleeper_lunatic && !sleeper_lunatic.frenzy, "Тело без игрока Луна безумием не берёт.")
+	sleeper.remove_status_effect(/datum/status_effect/heretic_lunatic)
+	var/mob/living/carbon/human/victim = moon_madness_victim(locate(origin.x + 2, origin.y + 2, origin.z), ANTAG_OPT_IN_TEMPORARY)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(origin.x + 5, origin.y + 2, origin.z))
+	victim.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	TEST_ASSERT(moon.madden(user, victim), "Безумие легло: [moon.moon_failure]")
+	var/datum/status_effect/heretic_lunatic/madness = victim.has_status_effect(/datum/status_effect/heretic_lunatic)
+	TEST_ASSERT(madness?.frenzy, "Согласный игрок в теле впадает в безумие.")
+	TEST_ASSERT(HAS_TRAIT(victim, TRAIT_MOBILITY_NOMOVE) && !(victim.mobility_flags & MOBILITY_MOVE), "Безумная сама не ходит.")
+	var/list/budget = new_wait_budget(3 SECONDS, "безумная дошла до ближайшего")
+	while(get_dist(victim, prey) > 1)
+		if(!wait_budget_tick(budget))
+			break
+	TEST_ASSERT_EQUAL(get_dist(victim, prey), 1, "Луна сама ведёт безумную к ближайшему, не дожидаясь хозяйки.")
+	TEST_ASSERT_EQUAL(sleeper.getBruteLoss(), 0, "Тело без игрока безумная не бьёт.")
+	sleeper.forceMove(get_step(victim, SOUTH))
+	TEST_ASSERT_EQUAL(madness.find_prey(), prey, "Безумная ищет игрока, а не тело, оставленное хозяином.")
+	victim.mock_client = null
+	TEST_ASSERT(wait_for_qdeleted(madness), "Игрок ушёл из тела - Луна отпускает его.")
+	TEST_ASSERT(!HAS_TRAIT(victim, TRAIT_MOBILITY_NOMOVE) && (victim.mobility_flags & MOBILITY_MOVE), "После безумия ноги снова свои.")
+
+/// Огонёк ведёт и Сомнамбула усыпляет только согласного игрока в теле; остальных они лишь заново помутняют.
+/datum/unit_test/heretic_moon_will_consent/Run()
+	var/datum/antagonist/heretic/heretic = make_moon_path_heretic()
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/moon_sleepwalk)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/moon_eclipse)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_moon/moon = heretic.get_knowledge(/datum/eldritch_knowledge/base_moon)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/refuser = moon_willing(allocate(/mob/living/carbon/human, locate(origin.x + 1, origin.y + 1, origin.z)), ANTAG_OPT_IN_NOT_TARGET)
+	var/mob/living/carbon/human/sleeper = allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y - 1, origin.z))
+	sleeper.mind_initialize()
+	sleeper.mind.antag_opt_in_level = ANTAG_OPT_IN_KILL
+	for(var/mob/living/carbon/human/body as anything in list(refuser, sleeper))
+		body.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	var/atom/movable/screen/alert/daze_alert = refuser.alerts["heretic_moon_daze"]
+	TEST_ASSERT(findtext(daze_alert?.desc, "не заберёт"), "Подсказка помутнения не пугает несогласного шествием: [daze_alert?.desc]")
+	var/obj/effect/heretic_moon_wisp/wisp = moon.launch_wisp(user, locate(origin.x + 3, origin.y, origin.z))
+	wisp.advance()
+	wisp.advance()
+	for(var/mob/living/carbon/human/body as anything in list(refuser, sleeper))
+		TEST_ASSERT_NULL(body.has_status_effect(/datum/status_effect/heretic_moon_parade), "Огонёк не ведёт [body == refuser ? "несогласного" : "тело без игрока"].")
+		TEST_ASSERT_NOTNULL(body.has_status_effect(/datum/status_effect/heretic_moon_daze), "Огонёк лишь заново помутняет.")
+		TEST_ASSERT(moon.sleepwalk(user, body), "Сомнамбула наводится: [moon.moon_failure]")
+		TEST_ASSERT_NULL(body.has_status_effect(/datum/status_effect/heretic_moon_sleepwalk), "Сомнамбула не усыпляет [body == refuser ? "несогласного" : "тело без игрока"].")
+		TEST_ASSERT_NOTNULL(body.has_status_effect(/datum/status_effect/heretic_moon_daze), "Сомнамбула лишь заново помутняет.")
+	qdel(wisp)
+
+/// Игрок ушёл из тела - Луна теряет его волю: огонёк отпускает, Сомнамбула срывается во время телеграфа и будит спящего.
+/datum/unit_test/heretic_moon_will_lost/Run()
+	var/datum/antagonist/heretic/heretic = make_moon_path_heretic()
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/moon_sleepwalk)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/moon_eclipse)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_moon/moon = heretic.get_knowledge(/datum/eldritch_knowledge/base_moon)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/follower = moon_willing(allocate(/mob/living/carbon/human, locate(origin.x + 1, origin.y + 1, origin.z)))
+	follower.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	var/obj/effect/heretic_moon_wisp/wisp = moon.launch_wisp(user, locate(origin.x + 2, origin.y, origin.z))
+	wisp.advance()
+	var/datum/status_effect/heretic_moon_parade/parade = follower.has_status_effect(/datum/status_effect/heretic_moon_parade)
+	TEST_ASSERT_NOTNULL(parade, "Огонёк ведёт согласного игрока.")
+	follower.mock_client = null
+	parade.step_after_wisp()
+	TEST_ASSERT(QDELETED(parade), "Игрок ушёл из тела - огонёк его больше не ведёт.")
+	qdel(wisp)
+	var/mob/living/carbon/human/dozing = moon_willing(allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y + 3, origin.z)))
+	dozing.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+	TEST_ASSERT(moon.sleepwalk(user, dozing), "Сомнамбула наводится: [moon.moon_failure]")
+	var/datum/status_effect/heretic_moon_sleepwalk/walk = dozing.has_status_effect(/datum/status_effect/heretic_moon_sleepwalk)
+	TEST_ASSERT_NOTNULL(walk, "Согласная цель засыпает.")
+	dozing.mock_client = null
+	walk.fall_asleep()
+	TEST_ASSERT(QDELETED(walk), "Игрок ушёл во время телеграфа - Сомнамбула срывается.")
+	var/mob/living/carbon/human/sleeper = allocate(/mob/living/carbon/human, locate(origin.x + 4, origin.y + 2, origin.z))
+	walk = moon_sleep_now(moon, sleeper)
+	TEST_ASSERT(walk?.asleep, "Согласная цель спит на ходу.")
+	sleeper.mock_client = null
+	walk.tick()
+	TEST_ASSERT(QDELETED(walk), "Игрок ушёл из спящего тела - Сомнамбула будит его.")
+
+/// Запасной шаг Сомнамбулы по диагонали не проводит спящую через лаву в промежуточной клетке.
+/datum/unit_test/heretic_moon_sleepwalk_diagonal_hazard/Run()
+	var/datum/antagonist/heretic/heretic = make_moon_path_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_moon/moon = heretic.get_knowledge(/datum/eldritch_knowledge/base_moon)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/walker = allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y + 2, origin.z))
+	var/turf/vertical = locate(origin.x + 2, origin.y + 1, origin.z)
+	var/vertical_type = vertical.type
+	vertical = vertical.ChangeTurf(/turf/open/lava/smooth, flags = CHANGETURF_INHERIT_AIR)
+	var/datum/unit_test_move_probe/probe = allocate(/datum/unit_test_move_probe)
+	probe.RegisterSignal(walker, COMSIG_MOVABLE_MOVED, TYPE_PROC_REF(/datum/unit_test_move_probe, on_moved))
+	moon.sleepwalk_step(walker, user)
+	probe.UnregisterSignal(walker, COMSIG_MOVABLE_MOVED)
+	vertical.ChangeTurf(vertical_type, flags = CHANGETURF_INHERIT_AIR)
+	TEST_ASSERT(!(vertical in probe.visited), "Спящая не проходит через лаву на диагонали.")
+
+/// Безумная без людей рядом приходит в себя за 3 секунды, а на учебной арене бросается и на манекен без игрока.
+/datum/unit_test/heretic_moon_madness_without_prey/Run()
+	var/datum/antagonist/heretic/heretic = make_moon_path_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/lunatic = moon_willing(allocate(/mob/living/carbon/human, locate(origin.x + 4, origin.y + 3, origin.z)))
+	var/datum/status_effect/heretic_lunatic/madness = lunatic.apply_status_effect(/datum/status_effect/heretic_lunatic, TRUE, user)
+	TEST_ASSERT(madness?.frenzy, "Согласная цель безумствует.")
+	var/mob/living/carbon/human/dummy = allocate(/mob/living/carbon/human, get_step(lunatic, WEST))
+	dummy.mind_initialize()
+	allocated += dummy.mind
+	TEST_ASSERT_NULL(madness.find_prey(), "Тело, оставленное игроком, безумная не трогает.")
+	heretic_test_area(get_turf(dummy), /area/antag_training)
+	TEST_ASSERT_EQUAL(madness.find_prey(), dummy, "На учебной арене безумная бросается на манекен.")
+	qdel(dummy)
+	TEST_ASSERT(wait_for_qdeleted(madness, HERETIC_MOON_MADNESS_IDLE_END + 1 SECONDS), "Без людей рядом безумие гаснет через [HERETIC_MOON_MADNESS_IDLE_END / (1 SECONDS)] секунды, а не через [HERETIC_MOON_MADNESS_DURATION / (1 SECONDS)].")
+	TEST_ASSERT(!HAS_TRAIT(lunatic, TRAIT_MOBILITY_NOMOVE), "Ноги снова свои.")
+	var/idle = HERETIC_MOON_MADNESS_IDLE_END / (1 SECONDS)
+	var/obj/effect/proc_holder/spell/madness_spell = /obj/effect/proc_holder/spell/pointed/heretic_moon/madness
+	var/datum/eldritch_knowledge/spell/moon_madness/knowledge = allocate(/datum/eldritch_knowledge/spell/moon_madness)
+	var/datum/heretic_path/path = GLOB.heretic_paths[PATH_MOON]
+	TEST_ASSERT(findtext(initial(madness_spell.desc), "рядом [idle] секунды нет никого") && findtext(knowledge.desc, "никого рядом [idle] секунды"), "Описания безумия называют срок без людей рядом.")
+	TEST_ASSERT(findtext(path.combat_practice, "ближайшую в [HERETIC_MOON_MADNESS_REACH] клетках") && findtext(path.combat_practice, "через [idle] секунды придёт в себя"), "Полигон называет дальность безумия и срок без соседей.")
+
+/// Вознесение поднимает Лунное зеркало на руне; вспышки и оружие разбивают его, и копии теряют силу вознесения.
+/datum/unit_test/heretic_moon_ascension_mirror/Run()
+	var/list/fixture = ascend_moon_fixture()
+	var/mob/living/carbon/human/user = fixture["user"]
+	var/datum/eldritch_knowledge/base_moon/knowledge = fixture["knowledge"]
+	var/datum/eldritch_knowledge/final_eldritch/moon_final/finale = fixture["finale"]
+	var/turf/ritual = locate(user.x + 4, user.y + 4, user.z)
+	var/obj/structure/heretic_moon_mirror/mirror = finale.raise_moon_mirror(ritual, user)
+	TEST_ASSERT_NOTNULL(mirror, "Вознесение поднимает Лунное зеркало.")
+	TEST_ASSERT_EQUAL(get_turf(mirror), ritual, "Зеркало встаёт на месте обряда.")
+	TEST_ASSERT_NULL(finale.raise_moon_mirror(ritual, user), "Зеркало одно.")
+	TEST_ASSERT(knowledge.ascended_power(), "Пока зеркало цело, сила вознесения держится.")
+	TEST_ASSERT_EQUAL(knowledge.reflection_limit(), 5, "Пять копий при целом зеркале.")
+	TEST_ASSERT(findtext(jointext(user.examine(user), "\n"), "Лунное зеркало"), "Осмотр вознёсшегося подсказывает про зеркало.")
+	var/obj/item/assembly/flash/handheld/flash = allocate(/obj/item/assembly/flash/handheld, get_step(ritual, WEST))
+	TEST_ASSERT(flash.try_use_flash(), "Вспышка у зеркала срабатывает.")
+	TEST_ASSERT_EQUAL(mirror.obj_integrity, HERETIC_MOON_MIRROR_INTEGRITY - HERETIC_MOON_MIRROR_FLASH_DAMAGE, "Вспышка бьёт по зеркалу.")
+	var/list/copies = list()
+	for(var/direction in list(EAST, NORTH, NORTHEAST, SOUTHEAST))
+		copies += knowledge.create_reflection(user, get_step(user, direction))
+	TEST_ASSERT_EQUAL(length(knowledge.reflections), 4, "При целом зеркале держится больше трёх копий.")
+	mirror.take_damage(HERETIC_MOON_MIRROR_INTEGRITY)
+	TEST_ASSERT(QDELETED(mirror), "Оружие добивает зеркало.")
+	TEST_ASSERT_NULL(finale.moon_mirror, "Финал забывает разбитое зеркало.")
+	TEST_ASSERT(knowledge.mirror_broken && !knowledge.ascended_power(), "Разбитое зеркало снимает силу вознесения с копий.")
+	TEST_ASSERT_EQUAL(length(knowledge.reflections), 2, "Лишние копии уходят до обычного предела.")
+	TEST_ASSERT(findtext(jointext(user.examine(user), "\n"), "разбито"), "Осмотр показывает, что зеркало разбито.")
+	knowledge.clear_reflections()
+	var/mob/living/attacker = allocate(/mob/living/carbon/human, locate(user.x + 3, user.y, user.z))
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/far = knowledge.create_reflection(user, get_step(get_step(user, NORTH), NORTH))
+	TEST_ASSERT(!(knowledge.intercept_projectile(user, TRUE, null, 20, "снаряд", ATTACK_TYPE_PROJECTILE, 0, attacker) & BLOCK_SUCCESS), "Без зеркала копия в двух клетках выстрел не ловит.")
+	TEST_ASSERT(!QDELETED(far), "Дальняя копия цела.")
+	var/datum/eldritch_knowledge/final_eldritch/moon_final/again = allocate(/datum/eldritch_knowledge/final_eldritch/moon_final)
+	var/obj/structure/heretic_moon_mirror/kept = again.raise_moon_mirror(ritual, user)
+	TEST_ASSERT(!knowledge.mirror_broken, "Новое зеркало возвращает силу.")
+	qdel(again)
+	TEST_ASSERT(QDELETED(kept), "Удалённый финал уносит своё зеркало.")

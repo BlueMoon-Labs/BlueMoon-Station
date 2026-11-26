@@ -18,7 +18,8 @@
 	ritual_floor.air.set_temperature(T0C + 20)
 	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, ritual_floor)
 	var/obj/item/kitchen/knife/knife = allocate(/obj/item/kitchen/knife, ritual_floor)
-	TEST_ASSERT(!rune.do_ritual(user, recipe), "Тёплый воздух без поля не подходит.")
+	recipe.combat_resource = 0
+	TEST_ASSERT(!rune.do_ritual(user, recipe), "Тёплый воздух без поля и осколков не подходит.")
 	TEST_ASSERT(!QDELETED(knife), "Отказ сохраняет нож.")
 	TEST_ASSERT(findtext(rune.recipe_failure_reason(recipe, user), "20 °C"), "Отказ показывает температуру на руне.")
 	recipe.ritual_time = 0
@@ -160,7 +161,7 @@
 	qdel(second_rune)
 	TEST_ASSERT_NULL(GLOB.heretic_ritual_reservations[ingredient], "Удаление руны должно освобождать компоненты.")
 
-/// Прерывания настоящего канала различают оглушение и смену предмета, сохраняя компоненты.
+/// Оглушение прерывает настоящий канал с понятной причиной и сохраняет компоненты, а выпавший из руки предмет обряд не срывает.
 /datum/unit_test/heretic_ritual_interruption_feedback/Run()
 	var/list/fixture = make_blade_fixture()
 	var/mob/living/user = fixture["user"]
@@ -180,9 +181,9 @@
 	var/obj/item/held_item = fixture["blade"]
 	TEST_ASSERT(user.put_in_active_hand(held_item), "После оглушения возвращаем выпавший клинок в активную руку.")
 	addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, dropItemToGround), held_item), 0.2 SECONDS)
-	TEST_ASSERT(!rune.do_ritual(user, recipe), "Смена предмета прерывает следующий канал.")
-	TEST_ASSERT(findtext(rune.ritual_interrupt_reason, "Предмет в активной руке"), "Новая попытка показывает свою причину отмены.")
-	TEST_ASSERT(!QDELETED(ingredient) && !GLOB.heretic_ritual_reservations[ingredient], "Смена предмета также сохраняет и освобождает компонент.")
+	TEST_ASSERT(rune.do_ritual(user, recipe), "Выпавший из руки клинок не срывает обряд: [rune.ritual_interrupt_reason]")
+	TEST_ASSERT(QDELETED(ingredient), "Завершённый обряд расходует компонент.")
+	allocated += locate(/obj/item/stack/sheet/metal) in get_turf(user)
 
 /datum/unit_test/heretic_final_body_selection/Run()
 	var/list/fixture = make_blade_fixture()
@@ -942,5 +943,5 @@
 	TEST_ASSERT(!swap.can_target(victim, user, TRUE), "Пристёгнутую цель не обменять.")
 	TEST_ASSERT(findtext(swap.heretic_failure_reason, "пристёгнута"), "Отказ называет ремни.")
 	var/obj/effect/proc_holder/spell/pointed/void_blink/blink = allocate(/obj/effect/proc_holder/spell/pointed/void_blink)
-	TEST_ASSERT(!blink.can_target(get_step(user, EAST), user, TRUE), "Соседняя клетка слишком близко.")
-	TEST_ASSERT(findtext(blink.heretic_failure_reason, "Слишком близко"), "Отказ называет дистанцию.")
+	TEST_ASSERT(!blink.can_target(get_turf(user), user, TRUE), "Своя клетка - не цель сдвига.")
+	TEST_ASSERT(findtext(blink.heretic_failure_reason, "в стороне от себя"), "Отказ называет дистанцию.")

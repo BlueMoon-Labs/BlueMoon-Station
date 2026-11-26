@@ -774,7 +774,7 @@
 	// от событийных seen_names, чтобы диагностика коллизии ruleset-vs-ruleset не путалась с event-vs-ruleset.
 	// test_pool_isolation и test_roundstart_intensity - фикстуры других тестов в этом же файле,
 	// не реальный игровой контент; требования тегирования на них не распространяются.
-	var/list/tagging_test_fixtures = list(/datum/dynamic_ruleset/midround/test_pool_isolation, /datum/dynamic_ruleset/latejoin/test_pool_isolation, /datum/dynamic_ruleset/roundstart/test_roundstart_intensity, /datum/dynamic_ruleset/midround/from_ghosts/test_assigned_minds)
+	var/list/tagging_test_fixtures = list(/datum/dynamic_ruleset/midround/test_pool_isolation, /datum/dynamic_ruleset/latejoin/test_pool_isolation, /datum/dynamic_ruleset/roundstart/test_roundstart_intensity, /datum/dynamic_ruleset/midround/from_ghosts/test_assigned_minds, /datum/dynamic_ruleset/midround/test_afk_filter)
 	var/list/ruleset_names = list()
 	for(var/datum/dynamic_ruleset/midround/ruleset_path as anything in subtypesof(/datum/dynamic_ruleset/midround))
 		if(!initial(ruleset_path.name) || (ruleset_path in tagging_test_fixtures))

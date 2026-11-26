@@ -618,6 +618,7 @@
 	status_type = STATUS_EFFECT_REPLACE
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_mark
 	on_remove_on_mob_delete = TRUE
+	examine_text = span_warning("На теле проступил знак еретика: удар тёмным клинком взорвёт его. Знак скоро гаснет, так что уведите раненого подальше от еретика.")
 	var/mutable_appearance/marked_underlay
 	var/effect_sprite = ""
 	var/effect_sprite_icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'

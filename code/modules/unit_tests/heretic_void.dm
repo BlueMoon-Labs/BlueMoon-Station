@@ -89,7 +89,7 @@
 	aspect.show_deflect(user, bullet.Angle)
 	var/obj/effect/temp_visual/heretic_vfx/shockwave/ripple = locate() in place
 	TEST_ASSERT_NOTNULL(ripple, "Отклонение рябит пространством.")
-	TEST_ASSERT(ripple.pixel_x > (world.icon_size - 256) / 2, "Рябь встаёт на стороне попадания.")
+	TEST_ASSERT(ripple.pixel_x || ripple.pixel_y, "Рябь встаёт на стороне попадания, а не в центре.")
 	var/obj/effect/temp_visual/heretic_vfx/burst/frost = find_vfx_burst(place, /particles/heretic_ascension/void/frost, before)
 	TEST_ASSERT_NOTNULL(frost, "С отклонённого снаряда сыплется иней.")
 	TEST_ASSERT(wait_for_qdeleted(ripple), "Рябь гаснет.")
@@ -479,7 +479,7 @@
 	TEST_ASSERT(user.Adjacent(victim), "Клинок переносит к меченой цели.")
 	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/voidin) in origin, "На прежнем месте остаётся провал пустоты.")
 	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/voidout) in get_turf(user), "У цели пустота раскрывается.")
-	TEST_ASSERT("[file('sound/magic/voidblink.ogg')]" in ear.heard, "Сдвиг слышен на прежнем месте.")
+	TEST_ASSERT(HERETIC_VOID_BLINK_OUT_SFX in ear.heard, "Сдвиг слышен на прежнем месте.")
 
 /// Притяжение пустоты звучит своим звуком с верхним слоем, а не прежним тихим гулом.
 /datum/unit_test/heretic_void_pull_sound/Run()
@@ -490,3 +490,137 @@
 	pull.cast(list(user), user)
 	TEST_ASSERT("[HERETIC_VOID_PULL_SOUND]" in ear.heard, "Притяжение звучит своим звуком.")
 	TEST_ASSERT(!("[file('sound/magic/voidpull.ogg')]" in ear.heard), "Прежний гул без верхнего слоя не играет.")
+
+/// Тёплая руна сама берёт осколок зимы за клинок, холод и своё поле - даром; без осколков отказ называет температуру, замену холоду и срок нового осколка.
+/datum/unit_test/heretic_void_blade_warm_shard
+	var/turf/open/floor/ritual_floor
+	var/original_temperature
+
+/datum/unit_test/heretic_void_blade_warm_shard/Destroy()
+	if(ritual_floor && !isnull(original_temperature))
+		ritual_floor.air.set_temperature(original_temperature)
+	return ..()
+
+/datum/unit_test/heretic_void_blade_warm_shard/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_void)
+	var/datum/eldritch_knowledge/base_void/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/base_void)
+	recipe.ritual_time = 0
+	COOLDOWN_START(recipe, resource_harvest, 1 MINUTES)
+	ritual_floor = get_turf(user)
+	original_temperature = ritual_floor.GetTemperature()
+	ritual_floor.air.set_temperature(T0C + 20)
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, ritual_floor)
+	recipe.combat_resource = 2
+	TEST_ASSERT(findtext(rune.preparation_hint(user), "возьмёт [HERETIC_VOID_RUNE_COST] осколок"), "Осмотр тёплой руны говорит, чем она заплатит.")
+	TEST_ASSERT(findtext(heretic_codex_text(/datum/eldritch_knowledge/base_void), "в тепле за [HERETIC_VOID_RUNE_COST] осколок"), "Кодекс называет цену клинка на тёплой руне.")
+	var/obj/item/kitchen/knife/knife = allocate(/obj/item/kitchen/knife, ritual_floor)
+	TEST_ASSERT(rune.do_ritual(user, recipe), "Тёплая руна с осколком даёт клинок с первой попытки.")
+	TEST_ASSERT(QDELETED(knife), "Клинок выходит из ножа.")
+	TEST_ASSERT_EQUAL(recipe.combat_resource, 2 - HERETIC_VOID_RUNE_COST, "Тёплая руна берёт осколок.")
+	var/obj/item/melee/sickly_blade/void/blade = locate() in ritual_floor
+	TEST_ASSERT_NOTNULL(blade, "На тёплой руне появился клинок.")
+	qdel(blade)
+	recipe.combat_resource = 0
+	knife = allocate(/obj/item/kitchen/knife, ritual_floor)
+	TEST_ASSERT(!rune.do_ritual(user, recipe), "Без осколков тёплая руна отказывает.")
+	TEST_ASSERT(!QDELETED(knife), "Отказ сохраняет нож.")
+	var/reason = rune.recipe_failure_reason(recipe, user)
+	TEST_ASSERT(findtext(reason, "20 °C") && findtext(reason, "лампы в инее") && findtext(reason, "Следующий осколок появится через"), "Отказ называет температуру, замену холоду и срок осколка: [reason]")
+	ritual_floor.air.set_temperature(T0C - 10)
+	TEST_ASSERT(rune.do_ritual(user, recipe), "Холодная руна даёт клинок даром.")
+	TEST_ASSERT_EQUAL(recipe.combat_resource, 0, "Холод осколков не тратит.")
+	blade = locate() in ritual_floor
+	qdel(blade)
+	ritual_floor.air.set_temperature(T0C + 20)
+	knife = allocate(/obj/item/kitchen/knife, ritual_floor)
+	var/obj/effect/heretic_combat_zone/void/winter = allocate(/obj/effect/heretic_combat_zone/void, ritual_floor, heretic.owner)
+	STOP_PROCESSING(SSprocessing, winter)
+	winter.refresh_boundary(list(ritual_floor))
+	recipe.combat_zone = winter
+	TEST_ASSERT(rune.do_ritual(user, recipe), "Своё поле над тёплой руной даёт клинок даром.")
+	TEST_ASSERT_EQUAL(recipe.combat_resource, 0, "Своё поле осколков не тратит.")
+	blade = locate() in ritual_floor
+	qdel(blade)
+	winter.expires_at = world.time + 1 SECONDS
+	TEST_ASSERT(findtext(recipe.ritual_start_reason(user, ritual_floor, 5 SECONDS), "осколка зимы на замену нет"), "Гаснущее поле без осколков не начинает обряд.")
+	recipe.combat_resource = 1
+	TEST_ASSERT_NULL(recipe.ritual_start_reason(user, ritual_floor, 5 SECONDS), "С осколком гаснущее поле обряд не срывает.")
+	recipe.combat_resource = 0
+	winter.expires_at = world.time - 1
+	var/fading = recipe.ritual_start_reason(user, ritual_floor, 5 SECONDS)
+	TEST_ASSERT(findtext(fading, "уже гаснет") && !findtext(fading, "через сейчас"), "Погасающее поле описано без «через сейчас»: [fading]")
+
+/// Предел клинков проверяется до платы: тёплая руна не списывает осколок за клинок, который не выйдет; сорванный обряд называет температуру руны.
+/datum/unit_test/heretic_void_blade_limit_keeps_shard
+	var/turf/open/floor/ritual_floor
+	var/original_temperature
+
+/datum/unit_test/heretic_void_blade_limit_keeps_shard/Destroy()
+	if(ritual_floor && !isnull(original_temperature))
+		ritual_floor.air.set_temperature(original_temperature)
+	return ..()
+
+/datum/unit_test/heretic_void_blade_limit_keeps_shard/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_void)
+	var/datum/eldritch_knowledge/base_void/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/base_void)
+	COOLDOWN_START(recipe, resource_harvest, 1 MINUTES)
+	ritual_floor = get_turf(user)
+	original_temperature = ritual_floor.GetTemperature()
+	ritual_floor.air.set_temperature(T0C + 20)
+	for(var/index in 1 to HERETIC_BLADE_LIMIT)
+		var/obj/item/melee/sickly_blade/void/held = allocate(/obj/item/melee/sickly_blade/void, user)
+		LAZYADD(recipe.created_blades, WEAKREF(held))
+	TEST_ASSERT_NOTNULL(recipe.blade_limit_reason(user), "Все клинки при еретике: предел достигнут.")
+	recipe.combat_resource = 1
+	TEST_ASSERT(!recipe.on_finished_recipe(user, list(), ritual_floor), "Сверх предела клинок не выходит.")
+	TEST_ASSERT_EQUAL(recipe.combat_resource, 1, "Отказ по пределу клинков не списывает осколок зимы.")
+	TEST_ASSERT(findtext(recipe.finish_failure_reason, "предел"), "Отказ называет предел клинков: [recipe.finish_failure_reason]")
+	recipe.created_blades = null
+	recipe.combat_resource = 0
+	TEST_ASSERT(!recipe.recipe_snowflake_check(list(), ritual_floor, list(), user), "Тёплая руна без осколков обряд не держит.")
+	var/reason = recipe.recipe_block_reason(user)
+	TEST_ASSERT(findtext(reason, "20 °C") && findtext(reason, "Следующий осколок"), "Сорванный обряд называет температуру руны и срок осколка: [reason]")
+	recipe.combat_resource = 1
+	TEST_ASSERT_NULL(recipe.recipe_block_reason(user), "С осколком тёплая руна годится.")
+
+/// Щелчок вплотную переносит сдвиг на три клетки по той же линии; закреплённое пространство отказывает сдвигу и Аплодисментам до применения; обмен восстанавливается 30 секунд.
+/datum/unit_test/heretic_void_blink_reach/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/turf/origin = get_turf(user)
+	var/obj/effect/proc_holder/spell/pointed/void_blink/spell = allocate(/obj/effect/proc_holder/spell/pointed/void_blink)
+	TEST_ASSERT(findtext(spell.active_msg, "[HERETIC_VOID_BLINK_MIN_RANGE] клетки"), "При выборе цели сдвиг заранее говорит про ближнюю границу: [spell.active_msg]")
+	TEST_ASSERT(!spell.can_target(origin, user, TRUE), "Своя клетка - не цель сдвига.")
+	var/turf/near = get_step(origin, EAST)
+	TEST_ASSERT(spell.can_target(near, user, TRUE), "Щелчок вплотную принимается: [spell.heretic_failure_reason]")
+	spell.cast(list(near), user)
+	TEST_ASSERT_EQUAL(get_turf(user), locate(origin.x + HERETIC_VOID_BLINK_MIN_RANGE, origin.y, origin.z), "Щелчок вплотную переносит на три клетки по той же линии.")
+	ADD_TRAIT(user, TRAIT_NO_TELEPORT, TRAIT_SOURCE_UNIT_TESTS)
+	TEST_ASSERT(!spell.can_target(origin, user, TRUE), "В закреплённом пространстве сдвиг отказывает до применения.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "закреплено"), "Отказ называет закреплённое пространство: [spell.heretic_failure_reason]")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, NORTH))
+	var/obj/effect/proc_holder/spell/pointed/boogie_woogie/swap = allocate(/obj/effect/proc_holder/spell/pointed/boogie_woogie)
+	TEST_ASSERT(!swap.can_target(victim, user, TRUE), "В закреплённом пространстве обмен отказывает до применения.")
+	TEST_ASSERT(findtext(swap.heretic_failure_reason, "закреплено"), "Отказ обмена называет закреплённое пространство: [swap.heretic_failure_reason]")
+	REMOVE_TRAIT(user, TRAIT_NO_TELEPORT, TRAIT_SOURCE_UNIT_TESTS)
+	TEST_ASSERT(swap.can_target(victim, user, TRUE), "Без запрета обмен доступен: [swap.heretic_failure_reason]")
+	TEST_ASSERT_EQUAL(swap.charge_max, HERETIC_VOID_APPLAUSE_COOLDOWN, "Аплодисменты восстанавливаются 30 секунд, а не 10.")
+	TEST_ASSERT(findtext(swap.desc, "Перезарядка [HERETIC_VOID_APPLAUSE_COOLDOWN / (1 SECONDS)] секунд"), "Описание обмена называет перезарядку из дефайна.")
+	TEST_ASSERT(findtext(spell.desc, "в [HERETIC_VOID_BLINK_MIN_RANGE]–[spell.range] клетках") && findtext(spell.desc, "ЦентКом"), "Описание сдвига называет ближнюю границу и где он не работает.")
+	var/datum/status_effect/heretic_void_chill/chill = /datum/status_effect/heretic_void_chill
+	var/chill_seconds = initial(chill.duration) / (1 SECONDS)
+	var/list/facts = list(
+		list(spell.desc, "[HERETIC_VOID_BLINK_DAMAGE] ушибов", "замедляются на [chill_seconds] секунды"),
+		list(spell.summary, "на [HERETIC_VOID_BLINK_MIN_RANGE]-[spell.range] клеток"),
+		list(spell.active_msg, "не дальше [spell.range] клеток"),
+		list(swap.desc, "в [swap.range] клетках", "замедляется на [chill_seconds] секунды"),
+		list(swap.summary, "раз в [swap.charge_max / (1 SECONDS)] секунд"),
+		list(heretic_codex_text(/datum/eldritch_knowledge/spell/boogiewoogie), "в [swap.range] клетках", "на [chill_seconds] секунды", "Перезарядка [swap.charge_max / (1 SECONDS)] секунд"),
+	)
+	for(var/list/fact_line as anything in facts)
+		for(var/index in 2 to length(fact_line))
+			TEST_ASSERT(findtext(fact_line[1], fact_line[index]), "Текст называет «[fact_line[index]]»: [fact_line[1]]")

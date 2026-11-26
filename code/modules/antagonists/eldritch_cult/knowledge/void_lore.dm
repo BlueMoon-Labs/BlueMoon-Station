@@ -4,7 +4,7 @@
 	name = "Мерцание зимы"
 	summary = "В холоде и у своих ламп в инее копятся осколки зимы, Зимний предел за осколок сковывает врагов на поле 5×5."
 	details = list(
-		"Нож на руне не теплее 0 °C, в своём Зимнем пределе или у своей лампы в инее даёт клинок Пустоты.",
+		"Нож на руне даёт клинок Пустоты: на холоде, у своей лампы в инее или в своём поле даром, в тепле за 1 осколок.",
 		"Осколок раз в 20 секунд на полу не теплее 0 °C или у своей лампы в инее; в тепле - не больше 2 раз в 30 секунд.",
 		"Хватка гасит работающую лампу и покрывает её инеем, новый отдел идёт в дело пути; в инее до 5 ламп.",
 		"У лампы в инее вы как на холоде, из изнанки можно выйти к ней; новая лампа или нулевой жезл снимают иней.",
@@ -15,8 +15,9 @@
 	role = HERETIC_ROLE_CRAFT
 	ritual_hints = list(
 		"Подойдут кухонные и боевые ножи, тесаки и заточки.",
-		"Воздух на клетке руны должен быть не теплее 0 °C, либо руна у своей лампы в инее.",
-		"Вместо охлаждения комнаты накройте руну своим Зимним пределом до конца обряда.",
+		"На руне не теплее 0 °C, у своей лампы в инее или в своём зимнем поле клинок выходит даром.",
+		"На тёплой руне обряд сам берёт 1 осколок зимы, охлаждать комнату не нужно.",
+		"Без осколков дождитесь нового: в тепле первый копится 20 секунд. Осмотр руны покажет, чем она заплатит.",
 	)
 	resource_rules = list(
 		"Запас до 4 осколков.",
@@ -24,33 +25,94 @@
 		"В тепле копится до 2 осколков, второй - через 30 секунд после первого.",
 		"Взрыв Метки Пустоты клинком даёт осколок.",
 		"Зимний предел, фонарь тишины и Ледяная темница тратят по 1 осколку.",
+		"Клинок на тёплой руне без своего поля берёт 1 осколок.",
 	)
 	gain_text = "В тишине между ударами сердца я услышал снег."
 	required_atoms = list(/obj/item/kitchen/knife)
 	result_atoms = list(/obj/item/melee/sickly_blade/void)
 	cost = 0
 	route = PATH_VOID
+	/// Пол руны из последней проверки обряда.
+	var/turf/checked_floor
 
 /datum/eldritch_knowledge/base_void/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
 	var/turf/open/floor/floor = get_turf(loc)
+	checked_floor = floor
 	if(!istype(floor))
 		return FALSE
-	if(cold_floor(floor))
-		return TRUE
-	var/obj/effect/heretic_combat_zone/void/winter = combat_zone
-	return user?.mind && istype(winter) && !QDELETED(winter) && winter.master_mind?.resolve() == user.mind && (floor in winter.field_turfs)
+	return combat_resource >= HERETIC_VOID_RUNE_COST || rune_cold(floor, user)
+
+/// Сорванный обряд называет, почему руна больше не холодна, а не общие «особые условия».
+/datum/eldritch_knowledge/base_void/recipe_block_reason(mob/living/user)
+	. = ..()
+	if(. || !checked_floor || combat_resource >= HERETIC_VOID_RUNE_COST || rune_cold(checked_floor, user))
+		return
+	return rune_cold_reason(checked_floor)
+
+/// Холод руны даром: воздух не теплее 0 °C, своя лампа в инее рядом или своё зимнее поле над руной.
+/datum/eldritch_knowledge/base_void/proc/rune_cold(turf/open/floor/floor, mob/living/user)
+	if(!istype(floor))
+		return FALSE
+	return cold_floor(floor) || (user?.mind && !!own_winter_zone(user, floor))
 
 /datum/eldritch_knowledge/base_void/ritual_start_reason(mob/living/user, turf/location, duration)
 	var/turf/open/floor = location
-	if(!istype(floor) || cold_floor(floor))
+	if(!istype(floor) || cold_floor(floor) || combat_resource >= HERETIC_VOID_RUNE_COST || !user?.mind)
 		return null
-	var/obj/effect/heretic_combat_zone/void/winter = combat_zone
-	if(!istype(winter) || QDELETED(winter) || !winter.expires_at)
+	var/obj/effect/heretic_combat_zone/void/winter = own_winter_zone(user, floor)
+	if(!winter?.expires_at)
 		return null
 	var/remaining = winter.expires_at - world.time
 	if(remaining >= duration)
 		return null
-	return "Зимний предел погаснет через [DisplayTimeText(max(remaining, 0))], а обряд длится [DisplayTimeText(duration)]. Примените его заново и сразу начните обряд."
+	return "Зимнее поле над руной [remaining > 0 ? "погаснет через [DisplayTimeText(remaining)]" : "уже гаснет"], а обряд длится [DisplayTimeText(duration)], и осколка зимы на замену нет. [next_shard_text()]"
+
+/datum/eldritch_knowledge/base_void/proc/next_shard_text()
+	var/wait = COOLDOWN_TIMELEFT(src, resource_harvest)
+	return wait > 0 ? "Следующий осколок появится через [DisplayTimeText(wait, 1)]." : "Осколок вот-вот появится."
+
+/// Отказ тёплой руны без осколка: температура и чем её заменить.
+/datum/eldritch_knowledge/base_void/proc/rune_cold_reason(turf/open/floor/floor)
+	if(!istype(floor))
+		return "Руна должна находиться на открытом полу."
+	return "Руна тёплая: [round(floor.GetTemperature() - T0C, 0.1)] °C, а осколков зимы нет. Даром клинок выходит на холоде не выше 0 °C, у своей лампы в инее или в своём Зимнем пределе. [next_shard_text()]"
+
+/// Подсказка при осмотре руны: выйдет ли клинок даром или за осколок.
+/datum/eldritch_knowledge/base_void/proc/rune_hint(mob/living/user, turf/open/floor/floor)
+	if(!istype(floor))
+		return null
+	var/craft_time = "Клинок выходит за [ritual_time / (1 SECONDS)] сек."
+	if(cold_floor(floor))
+		return "Руна достаточно холодна: клинок Пустоты выйдет даром. [craft_time]"
+	var/obj/effect/heretic_combat_zone/void/winter = user?.mind && own_winter_zone(user, floor)
+	if(winter)
+		if(!winter.expires_at)
+			return "Ваше зимнее поле над руной: клинок выйдет даром. [craft_time]"
+		var/remaining = max(0, winter.expires_at - world.time)
+		var/field = "Ваше зимнее поле над руной ещё [CEILING(remaining / (1 SECONDS), 1)] сек."
+		if(remaining >= ritual_time)
+			return "[field] Клинок выйдет даром. [craft_time]"
+		if(combat_resource >= HERETIC_VOID_RUNE_COST)
+			return "[field] Это меньше, чем длится обряд: руна возьмёт [HERETIC_VOID_RUNE_COST] осколок зимы. [craft_time]"
+		return "[field] Это меньше, чем длится обряд, а осколков нет. [next_shard_text()]"
+	var/warmth = "Руна тёплая: [round(floor.GetTemperature() - T0C, 0.1)] °C."
+	var/free = "Даром клинок выходит на холоде не выше 0 °C, у своей лампы в инее или в своём Зимнем пределе."
+	if(combat_resource >= HERETIC_VOID_RUNE_COST)
+		return "[warmth] Клинок Пустоты возьмёт [HERETIC_VOID_RUNE_COST] осколок зимы, у вас [combat_resource]. [free] [craft_time]"
+	return "[warmth] Осколков зимы нет. [next_shard_text()] [free]"
+
+/datum/eldritch_knowledge/base_void/on_finished_recipe(mob/living/user, list/atoms, loc)
+	var/limit_reason = blade_limit_reason(user)
+	if(limit_reason)
+		finish_failure_reason = limit_reason
+		return FALSE
+	var/turf/open/floor/floor = get_turf(loc)
+	if(!rune_cold(floor, user))
+		if(!spend_combat_resource(HERETIC_VOID_RUNE_COST))
+			finish_failure_reason = rune_cold_reason(floor)
+			return FALSE
+		to_chat(user, span_notice("Руна вытягивает из вас осколок зимы, и нож покрывается инеем."))
+	return ..()
 
 /datum/eldritch_knowledge/void_grasp
 	name = "Хватка Пустоты"
@@ -176,9 +238,9 @@
 	name = "Пустотный сдвиг"
 	summary = "Прыжок на 3-7 клеток бьёт врагов у входа и выхода; фонарь, стекло и бумага дают фонарь тишины."
 	details = list(
-		"Укажите видимую свободную клетку в 3-7 клетках: вы переноситесь туда.",
+		"Укажите видимую свободную клетку в 3-7 клетках; щелчок ближе переносит на 3 клетки по той же линии.",
 		"Враги в клетке от точек входа и выхода получают 20 ушибов и замедление на 4 секунды.",
-		"В зонах без телепортации сдвиг не работает. Перезарядка 30 секунд.",
+		"На ЦентКоме и в других зонах без телепортации сдвиг не работает. Перезарядка 30 секунд.",
 		"Шахтёрский фонарь, осколок стекла и лист бумаги на руне дают фонарь тишины.",
 		"Фонарь в руке за 1 осколок на 15 секунд окружает вас полем 3×3, которое замедляет, охлаждает и глушит врагов.",
 		"Поле гаснет, если выпустить фонарь; между включениями 25 секунд.",
@@ -266,7 +328,8 @@
 		return FALSE
 	var/mob/living/victim = target
 	var/mob/living/living_user = user
-	if(!CHECK_MOBILITY(living_user, MOBILITY_USE) || living_user.incapacitated())
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(living_user)
+	if(heretic_incapacitated(living_user) || (!heretic?.ascended && !CHECK_MOBILITY(living_user, MOBILITY_USE)))
 		return reject_blink(user, "Вы не можете действовать: дождитесь окончания оглушения или освободитесь.")
 	var/obj/item/melee/sickly_blade/void/blade = user.get_active_held_item()
 	if(!istype(blade))
@@ -293,11 +356,14 @@
 			break
 	if(!destination)
 		return reject_blink(user, "Возле цели нет клетки без препятствий.")
+	var/lock = heretic_void_teleport_lock(user, destination, user)
+	if(lock)
+		return reject_blink(user, lock)
 	var/turf/departure = get_turf(user)
 	if(!do_teleport(user, destination, channel = TELEPORT_CHANNEL_MAGIC))
 		return reject_blink(user, "Перемещение заблокировано: покиньте зону запрета телепортации или снимите удерживающий эффект.")
-	playsound(departure, 'sound/magic/voidblink.ogg', 50, TRUE)
-	playsound(destination, 'sound/magic/voidblink.ogg', 50, TRUE)
+	playsound(departure, HERETIC_VOID_BLINK_OUT_SFX, 50, TRUE)
+	playsound(destination, HERETIC_VOID_BLINK_IN_SFX, 50, TRUE)
 	new /obj/effect/temp_visual/voidin(departure)
 	new /obj/effect/temp_visual/voidout(destination)
 	COOLDOWN_START(src, blink_cooldown, in_own_domain(user, victim) ? HERETIC_VOID_DOMAIN_BLINK_COOLDOWN : HERETIC_VOID_BLINK_COOLDOWN)
@@ -342,8 +408,8 @@
 	details = list(
 		"Укажите живое существо в 15 клетках: вы меняетесь местами.",
 		"Враждебная цель после обмена замедляется на 4 секунды.",
-		"Пристёгнутых, закреплённых и защищённых от магии не поменять; в зонах без телепортации обмен не работает.",
-		"Перезарядка 10 секунд.",
+		"Пристёгнутых, закреплённых и защищённых от магии не поменять; на ЦентКоме и в зонах без телепортации обмен не работает.",
+		"Перезарядка 30 секунд: обмен выручит раз, а не уведёт от погони по кругу.",
 	)
 	role = HERETIC_ROLE_SUPPORT
 	gain_text = "Мы с Аристократом поменялись местами, и никто этого не заметил."
