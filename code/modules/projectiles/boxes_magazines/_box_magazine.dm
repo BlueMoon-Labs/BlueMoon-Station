@@ -1,7 +1,7 @@
 //Boxes of ammo
 
 /// Временный диагностический режим. Закомментируйте строку, чтобы убрать логи.
-#define AMMO_DEBUG_LOGS
+//#define AMMO_DEBUG_LOGS
 
 #ifdef AMMO_DEBUG_LOGS
 /proc/log_ammo_debug(text)
