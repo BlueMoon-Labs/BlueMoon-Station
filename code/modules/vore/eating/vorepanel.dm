@@ -475,6 +475,12 @@
 				unsaved_changes = FALSE
 			return TRUE
 
+		if("internal_loop_refresh")
+			return host.preyloop_refresh()
+
+		if("escapeOOC")
+			return host.escapeOOC()
+
 		if("restore_vore_backup")
 			return restore_vore_backup_act(usr)
 

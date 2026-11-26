@@ -218,6 +218,23 @@ const GeneralTab = () => {
         </Stack.Item>
 
         <Stack.Item>
+          <Section title="OOC и исправление ошибок">
+            <Stack spacing={1}>
+              <Stack.Item grow minWidth={0}>
+                <Button fluid ellipsis onClick={() => act('internal_loop_refresh')}>
+                  Возобновить звуки нутра
+                </Button>
+              </Stack.Item>
+              <Stack.Item grow minWidth={0}>
+                <Button fluid ellipsis onClick={() => act('escapeOOC')}>
+                  OOC выход из нутра
+                </Button>
+              </Stack.Item>
+            </Stack>
+          </Section>
+        </Stack.Item>
+
+        <Stack.Item>
           <Section title="Вкус и запах">
             <Box color="label" mb={0.5}>
               Эти описания видят те, кто вас пробует на вкус или принюхивается.

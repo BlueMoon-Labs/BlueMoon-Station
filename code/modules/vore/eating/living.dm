@@ -22,8 +22,6 @@
 // Hook for generic creation of stuff on new creatures
 //
 /hook/living_new/proc/vore_setup(mob/living/M)
-	add_verb(M, list(/mob/living/proc/preyloop_refresh, /mob/living/proc/escapeOOC))
-
 	if(M.vore_flags & NO_VORE) //If the mob isn't supposed to have a stomach, let's not give it an insidepanel so it can make one for itself, or a stomach.
 		return TRUE
 	add_verb(M, /mob/living/proc/insidePanel)
@@ -242,21 +240,16 @@
 
 // internal slimy button in case the loop stops playing but the player wants to hear it
 /mob/living/proc/preyloop_refresh()
-	set name = "Internal loop refresh"
-	set category = "Vore"
-	src.stop_sound_channel(CHANNEL_PREYLOOP) // sanity just in case
+	stop_sound_channel(CHANNEL_PREYLOOP) // sanity just in case
 	if(isbelly(loc))
 		var/sound/preyloop = sound('sound/vore/prey/loop.ogg')
 		SEND_SOUND(src, preyloop)
 	else
-		to_chat(src, "<span class='alert'>You aren't inside anything, you clod.</span>")
+		to_chat(src, span_alert("Ты не находишься в ком-либо, закуска ты этакая!"))
 
 // OOC Escape code for pref-breaking or AFK preds
 //
 /mob/living/proc/escapeOOC()
-	set name = "OOC Escape"
-	set category = "Vore"
-
 	//You're in a belly!
 	if(isbelly(loc))
 		var/obj/belly/B = loc
@@ -288,7 +281,7 @@
 		message_admins("[src] used OOC escape from a dogborg sleeper.")
 		log_consent("[src] used OOC escape from a dogborg sleeper.")
 	else
-		to_chat(src,"<span class='alert'>Ты ни в ком не находишься.</span>")
+		to_chat(src, span_alert("Закуска, ты ни в ком не находишься для использования этой возможности."))
 
 /mob/living/proc/copy_to_prefs_vr()
 	if(!client || !client.prefs)
