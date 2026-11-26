@@ -16,16 +16,6 @@
 /mob/living
 	var/datum/vore_look/vorePanel
 
-/mob/living/proc/insidePanel()
-	set name = "Vore Panel"
-	set category = "Vore"
-
-	if(!vorePanel)
-		log_game("VORE: [src] ([type], \ref[src]) didn't have a vorePanel and tried to use the verb.")
-		vorePanel = new(src)
-
-	vorePanel.ui_interact(src)
-
 /mob/living/proc/updateVRPanel() //Panel popup update call from belly events.
 	SStgui.update_uis(vorePanel)
 
