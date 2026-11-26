@@ -208,8 +208,15 @@
 				kept_radios += radio
 		radios = kept_radios
 
-	// From the list of radios, find all mobs who can hear those.
-	var/list/receive = get_mobs_in_radio_ranges(radios)
+	// Крупный текст получает только владелец гарнитуры, через которую пришёл сигнал.
+	var/list/receive = list()
+	var/list/amplified_receivers
+	for(var/obj/item/radio/radio in radios)
+		var/list/radio_hearers = get_hearers_in_view(radio.canhear_range, radio)
+		receive |= radio_hearers
+		var/obj/item/radio/headset/headset = radio
+		if(istype(headset) && headset.amplified_frequencies && (frequency in headset.amplified_frequencies) && ismob(headset.loc) && (headset.loc in radio_hearers))
+			LAZYOR(amplified_receivers, headset.loc)
 
 	// Cut out mobs with clients who are admins and have radio chatter disabled.
 	for(var/mob/R in receive)
@@ -223,10 +230,19 @@
 
 	// Render the message and have everybody hear it.
 	// Always call this on the virtualspeaker to avoid issues.
-	var/spans = radio_broadcast_spans(data["spans"], compression)
+	var/list/spans = radio_broadcast_spans(data["spans"], compression)
 	var/rendered = virt.compose_message(virt, language, message, frequency, spans)
+	var/list/amplified_spans
+	var/amplified_rendered
 	for(var/atom/movable/hearer in receive)
-		hearer.Hear(rendered, virt, language, message, frequency, spans)
+		if(amplified_receivers && (hearer in amplified_receivers))
+			if(!amplified_spans)
+				amplified_spans = spans ? spans.Copy() : list()
+				amplify_radio_spans(amplified_spans)
+				amplified_rendered = virt.compose_message(virt, language, message, frequency, amplified_spans)
+			hearer.Hear(amplified_rendered, virt, language, message, frequency, amplified_spans)
+		else
+			hearer.Hear(rendered, virt, language, message, frequency, spans)
 
 	// This following recording is intended for research and feedback in the use of department radio channels
 	if(length(receive))

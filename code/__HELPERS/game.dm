@@ -427,14 +427,6 @@
 		var/mob/M = k
 		SEND_SIGNAL(M, COMSIG_MOB_FOV_VIEWER, center, depth, .)
 
-/proc/get_mobs_in_radio_ranges(list/obj/item/radio/radios)
-	. = list()
-	// Returns a list of mobs who can hear any of the radios given in @radios
-	for(var/obj/item/radio/R in radios)
-		if(R)
-			. |= get_hearers_in_view(R.canhear_range, R)
-
-
 #define SIGNV(X) ((X<0)?-1:1)
 
 /proc/inLineOfSight(X1,Y1,X2,Y2,Z=1,PX1=16.5,PY1=16.5,PX2=16.5,PY2=16.5)

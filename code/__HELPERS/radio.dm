@@ -1,3 +1,8 @@
+/proc/amplify_radio_spans(list/spans, volume_span = SPAN_COMMAND)
+	spans -= SPAN_BIG
+	spans -= SPAN_SMALL_VOICE
+	spans |= volume_span
+
 /// Ensure the frequency is within bounds of what it should be sending/receiving at
 /proc/sanitize_frequency(frequency, free = FALSE)
 	frequency = round(frequency)

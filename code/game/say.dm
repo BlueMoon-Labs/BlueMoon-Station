@@ -97,8 +97,13 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	if(!source)
 		source = speaker
 	//This proc uses text() because it is faster than appending strings. Thanks BYOND.
-	//Basic span
-	var/spanpart1 = "<span class='[radio_freq ? get_radio_span(radio_freq) : "game say"]'>"
+	var/message_class = "game say"
+	if(radio_freq)
+		message_class = get_radio_span(radio_freq)
+		var/atom/movable/virtualspeaker/radio_speaker = speaker
+		if(istype(radio_speaker) && radio_speaker.radio_loudspeaker)
+			message_class += " radio_loudspeaker"
+	var/spanpart1 = "<span class='[message_class]'>"
 	//Start name span.
 	var/spanpart2 = "<span class='name'>"
 	//Radio freq/name display
@@ -509,6 +514,7 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	var/list/job_style
 	var/atom/movable/source
 	var/obj/item/radio/radio
+	var/radio_loudspeaker = FALSE
 
 INITIALIZE_IMMEDIATE(/atom/movable/virtualspeaker)
 /atom/movable/virtualspeaker/Initialize(mapload, atom/movable/M, obj/item/radio/new_radio)
