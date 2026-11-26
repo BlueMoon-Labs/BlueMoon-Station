@@ -11,7 +11,7 @@ GLOBAL_LIST_INIT(heretic_playstyle_labels, list(
 /// Порядок карточек выбора внутри групп сложности: раньше те, у кого начало прощает больше ошибок.
 GLOBAL_LIST_INIT(heretic_path_choice_order, list(
 	PATH_RUST, PATH_GLASS, PATH_ASH,
-	PATH_TIDE, PATH_COSMIC, PATH_WAX, PATH_BLADE, PATH_ECHO, PATH_VOID,
+	PATH_TIDE, PATH_COSMIC, PATH_WAX, PATH_BLADE, PATH_LEAD, PATH_ECHO, PATH_VOID,
 	PATH_LOCK, PATH_FLESH, PATH_BLOOD, PATH_MOON, PATH_SAND, PATH_SPIRIT, PATH_DANCE,
 ))
 
@@ -100,6 +100,15 @@ GLOBAL_LIST_INIT(heretic_path_choice_order, list(
 		"Темп дают удары тёмным клинком и парирования, а пустой запас возвращается сам.",
 		"Бросайте «Вызов» новым людям рядом: отказ валит с ног, а принятый уводит на дуэль.",
 		"Сбейте Хваткой со спины или Выпадом и приставьте клинок к горлу: разрез уводит цель.",
+	)
+
+/datum/heretic_path/lead
+	difficulty = 2
+	playstyle = list("ranged")
+	first_steps = list(
+		"Хватка издали стреляет дробиной, а гильзы, металл, пули рядом и затишье дают Свинец.",
+		"Заговорите Хваткой в «Помощи» ружьё экипажа: осечка в новом отделе идёт в дело.",
+		"Пуля с именем за 2 Свинца: цель тяжелеет и падает, встаньте рядом - и сердце уводит её.",
 	)
 
 /datum/heretic_path/echo

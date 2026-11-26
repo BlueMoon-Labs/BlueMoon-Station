@@ -263,6 +263,58 @@
 		TEST_ASSERT(!findtext(text, "SUBJECTOBJECT"), "SUBJECTOBJECT ничем не заменяется: [effect_type]")
 		TEST_ASSERT(!oblique.Find(text), "SUBJECTPRONOUN в косвенном падеже: [effect_type]: [text]")
 
+/// Вознёсшегося оглушение не лишает приёмов ресурса старых путей, Пляски, Воска и Песка, а до вознесения глушит их.
+/datum/unit_test/heretic_ascended_ignores_stun/Run()
+	var/datum/antagonist/heretic/ash_heretic = allocate_heretic()
+	var/mob/living/carbon/human/ash_user = ash_heretic.owner.current
+	ash_heretic.selected_path = PATH_ASH
+	ash_heretic.gain_knowledge(/datum/eldritch_knowledge/base_ash)
+	var/datum/eldritch_knowledge/base_ash/ash = ash_heretic.get_knowledge(/datum/eldritch_knowledge/base_ash)
+	ash.combat_resource = ash.combat_resource_max
+	var/obj/effect/proc_holder/spell/self/heretic_power/ash/rekindle = ash.combat_power
+	TEST_ASSERT_NOTNULL(rekindle, "Пепел получает Угасание.")
+	check_stun(ash_heretic, ash_user, CALLBACK(rekindle, TYPE_PROC_REF(/obj/effect/proc_holder/spell, can_cast), ash_user, TRUE, TRUE), "Угасание")
+
+	var/datum/antagonist/heretic/dance_heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTH))
+	dance_heretic.selected_path = PATH_DANCE
+	dance_heretic.gain_knowledge(/datum/eldritch_knowledge/base_dance)
+	var/datum/eldritch_knowledge/base_dance/dance = dance_heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	check_stun(dance_heretic, dance_heretic.owner.current, CALLBACK(dance, TYPE_PROC_REF(/datum/eldritch_knowledge/base_dance, can_use), dance_heretic.owner.current), "Пляска")
+
+	var/datum/antagonist/heretic/wax_heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, EAST))
+	wax_heretic.selected_path = PATH_WAX
+	wax_heretic.gain_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/datum/eldritch_knowledge/base_wax/wax = wax_heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	check_stun(wax_heretic, wax_heretic.owner.current, CALLBACK(wax, TYPE_PROC_REF(/datum/eldritch_knowledge/base_wax, can_use), wax_heretic.owner.current), "Воск")
+
+	var/datum/antagonist/heretic/sand_heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	sand_heretic.selected_path = PATH_SAND
+	sand_heretic.gain_knowledge(/datum/eldritch_knowledge/base_sand)
+	var/datum/eldritch_knowledge/base_sand/sand = sand_heretic.get_knowledge(/datum/eldritch_knowledge/base_sand)
+	check_stun(sand_heretic, sand_heretic.owner.current, CALLBACK(sand, TYPE_PROC_REF(/datum/eldritch_knowledge/base_sand, can_use), sand_heretic.owner.current), "Песок")
+
+	var/list/gates = list(
+		PATH_BLOOD = list(/datum/eldritch_knowledge/base_blood, TYPE_PROC_REF(/datum/eldritch_knowledge/base_blood, can_use)),
+		PATH_ECHO = list(/datum/eldritch_knowledge/base_echo, TYPE_PROC_REF(/datum/eldritch_knowledge/base_echo, can_use)),
+		PATH_GLASS = list(/datum/eldritch_knowledge/base_glass, TYPE_PROC_REF(/datum/eldritch_knowledge/base_glass, can_use)),
+		PATH_MOON = list(/datum/eldritch_knowledge/base_moon, TYPE_PROC_REF(/datum/eldritch_knowledge/base_moon, can_use)),
+		PATH_SPIRIT = list(/datum/eldritch_knowledge/base_spirit, TYPE_PROC_REF(/datum/eldritch_knowledge/base_spirit, can_use)),
+		PATH_TIDE = list(/datum/eldritch_knowledge/base_tide, TYPE_PROC_REF(/datum/eldritch_knowledge/base_tide, can_use)),
+		PATH_LEAD = list(/datum/eldritch_knowledge/base_lead, TYPE_PROC_REF(/datum/eldritch_knowledge/base_lead, can_use)),
+		PATH_LOCK = list(/datum/eldritch_knowledge/base_lock, TYPE_PROC_REF(/datum/eldritch_knowledge/base_lock, valid_user)),
+		PATH_COSMIC = list(/datum/eldritch_knowledge/base_cosmic, TYPE_PROC_REF(/datum/eldritch_knowledge/base_cosmic, door_user_ready)),
+		PATH_FLESH = list(/datum/eldritch_knowledge/base_flesh, TYPE_PROC_REF(/datum/eldritch_knowledge, door_user_ready)),
+	)
+	for(var/path_id in gates)
+		var/list/gate = gates[path_id]
+		var/datum/antagonist/heretic/path_heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+		var/mob/living/carbon/human/path_user = path_heretic.owner.current
+		path_heretic.selected_path = path_id
+		path_heretic.gain_knowledge(gate[1])
+		var/datum/eldritch_knowledge/knowledge = path_heretic.get_knowledge(gate[1])
+		TEST_ASSERT_NOTNULL(knowledge, "[path_id]: основа пути изучена.")
+		check_stun(path_heretic, path_user, CALLBACK(knowledge, gate[2], path_user), path_id)
+
 /// До вознесения оглушение глушит приём; вознёсшегося не глушит, но держат наручники, сон и стазис.
 /datum/unit_test/heretic_ascended_ignores_stun/proc/check_stun(datum/antagonist/heretic/heretic, mob/living/carbon/human/user, datum/callback/ready, label)
 	TEST_ASSERT(ready.Invoke(), "[label]: без оглушения приём доступен.")

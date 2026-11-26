@@ -26,6 +26,7 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	var/next_duel_at = 0
 	var/datum/heretic_dance_lesson/dance_lesson
 	var/datum/heretic_spirit_lesson/spirit_lesson
+	var/datum/heretic_lead_lesson/lead_lesson
 	var/datum/heretic_sand_lesson/sand_lesson
 
 /datum/antag_training_session/proc/practice_message(message)
@@ -221,6 +222,7 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	QDEL_NULL(path_lesson)
 	QDEL_NULL(dance_lesson)
 	QDEL_NULL(spirit_lesson)
+	QDEL_NULL(lead_lesson)
 	QDEL_NULL(sand_lesson)
 	practice_id = null
 	practice_target = null
@@ -230,7 +232,7 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 /datum/antag_training_session/proc/start_practice(id)
 	if(!istext(id))
 		return FALSE
-	if(!((id in list("combat", "hunt", "medicine", "dance", "spirit", "sand")) || GLOB.heretic_path_lessons[id]) || !can_control(current_body) || preparing || arena.resetting || world.time < arena.next_spawn_at)
+	if(!((id in list("combat", "hunt", "medicine", "dance", "spirit", "lead", "sand")) || GLOB.heretic_path_lessons[id]) || !can_control(current_body) || preparing || arena.resetting || world.time < arena.next_spawn_at)
 		return FALSE
 	if(id == "hunt" && !IS_HERETIC(current_body))
 		practice_message("Для подношения выберите программу еретика в разделе «Моя роль».")
@@ -244,6 +246,9 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 		return FALSE
 	if(id == "spirit" && !spirit_knowledge())
 		practice_message("Урок Духа доступен на пути Духа: выберите его в разделе «Моя роль» и изучите первую ступень.")
+		return FALSE
+	if(id == "lead" && !lead_knowledge())
+		practice_message("Урок Свинца доступен на пути Свинца: выберите его в разделе «Моя роль» и изучите первую ступень.")
 		return FALSE
 	if(id == "sand" && !sand_knowledge())
 		practice_message("Урок Песка доступен на пути Песка: выберите его в разделе «Моя роль» и изучите первую ступень.")
@@ -263,7 +268,7 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	if(previous)
 		QDEL_NULL(previous.mind)
 		qdel(previous)
-	var/zone_id = ((id in list("combat", "dance", "spirit", "sand")) || path_lesson_type) ? "range" : "laboratory"
+	var/zone_id = ((id in list("combat", "dance", "spirit", "lead", "sand")) || path_lesson_type) ? "range" : "laboratory"
 	var/mob/living/carbon/human/target = arena.spawn_creature("human", zone_id, FALSE, src)
 	if(!target)
 		preparing = FALSE
@@ -283,6 +288,8 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 		dance_lesson = new(src, dance_knowledge(), current_body, target)
 	if(id == "spirit")
 		spirit_lesson = new(src, spirit_knowledge(), current_body, target)
+	if(id == "lead")
+		lead_lesson = new(src, lead_knowledge(), current_body, target)
 	if(id == "sand")
 		sand_lesson = new(src, sand_knowledge(), current_body, target)
 	preparing = FALSE
@@ -314,6 +321,9 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	else if(practice_id == "spirit")
 		practice_complete = spirit_lesson?.finished()
 		practice_hint = spirit_lesson?.hint || "Урок прерван: начните его заново."
+	else if(practice_id == "lead")
+		practice_complete = lead_lesson?.finished()
+		practice_hint = lead_lesson?.hint || "Урок прерван: начните его заново."
 	else if(practice_id == "sand")
 		practice_complete = sand_lesson?.finished()
 		practice_hint = sand_lesson?.hint || "Урок прерван: начните его заново."
@@ -348,6 +358,12 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	if(heretic?.selected_path != PATH_SPIRIT)
 		return null
 	return heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+
+/datum/antag_training_session/proc/lead_knowledge()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(current_body)
+	if(heretic?.selected_path != PATH_LEAD)
+		return null
+	return heretic.get_knowledge(/datum/eldritch_knowledge/base_lead)
 
 /datum/antag_training_session/proc/sand_knowledge()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(current_body)

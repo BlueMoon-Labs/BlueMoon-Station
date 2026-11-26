@@ -11,6 +11,7 @@ GLOBAL_LIST_INIT(antag_training_practice_exercises, list(
 	"blood" = list("name" = "Урок Крови", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Крови: связь, Метка Крови как вторая связь, взыскание по намерению и путы."),
 	"dance" = list("name" = "Урок Пляски", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Пляски: такт, Вальс, смена стиля, Приглашение и спасение партнёра."),
 	"spirit" = list("name" = "Урок Духа", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Духа: душа отделяется и притягивается одной кнопкой, жатва, захват той же кнопкой, обол."),
+	"lead" = list("name" = "Урок Свинца", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Свинца: гильзы, Палец-ствол, Переплавка, заговор ружья, Пуля с именем, Ловля пули под огнём учебного стрелка, Рикошет, выбор Школы стрельбы, барабан Шестизарядника и Последний патрон."),
 	"sand" = list("name" = "Урок Песка", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Песка: Осыпь с Засухой, Стазис, засечка и Откат.")
 ))
 
@@ -371,7 +372,7 @@ GLOBAL_LIST_INIT(antag_training_practice_exercises, list(
 		var/active = practice_id == practice_key
 		if(!active && (practice["zone"] != zone_id || !practice_available(practice_key)))
 			continue
-		var/list/steps = active ? (path_lesson?.steps() || dance_lesson?.steps() || spirit_lesson?.steps() || sand_lesson?.steps()) : null
+		var/list/steps = active ? (path_lesson?.steps() || dance_lesson?.steps() || spirit_lesson?.steps() || lead_lesson?.steps() || sand_lesson?.steps()) : null
 		if(!steps)
 			steps = list(list("name" = practice["goal"] || practice["name"], "done" = active && practice_complete, "current" = active && !practice_complete, "hint" = null))
 		. += list(list("id" = practice_key, "name" = practice["name"], "desc" = practice["desc"], "difficulty" = practice["difficulty"], "zone" = arena.zones[practice["zone"]]["name"], "practice" = TRUE, "score_rule" = null, "steps" = steps, "best" = null, "run" = active ? list("ended" = practice_complete, "success" = practice_complete, "result" = practice_hint) : null))
@@ -386,6 +387,8 @@ GLOBAL_LIST_INIT(antag_training_practice_exercises, list(
 			return !!dance_knowledge()
 		if("spirit")
 			return !!spirit_knowledge()
+		if("lead")
+			return !!lead_knowledge()
 		if("sand")
 			return !!sand_knowledge()
 	return TRUE

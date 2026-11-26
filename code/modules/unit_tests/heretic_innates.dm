@@ -163,6 +163,13 @@
 	wax.next_tick = 0
 	wax.tick()
 	TEST_ASSERT_EQUAL(round(wax.reserve, DAMAGE_PRECISION), 8, "Горящий воск не лечит.")
+	var/datum/heretic_innate/lead/lead = create_path(PATH_LEAD)
+	var/mob/living/carbon/human/gunner = create_victim()
+	lead.body.adjustStaminaLoss(30)
+	heretic_lead_test_shot(gunner, lead.body)
+	TEST_ASSERT_EQUAL(round(lead.body.getStaminaLoss(), DAMAGE_PRECISION), 22, "Пуля в Свинец восстанавливает выносливость.")
+	heretic_lead_test_shot(gunner, lead.body)
+	TEST_ASSERT_EQUAL(round(lead.body.getStaminaLoss(), DAMAGE_PRECISION), 22, "Тугое ухо срабатывает раз в 6 секунд.")
 
 /// Перенос тела, смерть и снятие роли не оставляют черты и заряды прежнему телу.
 /datum/unit_test/heretic_innates/lifecycle/Run()

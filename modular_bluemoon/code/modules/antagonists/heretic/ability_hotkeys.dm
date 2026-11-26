@@ -31,6 +31,12 @@
 /datum/eldritch_knowledge/proc/extra_combat_spells()
 	return null
 
+/datum/eldritch_knowledge/lead_mark/extra_combat_spells()
+	return list(choice_power, school_power, school_rain)
+
+/datum/eldritch_knowledge/lead_relic/extra_combat_spells()
+	return list(recall_power)
+
 /datum/antagonist/heretic/proc/collect_combat_spells(list/spells)
 	for(var/knowledge_type in researched_knowledge)
 		var/datum/eldritch_knowledge/knowledge = researched_knowledge[knowledge_type]

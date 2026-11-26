@@ -41,6 +41,11 @@
 #define HERETIC_MANSUS_SPIRIT_DECOY (8 SECONDS)
 #define HERETIC_MANSUS_SPIRIT_LURE_RANGE 9
 #define HERETIC_MANSUS_SPIRIT_STEP (0.5 SECONDS)
+#define HERETIC_MANSUS_LEAD_INTERVAL (5 SECONDS)
+#define HERETIC_MANSUS_LEAD_WARNING (1 SECONDS)
+#define HERETIC_MANSUS_LEAD_STRIKE (0.5 SECONDS)
+#define HERETIC_MANSUS_LEAD_TARGETS 2
+#define HERETIC_MANSUS_LEAD_REACH 6
 #define HERETIC_MANSUS_INTERACT_TIME (1 SECONDS)
 
 /// Особое правило Дома одного пути. Хуки зовёт посещение; объекты правила живут в visit.scenery.
@@ -1133,6 +1138,108 @@
 	plane = FLOOR_PLANE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
+// Свинец: тир, линии прицела через жертву, мишени принимают выстрел.
+
+/datum/heretic_mansus_rule/lead
+	hint = "Это тир. Раз в пять секунд через вас ложится красная линия прицела, а через секунду по ней стреляют. Сойдите с линии или встаньте за деревянную мишень: линия на ней обрывается. Тени пули не страшны."
+	reminder = "Красная линия - через секунду выстрел, мишень его примет."
+	var/list/obj/effect/heretic_mansus_lead_target/targets = list()
+
+/datum/heretic_mansus_rule/lead/on_generate()
+	for(var/cell in ordinary_cells())
+		for(var/index in 1 to HERETIC_MANSUS_LEAD_TARGETS)
+			var/turf/position = free_spot(cell)
+			if(position)
+				targets += spawn_object(/obj/effect/heretic_mansus_lead_target, position, visit)
+
+/datum/heretic_mansus_rule/lead/on_danger()
+	schedule(CALLBACK(src, PROC_REF(take_aim)), HERETIC_MANSUS_LEAD_INTERVAL)
+
+/datum/heretic_mansus_rule/lead/proc/take_aim(horizontal = prob(50), reversed = prob(50))
+	if(!active())
+		return null
+	schedule(CALLBACK(src, PROC_REF(take_aim)), HERETIC_MANSUS_LEAD_INTERVAL)
+	var/turf/center = get_turf(visit.victim)
+	if(!visit.contains(center) || visit.is_safe(center))
+		return null
+	var/list/line = lane(center, horizontal, reversed)
+	var/list/hazards = list()
+	for(var/turf/position as anything in line[1])
+		var/obj/effect/heretic_mansus_hazard/lead_lane/hazard = visit.place_hazard(position, /obj/effect/heretic_mansus_hazard/lead_lane, HERETIC_MANSUS_LEAD_WARNING, HERETIC_MANSUS_LEAD_STRIKE)
+		if(!hazard)
+			continue
+		if(!horizontal)
+			hazard.transform = matrix(90, MATRIX_ROTATE)
+		hazards += hazard
+	if(!length(hazards))
+		return null
+	playsound(visit.victim, visit.theme["warning"], 40, FALSE)
+	schedule(CALLBACK(src, PROC_REF(fire), hazards, line[2]), HERETIC_MANSUS_LEAD_WARNING)
+	return hazards
+
+/// Клетки линии от стрелка у дальнего края через центр: list(клетки, мишень, на которой линия оборвалась).
+/datum/heretic_mansus_rule/lead/proc/lane(turf/center, horizontal, reversed)
+	var/direction = horizontal ? (reversed ? WEST : EAST) : (reversed ? SOUTH : NORTH)
+	var/turf/start = center
+	for(var/step in 1 to HERETIC_MANSUS_LEAD_REACH)
+		var/turf/back = get_step(start, turn(direction, 180))
+		if(!visit.walkable_turfs[back])
+			break
+		start = back
+	var/list/turf/tiles = list()
+	var/obj/effect/heretic_mansus_lead_target/cover
+	var/turf/position = start
+	for(var/step in 0 to HERETIC_MANSUS_LEAD_REACH * 2)
+		if(!visit.walkable_turfs[position])
+			break
+		cover = locate() in position
+		if(cover)
+			break
+		tiles += position
+		position = get_step(position, direction)
+	return list(tiles, cover)
+
+/datum/heretic_mansus_rule/lead/proc/fire(list/hazards, obj/effect/heretic_mansus_lead_target/cover)
+	if(!active())
+		return FALSE
+	var/hit = FALSE
+	for(var/obj/effect/heretic_mansus_hazard/lead_lane/hazard as anything in hazards)
+		if(QDELETED(hazard))
+			continue
+		visit.arm_hazard(hazard)
+		hit = hit || get_turf(visit.victim) == get_turf(hazard)
+	if(!QDELETED(cover))
+		flick("[visit.theme["id"]]_target_hit", cover)
+	playsound(visit.victim, visit.theme["hit"], 35, FALSE)
+	if(hit)
+		visit.suffer_hazard(visit.victim)
+	return hit
+
+/datum/heretic_mansus_rule/lead/cleanup()
+	targets.Cut()
+
+/obj/effect/heretic_mansus_hazard/lead_lane
+	name = "line of fire"
+	desc = "Красная линия прицела. Через секунду по ней выстрелят: сойдите с неё или встаньте за мишень."
+	dispels_hunters = FALSE
+	warning_state = "lane_warn"
+	warning_icon = HERETIC_MANSUS_RULES_ICON
+	danger_state = "lane_shot"
+	danger_icon = HERETIC_MANSUS_RULES_ICON
+
+/obj/effect/heretic_mansus_lead_target
+	name = "shooting target"
+	desc = "Деревянная мишень на подставке, вся в пробоинах. Встаньте за неё: выстрел по линии примет она."
+	icon = HERETIC_MANSUS_RULES_ICON
+	icon_state = "lead_target"
+	anchored = TRUE
+	layer = ABOVE_MOB_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/obj/effect/heretic_mansus_lead_target/Initialize(mapload, datum/heretic_mansus_visit/visit)
+	. = ..()
+	visit?.apply_style(src, "target", HERETIC_MANSUS_RULES_ICON)
+
 // Дух: освобождённые души уводят тени.
 
 /datum/heretic_mansus_rule/spirit
@@ -1247,4 +1354,9 @@
 #undef HERETIC_MANSUS_SPIRIT_DECOY
 #undef HERETIC_MANSUS_SPIRIT_LURE_RANGE
 #undef HERETIC_MANSUS_SPIRIT_STEP
+#undef HERETIC_MANSUS_LEAD_INTERVAL
+#undef HERETIC_MANSUS_LEAD_WARNING
+#undef HERETIC_MANSUS_LEAD_STRIKE
+#undef HERETIC_MANSUS_LEAD_TARGETS
+#undef HERETIC_MANSUS_LEAD_REACH
 #undef HERETIC_MANSUS_INTERACT_TIME

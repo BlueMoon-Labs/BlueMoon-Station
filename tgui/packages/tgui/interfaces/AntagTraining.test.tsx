@@ -292,7 +292,9 @@ test('кнопка урока Свинца видна на пути Свинца
   const plain = setup();
   expect(plain.queryByText('Урок Свинца')).toBeNull();
   plain.unmount();
+  const ui = setup({ lead_lesson: 1 });
   fireEvent.click(ui.getByText('Урок Свинца'));
+  expect(ui.topic.mock.calls.map(([message]) => [message.type, JSON.parse(message.payload)])).toEqual([['act/practice', { id: 'lead' }]]);
 });
 
 test('готовый предмет и компоненты используют конкретный изученный рецепт', () => {

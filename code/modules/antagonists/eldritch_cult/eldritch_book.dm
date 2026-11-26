@@ -244,7 +244,7 @@
 		"book" = list(
 			"name" = book_style?.book_name || "Codex Cicatrix",
 			"title" = book_style?.book_title || "Кодекс Рубцов",
-			"subtitle" = book_style?.book_subtitle || "Шестнадцать дорог за одну завесу",
+			"subtitle" = book_style?.book_subtitle || "Семнадцать дорог за одну завесу",
 			"path" = book_style?.id,
 			"cover_state" = book_style?.book_cover || "codex",
 		),

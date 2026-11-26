@@ -135,6 +135,7 @@
 	if(!briefing_button)
 		briefing_button = new(src, src)
 	briefing_button.Grant(affected)
+	heretic_lead_refresh_patina(affected)
 
 /datum/antagonist/heretic_monster/remove_innate_effects(mob/living/mob_override)
 	. = ..()
@@ -148,6 +149,7 @@
 	affected.faction -= "heretics"
 	restore_health_cap(affected)
 	briefing_button?.Remove(affected)
+	heretic_lead_refresh_patina_later(affected)
 
 /// Освобождает место в свите после смерти или удаления сосуда; пересадка в другое тело роль сохраняет.
 /datum/antagonist/heretic_monster/proc/on_monster_body_death(mob/living/source)

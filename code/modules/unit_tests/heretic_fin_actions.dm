@@ -114,6 +114,13 @@
 			/obj/effect/proc_holder/spell/self/heretic_dance/style,
 			/obj/effect/proc_holder/spell/self/heretic_dance/great_horovod,
 		),
+		PATH_LEAD = list(
+			/obj/effect/proc_holder/spell/pointed/heretic_lead/hex,
+			/obj/effect/proc_holder/spell/self/heretic_lead/school,
+			/obj/effect/proc_holder/spell/self/heretic_lead/standoff,
+			/obj/effect/proc_holder/spell/pointed/heretic_lead/tripwire,
+			/obj/effect/proc_holder/spell/pointed/heretic_lead/powder_charge,
+		),
 	)
 	for(var/knowledge_type in subtypesof(/datum/eldritch_knowledge/spell))
 		var/datum/eldritch_knowledge/spell/knowledge = knowledge_type

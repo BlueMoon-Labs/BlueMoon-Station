@@ -235,6 +235,7 @@
 	RegisterSignal(current, COMSIG_MOB_ITEM_AFTERATTACK, PROC_REF(on_item_afterattack))
 	update_combat_resource_alert(FALSE, current)
 	update_codex_alert(current)
+	heretic_lead_refresh_patina(current)
 
 /datum/antagonist/heretic/remove_innate_effects(mob/living/mob_override)
 	. = ..()
@@ -251,6 +252,7 @@
 		handle_clown_mutation(current, removing = FALSE)
 	current.faction -= "heretics"
 	UnregisterSignal(current, list(COMSIG_MOB_DEATH, COMSIG_PARENT_QDELETING, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, COMSIG_MOB_ITEM_AFTERATTACK))
+	heretic_lead_refresh_patina_later(current)
 
 /datum/antagonist/heretic/proc/on_innate_body_deleted(mob/living/source)
 	SIGNAL_HANDLER

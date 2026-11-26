@@ -159,6 +159,23 @@ CC BY-SA 3.0 согласно README каждого источника.
 | `blood_drink.ogg` | [sound/items/drink.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/items/drink.ogg), [sound/effects/glug.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/glug.ogg) |
 | `blood_absorb.ogg` | [sound/effects/glug.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/glug.ogg) |
 
+## Свинец
+
+Оригинальные звуки пути Свинца, без сторонних записей: синтез на физических моделях (выстрел - ударная волна, рёв газов, отражения и зал; щелчки стальных деталей, звон латунных гильз, рикошет, малый и большой барабаны, колокол, расплав, бумага, засов, удары по доскам и мишеням, скрип настила, хлопок и горящие крупинки пороха, трение проволоки, шорох ткани, сердцебиение) и синтез речи (шёпот, хор, выдох), обработка - обрезка, смена скорости, разворот, фильтры, зал, сведение, уровень. CC BY-SA 3.0. Это `ascend_lead.ogg`, `ascend_lead_climax.ogg`, `lead_to_shot_in.ogg`, `lead_to_shot_out.ogg`, `lead_cock_1..3.ogg`, `lead_cylinder_spin_1..2.ogg`, `lead_cylinder_select_1..2.ogg`, `lead_fan_cock.ogg`, `lead_school_gunslinger.ogg`, `lead_school_hunter.ogg`, `lead_school_cannoneer.ogg`, `lead_standoff_in.ogg`, `lead_tripwire_set.ogg`, `lead_tripwire_click.ogg`, `lead_charge_set.ogg`, `lead_charge_arm.ogg`, `lead_pop.ogg`, `lead_last_round_charge.ogg`, `lead_last_round_shot.ogg`, `lead_phantom_shot_1..2.ogg`, `lead_drum_count_1..2.ogg`, `capture/lead_latch.ogg` и `mansus/lead_*.ogg`, кроме `mansus/lead_deposit.ogg` и `mansus/lead_warning.ogg`.
+
+Остальные звуки пути сведены из записей ресурсов BlueMoon ниже (обрезка, смена скорости, разворот, фильтры, сведение, уровень) и синтеза: удары и звон металла, щелчки механизма барабана, звон латунных гильз, хлопки пороха и клубы дыма, свист пули, пузыри, пар, низкий гул. CC BY-SA 3.0. Синтез без сторонних записей: `lead_catch_1..3.ogg`, `lead_named_hit_1..2.ogg`, `lead_rain_warn.ogg`, `lead_rain_1..2.ogg`, `lead_revolver_shot_1..3.ogg`, `lead_misfire_1..3.ogg`, `lead_gun_turns.ogg`, `lead_revolver_empty_1..2.ogg`, `lead_standoff_out.ogg`, `lead_crucible_bubble_1..2.ogg`, `book_lead_page.ogg`, `mansus/lead_deposit.ogg`, `mansus/lead_warning.ogg`, `sky/lead_loop.ogg`, `sky/lead_event.ogg`.
+
+| Файлы | Источник |
+| --- | --- |
+| `lead_hit_1.ogg`, `lead_hit_3.ogg` | `sound/weapons/bladeslice.ogg` |
+| `lead_hit_2.ogg` | `sound/weapons/bladesliceb.ogg` |
+| `lead_ricochet_1.ogg`, `lead_ricochet_2.ogg`, `lead_ricochet_3.ogg` | `sound/weapons/effects/ric1.ogg`, `ric2.ogg`, `ric3.ogg`, `ric4.ogg` |
+| `lead_named_cast_2.ogg` | `sound/hallucinations/psychosis/whisper_vocal.ogg` |
+| `lead_named_cast_1.ogg` | `sound/hallucinations/psychosis/whisper_voices_2.ogg` |
+| `lead_casing_1..3.ogg`, `lead_crucible_quench_1..2.ogg` | `sound/effects/wounds/sizzle2.ogg` |
+| `lead_crucible_quench_1.ogg` | `sound/machines/grill/grillsizzle.ogg` |
+| `book_lead_open.ogg` | `sound/effects/pageturn3.ogg` |
+
 ## Ресурсы BlueMoon
 
 CC BY-SA 3.0.

@@ -1,3 +1,9 @@
+/datum/unit_test/proc/path_lesson_heretic(path_id, base_type)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(heretic_lead_test_spot(0, 2))
+	heretic.selected_path = path_id
+	heretic.gain_knowledge(base_type)
+	return heretic
+
 /datum/unit_test/proc/path_lesson_grasp(mob/living/user, atom/target)
 	var/obj/item/melee/touch_attack/mansus_fist/fist = allocate(/obj/item/melee/touch_attack/mansus_fist)
 	fist.afterattack(target, user, TRUE)
@@ -6,6 +12,217 @@
 	blade.afterattack(target, user, TRUE, null)
 	user.a_intent = INTENT_HARM
 	blade.attack(target, user)
+
+/// Урок Стекла проходит пять шагов настоящими действиями: призма, луч по шагнувшей вбок мишени, раскол меткой, переход и кража сквозь стекло.
+/datum/unit_test/heretic_glass_lesson/Run()
+	allocate(/datum/heretic_test_station_level, run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = path_lesson_heretic(PATH_GLASS, /datum/eldritch_knowledge/base_glass)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/carbon/human/target = heretic_lead_test_crew(heretic_lead_test_spot(3, 2))
+	var/datum/heretic_path_lesson/glass/lesson = new(null, glass, user, target)
+	allocated += lesson
+	TEST_ASSERT(heretic.get_knowledge(/datum/eldritch_knowledge/glass_mark) && heretic.get_knowledge(/datum/eldritch_knowledge/glass_passage), "Урок открывает метку и переход.")
+	var/obj/item/melee/sickly_blade/glass/blade = locate() in user.held_items
+	TEST_ASSERT_NOTNULL(blade, "Урок даёт стеклянный клинок в руку.")
+	TEST_ASSERT(glass.shards(user, heretic_lead_test_spot(1, 4)), "Призма встаёт.")
+	TEST_ASSERT_EQUAL(lesson.stage, 2, "Призма открывает следящий луч.")
+	var/turf/aimed = get_turf(target)
+	TEST_ASSERT(glass.release(user, target), "Луч выпущен.")
+	TEST_ASSERT(wait_for_var(lesson, NAMEOF(lesson, stage), 3, 3 SECONDS), "Луч по мишени открывает раскол.")
+	TEST_ASSERT(get_turf(target) != aimed, "Мишень шагнула вбок во время наводки.")
+	TEST_ASSERT(target.getBruteLoss() > 0 && target.getBruteLoss() < 30, "Луч довернул за мишенью, но задел вполсилы: [target.getBruteLoss()].")
+	target.forceMove(get_step(user, EAST))
+	target.SetKnockdown(0)
+	path_lesson_grasp(user, target)
+	path_lesson_blade_hit(user, blade, target)
+	TEST_ASSERT(target.IsKnockdown(), "Метка расколола мишень.")
+	TEST_ASSERT_EQUAL(lesson.stage, 4, "Раскол меткой открывает переход.")
+	TEST_ASSERT_EQUAL(length(lesson.panes), 2, "Урок ставит два окна.")
+	var/datum/weakref/near_ref = lesson.panes[1]
+	var/datum/weakref/far_ref = lesson.panes[2]
+	var/obj/structure/window/near = near_ref.resolve()
+	var/obj/structure/window/far = far_ref.resolve()
+	TEST_ASSERT(glass.attune(near, user) && glass.attune(far, user), "Оба окна настроены.")
+	TEST_ASSERT(glass.travel(user, near, far), "Переход между стёклами: [glass.glass_failure]")
+	TEST_ASSERT_EQUAL(lesson.stage, 5, "Переход открывает кражу.")
+	TEST_ASSERT_EQUAL(heretic.hunt_target, target.mind, "Мишень стала целью охоты.")
+	TEST_ASSERT(get_dist(target, near) <= 1, "Мишень встала у другого окна.")
+	var/list/doors = glass.theft_doors(user, far)
+	TEST_ASSERT_EQUAL(length(doors), 1, "Цель видна сквозь стекло.")
+	TEST_ASSERT(glass.steal_through(user, far, doors[1]), "Кража сквозь стекло.")
+	TEST_ASSERT(lesson.finished(), "Урок пройден.")
+	TEST_ASSERT_EQUAL(length(lesson.steps()), 5, "В уроке пять шагов.")
+	heretic.pocket.collapse("проверка")
+	qdel(lesson)
+	TEST_ASSERT(QDELETED(near) && QDELETED(far) && QDELETED(blade), "Реквизит урока убирается вместе с ним.")
+
+/// Урок Пучины: прорыв, метка, Захлёб в своей воде, Течение и уход в слив ко второму прорыву.
+/datum/unit_test/heretic_tide_lesson/Run()
+	var/datum/antagonist/heretic/heretic = path_lesson_heretic(PATH_TIDE, /datum/eldritch_knowledge/base_tide)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_tide/tide = heretic.get_knowledge(/datum/eldritch_knowledge/base_tide)
+	var/mob/living/carbon/human/target = heretic_lead_test_crew(heretic_lead_test_spot(1, 2))
+	var/datum/heretic_path_lesson/tide/lesson = new(null, tide, user, target)
+	allocated += lesson
+	var/obj/item/melee/sickly_blade/tide/harpoon = locate() in user.held_items
+	TEST_ASSERT_NOTNULL(harpoon, "Урок даёт гарпун в руку.")
+	var/obj/structure/sink/first = locate() in orange(1, user)
+	TEST_ASSERT_NOTNULL(first, "Урок ставит раковину рядом.")
+	path_lesson_grasp(user, first)
+	TEST_ASSERT_EQUAL(lesson.stage, 2, "Прорыв открывает метку.")
+	path_lesson_grasp(user, target)
+	path_lesson_blade_hit(user, harpoon, target)
+	TEST_ASSERT_EQUAL(lesson.stage, 3, "Взрыв метки открывает Захлёб.")
+	TEST_ASSERT(tide.on_own_water(target), "Под мишенью своя вода.")
+	TEST_ASSERT(tide.drown(user, target), "Захлёб начат: [tide.tide_failure]")
+	TEST_ASSERT(wait_for_var(lesson, NAMEOF(lesson, stage), 4, 3 SECONDS), "Захлёб в своей воде открывает Течение.")
+	TEST_ASSERT(tide.create_current(user, heretic_lead_test_spot(4, 2)), "Течение легло: [tide.tide_failure]")
+	TEST_ASSERT_EQUAL(lesson.stage, 5, "Течение открывает уход в слив.")
+	var/obj/structure/sink/second
+	for(var/obj/structure/sink/sink in range(5, user))
+		if(sink != first)
+			second = sink
+	TEST_ASSERT_NOTNULL(second, "Урок ставит вторую раковину.")
+	user.forceMove(get_step(second, get_dir(second, user)))
+	path_lesson_grasp(user, second)
+	TEST_ASSERT_EQUAL(length(tide.breaches), 2, "Второй прорыв открыт.")
+	user.forceMove(heretic_lead_test_spot(0, 2))
+	TEST_ASSERT(tide.dive(user, first, second), "Уход в слив: [tide.tide_failure]")
+	TEST_ASSERT(get_dist(user, second) <= 1, "Ученик вынырнул у второго прорыва.")
+	TEST_ASSERT(lesson.finished(), "Урок пройден.")
+	qdel(lesson)
+	TEST_ASSERT(QDELETED(first) && QDELETED(second) && QDELETED(harpoon), "Реквизит урока убирается вместе с ним.")
+
+/// Урок Воска: кукла по отпечаткам, Сон по кукле сквозь стену, печать и оттиск, оболочка.
+/datum/unit_test/heretic_wax_lesson/Run()
+	allocate(/datum/heretic_test_station_level, run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = path_lesson_heretic(PATH_WAX, /datum/eldritch_knowledge/base_wax)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/mob/living/carbon/human/target = heretic_lead_test_crew(heretic_lead_test_spot(3, 0))
+	var/datum/heretic_path_lesson/wax/lesson = new(null, wax, user, target)
+	allocated += lesson
+	var/obj/item/pen/pen = locate() in orange(1, user)
+	TEST_ASSERT_NOTNULL(pen, "Урок кладёт вещь с отпечатками рядом.")
+	user.a_intent = INTENT_HELP
+	path_lesson_grasp(user, pen)
+	var/obj/item/heretic_wax_puppet/puppet = locate() in user.held_items
+	TEST_ASSERT_EQUAL(puppet?.model_ref?.resolve(), target, "Кукла слеплена по отпечаткам мишени.")
+	TEST_ASSERT_EQUAL(lesson.stage, 2, "Кукла открывает Сон.")
+	TEST_ASSERT_EQUAL(length(lesson.walls), 3, "Между учеником и мишенью встала стена.")
+	TEST_ASSERT_EQUAL(heretic.hunt_target, target.mind, "Мишень стала целью охоты.")
+	var/datum/weakref/wall_ref = lesson.walls[1]
+	var/obj/structure/falsewall/wall = wall_ref.resolve()
+	TEST_ASSERT(get_dist(user, target) > 1 && get_dist(user, wall) < get_dist(user, target), "Мишень за стеной.")
+	TEST_ASSERT(wax.melt_puppet(user), "Кукла тает: [wax.wax_failure]")
+	TEST_ASSERT(wait_for_var(lesson, NAMEOF(lesson, stage), 3, HERETIC_WAX_PUPPET_SLEEP_CHANNEL + 2 SECONDS), "Сон сквозь стену открывает оттиск.")
+	TEST_ASSERT(target.IsSleeping(), "Мишень спит.")
+	TEST_ASSERT(QDELETED(wall), "Стена уходит перед оттиском.")
+	user.forceMove(get_step(target, get_dir(target, user)))
+	path_lesson_grasp(user, target)
+	TEST_ASSERT(wax.imprint(user, target), "Оттиск снят.")
+	TEST_ASSERT_EQUAL(lesson.stage, 4, "Оттиск по печати открывает оболочку.")
+	TEST_ASSERT(wax.raise_shell(user), "Оболочка поднята.")
+	TEST_ASSERT(lesson.finished(), "Урок пройден.")
+	qdel(lesson)
+	TEST_ASSERT(QDELETED(pen), "Реквизит урока убирается вместе с ним.")
+
+/// Урок Крови: связь, Метка Крови на втором должнике, частичное взыскание в «Разоружении» и путы в «Захвате».
+/datum/unit_test/heretic_blood_lesson/Run()
+	var/datum/antagonist/heretic/heretic = path_lesson_heretic(PATH_BLOOD, /datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/target = heretic_lead_test_crew(heretic_lead_test_spot(3, 2))
+	var/datum/heretic_path_lesson/blood/lesson = new(null, blood, user, target)
+	allocated += lesson
+	var/obj/effect/proc_holder/spell/pointed/heretic_blood/release/release = blood.combat_power
+	release.cast(list(target), user)
+	TEST_ASSERT_EQUAL(lesson.stage, 2, "Связь открывает Метку Крови.")
+	var/mob/living/second = lesson.second_ref?.resolve()
+	TEST_ASSERT_NOTNULL(second, "Рядом встал второй должник.")
+	path_lesson_grasp(user, second)
+	TEST_ASSERT_EQUAL(lesson.stage, 3, "Метка Крови открывает взыскание.")
+	TEST_ASSERT(QDELETED(second), "Второй должник уходит.")
+	var/datum/status_effect/heretic_blood_seal/seal = target.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	TEST_ASSERT_EQUAL(seal?.debt, 20, "Долг мишени полон.")
+	user.a_intent = INTENT_DISARM
+	TEST_ASSERT(findtext(blood.release_mode(), "до"), "Подпись значка в «Разоружении» - частичное взыскание: [blood.release_mode()]")
+	release.cast(list(target), user)
+	TEST_ASSERT(wait_for_var(lesson, NAMEOF(lesson, stage), 4, 3 SECONDS), "Частичное взыскание открывает путы.")
+	TEST_ASSERT(seal.debt > 0, "Остаток долга держит связь.")
+	user.a_intent = INTENT_GRAB
+	release.cast(list(target), user)
+	TEST_ASSERT(target.has_status_effect(/datum/status_effect/heretic_blood_tether), "Путы на мишени.")
+	TEST_ASSERT(lesson.finished(), "Урок пройден.")
+	TEST_ASSERT_EQUAL(length(lesson.steps()), 4, "В уроке четыре шага.")
+
+/// Связь мишени истекла до Метки: Хватка по второму должнику не съедает шаг, урок перевязывает мишень и просит повторить.
+/datum/unit_test/heretic_blood_lesson_lapsed_bond/Run()
+	var/datum/antagonist/heretic/heretic = path_lesson_heretic(PATH_BLOOD, /datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/target = heretic_lead_test_crew(heretic_lead_test_spot(3, 2))
+	var/datum/heretic_path_lesson/blood/lesson = new(null, blood, user, target)
+	allocated += lesson
+	var/obj/effect/proc_holder/spell/pointed/heretic_blood/release/release = blood.combat_power
+	release.cast(list(target), user)
+	TEST_ASSERT_EQUAL(lesson.stage, 2, "Связь открывает Метку Крови.")
+	var/mob/living/second = lesson.second_ref?.resolve()
+	TEST_ASSERT_NOTNULL(second, "Рядом встал второй должник.")
+	target.remove_status_effect(/datum/status_effect/heretic_blood_seal)
+	path_lesson_grasp(user, second)
+	TEST_ASSERT_EQUAL(lesson.stage, 2, "Обычная связь со вторым шаг не засчитывает.")
+	TEST_ASSERT(heretic_lead_test_wait(CALLBACK(target, TYPE_PROC_REF(/mob/living, has_status_effect), /datum/status_effect/heretic_blood_seal), 2 SECONDS, "связь мишени"), "Урок снова связал мишень.")
+	TEST_ASSERT_NULL(second.has_status_effect(/datum/status_effect/heretic_blood_seal), "Случайная связь со вторым снята.")
+	path_lesson_grasp(user, second)
+	TEST_ASSERT_EQUAL(lesson.stage, 3, "Повторная Хватка ставит Метку и открывает взыскание.")
+
+/// На шаге Метки связь мишени не истекает, пока ученик ждёт перезарядку Хватки.
+/datum/unit_test/heretic_blood_lesson_holds_bond/Run()
+	var/datum/antagonist/heretic/heretic = path_lesson_heretic(PATH_BLOOD, /datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/target = heretic_lead_test_crew(heretic_lead_test_spot(3, 2))
+	var/datum/heretic_path_lesson/blood/lesson = new(null, blood, user, target)
+	allocated += lesson
+	var/obj/effect/proc_holder/spell/pointed/heretic_blood/release/release = blood.combat_power
+	release.cast(list(target), user)
+	TEST_ASSERT_EQUAL(lesson.stage, 2, "Связь открывает Метку Крови.")
+	var/datum/status_effect/heretic_blood_seal/seal = target.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	TEST_ASSERT_NOTNULL(seal, "Мишень связана.")
+	var/started = seal.expires_at
+	var/list/budget = new_wait_budget(5 SECONDS, "продление связи на уроке")
+	while(!QDELETED(seal) && seal.expires_at < started + 2 SECONDS)
+		if(!wait_budget_tick(budget))
+			break
+	TEST_ASSERT(!QDELETED(seal) && seal.expires_at >= started + 2 SECONDS, "Связь мишени продлевается на шаге Метки: [seal.expires_at - started] дс.")
+
+/// Учебный стрелок Свинца не ранит: непойманная пуля только толкает, а выбывшего стрелка урок заменяет.
+/datum/unit_test/heretic_lead_lesson_drill/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_LEAD)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	user.forceMove(heretic_lead_test_spot(0, 2))
+	var/datum/eldritch_knowledge/base_lead/lead = heretic.get_knowledge(/datum/eldritch_knowledge/base_lead)
+	var/mob/living/carbon/human/target = heretic_lead_test_crew(heretic_lead_test_spot(2, 4))
+	var/datum/heretic_lead_lesson/lesson = new(null, lead, user, target)
+	allocated += lesson
+	lesson.set_stage(6)
+	var/mob/living/gunner = lesson.gunner_ref?.resolve()
+	TEST_ASSERT_NOTNULL(gunner, "На шаге ловли выходит учебный стрелок.")
+	var/obj/item/projectile/bullet = lesson.drill_shot()
+	TEST_ASSERT_NOTNULL(bullet, "Стрелок стреляет.")
+	heretic_lead_test_fly(bullet)
+	TEST_ASSERT(QDELETED(bullet), "Учебная пуля долетела.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Непойманная учебная пуля не ранит.")
+	TEST_ASSERT_EQUAL(lesson.stage, 6, "Непойманная пуля шаг не засчитывает.")
+	gunner.death()
+	lesson.drill()
+	var/mob/living/fresh = lesson.gunner_ref?.resolve()
+	TEST_ASSERT(fresh && fresh != gunner && fresh.stat == CONSCIOUS, "Вместо выбывшего стрелка выходит новый.")
+	TEST_ASSERT(QDELETED(gunner), "Выбывший стрелок убран.")
+	qdel(lesson)
+	TEST_ASSERT(QDELETED(fresh), "Стрелок уходит вместе с уроком.")
 
 /datum/unit_test/proc/check_training_path_lesson(path_id, lesson_id, step_count)
 	var/datum/antag_training_session/session = allocate_training_session()
@@ -79,6 +296,9 @@
 
 /datum/unit_test/antag_training_dance_lesson_stage/Run()
 	check_lesson_path_stage(PATH_DANCE, "dance")
+
+/datum/unit_test/antag_training_lead_lesson_stage/Run()
+	check_lesson_path_stage(PATH_LEAD, "lead")
 
 /// Числа боевых советов полигона совпадают с дефайнами механик.
 /datum/unit_test/heretic_combat_practice_numbers/Run()
