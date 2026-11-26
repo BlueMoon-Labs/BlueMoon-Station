@@ -186,14 +186,14 @@
 	power_equip = FALSE
 	requires_power = FALSE
 	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
-	ambientsounds = FALSE
+	ambientsounds = null
 	var/ignore_mesa_events = TRUE
 
 /area/awaymission/ihategordon/custom_walking
 	name = "Ihategordon Walking Zone"
 	icon_state = "awaycontent1"
 	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
-	ambientsounds = FALSE
+	ambientsounds = null
 	has_gravity = TRUE
 	var/ignore_mesa_events = TRUE
 
@@ -201,7 +201,7 @@
 	name = "Ihategordon Event Zone"
 	icon_state = "awaycontent2"
 	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
-	ambientsounds = FALSE
+	ambientsounds = null
 	has_gravity = TRUE
 
 

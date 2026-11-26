@@ -118,7 +118,10 @@
 	return table
 
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/Move()
-	if(charging || charge_state || charge_windup_timer)
+	// Пока charging/charge_* - стоим на месте, КРОМЕ случая когда нас самого
+	// несёт thrownthing (throw_at в charge): thrownthing двигает моба именно
+	// через Move(), и запрет здесь срывал бы собственный рывок на первом же шаге.
+	if((charging || charge_state || charge_windup_timer) && !throwing)
 		return FALSE
 	return ..()
 
@@ -183,15 +186,9 @@
 		return
 	visible_message(span_boldwarning("[src] опускает головой и готовится к рывку!"))
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchroar.ogg', 75, FALSE)
-	// Метки на всём пути рывка - тот же приём, что у bubblegum/legionnaire,
-	// но со спрайтом gonarch_warning (64x64).
-	var/dir_to_target = get_dir(home, T)
-	var/turf/mark_turf = home
-	for(var/i in 1 to charge_distance)
-		mark_turf = get_step(mark_turf, dir_to_target)
-		if(!mark_turf)
-			break
-		new /obj/effect/temp_visual/dragon_swoop/gonarch(mark_turf)
+	// Метка-предупреждение только на точке приземления, как у bubblegum -
+	// спрайт gonarch_warning (64x64) из gonarch.dmi.
+	new /obj/effect/temp_visual/dragon_swoop/gonarch(T)
 	charging = TRUE
 	DestroySurroundings()
 	setDir(get_dir(src, T))
