@@ -16,6 +16,7 @@ import {
   TextArea,
 } from '../components';
 import { NtosWindow } from '../layouts';
+import { PhotoGallery, PhotoGalleryPagination, PhotoTile } from './common/PhotoGallery';
 import { type PhotoMedia, PhotoPreview } from './PhotoViewer';
 
 type CameraTab = 'camera' | 'local' | 'cloud';
@@ -59,6 +60,7 @@ type CameraData = {
   editMode: 'upload' | 'edit' | null;
   shareContacts: Record<string, ShareContact> | null;
   attachmentPicker: ByondFlag;
+  syndimaticPicker?: 'compose' | 'avatar' | null;
   nameLimit: number;
   descriptionLimit: number;
   captionLimit: number;
@@ -253,88 +255,23 @@ const GalleryGrid = () => {
   return (
     <>
       {gallery?.length ? (
-        <Box
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-            gap: '0.5rem',
-          }}>
+        <PhotoGallery>
           {gallery.map(({ id, name, thumbnail, uploaded }) => (
-            <button
+            <PhotoTile
               key={id}
-              type="button"
-              title={name}
-              aria-label={name}
-              style={{
-                position: 'relative',
-                display: 'grid',
-                placeItems: 'center',
-                aspectRatio: '1 / 1',
-                minWidth: 0,
-                overflow: 'hidden',
-                padding: 0,
-                border: '1px solid #ffffff40',
-                background: '#181c23',
-                color: '#aeb8c2',
-                cursor: 'pointer',
-              }}
-              onClick={() => act('select', { id })}>
-              {thumbnail ? (
-                <img
-                  src={`data:image/png;base64,${thumbnail}`}
-                  alt=""
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    imageRendering: 'pixelated',
-                  }}
-                />
-              ) : (
-                <Icon name="image" size={1.75} />
-              )}
-              {!!uploaded && (
-                <Box
-                  position="absolute"
-                  top={0.25}
-                  right={0.25}
-                  px={0.25}
-                  backgroundColor="#000b"
-                  style={{ borderRadius: '0.2rem' }}>
-                  <Icon name="check" color="blue" />
-                </Box>
-              )}
-            </button>
+              label={name}
+              thumbnail={thumbnail}
+              badge={!!uploaded && <Icon name="check" color="blue" />}
+              onClick={() => act('select', { id })}
+            />
           ))}
-        </Box>
+        </PhotoGallery>
       ) : (
         <NoticeBox>
           {tab === 'local' ? 'На ПДА пока нет фотографий.' : 'В облаке пока нет фотографий.'}
         </NoticeBox>
       )}
-      {pages > 1 && (
-        <Stack justify="center" align="center" mt={1}>
-          <Stack.Item>
-            <Button
-              icon="chevron-left"
-              tooltip="Предыдущая страница"
-              aria-label="Предыдущая страница"
-              disabled={page <= 1}
-              onClick={() => act('page', { page: page - 1 })}
-            />
-          </Stack.Item>
-          <Stack.Item>{page} / {pages}</Stack.Item>
-          <Stack.Item>
-            <Button
-              icon="chevron-right"
-              tooltip="Следующая страница"
-              aria-label="Следующая страница"
-              disabled={page >= pages}
-              onClick={() => act('page', { page: page + 1 })}
-            />
-          </Stack.Item>
-        </Stack>
-      )}
+      <PhotoGalleryPagination page={page} pages={pages} onPage={(page) => act('page', { page })} />
     </>
   );
 };
@@ -551,11 +488,13 @@ const PhotoDetails = ({ photo }: { photo: SelectedPhoto }) => {
     <>
       <Section
         title={photo.name}
-        buttons={data.attachmentPicker ? (
+        buttons={data.syndimaticPicker || data.attachmentPicker ? (
           <>
             <Button icon="arrow-left" tooltip="К списку фотографий" onClick={() => act('back')} />
-            <Button icon="paperclip" onClick={() => act('attach_photo', { id: photo.id, tab: data.tab })}>
-              Прикрепить
+            <Button
+              icon={data.syndimaticPicker ? 'check' : 'paperclip'}
+              onClick={() => act(data.syndimaticPicker ? 'select_syndimatic_photo' : 'attach_photo', { id: photo.id, tab: data.tab })}>
+              {data.syndimaticPicker ? 'Выбрать' : 'Прикрепить'}
             </Button>
           </>
         ) : !data.editMode && (
@@ -635,7 +574,9 @@ export const NtosCamera = () => {
                 />
               </Stack.Item>
               <Stack.Item>
-                {data.attachmentPicker ? (
+                {data.syndimaticPicker ? (
+                  <Button icon="arrow-left" onClick={() => act('cancel_syndimatic_picker')}>В Syndimatic</Button>
+                ) : data.attachmentPicker ? (
                   <Button icon="arrow-left" onClick={() => act('cancel_attachment')}>В чат</Button>
                 ) : (
                   <Button icon="camera" onClick={() => act('tab', { tab: 'camera' })}>Камера</Button>

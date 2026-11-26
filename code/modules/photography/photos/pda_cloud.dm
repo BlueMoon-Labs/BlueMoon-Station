@@ -49,6 +49,10 @@
 				if(isicon(image_data))
 					thumbnail = pda_photo_thumbnail(image_data)
 			metadata["thumbnail"] = thumbnail
+			if(!thumbnail)
+				var/picture_url
+				archive["url"] >> picture_url
+				metadata["url"] = picture_url
 			return metadata
 		archive["image"] >> image_data
 		var/picture_url

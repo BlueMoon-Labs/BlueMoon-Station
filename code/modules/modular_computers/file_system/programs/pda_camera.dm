@@ -56,6 +56,8 @@
 	var/photos_taken = 0
 	var/list/share_contacts
 	var/datum/weakref/attachment_chat_ref
+	var/datum/weakref/syndimatic_ref
+	var/syndimatic_kind
 
 /datum/computer_file/program/pda_camera/Destroy()
 	close_camera_window()
@@ -82,12 +84,14 @@
 		current_ui?.close()
 	open_camera_ui(user)
 
-/datum/computer_file/program/pda_camera/proc/open_camera_ui(mob/user, datum/pda_chat/attachment_chat)
+/datum/computer_file/program/pda_camera/proc/open_camera_ui(mob/user, datum/pda_chat/attachment_chat, datum/computer_file/program/syndimatic/syndimatic, syndimatic_kind)
 	clear_session()
 	viewer_ref = WEAKREF(user)
 	cloud_directory = pda_photo_cloud_path(user.ckey)
-	if(attachment_chat)
+	if(attachment_chat || syndimatic)
 		attachment_chat_ref = WEAKREF(attachment_chat)
+		syndimatic_ref = WEAKREF(syndimatic)
+		src.syndimatic_kind = syndimatic_kind
 		tab = "local"
 		refresh_gallery(1)
 	RegisterSignal(user, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(on_viewer_logout))
@@ -136,6 +140,8 @@
 	viewer_ui_ref = null
 	cloud_directory = null
 	attachment_chat_ref = null
+	syndimatic_ref = null
+	syndimatic_kind = null
 	gallery_ids = null
 	gallery_rows = null
 	tab = "camera"
@@ -177,6 +183,7 @@
 	data["editMode"] = edit_mode
 	data["shareContacts"] = share_contacts
 	data["attachmentPicker"] = !!attachment_chat_ref
+	data["syndimaticPicker"] = syndimatic_kind
 	data["printOpen"] = print_open
 	data["printMessage"] = print_message
 	data["printJob"] = print_upload_timer ? print_job : null
@@ -212,6 +219,8 @@
 		return .
 	if(attachment_chat_ref && !(action in list("tab", "page", "select", "back", "attach_photo", "cancel_attachment")))
 		return FALSE
+	if(syndimatic_ref && !(action in list("tab", "page", "select", "back", "select_syndimatic_photo", "cancel_syndimatic_picker")))
+		return FALSE
 	switch(action)
 		if("toggle_flash")
 			if(tab != "camera" || capturing)
@@ -246,7 +255,7 @@
 			var/destination = params["tab"]
 			if(destination != "camera" && destination != "local" && destination != "cloud")
 				return FALSE
-			if(attachment_chat_ref && destination == "camera")
+			if((attachment_chat_ref || syndimatic_ref) && destination == "camera")
 				return FALSE
 			stop_aiming()
 			clear_selection()
@@ -337,6 +346,16 @@
 			if(!photo || !chat || params["id"] != selected_id || params["tab"] != tab || messenger.saved_chats[REF(chat)] != chat || messenger.viewing_messages_of != REF(chat))
 				return FALSE
 			return open_photo_chat(user, messenger, chat, photo)
+		if("select_syndimatic_photo", "cancel_syndimatic_picker")
+			var/datum/computer_file/program/syndimatic/syndimatic = syndimatic_ref?.resolve()
+			if(!syndimatic || syndimatic.computer != computer || computer.active_program != src)
+				return FALSE
+			var/datum/picture/photo
+			if(action == "select_syndimatic_photo")
+				photo = get_selection()
+				if(!photo || params["id"] != selected_id || params["tab"] != tab)
+					return FALSE
+			return syndimatic.return_from_syndimatic_picker(user, syndimatic_kind, photo)
 		if("request_print")
 			if(!get_selection() || edit_mode || share_contacts)
 				return FALSE

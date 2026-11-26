@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	89
+#define SAVEFILE_VERSION_MAX	90
 
 /datum/preferences
 	var/tmp/pending_savefile_version
@@ -546,6 +546,10 @@
 		all_quirks -= "Echolocation"
 		all_quirks |= /datum/quirk/echolocation::name
 
+	if(current_version < 90 && !syndimatic_character_id && path)
+		// Повторное чтение старого слота до пересохранения даёт тот же идентификатор.
+		syndimatic_character_id = rustg_hash_string(RUSTG_HASH_SHA256, "syndimatic/[path]/[default_slot]")
+
 /datum/preferences/proc/load_path(ckey,filename="preferences.sav")
 	if(!ckey)
 		return
@@ -638,6 +642,7 @@
 	READ_PLAYER_SAVE(S, document, "adminhelp_windowflash", adminhelp_windowflash)
 	READ_PLAYER_SAVE(S, document, "windownoise", windownoise)
 	READ_PLAYER_SAVE(S, document, "examine_headshots", examine_headshots)
+	READ_PLAYER_SAVE(S, document, "syndimatic_notifications", syndimatic_notifications)
 	READ_PLAYER_SAVE(S, document, "mood_vignette", mood_vignette)
 	READ_PLAYER_SAVE(S, document, "action_buttons_hide_on_spawn", action_buttons_hide_on_spawn)
 	READ_PLAYER_SAVE(S, document, "action_buttons_screen_locs", action_buttons_screen_locs)
@@ -848,6 +853,7 @@
 	adminhelp_windowflash = sanitize_integer(adminhelp_windowflash, 0, 1, initial(adminhelp_windowflash))
 	windownoise = sanitize_integer(windownoise, 0, 1, initial(windownoise))
 	examine_headshots = sanitize_integer(examine_headshots, 0, 1, initial(examine_headshots))
+	syndimatic_notifications = sanitize_integer(syndimatic_notifications, FALSE, TRUE, initial(syndimatic_notifications))
 	mood_vignette = sanitize_integer(mood_vignette, 0, 1, initial(mood_vignette))
 	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
 	default_slot = sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
@@ -1463,6 +1469,7 @@ GLOBAL_VAR(player_save_migration_timer)
 	WRITE_PLAYER_SAVE(S, document, "new_character_creator", new_character_creator)
 	WRITE_PLAYER_SAVE(S, document, "view_pixelshift", view_pixelshift)
 	WRITE_PLAYER_SAVE(S, document, "examine_headshots", examine_headshots)
+	WRITE_PLAYER_SAVE(S, document, "syndimatic_notifications", syndimatic_notifications)
 
 	//SKYRAT CHANGES BEGIN
 	WRITE_PLAYER_SAVE(S, document, "see_chat_emotes", see_chat_emotes)
@@ -1721,6 +1728,7 @@ GLOBAL_VAR(player_save_migration_timer)
 	//Character
 	READ_PLAYER_SAVE(S, document, "real_name", real_name)
 	READ_PLAYER_SAVE(S, document, "character_slot_name", character_slot_name)
+	READ_PLAYER_SAVE(S, document, "syndimatic_character_id", syndimatic_character_id)
 	READ_PLAYER_SAVE(S, document, "nameless", nameless)
 	READ_PLAYER_SAVE(S, document, "custom_species", custom_species)
 	READ_PLAYER_SAVE(S, document, "name_is_always_random", be_random_name)
@@ -2660,6 +2668,9 @@ GLOBAL_VAR(player_save_migration_timer)
 	//Character
 	WRITE_PLAYER_SAVE(S, document, "real_name", real_name)
 	WRITE_PLAYER_SAVE(S, document, "character_slot_name", character_slot_name)
+	if(!export && !syndimatic_character_id)
+		syndimatic_character_id = rustg_generate_uuid_v4()
+	WRITE_PLAYER_SAVE(S, document, "syndimatic_character_id", syndimatic_character_id)
 	WRITE_PLAYER_SAVE(S, document, "nameless", nameless)
 	WRITE_PLAYER_SAVE(S, document, "custom_species", custom_species)
 	WRITE_PLAYER_SAVE(S, document, "name_is_always_random", be_random_name)
