@@ -1250,9 +1250,9 @@ BLUEMOON REMOVAL END*/
 			continue
 		var/turf/spawn_turf = hive_turfs[i] || old_body.loc
 		var/mob/living/carbon/alien/larva/new_xeno = new(spawn_turf)
-		// transfer_to умеет отказать (training_origin, стоп-сигнал) - тогда человек остаётся
-		// человеком, и его нельзя ни убивать как оболочку, ни оставлять с ролью без тела.
-		if(!M.transfer_to(new_xeno))
+		// transfer_to() возвращает null и при успешном переносе, поэтому проверяем текущее тело разума.
+		M.transfer_to(new_xeno)
+		if(M.current != new_xeno)
 			message_admins("Рулсет [name]: разум [M] не переносится в ксеноморфа - игрок остаётся человеком.")
 			log_game("DYNAMIC: [name]: перенос разума в ксеноморфа не удался для [key_name(M)].")
 			qdel(new_xeno)
@@ -1331,7 +1331,8 @@ BLUEMOON REMOVAL END*/
 			continue
 		var/turf/spawn_turf = morph_turfs[i] || old_body.loc
 		var/mob/living/simple_animal/hostile/morph/new_morph = new(spawn_turf)
-		if(!M.transfer_to(new_morph))
+		M.transfer_to(new_morph)
+		if(M.current != new_morph)
 			message_admins("Рулсет [name]: разум [M] не переносится в морфа - игрок остаётся человеком.")
 			log_game("DYNAMIC: [name]: перенос разума в морфа не удался для [key_name(M)].")
 			qdel(new_morph)
