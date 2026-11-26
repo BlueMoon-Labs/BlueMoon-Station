@@ -41,95 +41,49 @@
     background-color: var(--paper);
     padding-bottom: 33px;
   }
+  .HereticBook__page--right { background-image: var(--book-material-recto, var(--book-material, var(--grain))); }
+  .HereticBook__gutter { background: var(--book-material) 50% 50% / 320% 130% no-repeat; }
+  .HereticBook__page--right .HereticBook__gutter { background-image: var(--book-material-recto, var(--book-material)); }
   .HereticBook__turningLeaf { background: linear-gradient(90deg, #38231566, transparent 25%), var(--book-material, var(--grain)), var(--paper); background-size: 100% 100%; }
-  .HereticBook__pageBody { background-color: var(--reading-wash); box-shadow: 0 0 12px 10px var(--reading-wash); border-radius: 4px; }
+  /* Поле для чтения: лист с жёсткой неровной кромкой поверх рамки, без размытого ореола */
+  &:not(.HereticBook--Dusk) .HereticBook__pageBody::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -6px -9px -4px;
+    pointer-events: none;
+    background: var(--reading-wash);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--paper-edge) 50%, transparent);
+    clip-path: polygon(0 .7px, 6% 1.4px, 11% 2.3px, 19% 1.9px, 24% 0, 31% 2px, 38% 2.1px, 44% .2px, 52% 1.2px, 57% 0, 65% 1.5px, 71% 1.7px, 78% 1.2px, 84% 2.4px, 91% 1.7px, 96% 2.4px, calc(100% - 2.3px) 0, calc(100% - .6px) 7%, 100% 13%, calc(100% - 2px) 29%, calc(100% - 1.5px) 37%, calc(100% - .6px) 52%, calc(100% - 1.7px) 61%, calc(100% - 2px) 76%, calc(100% - .7px) 83%, calc(100% - 1.8px) 90%, 100% 96%, 96% calc(100% - .8px), 84% calc(100% - 2.5px), 78% calc(100% - 1.5px), 65% calc(100% - .7px), 57% calc(100% - 1.2px), 52% calc(100% - 2.1px), 38% calc(100% - 2.1px), 31% calc(100% - .4px), 19% calc(100% - 1.3px), 11% calc(100% - .4px), 6% calc(100% - 2.4px), 0 calc(100% - 1.9px), 2.3px 96%, .2px 90%, 1.5px 83%, 1.3px 68%, 1px 52%, 2.1px 37%, 1.5px 29%, 2.1px 13%, 1.4px 7%);
+  }
+  &.HereticBook--Dusk .HereticBook__pageBody { background-color: var(--reading-wash); box-shadow: 0 0 6px 2px var(--reading-wash); border-radius: 4px; }
   .HereticBook__folio { padding-left: 8px; padding-right: 8px; }
   .HereticBook__pageOrnament { opacity: .22; }
   .HereticBook__page::after { opacity: .15; }
   .HereticBook__bookTitle { margin: 12px 0 !important; }
   .HereticBook__titleRule { margin-bottom: 16px; }
-  .HereticBook__oath { padding: 1px 0; }
-  &.HereticBook--Flesh {
-    --paper: #d6aaa1; --ink: #431f24; --faded: #42212a; --reading-wash: #d6aaa1cc;
-    .HereticBook__binding { background: linear-gradient(90deg, #5e202b, #a9575c 49%, #582330); border-color: #ad7571; }
-    .HereticBook__page { box-shadow: inset 0 0 18px #50172580; padding-top: 33px; padding-bottom: 40px; }
-    .HereticBook__spine { background: linear-gradient(90deg, transparent, #490d2070 34%, #d9959170 46%, #350e2399 51%, #9c4d5280 59%, transparent); }
-    .HereticBook__veins { stroke-width: 2; }
+  .HereticBook__pathCard { padding-top: 3px; padding-bottom: 4px; }
+  &.HereticBook--Dusk {
+    --reading-wash: #dcc79c5c;
+    .HereticBook__binding { box-shadow: 0 5px 12px #000c, inset 0 0 0 2px #7a6534, 0 0 18px #dcdbc014; }
+    .HereticBook__pageOrnament { opacity: .3; }
   }
-  &.HereticBook--Ash {
-    --paper: #342317; --ink: #f3dbb2; --faded: #dfc49c; --reading-wash: #342317cc;
-    .HereticBook__binding { box-shadow: 0 5px 15px #000b, inset 0 0 0 3px #542212, 0 0 23px #bf401d33; }
-    .HereticBook__titleRule { border-color: #da8e50; }
-  }
-  &.HereticBook--Rust {
-    --ink: #222619; --faded: #242719; --accent: #582717; --reading-wash: #c4b58ecc;
-    .HereticBook__page { background-image: radial-gradient(ellipse at center, #e7d2a545 0 45%, transparent 73%), var(--book-material); }
-    .HereticBook__binding { box-shadow: 0 5px 10px #000a, inset 0 0 6px #dca06188; }
-  }
-  &.HereticBook--Void {
-    --ink: #254551; --faded: #274853; --reading-wash: #d8e0dfcc;
-    .HereticBook__binding { box-shadow: 0 5px 12px #0008, inset 0 0 3px #eeffff, 0 0 19px #8fcdd455; }
-    .HereticBook__illumination { color: #548ba2; }
-  }
-  &.HereticBook--Blade {
-    --reading-wash: #d5d0bccc;
-    .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 2px #b5bfcb70, inset 0 0 7px #fff7; }
-    .HereticBook__titleRule { border-top-color: #8997a4; border-bottom-color: #414a57; }
-  }
-  &.HereticBook--Moon {
-    --ink: #35324e; --faded: #443a58; --reading-wash: #ced0dccc;
-    .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 3px #89849a, 0 0 17px #d8caff55; }
-    .HereticBook__page--right::before { opacity: .45; }
-  }
-  &.HereticBook--Cosmic {
-    --paper: #071622; --ink: #ede8cc; --faded: #c9dcdb; --accent: #d9cb8d; --reading-wash: #071622cc;
-    .HereticBook__binding { border-color: #678a8d; box-shadow: 0 5px 15px #000b, inset 0 0 0 3px #1b445a, 0 0 30px #3187af45; }
-    .HereticBook__spine { background: linear-gradient(90deg, transparent, #020f1dcc 40%, #84d6e947 49%, #020f1dcc 59%, transparent); }
-    .HereticBook__bookTitle { text-shadow: 0 0 12px #79b9d760; }
-  }
-  &.HereticBook--Lock {
-    --faded: #453528;
-  }
-  &.HereticBook--Tide {
-    --reading-wash: #1a353bcc;
-  }
-  &.HereticBook--Glass {
-    --reading-wash: #ded2d9d9;
-    .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 2px #bea7bd; }
-  }
-  &.HereticBook--Blood {
-    --reading-wash: #e2cec1d9;
-    .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 2px #986143; }
-  }
-  &.HereticBook--Echo {
-    --reading-wash: #ded4b9cc;
-    .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 2px #b39a61; }
-  }
-  &.HereticBook--Sand {
-    --reading-wash: #d7c4a1dd;
-    .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 2px #b7975c; }
-  }
-  &.HereticBook--Wax {
-    --reading-wash: #e2d5bbdd;
-    .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 3px #c6b99a; }
-  }
-  &.HereticBook--Spirit {
-    --paper: #202437; --reading-wash: #202437d9;
-    .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 2px #acae9c, 0 0 17px #9be8cf19; }
-    .HereticBook__spine { background: linear-gradient(90deg, transparent, #0c1125aa 38%, #a8bbaa45 49%, #0c1125aa 62%, transparent); }
-  }
-  &.HereticBook--Dance {
-    --reading-wash: #e8d8c4dd;
-    .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 2px #b87333, 0 0 17px #8f1d2133; }
-    .HereticBook__spine { background: linear-gradient(90deg, transparent, #1b1012aa 38%, #c8553d40 49%, #1b1012aa 62%, transparent); }
-  }
+}
+
+/* У корешка вместо рамки - заплата из середины того же листа, она гаснет к тексту */
+.HereticBook[data-book-view='living']:not(.HereticBook--Dusk), .HereticBook[data-book-view='muted']:not(.HereticBook--Dusk) {
+  .HereticBook__gutter { display: block; position: absolute; top: 0; bottom: 0; width: var(--gutter-width, 15%); pointer-events: none; border-radius: inherit; }
+  .HereticBook__page--left .HereticBook__gutter { right: 0; mask-image: linear-gradient(to left, #000 38%, transparent); }
+  .HereticBook__page--right .HereticBook__gutter { left: 0; mask-image: linear-gradient(to right, #000 38%, transparent); }
 }
 
 .HereticBook[data-book-view='muted'] {
   .HereticBook__page { background-image: linear-gradient(var(--paper), var(--paper)), var(--book-material, var(--grain)); background-blend-mode: screen; background-size: 100% 100%; }
+  .HereticBook__page--right { background-image: linear-gradient(var(--paper), var(--paper)), var(--book-material-recto, var(--book-material, var(--grain))); }
+  .HereticBook__gutter { background: linear-gradient(var(--paper), var(--paper)), var(--book-material) 50% 50% / 320% 130% no-repeat; background-blend-mode: screen; }
+  .HereticBook__page--right .HereticBook__gutter { background-image: linear-gradient(var(--paper), var(--paper)), var(--book-material-recto, var(--book-material)); }
   .HereticBook__pageOrnament { opacity: .25; }
-  .HereticBook__page--right::before { display: none; }
-  &.HereticBook--Ash .HereticBook__page, &.HereticBook--Cosmic .HereticBook__page, &.HereticBook--Spirit .HereticBook__page { background-blend-mode: soft-light; }
+  .HereticBook__page--right::before, &.HereticBook--Dusk .HereticBook__page::before, .HereticBook__duskLife { display: none; }
 }
 
 /* Спокойные режимы останавливают и старые гравюры, и перелистывание. */
@@ -146,7 +100,7 @@
   --grain: none;
   .HereticBook__page { background: var(--paper); box-shadow: inset 0 0 14px #614d3014; clip-path: none; border: 0; border-radius: 3px; }
   .HereticBook__binding { border-radius: 8px; border-color: var(--cover-light); box-shadow: 0 3px 8px #0008; }
-  .HereticBook__pageOrnament, .HereticBook__page::before, .HereticBook__page::after { display: none; }
+  .HereticBook__pageOrnament, .HereticBook__duskLife, .HereticBook__page::before, .HereticBook__page::after { display: none; }
   .HereticBook__spine { background: linear-gradient(90deg, transparent, #684b3830, transparent); }
   .HereticBook__illumination { opacity: .8; }
   .HereticBook__note { color: var(--faded); }
