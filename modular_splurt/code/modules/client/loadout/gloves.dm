@@ -24,7 +24,7 @@
 //BM add
 /datum/gear/gloves/combat/civil
     name = "Combat gloves"
-    description = "Эти тактические перчатки огнеупорны и устойчивы к ударам током."
+    description = "Эти тактические перчатки огнеупорны."
     path = /obj/item/clothing/gloves/combat/fake
 
 /datum/gear/gloves/combatmaid/civil

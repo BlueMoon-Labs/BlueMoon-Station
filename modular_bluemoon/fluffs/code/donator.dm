@@ -11,7 +11,6 @@
 
 /datum/gear/donator/bm
 	name = null //name = "Видишь это - пингуй Feenie#1815" //Название предмета
-	description = "Золото? Ясно — сделано из банания! Хонк!"
 	slot = ITEM_SLOT_BACKPACK //Место, в который будет выдаваться предмет, конкретно тут - кладётся в рюкзак
 	path = /obj/item/bikehorn/golden //Ссылка на датум объекта
 	category = LOADOUT_CATEGORY_DONATOR //Категория, в которой будет содержаться предмет - собственно во вкладке лодаута донатерских
@@ -108,7 +107,7 @@
 
 /datum/gear/donator/bm/modern_suit
 	name = "Modern Suit"
-	description = "Костюм красно-чёрных цветов. Включает шорты, подтяжки и галстук. На груди видна надпись «Epoque limited collection 2563, made specially for Tex»."
+	description = "Костюм красно-чёрных цветов. Включает шорты, подтяжки и галстук. На груди видна надпись «Epoque — ограниченная коллекция 2563, сделано специально для Tex»."
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/modern_suit
 	ckeywhitelist = list("rainbowkurwa")
@@ -2846,7 +2845,7 @@
 /datum/gear/donator/bm/oversize_shirt
 
 	name = "Oversized checkered shirt"
-	description = "Простая прочная рубашка навыпуск неизвестной марки с нашивкой на кармане груди: «Letting my heart speak»."
+	description = "Простая прочная рубашка навыпуск неизвестной марки с нашивкой на кармане груди: «Позволь моему сердцу говорить»."
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/cloak/oversize
 	ckeywhitelist = list("moun4l")
@@ -2951,7 +2950,7 @@
 
 /datum/gear/donator/bm/kumikoshouko_case
 	name = "Supply Case"
-	description = "Военный ящик с оружием, выданный одному коллекционеру. На крышке выгравировано: «One box to rule them all». Внутри полный набор наборов для модификации личного оружия."
+	description = "Военный ящик с оружием, выданный одному коллекционеру. На крышке выгравировано: «Один ящик, чтобы править всеми». Внутри полный набор наборов для модификации личного оружия."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/kumikoshouko_case
 	ckeywhitelist = list("kumikoshouko", "ottasuka", "foxrtotlimda", "1hollowknight1")
@@ -2965,7 +2964,7 @@
 
 /datum/gear/donator/bm/mountaineering_jacket
     name = "Mountaineering Jacket"
-    description = "Куртка из плотного качественного материала. На бирке написано: «Made in Tarkov». На второй — «Harr». Она напоминает о человеке с прозвищем Штурман."
+    description = "Куртка из плотного качественного материала. На бирке написано: «Сделано в Таркове». На второй — «Harr». Она напоминает о человеке с прозвищем Штурман."
     slot = ITEM_SLOT_OCLOTHING
     path = /obj/item/clothing/suit/hooded/wintercoat/mountaineering_jacket
     ckeywhitelist = list("hartty", "ordinarylife", "spoopyman228")

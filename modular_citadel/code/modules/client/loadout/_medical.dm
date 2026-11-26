@@ -1,6 +1,6 @@
 /datum/gear/hands/medicbriefcase
 	name = "Medical Briefcase"
-	description = "Белый нагрудник с синим крестом — для медицинского снаряжения, которое обычно не помещается в сумке."
+	description = "Белый медицинский портфель с синим крестом — для медицинского снаряжения, которое обычно не помещается в сумке."
 	path = /obj/item/storage/briefcase/medical
 	restricted_roles = list("Medical Doctor", "Chief Medical Officer")
 	restricted_desc = "MD, CMO"

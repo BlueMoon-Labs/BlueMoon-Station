@@ -26,7 +26,7 @@
 	restricted_roles = list("Chief Medical Officer", "Medical Doctor", "Chemist", "Virologist", "Paramedic", "Geneticist", "Research Director", "Scientist", "Roboticist", "Brig Physician")
 
 /datum/gear/head/cowboyhat/sec
-description = "Обычная коричневая ковбойская шляпа, йи-хау."
+	description = "Обычная коричневая ковбойская шляпа, йи-хау."
 	restricted_roles = list("Warden","Detective","Security Officer","Head of Security", "Brig Physician", "Blueshield")
 
 // Polychrome GWTB

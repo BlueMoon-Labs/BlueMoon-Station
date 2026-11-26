@@ -1,9 +1,9 @@
 /datum/gear/uniform/navyblueuniformhos
- 	name = "Head of Security navyblue uniform"
+	name = "Head of Security navyblue uniform"
 	description = "Эмблема на этой форме говорит, что она принадлежит Начальнику безопасности."
- 	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
- 	path = /obj/item/clothing/under/rank/security/head_of_security/formal
- 	restricted_roles = list("Head of Security")
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
+	path = /obj/item/clothing/under/rank/security/head_of_security/formal
+	restricted_roles = list("Head of Security")
 
 /datum/gear/head/navybluehosberet
 	name = "Head of security's navyblue beret"
@@ -42,11 +42,11 @@
 	restricted_roles = list("Security Officer")
 
 /datum/gear/uniform/navyblueuniformofficer
- 	name = "Security officer navyblue uniform"
+	name = "Security officer navyblue uniform"
 	description = "Последний пир модной охранной формы."
- 	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
- 	path = /obj/item/clothing/under/rank/security/officer/formal
- 	restricted_roles = list("Security Officer")
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
+	path = /obj/item/clothing/under/rank/security/officer/formal
+	restricted_roles = list("Security Officer")
 
 /datum/gear/suit/navybluejacketwarden
 	name = "warden navyblue jacket"
@@ -63,11 +63,11 @@
 	restricted_roles = list("Warden")
 
 /datum/gear/uniform/navyblueuniformwarden
- 	name = "Warden navyblue uniform"
+	name = "Warden navyblue uniform"
 	description = "Эмблема на этой форме говорит, что она принадлежит надзирателю."
- 	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
- 	path = /obj/item/clothing/under/rank/security/warden/formal
- 	restricted_roles = list("Warden")
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
+	path = /obj/item/clothing/under/rank/security/warden/formal
+	restricted_roles = list("Warden")
 
 /datum/gear/uniform/secskirt
 	name = "Security skirt"

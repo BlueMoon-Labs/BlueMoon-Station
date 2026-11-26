@@ -111,7 +111,7 @@
 
 /datum/gear/head/mailmanhat
 	name = "Mailman's Hat"
-	description = "Головной убор почтовой службы «<i>Точно-в-срок</i>»."
+	description = "Головной убор почтовой службы «Точно-в-срок»."
 	path = /obj/item/clothing/head/mailman
 
 //trek fancy Hats!
@@ -286,7 +286,6 @@
 
 /datum/gear/head/
 	name = "Tactical Maid Headband"
-	description = "Тактикутя."
 	path = /obj/item/clothing/head/maid/syndicate
 
 /datum/gear/head/geraniumcrown

@@ -34,7 +34,7 @@
 
 /datum/gear/socks/knee/bee
 	name = "Bee Knee Socks"
-	description = "<i>Тебе нравится джаз?</i>"
+	description = "Тебе нравится джаз?"
 	path = /obj/item/clothing/underwear/socks/knee/bee
 
 /datum/gear/socks/knee/candycane

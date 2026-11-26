@@ -7,7 +7,7 @@
 
 /datum/gear/suit/neetsuit
 	name = "D.A.B. suit"
-	description = "Дешёвая копия старой брони SWAT. На спине написано: «<i>Desperate Assistance Battleforce</i>»."
+	description = "Дешёвая копия старой брони SWAT. На спине написано: «Desperate Assistance Battleforce»."
 	path = /obj/item/clothing/suit/assu_suit
 	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
 	restricted_roles = list("Assistant", "Stowaway")

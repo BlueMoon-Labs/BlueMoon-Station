@@ -1,5 +1,5 @@
 /datum/gear/donator/gloves
-description = "Золото? Ясно — сделано из банания! Хонк!"
+	description = "Золото? Ясно — сделано из банания! Хонк!"
 	slot = ITEM_SLOT_GLOVES
 
 /datum/gear/donator/gloves/longblackgloves
@@ -9,4 +9,5 @@ description = "Золото? Ясно — сделано из банания! Х
 
 /datum/gear/donator/gloves/mikugloves
 	name = "starlight singer gloves"
+	description = "Перчатки в стиле звезды-певицы."
 	path = /obj/item/clothing/gloves/mikugloves

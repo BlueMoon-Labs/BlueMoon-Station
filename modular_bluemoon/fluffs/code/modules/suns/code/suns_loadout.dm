@@ -4,7 +4,7 @@
 // the SUNS conversion kit box instead.
 
 /datum/gear/donator/bm/suns
-description = "Золото? Ясно — сделано из банания! Хонк!"
+	description = "Золото? Ясно — сделано из банания! Хонк!"
 	ckeywhitelist = list("noterravija", "dagran")
 
 // uniforms

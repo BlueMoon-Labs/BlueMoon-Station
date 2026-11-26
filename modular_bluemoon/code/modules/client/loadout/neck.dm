@@ -45,7 +45,7 @@
 
 /datum/gear/neck/windy_scarf
 	name = "A windy scarf"
-	description = "Здесь вроде бы не ветрено, но шарф всё равно извивается, مثل змеи."
+	description = "Здесь вроде бы не ветрено, но шарф всё равно извивается, словно змея."
 	path = /obj/item/clothing/neck/bm/windy_scarf
 	loadout_initial_colors = list("#AF3D3D")
 

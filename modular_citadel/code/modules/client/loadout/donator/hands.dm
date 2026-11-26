@@ -1,5 +1,5 @@
 /datum/gear/donator/hands
-description = "Золото? Ясно — сделано из банания! Хонк!"
+	description = "Золото? Ясно — сделано из банания! Хонк!"
 	slot = ITEM_SLOT_HANDS
 
 /datum/gear/donator/hands/engravedzippo

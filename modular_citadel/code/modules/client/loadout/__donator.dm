@@ -13,22 +13,24 @@
 //////////////////////// DONATOR_GROUP_TIER_2 ////////////////////////
 /datum/gear/donator/t2
 	name = null
-	description = "Золото? Ясно — сделано из банания! Хонк!"
 	donator_group_id = DONATOR_GROUP_TIER_2
 	subcategory = LOADOUT_SUBCATEGORIES_DON02
 
 /datum/gear/donator/t2/syndicate_id_civilian
 	name = "Civilian Syndicate Card"
+	description = "Гражданская карта Синдиката с одноразовым разрешением на доступ."
 	path = /obj/item/card/id/syndicate/one_access_copy/loadout
 	cost = 2
 
 /datum/gear/donator/t2/maskscream
 	name = "Mask Scream"
+	description = "Кричащая маска. ЧУВАААААК."
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/screammask
 
 /datum/gear/donator/t2/summon_pie
 	name = "Book: Summon Pie"
+	description = "Книга, которая ощущается тёплой. Позволяет вызывать кремовые пироги."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/book/granter/spell/summon_pie
 	cost = 6
@@ -56,6 +58,7 @@
 
 /datum/gear/donator/t2/money
 	name = "Тысяча Денег (красивое)"
+	description = "Пачка наличных номиналом тысяча кредитов."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/stack/spacecash/c1000
 
@@ -148,6 +151,7 @@
 
 /datum/gear/donator/rationpack
 	name = "Ration Pack"
+	description = "Упаковка с едой в блюспейс-кармане. При выдаче подбирается случайное меню из линейки NT (1–4)."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/mre/random_safe
 
@@ -165,6 +169,7 @@
 
 /datum/gear/donator/jukebox
 	name = "Handled Jukebox"
+	description = "Переносная колонка для крутых."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/jukebox
 	cost = 4
@@ -369,6 +374,7 @@
 
 /datum/gear/donator/mankini
 	name = "Mankini"
+	description = "Розовый манкини — очень смелый наряд."
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/misc/stripper/mankini
 
@@ -399,6 +405,7 @@
 
 /datum/gear/donator/cybersun
 	name = "Cybersun mask"
+	description = "Модная полумаска в брендовых цветах компании Киберсан. Поговаривают, такие продают как сувенир на далёких научных станциях."
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/sechailer/syndicate/cybersun
 
@@ -591,6 +598,7 @@
 
 /datum/gear/donator/corgisuit
 	name = "Corgi Suit"
+	description = "Костюм корги с капюшоном."
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/hooded/ian_costume
 
@@ -704,26 +712,31 @@
 
 /datum/gear/donator/mikubikini
 	name = "starlight singer bikini"
+	description = "Бикини в стиле звезды-певицы."
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/custom/mikubikini
 
 /datum/gear/donator/mikujacket
 	name = "starlight singer jacket"
+	description = "Куртка в стиле звезды-певицы."
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/mikujacket
 
 /datum/gear/donator/mikuhair
 	name = "starlight singer hair"
+	description = "Волосы в стиле звезды-певицы."
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/head/mikuhair
 
 /datum/gear/donator/mikugloves
 	name = "starlight singer gloves"
+	description = "Перчатки в стиле звезды-певицы."
 	slot = ITEM_SLOT_GLOVES
 	path = /obj/item/clothing/gloves/mikugloves
 
 /datum/gear/donator/mikuleggings
 	name = "starlight singer leggings"
+	description = "Легинсы в стиле звезды-певицы."
 	slot = ITEM_SLOT_FEET
 	path = /obj/item/clothing/shoes/sneakers/mikuleggings
 
@@ -874,6 +887,7 @@
 
 /datum/gear/donator/book_alch
 	name = "Alchemist's Book"
+	description = "Покрытая пылью книга, заполненная странными рунами."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/paper/book_alch
 
@@ -893,6 +907,7 @@
 
 /datum/gear/donator/justice
 	name = "Backpack of justice"
+	description = "Крепкий рюкзак, выданный специально для крепких офицеров."
 	slot = ITEM_SLOT_BACK
 	path = /obj/item/storage/backpack/satchel/justice
 	cost = 2
@@ -905,6 +920,7 @@
 
 /datum/gear/donator/portallight_box
 	name = "Portal Fleshlight and Underwear"
+	description = "Маленькая серебряная шкатулка с тиснением Silver Love Co."
 	path = /obj/item/storage/box/portallight
 
 /datum/gear/donator/presscameradrone

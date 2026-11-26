@@ -1,5 +1,5 @@
 /datum/gear/donator/suit
-description = "Золото? Ясно — сделано из банания! Хонк!"
+	description = "Золото? Ясно — сделано из банания! Хонк!"
 	slot = ITEM_SLOT_OCLOTHING
 
 /datum/gear/donator/suit/redmadcoat
@@ -39,6 +39,7 @@ description = "Золото? Ясно — сделано из банания! Х
 
 /datum/gear/donator/suit/corgisuit
 	name = "Corgi Suit"
+	description = "Костюм корги с капюшоном."
 	path = /obj/item/clothing/suit/hooded/ian_costume
 
 /datum/gear/donator/suit/sharkcloth
@@ -68,6 +69,7 @@ description = "Золото? Ясно — сделано из банания! Х
 
 /datum/gear/donator/suit/mikujacket
 	name = "starlight singer jacket"
+	description = "Куртка в стиле звезды-певицы."
 	path = /obj/item/clothing/suit/mikujacket
 
 /datum/gear/donator/suit/exo

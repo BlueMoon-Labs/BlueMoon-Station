@@ -1,5 +1,5 @@
 /datum/gear/donator/head
-description = "Золото? Ясно — сделано из банания! Хонк!"
+	description = "Золото? Ясно — сделано из банания! Хонк!"
 	slot = ITEM_SLOT_HEAD
 
 /datum/gear/donator/head/santahat
@@ -34,6 +34,7 @@ description = "Золото? Ясно — сделано из банания! Х
 
 /datum/gear/donator/head/mikuhair
 	name = "starlight singer hair"
+	description = "Волосы в стиле звезды-певицы."
 	path = /obj/item/clothing/head/mikuhair
 
 /datum/gear/donator/head/hisakaki
@@ -43,5 +44,5 @@ description = "Золото? Ясно — сделано из банания! Х
 
 /datum/gear/donator/head/fancy_crown
 	name = "magnificent crown"
-	description = "Корона, которую носят только высочайшие императоры <s>суши</s> космоса."
+	description = "Корона, которую носят только высочайшие императоры суши космоса."
 	path = /obj/item/clothing/head/crown/fancy

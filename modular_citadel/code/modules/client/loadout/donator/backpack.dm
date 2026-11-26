@@ -1,5 +1,5 @@
 /datum/gear/donator/backpack
-description = "Золото? Ясно — сделано из банания! Хонк!"
+	description = "Золото? Ясно — сделано из банания! Хонк!"
 	handle_post_equip = TRUE
 
 /datum/gear/donator/backpack/pet
@@ -148,6 +148,7 @@ description = "Золото? Ясно — сделано из банания! Х
 
 /datum/gear/donator/backpack/lewdsleepy
 	name = "Lewd sleepy medipen"
+	description = "Усыпляющий автоинъектор. Использовать исключительно в целях воплощения своих сексуальных фантазий. С любовью, Silver Love Co."
 	path = /obj/item/reagent_containers/hypospray/medipen/lewdsleepy
 	cost = 2
 
@@ -191,7 +192,7 @@ description = "Золото? Ясно — сделано из банания! Х
 
 /datum/gear/donator/backpack/succupen
 	name = "Succubus milk autoinjector"
-	description = "Медипен, который за короткое время создаёт стабильные источники молока. Побочные эффекты <b>будут</b> включать набухание молочных желёз."
+	description = "Медипен, который за короткое время создаёт стабильные источники молока. Побочные эффекты будут включать набухание молочных желёз."
 	path = /obj/item/reagent_containers/hypospray/medipen/breastgrowth
 
 /datum/gear/donator/backpack/incupen
@@ -221,4 +222,5 @@ description = "Золото? Ясно — сделано из банания! Х
 
 /datum/gear/donator/backpack/legax_kit
 	name = "Legax Gravpulser Kit"
+	description = "Модифицирует стандартную лазерную винтовку в экспериментальный гравпульсер."
 	path = /obj/item/modkit/legax

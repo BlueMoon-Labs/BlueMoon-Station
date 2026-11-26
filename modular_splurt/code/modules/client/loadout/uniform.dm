@@ -110,15 +110,15 @@
 
 // Updates restrictions to accomodate new jobs (mostly trekkie stuff)
 /datum/gear/uniform/grey/sec
-description = "Скучная серая форма."
+	description = "Скучная серая форма."
 	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Brig Physician")
 
 /datum/gear/uniform/grey/med
-description = "Скучная серая форма."
+	description = "Скучная серая форма."
 	restricted_roles = list("Medical Doctor", "Virologist", "Chemist", "Geneticist", "Paramedic", "Brig Physician")
 
 /datum/gear/uniform/grey/com
-description = "Скучная серая форма."
+	description = "Скучная серая форма."
 	restricted_roles = list("Quartermaster", "Research Director", "Chief Medical Officer", "Head Of Security", "Head Of Personnel","Bridge Officer", "Captain", "Blueshield", "Bridge Officer")
 
 /datum/gear/uniform/trekcmdtos
@@ -332,7 +332,7 @@ description = "Скучная серая форма."
 
 /datum/gear/uniform/sneaksuit/civil
     name = "blood-red sneaksuit"
-    description = "Коварный бронированный комбинезон, подшитый нанофибрами Синдиката и прототипными пластинами; слегка устойчив к большинству типов урона, но слишком громоздкий, чтобы что-то к нему крепить. Всё равно считается stealth, если нет свидетелей."
+    description = "Коварный бронированный комбинезон, подшитый нанофибрами Синдиката и прототипными пластинами; слегка устойчив к большинству типов урона, но слишком громоздкий, чтобы что-то к нему крепить. Всё равно считается скрытностью, если нет свидетелей."
     path = /obj/item/clothing/under/syndicate/bloodred/civil
 
 /datum/gear/uniform/syndiesniper/civil

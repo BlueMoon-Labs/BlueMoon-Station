@@ -1,5 +1,5 @@
 /datum/gear/donator/mask
-description = "Золото? Ясно — сделано из банания! Хонк!"
+	description = "Золото? Ясно — сделано из банания! Хонк!"
 	slot = ITEM_SLOT_MASK
 
 /datum/gear/donator/mask/hheart

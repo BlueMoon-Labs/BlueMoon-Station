@@ -1,5 +1,5 @@
 /datum/gear/donator/shoes
-description = "Золото? Ясно — сделано из банания! Хонк!"
+	description = "Золото? Ясно — сделано из банания! Хонк!"
 	slot = ITEM_SLOT_FEET
 
 /datum/gear/donator/shoes/pinkshoes
@@ -9,4 +9,5 @@ description = "Золото? Ясно — сделано из банания! Х
 
 /datum/gear/donator/shoes/mikuleggings
 	name = "starlight singer leggings"
+	description = "Легинсы в стиле звезды-певицы."
 	path = /obj/item/clothing/shoes/sneakers/mikuleggings

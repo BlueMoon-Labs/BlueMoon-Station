@@ -1,5 +1,5 @@
 /datum/gear/donator/uniform
-description = "Золото? Ясно — сделано из банания! Хонк!"
+	description = "Золото? Ясно — сделано из банания! Хонк!"
 	slot = ITEM_SLOT_ICLOTHING
 
 /datum/gear/donator/uniform/geisha
@@ -9,6 +9,7 @@ description = "Золото? Ясно — сделано из банания! Х
 
 /datum/gear/donator/uniform/mankini
 	name = "Mankini"
+	description = "Розовый манкини — очень смелый наряд."
 	path = /obj/item/clothing/under/misc/stripper/mankini
 
 /datum/gear/donator/uniform/performersoutfit
@@ -48,6 +49,7 @@ description = "Золото? Ясно — сделано из банания! Х
 
 /datum/gear/donator/uniform/mikubikini
 	name = "starlight singer bikini"
+	description = "Бикини в стиле звезды-певицы."
 	path = /obj/item/clothing/under/custom/mikubikini
 
 /datum/gear/donator/uniform/vest

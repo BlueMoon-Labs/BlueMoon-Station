@@ -1,5 +1,5 @@
 /datum/gear/donator/neck
-description = "Золото? Ясно — сделано из банания! Хонк!"
+	description = "Золото? Ясно — сделано из банания! Хонк!"
 	slot = ITEM_SLOT_NECK
 
 /datum/gear/donator/neck/chameleon_bedsheet

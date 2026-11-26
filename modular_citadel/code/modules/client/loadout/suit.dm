@@ -513,5 +513,5 @@
 
 /datum/gear/suit/shoulder_sweater
 	name = "Off shoulder sweater"
-	description = "Укороченная куртка."
+	description = "Свитер с открытыми плечами."
 	path = /obj/item/clothing/suit/shoulder_sweater
