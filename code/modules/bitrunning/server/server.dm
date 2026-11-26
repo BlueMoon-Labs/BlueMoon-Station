@@ -232,6 +232,7 @@
 	SEND_SIGNAL(src, COMSIG_BITRUNNER_DOMAIN_COMPLETE, cache, generated_domain.reward_points)
 
 	points += generated_domain.reward_points
+	award_cargo_budget()
 	playsound(src, 'sound/machines/terminal_success.ogg', 30, vary = TRUE)
 
 	var/bonus = calculate_rewards()
@@ -254,6 +255,27 @@
 
 	chosen_forge.start_to_spawn(reward_cache)
 	return TRUE
+
+/obj/machinery/quantum_server/proc/get_cargo_budget_reward()
+	if(isnull(generated_domain))
+		return 0
+	if(generated_domain.cost >= BITRUNNER_COST_EXTREME)
+		return BITRUNNER_CARGO_BUDGET_HIGH
+	switch(generated_domain.difficulty)
+		if(BITRUNNER_DIFFICULTY_MEDIUM)
+			return BITRUNNER_CARGO_BUDGET_MEDIUM
+		if(BITRUNNER_DIFFICULTY_HIGH)
+			return BITRUNNER_CARGO_BUDGET_HIGH
+	return BITRUNNER_CARGO_BUDGET_LOW
+
+/obj/machinery/quantum_server/proc/award_cargo_budget()
+	var/datum/bank_account/department/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	if(isnull(cargo))
+		return
+	var/reward = get_cargo_budget_reward()
+	if(reward <= 0)
+		return
+	cargo.credit(reward, ECON_CONTRACT, null, "Битранинг: [generated_domain.name]")
 
 /obj/machinery/quantum_server/proc/generate_secondary_loot(obj/curiosity, obj/machinery/byteforge/chosen_forge)
 	SSblackbox.record_feedback("tally", "bitrunning_domain_secondary_completed", 1, generated_domain.key)
@@ -284,7 +306,8 @@
 	text += "### [generated_domain.name][domain_randomized ? " (Случайный)" : ""]\n"
 	text += "- **Сложность:** [generated_domain.difficulty]\n"
 	text += "- **Угрозы:** [domain_threats]\n"
-	text += "- **Базовая награда:** [base_points][domain_randomized ? " +1" : ""]\n\n"
+	text += "- **Базовая награда:** [base_points][domain_randomized ? " +1" : ""]\n"
+	text += "- **Бюджет карго:** +[get_cargo_budget_reward()]\n\n"
 	text += "- **Общий бонус:** [bonuses]x\n\n"
 
 	if(bonuses <= 1)

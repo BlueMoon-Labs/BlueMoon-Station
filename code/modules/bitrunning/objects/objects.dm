@@ -694,7 +694,9 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	locked = FALSE
 	var/reward_points_cache = 0
 	var/list/completion_loot_cache = list()
+	var/list/bonus_loot_cache = list()
 	var/rewards_multiplier_cache = 1
+	var/difficulty_cache = BITRUNNER_DIFFICULTY_LOW
 
 /obj/structure/closet/crate/secure/bitrunning/decrypted/Initialize(
 	mapload,
@@ -704,13 +706,16 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	if(!isnull(completed_domain))
 		reward_points_cache = completed_domain.reward_points
 		completion_loot_cache = completed_domain.completion_loot
+		bonus_loot_cache = get_domain_bonus_loot(completed_domain)
 		rewards_multiplier_cache = rewards_multiplier
+		difficulty_cache = completed_domain.difficulty
 	. = ..()
 	playsound(src, 'sound/magic/blink.ogg', 50, TRUE)
 
 // Крэйт с наградой: руда зависит от очков домена и множителя.
 /obj/structure/closet/crate/secure/bitrunning/decrypted/PopulateContents()
-	spawn_loot(completion_loot_cache)
+	spawn_loot(completion_loot_cache, TRUE)
+	spawn_bonus_rewards()
 
 	new /obj/item/stack/ore/iron(src, calculate_loot(reward_points_cache, rewards_multiplier_cache, ORE_MULTIPLIER_IRON))
 	new /obj/item/stack/ore/glass(src, calculate_loot(reward_points_cache, rewards_multiplier_cache, ORE_MULTIPLIER_GLASS))
@@ -728,6 +733,57 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 		new /obj/item/stack/ore/diamond(src, calculate_loot(reward_points_cache, rewards_multiplier_cache, ORE_MULTIPLIER_DIAMOND))
 		new /obj/item/stack/ore/bluespace_crystal(src, calculate_loot(reward_points_cache, rewards_multiplier_cache, ORE_MULTIPLIER_BLUESPACE_CRYSTAL))
 
+/obj/structure/closet/crate/secure/bitrunning/decrypted/proc/spawn_bonus_rewards()
+	var/cash_bills = 2
+	switch(difficulty_cache)
+		if(BITRUNNER_DIFFICULTY_NONE)
+			cash_bills = 1
+		if(BITRUNNER_DIFFICULTY_LOW)
+			cash_bills = 2
+		if(BITRUNNER_DIFFICULTY_MEDIUM)
+			cash_bills = 4
+		if(BITRUNNER_DIFFICULTY_HIGH)
+			cash_bills = 6
+	new /obj/item/stack/spacecash/c500(src, max(1, cash_bills + rand(-1, 1)))
+	var/medkit_path = pick(
+		/obj/item/storage/firstaid/regular,
+		/obj/item/storage/firstaid/brute,
+		/obj/item/storage/firstaid/fire,
+		/obj/item/storage/firstaid/o2,
+		/obj/item/storage/firstaid/toxin,
+	)
+	new medkit_path(src)
+	spawn_random_bonus_loot(bonus_loot_cache)
+
+	var/list/rewards = list(
+		/obj/item/storage/belt/utility/full,
+		/obj/item/gun/energy/laser,
+		/obj/item/clothing/suit/armor/vest/alt,
+		/obj/item/clothing/glasses/thermal,
+		/obj/item/disk/bitrunning/item/tier1,
+		/obj/item/disk/bitrunning/ability/tier1,
+		/obj/item/reagent_containers/pill/mannitol,
+		/obj/item/reagent_containers/pill/neurine,
+		/obj/item/reagent_containers/pill/psicodine,
+	)
+	if(difficulty_cache >= BITRUNNER_DIFFICULTY_MEDIUM)
+		rewards += list(
+			/obj/item/gun/energy/e_gun,
+			/obj/item/disk/bitrunning/item/tier2,
+			/obj/item/disk/bitrunning/ability/tier2,
+		)
+	if(difficulty_cache >= BITRUNNER_DIFFICULTY_HIGH)
+		rewards += list(
+			/obj/item/clothing/suit/space/hardsuit/security,
+			/obj/item/disk/bitrunning/item/tier3,
+			/obj/item/disk/bitrunning/ability/tier3,
+		)
+
+	var/reward_count = difficulty_cache >= BITRUNNER_DIFFICULTY_HIGH ? 2 : 1
+	for(var/i in 1 to reward_count)
+		var/reward_path = pick(rewards)
+		new reward_path(src)
+
 /obj/structure/closet/crate/secure/bitrunning/decrypted/proc/calculate_loot(reward_points, rewards_multiplier, ore_multiplier)
 	PRIVATE_PROC(TRUE)
 
@@ -735,7 +791,7 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	var/random_sum = (rand() + 0.5) * base
 	return max(ROUND_UP(random_sum * ore_multiplier), 1)
 
-/obj/structure/closet/crate/secure/bitrunning/decrypted/proc/spawn_loot(list/completion_loot)
+/obj/structure/closet/crate/secure/bitrunning/decrypted/proc/spawn_loot(list/completion_loot, randomize = FALSE)
 	for(var/path in completion_loot)
 		if(!ispath(path))
 			return FALSE
@@ -743,10 +799,29 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 		if(isnull(completion_loot[path]))
 			return FALSE
 
-		for(var/i in 1 to completion_loot[path])
+		var/count = completion_loot[path]
+		if(randomize && count > 1)
+			count = rand(1, count)
+
+		for(var/i in 1 to count)
 			new path(src)
 
 	return TRUE
+
+/obj/structure/closet/crate/secure/bitrunning/decrypted/proc/spawn_random_bonus_loot(list/loot)
+	if(!length(loot))
+		return
+
+	var/list/paths = list()
+	for(var/path in loot)
+		paths += path
+
+	shuffle_inplace(paths)
+	var/count = length(paths) > 1 ? rand(2, length(paths)) : 1
+	for(var/i in 1 to count)
+		var/path = paths[i]
+		for(var/j in 1 to loot[path])
+			new path(src)
 
 #undef ORE_MULTIPLIER_IRON
 #undef ORE_MULTIPLIER_GLASS

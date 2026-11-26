@@ -1232,3 +1232,167 @@
 	map_name = "xeno_nest"
 	mob_modules = list(/datum/modular_mob_segment/xenos)
 	reward_points = BITRUNNER_REWARD_LOW
+
+/proc/get_domain_bonus_loot(datum/lazy_template/virtual_domain/domain)
+	if(isnull(domain))
+		return list()
+	switch(domain.key)
+		if("abductor_ship")
+			return list(
+				/obj/item/gun/energy/alien = 1,
+				/obj/item/abductor/baton = 1,
+				/obj/item/stack/spacecash/c1000 = 1,
+			)
+		if("ash_drake")
+			return list(
+				/obj/item/clothing/suit/hooded/cloak/drake = 1,
+				/obj/item/stack/sheet/animalhide/ashdrake = 2,
+				/obj/item/toy/plush/drake = 1,
+			)
+		if("beach_bar")
+			return list(
+				/obj/item/toy/beach_ball = 1,
+				/obj/item/clothing/glasses/sunglasses = 1,
+				/obj/item/storage/cans/sixbeer = 1,
+			)
+		if("blood_drunk_miner")
+			return list(
+				/obj/item/gun/energy/kinetic_accelerator = 1,
+				/obj/item/kinetic_crusher = 1,
+				/obj/item/stack/sheet/animalhide/goliath_hide = 2,
+			)
+		if("breeze_bay")
+			return list(
+				/obj/item/fishing_rod = 1,
+				/obj/item/clothing/glasses/sunglasses = 1,
+				/obj/item/storage/cans/sixbeer = 1,
+			)
+		if("bubblegum")
+			return list(
+				/obj/item/toy/plush/bubbleplush = 1,
+				/obj/item/stack/sheet/bone = 5,
+				/obj/item/stack/spacecash/c1000 = 1,
+			)
+		if("clown_planet")
+			return list(
+				/obj/item/clothing/shoes/clown_shoes/banana_shoes = 1,
+				/obj/item/bikehorn = 1,
+				/obj/item/gun/magic/staff/honk = 1,
+			)
+		if("colossus")
+			return list(
+				/obj/item/stack/sheet/mineral/diamond = 10,
+				/obj/item/stack/sheet/mineral/plasma = 10,
+				/obj/item/stack/sheet/bone = 5,
+			)
+		if("fredingtonfastingbear")
+			return list(
+				/obj/item/reagent_containers/food/snacks/pizzaslice/meat/pizzeria = 2,
+				/obj/item/kitchen/knife = 1,
+				/obj/item/storage/cans/sixbeer = 1,
+			)
+		if("gondola_asteroid")
+			return list(
+				/obj/item/stack/sheet/animalhide/gondola = 2,
+				/obj/item/reagent_containers/food/snacks/meat/slab/gondola/virtual_domain = 1,
+				/obj/item/reagent_containers/hypospray/medipen = 1,
+			)
+		if("grasslands_hunt")
+			return list(
+				/obj/item/gun/ballistic/rifle/boltaction = 1,
+				/obj/item/ammo_box/a762 = 3,
+				/obj/item/kitchen/knife/combat = 1,
+			)
+		if("heretic_hunt")
+			return list(
+				/obj/item/melee/sickly_blade = 1,
+				/obj/item/clothing/suit/hooded/cultrobes/eldritch = 1,
+				/obj/item/clothing/neck/eldritch_amulet = 1,
+			)
+		if("hierophant")
+			return list(
+				/obj/item/hierophant_club = 1,
+				/obj/item/stack/sheet/mineral/plasma = 10,
+				/obj/item/stack/sheet/mineral/diamond = 10,
+			)
+		if("island_brawl")
+			return list(
+				/obj/item/toy/beach_ball = 1,
+				/obj/item/clothing/glasses/sunglasses = 1,
+				/obj/item/gun/energy/laser/chameleon = 1,
+			)
+		if("meta_central")
+			return list(
+				/obj/item/clothing/suit/armor/vest/alt = 1,
+				/obj/item/melee/baton/loaded = 1,
+				/obj/item/storage/box/sec_kit = 1,
+			)
+		if("pipedream")
+			return list(
+				/obj/item/storage/belt/utility/full = 1,
+				/obj/item/storage/toolbox/mechanical = 1,
+				/obj/item/stack/sheet/metal = 15,
+				/obj/item/stack/rods = 10,
+			)
+		if("pirates")
+			return list(
+				/obj/item/melee/sabre = 1,
+				/obj/item/clothing/head/pirate = 1,
+				/obj/item/clothing/suit/pirate = 1,
+				/obj/item/stack/spacecash/c1000 = 2,
+			)
+		if("psyker_shuffle")
+			return list(
+				/obj/item/clothing/glasses/sunglasses/blindfold = 1,
+				/obj/item/clothing/suit/jacket/leather_trenchcoat = 1,
+				/obj/item/disk/bitrunning/ability/tier1 = 1,
+			)
+		if("psyker_zombies")
+			return list(
+				/obj/item/clothing/suit/space/hardsuit/security/hos = 1,
+				/obj/item/gun/energy/laser = 1,
+				/obj/item/stock_parts/cell/high = 2,
+				/obj/item/storage/firstaid/brute = 1,
+			)
+		if("ancient_milsim")
+			return list(
+				/obj/item/gun/ballistic/automatic/pistol = 2,
+				/obj/item/ammo_box/magazine/m10mm = 3,
+				/obj/item/clothing/suit/armor/vest = 1,
+				/obj/item/stack/spacecash/c500 = 2,
+			)
+		if("stairs_and_cliffs")
+			return list(
+				/obj/item/clothing/suit/snowman = 1,
+				/obj/item/clothing/shoes/wheelys = 1,
+				/obj/item/clothing/head/ushanka = 1,
+				/obj/item/clothing/suit/hooded/wintercoat = 1,
+			)
+		if("syndicate_assault")
+			return list(
+				/obj/item/gun/ballistic/automatic/c20r/unrestricted = 1,
+				/obj/item/ammo_box/magazine/smgm45 = 2,
+				/obj/item/clothing/suit/armor/vest = 1,
+				/obj/item/toy/plush/nukeplushie = 1,
+			)
+		if("vaporwave")
+			return list(
+				/obj/item/toy/plush/lizardplushie = 1,
+				/obj/item/clothing/suit/jacket/leather_trenchcoat = 1,
+				/obj/item/stack/spacecash/c1000 = 2,
+				/obj/item/clothing/glasses/sunglasses = 1,
+			)
+		if("wendigo")
+			return list(
+				/obj/item/clothing/suit/hooded/wintercoat = 1,
+				/obj/item/clothing/head/ushanka = 1,
+				/obj/item/stack/sheet/bone = 5,
+			)
+		if("xeno_nest")
+			return list(
+				/obj/item/stack/sheet/animalhide/xeno = 2,
+				/obj/item/reagent_containers/food/snacks/meat/slab/xeno = 2,
+				/obj/item/gun/energy/laser = 1,
+				/obj/item/clothing/suit/space/hardsuit/security = 1,
+			)
+	return list()

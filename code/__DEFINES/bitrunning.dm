@@ -15,6 +15,10 @@
 /// Максимальная награда.
 #define BITRUNNER_REWARD_EXTREME 6
 
+#define BITRUNNER_CARGO_BUDGET_LOW 2500
+#define BITRUNNER_CARGO_BUDGET_MEDIUM 5000
+#define BITRUNNER_CARGO_BUDGET_HIGH 7500
+
 /// Синий: угроза только от ghost-ролей.
 #define BITRUNNER_DIFFICULTY_NONE 0
 /// Жёлтый: мобы слабые и легко обходятся.
