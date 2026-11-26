@@ -10,6 +10,7 @@
 	var/capacitor_coefficient = 1
 	var/datum/lazy_template/virtual_domain/generated_domain
 	var/domain_randomized = FALSE
+	var/domain_completed = FALSE
 	var/is_ready = TRUE
 	var/glitch_chance = 0.2
 	var/list/datum/weakref/avatar_connection_refs = list()
@@ -221,6 +222,7 @@
 	return total
 
 /obj/machinery/quantum_server/proc/generate_loot(obj/cache, obj/machinery/byteforge/chosen_forge)
+	domain_completed = TRUE
 	SSblackbox.record_feedback("tally", "bitrunning_domain_primary_completed", 1, generated_domain.key)
 	for(var/mob/person in cache.contents)
 		SEND_SIGNAL(person, COMSIG_BITRUNNER_CACHE_SEVER)
@@ -391,7 +393,8 @@
 	if(!length(connections))
 		balloon_alert_to_viewers("отключение домена...")
 		playsound(src, 'sound/machines/terminal_off.ogg', 40, vary = TRUE)
-		points = max(0, points - 1)
+		if(!domain_completed)
+			points = max(0, points - 1)
 		SStgui.update_uis(src)
 		reset()
 		return
@@ -411,7 +414,8 @@
 	if(!is_ready || QDELETED(src))
 		return
 
-	points = max(0, points - 1)
+	if(!domain_completed)
+		points = max(0, points - 1)
 	SStgui.update_uis(src)
 	reset()
 
@@ -615,6 +619,7 @@
 
 /obj/machinery/quantum_server/proc/reset(fast = FALSE)
 	is_ready = FALSE
+	domain_completed = FALSE
 
 	sever_connections()
 
