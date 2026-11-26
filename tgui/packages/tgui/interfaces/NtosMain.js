@@ -26,7 +26,7 @@ export const NtosMain = (props) => {
       title={device_theme === 'syndicate' ? 'Syndix OS' : 'NtOS'}
       theme={device_theme}
       width={420}
-      height={580}>
+      height={560}>
       <NtosWindow.Content>
         <Stack vertical fill>
           {/* ID Details */}
@@ -102,11 +102,12 @@ export const NtosMain = (props) => {
           )}
 
           {/* Applications */}
-          <Stack.Item grow>
+          <Stack.Item grow minHeight={0} mx="10px" mb="8px">
             <Section
+              className="NtosMain__programs"
               title="Приложения"
               fill
-              style={{ margin: '8px 10px' }}>
+              scrollable>
               <Stack vertical>
                 {programs.map(program => program !== camera && (
                   <Stack.Item key={program.name}>
@@ -147,7 +148,7 @@ export const NtosMain = (props) => {
           </Stack.Item>
 
           {/* Bottom bar */}
-          <Stack.Item>
+          <Stack.Item shrink={0}>
             <div style={{
               borderTop: '1px solid rgba(255,255,255,0.08)',
               padding: '6px 10px',

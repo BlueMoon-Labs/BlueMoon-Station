@@ -90,7 +90,7 @@
 	viewer.register_map_obj(frame_border)
 
 /atom/movable/screen/map_view/photo_viewfinder/proc/resize_frame(radius_x, radius_y)
-	frame_border.fill_rect(1, 1, radius_x * 2 + 1, radius_y * 2 + 1)
+	frame_border?.fill_rect(1, 1, radius_x * 2 + 1, radius_y * 2 + 1)
 
 /atom/movable/screen/map_view/photo_viewfinder/proc/clear_frame()
 	if(!length(frame_appearances))

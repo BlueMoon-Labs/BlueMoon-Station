@@ -150,9 +150,36 @@ const CameraSettings = ({ open, onOpenChange }: {
   );
 };
 
+const ViewfinderMap = ({ id, frameWidth, frameHeight }: {
+  id: string;
+  frameWidth: number;
+  frameHeight: number;
+}) => {
+  const { act } = useBackend<CameraData>();
+  const [onResize] = useState(() => () => act('mount_viewfinder', { id }));
+
+  return (
+    <ByondUi
+      onResize={onResize}
+      style={{
+        width: `min(100cqw, calc(100cqh * ${frameWidth / frameHeight}))`,
+        aspectRatio: `${frameWidth} / ${frameHeight}`,
+      }}
+      params={{
+        id,
+        type: 'map',
+        zoom: 0,
+        letterbox: true,
+        'background-color': '#101216',
+        'is-disabled': true,
+      }}
+    />
+  );
+};
+
 const Viewfinder = () => {
   const { act, data } = useBackend<CameraData>();
-  const { flash, viewfinder, viewfinderMap, capturing, localCount } = data;
+  const { flash, viewfinder, viewfinderMap, frameWidth, frameHeight, capturing, localCount } = data;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const aiming = viewfinder === 'aiming';
   const blocked = viewfinder === 'blocked';
@@ -164,23 +191,18 @@ const Viewfinder = () => {
           height="100%"
           backgroundColor={blocked || aiming ? '#101216' : '#555b62'}
           style={{
+            containerType: 'size',
             minHeight: '17rem',
             border: '1px solid rgba(255, 255, 255, 0.16)',
             display: 'grid',
             placeItems: 'center',
-            position: 'relative',
           }}>
           {aiming && viewfinderMap && !settingsOpen ? (
-            <ByondUi
+            <ViewfinderMap
               key={viewfinderMap}
-              fillPositionedParent
-              params={{
-                id: viewfinderMap,
-                type: 'map',
-                letterbox: true,
-                'background-color': '#101216',
-                'is-disabled': true,
-              }}
+              id={viewfinderMap}
+              frameWidth={frameWidth}
+              frameHeight={frameHeight}
             />
           ) : (
             <Box textAlign="center" textColor="#eee" mx={2}>
@@ -523,9 +545,7 @@ const PhotoDetails = ({ photo }: { photo: SelectedPhoto }) => {
             <Button icon="print" tooltip="Печать" onClick={() => act('request_print')} />
           </>
         )}>
-        <Box mx="auto" style={{ maxWidth: '19rem' }}>
-          <PhotoPreview {...photo} />
-        </Box>
+        <PhotoPreview {...photo} />
         {!data.editMode && (
           <>
             {!!photo.description && <Box mt={1} style={{ overflowWrap: 'anywhere' }}>{photo.description}</Box>}

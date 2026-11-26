@@ -251,6 +251,13 @@
 					if(istext(time_zone) && length(time_zone) <= 64 && time_zone_pattern.Find(time_zone))
 						aim_time_zone = time_zone
 					start_aiming(user)
+		if("mount_viewfinder")
+			if(!aiming || !viewfinder || viewfinder.registered_client || params["id"] != viewfinder.assigned_map || user.client != aim_client || !can_aim(user))
+				return FALSE
+			// ByondUi сообщает о размере после создания подкарты. Теперь можно зарегистрировать кадр и его границы.
+			viewfinder.show_frame(aim_client, frame_radius_x, frame_radius_y)
+			queue_viewfinder_refresh()
+			return FALSE
 		if("tab")
 			var/destination = params["tab"]
 			if(destination != "camera" && destination != "local" && destination != "cloud")
@@ -398,9 +405,7 @@
 	RegisterSignal(aim_client, COMSIG_CLIENT_SET_EYE, PROC_REF(on_aim_moved))
 	viewfinder = new
 	viewfinder.generate_view("pda_camera_[REF(src)]_map")
-	viewfinder.show_frame(aim_client, frame_radius_x, frame_radius_y)
 	viewfinder_cursor_dirty = TRUE
-	queue_viewfinder_refresh()
 
 /datum/computer_file/program/pda_camera/proc/stop_aiming()
 	aim_requested = FALSE
@@ -455,7 +460,7 @@
 	queue_viewfinder_refresh()
 
 /datum/computer_file/program/pda_camera/proc/queue_viewfinder_refresh()
-	if(!viewfinder || (!viewfinder_cursor_dirty && !viewfinder_target_ref && !viewfinder_timer))
+	if(!viewfinder?.registered_client || (!viewfinder_cursor_dirty && !viewfinder_target_ref && !viewfinder_timer))
 		return
 	if(viewfinder_timer)
 		if(!viewfinder_idle_timer)
@@ -473,7 +478,7 @@
 
 /datum/computer_file/program/pda_camera/proc/refresh_viewfinder()
 	viewfinder_timer = null
-	if(!aiming || QDELETED(viewfinder))
+	if(!aiming || QDELETED(viewfinder) || !viewfinder.registered_client)
 		return
 	var/mob/viewer = viewer_ref?.resolve()
 	if(!can_aim(viewer) || computer.active_program != src || !computer.enabled)
