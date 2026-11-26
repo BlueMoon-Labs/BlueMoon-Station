@@ -135,14 +135,14 @@
 		if(program.type in GLOB.nifsoft_catalog)
 			saved_programs += "[program.type]"
 	return list(
-		"version" = 1,
+		"version" = NIF_PERSISTENCE_VERSION,
 		"type" = "[type]",
 		"programs" = saved_programs,
 	)
 
 /// Recreates catalogued programs; the new NIF starts with its normal round-start state.
 /obj/item/organ/cyberimp/brain/nif/proc/load_persistent_data(list/saved_data)
-	if(!islist(saved_data) || saved_data["version"] != 1)
+	if(!islist(saved_data) || saved_data["version"] != NIF_PERSISTENCE_VERSION)
 		return FALSE
 	var/list/saved_programs = saved_data["programs"]
 	if(!islist(saved_programs))
@@ -158,7 +158,7 @@
 
 /// Reinstalls the saved model after the preference-selected organs have been created on the new body.
 /datum/preferences/proc/apply_persistent_nif(mob/living/carbon/human/target)
-	if(!ishuman(target) || !islist(nif_persistent_data) || !length(nif_persistent_data) || nif_persistent_data["version"] != 1)
+	if(!ishuman(target) || !islist(nif_persistent_data) || !length(nif_persistent_data) || nif_persistent_data["version"] != NIF_PERSISTENCE_VERSION)
 		return FALSE
 	var/nif_type_text = nif_persistent_data["type"]
 	if(!istext(nif_type_text))

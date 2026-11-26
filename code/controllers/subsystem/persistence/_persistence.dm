@@ -382,24 +382,25 @@ SUBSYSTEM_DEF(persistence)
 /// Saves the active character's NIF state using the same preference-save flow as scars.
 /datum/controller/subsystem/persistence/proc/SaveNIFs()
 	for(var/i in GLOB.joined_player_list)
-		var/mob/living/carbon/human/ending_human = get_mob_by_ckey(i)
-		if(!istype(ending_human) || !ending_human.mind || !ending_human.client || !ending_human.client.prefs)
+		var/mob/ending_mob = get_mob_by_ckey(i)
+		if(!ending_mob || !ending_mob.mind || !ending_mob.client || !ending_mob.client.prefs)
 			continue
 
-		var/mob/living/carbon/human/original_human = ending_human.mind.original_character?.resolve()
-		if(!original_human || original_human.stat == DEAD || !(original_human == ending_human))
-			if(ending_human.client)
-				ending_human.client.prefs.nif_persistent_data = list()
+		var/datum/preferences/prefs = ending_mob.client.prefs
+		var/mob/living/carbon/human/original_human = ending_mob.mind.original_character?.resolve()
+		if(!ishuman(ending_mob) || !original_human || original_human.stat == DEAD || original_human != ending_mob)
+			prefs.nif_persistent_data = list()
 		else
+			var/mob/living/carbon/human/ending_human = ending_mob
 			var/obj/item/organ/cyberimp/brain/nif/implant = ending_human.getorganslot(ORGAN_SLOT_BRAIN_NIF)
 			if(istype(implant) && implant.nif_persistence)
-				ending_human.client.prefs.nif_persistent_data = implant.get_persistent_data()
+				prefs.nif_persistent_data = implant.get_persistent_data()
 			else
-				ending_human.client.prefs.nif_persistent_data = list()
+				prefs.nif_persistent_data = list()
 
-		if(!ending_human.client)
+		if(!ending_mob.client)
 			return
-		ending_human.client.prefs.save_character()
+		prefs.save_character()
 
 /datum/controller/subsystem/persistence/proc/SaveTCGCards()
 	for(var/i in GLOB.joined_player_list)

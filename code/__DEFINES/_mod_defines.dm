@@ -172,6 +172,7 @@ GLOBAL_LIST_INIT(mod_themes, setup_mod_themes())
 #define MOD_BASE_ALLOWED list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/device/cooler)
 
 #define ORGAN_SLOT_BRAIN_NIF "brain_nif"
+#define NIF_PERSISTENCE_VERSION 1
 #define NIF_TRAIT "nif"
 #define NIF_CALIBRATION_BLIND 0.1
 #define NIF_CALIBRATION_CLEAR 0.2
