@@ -162,9 +162,10 @@
 	origin_x = view_pixels[1] / 2
 	origin_y = view_pixels[2] / 2
 	var/static/regex/screen_loc_regex = regex(@"(\d+):(\d+),(\d+):(\d+)$")
-	if(screen_loc && screen_loc_regex.Find(screen_loc))
-		origin_x = (text2num(screen_loc_regex.group[1]) - 1) * world.icon_size + text2num(screen_loc_regex.group[2])
-		origin_y = (text2num(screen_loc_regex.group[3]) - 1) * world.icon_size + text2num(screen_loc_regex.group[4])
+	var/regex/cursor_pattern = screen_loc_regex
+	if(screen_loc && cursor_pattern.Find(screen_loc))
+		origin_x = (text2num(cursor_pattern.group[1]) - 1) * world.icon_size + text2num(cursor_pattern.group[2])
+		origin_y = (text2num(cursor_pattern.group[3]) - 1) * world.icon_size + text2num(cursor_pattern.group[4])
 
 /// Вид меню из настроек игрока; без клиента (тесты) - по умолчанию
 /datum/context_menu/proc/load_style()

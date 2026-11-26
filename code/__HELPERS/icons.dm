@@ -829,8 +829,8 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 		GLOB.cached_icon_state_directional.Cut(1, (ICON_STATE_DIRECTIONAL_CACHE_MAX / 4) + 1) // evict oldest 25%
 
 // Собирает /atom или /image в одну иконку. icon_offsets получает смещение её исходной точки привязки.
-// Для фотографии передай icon_offsets вместе с apply_photo_transform, чтобы учесть матрицы и дополнительные смещения.
-/proc/getFlatIcon(image/A, defdir, deficon, defstate, defblend, start = TRUE, no_anim = FALSE, list/icon_offsets = null, apply_photo_transform = FALSE)
+// Камера передаёт photo_transform вместе с icon_offsets. Эта обработка матриц может уступать тик.
+/proc/getFlatIcon(image/A, defdir, deficon, defstate, defblend, start = TRUE, no_anim = FALSE, list/icon_offsets = null, photo_transform = null)
 	//Define... defines.
 	var/static/icon/flat_template = icon('icons/effects/effects.dmi', "nothing")
 
@@ -869,7 +869,7 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 		icon_offsets["y"] = 0
 	if(!A || A.alpha <= 0)
 		return BLANK
-	if(apply_photo_transform && is_camera_chat_appearance(A))
+	if(photo_transform && is_camera_chat_appearance(A))
 		return null
 
 	var/noIcon = FALSE
@@ -917,7 +917,7 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 	var/curblend = A.blend_mode || defblend
 	var/pivot_x = world.icon_size / 2
 	var/pivot_y = world.icon_size / 2
-	var/matrix/pose = apply_photo_transform ? A.transform : null
+	var/matrix/pose = photo_transform ? A.transform : null
 	if(pose && pose.a == 1 && !pose.b && !pose.c && !pose.d && pose.e == 1 && !pose.f)
 		pose = null
 
@@ -947,7 +947,7 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 				var/current_layer = current.layer
 				if(current_layer < 0)
 					if(current_layer <= -1000)
-						if(apply_photo_transform)
+						if(photo_transform)
 							continue
 						// Второй выход мимо хвостового учёта: оверлей ниже -1000 отдаёт
 						// собранную заготовку прямо отсюда. Считаем здесь по тем же
@@ -979,7 +979,7 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 		var/list/add_size[4]
 
 		var/list/rc_overlays = null // flat list
-		var/list/child_offsets = apply_photo_transform ? list() : null
+		var/list/child_offsets = photo_transform ? list() : null
 		var/list/layer_offsets
 		var/icon/base_icon
 		if(untransformed_layers)
@@ -1001,21 +1001,21 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 			if(I == copy) // 'I' is an /image based on the object being flattened.
 				curblend = BLEND_OVERLAY
 				add = base_icon || icon(I.icon, I.icon_state, base_icon_dir, no_anim ? FLAT_ICON_FIRST_FRAME : null)
-				if(apply_photo_transform)
+				if(photo_transform)
 					pixel_left -= A.icon_w
 					pixel_bottom -= A.icon_z
 					pivot_x = add.Width() / 2 + pixel_left
 					pivot_y = add.Height() / 2 + pixel_bottom
 			else // 'I' is an appearance object.
-				add = getFlatIcon(image(I), curdir, curicon, curstate, curblend, FALSE, no_anim, child_offsets, apply_photo_transform)
-				if(apply_photo_transform)
+				add = getFlatIcon(image(I), curdir, curicon, curstate, curblend, FALSE, no_anim, child_offsets, photo_transform)
+				if(photo_transform)
 					pixel_left += I.pixel_w - child_offsets["x"]
 					pixel_bottom += I.pixel_z - child_offsets["y"]
 					curblend = I.blend_mode || defblend
 			if(add && layer_offsets && !(I in untransformed_layers))
 				layer_offsets["x"] = -pixel_left
 				layer_offsets["y"] = -pixel_bottom
-				add = transform_camera_icon(add, pose, layer_offsets, pivot_x, pivot_y)
+				add = call(photo_transform)(add, pose, layer_offsets, pivot_x, pivot_y)
 				pixel_left = -layer_offsets["x"]
 				pixel_bottom = -layer_offsets["y"]
 			if(!add)
@@ -1075,7 +1075,7 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 	else	//There's no overlays.
 		if(!noIcon)
 			SET_SELF(.)
-			if(apply_photo_transform)
+			if(photo_transform)
 				var/icon/base_icon = .
 				icon_offsets["x"] = A.icon_w
 				icon_offsets["y"] = A.icon_z
@@ -1083,7 +1083,7 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 				pivot_y = base_icon.Height() / 2 - A.icon_z
 
 	if(pose && .)
-		. = transform_camera_icon(., pose, icon_offsets, pivot_x, pivot_y)
+		. = call(photo_transform)(., pose, icon_offsets, pivot_x, pivot_y)
 
 	//Clear defines
 	#undef flatX1

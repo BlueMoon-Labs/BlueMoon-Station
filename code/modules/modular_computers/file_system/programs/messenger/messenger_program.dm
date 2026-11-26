@@ -389,7 +389,8 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 			var/mob/user = ui.user
 			if(!user?.client || !user.ckey || !camera || computer.active_program != src || !sending_and_receiving || sending_virus || !istext(params["message"]))
 				return FALSE
-			if(camera.ui_state(user).can_use_topic(computer, user) != UI_INTERACTIVE)
+			var/datum/ui_state/camera_state = camera.ui_state(user)
+			if(camera_state.can_use_topic(computer, user) != UI_INTERACTIVE)
 				return FALSE
 			var/datum/pda_chat/chat = get_compose_chat()
 			if(!chat?.can_reply || chat.blocked || !computer.switch_program(camera, user))

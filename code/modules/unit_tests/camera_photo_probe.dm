@@ -16,7 +16,7 @@
 		overlay.appearance_flags = RESET_TRANSFORM | (grouping & KEEP_APART)
 		subject.overlays = list(overlay)
 		var/list/offsets = list()
-		var/icon/result = getFlatIcon(subject, no_anim = TRUE, icon_offsets = offsets, apply_photo_transform = TRUE)
+		var/icon/result = getFlatIcon(subject, no_anim = TRUE, icon_offsets = offsets, photo_transform = GLOBAL_PROC_REF(transform_camera_icon))
 		var/detail_x = grouping == KEEP_TOGETHER ? 13 : 5
 		TEST_ASSERT_EQUAL(result.GetPixel(11 + offsets["x"], 4 + offsets["y"]), "#ff0000", "Основа не получила матрицу объекта")
 		TEST_ASSERT_EQUAL(result.GetPixel(detail_x + offsets["x"], 6 + offsets["y"]), "#00ff00", "Оверлей получил неверную матрицу при флагах [grouping]")

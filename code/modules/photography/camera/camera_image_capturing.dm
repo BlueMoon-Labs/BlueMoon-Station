@@ -41,7 +41,7 @@
 				light_mask.MapColors(arglist(light_color))
 			rendered["icon"] = light_mask
 		else
-			rendered["icon"] = getFlatIcon(visual, no_anim = TRUE, icon_offsets = rendered, apply_photo_transform = TRUE)
+			rendered["icon"] = getFlatIcon(visual, no_anim = TRUE, icon_offsets = rendered, photo_transform = GLOBAL_PROC_REF(transform_camera_icon))
 		flat_icon_cache[appearance_key] = rendered
 	var/icon/flattened = rendered["icon"]
 	if(flattened)

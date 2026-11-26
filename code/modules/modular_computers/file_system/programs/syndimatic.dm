@@ -66,7 +66,8 @@
 	if(!can_view_syndimatic(user))
 		return
 	var/datum/tgui/current_ui = viewer_ui_ref?.resolve()
-	if(current_ui?.user == user && viewer_profile_id == get_syndimatic_actor(user)?.syndimatic_profile_id)
+	var/datum/mind/actor = get_syndimatic_actor(user)
+	if(current_ui?.user == user && viewer_profile_id == actor?.syndimatic_profile_id)
 		if(!current_ui.initialized || SStgui.try_update_ui(user, src, current_ui))
 			return
 	if(current_ui)
@@ -74,7 +75,10 @@
 	open_syndimatic_ui(user)
 
 /datum/computer_file/program/syndimatic/ui_status(mob/user, datum/ui_state/state)
-	if(!user?.client || viewer_ref?.resolve() != user || computer?.active_program != src || !computer.enabled || viewer_profile_id != get_syndimatic_actor(user)?.syndimatic_profile_id)
+	if(!user?.client || viewer_ref?.resolve() != user || computer?.active_program != src || !computer.enabled)
+		return UI_CLOSE
+	var/datum/mind/actor = get_syndimatic_actor(user)
+	if(viewer_profile_id != actor?.syndimatic_profile_id)
 		return UI_CLOSE
 	return ..()
 
@@ -86,7 +90,12 @@
 /datum/computer_file/program/syndimatic/proc/can_view_syndimatic(mob/user)
 	if(!user?.client || !istype(computer, /obj/item/modular_computer/pda) || !computer.enabled || computer.active_program != src)
 		return FALSE
-	return IsAdminGhost(user) || (isliving(user) && ui_state(user).can_use_topic(computer, user) == UI_INTERACTIVE)
+	if(IsAdminGhost(user))
+		return TRUE
+	if(!isliving(user))
+		return FALSE
+	var/datum/ui_state/state = ui_state(user)
+	return state.can_use_topic(computer, user) == UI_INTERACTIVE
 
 /datum/computer_file/program/syndimatic/proc/get_syndimatic_actor(mob/user)
 	var/datum/mind/actor = user?.mind
@@ -479,14 +488,18 @@
 	if(!camera)
 		to_chat(user, span_warning("На ПДА нет приложения камеры."))
 		return FALSE
-	if(camera.ui_state(user).can_use_topic(computer, user) != UI_INTERACTIVE || !computer.switch_program(camera, user))
+	var/datum/ui_state/camera_state = camera.ui_state(user)
+	if(camera_state.can_use_topic(computer, user) != UI_INTERACTIVE || !computer.switch_program(camera, user))
 		return FALSE
 	camera.open_camera_ui(user, syndimatic = src, syndimatic_kind = kind)
 	return TRUE
 
 /datum/computer_file/program/syndimatic/proc/return_from_syndimatic_picker(mob/user, kind, datum/picture/photo)
 	var/datum/mind/actor = get_syndimatic_actor(user)
-	if(!actor || !computer?.enabled || ui_state(user).can_use_topic(computer, user) != UI_INTERACTIVE)
+	if(!actor || !computer?.enabled)
+		return FALSE
+	var/datum/ui_state/state = ui_state(user)
+	if(state.can_use_topic(computer, user) != UI_INTERACTIVE)
 		return FALSE
 	var/photo_url = photo?.picture_url ? sanitize_headshot_link(html_decode(photo.picture_url)) : null
 	if(photo && !photo.picture_image && !photo_url)
