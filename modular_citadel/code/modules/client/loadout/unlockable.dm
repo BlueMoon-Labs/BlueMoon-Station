@@ -7,7 +7,7 @@
 
 /datum/gear/unlockable/janitor
 	name = "Janitor Bedsheet"
-	description = "Clean 100 messes with a mop to unlock this. It has a warning sign on!"
+	description = "Убери 100 беспорядков шваброй, чтобы разблокировать. На нём есть предупреждающий знак!"
 	path = /obj/item/bedsheet/unlockable/janitor
 
 	progress_required = 100
@@ -15,7 +15,7 @@
 
 /datum/gear/unlockable/cook
 	name = "Cook Bedsheet"
-	description = "Cook 250 items using the microwave to unlock this. It has a microwave on!"
+	description = "Приготовь 250 блюд в микроволновке, чтобы разблокировать. На нём нарисована микроволновка!"
 	path = /obj/item/bedsheet/unlockable/cook
 
 	progress_required = 250
@@ -23,7 +23,7 @@
 
 /datum/gear/unlockable/miner
 	name = "Miner Bedsheet"
-	description = "Redeem a total of 100,000 miner points to unlock this. It's made out of goliath hide!"
+	description = "Накопи 100 000 очков шахтёра, чтобы разблокировать. Сделано из шкуры голиафа!"
 	path = /obj/item/bedsheet/unlockable/miner
 
 	progress_required = 100000
