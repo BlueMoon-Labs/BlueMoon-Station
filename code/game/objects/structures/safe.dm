@@ -440,11 +440,73 @@ GLOBAL_DATUM_INIT(spare_id_safe, /obj/structure/safe/spare_id, null)
 	number_of_tumblers = 4
 	max_lock_integrity = 600
 
+/**
+ * Заполняет сейф предметами, описанными в коде.
+ *
+ * Ключи `loadout` — типы предметов, значения — сколько штук положить.
+ * Предметы, уже лежащие в сейфе (например, пришедшие со старых карт), учитываются,
+ * поэтому с карт можно постепенно убирать замапленные предметы без дублирования.
+ */
+/datum/component/safe_loadout
+	var/list/loadout = list()
+
+/datum/component/safe_loadout/Initialize(list/new_loadout)
+	if(!istype(parent, /obj/structure/safe))
+		return COMPONENT_INCOMPATIBLE
+	if(new_loadout)
+		loadout = new_loadout.Copy()
+	fill_loadout()
+
+/**
+ * Добавляет в сейф столько предметов каждого типа, сколько не хватает до `loadout`.
+ * Учитывает уже занятое место и не кладёт предметы сверх `maxspace`.
+ */
+/datum/component/safe_loadout/proc/fill_loadout()
+	var/obj/structure/safe/safe = parent
+	if(!istype(safe) || QDELETED(safe))
+		return
+
+	for(var/item_type in loadout)
+		if(!ispath(item_type, /obj/item))
+			continue
+
+		var/wanted = loadout[item_type]
+		if(!isnum(wanted))
+			wanted = 1 // Поддерживается и простой список из типов без количеств.
+
+		var/have = 0
+		for(var/obj/item/I in safe)
+			if(I.type == item_type) // Точный тип: AP-магазин не должен считаться обычным.
+				have++
+
+		for(var/i in 1 to (wanted - have))
+			var/obj/item/I = new item_type
+			if(safe.space + I.w_class > safe.maxspace)
+				qdel(I)
+				break
+			I.forceMove(safe)
+			safe.space += I.w_class
+
+/// Содержимое сейфа оружейной. Этот список — единственное место, которое нужно редактировать.
+/datum/component/safe_loadout/armory
+	loadout = list(
+		/obj/item/ammo_box/magazine/acr5m30/ap = 6,
+		/obj/item/ammo_box/magazine/acr5m30 = 6,
+		/obj/item/gun/ballistic/automatic/acr5m30 = 3,
+		/obj/item/gun/energy/modular_laser_rifle/carbine = 3,
+		/obj/item/storage/firstaid/brute = 1,
+		/obj/item/storage/firstaid/toxin = 1,
+		/obj/item/storage/firstaid/fire = 1,
+		/obj/item/storage/firstaid/regular = 1,
+		/obj/item/stack/sheet/plasteel/fifty = 2,
+		/obj/item/stack/sheet/rglass/fifty = 2,
+	)
+
 /// Сейф оружейной СБ и только оружейной
 /obj/structure/safe/floor/syndi/armory
 	name = "armory safe"
 	number_of_tumblers = 8
-	maxspace = 70
+	maxspace = 100
 	open_security_levels = list(SEC_LEVEL_RED, SEC_LEVEL_LAMBDA, SEC_LEVEL_GAMMA)
 	tgui_theme = "syndicate"
 
@@ -452,6 +514,7 @@ GLOBAL_DATUM_INIT(spare_id_safe, /obj/structure/safe/spare_id, null)
 	. = ..()
 	if(. == INITIALIZE_HINT_QDEL || . == INITIALIZE_HINT_QDEL_FORCE)
 		return .
+	AddComponent(/datum/component/safe_loadout/armory)
 	return INITIALIZE_HINT_LATELOAD
 
 /obj/structure/safe/floor/syndi/armory/LateInitialize()
