@@ -4,24 +4,29 @@
 
 /datum/gear/wrists/syntech/band
 	name = "Normalizer Band"
+	description = "Дорогой технологичный браслет в фиолетовых тонах SynTech с мерцающим золотом NanoTrasen. Пока надет, он «нормализует» размер владельца до заданного роста, одобренного для условий работы. На нём жужжит маленький экран с информацией."
 	path = /obj/item/clothing/wrists/syntech
 
 /datum/gear/wrists/armwarmer
 	name = "Arm Warmers"
+	description = "Пара нарукавников."
 	path = /obj/item/clothing/wrists/armwarmer
 
 /datum/gear/wrists/armwarmer/long
 	name = "Long Arm Warmers"
+	description = "Пара длинных нарукавников."
 	path = /obj/item/clothing/wrists/armwarmer/long
 
 /datum/gear/wrists/armwarmer_striped
 	name = "Striped Arm Warmers"
+	description = "Пара полосатых нарукавников."
 	path = /obj/item/clothing/wrists/armwarmer_striped
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#FFFFFF")
 
 /datum/gear/wrists/armwarmer_striped/long
 	name = "Long Striped Arm Warmers"
+	description = "Пара длинных полосатых нарукавников."
 	path = /obj/item/clothing/wrists/armwarmer_striped/long
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#FFFFFF")
