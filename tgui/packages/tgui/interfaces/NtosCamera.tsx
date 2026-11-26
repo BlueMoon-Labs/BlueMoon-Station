@@ -59,6 +59,7 @@ type CameraData = {
   page: number;
   pages: number;
   editMode: 'upload' | 'edit' | null;
+  editConflict: ByondFlag;
   shareContacts: Record<string, ShareContact> | null;
   attachmentPicker: ByondFlag;
   syndimaticPicker?: 'compose' | 'avatar' | null;
@@ -302,28 +303,35 @@ const GalleryGrid = () => {
 
 const EditPhoto = ({ photo }: { photo: SelectedPhoto }) => {
   const { act, data } = useBackend<CameraData>();
-  const [name, setName] = useState(photo.name);
-  const [description, setDescription] = useState(photo.description);
-  const [caption, setCaption] = useState(photo.caption);
+  const [name, setName] = useState<string>();
+  const [description, setDescription] = useState<string>();
+  const [caption, setCaption] = useState<string>();
 
   return (
     <Section title={data.editMode === 'upload' ? 'Загрузка в облако' : 'Редактирование'}>
       <Stack vertical>
+        {!!data.editConflict && (
+          <Stack.Item>
+            <NoticeBox>Фотография изменилась в облаке. Загрузите актуальную версию, чтобы продолжить. Ваши правки сохранятся в полях.</NoticeBox>
+            <Button icon="sync" onClick={() => act('reload_edit', { id: photo.id })}>Загрузить актуальную версию</Button>
+          </Stack.Item>
+        )}
         <Stack.Item>
           <Box as="label" display="block">
             Название
-            <Input fluid value={name} maxLength={data.nameLimit} onInput={(_, value) => setName(value)} />
+            <Input fluid value={name ?? photo.name} maxLength={data.nameLimit} onInput={(_, value) => setName(value === photo.name ? undefined : value)} />
           </Box>
         </Stack.Item>
         <Stack.Item>
           <Box as="label" display="block">
             Описание
             <TextArea
+              dontUseTabForIndent
               fluid
               height="5rem"
               maxLength={data.descriptionLimit}
-              value={description}
-              onInput={(_, value) => setDescription(value)}
+              value={description ?? photo.description}
+              onInput={(_, value) => setDescription(value === photo.description ? undefined : value)}
             />
           </Box>
         </Stack.Item>
@@ -331,11 +339,12 @@ const EditPhoto = ({ photo }: { photo: SelectedPhoto }) => {
           <Box as="label" display="block">
             Подпись на обратной стороне
             <TextArea
+              dontUseTabForIndent
               fluid
               height="4rem"
               maxLength={data.captionLimit}
-              value={caption}
-              onInput={(_, value) => setCaption(value)}
+              value={caption ?? photo.caption}
+              onInput={(_, value) => setCaption(value === photo.caption ? undefined : value)}
             />
           </Box>
         </Stack.Item>
@@ -343,7 +352,13 @@ const EditPhoto = ({ photo }: { photo: SelectedPhoto }) => {
           <Button onClick={() => act('cancel_edit')}>Отмена</Button>
           <Button
             icon={data.editMode === 'upload' ? 'cloud-upload-alt' : 'check'}
-            onClick={() => act('save', { id: photo.id, name, description, caption })}>
+            disabled={!!data.editConflict}
+            onClick={() => act('save', {
+              id: photo.id,
+              name: name ?? photo.name,
+              description: description ?? photo.description,
+              caption: caption ?? photo.caption,
+            })}>
             {data.editMode === 'upload' ? 'Загрузить' : 'Сохранить'}
           </Button>
         </Stack.Item>

@@ -303,6 +303,10 @@
 		sent_ids[id] = TRUE
 		if(full || !feed_sent_ids?[id] || changed_profile_id == post["author"])
 			data["feedPost:[id]"] = syndimatic_feed_post(id, post)
+	for(var/id in feed_sent_ids)
+		if(!sent_ids[id])
+			data["feedPost:[id]"] = null
+			data["feedPhoto:[id]"] = null
 	feed_sent_ids = sent_ids
 	return data
 
@@ -313,11 +317,14 @@
 	return summary
 
 /datum/computer_file/program/syndimatic/proc/update_syndimatic_view(changed_post_id, changed_profile_id)
+	var/datum/tgui/ui = viewer_ui_ref?.resolve()
+	if(!ui)
+		return
+	if(!ui.initialized)
+		ui.update_on_ready = TRUE
+		return
 	if(!is_viewing_syndimatic_feed() || !feed_sent_ids)
 		push_update()
-		return
-	var/datum/tgui/ui = viewer_ui_ref?.resolve()
-	if(!ui?.initialized)
 		return
 	if(changed_post_id && !changed_profile_id)
 		if(feed_sent_ids[changed_post_id])
@@ -397,7 +404,8 @@
 			if(!is_feed || !istext(id) || !feed.Find(id, 1, min(feed_limit, length(feed)) + 1))
 				return FALSE
 			// Передаём полноразмерный снимок отдельно от обновлений счётчиков.
-			ui.send_update(list("feedPhoto:[id]" = SSpersistence.get_syndimatic_media(id)))
+			var/list/media = SSpersistence.get_syndimatic_media(id)
+			ui.send_update(list("feedPhoto:[id]" = media || list("image" = null)))
 			return FALSE
 		if("open_post")
 			var/id = params["id"]

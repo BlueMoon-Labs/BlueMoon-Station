@@ -60,7 +60,7 @@ type SyndimaticData = {
   feedLimit: number;
   feedHasMore: ByondFlag;
   [key: `feedPhoto:${string}`]: PhotoMedia | null | undefined;
-  [key: `feedPost:${string}`]: (Post & { liked: ByondFlag }) | undefined;
+  [key: `feedPost:${string}`]: (Post & { liked: ByondFlag }) | null | undefined;
   post?: Post;
   liked?: ByondFlag;
   commentsOpen?: ByondFlag;
@@ -184,7 +184,7 @@ const FeedPost = ({ post, scrollRef }: {
 }) => {
   const { act, data } = useBackend<SyndimaticData>();
   const { id, author, authorId, avatar, caption, comments, likes, liked } = post;
-  const media = data[`feedPhoto:${id}`];
+  const media = data[`feedPhoto:${id}`] ?? undefined;
   const { targetRef: photoRef, request: loadPhoto } = useFeedTrigger(scrollRef, media === undefined, 'feed_photo', id);
 
   return (
@@ -512,7 +512,7 @@ const ProfilePage = ({ profile }: { profile: Profile }) => {
             { kind: 'comment', blocked: profileCommentBlocked, label: 'комментарии' },
           ].map(({ kind, blocked, label }) => (
             <Button.Confirm
-              key={kind}
+              key={`${profileId}:${kind}:${!!blocked}`}
               icon={blocked ? 'unlock' : 'ban'}
               color="bad"
               tooltip={`${adminAction} — ${blocked ? 'разрешить' : 'заблокировать'} ${label}`}
@@ -594,6 +594,7 @@ const NotificationOptions = () => {
     const dismissOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setOpen(false);
+        optionsRef.current?.querySelector<HTMLElement>('[aria-expanded]')?.focus();
       }
     };
     document.addEventListener('pointerdown', dismissOutside);
@@ -641,9 +642,12 @@ const NotificationOptions = () => {
               fluid
               role="button"
               style={{ whiteSpace: 'normal' }}
-              onClick={() => {
+              onClick={(event) => {
                 act('notifications', { enabled, permanent });
                 setOpen(false);
+                if (event.type === 'keydown' || event.detail === 0) {
+                  optionsRef.current?.querySelector<HTMLElement>('[aria-expanded]')?.focus();
+                }
               }}
             >
               {label}

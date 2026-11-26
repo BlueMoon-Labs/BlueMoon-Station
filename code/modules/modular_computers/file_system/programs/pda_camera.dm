@@ -60,6 +60,7 @@
 	var/datum/weakref/attachment_chat_ref
 	var/datum/weakref/syndimatic_ref
 	var/syndimatic_kind
+	var/edit_conflict = FALSE
 
 /datum/computer_file/program/pda_camera/Destroy()
 	close_camera_window()
@@ -75,14 +76,19 @@
 /datum/computer_file/program/pda_camera/ui_interact(mob/user, datum/tgui/ui)
 	if(!isliving(user) || !user.client || !user.ckey || computer?.active_program != src)
 		return
+	var/datum/tgui/current_ui = viewer_ui_ref?.resolve()
+	if(current_ui?.user == user)
+		if(!current_ui.initialized)
+			current_ui.process_status()
+			if(current_ui.status <= UI_CLOSE)
+				current_ui.close()
+			return
+		if(SStgui.try_update_ui(user, src, current_ui))
+			return
 	var/datum/ui_state/state = ui_state(user)
 	if(state.can_use_topic(computer, user) != UI_INTERACTIVE)
 		return
-	var/datum/tgui/current_ui = viewer_ui_ref?.resolve()
-	if(current_ui?.user == user)
-		if(!current_ui.initialized || SStgui.try_update_ui(user, src, current_ui))
-			return
-	else
+	if(current_ui?.user != user)
 		current_ui?.close()
 	open_camera_ui(user)
 
@@ -154,6 +160,7 @@
 	print_message = null
 	print_transferred = FALSE
 	edit_mode = null
+	edit_conflict = FALSE
 	share_contacts = null
 	selected_id = null
 	QDEL_NULL(cloud_selection)
@@ -183,6 +190,7 @@
 	data["page"] = gallery_page
 	data["pages"] = gallery_pages
 	data["editMode"] = edit_mode
+	data["editConflict"] = edit_conflict
 	data["shareContacts"] = share_contacts
 	data["attachmentPicker"] = !!attachment_chat_ref
 	data["syndimaticPicker"] = syndimatic_kind
@@ -304,6 +312,17 @@
 			edit_mode = action
 		if("cancel_edit")
 			edit_mode = null
+			edit_conflict = FALSE
+		if("reload_edit")
+			if(tab != "cloud" || edit_mode != "edit" || !edit_conflict || params["id"] != selected_id)
+				return FALSE
+			var/datum/picture/current = read_pda_cloud_photo(cloud_photo_path(selected_id), TRUE)
+			if(!current)
+				to_chat(user, span_warning("Не удалось обновить фотографию из облака."))
+				return FALSE
+			qdel(cloud_selection)
+			cloud_selection = current
+			edit_conflict = FALSE
 		if("save")
 			if(params["id"] != selected_id || !save_selection(params, user))
 				return FALSE
@@ -549,6 +568,7 @@
 /datum/computer_file/program/pda_camera/proc/take_picture(turf/center, mob/user, use_flash, radius_x, radius_y, time_zone)
 	if(QDELETED(src))
 		return
+	push_update()
 	var/id
 	var/datum/picture/picture
 	try
@@ -697,6 +717,8 @@
 		return FALSE
 	var/uploading = edit_mode == "upload"
 	var/saving_to_cloud = uploading || tab == "cloud"
+	if(edit_conflict)
+		return FALSE
 	if(saving_to_cloud && (uploading ? is_uploaded(selected_id) : !is_uploaded(selected_id)))
 		to_chat(user, span_warning("Состояние фотографии в облаке изменилось. Откройте галерею заново."))
 		return FALSE
@@ -711,11 +733,19 @@
 		photo_desc = html_encode_readable(trim(strip_control_chars(params["description"]), PHOTO_DESCRIPTION_LIMIT + 1))
 	var/photo_caption = html_encode_readable(trim(strip_control_chars(params["caption"]), PHOTO_CAPTION_LIMIT + 1))
 	if(saving_to_cloud)
-		var/datum/picture/edited = selected.Copy()
+		var/path = cloud_photo_path(selected_id)
+		var/datum/picture/edited = uploading ? selected.Copy() : read_pda_cloud_photo(path, TRUE)
+		if(!edited)
+			to_chat(user, span_warning("Не удалось прочитать фотографию из облака."))
+			return FALSE
+		if(!uploading && (edited.picture_name != selected.picture_name || edited.picture_desc != selected.picture_desc || edited.caption != selected.caption))
+			qdel(edited)
+			edit_conflict = TRUE
+			return TRUE
 		edited.picture_name = photo_name
 		edited.picture_desc = photo_desc
 		edited.caption = photo_caption
-		var/saved = save_pda_cloud_photo(cloud_photo_path(selected_id), edited, local_thumbnails?[selected_id])
+		var/saved = save_pda_cloud_photo(path, edited, local_thumbnails?[selected_id])
 		qdel(edited)
 		if(!saved)
 			to_chat(user, span_warning("Не удалось сохранить фотографию в облаке."))

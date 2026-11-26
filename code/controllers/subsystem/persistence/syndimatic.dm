@@ -301,7 +301,9 @@
 			return data
 	var/backup = "[path].bak"
 	if(fexists(backup))
-		return safe_json_decode(file2text(backup), null)
+		var/list/data = safe_json_decode(file2text(backup), null)
+		if(islist(data))
+			return data
 	return null
 
 /proc/write_syndimatic_record(path, list/data)
