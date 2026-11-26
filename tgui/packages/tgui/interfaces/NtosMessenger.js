@@ -38,14 +38,15 @@ export const NtosMessenger = (props) => {
     if (!openChat && !temporaryRecipient) {
       content = <ContactsScreen />;
     } else {
+      const recipient = openChat ? openChat.recipient : temporaryRecipient;
       content = (
         <ChatScreen
-          key={open_chat}
+          key={recipient.ref || open_chat}
           isSilicon={is_silicon}
           sendingVirus={sending_virus}
           canReply={openChat ? openChat.can_reply : !!temporaryRecipient}
           messages={openChat ? openChat.messages : []}
-          recipient={openChat ? openChat.recipient : temporaryRecipient}
+          recipient={recipient}
           unreads={openChat ? openChat.unread_messages : 0}
           chatRef={openChat ? openChat.ref : null}
           blocked={openChat ? openChat.blocked : false}
@@ -465,7 +466,7 @@ const ChatScreen = (props) => {
 
     if (index === messages.length - unreads) {
       filteredMessages.push(
-        <Box className="UnreadDivider" m={0} mt={isSwitch ? 3 : 1}>
+        <Box key="unread-divider" className="UnreadDivider" m={0} mt={isSwitch ? 3 : 1}>
           <div />
           <span>Непрочитанные сообщения</span>
           <div />

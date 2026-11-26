@@ -255,20 +255,7 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 			return TRUE
 
 		if("PDA_viewMessages")
-			if(viewing_messages_of in saved_chats)
-				var/datum/pda_chat/chat = saved_chats[viewing_messages_of]
-				chat.unread_messages = 0
-				if(istext(params["message"]))
-					chat.message_draft = trim(params["message"], MAX_PDA_MESSAGE_LEN)
-
-			viewing_messages_of = params["ref"]
-
-			if(viewing_messages_of in saved_chats)
-				var/datum/pda_chat/chat = saved_chats[viewing_messages_of]
-				chat.visible_in_recents = TRUE
-
-			selected_image = null
-			return TRUE
+			return view_messages(params["ref"], params["message"])
 
 		if("PDA_closeMessages")
 			var/target = params["ref"]
@@ -811,6 +798,28 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 		message = emoji_sanitize(message)
 
 	return parse_emoji_message(message)
+
+/datum/computer_file/program/messenger/proc/view_messages(target_ref, message)
+	var/datum/pda_chat/previous_chat = saved_chats[viewing_messages_of]
+	if(istext(message))
+		var/draft = trim(message, MAX_PDA_MESSAGE_LEN)
+		if(!previous_chat && length(draft))
+			previous_chat = get_compose_chat()
+		if(previous_chat)
+			previous_chat.message_draft = draft
+			if(length(draft))
+				previous_chat.visible_in_recents = TRUE
+	if(previous_chat)
+		previous_chat.unread_messages = 0
+
+	var/datum/pda_chat/next_chat
+	if(istext(target_ref))
+		next_chat = saved_chats[target_ref] || find_chat_by_recipient(target_ref)
+	if(next_chat)
+		next_chat.visible_in_recents = TRUE
+	viewing_messages_of = next_chat ? REF(next_chat) : target_ref
+	selected_image = null
+	return TRUE
 
 /datum/computer_file/program/messenger/proc/get_compose_chat()
 	if(!viewing_messages_of)

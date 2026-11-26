@@ -127,6 +127,31 @@
 /datum/unit_test/pda_camera_share_photo
 	var/saved_debug_signal
 
+/datum/unit_test/pda_messenger_new_recipient_draft/Run()
+	var/obj/item/modular_computer/pda/source = allocate(/obj/item/modular_computer/pda)
+	var/obj/item/modular_computer/pda/target = allocate(/obj/item/modular_computer/pda)
+	target.imprint_id("Тестовый получатель", "Повар")
+	var/datum/computer_file/program/messenger/source_app = locate() in source.get_all_files()
+	var/datum/computer_file/program/messenger/target_app = locate() in target.get_all_files()
+	var/target_ref = REF(target_app)
+	GLOB.pda_messenger_directory_time = -1
+	TEST_ASSERT(target_ref in source_app.get_messengers(), "Получателя нет в адресной книге.")
+	source_app.view_messages(target_ref)
+	TEST_ASSERT_NULL(source_app.find_chat_by_recipient(target_ref), "Открытие нового адресата создало пустой чат.")
+	source_app.view_messages(null, "")
+	TEST_ASSERT_NULL(source_app.find_chat_by_recipient(target_ref), "Выход без черновика создал пустой чат.")
+
+	source_app.view_messages(target_ref)
+	source_app.view_messages(null, "Черновик новому адресату")
+	var/datum/pda_chat/chat = source_app.find_chat_by_recipient(target_ref)
+	TEST_ASSERT_NOTNULL(chat, "Выход с черновиком не создал чат.")
+	TEST_ASSERT_EQUAL(chat.message_draft, "Черновик новому адресату", "Черновик нового адресата потерян.")
+	TEST_ASSERT(chat.visible_in_recents, "Чат с черновиком пропал из недавних.")
+	source_app.view_messages(target_ref)
+	TEST_ASSERT_EQUAL(source_app.viewing_messages_of, REF(chat), "Адресная книга не открыла чат с черновиком.")
+	source_app.view_messages(null, "")
+	TEST_ASSERT_EQUAL(chat.message_draft, "", "Пустой ввод не очистил предыдущий черновик.")
+
 /datum/unit_test/pda_camera_share_photo/Destroy()
 	if(!isnull(saved_debug_signal))
 		SSnetworks.ntnet_debug_global_signal = saved_debug_signal
