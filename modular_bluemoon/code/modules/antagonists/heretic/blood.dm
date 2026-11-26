@@ -1579,7 +1579,7 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	var/list/entry = heal_ledger[REF(victim)]
 	if(!entry || world.time >= entry[1] + HERETIC_BLOOD_TARGET_HEAL_WINDOW)
 		return HERETIC_BLOOD_TARGET_HEAL_LIMIT
-	return max(0, HERETIC_BLOOD_TARGET_HEAL_LIMIT - entry[2])
+	return max(0, round(HERETIC_BLOOD_TARGET_HEAL_LIMIT - entry[2], DAMAGE_PRECISION))
 
 /datum/eldritch_knowledge/base_blood/proc/note_target_heal(mob/living/victim, amount)
 	if(amount <= 0)

@@ -2026,6 +2026,27 @@
 	entry[1] = world.time - 60 SECONDS - 1
 	TEST_ASSERT(abs(blood.siphon(user, 40, victim) - 10) <= DAMAGE_PRECISION, "Через минуту цель снова лечит.")
 
+/// Лечение по частям тела копит в запасе цели дробную пыль: 19.999996 из 20 - это исчерпанная цель, чаша и взыскание её не трогают.
+/datum/unit_test/heretic_blood_heal_room_ignores_float_dust/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/blood_relic)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/victim = blood_minded_victim(get_step(user, EAST))
+	user.adjustBruteLoss(80)
+	TEST_ASSERT(blood.release(user, victim), "Цель связана для чаши.")
+	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	seal.debt = 10
+	blood.heal_ledger[REF(victim)] = list(world.time, 20 - 0.000004)
+	var/brute = user.getBruteLoss()
+	TEST_ASSERT_EQUAL(blood.target_heal_room(victim), 0, "Пыль запаса не считается остатком.")
+	TEST_ASSERT(!blood.refund(user, victim), "Чаша не пьёт пыль запаса.")
+	TEST_ASSERT_EQUAL(seal.debt, 10, "Отказ чаши не тратит долг.")
+	TEST_ASSERT_EQUAL(blood.siphon(user, 40, victim), 0, "Взыскание не лечит пылью запаса.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), brute, "Раны не затянулись.")
+
 /// Взыскание у целого еретика ничего не лечит и не тратит запас лечения от этой цели.
 /datum/unit_test/heretic_blood_heal_ledger_counts_healed/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
