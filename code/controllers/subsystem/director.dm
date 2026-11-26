@@ -694,10 +694,11 @@ SUBSYSTEM_DEF(director)
 
 /// Неотработанная доля индивидуальной страховки. policy хранит цену, время выдачи роли и
 /// накопленную активность mind на тот момент, поэтому повторная роль того же игрока считается с нуля.
-/datum/controller/subsystem/director/proc/antag_loss_refund_value(list/policy, activity_total = 0)
+/// lost_at - когда роль потеряна: выплата после отсрочки считает возраст роли на момент потери.
+/datum/controller/subsystem/director/proc/antag_loss_refund_value(list/policy, activity_total = 0, lost_at = null)
 	if(!islist(policy) || !profile || profile.antag_loss_refund_window <= 0 || profile.antag_loss_activity_threshold <= 0)
 		return 0
-	var/age = now() - policy["at"]
+	var/age = (isnull(lost_at) ? now() : lost_at) - policy["at"]
 	if(age < 0 || age > profile.antag_loss_refund_window)
 		return 0
 	var/activity = max(0, activity_total - (policy["activity"] || 0))
@@ -720,9 +721,21 @@ SUBSYSTEM_DEF(director)
 	log_game("DIRECTOR: страховка [source_name] вернула [shown] бюджета за раннюю потерю ролей ([lost_count])")
 	return granted
 
+/// Отсрочка страховки: lost_at ставится при первой замеченной потере и снимается, если роль вернулась.
+/// TRUE - потеря продержалась DIRECTOR_ANTAG_LOSS_GRACE, полис можно закрывать.
+/datum/controller/subsystem/director/proc/antag_loss_grace_over(list/policy, lost)
+	if(!lost)
+		policy -= "lost_at"
+		return FALSE
+	if(isnull(policy["lost_at"]))
+		policy["lost_at"] = now()
+	// Сравнение с моментом окончания, а не разность: при дробном world.time разность в float теряет последний бит.
+	return now() >= policy["lost_at"] + DIRECTOR_ANTAG_LOSS_GRACE
+
 /// Одноразово страхует каждую подтверждённо выданную рулсетом роль. Стоимость уже разделена
 /// confirm_action_success() между новыми assigned, поэтому масштабированные и повторные рулсеты
 /// возвращают ровно свою фактически потраченную долю, а не текущий cost на глаз.
+/// Потеря должна продержаться DIRECTOR_ANTAG_LOSS_GRACE: роль, вернувшаяся за это время, полис не закрывает.
 /datum/controller/subsystem/director/proc/refund_lost_ruleset_antags(datum/dynamic_ruleset/rule)
 	if(!length(rule.director_loss_refund_values))
 		return 0
@@ -730,14 +743,16 @@ SUBSYSTEM_DEF(director)
 	var/lost_count = 0
 	for(var/datum/mind/assigned_mind as anything in rule.assigned)
 		var/list/policy = rule.director_loss_refund_values[assigned_mind]
-		if(!islist(policy) || !is_terminal_antag_loss(assigned_mind))
+		if(!islist(policy))
+			continue
+		if(!antag_loss_grace_over(policy, is_terminal_antag_loss(assigned_mind)))
 			continue
 		// Сначала закрываем полис: даже полная выплата не повторится после воскрешения/новой смерти,
 		// а слишком поздняя или уже отработанная роль тоже не будет проверяться бесконечно.
 		rule.director_loss_refund_values -= assigned_mind
 		rule.director_loss_accounted[assigned_mind] = TRUE
 		lost_count++
-		refund += antag_loss_refund_value(policy, assigned_mind.director_activity_total)
+		refund += antag_loss_refund_value(policy, assigned_mind.director_activity_total, policy["lost_at"])
 	return grant_antag_loss_refund(rule.action_name(), refund, lost_count)
 
 /// Текущий score активности антага с ленивым затуханием: полураспад DIRECTOR_ACTIVITY_HALF_LIFE,
@@ -897,15 +912,19 @@ SUBSYSTEM_DEF(director)
 		var/presence_sum = 0
 		var/refund = 0
 		var/lost_count = 0
+		var/pending = 0
 		for(var/datum/mind/assigned_mind as anything in minds)
 			var/mob/current = assigned_mind?.current
 			var/list/policy = refund_values?[assigned_mind]
 			var/role_removed = islist(hard_minds) && (assigned_mind in hard_minds) && !is_hard_antag_mind(assigned_mind)
-			if(!current || current.stat == DEAD || role_removed)
-				if(islist(policy))
-					refund_values -= assigned_mind
-					lost_count++
-					refund += antag_loss_refund_value(policy, assigned_mind.director_activity_total)
+			var/lost = !current || current.stat == DEAD || role_removed
+			if(islist(policy) && antag_loss_grace_over(policy, lost))
+				refund_values -= assigned_mind
+				lost_count++
+				refund += antag_loss_refund_value(policy, assigned_mind.director_activity_total, policy["lost_at"])
+			else if(lost && islist(policy))
+				pending++
+			if(lost)
 				continue
 			living++
 			if(is_antag)
@@ -918,19 +937,25 @@ SUBSYSTEM_DEF(director)
 				counted_minds[assigned_mind] = TRUE
 		for(var/datum/weakref/mob_ref as anything in mob_refs)
 			var/mob/current = mob_ref.resolve()
-			if(current && current.stat != DEAD)
-				living++
-				if(is_antag)
-					presence_sum += ghost_member_presence(current)
-				continue
+			var/lost = !current || current.stat == DEAD
 			var/list/policy = refund_values?[mob_ref]
-			if(islist(policy))
+			if(islist(policy) && antag_loss_grace_over(policy, lost))
 				refund_values -= mob_ref
 				lost_count++
-				refund += antag_loss_refund_value(policy)
+				refund += antag_loss_refund_value(policy, 0, policy["lost_at"])
+			else if(lost && islist(policy))
+				pending++
+			if(lost)
+				continue
+			living++
+			if(is_antag)
+				presence_sum += ghost_member_presence(current)
 		grant_antag_loss_refund(entry["name"], refund, lost_count)
-		if(!assigned || !living)
+		// Запись с полисами в отсрочке живёт, пока они не закроются: оживление в отсрочке полис не трогает.
+		if(!assigned || (!living && !pending))
 			live_ghost_role_spawns.Cut(i, i + 1)
+			continue
+		if(!living)
 			continue
 		if(!isnull(only_antag) && is_antag != only_antag)
 			continue

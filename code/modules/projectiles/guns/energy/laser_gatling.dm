@@ -143,7 +143,7 @@
 	if(ammo_pack)
 		if(ammo_pack.overheat < ammo_pack.overheat_max)
 			ammo_pack.overheat++
-			..()
+			return ..()
 		else
 			to_chat(user, "The gun's heat sensor locked the trigger to prevent lens damage.")
 

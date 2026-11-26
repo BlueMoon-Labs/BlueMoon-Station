@@ -150,6 +150,8 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 			if (istype(content, /obj/effect/landmark))
 				continue
 			qdel(content)
+	// BYOND держит атомы последнего view()/range() до следующего вызова; в тихом тестовом мире без сброса они становятся хардделами.
+	pass(view(0, run_loc_floor_bottom_left))
 	return ..()
 
 /datum/unit_test/proc/Run()

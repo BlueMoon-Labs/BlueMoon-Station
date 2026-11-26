@@ -175,6 +175,7 @@
 		"antagInitialGrant" = antag_initial_grant,
 		"antagLossRefundWindow" = round(antag_loss_refund_window / (1 MINUTES), 0.1),
 		"antagLossActivityThreshold" = antag_loss_activity_threshold,
+		"antagLossGrace" = round(DIRECTOR_ANTAG_LOSS_GRACE / (1 MINUTES), 0.1),
 		"maxQuiet" = round(max_quiet_time / (1 MINUTES), 0.1),
 		"quietThreshold" = quiet_intensity_threshold,
 		"securityPerPlayers" = security_per_players,

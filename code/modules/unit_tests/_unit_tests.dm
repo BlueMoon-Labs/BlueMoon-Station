@@ -312,6 +312,7 @@
 #include "gc_harddel_defer.dm"
 #include "gc_rewrite.dm"
 #include "ghost_follow_link_identity.dm"
+#include "gun_canceled_fire.dm"
 #include "hair_style_picker_cache.dm"
 #include "healium_nerf.dm"
 #include "harddel_round_10417.dm"

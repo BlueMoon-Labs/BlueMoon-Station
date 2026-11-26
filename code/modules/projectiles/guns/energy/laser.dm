@@ -250,13 +250,7 @@
 
 	playsound('sound/weapons/dink.ogg', 30, 1)
 
-	if((iscultist(target)) || (is_servant_of_ratvar(target)))
-		chambered.BB.damage *= 1500
-
-	else if(chambered && chambered.BB)
-		chambered.BB.damage *= 5
-
-	process_fire(target, user, TRUE, params)
+	return process_boosted_fire(target, user, (iscultist(target) || is_servant_of_ratvar(target)) ? 1500 : 5, null, params)
 
 /obj/item/gun/laser/shoot_with_empty_chamber(mob/living/user as mob|obj)
 	playsound(src, 'sound/weapons/laser_no_power.ogg', 30, 1)

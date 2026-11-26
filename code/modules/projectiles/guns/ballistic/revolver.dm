@@ -140,7 +140,7 @@
 			user.take_bodypart_damage(10,10)
 			user.dropItemToGround(src)
 			return FALSE
-	..()
+	return ..()
 
 /obj/item/gun/ballistic/revolver/detective/wrench_act(mob/living/user, obj/item/I)
 	if(..())

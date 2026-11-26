@@ -516,12 +516,17 @@
 
 	if(on_cooldown())
 		return
+	if(SEND_SIGNAL(src, COMSIG_GUN_TRY_FIRE, user, target) & COMPONENT_CANCEL_GUN_FIRE)
+		return FALSE
 	if(user && HAS_TRAIT(user, TRAIT_HERETIC_LUNATIC))
 		bonus_spread += HERETIC_MOON_LUNATIC_SPREAD
+	var/fired_type = chambered?.BB?.type
 	firing = TRUE
 	. = do_fire(target, user, message, params, zone_override, bonus_spread, stam_cost)
 	firing = FALSE
 	last_fire = world.time
+	if(.)
+		SEND_GLOBAL_SIGNAL(COMSIG_GLOB_GUN_FIRED, src, user, target, fired_type)
 
 	if(user)
 		user.update_inv_hands()
@@ -882,11 +887,22 @@
 
 	playsound('sound/weapons/dink.ogg', 30, 1)
 
-	if(chambered && chambered.BB)
-		chambered.BB.damage *= 10
-		. = TRUE
+	return process_boosted_fire(target, user, 10, null, params, BODY_ZONE_HEAD, getstamcost(user))
 
-	process_fire(target, user, TRUE, params, BODY_ZONE_HEAD, stam_cost = getstamcost(user))
+/// Выстрел разогнанной пулей. Если курок не сработал (осечка, откат, заговор), пуля в патроннике
+/// возвращает исходный урон: иначе разгон переживал отменённый выстрел и копился до следующего.
+/obj/item/gun/proc/process_boosted_fire(atom/target, mob/living/user, damage_mult = 1, wound_bonus = null, params = null, zone_override = "", stam_cost = 0)
+	var/obj/item/projectile/shot = chambered?.BB
+	var/base_damage = shot?.damage
+	var/base_wound_bonus = shot?.wound_bonus
+	if(shot)
+		shot.damage *= damage_mult
+		if(!isnull(wound_bonus))
+			shot.wound_bonus = wound_bonus
+	. = process_fire(target, user, TRUE, params, zone_override, stam_cost = stam_cost)
+	if(!. && !QDELETED(shot) && chambered?.BB == shot)
+		shot.damage = base_damage
+		shot.wound_bonus = base_wound_bonus
 
 // BLUEMOON ADD START
 /obj/item/gun/proc/shoot_balls(mob/living/carbon/human/user, mob/living/carbon/human/target)
@@ -939,15 +955,12 @@
 
 	playsound('sound/weapons/dink.ogg', 30, 1)
 
-	var/chambered_damage_type
-	var/chambered_damage = 0
 	var/const/balls_explode_damage = 20
-	if(chambered?.BB)
-		chambered.BB.damage *= 3
-		chambered_damage = chambered.BB.damage
-		chambered_damage_type = chambered.BB.damage_type
-		chambered.BB.wound_bonus = CANT_WOUND
-	process_fire(target, user, TRUE, zone_override = BODY_ZONE_PRECISE_GROIN, stam_cost = getstamcost(user))
+	var/obj/item/projectile/shot = chambered?.BB
+	var/chambered_damage_type = shot?.damage_type
+	var/chambered_damage = shot ? shot.damage * 3 : 0
+	if(!process_boosted_fire(target, user, 3, CANT_WOUND, null, BODY_ZONE_PRECISE_GROIN, getstamcost(user)))
+		return FALSE
 	if(chambered_damage_type == BRUTE)
 		target.emote("realagony")
 		target.say("А-А-А-А-А-А!!!", forced = "shoot_balls")

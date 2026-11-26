@@ -251,10 +251,11 @@
 	user.visible_message("<span class='warning'>[user] пытается нацелить [lasgun] на рану на [limb.ru_name_v] персонажа [victim]....</span>", "<span class='userdanger'>Вы пытаетесь нацелить [lasgun] на рану на [user == victim ? "вашей конечности" : "конечности персонажа [victim]"]...</span>")
 	if(!do_after(user, base_treat_time  * self_penalty_mult, target=victim, extra_checks = CALLBACK(src, PROC_REF(still_exists))))
 		return
-	var/damage = lasgun.chambered.BB.damage
-	lasgun.chambered.BB.wound_bonus -= 30
-	lasgun.chambered.BB.damage *= self_penalty_mult
-	if(!lasgun.process_fire(victim, victim, TRUE, null, limb.body_zone))
+	var/obj/item/projectile/shot = lasgun.chambered?.BB
+	if(!shot)
+		return
+	var/damage = shot.damage
+	if(!lasgun.process_boosted_fire(victim, victim, self_penalty_mult, shot.wound_bonus - 30, null, limb.body_zone))
 		return
 	if(!HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
 		victim.emote("scream")
