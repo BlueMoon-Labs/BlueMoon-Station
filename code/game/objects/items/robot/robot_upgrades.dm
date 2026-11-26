@@ -77,6 +77,14 @@
 	var/list/blocked_storm_laws = list()
 	var/last_warning_tick = -1
 	var/last_warning_law
+	// BLUEMOON CYBORG ION SHIELD v10.1: keep a clean, per-cyborg
+	// snapshot. Filtering the ion text alone loses displaced core laws.
+	var/mob/living/silicon/ai/protected_ai
+	var/remote_storm_active = FALSE
+	var/list/safe_inherent
+	var/list/safe_supplied
+	var/list/last_master_inherent
+	var/list/last_master_supplied
 
 /obj/item/borg/upgrade/ion_shield/action(mob/living/silicon/robot/R, user = usr)
 	. = ..()
@@ -101,6 +109,7 @@
 	observed_ai = null
 	observed_ion_laws = list()
 	blocked_storm_laws = list()
+	reset_remote_storm_snapshot()
 	to_chat(R, span_warning("Модуль экранирования отключён. Защита от ионных штормов недоступна."))
 	return TRUE
 
@@ -130,6 +139,120 @@
 		if(!(law in observed_ion_laws))
 			report_blocked_law(R, law)
 	observed_ion_laws = incoming.Copy()
+
+// A snapshot is owned by the installed module, never by the AI. This is
+// important: the AI is allowed to keep its ion-corrupted laws, while this borg
+// must retain the version it had immediately before the event.
+/obj/item/borg/upgrade/ion_shield/proc/reset_remote_storm_snapshot()
+	protected_ai = null
+	remote_storm_active = FALSE
+	safe_inherent = null
+	safe_supplied = null
+	last_master_inherent = null
+	last_master_supplied = null
+
+/obj/item/borg/upgrade/ion_shield/proc/begin_remote_ion_storm(mob/living/silicon/robot/R, mob/living/silicon/ai/source_ai)
+	if(QDELETED(R) || QDELETED(source_ai) || R.connected_ai != source_ai || !R.lawupdate)
+		return
+	if(remote_storm_active)
+		return
+	// Bring through any genuine AI edits which happened BEFORE this storm.
+	R.lawsync(FALSE)
+	R.laws_sanity_check()
+	protected_ai = source_ai
+	safe_inherent = R.laws.inherent.Copy()
+	safe_supplied = R.laws.supplied.Copy()
+	last_master_inherent = source_ai.laws.inherent.Copy()
+	last_master_supplied = source_ai.laws.supplied.Copy()
+	remote_storm_active = TRUE
+
+/obj/item/borg/upgrade/ion_shield/proc/end_remote_ion_storm(mob/living/silicon/robot/R, mob/living/silicon/ai/source_ai)
+	if(protected_ai != source_ai || !remote_storm_active)
+		return
+	// Advance the observation baseline past the storm without accepting any
+	// changes to the clean lists. Every later sync compares against THIS baseline.
+	if(!QDELETED(source_ai) && source_ai.laws)
+		last_master_inherent = source_ai.laws.inherent.Copy()
+		last_master_supplied = source_ai.laws.supplied.Copy()
+		observed_ai = source_ai
+		observed_ion_laws = source_ai.laws.ion.Copy()
+	remote_storm_active = FALSE
+
+// Merge only changes the AI made AFTER the storm. Do not rebuild the local
+// list from master.inherent/master.supplied: those lists still contain the
+// storm's removed/replaced/shuffled laws. A genuine new directive is included;
+// a genuine removal of an unaffected law removes that law locally.
+/obj/item/borg/upgrade/ion_shield/proc/merge_nonstorm_laws(list/safe, list/old_raw, list/new_raw)
+	if(!islist(safe) || !islist(old_raw) || !islist(new_raw))
+		return islist(new_raw) ? new_raw.Copy() : list()
+	// A deliberate non-storm full reset must still work normally.
+	if(!length(new_raw) && length(old_raw))
+		return list()
+	if(length(new_raw) > 1 && length(old_raw) > 1)
+		var/has_common_law = FALSE
+		for(var/law in new_raw)
+			if(law in old_raw)
+				has_common_law = TRUE
+				break
+		if(!has_common_law)
+			return new_raw.Copy()
+	// An ordinary edit of a slot of unchanged length replaces that same slot,
+	// e.g. updating a supplied law in-place through the normal law UI.
+	var/aligned = length(old_raw) == length(new_raw) && length(safe) == length(old_raw)
+	if(aligned)
+		for(var/i = 1, i <= length(old_raw), i++)
+			if(safe[i] != old_raw[i])
+				aligned = FALSE
+				break
+	if(aligned)
+		for(var/i = 1, i <= length(new_raw), i++)
+			if(old_raw[i] != new_raw[i])
+				safe[i] = new_raw[i]
+		return safe
+	// Structural edits: account for membership rather than raw indices, as
+	// a storm can have deleted an original core law from the AI outright.
+	var/list/unmatched_old = old_raw.Copy()
+	var/list/unmatched_new = new_raw.Copy()
+	for(var/law in old_raw)
+		if(law in unmatched_new)
+			unmatched_new.Remove(law)
+			unmatched_old.Remove(law)
+	var/list/replacement_slots = list()
+	for(var/deleted_law in unmatched_old)
+		var/removed_pos = safe.Find(deleted_law)
+		if(removed_pos)
+			replacement_slots += removed_pos
+			safe.Remove(deleted_law)
+	for(var/added_law in unmatched_new)
+		if(added_law in safe)
+			continue
+		var/insert_at = length(safe) + 1
+		if(length(replacement_slots))
+			// Ordinary replacement of a surviving law keeps its old priority.
+			insert_at = replacement_slots[1]
+			replacement_slots.Cut(1, 2)
+		else
+			// Ordinary addition: place it ahead of the next surviving source
+			// law without disturbing the archived pre-storm directives.
+			var/new_pos = new_raw.Find(added_law)
+			for(var/j = new_pos + 1, j <= length(new_raw), j++)
+				var/next_law = new_raw[j]
+				var/next_pos = safe.Find(next_law)
+				if(next_pos)
+					insert_at = next_pos
+					break
+		safe.Insert(insert_at, added_law)
+	return safe
+
+/obj/item/borg/upgrade/ion_shield/proc/sync_protected_ai_laws(mob/living/silicon/robot/R, datum/ai_laws/master)
+	if(QDELETED(R) || !master || !islist(safe_inherent) || !islist(safe_supplied))
+		return
+	safe_inherent = merge_nonstorm_laws(safe_inherent, last_master_inherent, master.inherent)
+	safe_supplied = merge_nonstorm_laws(safe_supplied, last_master_supplied, master.supplied)
+	last_master_inherent = master.inherent.Copy()
+	last_master_supplied = master.supplied.Copy()
+	R.laws.inherent = safe_inherent.Copy()
+	R.laws.supplied = safe_supplied.Copy()
 
 /mob/living/silicon/robot/proc/get_ion_shield()
 	if(shell)

@@ -37,6 +37,17 @@
 	for(var/mob/living/silicon/ai/M in GLOB.alive_mob_list)
 		M.laws_sanity_check()
 		if(M.stat != DEAD && M.see_in_dark != 0)
+			// A linked borg must be shielded before the AI's first mutation:
+			// remove_law() may already call post_lawchange() mid-event.
+			var/list/storm_shielded_borgs = list()
+			for(var/mob/living/silicon/robot/snapshot_borg in GLOB.silicon_mobs)
+				if(snapshot_borg.connected_ai != M || !snapshot_borg.lawupdate)
+					continue
+				var/obj/item/borg/upgrade/ion_shield/pre_storm_shield = snapshot_borg.get_ion_shield()
+				if(!pre_storm_shield)
+					continue
+				pre_storm_shield.begin_remote_ion_storm(snapshot_borg, M)
+				storm_shielded_borgs += snapshot_borg
 			if(prob(replaceLawsetChance))
 				M.laws.pick_weighted_lawset()
 
@@ -57,11 +68,17 @@
 			// The event can replace an inherent law instead of adding to ion.
 			// Always tell shielded, linked cyborgs which ion law was attempted.
 			if(message)
-				for(var/mob/living/silicon/robot/R in M.connected_robots)
-					if(R.connected_ai == M && R.lawupdate)
-						var/obj/item/borg/upgrade/ion_shield/guard = R.get_ion_shield()
-						guard?.report_blocked_law(R, message)
+				// Same set as the snapshot: even if connected_robots was stale,
+				// every protected, law-synced cyborg gets a notification.
+				for(var/mob/living/silicon/robot/warn_borg in storm_shielded_borgs)
+					var/obj/item/borg/upgrade/ion_shield/warn_shield = warn_borg.get_ion_shield()
+					warn_shield?.report_blocked_law(warn_borg, message)
 			M.post_lawchange()
+			// Record the damaged AI state as the new comparison baseline, but
+			// retain every pre-storm law the protected borg had at the start.
+			for(var/mob/living/silicon/robot/restore_borg in storm_shielded_borgs)
+				var/obj/item/borg/upgrade/ion_shield/post_storm_shield = restore_borg.get_ion_shield()
+				post_storm_shield?.end_remote_ion_storm(restore_borg, M)
 
 	//Generate Cyborg law change
 	for(var/mob/living/silicon/robot/M in GLOB.alive_mob_list)
