@@ -1,7 +1,7 @@
 //Boxes of ammo
 
 /// Временный диагностический режим. Закомментируйте строку, чтобы убрать логи.
-//#define AMMO_DEBUG_LOGS
+#define AMMO_DEBUG_LOGS
 
 #ifdef AMMO_DEBUG_LOGS
 /proc/log_ammo_debug(text)
@@ -49,6 +49,11 @@
 		var/obj/item/ammo_box/box = new box_type
 		var/obj/item/ammo_casing/casing = new casing_type
 		box.stored_ammo.Cut()
+		// cylinder/give_round() заменяет только существующие позиции, поэтому
+		// барабану нужны пустые слоты, а обычному магазину — пустой список.
+		if(istype(box, /obj/item/ammo_box/magazine/internal/cylinder))
+			for(var/i in 1 to box.max_ammo)
+				box.stored_ammo += null
 		var/compat = box.caliber_compatible(casing)
 		var/given = box.give_round(casing)
 		var/ok = (compat == expected && given == expected)
