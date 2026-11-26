@@ -26,7 +26,7 @@ export const NtosMain = (props) => {
       title={device_theme === 'syndicate' ? 'Syndix OS' : 'NtOS'}
       theme={device_theme}
       width={420}
-      height={560}>
+      height={580}>
       <NtosWindow.Content>
         <Stack vertical fill>
           {/* ID Details */}
