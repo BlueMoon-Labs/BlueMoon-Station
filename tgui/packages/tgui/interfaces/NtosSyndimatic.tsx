@@ -1,7 +1,7 @@
-import { type RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, Dropdown, Icon, NoticeBox, Section, Stack, TextArea } from '../components';
+import { Box, Button, Icon, NoticeBox, Section, Stack, TextArea } from '../components';
 import { NtosWindow } from '../layouts';
 import { PhotoGallery, PhotoGalleryPagination, PhotoTile } from './common/PhotoGallery';
 import { type PhotoMedia, PhotoPreview } from './PhotoViewer';
@@ -56,10 +56,11 @@ type SyndimaticData = {
   captionLimit: number;
   descriptionLimit: number;
   posts?: Post[];
-  feedPosts?: (Post & { liked: ByondFlag })[];
+  feedIds?: string[];
   feedLimit: number;
   feedHasMore: ByondFlag;
   [key: `feedPhoto:${string}`]: PhotoMedia | null | undefined;
+  [key: `feedPost:${string}`]: (Post & { liked: ByondFlag }) | undefined;
   post?: Post;
   liked?: ByondFlag;
   commentsOpen?: ByondFlag;
@@ -142,24 +143,39 @@ const PostLikeButton = ({ id, likes, liked }: { id: string; likes: number; liked
 const useFeedTrigger = (
   scrollRef: RefObject<HTMLDivElement | null>,
   enabled: boolean,
-  onVisible: () => void,
+  action: 'feed_photo' | 'feed_more',
+  value: string | number,
 ) => {
+  const { act } = useBackend<SyndimaticData>();
   const targetRef = useRef<HTMLDivElement>(null);
+  const requestRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     const target = targetRef.current;
     if (!enabled || !target) {
       return;
     }
+    let pendingUntil = 0;
+    const request = () => {
+      const now = performance.now();
+      if (now < pendingUntil) {
+        return;
+      }
+      pendingUntil = now + 2000;
+      act(action, action === 'feed_photo' ? { id: value } : { limit: value });
+    };
+    requestRef.current = request;
     const observer = new IntersectionObserver((entries) => {
       if (entries.some((entry) => entry.isIntersecting)) {
-        observer.disconnect();
-        onVisible();
+        request();
       }
     }, { root: scrollRef.current, rootMargin: '160px 0px' });
     observer.observe(target);
-    return () => observer.disconnect();
-  }, [scrollRef, enabled, onVisible]);
-  return targetRef;
+    return () => {
+      observer.disconnect();
+      requestRef.current = null;
+    };
+  }, [act, scrollRef, enabled, action, value]);
+  return { targetRef, request: () => requestRef.current?.() };
 };
 
 const FeedPost = ({ post, scrollRef }: {
@@ -169,11 +185,10 @@ const FeedPost = ({ post, scrollRef }: {
   const { act, data } = useBackend<SyndimaticData>();
   const { id, author, authorId, avatar, caption, comments, likes, liked } = post;
   const media = data[`feedPhoto:${id}`];
-  const loadPhoto = useCallback(() => act('feed_photo', { id }), [act, id]);
-  const photoRef = useFeedTrigger(scrollRef, media === undefined, loadPhoto);
+  const { targetRef: photoRef, request: loadPhoto } = useFeedTrigger(scrollRef, media === undefined, 'feed_photo', id);
 
   return (
-    <Box as="article" mb={1} p={0.75} backgroundColor="rgba(0, 0, 0, 0.22)"
+    <Box as="article" data-feed-post={id} mb={1} p={0.75} backgroundColor="rgba(0, 0, 0, 0.22)"
       style={{ border: '1px solid #ffffff24', borderRadius: '0.35rem' }}>
       <div ref={photoRef} style={{ margin: '0.5rem 0' }}>
         {media === undefined ? (
@@ -202,17 +217,19 @@ const FeedPost = ({ post, scrollRef }: {
 };
 
 const PostFeed = ({ scrollRef }: { scrollRef: RefObject<HTMLDivElement | null> }) => {
-  const { act, data } = useBackend<SyndimaticData>();
-  const { feedHasMore, feedLimit, feedPosts } = data;
-  const loadMore = useCallback(() => act('feed_more', { limit: feedLimit }), [act, feedLimit]);
-  const moreRef = useFeedTrigger(scrollRef, !!feedHasMore, loadMore);
+  const { data } = useBackend<SyndimaticData>();
+  const { feedHasMore, feedLimit, feedIds } = data;
+  const { targetRef: moreRef, request: loadMore } = useFeedTrigger(scrollRef, !!feedHasMore, 'feed_more', feedLimit);
 
-  if (!feedPosts?.length) {
+  if (!feedIds?.length) {
     return <NoticeBox>В ленте пока нет публикаций.</NoticeBox>;
   }
   return (
     <>
-      {feedPosts.map((post) => <FeedPost key={post.id} post={post} scrollRef={scrollRef} />)}
+      {feedIds.map((id) => {
+        const post = data[`feedPost:${id}`];
+        return post ? <FeedPost key={id} post={post} scrollRef={scrollRef} /> : null;
+      })}
       {!!feedHasMore && (
         <div ref={moreRef}>
           <Button fluid icon="chevron-down" onClick={loadMore}>Загрузить ещё</Button>
@@ -299,13 +316,16 @@ const Comments = ({ id }: { id: string }) => {
   return (
     <Section title="Комментарии" data-syndimatic-comments>
       <Box mb={1}>
-        <Dropdown
-          options={commentSortOptions}
-          selected={commentSort}
-          width={12}
-          tooltip="Порядок комментариев"
-          onSelected={(order) => act('sort_comments', { id, order })}
-        />
+        <select
+          aria-label="Порядок комментариев"
+          value={commentSort}
+          onChange={(event) => act('sort_comments', { id, order: event.target.value })}
+          style={{ font: 'inherit', colorScheme: 'dark' }}
+        >
+          {commentSortOptions.map(({ value, displayText }) => (
+            <option key={value} value={value}>{displayText}</option>
+          ))}
+        </select>
       </Box>
       {commentsDisabled ? (
         <NoticeBox>Автор закрыл комментарии к публикации.</NoticeBox>
@@ -639,13 +659,44 @@ export const NtosSyndimatic = () => {
   const { act, data } = useBackend<SyndimaticData>();
   const { blocks, canWrite, draftId, isAdmin, myProfile, ownProfile, post, profile, publishBlocked, view } = data;
   const scrollRef = useRef<HTMLDivElement>(null);
-  const feedScrollTop = useRef(0);
+  const feedPosition = useRef({ id: '', offset: 0, scrollTop: 0 });
   const viewedPostId = view === 'post' ? post?.id : undefined;
+
+  const rememberFeedPosition = () => {
+    const content = scrollRef.current;
+    if (view !== 'feed' || !content) {
+      return;
+    }
+    const viewport = content.getBoundingClientRect();
+    for (const card of content.querySelectorAll<HTMLElement>('[data-feed-post]')) {
+      const rect = card.getBoundingClientRect();
+      if (rect.bottom > viewport.top && rect.top < viewport.bottom) {
+        const scale = viewport.width / content.offsetWidth || 1;
+        feedPosition.current = {
+          id: card.dataset.feedPost || '',
+          offset: (viewport.top - rect.top) / scale,
+          scrollTop: content.scrollTop,
+        };
+        return;
+      }
+    }
+    feedPosition.current = { id: '', offset: 0, scrollTop: content.scrollTop };
+  };
 
   useLayoutEffect(() => {
     const content = scrollRef.current;
     if (content) {
-      content.scrollTop = view === 'feed' ? feedScrollTop.current : 0;
+      if (view === 'feed') {
+        const { id, offset, scrollTop } = feedPosition.current;
+        const card = id && content.querySelector(`[data-feed-post="${CSS.escape(id)}"]`);
+        const viewport = content.getBoundingClientRect();
+        const scale = viewport.width / content.offsetWidth || 1;
+        content.scrollTop = card
+          ? content.scrollTop + (card.getBoundingClientRect().top - viewport.top) / scale + offset
+          : scrollTop;
+      } else {
+        content.scrollTop = 0;
+      }
       if (view === 'post') {
         content.querySelector('[data-syndimatic-comments]')?.scrollIntoView({ block: 'start' });
       }
@@ -655,7 +706,16 @@ export const NtosSyndimatic = () => {
   return (
     <NtosWindow title="Syndimatic" width={550} height={620}>
       <NtosWindow.Content fitted>
-        <Stack vertical fill>
+        <Stack
+          vertical
+          fill
+          onClickCapture={rememberFeedPosition}
+          onKeyDownCapture={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              rememberFeedPosition();
+            }
+          }}
+        >
           <Stack.Item position="relative" px={0.75} pt={0.75} pb={0.5}>
             <Stack wrap="wrap" align="center">
               <Stack.Item grow>
@@ -719,11 +779,6 @@ export const NtosSyndimatic = () => {
               fill
               scrollable
               scrollableRef={scrollRef}
-              onScroll={() => {
-                if (view === 'feed' && scrollRef.current) {
-                  feedScrollTop.current = scrollRef.current.scrollTop;
-                }
-              }}
             >
               {view === 'feed' && <PostFeed scrollRef={scrollRef} />}
               {view === 'gallery' && <PostGallery />}

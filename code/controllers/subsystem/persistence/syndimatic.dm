@@ -292,7 +292,7 @@
 		if(!viewer)
 			syndimatic_viewers -= viewer_ref
 		else if(viewer != source && viewer.shows_syndimatic_change(post_id, profile_id))
-			viewer.push_update()
+			viewer.update_syndimatic_view(post_id, profile_id)
 
 /proc/read_syndimatic_record(path)
 	if(fexists(path))
