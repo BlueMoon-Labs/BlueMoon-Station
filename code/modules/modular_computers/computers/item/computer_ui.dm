@@ -51,6 +51,7 @@
 /obj/item/modular_computer/ui_data(mob/user)
 	var/list/data = get_header_data()
 	data["device_theme"] = device_theme
+	data["is_pda"] = istype(src, /obj/item/modular_computer/pda)
 
 	data["login"] = list()
 	var/obj/item/computer_hardware/card_slot/cardholder = all_components[MC_CARD]

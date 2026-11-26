@@ -564,7 +564,7 @@ export const NtosCamera = () => {
   const { tab, photo } = data;
 
   return (
-    <NtosWindow title="Камера" width={550} height={550}>
+    <NtosWindow title="Камера" width={550} height={800}>
       <NtosWindow.Content scrollable={tab !== 'camera'}>
         {tab === 'camera' ? (
           <Viewfinder />
