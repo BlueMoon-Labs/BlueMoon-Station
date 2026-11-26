@@ -144,6 +144,38 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 /datum/eldritch_knowledge/proc/combat_resource_state()
 	return ""
 
+/// Строки подсказки значка: по факту на строку, без пустых счётчиков. Правила остаются в кодексе.
+/datum/eldritch_knowledge/proc/combat_resource_lines()
+	. = list()
+	for(var/fact in heretic_text_facts(combat_resource_state()))
+		if(!heretic_empty_fact(fact))
+			. += fact
+
+/// Текст по фразам без конечной точки; фраза кончается на точке, «!» или «?» перед заглавной буквой, цифрой или «.
+/proc/heretic_text_facts(text)
+	. = list()
+	if(!text)
+		return
+	var/static/regex/boundary = regex(@"(?<=[.!?])\s+(?=[А-ЯЁA-Z0-9«])")
+	var/static/regex/last_dot = regex(@"(?<!\.)\.$")
+	for(var/fact in splittext(text, boundary))
+		fact = trim(replacetext(fact, last_dot, ""))
+		if(fact)
+			. += fact
+
+/// Фразы обратно в текст состояния: каждая с точкой, через пробел.
+/proc/heretic_facts_text(list/facts)
+	var/static/regex/closed = regex(@"[.!?]$")
+	var/list/sentences = list()
+	for(var/fact in facts)
+		sentences += closed.Find(fact) ? fact : "[fact]."
+	return jointext(sentences, " ")
+
+/// Счётчик на нуле вроде «Призм: 0 из 3» или «Оболочка: 0 защиты» для подсказки значка пуст.
+/proc/heretic_empty_fact(fact)
+	var/static/regex/zero = regex(@"^[^:]+: 0( из \d+|/\d+)?( [а-яё]+)?$")
+	return zero.Find(fact)
+
 /datum/eldritch_knowledge/proc/gain_combat_resource(amount = 1)
 	var/previous = combat_resource
 	combat_resource = clamp(combat_resource + amount, 0, combat_resource_max)

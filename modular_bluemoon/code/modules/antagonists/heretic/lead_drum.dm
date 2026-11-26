@@ -106,19 +106,33 @@
 	return "обычный выстрел"
 
 /datum/eldritch_knowledge/base_lead/proc/drum_state()
+	var/list/facts = drum_facts()
+	return length(facts) ? " [heretic_facts_text(facts)]" : ""
+
+/// Барабан по фразам; для значка курок, заряды и непривычный стиль - одной строкой.
+/datum/eldritch_knowledge/base_lead/proc/drum_facts(hud = FALSE)
+	. = list()
 	if(!knows(/datum/eldritch_knowledge/lead_relic))
-		return ""
+		return
 	var/list/charged = list()
 	for(var/step in 0 to min(combat_resource, LEAD_DRUM_RING) - 1)
 		charged += round_name((drum_hammer - 1 + step) % LEAD_DRUM_RING + 1)
 	var/next = sixth_cocked() ? "Последний патрон" : round_name(drum_hammer)
-	. = " Под курком: [next][drum_lucky ? ", на удачу" : ""]. Заряжены: [length(charged) ? jointext(charged, ", ") : "ничего"]. Стиль: [style_name()]."
+	var/list/drum = list("Под курком: [next][drum_lucky ? ", на удачу" : ""]")
+	if(!hud || length(charged))
+		drum += "Заряжены: [length(charged) ? jointext(charged, ", ") : "ничего"]"
+	if(!hud || drum_style != HERETIC_LEAD_STYLE_PLAIN)
+		drum += "Стиль: [style_name()]"
+	if(hud)
+		. += jointext(drum, " · ")
+	else
+		. += drum
 	if(sixth_armed && !sixth_cocked())
-		. += " Шестая камора взведена и ждёт полного барабана."
+		. += "Шестая камора взведена и ждёт полного барабана"
 	else if(!sixth_armed && free_last_round && knows(/datum/eldritch_knowledge/lead_ear))
-		. += " Шестая камора - подарок барабана: Alt-клик по Шестизаряднику взводит её, Свинец не тратится."
+		. += "Шестая камора - подарок барабана: Alt-клик по Шестизаряднику взводит её, Свинец не тратится"
 	else if(!sixth_armed && last_round_ready())
-		. += " Барабан полон: Alt-клик по Шестизаряднику взводит Шестую камору."
+		. += "Барабан полон: Alt-клик по Шестизаряднику взводит Шестую камору"
 
 /// Барабан поверх значка запаса: заряженные каморы своим цветом, метка у каморы под курком.
 /datum/eldritch_knowledge/base_lead/proc/update_drum_hud()

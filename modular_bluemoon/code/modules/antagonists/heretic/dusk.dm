@@ -394,25 +394,49 @@ GLOBAL_LIST_INIT(heretic_dusk_sounds, list(
 	grudges.Cut()
 
 /datum/eldritch_knowledge/base_dusk/combat_resource_state()
-	. = "Облик: [form == HERETIC_DUSK_FORM_FACE ? "Лик" : "Крыло"], клетка [lit ? "на свету" : "в тени"], Сумрак [can_gather() ? "копится" : "не копится"]. Ламп: [length(lamps)] из [HERETIC_DUSK_LAMP_LIMIT]."
+	return heretic_facts_text(dusk_facts())
+
+/// Подсказка значка: заряды видны на самом значке, вместо них - что значат его буквы и цвета.
+/datum/eldritch_knowledge/base_dusk/combat_resource_lines()
+	. = dusk_facts(TRUE)
+	if(world.time < form_locked_until)
+		. += "Облик заперт святой водой: [heretic_capture_seconds_left(form_locked_until)] с (голубые секунды на значке)"
+	var/holy_block = holy_gather_block()
+	if(holy_block)
+		. += "Святое не даёт копить Сумрак: [holy_block]"
+	. += "Буква Л/К - облик: яркая - Сумрак копится, серая - нет, голубая - мешает святое"
+	var/step = charge_cap("step")
+	var/descent = charge_cap("descent")
+	if(step && descent)
+		. += "Ш и Н - заряды Шага и Нисхождения"
+	else if(step)
+		. += "Ш - заряды Шага в тень"
+	else if(descent)
+		. += "Н - заряд Нисхождения"
+
+/// Живое состояние Сумрака по фразам; для значка - без пустых счётчиков и зарядов.
+/datum/eldritch_knowledge/base_dusk/proc/dusk_facts(hud = FALSE)
+	. = list("Облик: [form == HERETIC_DUSK_FORM_FACE ? "Лик" : "Крыло"], клетка [lit ? "на свету" : "в тени"], Сумрак [can_gather() ? "копится" : "не копится"]")
+	if(!hud || length(lamps))
+		. += "Ламп: [length(lamps)] из [HERETIC_DUSK_LAMP_LIMIT]"
 	if(world.time < strike_until)
-		. += " Удар из тени готов: бейте Пером."
+		. += "Удар из тени готов: бейте Пером[hud ? " (багровый фон значка)" : ""]"
 	if(length(burnt))
-		. += " Выжженных теней: [length(burnt)], к ним Шаг ведёт издалека, а Хватка держит полностью и на свету."
+		. += hud ? "Выжженных теней: [length(burnt)] - к ним Шаг издалека, Хватка держит и на свету" : "Выжженных теней: [length(burnt)], к ним Шаг ведёт издалека, а Хватка держит полностью и на свету"
 	if(form == HERETIC_DUSK_FORM_FACE && !COOLDOWN_FINISHED(src, light_drink))
-		. += " Лик только что выпил лазер: следующий луч в лицо ранит."
-	if(charge_cap("step"))
-		. += " Шаг в тень: [charges["step"]] из [charge_cap("step")]."
-	if(charge_cap("descent"))
-		. += " Нисхождение: [charges["descent"]] из [charge_cap("descent")]."
+		. += "Лик только что выпил лазер: следующий луч в лицо ранит"
+	if(!hud && charge_cap("step"))
+		. += "Шаг в тень: [charges["step"]] из [charge_cap("step")]"
+	if(!hud && charge_cap("descent"))
+		. += "Нисхождение: [charges["descent"]] из [charge_cap("descent")]"
 	var/datum/heretic_dusk_covenant/chosen = covenant_datum()
 	if(chosen)
-		. += " [chosen.name]."
-		if(covenant == HERETIC_DUSK_COVENANT_ROT)
-			. += " Носителей скверны: [length(rot)] из [HERETIC_DUSK_ROT_CARRIERS]."
+		. += chosen.name
+		if(covenant == HERETIC_DUSK_COVENANT_ROT && (!hud || length(rot)))
+			. += "Носителей скверны: [length(rot)] из [HERETIC_DUSK_ROT_CARRIERS]"
 	else if(knows(/datum/eldritch_knowledge/spell/dusk_covenant))
-		. += " Завет не выбран: нажмите кнопку «Завет»."
-	. += suns_state()
+		. += "Завет не выбран: нажмите кнопку «Завет»"
+	. += heretic_text_facts(suns_state())
 
 /// Вознёсшегося держат сон, путы и стазис, а не оглушение.
 /datum/eldritch_knowledge/base_dusk/proc/can_use(mob/living/user, ignore_grab = FALSE)

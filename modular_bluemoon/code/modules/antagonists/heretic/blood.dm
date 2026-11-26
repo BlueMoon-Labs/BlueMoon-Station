@@ -384,16 +384,27 @@ GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
 	return combat_resource_payload("[combat_resource_name] — [release_mode()]", round(combat_resource, 0.1), combat_resource_max)
 
 /datum/eldritch_knowledge/base_blood/combat_resource_state()
-	. = "Связей: [length(seals) - (mark_seal ? 1 : 0)]/[link_limit][mark_seal ? ", Метка Крови на [html_encode(mark_seal.owner.name)]" : ""]. Меток крови на полу: [length(signs)] из [HERETIC_BLOOD_SIGN_LIMIT]."
-	if(length(seals))
-		. += " Сейчас по своему должнику значок [release_mode()]: «Вред» и «Помощь» взыскивают весь долг, «Разоружение» - до [HERETIC_BLOOD_PARTIAL_COLLECTION], «Захват» опутывает за [HERETIC_BLOOD_TETHER_COST] долга. Хватка и клинок сами долг не взыскивают."
-	else
-		. += " Нажмите индикатор долга и укажите врага, чтобы создать связь."
+	return heretic_facts_text(blood_facts())
+
+/datum/eldritch_knowledge/base_blood/combat_resource_lines()
+	return blood_facts(TRUE)
+
+/// Живое состояние долга по фразам; для значка - только связи и должники, что делает нажатие, уже в его подписи.
+/datum/eldritch_knowledge/base_blood/proc/blood_facts(hud = FALSE)
+	. = list()
+	if(!hud || length(seals))
+		. += "Связей: [length(seals) - (mark_seal ? 1 : 0)]/[link_limit][mark_seal ? ", Метка Крови на [html_encode(mark_seal.owner.name)]" : ""]"
+	if(!hud || length(signs))
+		. += "Меток крови на полу: [length(signs)] из [HERETIC_BLOOD_SIGN_LIMIT]"
+	if(!hud && length(seals))
+		. += "Сейчас по своему должнику значок [release_mode()]: «Вред» и «Помощь» взыскивают весь долг, «Разоружение» - до [HERETIC_BLOOD_PARTIAL_COLLECTION], «Захват» опутывает за [HERETIC_BLOOD_TETHER_COST] долга. Хватка и клинок сами долг не взыскивают"
+	else if(!hud)
+		. += "Нажмите индикатор долга и укажите врага, чтобы создать связь"
 	if(ascension_active && tide_hearts_raised)
-		. += tide_receded ? " Сердца прилива вычищены: кровотечение больше не удваивается." : " Сердец прилива на станции: [length(tide_hearts)]."
+		. += tide_receded ? "Сердца прилива вычищены: кровотечение больше не удваивается" : "Сердец прилива на станции: [length(tide_hearts)]"
 	for(var/datum/status_effect/heretic_blood_seal/seal as anything in seals)
 		var/expected_damage = (seal.collecting ? seal.collection_amount : seal.debt) * HERETIC_BLOOD_DAMAGE_PER_DEBT
-		. += " [html_encode(seal.owner.name)]: [round(seal.debt, 0.1)]/[debt_cap] долга → [round(expected_damage, 0.1)] ушибов[seal.collecting ? "; взыскание началось" : (!isnull(seal.contact_lost_at) ? "; связь слабеет" : "")]."
+		. += "[html_encode(seal.owner.name)]: [round(seal.debt, 0.1)]/[debt_cap] долга → [round(expected_damage, 0.1)] ушибов[seal.collecting ? "; взыскание началось" : (!isnull(seal.contact_lost_at) ? "; связь слабеет" : "")]"
 
 /datum/eldritch_knowledge/base_blood/on_mark_detonated(mob/living/user, mob/living/target)
 	return

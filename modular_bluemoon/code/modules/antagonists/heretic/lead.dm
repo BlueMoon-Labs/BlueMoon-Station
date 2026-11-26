@@ -355,15 +355,33 @@ GLOBAL_LIST_INIT(heretic_lead_sounds, list(
 	knocked.Cut()
 
 /datum/eldritch_knowledge/base_lead/combat_resource_state()
-	. = "Заговоров: [length(curses)] из [HERETIC_LEAD_CURSE_LIMIT]. Патронташ: [bandolier] из [HERETIC_LEAD_BANDOLIER][reload_timer ? ", барабан дозаряжается" : ""]."
+	return heretic_facts_text(lead_facts())
+
+/datum/eldritch_knowledge/base_lead/combat_resource_lines()
+	return lead_facts(TRUE)
+
+/// Живое состояние Свинца по фразам; для значка - без пустых счётчиков, барабан и Школа строкой каждый.
+/datum/eldritch_knowledge/base_lead/proc/lead_facts(hud = FALSE)
+	. = list()
+	if(!hud || length(curses))
+		. += "Заговоров: [length(curses)] из [HERETIC_LEAD_CURSE_LIMIT]"
+	. += "Патронташ: [bandolier] из [HERETIC_LEAD_BANDOLIER][reload_timer ? ", барабан дозаряжается" : ""]"
 	if(impact_fresh())
-		. += " Точка Рикошета: [get_area_name(impact_turf, TRUE)], ещё [heretic_lead_seconds(impact_at + HERETIC_LEAD_RICOCHET_MEMORY - world.time)] с."
+		. += "Точка Рикошета: [get_area_name(impact_turf, TRUE)], ещё [heretic_lead_seconds(impact_at + HERETIC_LEAD_RICOCHET_MEMORY - world.time)] с"
 	if(sixth_cocked())
-		. += " Шестая камора: выстрел в человека станет Последним патроном."
-	. += drum_state()
-	. += timer_state()
-	. += school_state()
-	. += crucible_state()
+		. += "Шестая камора: выстрел в человека станет Последним патроном"
+	. += drum_facts(hud)
+	. += heretic_text_facts(timer_state())
+	var/list/school = heretic_text_facts(school_state())
+	if(!hud)
+		. += school
+	else
+		for(var/fact in school.Copy())
+			if(heretic_empty_fact(fact))
+				school -= fact
+		if(length(school))
+			. += jointext(school, " · ")
+	. += heretic_text_facts(crucible_state())
 
 /proc/heretic_lead_seconds(time_left)
 	return max(1, CEILING(time_left / (1 SECONDS), 1))

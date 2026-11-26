@@ -85,11 +85,10 @@
 	displayed_value = value
 	displayed_max = capacity
 	name = resource["name"]
-	desc = "[name]: [value]/[capacity]. [resource["description"]]"
 	power_ref = QDELETED(power) ? null : WEAKREF(power)
+	desc = tooltip_text(knowledge ? knowledge.combat_resource_lines() : list(), power_ref ? power : null, knowledge?.combat_resource_name || name)
 	if(power_ref)
 		name += " — [power.name]"
-		desc += " Нажмите на этот значок, чтобы применить «[power.name]». Если способность требует цель, затем укажите её на игровом поле."
 	if(path.id == PATH_BLOOD)
 		name = resource["name"]
 	icon_state = "sigil_[lowertext(path.id)]"
@@ -110,6 +109,17 @@
 	if(owner?.client && COOLDOWN_FINISHED(src, resource_sound))
 		COOLDOWN_START(src, resource_sound, 0.7 SECONDS)
 		owner.playsound_local(get_turf(owner), difference > 0 ? 'modular_bluemoon/sound/heretic/resource_gain.ogg' : 'modular_bluemoon/sound/heretic/resource_spend.ogg', 14, FALSE, pressure_affected = FALSE)
+
+/// Подсказка значка: живые факты по строке, что делает клик и где искать правила.
+/atom/movable/screen/alert/heretic_resource/proc/tooltip_text(list/lines, obj/effect/proc_holder/spell/power, resource_name)
+	var/list/rows = list()
+	if(length(lines))
+		rows += "<span style='font-weight:normal'>[jointext(lines, "<br>")]</span>"
+	if(power)
+		rows += "Клик - «[power.name]»[istype(power, /obj/effect/proc_holder/spell/pointed) ? ", затем укажите цель" : ""]"
+	var/mode_mark = findtext(resource_name, ":")
+	rows += "<span style='font-weight:normal;opacity:0.75'>Как копить и тратить - в кодексе: кнопка «[mode_mark ? copytext(resource_name, 1, mode_mark) : resource_name]» внизу книги</span>"
+	return jointext(rows, "<br>")
 
 #undef HERETIC_RESOURCE_ALERT
 

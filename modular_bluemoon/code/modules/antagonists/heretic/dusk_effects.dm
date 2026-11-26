@@ -1253,16 +1253,9 @@
 	var/locked = world.time < form_locked_until
 	if(locked)
 		counters += "<span style='color:[HERETIC_DUSK_HUD_HOLY]'>[heretic_capture_seconds_left(form_locked_until)]с</span>"
-	var/holy_state = ""
-	if(locked)
-		holy_state += " Облик заперт святой водой: [heretic_capture_seconds_left(form_locked_until)] с."
-	if(holy_block)
-		holy_state += " Святое не даёт копить Сумрак: [holy_block]."
 	var/top = length(counters) ? "[jointext(counters, " ")]<br>" : ""
 	indicator.maptext_height = top ? 24 : 12
 	indicator.maptext = MAPTEXT("<div style='text-align:center;font-size:8px;color:[value ? "#ffffff" : "#ff9e88"];background-color:[strike ? HERETIC_DUSK_HUD_STRIKE : "#17111d"]'>[top]<span style='color:[letter_color]'>[face ? "Л" : "К"]</span>[value]/[resource["max"]]</div>")
-	var/obj/effect/proc_holder/spell/power = indicator.power_ref?.resolve()
-	indicator.desc = "[resource["name"]]: [value]/[resource["max"]]. [resource["state"]][holy_state] Нажмите на значок, чтобы применить «[power ? power.name : "Смена облика"]». Буква - облик (Л - Лик, К - Крыло), яркая, пока Сумрак копится, голубая - святое не даёт копить; Ш и Н - заряды Шага и Нисхождения; голубые секунды - облик заперт святой водой; багровый фон - окно Удара из тени. [jointext(resource["rules"], " ")]"
 	var/next_change = INFINITY
 	if(strike)
 		next_change = strike_until

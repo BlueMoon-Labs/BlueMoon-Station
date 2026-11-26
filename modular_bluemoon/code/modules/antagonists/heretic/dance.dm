@@ -229,12 +229,21 @@
 	return !QDELETED(src) && user && user == dance_body && user.stat != DEAD && (allow_incapacitated || !heretic_incapacitated(user, ignore_grab)) && isturf(user.loc) && heretic?.selected_path == PATH_DANCE && !heretic.role_removed && heretic.get_knowledge(type) == src
 
 /datum/eldritch_knowledge/base_dance/combat_resource_state()
+	return heretic_facts_text(dance_facts())
+
+/datum/eldritch_knowledge/base_dance/combat_resource_lines()
+	return dance_facts(TRUE)
+
+/// Живое состояние Такта по фразам; для значка - без пустых счётчиков и открытых стилей, они в кодексе.
+/datum/eldritch_knowledge/base_dance/proc/dance_facts(hud = FALSE)
 	var/datum/heretic_dance_style/style = current_style()
-	. = "Стиль: [style.name][passive_active ? " (пассивка работает)" : ""]. Схем шагов: [length(diagrams)] из [HERETIC_DANCE_DIAGRAM_LIMIT], заражённых: [length(earworms)] из [HERETIC_DANCE_EARWORM_LIMIT]."
+	. = list("Стиль: [style.name][passive_active ? " (пассивка работает)" : ""]")
+	if(!hud || length(diagrams) || length(earworms))
+		. += "Схем шагов: [length(diagrams)] из [HERETIC_DANCE_DIAGRAM_LIMIT], заражённых: [length(earworms)] из [HERETIC_DANCE_EARWORM_LIMIT]"
 	if(link_bonus)
-		. += " Следующий акцент удвоен связкой."
+		. += "Следующий акцент удвоен связкой"
 	if(humming)
-		. += " Вы напеваете."
+		. += "Вы напеваете"
 	var/list/style_names = list()
 	var/datum/heretic_dance_style/locked
 	for(var/id in GLOB.heretic_dance_styles)
@@ -243,17 +252,18 @@
 			style_names += candidate.name
 		else
 			locked ||= candidate
-	. += " Стили: [english_list(style_names, and_text = " и ")]."
+	if(!hud)
+		. += "Стили: [english_list(style_names, and_text = " и ")]"
 	var/list/routine_names = list()
 	for(var/id in GLOB.heretic_dance_routines)
 		var/datum/heretic_dance_routine/routine = GLOB.heretic_dance_routines[id]
 		if(style_known(routine.from_style) && style_known(routine.to_style))
 			routine_names += "«[routine.name]»"
 	if(length(routine_names))
-		. += " Номера: [english_list(routine_names, and_text = " и ")]."
-	if(locked)
+		. += "Номера: [english_list(routine_names, and_text = " и ")]"
+	if(locked && !hud)
 		var/datum/eldritch_knowledge/unlock = locked.unlock
-		. += " Следующий стиль, [locked.name], откроет «[initial(unlock.name)]»."
+		. += "Следующий стиль, [locked.name], откроет «[initial(unlock.name)]»"
 
 /// Правила Такта по мере изучения: связка - со второго стиля, Колокол - с его знанием.
 /datum/eldritch_knowledge/base_dance/proc/open_resource_rules()

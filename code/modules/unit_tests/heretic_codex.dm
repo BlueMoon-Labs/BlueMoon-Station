@@ -118,7 +118,11 @@
 	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/list/resource = glass.get_combat_resource_data()
 	TEST_ASSERT_EQUAL(resource["state"], "Призм: 0 из 3. Настроено стёкол: 0 из [HERETIC_GLASS_ATTUNE_LIMIT].", "Состояние граней отдельной строкой.")
-	TEST_ASSERT_EQUAL(resource["description"], "[jointext(resource["rules"], " ")] [resource["state"]]", "Значок получает правила и состояние одним текстом.")
+	TEST_ASSERT_EQUAL(resource["description"], "[jointext(resource["rules"], " ")] [resource["state"]]", "Панель полигона получает правила и состояние одним текстом.")
+	var/list/glass_rules = resource["rules"]
+	var/atom/movable/screen/alert/heretic_resource/indicator = user.alerts["heretic_path_resource"]
+	TEST_ASSERT(indicator && !findtext(indicator.desc, glass_rules[1]) && findtext(indicator.desc, "в кодексе"), "Значок не повторяет правила, а отсылает к кодексу: [indicator?.desc]")
+	TEST_ASSERT(!findtext(indicator.desc, "Призм: 0"), "Пустые счётчики в подсказку значка не идут: [indicator.desc]")
 	var/datum/eldritch_knowledge/codex_legacy_probe/legacy = allocate(/datum/eldritch_knowledge/codex_legacy_probe)
 	var/list/legacy_resource = legacy.get_combat_resource_data()
 	var/list/legacy_rules = legacy_resource["rules"]
@@ -136,6 +140,69 @@
 	var/list/moon_resource = moon.get_combat_resource_data()
 	TEST_ASSERT_EQUAL(moon_resource["state"], "Двойника на посту нет. Голос двойника выключен.", "Двойник на посту и его голос вынесены в состояние.")
 	TEST_ASSERT_EQUAL(jointext(moon_resource["rules"], "|"), jointext(moon.resource_rules, "|"), "Правила отражений идут списком строк.")
+
+/// Подсказка значка запаса у каждого пути короткая: живые факты строками, клик и ссылка на правила в кодексе - и в тяжёлом бою Свинца и Сумрака.
+/datum/unit_test/heretic_resource_tooltip/Run()
+	var/list/facts = heretic_text_facts("Двойник на посту: Мостик, ещё 2 мин. Голос двойника включён.")
+	TEST_ASSERT_EQUAL(jointext(facts, "|"), "Двойник на посту: Мостик, ещё 2 мин|Голос двойника включён", "Состояние делится на фразы по концам предложений.")
+	TEST_ASSERT_EQUAL(heretic_facts_text(facts), "Двойник на посту: Мостик, ещё 2 мин. Голос двойника включён.", "Фразы собираются обратно в тот же текст для кодекса.")
+	TEST_ASSERT(heretic_empty_fact("Призм: 0 из 3") && heretic_empty_fact("Оболочка: 0 защиты") && heretic_empty_fact("Связей: 0/1"), "Нулевые счётчики в подсказку не идут.")
+	TEST_ASSERT(!heretic_empty_fact("Призм: 1 из 3") && !heretic_empty_fact("Долг: 0.5/20") && !heretic_empty_fact("Схем шагов: 0 из 3, заражённых: 1 из 2"), "Счётчик с чем-то кроме нуля остаётся.")
+	for(var/path_id in GLOB.heretic_paths)
+		var/datum/antagonist/heretic/heretic = allocate_deed_heretic(path_id)
+		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		check_tooltip(heretic, heretic.get_knowledge(path.knowledge[1]), path_id)
+		qdel(heretic)
+	var/datum/antagonist/heretic/lead_heretic = allocate_deed_heretic(PATH_LEAD)
+	var/mob/living/carbon/human/shooter = lead_heretic.owner.current
+	var/datum/eldritch_knowledge/base_lead/lead = lead_heretic.get_knowledge(/datum/eldritch_knowledge/base_lead)
+	heretic_lead_test_revolver(lead_heretic, shooter)
+	lead_heretic.gain_knowledge(/datum/eldritch_knowledge/lead_mark)
+	lead_heretic.gain_knowledge(/datum/eldritch_knowledge/lead_ear)
+	TEST_ASSERT(lead.choose_school(shooter, HERETIC_LEAD_SCHOOL_GUNSLINGER), "Свинец выбирает Школу: [lead.lead_failure]")
+	for(var/index in 1 to 2)
+		lead.place_curse(shooter, allocate(/obj/item/gun/ballistic/shotgun, get_turf(shooter)))
+	lead.record_impact(get_turf(shooter))
+	lead_heretic.total_sacrifices = HERETIC_LEAD_SOUND_HUNT_SACRIFICES
+	lead.combat_resource = lead.combat_resource_max
+	var/lead_state = lead.combat_resource_state()
+	TEST_ASSERT(findtext(lead_state, "Школа: Стрелок") && findtext(lead_state, "Точка Рикошета") && findtext(lead_state, "Заговоров: 2 из [HERETIC_LEAD_CURSE_LIMIT]. Патронташ: ") && findtext(lead_state, "Барабан полон"), "Свинец в тяжёлом бою: [lead_state]")
+	check_tooltip(lead_heretic, lead, "Свинец в бою")
+	var/datum/eldritch_knowledge/base_dusk/dusk = allocate_dusk()
+	var/mob/living/carbon/human/dusk_user = dusk.dusk_body
+	dusk_light(dusk_user, 1)
+	dusk_tick(dusk)
+	dusk_learn(dusk, /datum/eldritch_knowledge/spell/dusk_step)
+	TEST_ASSERT(dusk.toggle_form(dusk_user), "Облик сменён: [dusk.dusk_failure]")
+	var/mob/living/carbon/human/crew = heretic_lead_test_crew(get_step(dusk_user, EAST))
+	crew.apply_status_effect(/datum/status_effect/heretic_dusk_burnt, dusk)
+	dusk.holy_silence_until = world.time + 5 SECONDS
+	dusk.form_locked_until = world.time + 5 SECONDS
+	var/atom/movable/screen/alert/heretic_resource/dusk_indicator = check_tooltip(dusk.owner_heretic(), dusk, "Сумрак в бою")
+	for(var/fragment in list("Удар из тени готов", "Выжженных теней: 1", "Облик заперт святой водой: 5 с", "Святое не даёт копить", "Ш - заряды Шага", "Буква Л/К"))
+		TEST_ASSERT(findtext(dusk_indicator?.desc, fragment), "Подсказка Сумрака называет «[fragment]»: [dusk_indicator?.desc]")
+	dusk.holy_silence_until = 0
+	dusk.form_locked_until = 0
+
+/datum/unit_test/heretic_resource_tooltip/proc/check_tooltip(datum/antagonist/heretic/heretic, datum/eldritch_knowledge/knowledge, label)
+	var/atom/movable/screen/alert/heretic_resource/indicator = heretic?.update_combat_resource_alert()
+	. = indicator
+	TEST_ASSERT_NOTNULL(indicator, "У [label] есть значок запаса.")
+	var/desc = indicator.desc
+	log_test("Подсказка значка [label]: [indicator.name] | [desc]")
+	var/list/resource = knowledge.get_combat_resource_data()
+	for(var/rule in resource["rules"])
+		TEST_ASSERT(!findtext(desc, rule), "Подсказка [label] не повторяет правило кодекса: [rule]")
+	var/list/lines = splittext(desc, "<br>")
+	TEST_ASSERT(length(lines) <= 10, "В подсказке [label] не больше 10 строк, сейчас [length(lines)]: [desc]")
+	var/visible = replacetext(desc, regex(@"<[^>]*>", "g"), "")
+	TEST_ASSERT(length_char(visible) <= 600, "Подсказка [label] не длиннее 600 знаков, сейчас [length_char(visible)]: [visible]")
+	for(var/line in lines)
+		var/shown = replacetext(line, regex(@"<[^>]*>", "g"), "")
+		TEST_ASSERT(length_char(shown) <= 160, "Строка подсказки [label] короткая: [shown]")
+	TEST_ASSERT(findtext(lines[length(lines)], "в кодексе"), "Подсказка [label] кончается ссылкой на правила в кодексе: [desc]")
+	var/obj/effect/proc_holder/spell/power = indicator.power_ref?.resolve()
+	TEST_ASSERT(power && findtext(desc, "Клик - «[power.name]»"), "Подсказка [label] называет действие клика одной строкой: [desc]")
 
 /// Стекло отдаёт кодексу лид вместо описания в рецептах, короткие строки способностей и правила граней по строкам.
 /datum/unit_test/heretic_codex_glass/Run()
