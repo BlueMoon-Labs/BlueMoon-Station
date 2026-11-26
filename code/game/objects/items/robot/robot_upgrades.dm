@@ -77,6 +77,8 @@
 	var/list/blocked_storm_laws = list()
 	var/last_warning_tick = -1
 	var/last_warning_law
+	// Prevent two storm paths (AI snapshot + direct borg pass) from double-stunning.
+	var/last_storm_disruption_tick = -1
 	// BLUEMOON CYBORG ION SHIELD v10.1: keep a clean, per-cyborg
 	// snapshot. Filtering the ion text alone loses displaced core laws.
 	var/mob/living/silicon/ai/protected_ai
@@ -253,6 +255,29 @@
 	last_master_supplied = master.supplied.Copy()
 	R.laws.inherent = safe_inherent.Copy()
 	R.laws.supplied = safe_supplied.Copy()
+
+// BLUEMOON CYBORG ION SHIELD v10.2
+// Shielding an ion storm temporarily overloads the borg's control circuits.
+// This is a normal timed paralysis, not death, brain removal or law reset.
+/obj/item/borg/upgrade/ion_shield/proc/ion_storm_disruption(mob/living/silicon/robot/R)
+	if(QDELETED(src) || QDELETED(R) || R.stat == DEAD || loc != R || !(src in R.upgrades))
+		return
+	if(last_storm_disruption_tick == world.time)
+		return
+	last_storm_disruption_tick = world.time
+	R.Paralyze(5 SECONDS)
+	R.spark_system?.start()
+	to_chat(R, span_boldwarning("ИОННЫЙ ШТОРМ: модуль экранирования сохранил ваши законы, но перегрузка временно отключила двигательные системы (5 секунд)."))
+	R.logevent("Ion shield interrupted controls for 5 seconds during an ion storm.")
+
+// Any real EMP which reaches the robot destroys only this installed module.
+// qdel signals the normal upgrade cleanup; other upgrades are untouched.
+/obj/item/borg/upgrade/ion_shield/proc/burn_out_from_emp(mob/living/silicon/robot/R)
+	if(QDELETED(src) || QDELETED(R) || loc != R || !(src in R.upgrades))
+		return
+	to_chat(R, span_userdanger("ЭМИ ПЕРЕГРУЗКА: модуль экранирования необратимо повреждён и уничтожен! Для восстановления защиты установите новый модуль."))
+	R.logevent("Ion shielding module destroyed by EMP; replacement hardware required.")
+	qdel(src)
 
 /mob/living/silicon/robot/proc/get_ion_shield()
 	if(shell)

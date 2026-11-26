@@ -47,6 +47,7 @@
 				if(!pre_storm_shield)
 					continue
 				pre_storm_shield.begin_remote_ion_storm(snapshot_borg, M)
+				pre_storm_shield.ion_storm_disruption(snapshot_borg)
 				storm_shielded_borgs += snapshot_borg
 			if(prob(replaceLawsetChance))
 				M.laws.pick_weighted_lawset()
@@ -86,6 +87,7 @@
 		if(M.stat != DEAD && M.see_in_dark != 0)
 			var/obj/item/borg/upgrade/ion_shield/guard = M.get_ion_shield()
 			if(guard)
+				guard.ion_storm_disruption(M)
 				// Reject ALL direct ion-storm mutations: random replacement,
 				// removal, injection and shuffling. Do not call post_lawchange.
 				// A healthy linked AI already reports its own ion law to this borg.
