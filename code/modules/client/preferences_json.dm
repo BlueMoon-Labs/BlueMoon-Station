@@ -134,30 +134,12 @@
 		return FALSE
 	return TRUE
 
-/datum/preferences/proc/save_nif_persistent_data(character_slot, list/saved_data)
-	if(!path || !isnum(character_slot) || character_slot < 1 || character_slot > max_save_slots)
-		return FALSE
-	var/datum/player_save_json/account/storage = get_player_save_storage()
-	if(!storage || player_save_blocked || !ensure_player_save_migrated())
-		return FALSE
-	var/character_key = "character[character_slot]"
-	var/datum/player_save_document/root = storage.snapshot()
-	if(!root || !islist(root.directories) || !(character_key in root.tree) || !(character_key in root.directories))
-		return FALSE
-	var/datum/player_save_character_transaction/transaction = storage.character_transaction(character_key)
+/datum/preferences/proc/commit_character_save(savefile/source, slot, datum/player_save_character_transaction/transaction)
 	if(!transaction)
-		player_save_error(storage.error)
-		return FALSE
-	var/encoded_data = safe_json_encode(islist(saved_data) ? saved_data : list())
-	if(!transaction.character.write("nif_persistent_data", encoded_data))
-		if(character_slot == default_slot)
-			nif_persistent_data = islist(saved_data) ? saved_data.Copy() : list()
-		return TRUE
+		return commit_player_save(source, "/character[slot]")
 	if(!transaction.commit())
-		player_save_error(storage.error)
+		player_save_error(transaction.root.storage.error)
 		return FALSE
-	if(character_slot == default_slot)
-		nif_persistent_data = islist(saved_data) ? saved_data.Copy() : list()
 	return TRUE
 
 /// Модульные расширения дописывают тот же документ в памяти, затем идёт одна запись.
@@ -220,7 +202,7 @@
 			pending_single_prefs = null
 			for(var/key in pending_before_write)
 				transaction.root.write(key, pending_before_write[key])
-		var/saved = transaction ? transaction.commit() : commit_player_save(result, "/character[default_slot]")
+		var/saved = commit_character_save(result, default_slot, transaction)
 		if(saved && pending_before_write && !length(pending_single_prefs) && single_pref_queue)
 			deltimer(single_pref_queue)
 			single_pref_queue = null
@@ -230,8 +212,6 @@
 				pending_before_write[key] = pending_single_prefs[key]
 			pending_single_prefs = pending_before_write
 		if(!saved)
-			if(transaction)
-				player_save_error(transaction.root.storage.error)
 			blocking_call_finish(blocking_started_ms, "JSON (персонаж)", "ошибка записи")
 			return FALSE
 	blocking_call_finish(blocking_started_ms, "JSON (персонаж)", "слот [default_slot]")

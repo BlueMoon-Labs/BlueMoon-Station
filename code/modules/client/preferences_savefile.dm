@@ -1776,13 +1776,9 @@ GLOBAL_VAR(player_save_migration_timer)
 	READ_PLAYER_SAVE(S, document, "scars3", scars_list["3"])
 	READ_PLAYER_SAVE(S, document, "scars4", scars_list["4"])
 	READ_PLAYER_SAVE(S, document, "scars5", scars_list["5"])
-	var/nif_persistent_data_json
-	READ_PLAYER_SAVE(S, document, "nif_persistent_data", nif_persistent_data_json)
-	if(length(nif_persistent_data_json))
-		var/list/loaded_nif_persistent_data = safe_json_decode(nif_persistent_data_json)
-		nif_persistent_data = islist(loaded_nif_persistent_data) ? loaded_nif_persistent_data : list()
-	else
-		nif_persistent_data = list()
+	var/nif_data
+	READ_PLAYER_SAVE(S, document, "nif_persistent_data", nif_data)
+	nif_persistent_data = istext(nif_data) ? nif_data : null
 	var/limbmodstr
 	READ_PLAYER_SAVE(S, document, "modified_limbs", limbmodstr)
 	if(length(limbmodstr))
@@ -2573,6 +2569,9 @@ GLOBAL_VAR(player_save_migration_timer)
 		if(!commit_player_save(S))
 			return FALSE
 		deleted_name = check_name
+	if(slots_joined_as && ("[slot]" in slots_joined_as))
+		// Слот по-прежнему учитывается при респавне, но больше не связан с телом удалённого персонажа.
+		slots_joined_as["[slot]"] = null
 	log_game("Сохранения: [player_save_ckey()] удалил слот [slot] «[deleted_name]».")
 	if(char_queue)
 		deltimer(char_queue)
@@ -2602,6 +2601,35 @@ GLOBAL_VAR(player_save_migration_timer)
 	save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	return TRUE
 
+// Открываем нужный слот для записи через JSON или адаптер старого сейва.
+/datum/preferences/proc/open_character_save(slot, list/patch_context, existing_only = FALSE)
+	var/key = "character[slot]"
+	if(patch_context)
+		var/datum/player_save_document/root = open_player_document()
+		if(!root)
+			return null
+		if(islist(root.directories))
+			if(existing_only && !(key in root.directories))
+				return null
+			var/datum/player_save_json/account/storage = root.storage
+			var/datum/player_save_character_transaction/transaction = storage.character_transaction(key)
+			if(!transaction)
+				player_save_error(storage.error)
+				return null
+			if(length(transaction.character.tree) && player_save_version_status(transaction.character.read("version")) == -2)
+				player_save_error("Неподдерживаемая версия слота [slot]; запись заблокирована")
+				return null
+			patch_context["transaction"] = transaction
+			return transaction.character
+	var/savefile/S = open_player_save("/[key]")
+	if(!S || (existing_only && !(key in S.dir)))
+		return null
+	S.cd = "/[key]"
+	if(length(S.dir) && savefile_needs_update(S) == -2)
+		player_save_error("Неподдерживаемая версия слота [slot]; запись заблокирована")
+		return null
+	return S
+
 /datum/preferences/proc/write_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE, list/patch_context, update_active_preset = TRUE)
 	if(!path && !export)
 		return FALSE
@@ -2620,33 +2648,14 @@ GLOBAL_VAR(player_save_migration_timer)
 	var/datum/player_save_document/document
 	if(export)
 		S = new
-	else if(patch_context)
-		var/datum/player_save_document/root = open_player_document()
-		if(!root)
-			return FALSE
-		if(islist(root.directories))
-			var/datum/player_save_json/account/storage = get_player_save_storage()
-			var/datum/player_save_character_transaction/transaction = storage.character_transaction("character[default_slot]")
-			if(!transaction)
-				player_save_error(storage.error)
-				return FALSE
-			if(length(transaction.character.tree) && player_save_version_status(transaction.character.read("version")) == -2)
-				player_save_error("Неподдерживаемая версия слота [default_slot]; запись заблокирована")
-				return FALSE
-			patch_context["transaction"] = transaction
-			document = transaction.character
-		else
-			S = open_player_save("/character[default_slot]")
 	else
-		S = open_player_save("/character[default_slot]")
-	if(!S && !document)
-		return FALSE
-	if(!export)
-		if(S)
-			S.cd = "/character[default_slot]"
-			if(length(S.dir) && savefile_needs_update(S) == -2)
-				player_save_error("Неподдерживаемая версия слота [default_slot]; запись заблокирована")
-				return FALSE
+		var/target = open_character_save(default_slot, patch_context)
+		if(!target)
+			return FALSE
+		if(istype(target, /datum/player_save_document))
+			document = target
+		else
+			S = target
 		// Обновляем только активный пресет при реальном сохранении, без смены выбранного лодаута.
 		if(update_active_preset && character_setup_preset_autosave && istext(active_character_preset) && islist(character_presets[active_character_preset]))
 			character_presets[active_character_preset] = capture_character_preset()
@@ -2896,7 +2905,7 @@ GLOBAL_VAR(player_save_migration_timer)
 	WRITE_PLAYER_SAVE(S, document, "scars3"						, scars_list["3"])
 	WRITE_PLAYER_SAVE(S, document, "scars4"						, scars_list["4"])
 	WRITE_PLAYER_SAVE(S, document, "scars5"						, scars_list["5"])
-	WRITE_PLAYER_SAVE(S, document, "nif_persistent_data", safe_json_encode(islist(nif_persistent_data) ? nif_persistent_data : list()))
+	WRITE_PLAYER_SAVE(S, document, "nif_persistent_data", nif_persistent_data)
 	if(islist(modified_limbs))
 		WRITE_PLAYER_SAVE(S, document, "modified_limbs", safe_json_encode(modified_limbs))
 	if(islist(organ_mods))
@@ -2980,6 +2989,61 @@ GLOBAL_VAR(player_save_migration_timer)
 	scars_list[scar_key] = valid_scars
 	save_character()
 	return TRUE
+
+// Пишем только данные смены, чтобы не сохранять за игрока остальные правки анкеты.
+/datum/preferences/proc/save_roundend_character(slot, scar_index, mob/living/carbon/human/ending_human, survived)
+	var/nif_data
+	if(survived)
+		var/obj/item/organ/cyberimp/brain/nif/implant = ending_human.getorganslot(ORGAN_SLOT_BRAIN_NIF)
+		if(istype(implant) && implant.nif_persistence)
+			nif_data = safe_json_encode(implant.get_persistent_data())
+	var/is_selected_slot = slot == "[default_slot]"
+	var/save_scars = ending_human && ending_human == parent?.mob && (!is_selected_slot || persistent_scars)
+	if(!save_scars && is_selected_slot && nif_data == nif_persistent_data)
+		return
+
+	var/list/patch_context = list()
+	var/target = open_character_save(slot, patch_context, existing_only = TRUE)
+	if(!target)
+		return
+	var/datum/player_save_document/document = istype(target, /datum/player_save_document) ? target : null
+	var/savefile/S = document ? null : target
+
+	if(save_scars && !is_selected_slot)
+		var/saved_option
+		READ_PLAYER_SAVE(S, document, "persistent_scars", saved_option)
+		save_scars = sanitize_integer(saved_option)
+	var/scar_data
+	var/scar_key = "scars[scar_index]"
+	var/previous_nif_data
+	READ_PLAYER_SAVE(S, document, "nif_persistent_data", previous_nif_data)
+	var/changed = previous_nif_data != nif_data
+	if(changed)
+		WRITE_PLAYER_SAVE(S, document, "nif_persistent_data", nif_data)
+	if(save_scars)
+		scar_data = ""
+		if(survived && ending_human.all_scars)
+			// Закрываем раны, чтобы учесть их шрамы.
+			for(var/datum/wound/wound as anything in ending_human.all_wounds)
+				wound.remove_wound()
+			scar_data = ending_human.format_scars() || ""
+		var/previous_scars
+		READ_PLAYER_SAVE(S, document, scar_key, previous_scars)
+		if(previous_scars != scar_data)
+			WRITE_PLAYER_SAVE(S, document, scar_key, scar_data)
+			changed = TRUE
+	if(changed)
+		var/datum/player_save_character_transaction/transaction = patch_context["transaction"]
+		if(!commit_character_save(S, slot, transaction))
+			return
+	if(is_selected_slot)
+		nif_persistent_data = nif_data
+		if(save_scars && scars_list["[scar_index]"] != scar_data)
+			var/datum/character_setup/setup = character_setup_ui
+			var/setup_was_saved = setup && setup.saved_character_state == setup.character_state()
+			scars_list["[scar_index]"] = scar_data
+			if(setup_was_saved)
+				setup.record_saved_state()
 
 /datum/preferences/proc/queue_save_char(save_in, silent)
 	if(parent && !silent)
