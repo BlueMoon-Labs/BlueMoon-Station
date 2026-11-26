@@ -2,16 +2,16 @@
 	form = "Condition"
 	name = "Adrenal Crisis"
 	max_stages = 2
-	cure_text = "Trauma"
+	cure_text = "Травма"
 	cures = list(/datum/reagent/determination)
 	cure_chance = 10
-	agent = "Shitty Adrenal Glands"
+	agent = "Плохие надпочечники"
 	viable_mobtypes = list(/mob/living/carbon/human)
 	permeability_mod = 1
-	desc = "If left untreated the subject will suffer from lethargy, dizziness and periodic loss of consciousness."
+	desc = "Если не лечить, субъект будет страдать от вялости, головокружения и периодической потери сознания."
 	severity = DISEASE_SEVERITY_MEDIUM
 	spread_flags = DISEASE_SPREAD_NON_CONTAGIOUS
-	spread_text = "Organ failure"
+	spread_text = "Отказ органов"
 	visibility_flags = HIDDEN_PANDEMIC
 	bypasses_immunity = TRUE
 
@@ -23,7 +23,7 @@
 	switch(stage)
 		if(1)
 			if(prob(2))
-				to_chat(affected_mob, span_warning(pick("You feel lightheaded.", "You feel lethargic.")))
+				to_chat(affected_mob, span_warning(pick("Вы чувствуете лёгкость в голове.", "Вы чувствуете вялость.")))
 		if(2)
 			if(prob(5))
 				affected_mob.Unconscious(40)
@@ -35,4 +35,4 @@
 				affected_mob.Dizzy(200)
 
 			if(prob(2))
-				to_chat(affected_mob, span_warning(pick("You feel pain shoot down your legs!", "You feel like you are going to pass out at any moment.", "You feel really dizzy.")))
+				to_chat(affected_mob, span_warning(pick("Вы чувствуете боль, пронзающую ноги!", "Кажется, вы вот-вот потеряете сознание.", "Вы чувствуете сильное головокружение.")))

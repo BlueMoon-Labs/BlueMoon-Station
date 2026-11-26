@@ -18,7 +18,7 @@ Bonus
 /datum/symptom/flesh_eating
 
 	name = "Necrotizing Fasciitis"
-	desc = "The virus aggressively attacks body cells, necrotizing tissues and organs."
+	desc = "Вирус агрессивно атакует клетки тела, некротизируя ткани и органы."
 	stealth = -3
 	resistance = -2
 	stage_speed = 0
@@ -31,8 +31,8 @@ Bonus
 	var/bleed = FALSE
 	var/pain = FALSE
 	threshold_desc = list(
-		"Resistance 7" = "Erodes the host's skin, causing them to bleed profusely.",
-		"Transmission 8" = "Eat's away at the host's musclemass, causing increased fatigue."
+		"Resistance 7" = "Разъедает кожу хозяина, вызывая обильное кровотечение.",
+		"Transmission 8" = "Разъедает мышечную массу хозяина, вызывая повышенную усталость."
 	)
 
 /datum/symptom/flesh_eating/Start(datum/disease/advance/A)
@@ -50,9 +50,9 @@ Bonus
 	switch(A.stage)
 		if(2,3)
 			if(prob(base_message_chance))
-				to_chat(M, "<span class='warning'>[pick("You feel a sudden pain across your body.", "Drops of blood appear suddenly on your skin.")]</span>")
+				to_chat(M, "<span class='warning'>[pick("Вы чувствуете внезапную боль по всему телу.", "На коже внезапно появляются капли крови.")]</span>")
 		if(4,5)
-			to_chat(M, "<span class='userdanger'>[pick("You cringe as a violent pain takes over your body.", "It feels like your body is eating itself inside out.", "IT HURTS.")]</span>")
+			to_chat(M, "<span class='userdanger'>[pick("Вы корчитесь от сильной боли, охватывающей тело.", "Кажется, ваше тело пожирает себя изнутри.", "ЭТО БОЛЬНО.")]</span>")
 			Flesheat(M, A)
 
 /datum/symptom/flesh_eating/proc/Flesheat(mob/living/M, datum/disease/advance/A)
@@ -86,7 +86,7 @@ Bonus
 
 /datum/symptom/flesh_death
 	name = "Autophagocytosis Necrosis"
-	desc = "The virus rapidly consumes infected cells, leading to heavy and widespread damage."
+	desc = "Вирус быстро поглощает заражённые клетки, приводя к тяжёлым и обширным повреждениям."
 	stealth = -2
 	resistance = -2
 	stage_speed = 1
@@ -99,8 +99,8 @@ Bonus
 	var/chems = FALSE
 	var/zombie = FALSE
 	threshold_desc = list(
-		"Stage Speed 7" = "Synthesizes Heparin and Lipolicide inside the host, causing increased bleeding and hunger.",
-		"Stealth 5" = "The symptom remains hidden until active.",
+		"Stage Speed 7" = "Синтезирует гепарин и липолицид в организме хозяина, вызывая усиленное кровотечение и голод.",
+		"Stealth 5" = "Симптом остаётся скрытым до активации.",
 	)
 
 
@@ -119,10 +119,10 @@ Bonus
 	switch(A.stage)
 		if(2,3)
 			if(prob(base_message_chance) && !suppress_warning)
-				to_chat(M, "<span class='warning'>[pick("You feel your body break apart.", "Your skin rubs off like dust.")]</span>")
+				to_chat(M, "<span class='warning'>[pick("Вы чувствуете, как ваше тело распадается.", "Ваша кожа слезает, как пыль.")]</span>")
 		if(4,5)
 			if(prob(base_message_chance / 2)) //reduce spam
-				to_chat(M, "<span class='userdanger'>[pick("You feel your muscles weakening.", "Some of your skin detaches itself.", "You feel sandy.")]</span>")
+				to_chat(M, "<span class='userdanger'>[pick("Вы чувствуете ослабление мышц.", "Часть вашей кожи отслаивается.", "Вы чувствуете себя песчаным.")]</span>")
 			Flesh_death(M, A)
 
 /datum/symptom/flesh_death/proc/Flesh_death(mob/living/M, datum/disease/advance/A)

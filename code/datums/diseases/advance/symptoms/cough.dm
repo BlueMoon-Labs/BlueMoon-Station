@@ -18,7 +18,7 @@ BONUS
 /datum/symptom/cough
 
 	name = "Cough"
-	desc = "The virus irritates the throat of the host, causing occasional coughing."
+	desc = "Вирус раздражает горло хозяина, вызывая периодический кашель."
 	stealth = -1
 	resistance = 3
 	stage_speed = 1
@@ -30,11 +30,11 @@ BONUS
 	symptom_delay_max = 15
 	var/infective = FALSE
 	threshold_desc = list(
-		"Resistance 11" = "The host will drop small items when coughing.",
-		"Resistance 15" = "Occasionally causes coughing fits that stun the host. The extra coughs do not spread the virus.",
-		"Stage Speed 6" = "Increases cough frequency.",
-		"Transmission 7" = "Coughing will now infect bystanders up to 2 tiles away.",
-		"Stealth 4" = "The symptom remains hidden until active.",
+		"Resistance 11" = "Хозяин будет ронять мелкие предметы при кашле.",
+		"Resistance 15" = "Иногда вызывает приступы кашля, оглушающие хозяина. Дополнительные кашли не распространяют вирус.",
+		"Stage Speed 6" = "Увеличивает частоту кашля.",
+		"Transmission 7" = "Кашель теперь заражает окружающих в радиусе до 2 клеток.",
+		"Stealth 4" = "Симптом остаётся скрытым до активации.",
 	)
 /datum/symptom/cough/Start(datum/disease/advance/A)
 	if(!..())
@@ -57,7 +57,7 @@ BONUS
 	switch(A.stage)
 		if(1, 2, 3)
 			if(prob(base_message_chance) && !suppress_warning)
-				to_chat(M, "<span notice='warning'>[pick("You swallow excess mucus.", "You lightly cough.")]</span>")
+				to_chat(M, "<span notice='warning'>[pick("Вы глотаете избыточную слизь.", "Вы слегка кашляете.")]</span>")
 		else
 			M.emote("cough")
 			if(power >= 1.5)
@@ -65,7 +65,7 @@ BONUS
 				if(I && I.w_class == WEIGHT_CLASS_TINY)
 					M.dropItemToGround(I)
 			if(power >= 2 && prob(10))
-				to_chat(M, "<span notice='userdanger'>[pick("You have a coughing fit!", "You can't stop coughing!")]</span>")
+				to_chat(M, "<span notice='userdanger'>[pick("У вас приступ кашля!", "Вы не можете перестать кашлять!")]</span>")
 				M.Stun(20)
 				M.emote("cough")
 				addtimer(CALLBACK(M, TYPE_PROC_REF(/mob, emote), "cough"), 6)

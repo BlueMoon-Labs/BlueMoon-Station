@@ -1,13 +1,13 @@
 /datum/disease/death_sandwich_poisoning
 	name = "Death Sandwich Poisoning"
-	desc = "If left untreated the subject will ultimately perish."
+	desc = "Если не лечить, субъект в конечном итоге погибнет."
 	form = "Condition"
-	spread_text = "Unknown"
+	spread_text = "Неизвестно"
 	max_stages = 3
-	cure_text = "Anacea"
+	cure_text = "Анацея"
 	cures = list(/datum/reagent/toxin/anacea)
 	cure_chance = 4
-	agent = "eating the Death Sandwich wrong"
+	agent = "неправильное поедание Смертельного сэндвича"
 	viable_mobtypes = list(/mob/living/carbon/human)
 	severity = DISEASE_SEVERITY_DANGEROUS
 	disease_flags = CURABLE
@@ -35,7 +35,7 @@
 			if(prob(2))
 				affected_mob.emote("gag")
 			if(prob(1))
-				to_chat(affected_mob, span_danger("Your body feels hot!"))
+				to_chat(affected_mob, span_danger("Ваше тело горит!"))
 				if(prob(20))
 					affected_mob.take_bodypart_damage(0, 1)
 			if(prob(3))
@@ -49,11 +49,11 @@
 			if(prob(2))
 				affected_mob.vomit(20, TRUE)
 			if(prob(2))
-				to_chat(affected_mob, span_danger("Your body feels hot!"))
+				to_chat(affected_mob, span_danger("Ваше тело горит!"))
 				if(prob(60))
 					affected_mob.take_bodypart_damage(0, 2)
 			if(prob(6))
 				affected_mob.adjustToxLoss(15)
 			if(prob(1))
-				to_chat(affected_mob, span_danger("You try to scream, but nothing comes out!"))
+				to_chat(affected_mob, span_danger("Вы пытаетесь закричать, но ничего не выходит!"))
 				affected_mob.Stun(50)

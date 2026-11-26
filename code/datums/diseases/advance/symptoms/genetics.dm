@@ -17,7 +17,7 @@ Bonus
 
 /datum/symptom/genetic_mutation
 	name = "Deoxyribonucleic Acid Saboteur"
-	desc = "The virus bonds with the DNA of the host, causing damaging mutations until removed."
+	desc = "Вирус связывается с ДНК хозяина, вызывая вредные мутации до момента удаления."
 	stealth = -2
 	resistance = -3
 	stage_speed = 0
@@ -31,10 +31,10 @@ Bonus
 	symptom_delay_max = 120
 	var/no_reset = FALSE
 	threshold_desc = list(
-		"Resistance 8" = "The negative and mildly negative mutations caused by the virus are mutadone-proof (but will still be undone when the virus is cured if the resistance 14 threshold is not met).",
-		"Resistance 14" = "The host's genetic alterations are not undone when the virus is cured.",
-		"Stage Speed 10" = "The virus activates dormant mutations at a much faster rate.",
-		"Stealth 5" = "Only activates negative mutations in hosts."
+		"Resistance 8" = "Отрицательные и слегка отрицательные мутации, вызванные вирусом, устойчивы к мутадону (но всё равно будут отменены при излечении, если не достигнут порог сопротивления 14).",
+		"Resistance 14" = "Генетические изменения хозяина не отменяются при излечении вируса.",
+		"Stage Speed 10" = "Вирус активирует спящие мутации гораздо быстрее.",
+		"Stealth 5" = "Активирует только отрицательные мутации у хозяев."
 	)
 
 /datum/symptom/genetic_mutation/Activate(datum/disease/advance/A)
@@ -45,7 +45,7 @@ Bonus
 		return
 	switch(A.stage)
 		if(4, 5)
-			to_chat(C, "<span class='warning'>[pick("Your skin feels itchy.", "You feel light headed.")]</span>")
+			to_chat(C, "<span class='warning'>[pick("Ваша кожа чешется.", "Вы чувствуете лёгкое головокружение.")]</span>")
 			C.dna.remove_mutation_group(possible_mutations)
 			for(var/i in 1 to power)
 				C.randmut(possible_mutations)

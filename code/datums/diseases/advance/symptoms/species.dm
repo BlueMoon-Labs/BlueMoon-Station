@@ -1,6 +1,6 @@
 /datum/symptom/undead_adaptation
 	name = "Necrotic Metabolism"
-	desc = "The virus is able to thrive and act even within dead hosts."
+	desc = "Вирус способен процветать и действовать даже в мёртвых хозяевах."
 	stealth = 2
 	resistance = -2
 	stage_speed = 1
@@ -18,7 +18,7 @@
 
 /datum/symptom/inorganic_adaptation
 	name = "Inorganic Biology"
-	desc = "The virus can survive and replicate even in an inorganic environment, increasing its resistance and infection rate."
+	desc = "Вирус способен выживать и размножаться даже в неорганической среде, повышая сопротивляемость и скорость заражения."
 	stealth = -1
 	resistance = 4
 	stage_speed = -2

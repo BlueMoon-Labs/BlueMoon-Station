@@ -18,7 +18,7 @@ Bonus
 /datum/symptom/confusion
 
 	name = "Confusion"
-	desc = "The virus interferes with the proper function of the neural system, leading to bouts of confusion and erratic movement."
+	desc = "Вирус нарушает нормальную работу нервной системы, вызывая приступы спутанности сознания и хаотичные движения."
 	stealth = 1
 	resistance = -1
 	stage_speed = -3
@@ -30,9 +30,9 @@ Bonus
 	symptom_delay_max = 30
 	var/brain_damage = FALSE
 	threshold_desc = list(
-		"Resistance 6" = "Causes brain damage over time.",
-		"Transmission 6" = "Increases confusion duration and strength.",
-		"Stealth 4" = "The symptom remains hidden until active.",
+		"Resistance 6" = "Со временем вызывает повреждение мозга.",
+		"Transmission 6" = "Увеличивает длительность и силу спутанности.",
+		"Stealth 4" = "Симптом остаётся скрытым до активации.",
 	)
 
 /datum/symptom/confusion/Start(datum/disease/advance/A)
@@ -52,9 +52,9 @@ Bonus
 	switch(A.stage)
 		if(1, 2, 3, 4)
 			if(prob(base_message_chance) && !suppress_warning)
-				to_chat(M, "<span class='warning'>[pick("Your head hurts.", "Your mind blanks for a moment.")]</span>")
+				to_chat(M, "<span class='warning'>[pick("У вас болит голова.", "Ваш разум на мгновение пустеет.")]</span>")
 		else
-			to_chat(M, "<span class='userdanger'>You can't think straight!</span>")
+			to_chat(M, "<span class='userdanger'>Вы не можете мыслить ясно!</span>")
 			M.AdjustConfused(8 SECONDS * power, 0, min(100 * power, 100) SECONDS)
 			if(brain_damage)
 				M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 3 * power, 80)

@@ -18,7 +18,7 @@ Bonus
 /datum/symptom/visionloss
 
 	name = "Hyphema"
-	desc = "The virus causes inflammation of the retina, leading to eye damage and eventually blindness."
+	desc = "Вирус вызывает воспаление сетчатки, приводящее к повреждению глаз и в итоге к слепоте."
 	stealth = -1
 	resistance = -4
 	stage_speed = -4
@@ -30,8 +30,8 @@ Bonus
 	symptom_delay_max = 80
 	var/remove_eyes = FALSE
 	threshold_desc = list(
-		"Resistance 12" = "Weakens extraocular muscles, eventually leading to complete detachment of the eyes.",
-		"Stealth 4" = "The symptom remains hidden until active.",
+		"Resistance 12" = "Ослабляет наружные мышцы глаза, в итоге приводя к полному отслоению глаз.",
+		"Stealth 4" = "Симптом остаётся скрытым до активации.",
 	)
 /datum/symptom/visionloss/Start(datum/disease/advance/A)
 	if(!..())
@@ -50,9 +50,9 @@ Bonus
 		switch(A.stage)
 			if(1, 2)
 				if(prob(base_message_chance) && !suppress_warning)
-					to_chat(M, "<span class='warning'>Your eyes itch.</span>")
+					to_chat(M, "<span class='warning'>Ваши глаза чешутся.</span>")
 			if(3, 4)
-				to_chat(M, "<span class='warning'><b>Your eyes burn!</b></span>")
+				to_chat(M, "<span class='warning'><b>Ваши глаза горят!</b></span>")
 				M.blur_eyes(10)
 				eyes.applyOrganDamage(1)
 			else
@@ -63,11 +63,11 @@ Bonus
 				if(prob(eyes.damage - 10 + 1))
 					if(!remove_eyes)
 						if(!HAS_TRAIT(M, TRAIT_BLIND))
-							to_chat(M, "<span class='userdanger'>You go blind!</span>")
+							to_chat(M, "<span class='userdanger'>Вы слепнете!</span>")
 							eyes.applyOrganDamage(eyes.maxHealth)
 					else
-						M.visible_message("<span class='warning'>[M]'s eyes fall off their sockets!</span>", "<span class='userdanger'>Your eyes fall off their sockets!</span>")
+						M.visible_message("<span class='warning'>Глаза [M] выпадают из орбит!</span>", "<span class='userdanger'>Ваши глаза выпадают из орбит!</span>")
 						eyes.Remove()
 						eyes.forceMove(get_turf(M))
 				else
-					to_chat(M, "<span class='userdanger'>Your eyes burn horrifically!</span>")
+					to_chat(M, "<span class='userdanger'>Ваши глаза ужасно горят!</span>")

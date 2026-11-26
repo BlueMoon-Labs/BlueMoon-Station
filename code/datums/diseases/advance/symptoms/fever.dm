@@ -17,7 +17,7 @@ Bonus
 
 /datum/symptom/fever
 	name = "Fever"
-	desc = "The virus causes a febrile response from the host, raising its body temperature."
+	desc = "Вирус вызывает лихорадочную реакцию хозяина, повышая температуру его тела."
 	stealth = 0
 	resistance = 3
 	stage_speed = 3
@@ -29,8 +29,8 @@ Bonus
 	symptom_delay_max = 30
 	var/unsafe = FALSE //over the heat threshold
 	threshold_desc = list(
-		"Resistance 5" = "Increases fever intensity, fever can overheat and harm the host.",
-		"Resistance 10" = "Further increases fever intensity.",
+		"Resistance 5" = "Увеличивает интенсивность лихорадки, лихорадка может перегреть и навредить хозяину.",
+		"Resistance 10" = "Дополнительно увеличивает интенсивность лихорадки.",
 	)
 /datum/symptom/fever/Start(datum/disease/advance/A)
 	if(!..())
@@ -46,9 +46,9 @@ Bonus
 		return
 	var/mob/living/carbon/M = A.affected_mob
 	if(!unsafe || A.stage < 4)
-		to_chat(M, "<span class='warning'>[pick("You feel hot.", "You feel like you're burning.")]</span>")
+		to_chat(M, "<span class='warning'>[pick("Вам жарко.", "Вам кажется, что вы горите.")]</span>")
 	else
-		to_chat(M, "<span class='userdanger'>[pick("You feel too hot.", "You feel like your blood is boiling.")]</span>")
+		to_chat(M, "<span class='userdanger'>[pick("Вам слишком жарко.", "Вам кажется, что ваша кровь кипит.")]</span>")
 	if(M.bodytemperature < BODYTEMP_HEAT_DAMAGE_LIMIT || unsafe)
 		Heat(M, A)
 

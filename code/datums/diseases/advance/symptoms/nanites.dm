@@ -1,6 +1,6 @@
 /datum/symptom/nano_boost
 	name = "Nano-symbiosis"
-	desc = "The virus reacts to nanites in the host's bloodstream by enhancing their replication cycle."
+	desc = "Вирус реагирует на наниты в кровотоке хозяина, усиливая их цикл репликации."
 	stealth = 0
 	resistance = 2
 	stage_speed = 2
@@ -11,8 +11,8 @@
 	symptom_delay_max = 1
 	var/reverse_boost = FALSE
 	threshold_desc = list(
-		"Transmission 5" = "Increases the virus' growth rate while nanites are present.",
-		"Stage Speed 7" = "Increases the replication boost."
+		"Передача 5" = "Увеличивает скорость роста вируса при наличии нанитов.",
+		"Скорость стадии 7" = "Усиливает репликационный буст."
 	)
 
 /datum/symptom/nano_boost/Start(datum/disease/advance/A)
@@ -34,7 +34,7 @@
 			
 /datum/symptom/nano_destroy
 	name = "Silicolysis"
-	desc = "The virus reacts to nanites in the host's bloodstream by attacking and consuming them."
+	desc = "Вирус реагирует на наниты в кровотоке хозяина, атакуя и поглощая их."
 	stealth = 0
 	resistance = 4
 	stage_speed = -1
@@ -45,8 +45,8 @@
 	symptom_delay_max = 1
 	var/reverse_boost = FALSE
 	threshold_desc = list(
-		"Stage Speed 5" = "Increases the virus' growth rate while nanites are present.",
-		"Resistance 7" = "Severely increases the rate at which the nanites are destroyed."
+		"Скорость стадии 5" = "Увеличивает скорость роста вируса при наличии нанитов.",
+		"Сопротивление 7" = "Сильно увеличивает скорость уничтожения нанитов."
 	)
 
 /datum/symptom/nano_destroy/Start(datum/disease/advance/A)

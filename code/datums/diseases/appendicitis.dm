@@ -2,11 +2,11 @@
 	form = "Condition"
 	name = "Appendicitis"
 	max_stages = 3
-	cure_text = "Surgery"
-	agent = "Shitty Appendix"
+	cure_text = "Хирургия"
+	agent = "Плохой аппендикс"
 	viable_mobtypes = list(/mob/living/carbon/human)
 	permeability_mod = 1
-	desc = "If left untreated the subject will become very weak, and may vomit often."
+	desc = "Если не лечить, субъект станет очень слабым и может часто рвать."
 	severity = DISEASE_SEVERITY_MEDIUM
 	disease_flags = CAN_CARRY|CAN_RESIST
 	spread_flags = DISEASE_SPREAD_NON_CONTAGIOUS
@@ -26,7 +26,7 @@
 				A.inflamed = 1
 				A.update_icon()
 			if(prob(3))
-				to_chat(affected_mob, "<span class='warning'>You feel a stabbing pain in your abdomen!</span>")
+				to_chat(affected_mob, "<span class='warning'>Вы чувствуете колющую боль в животе!</span>")
 				affected_mob.adjustOrganLoss(ORGAN_SLOT_APPENDIX, 5)
 				affected_mob.Stun(rand(40,60))
 				affected_mob.adjustToxLoss(1)

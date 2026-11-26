@@ -1,18 +1,18 @@
 /datum/disease/chronic_illness
 	name = "Hereditary Manifold Sickness"
 	max_stages = 5
-	spread_text = "Non-communicable disease"
+	spread_text = "Неинфекционное заболевание"
 	spread_flags = DISEASE_SPREAD_NON_CONTAGIOUS
 	disease_flags = CHRONIC
 	infectable_biotypes = MOB_ORGANIC | MOB_MINERAL | MOB_ROBOTIC
 	process_dead = TRUE
 	stage_prob = 0.25
-	cure_text = "Sansufentanyl"
+	cure_text = "Сансуфентанил"
 	cures = list(/datum/reagent/medicine/sansufentanyl)
 	infectivity = 0
-	agent = "Quantum Entanglement"
+	agent = "Квантовая запутанность"
 	viable_mobtypes = list(/mob/living/carbon/human)
-	desc = "A disease discovered in an Interdyne laboratory caused by subjection to timestream correction technology."
+	desc = "Болезнь, обнаруженная в лаборатории Interdyne, вызванная воздействием технологии коррекции временного потока."
 	bypasses_immunity = TRUE
 	severity = DISEASE_SEVERITY_UNCURABLE
 	var/being_stealthy = TRUE
@@ -28,25 +28,25 @@
 			being_stealthy = TRUE
 		if(2)
 			if(prob(1))
-				to_chat(affected_mob, span_warning("You feel dizzy."))
+				to_chat(affected_mob, span_warning("Вы чувствуете головокружение."))
 				affected_mob.Dizzy(60)
 				being_stealthy = FALSE
 			if(prob(1))
-				to_chat(affected_mob, span_notice("You look at your hand. Your vision blurs."))
+				to_chat(affected_mob, span_notice("Вы смотрите на руку. Зрение расплывается."))
 				affected_mob.eye_blurry = max(affected_mob.eye_blurry, 100)
 				being_stealthy = FALSE
 		if(3)
 			if(prob(1))
-				to_chat(affected_mob, span_danger("You feel a very sharp pain in your chest!"))
+				to_chat(affected_mob, span_danger("Вы чувствуете очень острую боль в груди!"))
 				being_stealthy = FALSE
 				if(prob(45))
 					affected_mob.vomit(20, TRUE)
 			if(prob(1))
-				to_chat(affected_mob, span_userdanger("[pick("You feel your heart slowing...", "You relax and slow your heartbeat.")]"))
+				to_chat(affected_mob, span_userdanger("[pick("Вы чувствуете, как сердце замедляется...", "Вы расслабляетесь и замедляете сердцебиение.")]"))
 				affected_mob.adjustStaminaLoss(70)
 				being_stealthy = FALSE
 			if(prob(1))
-				to_chat(affected_mob, span_danger("You feel a buzzing in your brain."))
+				to_chat(affected_mob, span_danger("Вы чувствуете звон в мозгу."))
 				SEND_SOUND(affected_mob, sound('sound/effects/genetics.ogg'))
 				being_stealthy = FALSE
 			if(prob(1))
@@ -56,27 +56,27 @@
 			if(prob(30))
 				affected_mob.playsound_local(affected_mob, 'sound/effects/singlebeat.ogg', 100, 0)
 			if(prob(1))
-				to_chat(affected_mob, span_danger("You feel a gruesome pain in your chest!"))
+				to_chat(affected_mob, span_danger("Вы чувствуете жуткую боль в груди!"))
 				if(prob(75))
 					affected_mob.vomit(45, TRUE)
 			if(prob(1))
 				affected_mob.adjustStaminaLoss(100)
-				affected_mob.visible_message(span_warning("[affected_mob] collapses!"))
+				affected_mob.visible_message(span_warning("[affected_mob] падает!"))
 				if(prob(30))
-					to_chat(affected_mob, span_danger("Your vision blurs as you faint!"))
+					to_chat(affected_mob, span_danger("Зрение расплывается, и вы теряете сознание!"))
 					affected_mob.AdjustSleeping(10)
 			if(prob(1))
-				to_chat(affected_mob, span_danger("[pick("You feel as though your atoms are accelerating in place.", "You feel like you're being torn apart!")]"))
+				to_chat(affected_mob, span_danger("[pick("Вы чувствуете, как ваши атомы ускоряются на месте.", "Кажется, вас разрывает на части!")]"))
 				affected_mob.emote("scream")
 				affected_mob.adjustBruteLoss(10)
 				affected_mob.updatehealth()
 		if(5)
 			switch(rand(1,2))
 				if(1)
-					to_chat(affected_mob, span_notice("You feel your atoms begin to realign. You're safe. For now."))
+					to_chat(affected_mob, span_notice("Вы чувствуете, как ваши атомы начинают выравниваться. Вы в безопасности. Пока."))
 					update_stage(1)
 				if(2)
-					to_chat(affected_mob, span_boldwarning("There is no place for you in this timeline."))
+					to_chat(affected_mob, span_boldwarning("Вам нет места в этой временной линии."))
 					affected_mob.adjustStaminaLoss(100)
 					playsound(affected_mob.loc, 'sound/magic/repulse.ogg', 100, FALSE)
 					affected_mob.emote("scream")
@@ -84,7 +84,7 @@
 						viewers.flash_act()
 					new /obj/effect/decal/cleanable/plasma(affected_mob.loc)
 					new /obj/effect/decal/cleanable/ash(affected_mob.loc)
-					affected_mob.visible_message(span_warning("[affected_mob] is erased from the timeline!"), span_userdanger("You are ripped from the timeline!"))
+					affected_mob.visible_message(span_warning("[affected_mob] стёрт из временной линии!"), span_userdanger("Вас вырывают из временной линии!"))
 					affected_mob.investigate_log("has been dusted / deleted by [name].", INVESTIGATE_DEATHS)
 					affected_mob.ghostize(can_reenter_corpse = FALSE)
 					qdel(affected_mob)
@@ -92,7 +92,7 @@
 /datum/disease/chronic_illness/update_stage(new_stage)
 	. = ..()
 	if(new_stage == 4 && being_stealthy)
-		to_chat(affected_mob, span_danger("[pick("You feel as though your atoms are accelerating in place.", "You feel like you're being torn apart!")]"))
+		to_chat(affected_mob, span_danger("[pick("Вы чувствуете, как ваши атомы ускоряются на месте.", "Кажется, вас разрывает на части!")]"))
 		affected_mob.emote("scream")
 		affected_mob.adjustBruteLoss(10)
 		being_stealthy = FALSE

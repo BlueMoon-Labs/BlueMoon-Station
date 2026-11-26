@@ -1,10 +1,10 @@
 /// Caused by dirty food. Makes you vomit stars.
 /datum/disease/nebula_nausea
 	name = "Nebula Nausea"
-	desc = "You can't contain the colorful beauty of the cosmos inside."
+	desc = "Вы не можете сдержать красочную красоту космоса внутри."
 	form = "Condition"
 	agent = "Stars"
-	cure_text = "Space Cleaner"
+	cure_text = "Космический очиститель"
 	cures = list(/datum/reagent/space_cleaner)
 	viable_mobtypes = list(/mob/living/carbon/human)
 	spread_flags = DISEASE_SPREAD_NON_CONTAGIOUS
@@ -20,15 +20,15 @@
 	switch(stage)
 		if(2)
 			if(prob(1) && affected_mob.stat == CONSCIOUS)
-				to_chat(affected_mob, span_warning("The colorful beauty of the cosmos seems to have taken a toll on your equilibrium."))
+				to_chat(affected_mob, span_warning("Красочная красота космоса, кажется, сказалась на вашем равновесии."))
 		if(3)
 			if(prob(1) && affected_mob.stat == CONSCIOUS)
-				to_chat(affected_mob, span_warning("Your stomach swirls with colors unseen by human eyes."))
+				to_chat(affected_mob, span_warning("Живот кружится цветами, невиданными человеческим глазом."))
 		if(4)
 			if(prob(1) && affected_mob.stat == CONSCIOUS)
-				to_chat(affected_mob, span_warning("It feels like you're floating through a maelstrom of celestial colors."))
+				to_chat(affected_mob, span_warning("Кажется, вы плывёте сквозь водоворот небесных цветов."))
 		if(5)
 			if(prob(1) && affected_mob.stat == CONSCIOUS)
-				to_chat(affected_mob, span_warning("Your stomach has become a turbulent nebula, swirling with kaleidoscopic patterns."))
+				to_chat(affected_mob, span_warning("Ваш живот превратился в бурную туманность, кружась калейдоскопическими узорами."))
 			else
 				affected_mob.vomit(10, FALSE, TRUE, 2)

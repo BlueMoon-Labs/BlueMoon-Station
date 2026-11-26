@@ -17,7 +17,7 @@ Bonus
 
 /datum/symptom/hallucigen
 	name = "Hallucigen"
-	desc = "The virus stimulates the brain, causing occasional hallucinations."
+	desc = "Вирус стимулирует мозг, вызывая периодические галлюцинации."
 	stealth = -1
 	resistance = -3
 	stage_speed = -3
@@ -29,8 +29,8 @@ Bonus
 	symptom_delay_max = 90
 	var/fake_healthy = FALSE
 	threshold_desc = list(
-		"Stage Speed 7" = "Increases the amount of hallucinations.",
-		"Stealth 4" = "The virus mimics positive symptoms.",
+		"Stage Speed 7" = "Увеличивает количество галлюцинаций.",
+		"Stealth 4" = "Вирус имитирует положительные симптомы.",
 	)
 
 /datum/symptom/hallucigen/Start(datum/disease/advance/A)
@@ -46,22 +46,22 @@ Bonus
 	if(!..())
 		return
 	var/mob/living/carbon/M = A.affected_mob
-	var/list/healthy_messages = list("Your lungs feel great.", "You realize you haven't been breathing.", "You don't feel the need to breathe.",\
-					"Your eyes feel great.", "You are now blinking manually.", "You don't feel the need to blink.")
+	var/list/healthy_messages = list("Ваши лёгкие чувствуют себя отлично.", "Вы понимаете, что не дышали.", "Вы не чувствуете потребности дышать.",\
+					"Ваши глаза чувствуют себя отлично.", "Теперь вы моргаете вручную.", "Вы не чувствуете потребности моргать.")
 	switch(A.stage)
 		if(1, 2)
 			if(prob(base_message_chance))
 				if(!fake_healthy)
-					to_chat(M, "<span class='notice'>[pick("Something appears in your peripheral vision, then winks out.", "You hear a faint whisper with no source.", "Your head aches.")]</span>")
+					to_chat(M, "<span class='notice'>[pick("Что-то появляется на периферии зрения, а затем исчезает.", "Вы слышите тихий шёпот без источника.", "У вас болит голова.")]</span>")
 				else
 					to_chat(M, "<span class='notice'>[pick(healthy_messages)]</span>")
 		if(3, 4)
 			if(prob(base_message_chance))
 				if(!fake_healthy)
-					to_chat(M, "<span class='danger'>[pick("Something is following you.", "You are being watched.", "You hear a whisper in your ear.", "Thumping footsteps slam toward you from nowhere.")]</span>")
+					to_chat(M, "<span class='danger'>[pick("Что-то следует за вами.", "За вами наблюдают.", "Вы слышите шёпот в ухо.", "Откуда-то раздаются громкие шаги.")]</span>")
 				else
 					to_chat(M, "<span class='notice'>[pick(healthy_messages)]</span>")
 		else
 			if(prob(base_message_chance))
-				to_chat(M, "<span class='userdanger'>[pick("Oh, your head...", "Your head pounds.", "They're everywhere! Run!", "Something in the shadows...")]</span>")
+				to_chat(M, "<span class='userdanger'>[pick("Ох, ваша голова...", "Ваша голова раскалывается.", "Они повсюду! Бегите!", "Что-то в тенях...")]</span>")
 			M.hallucination += (45 * power)
