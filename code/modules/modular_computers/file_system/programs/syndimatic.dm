@@ -51,6 +51,7 @@
 	var/viewing_blocks = FALSE
 	var/viewing_gallery = FALSE
 	var/feed_limit = SYNDIMATIC_FEED_BATCH_SIZE
+	var/comment_sort = "oldest"
 
 /datum/computer_file/program/syndimatic/Destroy()
 	close_syndimatic_window()
@@ -145,6 +146,7 @@
 	gallery_page = 1
 	comment_page = 0
 	comment_serial = 0
+	comment_sort = "oldest"
 	editing_profile = FALSE
 	viewing_blocks = FALSE
 	viewing_gallery = FALSE
@@ -215,12 +217,14 @@
 			data["commentsOpen"] = comment_page > 0
 			if(comment_page)
 				var/list/comments = post["comments"]
+				if(comment_sort == "popular" && length(comments) > 1)
+					comments = SSpersistence.get_syndimatic_ranked_comments(post_id, comments)
 				var/pages = max(1, CEILING(length(comments) / SYNDIMATIC_COMMENT_PAGE_SIZE, 1))
 				comment_page = clamp(comment_page, 1, pages)
 				var/start = (comment_page - 1) * SYNDIMATIC_COMMENT_PAGE_SIZE + 1
 				var/list/rows = list()
 				for(var/index = start to min(start + SYNDIMATIC_COMMENT_PAGE_SIZE - 1, length(comments)))
-					var/list/comment = comments[index]
+					var/list/comment = comments[comment_sort == "oldest" ? length(comments) - index + 1 : index]
 					var/list/author_profile = SSpersistence.get_syndimatic_profile(comment["author"])
 					var/list/comment_likes = comment["likes"]
 					var/list/comment_dislikes = comment["dislikes"]
@@ -238,6 +242,7 @@
 					))
 				data["comments"] = rows
 				data["commentSerial"] = comment_serial
+				data["commentSort"] = comment_sort
 				data["page"] = comment_page
 				data["pages"] = pages
 			return data
@@ -283,7 +288,7 @@
 	var/list/gallery = list()
 	for(var/index = start to min(start + SYNDIMATIC_PAGE_SIZE - 1, length(ids)))
 		var/id = ids[index]
-		var/list/summary = syndimatic_post_summary(id, posts[id])
+		var/list/summary = syndimatic_post_summary(id, posts[id], include_avatar = !profile_id)
 		summary += SSpersistence.get_syndimatic_thumbnail(id)
 		gallery += list(summary)
 	data["posts"] = gallery
@@ -381,6 +386,12 @@
 			if(!post || params["id"] != post_id)
 				return FALSE
 			comment_page = comment_page ? 0 : 1
+		if("sort_comments")
+			var/order = params["order"]
+			if(!post || !comment_page || params["id"] != post_id || !(order in list("oldest", "newest", "popular")) || order == comment_sort)
+				return FALSE
+			comment_sort = order
+			comment_page = 1
 		if("pick_post")
 			var/list/blocks = viewer_profile_id ? SSpersistence.syndimatic_blocks[viewer_profile_id] : null
 			if(blocks?["publish"])
@@ -535,7 +546,10 @@
 				updated_post["comments"] = comments
 			saved = SSpersistence.save_syndimatic_post(target_id, updated_post, action == "comment" ? actor : null)
 			if(saved && action == "comment")
-				comment_page = 1
+				if(comment_sort == "oldest")
+					comment_page = CEILING(length(updated_post["comments"]) / SYNDIMATIC_COMMENT_PAGE_SIZE, 1)
+				else if(comment_sort == "newest")
+					comment_page = 1
 				comment_serial++
 			changed_post = target_id
 	if(!saved)

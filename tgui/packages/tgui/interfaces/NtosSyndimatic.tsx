@@ -1,7 +1,7 @@
 import { type RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, Icon, NoticeBox, Section, Stack, TextArea } from '../components';
+import { Box, Button, Dropdown, Icon, NoticeBox, Section, Stack, TextArea } from '../components';
 import { NtosWindow } from '../layouts';
 import { PhotoGallery, PhotoGalleryPagination, PhotoTile } from './common/PhotoGallery';
 import { type PhotoMedia, PhotoPreview } from './PhotoViewer';
@@ -65,6 +65,7 @@ type SyndimaticData = {
   commentsOpen?: ByondFlag;
   comments?: Comment[];
   commentSerial: number;
+  commentSort: 'oldest' | 'newest' | 'popular';
   profile?: Profile;
   ownProfile?: ByondFlag;
   editingProfile?: ByondFlag;
@@ -77,6 +78,23 @@ type SyndimaticData = {
 const multiline = { overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' } as const;
 const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const;
 const adminAction = 'Административное действие';
+const commentSortOptions = [
+  { value: 'oldest', displayText: 'Сначала старые' },
+  { value: 'newest', displayText: 'Сначала новые' },
+  { value: 'popular', displayText: 'По лайкам' },
+];
+
+const ProfileAvatar = ({ avatar, size }: { avatar?: PhotoMedia | null; size: number }) => (
+  <Box
+    aria-hidden="true"
+    width={size}
+    height={size}
+    textAlign="center"
+    style={{ borderRadius: '50%', overflow: 'hidden', display: 'grid', placeItems: 'center' }}
+  >
+    {avatar ? <PhotoPreview {...avatar} /> : <Icon name="user-circle" size={size - 0.25} />}
+  </Box>
+);
 
 const AuthorButton = ({ id, name, avatar, size = 4 }: {
   id: string;
@@ -95,15 +113,7 @@ const AuthorButton = ({ id, name, avatar, size = 4 }: {
     >
       <Stack align="center">
         <Stack.Item>
-          <Box
-            aria-hidden="true"
-            width={size}
-            height={size}
-            textAlign="center"
-            style={{ borderRadius: '50%', overflow: 'hidden', display: 'grid', placeItems: 'center' }}
-          >
-            {avatar ? <PhotoPreview {...avatar} /> : <Icon name="user-circle" size={size - 0.25} />}
-          </Box>
+          <ProfileAvatar avatar={avatar} size={size} />
         </Stack.Item>
         <Stack.Item bold style={{ overflowWrap: 'anywhere' }}>{name}</Stack.Item>
       </Stack>
@@ -225,7 +235,7 @@ const PostGallery = () => {
   return (
     <>
       <PhotoGallery columns={3}>
-        {posts.map(({ id, author, caption, thumbnail, thumbnailUrl, likes, comments }) => (
+        {posts.map(({ id, author, avatar, caption, thumbnail, thumbnailUrl, likes, comments }) => (
           <PhotoTile
             key={id}
             label={`${author}${caption ? ` · ${caption}` : ''} · Нравится: ${likes}, комментарии: ${comments}`}
@@ -233,13 +243,18 @@ const PostGallery = () => {
             thumbnailUrl={thumbnailUrl}
             onClick={() => act('open_post', { id })}
             footer={
-              <>
-                {view === 'gallery' && <Box bold style={ellipsis}>{author}</Box>}
-                <Stack>
-                  <Stack.Item><Icon name="heart" /> {likes}</Stack.Item>
-                  <Stack.Item><Icon name="comment" /> {comments}</Stack.Item>
-                </Stack>
-              </>
+              <Stack align="center">
+                {view === 'gallery' && (
+                  <Stack.Item shrink={0}><ProfileAvatar avatar={avatar} size={3} /></Stack.Item>
+                )}
+                <Stack.Item grow minWidth={0}>
+                  {view === 'gallery' && <Box bold style={ellipsis}>{author}</Box>}
+                  <Stack>
+                    <Stack.Item><Icon name="heart" /> {likes}</Stack.Item>
+                    <Stack.Item><Icon name="comment" /> {comments}</Stack.Item>
+                  </Stack>
+                </Stack.Item>
+              </Stack>
             }
           />
         ))}
@@ -280,9 +295,18 @@ const CommentForm = ({ id }: { id: string }) => {
 
 const Comments = ({ id }: { id: string }) => {
   const { act, data } = useBackend<SyndimaticData>();
-  const { canWrite, comments, commentSerial, commentBlocked, commentsDisabled, isAdmin, page, pages } = data;
+  const { canWrite, comments, commentSerial, commentSort, commentBlocked, commentsDisabled, isAdmin, page, pages } = data;
   return (
     <Section title="Комментарии" data-syndimatic-comments>
+      <Box mb={1}>
+        <Dropdown
+          options={commentSortOptions}
+          selected={commentSort}
+          width={12}
+          tooltip="Порядок комментариев"
+          onSelected={(order) => act('sort_comments', { id, order })}
+        />
+      </Box>
       {commentsDisabled ? (
         <NoticeBox>Автор закрыл комментарии к публикации.</NoticeBox>
       ) : commentBlocked ? (

@@ -21,6 +21,15 @@
 	var/list/syndimatic_feed = list()
 	var/list/syndimatic_feed_photos = list()
 	var/list/syndimatic_media = list()
+	var/list/syndimatic_ranked_comments = list()
+
+/datum/controller/subsystem/persistence/proc/get_syndimatic_ranked_comments(id, list/comments)
+	if(!syndimatic_ranked_comments[id])
+		syndimatic_ranked_comments[id] = sortTim(reverseList(comments), GLOBAL_PROC_REF(cmp_syndimatic_comment_likes))
+	return syndimatic_ranked_comments[id]
+
+/proc/cmp_syndimatic_comment_likes(list/left, list/right)
+	return length(right["likes"]) - length(left["likes"])
 
 /datum/controller/subsystem/persistence/proc/load_syndimatic()
 	syndimatic_blocks = read_syndimatic_record(SYNDIMATIC_BLOCKS_FILE) || list()
@@ -194,6 +203,9 @@
 		LAZYINITLIST(syndimatic_posts_by_author[author])
 		var/list/author_posts = syndimatic_posts_by_author[author]
 		author_posts.Insert(1, id)
+	var/list/previous_post = syndimatic_posts[id]
+	if(previous_post?["comments"] != post["comments"])
+		syndimatic_ranked_comments -= id
 	syndimatic_posts[id] = post
 	return TRUE
 
@@ -264,6 +276,7 @@
 	syndimatic_feed -= id
 	syndimatic_thumbnails -= id
 	syndimatic_media -= id
+	syndimatic_ranked_comments -= id
 	var/author = post["author"]
 	var/list/author_posts = syndimatic_posts_by_author[author]
 	author_posts -= id
