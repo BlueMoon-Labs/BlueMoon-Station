@@ -92,6 +92,7 @@
 	var/save_path
 	var/save_timer
 	var/save_pending = FALSE
+	var/preserve_backup = FALSE
 
 /obj/item/storage/photo_album/personal/Entered(atom/movable/arrived, atom/old_loc)
 	. = ..()
@@ -122,7 +123,8 @@
 
 	var/path = personal_photo_album_path(owner_ckey)
 	if(fexists(path) || fexists("[path].bak"))
-		if(!restore_contents(path) && !restore_contents("[path].bak"))
+		preserve_backup = !restore_contents(path)
+		if(preserve_backup && !restore_contents("[path].bak"))
 			return
 	else
 		populate_from_id_list(personal_photo_album_legacy_ids(owner_ckey, SSpersistence.GetPhotoAlbums()))
@@ -222,12 +224,16 @@
 		stack_trace("Не удалось записать личный фотоальбом [save_path]: [error]")
 		fdel(temp_path)
 		return FALSE
-	if(fexists(save_path) && !fcopy(save_path, "[save_path].bak"))
+	if(!preserve_backup && fexists(save_path) && !fcopy(save_path, "[save_path].bak"))
 		stack_trace("Не удалось создать резервную копию личного фотоальбома [save_path]")
+		fdel(temp_path)
 		return FALSE
 	if(!fcopy(temp_path, save_path))
+		preserve_backup = TRUE
 		stack_trace("Не удалось обновить личный фотоальбом [save_path]")
+		fdel(temp_path)
 		return FALSE
 	fdel(temp_path)
+	preserve_backup = FALSE
 	save_pending = FALSE
 	return TRUE

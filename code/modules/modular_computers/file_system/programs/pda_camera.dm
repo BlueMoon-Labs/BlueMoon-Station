@@ -470,30 +470,39 @@
 	return COMSIG_MOB_CANCEL_CLICKON
 
 /datum/computer_file/program/pda_camera/proc/take_picture(turf/center, mob/user, use_flash, radius_x, radius_y, time_zone)
-	if(QDELETED(src) || QDELETED(computer))
+	if(QDELETED(src))
 		return
-	var/id = rustg_generate_uuid_v7()
-	var/station_capture_time = "[time2text(world.timeofday, "DD.MM")].[GLOB.year_integer] [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)]"
-	var/server_capture_time = rustg_formatted_timestamp("%d.%m.%Y %H:%M:%S")
-	var/turf/device_turf = get_turf(computer)
-	if(use_flash && device_turf)
-		device_turf.flash_lighting_fx(8)
-	play_camera_shutter(computer)
-	var/datum/picture/picture = capture_camera_picture(center, user, radius_x, radius_y, use_flash)
+	var/id
+	var/datum/picture/picture
+	try
+		if(!QDELETED(computer))
+			id = rustg_generate_uuid_v7()
+			var/station_capture_time = "[time2text(world.timeofday, "DD.MM")].[GLOB.year_integer] [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)]"
+			var/server_capture_time = rustg_formatted_timestamp("%d.%m.%Y %H:%M:%S")
+			var/turf/device_turf = get_turf(computer)
+			if(use_flash && device_turf)
+				device_turf.flash_lighting_fx(8)
+			play_camera_shutter(computer)
+			picture = capture_camera_picture(center, user, radius_x, radius_y, use_flash)
+			if(picture)
+				picture.station_capture_time = station_capture_time
+				picture.capture_time_zone = time_zone
+				picture.server_capture_time = server_capture_time
+	catch(var/exception/error)
+		QDEL_NULL(picture)
+		stack_trace("Ошибка съёмки камерой ПДА: [error]")
+	capturing = FALSE
 	if(QDELETED(src))
 		qdel(picture)
 		return
-	photos_taken++
-	picture.picture_name = "Фотография №[photos_taken]"
-	picture.station_capture_time = station_capture_time
-	picture.capture_time_zone = time_zone
-	picture.server_capture_time = server_capture_time
-	LAZYINITLIST(local_photos)
-	local_photos.Insert(1, id)
-	local_photos[id] = picture
-	if(tab == "local" && !selected_id)
-		refresh_gallery(gallery_page)
-	capturing = FALSE
+	if(picture)
+		photos_taken++
+		picture.picture_name = "Фотография №[photos_taken]"
+		LAZYINITLIST(local_photos)
+		local_photos.Insert(1, id)
+		local_photos[id] = picture
+		if(tab == "local" && !selected_id)
+			refresh_gallery(gallery_page)
 	push_update()
 
 /datum/computer_file/program/pda_camera/proc/cloud_photo_path(id)

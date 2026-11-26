@@ -206,10 +206,12 @@ GLOBAL_DATUM_INIT(photo_editor_state, /datum/ui_state/photo_viewer/editor, new)
 
 /datum/ui_state/photo_viewer/can_use_topic(obj/item/photo/src_object, mob/user)
 	var/turf/photo_turf = get_turf(src_object)
-	if(!user?.client || !photo_turf || !src_object.picture || !in_range(photo_turf, user))
+	if(!user?.client || !photo_turf || !src_object.picture)
 		return UI_CLOSE
 	if(isobserver(user))
 		return UI_UPDATE
+	if(!in_range(photo_turf, user))
+		return UI_CLOSE
 	return user.shared_ui_interaction(src_object)
 
 /datum/ui_state/photo_viewer/editor/can_use_topic(obj/item/photo/src_object, mob/user)

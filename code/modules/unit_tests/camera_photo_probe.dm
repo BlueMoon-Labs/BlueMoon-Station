@@ -1,6 +1,26 @@
 // Камера должна рисовать пол и в затенённом помещении. Служебная маска освещения
 // из turf.contents прежде перекрывала фон чёрным цветом.
 
+/datum/unit_test/camera_photo_reset_transform/Run()
+	var/icon/base = icon('icons/effects/camera_image_base.dmi', "")
+	base.DrawBox("#ff0000", 3, 4, 3, 4)
+	var/icon/detail = icon('icons/effects/camera_image_base.dmi', "")
+	detail.DrawBox("#00ff00", 5, 6, 5, 6)
+	var/image/subject = image(icon = base)
+	var/matrix/pose = matrix()
+	pose.Translate(8, 0)
+	subject.transform = pose
+	var/image/overlay = image(icon = detail)
+	for(var/grouping in list(0, KEEP_TOGETHER, KEEP_TOGETHER | KEEP_APART))
+		subject.appearance_flags = grouping & KEEP_TOGETHER
+		overlay.appearance_flags = RESET_TRANSFORM | (grouping & KEEP_APART)
+		subject.overlays = list(overlay)
+		var/list/offsets = list()
+		var/icon/result = getFlatIcon(subject, no_anim = TRUE, icon_offsets = offsets, apply_photo_transform = TRUE)
+		var/detail_x = grouping == KEEP_TOGETHER ? 13 : 5
+		TEST_ASSERT_EQUAL(result.GetPixel(11 + offsets["x"], 4 + offsets["y"]), "#ff0000", "Основа не получила матрицу объекта")
+		TEST_ASSERT_EQUAL(result.GetPixel(detail_x + offsets["x"], 6 + offsets["y"]), "#00ff00", "Оверлей получил неверную матрицу при флагах [grouping]")
+
 /// Returns TRUE if the pixel at (px,py) is present and not pure/near-black.
 /datum/unit_test/proc/camera_pixel_is_lit(icon/ico, px, py)
 	if(!ico)

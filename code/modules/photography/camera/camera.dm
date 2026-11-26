@@ -223,17 +223,20 @@
 	if(use_flash)
 		flash_lighting_fx(8, light_power, light_color)
 	blending = TRUE
-	var/turf/target_turf = get_turf(target)
-	var/datum/picture/picture
-	if(target_turf)
-		picture = capture_camera_picture(target_turf, user, size_x, size_y, use_flash, see_ghosts, target)
-	if(picture)
-		if(QDELETED(src))
-			qdel(picture)
-			return FALSE
-		if(!silent)
-			play_camera_shutter(loc, custom_sound)
-		after_picture(user, picture, flag)
+	try
+		var/turf/target_turf = get_turf(target)
+		var/datum/picture/picture
+		if(target_turf)
+			picture = capture_camera_picture(target_turf, user, size_x, size_y, use_flash, see_ghosts, target)
+		if(picture)
+			if(QDELETED(src))
+				qdel(picture)
+			else
+				if(!silent)
+					play_camera_shutter(loc, custom_sound)
+				after_picture(user, picture, flag)
+	catch(var/exception/error)
+		stack_trace("Ошибка съёмки фотоаппаратом: [error]")
 	blending = FALSE
 
 /proc/camera_frame_turfs(turf/target_turf, mob/user, size_x, size_y, flash_enabled, atom/target = target_turf)
@@ -270,7 +273,8 @@
 	var/blueprints = FALSE
 	for(var/turf/T as anything in turfs)
 		for(var/mob/M in T)
-			mobs += M
+			if(camera_can_render_subject(M, see_ghosts))
+				mobs += M
 		if(locate(/obj/item/areaeditor/blueprints) in T)
 			blueprints = TRUE
 	if(!length(turfs))

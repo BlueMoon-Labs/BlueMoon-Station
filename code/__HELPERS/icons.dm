@@ -917,12 +917,16 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 	var/curblend = A.blend_mode || defblend
 	var/pivot_x = world.icon_size / 2
 	var/pivot_y = world.icon_size / 2
+	var/matrix/pose = apply_photo_transform ? A.transform : null
+	if(pose && pose.a == 1 && !pose.b && !pose.c && !pose.d && pose.e == 1 && !pose.f)
+		pose = null
 
 	if(A.overlays.len || A.underlays.len)
 		var/icon/flat = BLANK
 		// Layers will be a sorted list of icons/overlays, based on the order in which they are displayed
 		var/list/layers = list()
 		var/image/copy
+		var/list/untransformed_layers
 		// Add the atom's icon itself, without pixel_x/y offsets.
 		if(!noIcon)
 			copy = image(icon=curicon, icon_state=curstate, layer=A.layer, dir=base_icon_dir)
@@ -955,6 +959,9 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 						return flat
 					current_layer = process_set + A.layer + current_layer / 1000
 
+				if(pose && (current.appearance_flags & RESET_TRANSFORM) && (!(A.appearance_flags & KEEP_TOGETHER) || (current.appearance_flags & KEEP_APART)))
+					LAZYADD(untransformed_layers, current)
+
 				for(var/p in 1 to layers.len)
 					var/image/cmp = layers[p]
 					if(current_layer < layers[cmp])
@@ -973,6 +980,15 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 
 		var/list/rc_overlays = null // flat list
 		var/list/child_offsets = apply_photo_transform ? list() : null
+		var/list/layer_offsets
+		var/icon/base_icon
+		if(untransformed_layers)
+			// Слои должны сохранить порядок даже при разных матрицах, поэтому сводим их после преобразования.
+			layer_offsets = list()
+			if(copy)
+				base_icon = icon(copy.icon, copy.icon_state, base_icon_dir, no_anim ? FLAT_ICON_FIRST_FRAME : null)
+				pivot_x = base_icon.Width() / 2 - A.icon_w
+				pivot_y = base_icon.Height() / 2 - A.icon_z
 
 		for(var/V in layers)
 			var/image/I = V
@@ -984,7 +1000,7 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 
 			if(I == copy) // 'I' is an /image based on the object being flattened.
 				curblend = BLEND_OVERLAY
-				add = icon(I.icon, I.icon_state, base_icon_dir, no_anim ? FLAT_ICON_FIRST_FRAME : null)
+				add = base_icon || icon(I.icon, I.icon_state, base_icon_dir, no_anim ? FLAT_ICON_FIRST_FRAME : null)
 				if(apply_photo_transform)
 					pixel_left -= A.icon_w
 					pixel_bottom -= A.icon_z
@@ -996,6 +1012,12 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 					pixel_left += I.pixel_w - child_offsets["x"]
 					pixel_bottom += I.pixel_z - child_offsets["y"]
 					curblend = I.blend_mode || defblend
+			if(add && layer_offsets && !(I in untransformed_layers))
+				layer_offsets["x"] = -pixel_left
+				layer_offsets["y"] = -pixel_bottom
+				add = transform_camera_icon(add, pose, layer_offsets, pivot_x, pivot_y)
+				pixel_left = -layer_offsets["x"]
+				pixel_bottom = -layer_offsets["y"]
 			if(!add)
 				continue
 			// Find the new dimensions of the flat icon to fit the added overlay
@@ -1048,6 +1070,8 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 			. = icon(flat, "", SOUTH, FLAT_ICON_FIRST_FRAME, FALSE)
 		else
 			. = icon(flat, "", SOUTH)
+		if(layer_offsets)
+			pose = null
 	else	//There's no overlays.
 		if(!noIcon)
 			SET_SELF(.)
@@ -1058,10 +1082,8 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 				pivot_x = base_icon.Width() / 2 - A.icon_w
 				pivot_y = base_icon.Height() / 2 - A.icon_z
 
-	if(apply_photo_transform && .)
-		var/matrix/pose = A.transform
-		if(pose && (pose.a != 1 || pose.b || pose.c || pose.d || pose.e != 1 || pose.f))
-			. = transform_camera_icon(., pose, icon_offsets, pivot_x, pivot_y)
+	if(pose && .)
+		. = transform_camera_icon(., pose, icon_offsets, pivot_x, pivot_y)
 
 	//Clear defines
 	#undef flatX1

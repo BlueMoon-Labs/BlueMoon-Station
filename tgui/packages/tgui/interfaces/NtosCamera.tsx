@@ -447,7 +447,8 @@ const formatCaptureTime = (time: number, timeZone: string) =>
 const PhotoCaptureTime = ({ photo }: { photo: SelectedPhoto }) => {
   const { data } = useBackend<CameraData>();
   // Первые 48 бит UUIDv7 хранят время создания в миллисекундах.
-  const capturedAt = parseInt(photo.id.slice(0, 8) + photo.id.slice(9, 13), 16);
+  const uuidTime = /^([0-9a-f]{8})-([0-9a-f]{4})-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.exec(photo.id);
+  const capturedAt = uuidTime ? parseInt(uuidTime[1] + uuidTime[2], 16) : NaN;
   let clientTime: string | undefined;
   if (photo.captureTimeZone && Number.isFinite(capturedAt)) {
     try {

@@ -82,8 +82,15 @@
 		stack_trace("Не удалось записать облачную фотографию [path]: [error]")
 		fdel(temp_path)
 		return FALSE
-	// Предыдущий снимок остаётся доступен, пока новый записывается во временный файл.
-	var/saved = (!fexists(path) || fcopy(path, "[path].bak")) && fcopy(temp_path, path)
+	// Основной файл может быть повреждён, если снимок открыли из резервной копии.
+	var/backup_path = "[path].bak"
+	var/can_publish = TRUE
+	if(fexists(path))
+		var/datum/picture/primary = read_pda_cloud_archive(path, TRUE)
+		if(primary)
+			can_publish = fcopy(path, backup_path)
+			qdel(primary)
+	var/saved = can_publish && fcopy(temp_path, path)
 	fdel(temp_path)
 	return saved
 

@@ -477,6 +477,18 @@
 	TEST_ASSERT(delete_pda_cloud_photo(url_path), "не удалён снимок из облака")
 	TEST_ASSERT(prefs.load_preferences(TRUE), "не читаются настройки после переноса")
 	TEST_ASSERT_EQUAL(length(pda_photo_cloud_ids(cloud)), 2, "удалённый снимок вернулся после завершения переноса")
+	var/cloud_backup_hash = rustg_hash_file(RUSTG_HASH_SHA256, "[edited_path].bak")
+	fdel(edited_path)
+	write_album(edited_path, "повреждённый снимок")
+	TEST_ASSERT(save_pda_cloud_photo(edited_path, edited, null), "не удалось записать снимок после восстановления")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_SHA256, "[edited_path].bak"), cloud_backup_hash, "исправная копия снимка перезаписана повреждённой")
+	var/album_backup_hash = rustg_hash_file(RUSTG_HASH_SHA256, "[album_path].bak")
+	var/obj/item/storage/photo_album/personal/album = allocate(/obj/item/storage/photo_album/personal, run_loc_floor_bottom_left)
+	album.load_for_account(account_key)
+	TEST_ASSERT_EQUAL(length(album.contents), 3, "альбом не восстановлен из резервной копии")
+	album.queue_save()
+	TEST_ASSERT(album.save_contents(), "не удалось сохранить восстановленный альбом")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_SHA256, "[album_path].bak"), album_backup_hash, "исправная копия альбома перезаписана повреждённой")
 
 /datum/unit_test/player_save_json/pda_legacy_album_migration
 	var/fixture_directory

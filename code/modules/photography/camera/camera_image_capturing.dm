@@ -221,6 +221,8 @@
 
 	return result
 
+#define CAMERA_RASTER_SIDE_LIMIT 2048
+
 /proc/transform_camera_icon(icon/source, matrix/pose, list/offsets, pivot_x, pivot_y)
 	var/source_x = -offsets["x"] - pivot_x
 	var/source_y = -offsets["y"] - pivot_y
@@ -252,7 +254,7 @@
 	offsets["y"] = -bottom
 
 	// Перенос и масштабирование без поворота обрабатываем средствами /icon.
-	if(!b && !d && new_width <= 2048 && new_height <= 2048)
+	if(!b && !d && new_width <= CAMERA_RASTER_SIDE_LIMIT && new_height <= CAMERA_RASTER_SIDE_LIMIT)
 		if(a == 1 && e == 1)
 			return source
 		var/icon/scaled = icon(source)
@@ -265,8 +267,8 @@
 
 	// Ограничиваем растр для экстремальных матриц. Обратное преобразование сохраняет
 	// исходные цвета и избегает дыр между пикселями при повороте или сдвиге.
-	new_width = min(new_width, 2048)
-	new_height = min(new_height, 2048)
+	new_width = min(new_width, CAMERA_RASTER_SIDE_LIMIT)
+	new_height = min(new_height, CAMERA_RASTER_SIDE_LIMIT)
 	var/icon/result = icon('icons/effects/camera_image_base.dmi', "")
 	result.Scale(new_width, new_height)
 	for(var/y in 1 to new_height)
@@ -289,3 +291,5 @@
 			result.DrawBox(run_color, run_start, y, new_width, y)
 		CHECK_TICK
 	return result
+
+#undef CAMERA_RASTER_SIDE_LIMIT
