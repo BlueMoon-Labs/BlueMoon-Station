@@ -167,6 +167,31 @@ $color-bg-section: base.$color-bg-section !default;
   word-wrap: break-word;
 }
 
+.ChatMessage:has(.radio_loudspeaker) {
+  display: flex;
+  align-items: baseline;
+
+  > .ChatMessage__timestamp {
+    flex: none;
+  }
+
+  > span:has(.radio_loudspeaker) {
+    position: relative;
+    min-width: 0;
+    padding-left: 0.55em;
+  }
+
+  .radio_loudspeaker::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    border-left: 2px solid currentColor;
+    pointer-events: none;
+  }
+}
+
 .ChatMessage--highlighted {
   position: relative;
   border-left: math.div(1em, 6) solid var(--chat-accent, rgba(255, 221, 68));

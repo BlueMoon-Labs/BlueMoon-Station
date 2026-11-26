@@ -231,14 +231,25 @@
 	if(!beacon && !bridge && !shuttle_fallback)
 		return
 	var/atom/movable/npc_target = get_target()
+	var/skipped_mindless = 0
 	for(var/mob/living/L as anything in GLOB.mob_living_list)
-		if(QDELETED(L) || L == npc_target || !L.mind)
+		if(QDELETED(L) || L == npc_target)
 			continue
 		var/turf/start = get_turf(L)
 		if(start?.z != objective_z_level)
 			continue
 		//Только авангард: трупы живцов руины и цель миссии на маяк не летят.
-		if(!is_expedition_crew(L))
+		//После ghost'а у трупа нет ни mind, ни ckey — узнаём его по ДНК, снятой на старте
+		//миссии. stat == DEAD не даёт фултонуть живого человека с совпавшей ДНК.
+		var/is_crew = FALSE
+		if(L.mind)
+			is_crew = is_expedition_crew(L)
+		else if(iscarbon(L) && L.stat == DEAD)
+			var/mob/living/carbon/body = L
+			is_crew = is_expedition_body(body)
+			if(!is_crew)
+				skipped_mindless++
+		if(!is_crew)
 			continue
 		//Сознание в отрубленной голове, мозге или MMI: сам он с руины не уйдёт, везём носитель.
 		var/atom/movable/remains = L
@@ -247,10 +258,14 @@
 		else if(L.stat != DEAD)
 			continue
 		//Останки уходят на маяк (на свободный пол рядом с ним) или, если маяка нет, на мостик шаттла.
-		if(!send_remains_home(remains, beacon ? beacon.get_delivery_turf() : (bridge || shuttle_fallback)))
+		var/turf/destination = beacon ? beacon.get_delivery_turf() : (bridge || shuttle_fallback)
+		if(!send_remains_home(remains, destination))
 			continue
+		log_game("[name]: останки [key_name(L)] отправлены с руины (z=[objective_z_level]) домой.")
 		if(isbrain(L))
-			send_remains_home(find_brainless_body(L), beacon ? beacon.get_delivery_turf() : (bridge || shuttle_fallback))
+			send_remains_home(find_brainless_body(L), destination)
+	if(skipped_mindless)
+		log_game("[name]: на руине (z=[objective_z_level]) осталось [skipped_mindless] мёртвых тел без mind/ckey, не совпавших со снимком экипажа.")
 
 /datum/orbital_objective/proc/send_remains_home(atom/movable/remains, turf/destination)
 	if(QDELETED(remains) || !destination)

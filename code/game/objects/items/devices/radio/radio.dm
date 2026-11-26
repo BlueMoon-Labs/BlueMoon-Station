@@ -222,6 +222,10 @@
 			else
 				channels[channel] |= FREQ_LISTENING
 			. = TRUE
+		if("amplify")
+			var/obj/item/radio/headset/headset = src
+			if(istype(headset))
+				return headset.toggle_receive_amplification(params)
 		if("command")
 			use_command = !use_command
 			. = TRUE
@@ -262,15 +266,6 @@
 	if(language && initial(language.visual_language))
 		return
 
-	if(use_command)
-		// BLUEMOON ADD START - чтобы работал большой текст у больших и маленький персонажей
-		if(spans & SPAN_BIG)
-			spans &= ~SPAN_BIG
-		if(spans & SPAN_SMALL)
-			spans &= ~SPAN_SMALL
-		// BLUEMOON ADD END
-		spans |= commandspan
-
 	/*
 	Roughly speaking, radios attempt to make a subspace transmission (which
 	is received, processed, and rebroadcast by the telecomms satellite) and
@@ -303,6 +298,9 @@
 
 	// Determine the identity information which will be attached to the signal.
 	var/atom/movable/virtualspeaker/speaker = new(null, M, src)
+	if(use_command)
+		amplify_radio_spans(spans, commandspan)
+		speaker.radio_loudspeaker = TRUE
 
 	// Construct the signal
 	var/datum/signal/subspace/vocal/signal = new(src, freq, speaker, language, message, spans)

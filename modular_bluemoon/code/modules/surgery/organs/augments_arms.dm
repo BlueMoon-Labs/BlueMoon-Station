@@ -532,7 +532,8 @@
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	icon_state = "implant_mono_wire_sec"
 	item_state = "mono_wire"
-	force = 20
+	force = 15
+	attack_speed = CLICK_CD_MELEE * 1.2
 	armour_penetration = MELEE_AP_COMBAT
 	flags_1 = CONDUCT_1
 	w_class = WEIGHT_CLASS_BULKY
@@ -624,11 +625,12 @@
 /obj/item/melee/implantmonostring/syndie
 	name = "Agent Monowire"
 	icon_state = "implant_mono_wire"
-	force =25
+	force = 20
 	armour_penetration = MELEE_AP_ANTAGONIST
 	reach = 3 // +2 тайла
 	/// Шанс разряда тока по цели при ударе.
-	var/shock_chance = 25
+	attack_speed = CLICK_CD_MELEE * 1.5
+	var/shock_chance = 5
 
 /obj/item/melee/implantmonostring/syndie/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	// Разряд не должен проходить сквозь щит, даже если сам удар поглощён.
@@ -797,7 +799,7 @@
 /obj/item/projectile/bullet/implanthandgun
 	name = "explosive charge"
 	icon_state = "missile"
-	damage = 35
+	damage = 50
 	range = 15
 	knockdown = 0
 	stun = 0

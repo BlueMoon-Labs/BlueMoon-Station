@@ -19,12 +19,16 @@ export const Radio = (props) => {
     useCommand,
     subspace,
     subspaceSwitchable,
+    headset,
+    amplifiedFrequency,
+    amplifiedChannels,
   } = data;
   const tunedChannel = RADIO_CHANNELS
     .find(channel => channel.freq === frequency);
   const channels = map((value, key) => ({
     name: key,
     status: !!value,
+    amplified: !!amplifiedChannels?.[key],
   }))(data.channels);
   // Calculate window height
   let height = 106;
@@ -66,6 +70,13 @@ export const Radio = (props) => {
                 <Box inline color={tunedChannel.color} ml={2}>
                   [{tunedChannel.name}]
                 </Box>
+              )}
+              {!!headset && (
+                <Button.Checkbox
+                  ml={1}
+                  checked={!!amplifiedFrequency}
+                  tooltip="Крупный текст при приёме на этой частоте"
+                  onClick={() => act('amplify', { frequency })} />
               )}
             </LabeledList.Item>
             <LabeledList.Item label="Звук">
@@ -114,6 +125,13 @@ export const Radio = (props) => {
                       onClick={() => act('channel', {
                         channel: channel.name,
                       })} />
+                    {!!headset && (
+                      <Button.Checkbox
+                        ml={1}
+                        checked={channel.amplified}
+                        content="Крупный текст"
+                        onClick={() => act('amplify', { channel: channel.name })} />
+                    )}
                   </Box>
                 ))}
               </LabeledList.Item>

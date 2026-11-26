@@ -108,6 +108,7 @@
 	/// Just 'slightly' snowflakey way to modify projectile damage for projectiles fired from this gun.
 	var/projectile_damage_multiplier = 1
 
+	/// Множитель урона по симпл-мобам без разума (ИИ); не применяется к симпл-мобам, занятым игроками
 	var/projectile_simple_mob_damage_multiplier = 1
 
 	/// directional recoil multiplier

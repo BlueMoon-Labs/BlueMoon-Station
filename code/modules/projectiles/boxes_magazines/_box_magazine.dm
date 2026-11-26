@@ -69,9 +69,36 @@
 			stored_ammo.Insert(1,b)
 		return b
 
+/// Калибр магазина и гильзы может быть как строкой, так и списком калибров
+/// (например, револьверные барабаны). Раньше здесь было строгое `!=`, из-за чего
+/// любой список калибров не совпадал даже с той же строкой и патроны не вставлялись.
+/obj/item/ammo_box/proc/caliber_compatible(obj/item/ammo_casing/R)
+	if(!R)
+		return FALSE
+
+	var/box_caliber = caliber
+	var/round_caliber = R.caliber
+
+	// У коробок без калибра старый fallback - точный тип патрона.
+	if(!box_caliber)
+		return R.type == ammo_type
+
+	if(islist(box_caliber))
+		if(islist(round_caliber))
+			for(var/check_caliber in round_caliber)
+				if(check_caliber in box_caliber)
+					return TRUE
+			return FALSE
+		return round_caliber in box_caliber
+
+	if(islist(round_caliber))
+		return box_caliber in round_caliber
+
+	return box_caliber == round_caliber
+
 /obj/item/ammo_box/proc/give_round(obj/item/ammo_casing/R, replace_spent = 0)
-	// Boxes don't have a caliber type, magazines do. Not sure if it's intended or not, but if we fail to find a caliber, then we fall back to ammo_type.
-	if(!R || (caliber && R.caliber != caliber) || (!caliber && R.type != ammo_type))
+	// Boxes don't have a caliber type, magazines do. If we fail to find a caliber, then we fall back to ammo_type.
+	if(!caliber_compatible(R))
 		return FALSE
 
 	if (stored_ammo.len < max_ammo)
