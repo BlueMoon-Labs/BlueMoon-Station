@@ -7,6 +7,7 @@
 	var/datum/avatar_help_text/help_datum
 	var/nohit = TRUE
 	var/disconnecting = FALSE
+	var/linked_damage_multiplier = 0.5
 
 /datum/component/avatar_connection/Initialize(
 	datum/mind/old_mind,
@@ -183,6 +184,8 @@
 	var/mob/living/carbon/old_body = old_body_ref?.resolve()
 	if(isnull(old_body) || damage_type == STAMINA || damage_type == OXYLOSS)
 		return
+
+	damage *= linked_damage_multiplier
 
 	if(domain_has_no_linked_damage())
 		nohit = FALSE

@@ -102,8 +102,13 @@
 /obj/item/ammo_casing/caseless/rocket,
 /obj/item/ammo_casing/caseless/rocket,
 /obj/item/ammo_casing/caseless/rocket,
+/obj/item/ammo_casing/caseless/rocket,
+/obj/item/ammo_casing/caseless/rocket,
+/obj/item/ammo_casing/caseless/rocket,
 /obj/item/energy_katana,
 /obj/item/ammo_box/magazine/m10mm,
+/obj/item/storage/firstaid/regular,
+/obj/item/storage/firstaid/regular,
 /turf/open/floor/plasteel/dark{
 	dir = 8
 	},
@@ -159,7 +164,11 @@
 /obj/structure/closet,
 /obj/item/gun/ballistic/automatic/l6_saw/unrestricted,
 /obj/item/ammo_box/magazine/mm712x82,
+/obj/item/ammo_box/magazine/mm712x82,
+/obj/item/ammo_box/magazine/mm712x82,
 /obj/item/gun/ballistic/automatic/sniper_rifle,
+/obj/item/ammo_box/magazine/sniper_rounds,
+/obj/item/ammo_box/magazine/sniper_rounds,
 /turf/open/floor/plasteel/dark,
 /area/virtual_domain/safehouse)
 "X" = (

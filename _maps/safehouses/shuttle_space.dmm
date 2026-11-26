@@ -61,6 +61,11 @@
 /obj/structure/table/reinforced,
 /obj/effect/decal/cleanable/dirt,
 /obj/item/storage/toolbox/emergency,
+/obj/item/clothing/suit/armor/vest,
+/obj/item/storage/firstaid/regular,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
 /turf/open/floor/plasteel,
 /area/virtual_domain/safehouse)
 "r" = (

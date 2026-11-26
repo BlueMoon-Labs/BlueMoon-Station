@@ -737,10 +737,14 @@
 	to_wear.gloves = null
 	to_wear.l_pocket = null
 	to_wear.r_pocket = null
-	to_wear.suit = null
 	to_wear.suit_store = null
 
 	avatar.equipOutfit(to_wear, visualsOnly = TRUE)
+
+	if(isnull(avatar.wear_suit))
+		var/obj/item/clothing/suit/armor/vest/vest = new(get_turf(avatar))
+		if(!avatar.equip_to_slot_if_possible(vest, ITEM_SLOT_OCLOTHING))
+			qdel(vest)
 
 	var/obj/item/clothing/under/avatar_uniform = avatar.w_uniform
 	if(istype(avatar_uniform))
@@ -755,8 +759,6 @@
 
 	var/obj/item/storage/backpack/bag = avatar.back
 	if(istype(bag))
-		QDEL_LIST(bag.contents)
-
 		bag.contents += list(
 			new /obj/item/storage/box/survival(bag),
 			new /obj/item/storage/firstaid/regular(bag),
@@ -814,6 +816,7 @@
 			for(var/datum/weakref/spawn_ref as anything in mob_spawns)
 				var/mob/living/spawned_mob = spawn_ref.resolve()
 				if(spawned_mob && !QDELETED(spawned_mob))
+					soften_domain_mob(spawned_mob)
 					spawned_mob.AddComponent(/datum/component/virtual_entity, src)
 
 		qdel(landmark)
@@ -895,6 +898,34 @@
 	examine_text += span_info("Под вашим взглядом пол едва пульсирует потоками закодированных данных.")
 	examine_text += span_info("Похоже, это часть места, предназначенного для получения зашифрованных грузов.")
 
+/obj/machinery/quantum_server/proc/soften_domain_mob(mob/living/creature)
+	if(QDELETED(creature) || !isliving(creature))
+		return
+
+	var/is_boss = istype(creature, /mob/living/simple_animal/hostile/megafauna)
+	var/health_factor = is_boss ? 0.25 : 0.55
+	var/min_health = is_boss ? 150 : 20
+	var/new_max_health = max(min_health, round(creature.maxHealth * health_factor))
+	if(creature.maxHealth > new_max_health)
+		creature.maxHealth = new_max_health
+		creature.health = min(creature.health, new_max_health)
+		creature.updatehealth()
+
+	if(!istype(creature, /mob/living/simple_animal/hostile))
+		return
+
+	var/mob/living/simple_animal/hostile/hostile = creature
+	var/damage_factor = is_boss ? 0.6 : 0.7
+	hostile.melee_damage_lower = round(hostile.melee_damage_lower * damage_factor)
+	hostile.melee_damage_upper = max(hostile.melee_damage_lower, round(hostile.melee_damage_upper * damage_factor))
+
+	if(is_boss)
+		hostile.obj_damage = round(hostile.obj_damage * 0.5)
+		hostile.armour_penetration = min(hostile.armour_penetration, 10)
+		hostile.ranged_cooldown_time = round(hostile.ranged_cooldown_time * 1.5)
+	else if(hostile.ranged)
+		hostile.ranged_cooldown_time = round(hostile.ranged_cooldown_time * 1.25)
+
 /obj/machinery/quantum_server/proc/on_template_loaded(datum/lazy_template/source, list/created_atoms)
 	SIGNAL_HANDLER
 
@@ -908,6 +939,7 @@
 			else
 				mutation_candidate_refs.Add(WEAKREF(creature))
 
+			soften_domain_mob(creature)
 			creature.AddComponent(/datum/component/virtual_entity, src)
 			continue
 
