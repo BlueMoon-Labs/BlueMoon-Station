@@ -258,6 +258,8 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 			if(viewing_messages_of in saved_chats)
 				var/datum/pda_chat/chat = saved_chats[viewing_messages_of]
 				chat.unread_messages = 0
+				if(istext(params["message"]))
+					chat.message_draft = trim(params["message"], MAX_PDA_MESSAGE_LEN)
 
 			viewing_messages_of = params["ref"]
 
@@ -277,6 +279,8 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 			var/datum/pda_chat/chat = saved_chats[target]
 			chat.visible_in_recents = FALSE
 			if(viewing_messages_of == target)
+				if(istext(params["message"]))
+					chat.message_draft = trim(params["message"], MAX_PDA_MESSAGE_LEN)
 				viewing_messages_of = null
 			return TRUE
 
@@ -389,7 +393,31 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 					return FALSE
 				return disk.send_virus(computer, target_messenger.computer, usr, params["message"])
 
+			if(istype(target, /datum/pda_chat))
+				return send_chat_message(usr, params["message"], target)
 			return send_message(usr, params["message"], list(target))
+
+		if("PDA_openPhotoGallery")
+			var/datum/computer_file/program/pda_camera/camera = locate() in computer.get_all_files()
+			var/mob/user = ui.user
+			if(!user?.client || !user.ckey || !camera || computer.active_program != src || !sending_and_receiving || sending_virus || !istext(params["message"]))
+				return FALSE
+			if(camera.ui_state(user).can_use_topic(computer, user) != UI_INTERACTIVE)
+				return FALSE
+			var/datum/pda_chat/chat = get_compose_chat()
+			if(!chat?.can_reply || chat.blocked || !computer.switch_program(camera, user))
+				return FALSE
+			chat.message_draft = trim(params["message"], MAX_PDA_MESSAGE_LEN)
+			viewing_messages_of = REF(chat)
+			camera.open_camera_ui(user, chat)
+			return TRUE
+
+		if("PDA_clearPhotoAttachment")
+			var/datum/pda_chat/chat = saved_chats[viewing_messages_of]
+			if(!chat)
+				return FALSE
+			chat.photo_attachment = null
+			return TRUE
 
 		if("PDA_clearPhoto")
 			selected_image = null
@@ -467,6 +495,9 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 	data["alert_silenced"] = alert_silenced
 	data["sending_and_receiving"] = sending_and_receiving
 	data["open_chat"] = viewing_messages_of
+	var/datum/pda_chat/open_chat = saved_chats[viewing_messages_of]
+	data["photo_attachment"] = open_chat?.photo_attachment
+	data["has_camera_gallery"] = istype(computer, /obj/item/modular_computer/pda)
 
 	data["stored_photos"] = list()
 	data["selected_photo_path"] = null
@@ -781,26 +812,55 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 
 	return parse_emoji_message(message)
 
+/datum/computer_file/program/messenger/proc/get_compose_chat()
+	if(!viewing_messages_of)
+		return null
+	var/datum/pda_chat/chat = saved_chats[viewing_messages_of]
+	if(chat)
+		return chat
+	var/list/contacts = get_messengers()
+	if(!(viewing_messages_of in contacts))
+		return null
+	var/datum/computer_file/program/messenger/recipient = locate(viewing_messages_of)
+	if(!istype(recipient) || QDELETED(recipient) || training_side_differs(recipient))
+		return null
+	if(!(viewing_messages_of in GLOB.pda_messengers))
+		add_messenger(recipient)
+	return find_chat_by_recipient(viewing_messages_of) || create_chat(viewing_messages_of)
+
+/datum/computer_file/program/messenger/proc/encode_photo_attachment(datum/picture/photo)
+	var/base64 = photo.get_base64()
+	if(base64)
+		return "data:image/png;base64,[base64]"
+	var/url = html_decode(photo.picture_url)
+	if(findtext(url, "https://", 1, 9) == 1 || findtext(url, "http://", 1, 8) == 1)
+		return url
+	return null
+
+/datum/computer_file/program/messenger/proc/send_chat_message(mob/user, message, datum/pda_chat/chat)
+	if(!send_message(user, message, list(chat), photo_attachment = chat.photo_attachment))
+		return FALSE
+	chat.photo_attachment = null
+	chat.message_draft = ""
+	return TRUE
+
 /// Sends a message to targets via PDA
-/datum/computer_file/program/messenger/proc/send_message(atom/source, message, list/targets, everyone = FALSE)
+/datum/computer_file/program/messenger/proc/send_message(atom/source, message, list/targets, everyone = FALSE, photo_attachment)
 	var/mob/living/sender
 	if(isliving(source))
 		sender = source
 
-	var/photo_path = null
-	var/photo_asset = null
+	var/photo_path = photo_attachment
 	var/obj/item/modular_computer/pda/pda_device = computer
-	if(istype(pda_device) && pda_device.picture)
+	if(!photo_attachment && istype(pda_device) && pda_device.picture)
 		var/datum/picture/pic = pda_device.picture
 		var/base64 = pic?.get_base64()
 		if(base64)
 			photo_path = "data:image/png;base64,[base64]"
-			photo_asset = photo_path
 			pda_device.picture = null
 
-	if(admin_photo_url)
+	if(!photo_attachment && admin_photo_url)
 		photo_path = admin_photo_url
-		photo_asset = admin_photo_url
 		admin_photo_url = null
 
 	message = sanitize_pda_message(message, sender)
@@ -866,7 +926,7 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 		return FALSE
 
 	// Log in our chat
-	var/datum/pda_message/message_datum = new(message, TRUE, STATION_TIME_TIMESTAMP(PDA_MESSAGE_TIMESTAMP_FORMAT, world.time), photo_asset, everyone)
+	var/datum/pda_message/message_datum = new(message, TRUE, STATION_TIME_TIMESTAMP(PDA_MESSAGE_TIMESTAMP_FORMAT, world.time), photo_path, everyone)
 	for(var/datum/pda_chat/target_chat as anything in target_chats)
 		if(!target_chat)
 			continue

@@ -174,36 +174,7 @@
 				to_chat(user, span_danger("\The [src]'s screen shows \"I/O ERROR - Unable to run program\" warning."))
 				return
 
-			P.computer = src
-
-			if(!P.is_supported_by_hardware(hardware_flag, 1, user))
-				return
-
-			// The program is already running. Resume it.
-			if(P in idle_threads)
-				P.program_state = PROGRAM_STATE_ACTIVE
-				active_program = P
-				P.alert_pending = FALSE
-				idle_threads.Remove(P)
-				update_appearance()
-				playsound(src, 'sound/machines/terminal_select.ogg', 25, FALSE)
-				return
-
-			var/obj/item/computer_hardware/processor_unit/PU = all_components[MC_CPU]
-			var/max_idle = PU ? PU.max_idle_programs : max_idle_programs
-
-			if(idle_threads.len > max_idle)
-				to_chat(user, span_danger("\The [src] displays a \"Maximal CPU load reached. Unable to run another program.\" error."))
-				return
-
-			if(P.requires_ntnet && !get_ntnet_status(P.requires_ntnet_feature)) // The program requires NTNet connection, but we are not connected to NTNet.
-				to_chat(user, span_danger("\The [src]'s screen shows \"Unable to connect to NTNet. Please retry. If problem persists contact your system administrator.\" warning."))
-				return
-			if(P.run_program(user))
-				active_program = P
-				P.alert_pending = FALSE
-				update_appearance()
-				playsound(src, 'sound/machines/terminal_select.ogg', 25, FALSE)
+			activate_program(P, user)
 			return TRUE
 
 		if("PDA_ejectDisk")
@@ -293,3 +264,35 @@
 	if(physical)
 		return physical
 	return src
+
+/obj/item/modular_computer/proc/activate_program(datum/computer_file/program/program, mob/user)
+	program.computer = src
+	if(!program.is_supported_by_hardware(hardware_flag, TRUE, user))
+		return FALSE
+	if(program in idle_threads)
+		program.program_state = PROGRAM_STATE_ACTIVE
+		idle_threads -= program
+	else
+		var/obj/item/computer_hardware/processor_unit/cpu = all_components[MC_CPU]
+		if(length(idle_threads) > (cpu ? cpu.max_idle_programs : max_idle_programs))
+			to_chat(user, span_danger("Загрузка процессора достигла предела. Не удалось запустить приложение."))
+			return FALSE
+		if(program.requires_ntnet && !get_ntnet_status(program.requires_ntnet_feature))
+			to_chat(user, span_danger("Не удалось подключиться к NtNet."))
+			return FALSE
+		if(!program.run_program(user))
+			return FALSE
+	active_program = program
+	program.alert_pending = FALSE
+	update_appearance()
+	playsound(src, 'sound/machines/terminal_select.ogg', 25, FALSE)
+	return TRUE
+
+/obj/item/modular_computer/proc/switch_program(datum/computer_file/program/program, mob/user)
+	var/datum/computer_file/program/previous = active_program
+	if(!activate_program(program, user))
+		return FALSE
+	if(previous && previous != program)
+		previous.kill_program()
+		SStgui.close_uis(previous)
+	return TRUE

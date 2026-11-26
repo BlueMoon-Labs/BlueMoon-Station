@@ -54,6 +54,8 @@
 	var/datum/weakref/viewfinder_target_ref
 	var/datum/weakref/viewfinder_origin_ref
 	var/photos_taken = 0
+	var/list/share_contacts
+	var/datum/weakref/attachment_chat_ref
 
 /datum/computer_file/program/pda_camera/Destroy()
 	close_camera_window()
@@ -78,11 +80,18 @@
 			return
 	else
 		current_ui?.close()
+	open_camera_ui(user)
+
+/datum/computer_file/program/pda_camera/proc/open_camera_ui(mob/user, datum/pda_chat/attachment_chat)
 	clear_session()
 	viewer_ref = WEAKREF(user)
 	cloud_directory = pda_photo_cloud_path(user.ckey)
+	if(attachment_chat)
+		attachment_chat_ref = WEAKREF(attachment_chat)
+		tab = "local"
+		refresh_gallery(1)
 	RegisterSignal(user, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(on_viewer_logout))
-	ui = new(user, src, tgui_id, filedesc)
+	var/datum/tgui/ui = new(user, src, tgui_id, filedesc)
 	viewer_ui_ref = WEAKREF(ui)
 	RegisterSignal(ui, COMSIG_PARENT_QDELETING, PROC_REF(on_viewer_ui_deleted))
 	ui.set_autoupdate(FALSE)
@@ -126,6 +135,7 @@
 	viewer_ref = null
 	viewer_ui_ref = null
 	cloud_directory = null
+	attachment_chat_ref = null
 	gallery_ids = null
 	gallery_rows = null
 	tab = "camera"
@@ -136,6 +146,7 @@
 	print_message = null
 	print_transferred = FALSE
 	edit_mode = null
+	share_contacts = null
 	selected_id = null
 	QDEL_NULL(cloud_selection)
 
@@ -164,6 +175,8 @@
 	data["page"] = gallery_page
 	data["pages"] = gallery_pages
 	data["editMode"] = edit_mode
+	data["shareContacts"] = share_contacts
+	data["attachmentPicker"] = !!attachment_chat_ref
 	data["printOpen"] = print_open
 	data["printMessage"] = print_message
 	data["printJob"] = print_upload_timer ? print_job : null
@@ -180,7 +193,7 @@
 			var/obj/machinery/photocopier/printer = print_upload_timer ? printer_ref?.resolve() : find_printer(user)
 			data["printerNearby"] = !!printer
 			data["printerError"] = (!print_upload_timer && printer) ? printer.pda_photo_print_error() : null
-		else
+		else if(!share_contacts)
 			photo["uploaded"] = (tab == "local" && is_uploaded(selected_id))
 			photo["stationCaptureTime"] = selected.station_capture_time
 			photo["captureTimeZone"] = selected.capture_time_zone
@@ -197,6 +210,8 @@
 	var/mob/user = ui?.user
 	if(. || !user?.client || viewer_ref?.resolve() != user)
 		return .
+	if(attachment_chat_ref && !(action in list("tab", "page", "select", "back", "attach_photo", "cancel_attachment")))
+		return FALSE
 	switch(action)
 		if("toggle_flash")
 			if(tab != "camera" || capturing)
@@ -231,6 +246,8 @@
 			var/destination = params["tab"]
 			if(destination != "camera" && destination != "local" && destination != "cloud")
 				return FALSE
+			if(attachment_chat_ref && destination == "camera")
+				return FALSE
 			stop_aiming()
 			clear_selection()
 			ui.set_autoupdate(FALSE)
@@ -262,7 +279,7 @@
 			if(tab != "camera")
 				refresh_gallery(gallery_page)
 		if("edit", "upload")
-			if(print_open || !get_selection())
+			if(print_open || share_contacts || !get_selection())
 				return FALSE
 			if(action == "upload" && (tab != "local" || is_uploaded(selected_id) || !can_upload_to_cloud(user)))
 				return FALSE
@@ -274,7 +291,7 @@
 				return FALSE
 		if("delete")
 			var/datum/picture/selected = get_selection()
-			if(!selected || edit_mode || print_open || params["id"] != selected_id || params["tab"] != tab)
+			if(!selected || edit_mode || print_open || share_contacts || params["id"] != selected_id || params["tab"] != tab)
 				return FALSE
 			if(tab == "local")
 				local_photos -= selected_id
@@ -286,8 +303,42 @@
 				return FALSE
 			clear_selection()
 			refresh_gallery(gallery_page)
+		if("request_share")
+			if(!get_selection() || edit_mode || print_open || share_contacts)
+				return FALSE
+			var/datum/computer_file/program/messenger/messenger = get_share_messenger(user)
+			if(!messenger)
+				return FALSE
+			share_contacts = messenger.get_messengers()
+			if(!length(share_contacts))
+				share_contacts = null
+				to_chat(user, span_warning("В адресной книге нет получателей."))
+				return FALSE
+		if("cancel_share")
+			share_contacts = null
+		if("share_photo")
+			var/contact_ref = params["recipient"]
+			if(!share_contacts || !istext(contact_ref) || params["id"] != selected_id || params["tab"] != tab)
+				return FALSE
+			return share_photo(user, contact_ref)
+		if("attach_photo", "cancel_attachment")
+			var/datum/pda_chat/chat = attachment_chat_ref?.resolve()
+			if(!attachment_chat_ref)
+				return FALSE
+			var/datum/computer_file/program/messenger/messenger = locate() in computer.get_all_files()
+			if(!messenger)
+				return FALSE
+			if(action == "cancel_attachment")
+				if(!computer.switch_program(messenger, user))
+					return FALSE
+				computer.ui_interact(user)
+				return TRUE
+			var/datum/picture/photo = get_selection()
+			if(!photo || !chat || params["id"] != selected_id || params["tab"] != tab || messenger.saved_chats[REF(chat)] != chat || messenger.viewing_messages_of != REF(chat))
+				return FALSE
+			return open_photo_chat(user, messenger, chat, photo)
 		if("request_print")
-			if(!get_selection() || edit_mode)
+			if(!get_selection() || edit_mode || share_contacts)
 				return FALSE
 			print_open = TRUE
 			ui.set_autoupdate(TRUE)
@@ -529,6 +580,55 @@
 	if(tab == "local")
 		return local_photos?[selected_id]
 	return cloud_selection
+
+/datum/computer_file/program/pda_camera/proc/get_share_messenger(mob/user)
+	var/obj/item/modular_computer/pda/device = computer
+	var/datum/computer_file/program/messenger/messenger = locate() in device?.get_all_files()
+	if(!istype(device) || device.toff || !messenger?.sending_and_receiving)
+		to_chat(user, span_warning("Отправка сообщений на этом ПДА недоступна."))
+		return null
+	return messenger
+
+/datum/computer_file/program/pda_camera/proc/share_photo(mob/user, contact_ref)
+	var/list/contact = share_contacts[contact_ref]
+	var/datum/picture/photo = get_selection()
+	if(!contact || !photo)
+		return FALSE
+	var/datum/computer_file/program/messenger/messenger = get_share_messenger(user)
+	if(!messenger)
+		return FALSE
+	var/datum/computer_file/program/messenger/recipient = locate(contact_ref)
+	var/obj/item/modular_computer/pda/recipient_device = istype(recipient) ? recipient.computer : null
+	if(!istype(recipient_device) || QDELETED(recipient) || recipient.invisible || !recipient.sending_and_receiving || recipient_device.hidden || recipient_device.toff || is_ghost_cafe_pda(recipient_device) || messenger.training_side_differs(recipient))
+		to_chat(user, span_warning("ПДА получателя больше недоступен."))
+		return FALSE
+	if((recipient_device.saved_identification || "Unknown") != contact["name"] || (recipient_device.saved_job || "Unknown") != contact["job"])
+		to_chat(user, span_warning("Данные получателя изменились. Откройте список получателей заново."))
+		return FALSE
+	// Камера может отправить фото до первого открытия мессенджера на обоих ПДА.
+	if(!(REF(messenger) in GLOB.pda_messengers))
+		add_messenger(messenger)
+	if(!(contact_ref in GLOB.pda_messengers))
+		add_messenger(recipient)
+	var/datum/pda_chat/chat = messenger.find_chat_by_recipient(contact_ref) || messenger.create_chat(contact_ref)
+	return open_photo_chat(user, messenger, chat, photo)
+
+/datum/computer_file/program/pda_camera/proc/open_photo_chat(mob/user, datum/computer_file/program/messenger/messenger, datum/pda_chat/chat, datum/picture/photo)
+	if(!chat?.can_reply || chat.blocked)
+		to_chat(user, span_warning("К этому чату нельзя прикрепить фотографию."))
+		return FALSE
+	var/attachment = messenger.encode_photo_attachment(photo)
+	if(!attachment)
+		to_chat(user, span_warning("Не удалось прикрепить фотографию."))
+		return FALSE
+	var/obj/item/modular_computer/device = computer
+	if(!device.switch_program(messenger, user))
+		return FALSE
+	chat.photo_attachment = attachment
+	chat.visible_in_recents = TRUE
+	messenger.viewing_messages_of = REF(chat)
+	device.ui_interact(user)
+	return TRUE
 
 /datum/computer_file/program/pda_camera/proc/refresh_gallery(page)
 	gallery_ids = tab == "cloud" ? pda_photo_cloud_ids(cloud_directory) : local_photos

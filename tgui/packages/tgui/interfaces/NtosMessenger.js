@@ -40,6 +40,7 @@ export const NtosMessenger = (props) => {
     } else {
       content = (
         <ChatScreen
+          key={open_chat}
           isSilicon={is_silicon}
           sendingVirus={sending_virus}
           canReply={openChat ? openChat.can_reply : !!temporaryRecipient}
@@ -48,6 +49,7 @@ export const NtosMessenger = (props) => {
           unreads={openChat ? openChat.unread_messages : 0}
           chatRef={openChat ? openChat.ref : null}
           blocked={openChat ? openChat.blocked : false}
+          draftMessage={openChat?.message_draft || ''}
         />
       );
     }
@@ -403,14 +405,16 @@ const ChatScreen = (props) => {
     sendingVirus,
     unreads,
     blocked,
+    draftMessage,
   } = props;
 
   const { emoji_list, emoji_base64, has_scanned_photo, selected_photo_path, admin_photo_url, can_set_url_photo, credits_balance = 0, metadollar_balance = 0 } = data;
+  const { has_camera_gallery, photo_attachment } = data;
   const rawList = Array.isArray(emoji_list) ? emoji_list : Object.values(emoji_list || {});
   const uniqueEmojis = [...new Set(rawList)].slice(0, 100);
   const base64Map = emoji_base64 || {};
 
-  const [message, setMessage] = useLocalState('chatMessage', '');
+  const [message, setMessage] = useState(draftMessage);
   const [canSend, setCanSend] = useState(true);
   const [showEmoji, setShowEmoji] = useState(false);
   const [showAdminUrl, setShowAdminUrl] = useState(false);
@@ -434,7 +438,7 @@ const ChatScreen = (props) => {
   };
 
   const handleSendMessage = () => {
-    if (message === '' && !has_scanned_photo && !admin_photo_url) {
+    if (message === '' && !has_scanned_photo && !admin_photo_url && !photo_attachment) {
       return;
     }
     const ref = chatRef || recipient.ref;
@@ -520,6 +524,15 @@ const ChatScreen = (props) => {
             onClick={() => setShowEmoji(!showEmoji)}
           />
         </Stack.Item>
+        {!!has_camera_gallery && !sendingVirus && (
+          <Stack.Item>
+            <Button
+              tooltip="Прикрепить фото из галереи"
+              icon="images"
+              onClick={() => act('PDA_openPhotoGallery', { message })}
+            />
+          </Stack.Item>
+        )}
         {!!has_scanned_photo && (
           <Stack.Item>
             <Button
@@ -569,6 +582,25 @@ const ChatScreen = (props) => {
             </Stack.Item>
             {buttons}
           </Stack>
+          {!!photo_attachment && (
+            <Stack align="center" mt={1}>
+              <Stack.Item>
+                <MediaAttachment
+                  src={photo_attachment}
+                  maxHeight="96px"
+                  maxWidth="128px"
+                  onClick={() => setPreviewUrl(photo_attachment)}
+                />
+              </Stack.Item>
+              <Stack.Item>
+                <Button
+                  icon="times"
+                  tooltip="Убрать вложение"
+                  onClick={() => act('PDA_clearPhotoAttachment')}
+                />
+              </Stack.Item>
+            </Stack>
+          )}
           {!!showAdminUrl && (
             <Stack mt={1} fill align="center">
               <Stack.Item grow>
@@ -628,14 +660,14 @@ const ChatScreen = (props) => {
         <Button
           icon="arrow-left"
           content="Назад"
-          onClick={() => act('PDA_viewMessages', { ref: null })}
+          onClick={() => act('PDA_viewMessages', { ref: null, message })}
         />
         {chatRef && (
           <>
             <Button
               icon="box-archive"
               content="Закрыть чат"
-              onClick={() => act('PDA_closeMessages', { ref: chatRef })}
+              onClick={() => act('PDA_closeMessages', { ref: chatRef, message })}
             />
             <Button.Confirm
               icon="trash-can"
@@ -785,24 +817,35 @@ const ChatScreen = (props) => {
         );
       })()}
       {!!previewUrl && (
-        <Modal>
-          <Stack vertical align="center">
-            <Stack.Item>
-              <MediaAttachment src={previewUrl} maxHeight="80vh" maxWidth="575px" />
-            </Stack.Item>
-            <Stack.Item>
-              <Button content="Закрыть" onClick={() => setPreviewUrl(null)} />
-            </Stack.Item>
-          </Stack>
+        <Modal style={{
+          position: 'absolute',
+          inset: '0.5rem',
+          display: 'grid',
+          gridTemplate: 'minmax(0, 1fr) auto / minmax(0, 1fr)',
+          gap: '0.5rem',
+        }}>
+          <MediaAttachment src={previewUrl} expanded />
+          <Box textAlign="center">
+            <Button content="Закрыть" onClick={() => setPreviewUrl(null)} />
+          </Box>
         </Modal>
       )}
     </>
   );
 };
 
-const MediaAttachment = ({ src, maxHeight = '200px', maxWidth = '100%', onClick }) => {
+const MediaAttachment = ({ src, maxHeight = '200px', maxWidth = '100%', onClick, expanded = false }) => {
   if (!src) return null;
 
+  const mediaStyle = {
+    maxWidth,
+    maxHeight: expanded ? '100%' : maxHeight,
+    width: expanded ? '100%' : 'auto',
+    height: expanded ? '100%' : 'auto',
+    objectFit: 'contain',
+    display: 'block',
+    marginTop: expanded ? 0 : '5px',
+  };
   const isVideo = /\.(webm|mp4)(\?.*)?$/i.test(src) || src.startsWith('data:video/');
 
   if (isVideo) {
@@ -810,21 +853,13 @@ const MediaAttachment = ({ src, maxHeight = '200px', maxWidth = '100%', onClick 
       ? (src.match(/^data:([^;,]+)/)?.[1] || 'video/webm')
       : (/\.mp4(\?.*)?$/i.test(src) ? 'video/mp4' : 'video/webm');
     return (
-      <Box>
+      <Box height={expanded ? '100%' : undefined}>
         <video
           controls
           preload="metadata"
           crossOrigin="anonymous"
           playsInline
-          style={{
-            maxWidth,
-            maxHeight,
-            width: 'auto',
-            height: 'auto',
-            objectFit: 'contain',
-            display: 'block',
-            marginTop: '5px',
-          }}
+          style={mediaStyle}
         >
           <source src={src} type={videoType} />
         </video>
@@ -846,14 +881,9 @@ const MediaAttachment = ({ src, maxHeight = '200px', maxWidth = '100%', onClick 
       src={src}
       alt="Прикреплённое изображение"
       style={{
-        maxWidth,
-        maxHeight,
-        width: 'auto',
-        height: 'auto',
-        objectFit: 'contain',
+        ...mediaStyle,
+        imageRendering: expanded && src.startsWith('data:image/png;base64,') ? 'pixelated' : undefined,
         cursor: onClick ? 'pointer' : 'default',
-        display: 'block',
-        marginTop: '5px',
       }}
       title={onClick ? 'Кликните для открытия полного изображения' : undefined}
       onClick={onClick}

@@ -36,6 +36,12 @@ type SelectedPhoto = GalleryPhoto & PhotoMedia & {
   serverCaptureTime?: string | null;
 };
 
+type ShareContact = {
+  ref: string;
+  name: string;
+  job: string;
+};
+
 type CameraData = {
   tab: CameraTab;
   flash: ByondFlag;
@@ -51,6 +57,8 @@ type CameraData = {
   page: number;
   pages: number;
   editMode: 'upload' | 'edit' | null;
+  shareContacts: Record<string, ShareContact> | null;
+  attachmentPicker: ByondFlag;
   nameLimit: number;
   descriptionLimit: number;
   captionLimit: number;
@@ -488,17 +496,69 @@ const PhotoCaptureTime = ({ photo }: { photo: SelectedPhoto }) => {
   );
 };
 
+const SharePhoto = ({ photo }: { photo: SelectedPhoto }) => {
+  const { act, data } = useBackend<CameraData>();
+  const [search, setSearch] = useState('');
+  const query = search.trim().toLowerCase();
+  const contacts = Object.values(data.shareContacts ?? {}).filter(({ name, job }) =>
+    `${name} ${job}`.toLowerCase().includes(query),
+  );
+
+  return (
+    <Section
+      title={photo.name}
+      buttons={<Button icon="arrow-left" onClick={() => act('cancel_share')}>Назад</Button>}>
+      <Stack vertical>
+        <Stack.Item>
+          <Input
+            fluid
+            placeholder="Найти получателя"
+            value={search}
+            onInput={(_, value) => setSearch(value)}
+          />
+        </Stack.Item>
+        {contacts.length === 0 && (
+          <Stack.Item>
+            <NoticeBox>Получатели не найдены.</NoticeBox>
+          </Stack.Item>
+        )}
+        {contacts.map(({ ref, name, job }) => (
+          <Stack.Item key={ref}>
+            <Button
+              fluid
+              ellipsis
+              icon="comment"
+              content={`${name} · ${job}`}
+              onClick={() => act('share_photo', { id: photo.id, tab: data.tab, recipient: ref })}
+            />
+          </Stack.Item>
+        ))}
+      </Stack>
+    </Section>
+  );
+};
+
 const PhotoDetails = ({ photo }: { photo: SelectedPhoto }) => {
   const { act, data } = useBackend<CameraData>();
   if (data.printOpen) {
     return <PrintPhoto photo={photo} />;
+  }
+  if (data.shareContacts) {
+    return <SharePhoto photo={photo} />;
   }
 
   return (
     <>
       <Section
         title={photo.name}
-        buttons={!data.editMode && (
+        buttons={data.attachmentPicker ? (
+          <>
+            <Button icon="arrow-left" tooltip="К списку фотографий" onClick={() => act('back')} />
+            <Button icon="paperclip" onClick={() => act('attach_photo', { id: photo.id, tab: data.tab })}>
+              Прикрепить
+            </Button>
+          </>
+        ) : !data.editMode && (
           <>
             <Button icon="arrow-left" tooltip="К списку фотографий" onClick={() => act('back')} />
             {data.tab === 'local' && (
@@ -518,6 +578,7 @@ const PhotoDetails = ({ photo }: { photo: SelectedPhoto }) => {
               confirmContent="Удалить?"
               onClick={() => act('delete', { id: photo.id, tab: data.tab })}
             />
+            <Button icon="share" tooltip="Поделиться" aria-label="Поделиться" onClick={() => act('request_share')} />
             <Button icon="print" tooltip="Печать" onClick={() => act('request_print')} />
           </>
         )}>
@@ -574,9 +635,11 @@ export const NtosCamera = () => {
                 />
               </Stack.Item>
               <Stack.Item>
-                <Button icon="camera" onClick={() => act('tab', { tab: 'camera' })}>
-                  Камера
-                </Button>
+                {data.attachmentPicker ? (
+                  <Button icon="arrow-left" onClick={() => act('cancel_attachment')}>В чат</Button>
+                ) : (
+                  <Button icon="camera" onClick={() => act('tab', { tab: 'camera' })}>Камера</Button>
+                )}
               </Stack.Item>
             </Stack>
             {photo ? <PhotoDetails photo={photo} /> : <GalleryGrid />}
