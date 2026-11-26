@@ -70116,7 +70116,6 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 6
 	},
-/obj/machinery/vending/medical,
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
 "qOZ" = (
@@ -83845,6 +83844,7 @@
 	dir = 5
 	},
 /obj/effect/turf_decal/trimline/blue/filled/warning,
+/obj/machinery/vending/medical,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "wkX" = (
