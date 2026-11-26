@@ -2609,12 +2609,12 @@ GLOBAL_VAR(player_save_migration_timer)
 		if(!root)
 			return null
 		if(islist(root.directories))
-			if(existing_only && !(key in root.directories))
-				return null
 			var/datum/player_save_json/account/storage = root.storage
 			var/datum/player_save_character_transaction/transaction = storage.character_transaction(key)
 			if(!transaction)
 				player_save_error(storage.error)
+				return null
+			if(existing_only && !(key in transaction.root.directories))
 				return null
 			if(length(transaction.character.tree) && player_save_version_status(transaction.character.read("version")) == -2)
 				player_save_error("Неподдерживаемая версия слота [slot]; запись заблокирована")
