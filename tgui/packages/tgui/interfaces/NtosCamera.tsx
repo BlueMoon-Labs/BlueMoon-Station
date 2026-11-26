@@ -26,6 +26,7 @@ type GalleryPhoto = {
   id: string;
   name: string;
   thumbnail?: string | null;
+  thumbnailUrl?: string | null;
   uploaded?: ByondFlag;
 };
 
@@ -256,11 +257,12 @@ const GalleryGrid = () => {
     <>
       {gallery?.length ? (
         <PhotoGallery>
-          {gallery.map(({ id, name, thumbnail, uploaded }) => (
+          {gallery.map(({ id, name, thumbnail, thumbnailUrl, uploaded }) => (
             <PhotoTile
               key={id}
               label={name}
               thumbnail={thumbnail}
+              thumbnailUrl={thumbnailUrl}
               badge={!!uploaded && <Icon name="check" color="blue" />}
               onClick={() => act('select', { id })}
             />

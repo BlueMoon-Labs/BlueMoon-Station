@@ -659,12 +659,15 @@
 		var/id = gallery_ids[index]
 		var/photo_name
 		var/thumbnail
+		var/thumbnail_url
 		if(tab == "cloud")
 			var/list/metadata = read_pda_cloud_photo(cloud_photo_path(id))
 			if(!metadata)
 				continue
 			photo_name = metadata["name"]
 			thumbnail = metadata["thumbnail"]
+			if(!thumbnail && istext(metadata["url"]))
+				thumbnail_url = html_decode(metadata["url"])
 		else
 			var/datum/picture/photo = local_photos[id]
 			photo_name = photo.picture_name
@@ -677,6 +680,7 @@
 			"id" = id,
 			"name" = html_decode(photo_name),
 			"thumbnail" = thumbnail,
+			"thumbnailUrl" = thumbnail_url,
 			"uploaded" = (tab == "local" && is_uploaded(id)),
 		))
 

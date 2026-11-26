@@ -27,10 +27,12 @@
 	var/static/regex/post_file = regex("^(\[0-9a-f-\]{36})\\.json(\\.bak)?$")
 	var/list/ids = list()
 	for(var/filename in flist(SYNDIMATIC_POSTS))
+		CHECK_TICK
 		if(post_file.Find(filename))
 			ids[post_file.group[1]] = TRUE
 	sortTim(ids, GLOBAL_PROC_REF(cmp_text_dsc), associative = TRUE)
 	for(var/id in ids)
+		CHECK_TICK
 		var/list/post = read_syndimatic_record("[SYNDIMATIC_POSTS][id].json")
 		if(!isnum(post?["round"]) || !istext(post["author"]) || !islist(post["likes"]) || !islist(post["comments"]))
 			continue
@@ -73,10 +75,10 @@
 
 /datum/controller/subsystem/persistence/proc/on_syndimatic_round_start()
 	SIGNAL_HANDLER
-	start_syndimatic_round()
+	start_syndimatic_round(update_after_prune = FALSE)
 	INVOKE_ASYNC(src, PROC_REF(notify_syndimatic_viewers))
 
-/datum/controller/subsystem/persistence/proc/start_syndimatic_round()
+/datum/controller/subsystem/persistence/proc/start_syndimatic_round(update_after_prune = TRUE)
 	if(syndimatic_round_started)
 		return TRUE
 	var/next_round = syndimatic_round + 1
@@ -85,10 +87,12 @@
 		return FALSE
 	syndimatic_round = next_round
 	syndimatic_round_started = TRUE
-	prune_syndimatic_posts()
+	if(prune_syndimatic_posts() && update_after_prune)
+		INVOKE_ASYNC(src, PROC_REF(notify_syndimatic_viewers))
 	return TRUE
 
 /datum/controller/subsystem/persistence/proc/prune_syndimatic_posts()
+	. = FALSE
 	while(length(syndimatic_posts) > SYNDIMATIC_MIN_POSTS)
 		var/id = syndimatic_posts[length(syndimatic_posts)]
 		var/list/post = syndimatic_posts[id]
@@ -96,6 +100,7 @@
 			break
 		if(!delete_syndimatic_post(id))
 			break
+		. = TRUE
 
 /datum/controller/subsystem/persistence/proc/get_syndimatic_thumbnail(id)
 	if(!(id in syndimatic_thumbnails))

@@ -475,7 +475,8 @@
 				if(blocks?["comment"] || post["comments_disabled"])
 					to_chat(user, span_warning("Оставить комментарий к этой публикации сейчас нельзя."))
 					return FALSE
-				if(!comment_page || !istext(params["text"]))
+				var/draft_serial = params["commentSerial"]
+				if(!comment_page || !istext(params["text"]) || !isnum(draft_serial) || draft_serial != comment_serial)
 					return FALSE
 				var/message = trim(params["text"], PHOTO_CAPTION_LIMIT + 1)
 				if(!length(message))

@@ -116,6 +116,7 @@ const CommentForm = ({ id }: { id: string }) => {
     <Stack vertical>
       <Stack.Item>
         <TextArea
+          dontUseTabForIndent
           fluid
           height={4}
           value={text}
@@ -128,7 +129,7 @@ const CommentForm = ({ id }: { id: string }) => {
         <Button
           icon="paper-plane"
           disabled={!text.trim()}
-          onClick={() => act('comment', { id, text })}
+          onClick={() => act('comment', { id, text, commentSerial: data.commentSerial })}
         >
           Отправить
         </Button>
@@ -163,6 +164,7 @@ const Comments = ({ id }: { id: string }) => {
                   icon="trash"
                   color="bad"
                   tooltip={`${adminAction} — удалить комментарий`}
+                  role="button"
                   aria-label="Удалить комментарий"
                   confirmContent="Удалить?"
                   onClick={() => act('delete_comment', { id, comment: commentId })}
@@ -174,8 +176,10 @@ const Comments = ({ id }: { id: string }) => {
                   compact
                   icon="thumbs-up"
                   content={likes}
+                  role="button"
                   aria-label="Лайк комментарию"
                   aria-pressed={vote === 1}
+                  aria-disabled={!canWrite || !!ownComment}
                   selected={vote === 1}
                   disabled={!canWrite || !!ownComment}
                   tooltip={ownComment ? 'Это ваш комментарий' : 'Лайк'}
@@ -185,8 +189,10 @@ const Comments = ({ id }: { id: string }) => {
                   compact
                   icon="thumbs-down"
                   content={dislikes}
+                  role="button"
                   aria-label="Дизлайк комментарию"
                   aria-pressed={vote === -1}
+                  aria-disabled={!canWrite || !!ownComment}
                   selected={vote === -1}
                   disabled={!canWrite || !!ownComment}
                   tooltip={ownComment ? 'Это ваш комментарий' : 'Дизлайк'}
@@ -221,6 +227,7 @@ const PostPage = ({ post }: { post: Post }) => {
                 icon="trash"
                 color={isAdmin ? 'bad' : undefined}
                 tooltip={isAdmin ? `${adminAction} — удалить публикацию` : 'Удалить публикацию'}
+                role="button"
                 aria-label="Удалить публикацию"
                 confirmContent="Удалить?"
                 onClick={() => act('delete_post', { id })}
@@ -240,7 +247,10 @@ const PostPage = ({ post }: { post: Post }) => {
               icon="heart"
               selected={!!liked}
               disabled={!canWrite}
+              role="button"
               aria-label={liked ? 'Убрать отметку «Нравится»' : 'Поставить отметку «Нравится»'}
+              aria-pressed={!!liked}
+              aria-disabled={!canWrite}
               onClick={() => act('like', { id, liked: liked ? 0 : 1 })}
             >
               Нравится · {likes}
@@ -250,6 +260,7 @@ const PostPage = ({ post }: { post: Post }) => {
             <Button
               icon="comment"
               selected={!!commentsOpen}
+              role="button"
               aria-expanded={!!commentsOpen}
               onClick={() => act('show_comments', { id })}
             >
@@ -279,6 +290,7 @@ const EditProfile = ({ profile }: { profile: Profile }) => {
   return (
     <Section title="Описание профиля">
       <TextArea
+        dontUseTabForIndent
         fluid
         height={5}
         value={description}
@@ -367,6 +379,7 @@ const PhotoDraft = ({ id, avatar }: { id: string; avatar: boolean }) => {
       </Box>
       {!avatar && (
         <TextArea
+          dontUseTabForIndent
           fluid
           height={4}
           maxLength={data.captionLimit}
@@ -408,6 +421,7 @@ const NotificationOptions = () => {
         <Button
           icon={data.notifications ? 'bell' : 'bell-slash'}
           tooltip="Настроить уведомления о новых публикациях"
+          role="button"
           aria-expanded={open}
           onClick={() => setOpen(!open)}
         >
