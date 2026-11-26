@@ -78,7 +78,7 @@ const multiline = { overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' } as const;
 const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const;
 const adminAction = 'Административное действие';
 
-const AuthorButton = ({ id, name, avatar, size = 2 }: {
+const AuthorButton = ({ id, name, avatar, size = 4 }: {
   id: string;
   name: string;
   avatar?: PhotoMedia | null;
@@ -88,7 +88,8 @@ const AuthorButton = ({ id, name, avatar, size = 2 }: {
   return (
     <Button
       compact
-      transparent
+      color="transparent"
+      style={{ backgroundColor: 'transparent', color: 'inherit' }}
       role="button"
       onClick={() => act('profile', { id })}
     >
@@ -164,7 +165,6 @@ const FeedPost = ({ post, scrollRef }: {
   return (
     <Box as="article" mb={1} p={0.75} backgroundColor="rgba(0, 0, 0, 0.22)"
       style={{ border: '1px solid #ffffff24', borderRadius: '0.35rem' }}>
-      <AuthorButton id={authorId} name={author} avatar={avatar} />
       <div ref={photoRef} style={{ margin: '0.5rem 0' }}>
         {media === undefined ? (
           <Box
@@ -177,7 +177,9 @@ const FeedPost = ({ post, scrollRef }: {
           <PhotoPreview {...media} />
         )}
       </div>
-      <Stack align="center" wrap="wrap">
+      <AuthorButton id={authorId} name={author} avatar={avatar} />
+      {!!caption && <Box mt={0.5} style={multiline}>{caption}</Box>}
+      <Stack align="center" wrap="wrap" mt={0.5}>
         <Stack.Item><PostLikeButton id={id} likes={likes} liked={liked} /></Stack.Item>
         <Stack.Item>
           <Button icon="comment" role="button" onClick={() => act('open_post', { id, comments: 1 })}>
@@ -185,7 +187,6 @@ const FeedPost = ({ post, scrollRef }: {
           </Button>
         </Stack.Item>
       </Stack>
-      {!!caption && <Box mt={0.5} style={multiline}>{caption}</Box>}
     </Box>
   );
 };
@@ -291,46 +292,52 @@ const Comments = ({ id }: { id: string }) => {
         <Stack vertical mt={1}>
           {comments.map(({ id: commentId, author, authorId, avatar, text, likes, dislikes, vote, ownComment }) => (
             <Stack.Item key={commentId}>
-              <AuthorButton id={authorId} name={author} avatar={avatar} size={1.5} />
-              {!!isAdmin && (
-                <Button.Confirm
-                  icon="trash"
-                  color="bad"
-                  tooltip={`${adminAction} — удалить комментарий`}
-                  role="button"
-                  aria-label="Удалить комментарий"
-                  confirmContent="Удалить?"
-                  onClick={() => act('delete_comment', { id, comment: commentId })}
-                />
-              )}
+              <Stack align="center">
+                <Stack.Item>
+                  <AuthorButton id={authorId} name={author} avatar={avatar} size={3} />
+                </Stack.Item>
+                {!!isAdmin && (
+                  <Stack.Item>
+                    <Button.Confirm
+                      icon="trash"
+                      color="bad"
+                      tooltip={`${adminAction} — удалить комментарий`}
+                      role="button"
+                      aria-label="Удалить комментарий"
+                      confirmContent="Удалить?"
+                      onClick={() => act('delete_comment', { id, comment: commentId })}
+                    />
+                  </Stack.Item>
+                )}
+              </Stack>
               <Box ml={0.5} style={multiline}>{text}</Box>
               <Box mt={0.25}>
-                <Button
-                  compact
-                  icon="thumbs-up"
-                  content={likes}
-                  role="button"
-                  aria-label="Лайк комментарию"
-                  aria-pressed={vote === 1}
-                  aria-disabled={!canWrite || !!ownComment}
-                  selected={vote === 1}
-                  disabled={!canWrite || !!ownComment}
-                  tooltip={ownComment ? 'Это ваш комментарий' : 'Лайк'}
-                  onClick={() => act('vote_comment', { id, comment: commentId, vote: vote === 1 ? 0 : 1 })}
-                />
-                <Button
-                  compact
-                  icon="thumbs-down"
-                  content={dislikes}
-                  role="button"
-                  aria-label="Дизлайк комментарию"
-                  aria-pressed={vote === -1}
-                  aria-disabled={!canWrite || !!ownComment}
-                  selected={vote === -1}
-                  disabled={!canWrite || !!ownComment}
-                  tooltip={ownComment ? 'Это ваш комментарий' : 'Дизлайк'}
-                  onClick={() => act('vote_comment', { id, comment: commentId, vote: vote === -1 ? 0 : -1 })}
-                />
+                {[
+                  { value: 1, count: likes, icon: 'thumbs-up', color: 'good', label: 'Лайк комментарию' },
+                  { value: -1, count: dislikes, icon: 'thumbs-down', color: 'bad', label: 'Дизлайк комментарию' },
+                ].map(({ value, count, icon, color, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-label={label}
+                    aria-pressed={vote === value}
+                    disabled={!canWrite || !!ownComment}
+                    title={ownComment ? 'Это ваш комментарий' : label}
+                    onClick={() => act('vote_comment', { id, comment: commentId, vote: vote === value ? 0 : value })}
+                    style={{
+                      color: 'inherit',
+                      font: 'inherit',
+                      border: 0,
+                      background: 'transparent',
+                      opacity: !canWrite || ownComment ? 0.6 : 1,
+                      cursor: !canWrite || ownComment ? 'default' : 'pointer',
+                      padding: '0.15rem 0.5rem',
+                    }}
+                  >
+                    <Icon name={icon} color={vote === value ? color : undefined} mr={0.4} />
+                    {count}
+                  </button>
+                ))}
               </Box>
             </Stack.Item>
           ))}
@@ -349,28 +356,25 @@ const PostPage = ({ post }: { post: Post }) => {
   const { id, authorId, author, avatar, caption, likes, comments } = post;
   return (
     <>
-      <Section
-        title={<AuthorButton id={authorId} name={author} avatar={avatar} />}
-        buttons={(
-          <>
-            {(!!ownPost || !!isAdmin) && (
-              <Button.Confirm
-                icon="trash"
-                color={isAdmin ? 'bad' : undefined}
-                tooltip={isAdmin ? `${adminAction} — удалить публикацию` : 'Удалить публикацию'}
-                role="button"
-                aria-label="Удалить публикацию"
-                confirmContent="Удалить?"
-                onClick={() => act('delete_post', { id })}
-              />
-            )}
-            <Button icon="arrow-left" onClick={() => act('back')}>Назад</Button>
-          </>
-        )}
-      >
+      <Section>
+        <Box mb={0.5} textAlign="right">
+          {(!!ownPost || !!isAdmin) && (
+            <Button.Confirm
+              icon="trash"
+              color={isAdmin ? 'bad' : undefined}
+              tooltip={isAdmin ? `${adminAction} — удалить публикацию` : 'Удалить публикацию'}
+              role="button"
+              aria-label="Удалить публикацию"
+              confirmContent="Удалить?"
+              onClick={() => act('delete_post', { id })}
+            />
+          )}
+          <Button icon="arrow-left" onClick={() => act('back')}>Назад</Button>
+        </Box>
         <Box mx="auto" style={{ maxWidth: '22rem' }}>
           <PhotoPreview {...media} />
         </Box>
+        <AuthorButton id={authorId} name={author} avatar={avatar} />
         {!!caption && <Box my={1} style={multiline}>{caption}</Box>}
         <Stack mt={1}>
           <Stack.Item>
@@ -532,26 +536,56 @@ const PhotoDraft = ({ id, avatar }: { id: string; avatar: boolean }) => {
 const NotificationOptions = () => {
   const { act, data } = useBackend<SyndimaticData>();
   const [open, setOpen] = useState(false);
+  const optionsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const dismissOutside = (event: PointerEvent) => {
+      if (!optionsRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', dismissOutside);
+    document.addEventListener('keydown', dismissOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', dismissOutside);
+      document.removeEventListener('keydown', dismissOnEscape);
+    };
+  }, [open]);
+
   if (!data.canSetNotifications) {
     return null;
   }
   return (
-    <Section
-      buttons={(
-        <Button
-          icon={data.notifications ? 'bell' : 'bell-slash'}
-          tooltip="Настроить уведомления о новых публикациях"
-          role="button"
-          aria-expanded={open}
-          onClick={() => setOpen(!open)}
-        >
-          {data.notifications ? 'Включены' : 'Выключены'}
-        </Button>
-      )}
-      title="Уведомления"
-    >
+    <div ref={optionsRef} style={{ display: 'inline-block', marginRight: '0.2rem' }}>
+      <Button
+        icon={data.notifications ? 'bell' : 'bell-slash'}
+        tooltip={data.notifications ? 'Уведомления включены' : 'Уведомления выключены'}
+        role="button"
+        aria-label="Настроить уведомления о новых публикациях"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      />
       {open && (
-        <>
+        <Box
+          role="group"
+          aria-label="Уведомления"
+          position="absolute"
+          right={0.75}
+          top="100%"
+          width="16rem"
+          maxWidth="calc(100% - 1.5rem)"
+          p={0.5}
+          backgroundColor="#1c2531"
+          style={{ boxSizing: 'border-box', zIndex: 5, borderRadius: '0.35rem', boxShadow: '0 0.25rem 0.75rem #0008' }}
+        >
           {[
             { enabled: 1, permanent: 0, label: 'Включить на эту смену' },
             { enabled: 0, permanent: 0, label: 'Выключить на эту смену' },
@@ -560,6 +594,9 @@ const NotificationOptions = () => {
           ].map(({ enabled, permanent, label }) => (
             <Button
               key={label}
+              fluid
+              role="button"
+              style={{ whiteSpace: 'normal' }}
               onClick={() => {
                 act('notifications', { enabled, permanent });
                 setOpen(false);
@@ -568,9 +605,9 @@ const NotificationOptions = () => {
               {label}
             </Button>
           ))}
-        </>
+        </Box>
       )}
-    </Section>
+    </div>
   );
 };
 
@@ -595,7 +632,7 @@ export const NtosSyndimatic = () => {
     <NtosWindow title="Syndimatic" width={550} height={620}>
       <NtosWindow.Content fitted>
         <Stack vertical fill>
-          <Stack.Item px={0.75} pt={0.75} pb={0.5}>
+          <Stack.Item position="relative" px={0.75} pt={0.75} pb={0.5}>
             <Stack wrap="wrap" align="center">
               <Stack.Item grow>
                 <Button
@@ -640,6 +677,7 @@ export const NtosSyndimatic = () => {
                     onClick={() => act('blocks')}
                   />
                 )}
+                <NotificationOptions />
                 <Button
                   icon="plus"
                   color="good"
@@ -663,12 +701,7 @@ export const NtosSyndimatic = () => {
                 }
               }}
             >
-              {view === 'feed' && (
-                <>
-                  <NotificationOptions />
-                  <PostFeed scrollRef={scrollRef} />
-                </>
-              )}
+              {view === 'feed' && <PostFeed scrollRef={scrollRef} />}
               {view === 'gallery' && <PostGallery />}
               {view === 'blocks' && !!isAdmin && (
                 <Section title="Заблокированные профили">
