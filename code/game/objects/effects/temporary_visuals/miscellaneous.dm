@@ -396,6 +396,8 @@
 
 /obj/effect/temp_visual/heart/Initialize(mapload)
 	. = ..()
+	if(!isturf(loc))
+		return INITIALIZE_HINT_QDEL
 	pixel_x = rand(-4,4)
 	pixel_y = rand(-4,4)
 	animate(src, pixel_y = pixel_y + 32, alpha = 0, time = 25)
