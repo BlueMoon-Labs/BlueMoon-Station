@@ -105,9 +105,6 @@
 
 	///Weakref to the character we spawned in as- either at roundstart or latejoin, so we know for persistent scars if we ended as the same person or not
 	var/datum/weakref/original_character
-	/// Preference slot the original character was loaded from, unaffected by later slot switches in the UI.
-	var/original_character_slot
-
 	/// A lazy list of statuses to add next to this mind in the traitor panel
 	var/list/special_statuses
 
@@ -202,9 +199,8 @@
 	SIGNAL_HANDLER
 	set_enslaved_to(null)
 
-/datum/mind/proc/set_original_character(new_original_character, character_slot)
+/datum/mind/proc/set_original_character(new_original_character)
 	original_character = WEAKREF(new_original_character)
-	original_character_slot = character_slot
 	if(ishuman(new_original_character))
 		var/mob/living/carbon/human/original_human = new_original_character
 		set_naga_locomotion(HAS_TRAIT(original_human, TRAIT_NAGA_ANATOMY))
