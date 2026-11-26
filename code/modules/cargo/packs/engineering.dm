@@ -68,7 +68,7 @@
 /datum/supply_pack/engineering/engihardsuit
 	name = "Engineering Hardsuit"
 	desc = "Вы можете получить больше скафандров, если понадобится! ОБРАТИТЕ ВНИМАНИЕ, ЧТО В ЭТОМ ЯЩИКЕ НАХОДИТСЯ ОДИН ЗАЩИТНЫЙ КОСТЮМ, а также один баллон с воздухом и маска!"
-	cost = 2250
+	cost = 1500
 	access = ACCESS_ENGINE
 	contains = list(/obj/item/tank/internals/air,
 					/obj/item/clothing/mask/gas,
@@ -79,7 +79,7 @@
 /datum/supply_pack/engineering/atmoshardsuit
 	name = "Atmospherics Hardsuit"
 	desc = "Слишком много техников и недостаточно скафандров? Время купить еще немного! Поставляется с противогазом и воздушным баллоном."
-	cost = 5000
+	cost = 1750
 	access = ACCESS_ATMOSPHERICS //100% Fire and Bio resistance
 	contains = list(/obj/item/tank/internals/air,
 					/obj/item/clothing/mask/gas,

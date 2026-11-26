@@ -713,7 +713,7 @@
 //Nerfing those on the chest because too OP yada yada
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal/inquisitor/damaged
 	name = "damaged inquisitor's hardsuit"
-	desc = "It's not really in good shape, but still serves decent protection."
+	desc = "It's not really in good shape, but still serves decent protection. Its worn soles still grip wet surfaces."
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/inquisitor/damaged
 	clothing_flags = THICKMATERIAL // no space protection
 	armor_type = /datum/armor/paranormal_damaged
@@ -725,8 +725,9 @@
 	armor_type = /datum/armor/paranormal_damaged
 
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal/beserker/damaged
+	rig_bulwark = FALSE
 	name = "damaged berserker's hardsuit"
-	desc = "It's not really in good shape, but still serves decent protection."
+	desc = "It's not really in good shape, but still serves decent protection. Its battered frame still helps haul heavy burdens."
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/beserker/damaged
 	clothing_flags = THICKMATERIAL // no space protection
 	armor_type = /datum/armor/paranormal_damaged

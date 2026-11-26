@@ -299,7 +299,7 @@
 
 /obj/item/clothing/suit/space/hardsuit/shielded/wizard
 	name = "battlemage armour"
-	desc = "Not all wizards are afraid of getting up close and personal."
+	desc = "Not all wizards are afraid of getting up close and personal. Enchanted fastenings hold a spellbook or wand close at hand."
 	icon_state = "battlemage"
 	item_state = "battlemage"
 	tail_state = "wizard_battle"
@@ -314,7 +314,7 @@
 	armor_type = /datum/armor/wizard_suit
 	slowdown = 0
 	resistance_flags = FIRE_PROOF | ACID_PROOF
-	allowed = list(/obj/item/teleportation_scroll, /obj/item/tank/internals)
+	allowed = list(/obj/item/teleportation_scroll, /obj/item/tank/internals, /obj/item/spellbook, /obj/item/gun/magic/wand)
 	var/magic_flags = SPELL_WIZARD_ROBE|SPELL_CULT_ARMOR
 
 

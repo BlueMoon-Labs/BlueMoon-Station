@@ -941,8 +941,9 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
 /obj/item/clothing/suit/space/hardsuit/gearsuit
+	rig_superheavy_pull_slowdown = 0.75
 	name = "G.E.A.R hardsuit"
-	desc = "The Gearbox Eidoldon-Augmented Repentor Suit was prototype outerwear created by the Clockwork Cult to conduct repairs on Reebe from within its void. Now, advancements in hybrid technology let it serve a dual engineering-combat purpose."
+	desc = "The Gearbox Eidoldon-Augmented Repentor Suit was prototype outerwear created by the Clockwork Cult to conduct repairs on Reebe from within its void. Now, advancements in hybrid technology let it serve a dual engineering-combat purpose, with reinforced servos to move heavy casualties."
 	icon = 'modular_splurt/icons/mob/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/suit.dmi'
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/suit_digi.dmi'

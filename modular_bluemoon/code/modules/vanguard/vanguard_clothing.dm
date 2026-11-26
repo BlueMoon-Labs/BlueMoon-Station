@@ -46,8 +46,8 @@
 	icon_state = "hardsuit-exploration"
 	item_state = "hardsuit-exploration"
 	name = "Ranger hardsuit"
-	desc = "Продвинутый скафандр для защиты от космоса, его угроз, шальных пуль членов эскадрона и пролитого виски."
-	slowdown = 0.5
+	desc = "Подвижный продвинутый скафандр со встроенным хранилищем для защиты от космоса, его угроз, шальных пуль членов эскадрона и пролитого виски."
+	slowdown = 0.25
 	armor_type = /datum/armor/hardsuit_security
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)

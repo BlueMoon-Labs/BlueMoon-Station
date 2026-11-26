@@ -20,7 +20,7 @@
 	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("engineering", "emp_basic")
 	design_ids = list("engine_goggles", "magboots", "forcefield_projector", "weldingmask" , "rcd_loaded", "rpd",
-	"rcd_upgrade_frames", "rcd_upgrade_simple_circuits", "rcd_ammo_large", "sheetifier")
+	"rcd_upgrade_frames", "rcd_upgrade_simple_circuits", "rcd_ammo_large", "sheetifier", "hardsuitjpack")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 4000)
 
 /datum/techweb_node/anomaly

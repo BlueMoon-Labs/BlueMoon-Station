@@ -171,6 +171,7 @@
 	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/mob_sol_head.dmi'
 
 /obj/item/clothing/suit/space/hardsuit/ert/alert/sol
+	rig_superheavy_pull_slowdown = -1
 	name = "FCS SolFed hardsuit"
 	desc = "The default Future Combat Systems Solar marine hardsuit. Provided with special fibers and armor plates."
 	icon_state = "hardsuit0-solfed"

@@ -28,6 +28,7 @@
 	armor_type = /datum/armor/hardsuit_debug
 
 /obj/item/clothing/suit/space/hardsuit/ert/alert/debug
+	rig_superheavy_pull_slowdown = -1
 	name = "Bluespace Tech Hardsuit"
 	desc = "A specialised hardsuit for Bluespace agents."
 	armor_type = /datum/armor/hardsuit_debug

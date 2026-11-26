@@ -130,6 +130,7 @@
 	//mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/space/hardsuit/ert/alert/nri
+	rig_superheavy_pull_slowdown = -1
 	name = "Ratnik-4 hardsuit"
 	desc = "Reinforced greenish hardsuit, designated for NRI special forces."
 	icon_state = "russiansuit"
