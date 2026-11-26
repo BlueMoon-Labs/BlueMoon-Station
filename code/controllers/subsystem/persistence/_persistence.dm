@@ -90,8 +90,7 @@ SUBSYSTEM_DEF(persistence)
 	CollectChiselMessages()
 	SavePhotoPersistence()						//THIS IS PERSISTENCE, NOT THE LOGGING PORTION.
 	SavePaintings()
-	SaveScars()
-	SaveNIFs()
+	SaveCharacterPersistence()
 
 /**
  * Loads persistent data relevant to the current map: Objects, etc.
@@ -358,51 +357,20 @@ SUBSYSTEM_DEF(persistence)
 	fdel(json_file)
 	WRITE_FILE(json_file, json_encode(paintings))
 
-/datum/controller/subsystem/persistence/proc/SaveScars()
-	for(var/i in GLOB.joined_player_list)
-		var/mob/living/carbon/human/ending_human = get_mob_by_ckey(i)
-		if(!istype(ending_human) || !ending_human.mind || !ending_human.client || !ending_human.client.prefs || !ending_human.client.prefs.persistent_scars)
-			continue
-
-		var/mob/living/carbon/human/original_human = ending_human.mind.original_character?.resolve()
-		if(!original_human || original_human.stat == DEAD || !original_human.all_scars || !(original_human == ending_human))
-			if(ending_human.client) // i was told if i don't check this every step of the way byond might decide a client ceases to exist mid proc so here we go
-				ending_human.client.prefs.scars_list["[ending_human.client.prefs.scars_index]"] = ""
-		else
-			for(var/k in ending_human.all_wounds)
-				var/datum/wound/iter_wound = k
-				iter_wound.remove_wound() // so we can get the scars for open wounds
-			if(!ending_human.client)
-				return
-			ending_human.client.prefs.scars_list["[ending_human.client.prefs.scars_index]"] = ending_human.format_scars()
-		if(!ending_human.client)
-			return
-		ending_human.client.prefs.save_character()
-
-/// Saves the active character's NIF state at round end. Only the original living body can carry it forward.
-/datum/controller/subsystem/persistence/proc/SaveNIFs()
-	for(var/i in GLOB.joined_player_list)
-		var/datum/preferences/prefs = GLOB.preferences_datums[i]
-		if(!prefs)
-			continue
-		var/mob/living/carbon/human/ending_human = get_mob_by_ckey(i)
-		var/datum/mind/player_mind = ending_human?.mind
-		if(!player_mind)
-			for(var/datum/mind/round_mind as anything in SSticker?.minds)
-				if(ckey(round_mind.key) != ckey(i))
-					continue
-				player_mind = round_mind
-				break
-		if(!player_mind || !player_mind.original_character_slot)
-			continue
-		ending_human = player_mind.current
-		var/mob/living/carbon/human/original_human = player_mind.original_character?.resolve()
-		var/list/nif_data = list()
-		if(istype(ending_human) && original_human && original_human.stat != DEAD && original_human == ending_human)
-			var/obj/item/organ/cyberimp/brain/nif/implant = ending_human.getorganslot(ORGAN_SLOT_BRAIN_NIF)
-			if(istype(implant) && implant.nif_persistence)
-				nif_data = implant.get_persistent_data()
-		prefs.save_nif_persistent_data(player_mind.original_character_slot, nif_data)
+/datum/controller/subsystem/persistence/proc/SaveCharacterPersistence()
+	for(var/player_ckey in uniqueList(GLOB.joined_player_list))
+		var/datum/preferences/prefs = GLOB.preferences_datums[player_ckey]
+		for(var/slot in prefs?.slots_joined_as)
+			var/list/character = prefs.slots_joined_as[slot]
+			if(!character)
+				continue
+			var/datum/weakref/mind_ref = character["mind"]
+			var/datum/mind/player_mind = mind_ref?.resolve()
+			var/mob/living/carbon/human/ending_human = player_mind?.current
+			if(!istype(ending_human))
+				ending_human = null
+			var/survived = ending_human && ending_human.stat != DEAD && ending_human == player_mind.original_character?.resolve()
+			prefs.save_roundend_character(slot, character["scars_index"], ending_human, survived)
 
 /datum/controller/subsystem/persistence/proc/SaveTCGCards()
 	for(var/i in GLOB.joined_player_list)
