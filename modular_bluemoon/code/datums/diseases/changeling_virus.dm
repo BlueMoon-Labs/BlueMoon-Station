@@ -2,10 +2,10 @@
 /datum/disease/changeling_virus
 	form = "Virus"
 	name = "Cryptogenic polymorph strain"
-	desc = "Aberrant tissue markers consistent with xenomorphic enzyme exposure — possibly changeling-adjacent."
-	agent = "Cryptogenic xenomorph-linked prions"
-	spread_text = "Non-contagious; associated with polymorph-class tissue contact"
-	cure_text = "High-dose spaceacillin with sufficient blood toxin load, or aggressive toxin purge once the infection window is open (medical protocol)."
+	desc = "Аберрантные тканевые маркеры, согласующиеся с воздействием ксеноморфных ферментов — возможно, связано с генокрадами."
+	agent = "Криптогенные прионы, связанные с ксеноморфами"
+	spread_text = "Не заразно; связано с контактом тканей полиморфного класса"
+	cure_text = "Высокая доза спейсациллина при достаточной токсической нагрузке крови или агрессивная очистка токсинов после открытия окна инфекции (медицинский протокол)."
 	max_stages = 1
 	stage = 1
 	stage_prob = 0

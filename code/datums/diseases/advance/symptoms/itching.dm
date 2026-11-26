@@ -19,7 +19,7 @@ BONUS
 /datum/symptom/itching
 
 	name = "Itching"
-	desc = "The virus irritates the skin, causing itching."
+	desc = "Вирус раздражает кожу, вызывая зуд."
 	stealth = 0
 	resistance = 3
 	stage_speed = 3
@@ -30,8 +30,8 @@ BONUS
 	symptom_delay_max = 25
 	var/scratch = FALSE
 	threshold_desc = list(
-		"Transmission 6" = "Increases frequency of itching.",
-		"Stage Speed 7" = "The host will scrath itself when itching, causing superficial damage.",
+		"Передача 6" = "Увеличивает частоту зуда.",
+		"Скорость стадии 7" = "Заражённый будет чесаться при зуде, получая поверхностные повреждения.",
 	)
 
 /datum/symptom/itching/Start(datum/disease/advance/A)
@@ -51,7 +51,7 @@ BONUS
 	var/obj/item/bodypart/bodypart = M.get_bodypart(picked_bodypart)
 	if(bodypart && bodypart.is_organic_limb() && !bodypart.is_pseudopart)	 //robotic limbs will mean less scratching overall
 		var/can_scratch = scratch && !M.incapacitated() && get_location_accessible(M, picked_bodypart)
-		M.visible_message("[can_scratch ? "<span class='warning'>[M] scratches [M.ru_ego()] [bodypart.name].</span>" : ""]", "<span class='warning'>Your [bodypart.name] itches. [can_scratch ? " You scratch it." : ""]</span>")
+		M.visible_message("[can_scratch ? "<span class='warning'>[M] чешет [M.ru_ego()] [bodypart.name].</span>" : ""]", "<span class='warning'>[bodypart.name] чешется. [can_scratch ? " Вы почесали его." : ""]</span>")
 		if(can_scratch)
 			// Поверхностные царапины — без ролла травм/переломов (иначе разумный вирус с частым проком кладёт неизлечимые раны).
 			bodypart.receive_damage(brute = 0.5, wound_bonus = CANT_WOUND)

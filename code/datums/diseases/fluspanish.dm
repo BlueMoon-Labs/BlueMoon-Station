@@ -1,14 +1,14 @@
 /datum/disease/fluspanish
 	name = "Spanish inquisition Flu"
 	max_stages = 3
-	spread_text = "Airborne"
-	cure_text = "Spaceacillin & Anti-bodies to the common flu"
+	spread_text = "Воздушно-капельный"
+	cure_text = "Спейсациллин и антитела к обычному гриппу"
 	cures = list(/datum/reagent/medicine/spaceacillin)
 	cure_chance = 10
 	agent = "1nqu1s1t10n flu virion"
 	viable_mobtypes = list(/mob/living/carbon/human)
 	permeability_mod = 0.75
-	desc = "If left untreated the subject will burn to death for being a heretic."
+	desc = "Если не лечить, субъект сгорит заживо за ересь."
 	severity = DISEASE_SEVERITY_DANGEROUS
 
 /datum/disease/fluspanish/stage_act()
@@ -21,7 +21,7 @@
 			if(prob(5))
 				affected_mob.emote("cough")
 			if(prob(1))
-				to_chat(affected_mob, "<span class='danger'>You're burning in your own skin!</span>")
+				to_chat(affected_mob, "<span class='danger'>Вы горите в собственной коже!</span>")
 				affected_mob.take_bodypart_damage(0,5)
 
 		if(3)
@@ -31,6 +31,6 @@
 			if(prob(5))
 				affected_mob.emote("cough")
 			if(prob(5))
-				to_chat(affected_mob, "<span class='danger'>You're burning in your own skin!</span>")
+				to_chat(affected_mob, "<span class='danger'>Вы горите в собственной коже!</span>")
 				affected_mob.take_bodypart_damage(0,5)
 	return

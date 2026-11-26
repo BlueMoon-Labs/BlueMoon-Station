@@ -16,7 +16,7 @@ Bonus
 
 /datum/symptom/monkey_transform
 	name = "Primal Regression"
-	desc = "The virus rewrites the host's genome toward a more primitive form, eventually transforming them into a monkey."
+	desc = "Вирус переписывает геном хозяина в более примитивную форму, в итоге превращая его в обезьяну."
 	stealth = -2
 	resistance = -2
 	stage_speed = 0
@@ -28,7 +28,7 @@ Bonus
 	symptom_delay_min = 30
 	symptom_delay_max = 80
 	threshold_desc = list(
-		"Stage Speed 8" = "Transformation occurs earlier.",
+		"Скорость стадии 8" = "Превращение происходит раньше.",
 	)
 
 /datum/symptom/monkey_transform/Activate(datum/disease/advance/A)
@@ -38,10 +38,10 @@ Bonus
 	switch(A.stage)
 		if(3, 4)
 			if(prob(base_message_chance))
-				to_chat(M, "<span class='warning'>[pick("Your back hurts.", "You have a craving for bananas.", "Your mind feels clouded.")]</span>")
+				to_chat(M, "<span class='warning'>[pick("У вас болит спина.", "Вам хочется бананов.", "Ваш разум затуманен.")]</span>")
 		if(5)
 			if(ishuman(M))
-				to_chat(M, "<span class='userdanger'>You feel like monkeying around!</span>")
+				to_chat(M, "<span class='userdanger'>Вам хочется пообезьянничать!</span>")
 				if(M.mind && !is_monkey(M.mind))
 					var/datum/antagonist/monkey/monkey_antag = new
 					monkey_antag.monkey_only = FALSE

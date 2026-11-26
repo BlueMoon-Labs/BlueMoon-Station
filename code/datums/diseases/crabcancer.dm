@@ -1,14 +1,14 @@
 /datum/disease/crabcancer
 	name = "Crab Cancer"
-	form = "Skin Cancer"
+	form = "Рак кожи"
 	max_stages = 3
-	cure_text = "Mutadone"
-	spread_text = "Noncontagious"
+	cure_text = "Мутадон"
+	spread_text = "Не заразно"
 	cures = list(/datum/reagent/medicine/mutadone)
 	agent = "Carcinisoprojection Jelly"
 	viable_mobtypes = list(/mob/living/carbon/human, /mob/living/carbon/monkey)
 	permeability_mod = 1
-	desc = "If left untreated, the patient will rapidly and painfully grow flesh that will fall off the subject. This can result in death if unmaintained."
+	desc = "Если не лечить, пациент быстро и болезненно отрастит плоть, которая будет отваливаться. Это может привести к смерти, если не следить."
 	severity = DISEASE_SEVERITY_DANGEROUS
 	spread_flags = DISEASE_SPREAD_NON_CONTAGIOUS
 	visibility_flags = HIDDEN_PANDEMIC
@@ -19,30 +19,30 @@
 	switch(stage)
 		if(1)
 			if(prob(10))
-				to_chat(affected_mob, "<span class='warning'>" + pick("You feel uncomfortable.",
-				"You can feel your arms and legs throbbing.",
-				"You feel... crabby.",
-				"You're starting to smell like seafood.") + "</span>")
+				to_chat(affected_mob, "<span class='warning'>" + pick("Вам неудобно.",
+				"Вы чувствуете пульсацию в руках и ногах.",
+				"Вы чувствуете... крабовость.",
+				"От вас начинает пахнуть морепродуктами.") + "</span>")
 		if(2)
 			if(prob(10))
-				to_chat(affected_mob, "<span class='danger'>" + pick("Your flesh is starting to look deformed.",
-				"You feel your flesh bubbling and swelling.",
-				"You think you see pincers coming out of your flesh.",
-				"It's time for crab...") + "</span>")
+				to_chat(affected_mob, "<span class='danger'>" + pick("Ваша плоть начинает выглядеть деформированной.",
+				"Вы чувствуете, как плоть пузырится и вздувается.",
+				"Вам кажется, что из плоти торчат клешни.",
+				"Настало время краба...") + "</span>")
 		if(3)
 			if(prob(5))
-				to_chat(affected_mob, "<span class='danger'>" + pick("Your skin forms black, rough patches!",
-				"The pain is unbearable!",
-				"Your skin is forming painful cysts!") + "</span>")
+				to_chat(affected_mob, "<span class='danger'>" + pick("Кожа покрывается чёрными грубыми пятнами!",
+				"Боль невыносима!",
+				"На коже образуются болезненные кисты!") + "</span>")
 				affected_mob.take_bodypart_damage(rand(1,5))
 			if(prob(5))
-				affected_mob.visible_message("<span class='danger'>[affected_mob]'s own flesh swells and tears away from \him!</span>", \
-				"<span class='userdanger'>" + pick("You feel your flesh swelling and tearing away from you!",
-				"Your own flesh grows and falls beneath you!",
-				"The pain... the crabby meat falls off you!",
-				"Your flesh... it tears!",
-				"It is now time for crab!") + "</span>",
-				"<span class='italics'>You hear a disgusting squelch of flesh being torn.</span>")
+				affected_mob.visible_message("<span class='danger'>Плоть [affected_mob] вздувается и отрывается от тела!</span>", \
+				"<span class='userdanger'>" + pick("Вы чувствуете, как плоть вздувается и отрывается от вас!",
+				"Ваша плоть растёт и падает под вами!",
+				"Боль... крабовое мясо отваливается от вас!",
+				"Ваша плоть... она рвётся!",
+				"Настало время краба!") + "</span>",
+				"<span class='italics'>Вы слышите отвратительный чавкающий звук разрывающейся плоти.</span>")
 				playsound(affected_mob, 'sound/items/poster_ripped.ogg', 50, TRUE)
 				playsound(get_turf(affected_mob), 'sound/effects/splat.ogg', 20, TRUE)
 				if(!HAS_TRAIT(affected_mob, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли

@@ -1,17 +1,17 @@
 /datum/disease/anaphylaxis
 	form = "Shock"
 	name = "Anaphylaxis"
-	desc = "Patient is undergoing a life-threatening allergic reaction and will die if not treated."
+	desc = "Пациент переживает угрожающую жизни аллергическую реакцию и умрёт, если не лечить."
 	max_stages = 3
-	cure_text = "Epinephrine"
+	cure_text = "Эпинефрин"
 	cures = list(/datum/reagent/medicine/epinephrine)
 	cure_chance = 20
-	agent = "Allergy"
+	agent = "Аллергия"
 	viable_mobtypes = list(/mob/living/carbon/human)
 	disease_flags = CURABLE
 	severity = DISEASE_SEVERITY_DANGEROUS
 	spread_flags = DISEASE_SPREAD_NON_CONTAGIOUS
-	spread_text = "None"
+	spread_text = "Нет"
 	visibility_flags = HIDDEN_PANDEMIC
 	bypasses_immunity = TRUE
 	stage_prob = 5
@@ -30,7 +30,7 @@
 	switch(stage)
 		if(1)
 			if(affected_mob.get_num_arms() >= 1 && prob(5))
-				to_chat(affected_mob, span_warning("You feel your hand[affected_mob.get_num_arms() == 1 ? "" : "s"] start to shake."))
+				to_chat(affected_mob, span_warning("Вы чувствуете, как [affected_mob.get_num_arms() == 1 ? "ваша рука начинает дрожать" : "ваши руки начинают дрожать"]."))
 				affected_mob.Jitter(40)
 			if(affected_mob.get_num_supporting_limbs() >= 1 && prob(5))
 				if(HAS_TRAIT(affected_mob, TRAIT_NAGA_ANATOMY))
@@ -41,13 +41,13 @@
 			if(prob(2))
 				affected_mob.Dizzy(50)
 			if(prob(1))
-				to_chat(affected_mob, span_danger("Your throat itches."))
+				to_chat(affected_mob, span_danger("У вас чешется горло."))
 
 		if(2)
 			affected_mob.adjustToxLoss(0.33)
 
 			if(affected_mob.get_num_arms() >= 1 && prob(5))
-				to_chat(affected_mob, span_warning("You feel your hand[affected_mob.get_num_arms() == 1 ? "" : "s"] shake violently."))
+				to_chat(affected_mob, span_warning("Вы чувствуете, как [affected_mob.get_num_arms() == 1 ? "ваша рука сильно дрожит" : "ваши руки сильно дрожат"]."))
 				affected_mob.Jitter(80)
 				if(prob(20))
 					affected_mob.drop_all_held_items()
@@ -61,11 +61,11 @@
 					affected_mob.adjustStaminaLoss(15)
 			if(affected_mob.getorganslot(ORGAN_SLOT_EYES) && prob(4))
 				affected_mob.eye_blurry = max(affected_mob.eye_blurry, 40)
-				to_chat(affected_mob, span_warning("It's getting harder to see clearly."))
+				to_chat(affected_mob, span_warning("Становится труднее видеть."))
 			if(!HAS_TRAIT(affected_mob, TRAIT_NOBREATH) && prob(4))
 				affected_mob.adjustOxyLoss(2)
 				affected_mob.losebreath += 2
-				to_chat(affected_mob, span_warning("It's getting harder to breathe."))
+				to_chat(affected_mob, span_warning("Становится труднее дышать."))
 			if(prob(2))
 				affected_mob.Dizzy(50)
 			if(prob(2))
@@ -74,7 +74,7 @@
 			if(prob(1))
 				affected_mob.emote("cough")
 			if(prob(1))
-				to_chat(affected_mob, span_danger("Your throat feels sore."))
+				to_chat(affected_mob, span_danger("У вас болит горло."))
 
 		if(3)
 			affected_mob.adjustToxLoss(3)

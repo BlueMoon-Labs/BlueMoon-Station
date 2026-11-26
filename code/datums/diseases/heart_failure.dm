@@ -3,11 +3,11 @@
 	name = "Myocardial Infarction"
 	max_stages = 5
 	stage_prob = 2
-	cure_text = "Heart replacement surgery to cure. Defibrillation (or as a last resort, uncontrolled electric shocking) may also be effective after the onset of cardiac arrest. Corazone can also mitigate cardiac arrest."
-	agent = "Shitty Heart"
+	cure_text = "Пересадка сердца для излечения. Дефибрилляция (или в крайнем случае неконтролируемый электрический шок) также может помочь после остановки сердца. Коразон также смягчает остановку сердца."
+	agent = "Плохое сердце"
 	viable_mobtypes = list(/mob/living/carbon/human)
 	permeability_mod = 1
-	desc = "If left untreated the subject will die!"
+	desc = "Если не лечить, субъект умрёт!"
 	severity = "Dangerous!"
 	disease_flags = CAN_CARRY|CAN_RESIST
 	spread_flags = DISEASE_SPREAD_NON_CONTAGIOUS
@@ -29,25 +29,25 @@
 		switch(stage)
 			if(1 to 2)
 				if(prob(2))
-					to_chat(H, "<span class='warning'>You feel [pick("discomfort", "pressure", "a burning sensation", "pain")] in your chest.</span>")
+					to_chat(H, "<span class='warning'>Вы чувствуете [pick("дискомфорт", "давление", "жжение", "боль")] в груди.</span>")
 				if(prob(2))
-					to_chat(H, "<span class='warning'>You feel dizzy.</span>")
+					to_chat(H, "<span class='warning'>Вы чувствуете головокружение.</span>")
 					H.confused += 6
 				if(prob(3))
-					to_chat(H, "<span class='warning'>You feel [pick("full", "nauseated", "sweaty", "weak", "tired", "short on breath", "uneasy")].</span>")
+					to_chat(H, "<span class='warning'>Вы чувствуете [pick("полноту", "тошноту", "потливость", "слабость", "усталость", "нехватку дыхания", "беспокойство")].</span>")
 			if(3 to 4)
 				if(!sound)
 					H.playsound_local(H, 'sound/health/slowbeat.ogg', 40, FALSE, channel = CHANNEL_HEARTBEAT)
 					sound = TRUE
 				if(prob(3))
-					to_chat(H, "<span class='danger'>You feel a sharp pain in your chest!</span>")
+					to_chat(H, "<span class='danger'>Вы чувствуете острую боль в груди!</span>")
 					if(prob(25))
 						affected_mob.vomit(95)
 					H.emote("cough")
 					H.DefaultCombatKnockdown(40)
 					H.losebreath += 12
 				if(prob(3))
-					to_chat(H, "<span class='danger'>You feel very weak and dizzy...</span>")
+					to_chat(H, "<span class='danger'>Вы чувствуете сильную слабость и головокружение...</span>")
 					H.confused += 16
 					H.adjustStaminaLoss(80)
 					H.emote("cough")

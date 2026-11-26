@@ -15,7 +15,7 @@ BONUS
 */
 /datum/symptom/viraladaptation
 	name = "Viral self-adaptation"
-	desc = "The virus mimics the function of normal body cells, becoming harder to spot and to eradicate, but reducing its speed."
+	desc = "Вирус имитирует функцию обычных клеток организма, становясь труднее обнаруживаемым и уничтожаемым, но замедляясь."
 	stealth = 3
 	resistance = 5
 	stage_speed = -3
@@ -39,8 +39,8 @@ BONUS
 */
 /datum/symptom/viralevolution
 	name = "Viral evolutionary acceleration"
-	desc = "The virus quickly adapts to spread as fast as possible both outside and inside a host. \
-	This, however, makes the virus easier to spot, and less able to fight off a cure."
+	desc = "Вирус быстро адаптируется, чтобы распространяться как можно быстрее как вне, так и внутри хозяина. \
+	Однако это делает вирус легче обнаруживаемым и менее способным противостоять лекарству."
 	stealth = -2
 	resistance = -3
 	stage_speed = 5

@@ -20,7 +20,7 @@ Bonus
 
 /datum/symptom/sneeze
 	name = "Sneezing"
-	desc = "The virus causes irritation of the nasal cavity, making the host sneeze occasionally, briefly disrupting movement and actions. At the final stage of the disease, sneezing can knock the host backward."
+	desc = "Вирус раздражает носовую полость, заставляя хозяина периодически чихать, ненадолго нарушая движения и действия. На последней стадии болезни чихание может отбросить хозяина назад."
 	stealth = -2
 	resistance = 3
 	stage_speed = 0
@@ -30,8 +30,8 @@ Bonus
 	symptom_delay_min = 5
 	symptom_delay_max = 35
 	threshold_desc = list(
-		"Transmission 9" = "Increases sneezing range, spreading the virus over 6 meter cone instead of over a 4 meter cone.",
-		"Stealth 4" = "The symptom remains hidden until active.",
+		"Передача 9" = "Увеличивает дальность чихания, распространяя вирус конусом 6 метров вместо 4 метров.",
+		"Скрытность 4" = "Симптом остаётся скрытым до активации.",
 	)
 
 /datum/symptom/sneeze/Start(datum/disease/advance/A)
