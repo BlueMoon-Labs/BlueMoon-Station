@@ -5,6 +5,7 @@ GLOBAL_LIST_INIT(heretic_path_lessons, list(
 	"glass" = /datum/heretic_path_lesson/glass,
 	"tide" = /datum/heretic_path_lesson/tide,
 	"dusk" = /datum/heretic_path_lesson/dusk,
+	"hammer" = /datum/heretic_path_lesson/hammer,
 	"wax" = /datum/heretic_path_lesson/wax,
 	"blood" = /datum/heretic_path_lesson/blood,
 ))

@@ -8,6 +8,7 @@ GLOBAL_LIST_INIT(heretic_robe_armor, list(
 	PATH_ECHO = /datum/armor/heretic_echo,
 	PATH_FLESH = /datum/armor/heretic_flesh,
 	PATH_GLASS = /datum/armor/heretic_glass,
+	PATH_HAMMER = /datum/armor/heretic_hammer,
 	PATH_LEAD = /datum/armor/heretic_lead,
 	PATH_LOCK = /datum/armor/heretic_lock,
 	PATH_MOON = /datum/armor/heretic_moon,

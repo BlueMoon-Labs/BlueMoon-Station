@@ -60,6 +60,9 @@
 		else if(blade.route == PATH_BLOOD)
 			expected_x = -8
 			expected_y = -2
+		else if(blade.route == PATH_HAMMER)
+			expected_x = -16
+			expected_y = -16
 		for(var/hand_icon in list(blade.lefthand_file, blade.righthand_file))
 			var/mutable_appearance/held = blade.build_worn_icon(default_icon_file = hand_icon, isinhands = TRUE)
 			TEST_ASSERT_EQUAL(held.icon_state, blade.icon_state, "Спрайт [blade.type] в руках должен соответствовать предмету.")

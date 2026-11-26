@@ -478,6 +478,16 @@
 	fire = 20
 	acid = 20
 
+/datum/armor/heretic_hammer
+	melee = 65
+	bullet = 45
+	laser = 40
+	energy = 50
+	bomb = 45
+	bio = 20
+	fire = 35
+	acid = 20
+
 /datum/armor/heretic_lead
 	melee = 55
 	bullet = 60

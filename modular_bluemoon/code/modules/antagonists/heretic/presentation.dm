@@ -2,7 +2,7 @@
 	var/book_type = /obj/item/forbidden_book
 	var/book_name = "Codex Cicatrix"
 	var/book_title = "Кодекс Рубцов"
-	var/book_subtitle = "Восемнадцать дорог за одну завесу"
+	var/book_subtitle = "Девятнадцать дорог за одну завесу"
 	var/book_desc = "Строки проступают между старыми шрамами на страницах."
 	var/book_cover = "codex"
 	var/book_ink = "#b2ac7d"
@@ -468,6 +468,11 @@
 		if(PATH_LEAD)
 			animate(src, pixel_y = book_rest_y - 2, time = 0.1 SECONDS, easing = SINE_EASING)
 			animate(pixel_y = book_rest_y, time = 0.5 SECONDS, easing = BOUNCE_EASING)
+		if(PATH_HAMMER)
+			opening.Scale(1.06, 0.94)
+			transform = opening
+			animate(src, transform = book_rest_transform, pixel_y = book_rest_y - 3, time = 0.08 SECONDS, easing = SINE_EASING)
+			animate(pixel_y = book_rest_y, time = 0.4 SECONDS, easing = BOUNCE_EASING)
 		if(PATH_SPIRIT)
 			animate(src, pixel_y = book_rest_y + 4, alpha = 180, time = 0.4 SECONDS, easing = SINE_EASING)
 			animate(pixel_y = book_rest_y, alpha = book_rest_alpha, time = 0.6 SECONDS, easing = SINE_EASING)

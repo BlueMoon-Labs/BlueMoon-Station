@@ -130,6 +130,14 @@
 	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_dance_worn.dmi'
 	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_dance_worn.dmi'
 
+/obj/item/melee/sickly_blade/hammer
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_blades_hammer_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_blades_hammer_righthand.dmi'
+	inhand_x_dimension = 64
+	inhand_y_dimension = 64
+	held_offset_x = 0
+	held_offset_y = 0
+
 /datum/heretic_path/dusk
 	robe_state = "dusk_armor"
 	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_dusk_worn.dmi'

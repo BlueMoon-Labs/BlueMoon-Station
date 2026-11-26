@@ -128,6 +128,9 @@
 			/obj/effect/proc_holder/spell/self/heretic_dusk/noon,
 			/obj/effect/proc_holder/spell/self/heretic_dusk/desecrate,
 		),
+		PATH_HAMMER = list(
+			/obj/effect/proc_holder/spell/self/heretic_hammer/swing,
+		),
 	)
 	for(var/knowledge_type in subtypesof(/datum/eldritch_knowledge/spell))
 		var/datum/eldritch_knowledge/spell/knowledge = knowledge_type

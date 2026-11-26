@@ -333,6 +333,7 @@
 #include "heretic_dusk_play_comfort.dm"
 #include "heretic_dusk_review_fix.dm"
 #include "heretic_evolution.dm"
+#include "heretic_hammer.dm"
 #include "heretic_lead.dm"
 #include "heretic_lead_drum_comfort.dm"
 #include "heretic_lead_fx.dm"

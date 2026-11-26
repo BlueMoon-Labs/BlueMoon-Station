@@ -263,6 +263,9 @@
 /datum/unit_test/antag_training_dusk_lesson/Run()
 	check_training_path_lesson(PATH_DUSK, "dusk", 10)
 
+/datum/unit_test/antag_training_hammer_lesson/Run()
+	check_training_path_lesson(PATH_HAMMER, "hammer", 8)
+
 /// После урока подготовка пути доводит его до девятой ступени: ступени, выданные уроком, не запирают следующие.
 /datum/unit_test/proc/check_lesson_path_stage(path_id, lesson_id)
 	var/datum/antag_training_session/session = allocate_training_session()
@@ -294,6 +297,9 @@
 /datum/unit_test/antag_training_dusk_lesson_stage/Run()
 	check_lesson_path_stage(PATH_DUSK, "dusk")
 
+/datum/unit_test/antag_training_hammer_lesson_stage/Run()
+	check_lesson_path_stage(PATH_HAMMER, "hammer")
+
 /datum/unit_test/antag_training_sand_lesson_stage/Run()
 	check_lesson_path_stage(PATH_SAND, "sand")
 
@@ -305,6 +311,17 @@
 
 /datum/unit_test/antag_training_lead_lesson_stage/Run()
 	check_lesson_path_stage(PATH_LEAD, "lead")
+
+/// Боевой совет пути с уроком называет кнопку урока.
+/datum/unit_test/heretic_path_lesson_practice_texts/Run()
+	var/list/lessons = list(PATH_GLASS = "glass", PATH_TIDE = "tide", PATH_WAX = "wax", PATH_BLOOD = "blood", PATH_HAMMER = "hammer", PATH_DUSK = "dusk")
+	var/list/titles = list(PATH_SAND = "Урок Песка", PATH_SPIRIT = "Урок Духа", PATH_DANCE = "Урок Пляски", PATH_LEAD = "Урок Свинца")
+	for(var/path_id in lessons)
+		var/datum/heretic_path_lesson/lesson_type = GLOB.heretic_path_lessons[lessons[path_id]]
+		titles[path_id] = initial(lesson_type.title)
+	for(var/path_id in titles)
+		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		TEST_ASSERT(findtext(path.combat_practice, "кнопка «[titles[path_id]]»"), "Совет пути [path_id] называет кнопку урока.")
 
 /// Числа боевых советов полигона совпадают с дефайнами механик.
 /datum/unit_test/heretic_combat_practice_numbers/Run()

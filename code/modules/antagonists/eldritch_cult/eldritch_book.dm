@@ -244,7 +244,7 @@
 		"book" = list(
 			"name" = book_style?.book_name || "Codex Cicatrix",
 			"title" = book_style?.book_title || "Кодекс Рубцов",
-			"subtitle" = book_style?.book_subtitle || "Восемнадцать дорог за одну завесу",
+			"subtitle" = book_style?.book_subtitle || "Девятнадцать дорог за одну завесу",
 			"path" = book_style?.id,
 			"cover_state" = book_style?.book_cover || "codex",
 		),
@@ -417,7 +417,8 @@
 			var/datum/eldritch_knowledge/learned = text2path(params["id"])
 			if(!heretic.research_knowledge(learned, user))
 				return FALSE
-			user.playsound_local(get_turf(user), HERETIC_CODEX_LEARN_SFX, 25, TRUE)
+			var/datum/heretic_path/learned_path = GLOB.heretic_paths[initial(learned.route)]
+			user.playsound_local(get_turf(user), learned_path?.learn_sound || HERETIC_CODEX_LEARN_SFX, 25, TRUE)
 			return TRUE
 		if("retarget")
 			return heretic.ensure_hunt_target(user, force_replace = TRUE)

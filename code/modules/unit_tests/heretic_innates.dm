@@ -122,6 +122,16 @@
 	cosmic.body.adjustStaminaLoss(20)
 	cosmic.body.Move(water_floor, NORTH)
 	TEST_ASSERT_EQUAL(cosmic.body.getStaminaLoss(), 14, "Шаг возле собственной звезды восстанавливает выносливость.")
+	var/datum/heretic_innate/hammer/heft = create_path(PATH_HAMMER)
+	var/mob/living/carbon/human/smith = heft.body
+	var/obj/item/shield/riot/tower/tower = allocate(/obj/item/shield/riot/tower)
+	smith.put_in_hands(tower)
+	smith.update_equipment_speed_mods()
+	TEST_ASSERT(!smith.has_movespeed_modifier(/datum/movespeed_modifier/equipment_speedmod), "Громоздкое в руках Молот не замедляет.")
+	TEST_ASSERT(LAZYACCESS(smith.movespeed_mod_immunities, "[/datum/movespeed_modifier/pull_slowdown]"), "Тащить тело Молоту не тяжело.")
+	heft.unbind()
+	TEST_ASSERT(smith.has_movespeed_modifier(/datum/movespeed_modifier/equipment_speedmod), "Без черты громоздкое в руках снова замедляет.")
+	TEST_ASSERT(!LAZYACCESS(smith.movespeed_mod_immunities, "[/datum/movespeed_modifier/pull_slowdown]"), "Без черты тащить снова тяжело.")
 
 /// Ответные черты получают заряд только от фактических ранений.
 /datum/unit_test/heretic_innates/damage/Run()

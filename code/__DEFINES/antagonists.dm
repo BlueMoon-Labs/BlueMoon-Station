@@ -109,6 +109,7 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define PATH_DANCE "Dance"
 #define PATH_LEAD "Lead"
 #define PATH_DUSK "Dusk"
+#define PATH_HAMMER "Hammer"
 
 #define HERETIC_SKY_OMEN "omen"
 #define HERETIC_SKY_ASCENDED "ascended"

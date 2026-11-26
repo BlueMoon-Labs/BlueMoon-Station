@@ -48,6 +48,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 		/datum/heretic_path/dance,
 		/datum/heretic_path/lead,
 		/datum/heretic_path/dusk,
+		/datum/heretic_path/hammer,
 	)
 	path_types |= subtypesof(/datum/heretic_path)
 	for(var/datum/heretic_path/path_type as anything in path_types)
