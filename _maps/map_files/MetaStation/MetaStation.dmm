@@ -23102,26 +23102,10 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
-/obj/structure/table,
-/obj/item/reagent_containers/glass/beaker/large{
-	pixel_y = 3
-	},
-/obj/item/reagent_containers/glass/bottle/charcoal{
-	pixel_x = -5
-	},
-/obj/item/reagent_containers/syringe/epinephrine{
-	pixel_x = 3;
-	pixel_y = -2
-	},
-/obj/item/reagent_containers/glass/bottle/morphine,
-/obj/item/reagent_containers/dropper,
-/obj/item/reagent_containers/glass/beaker{
-	pixel_x = 8;
-	pixel_y = 2
-	},
 /obj/structure/noticeboard{
 	pixel_y = 32
 	},
+/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
 "bYW" = (
@@ -24172,6 +24156,23 @@
 /obj/effect/turf_decal/tile/blue,
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
+	},
+/obj/structure/table,
+/obj/item/reagent_containers/glass/beaker{
+	pixel_x = 8;
+	pixel_y = 2
+	},
+/obj/item/reagent_containers/glass/beaker/large{
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/dropper,
+/obj/item/reagent_containers/glass/bottle/morphine,
+/obj/item/reagent_containers/glass/bottle/charcoal{
+	pixel_x = -5
+	},
+/obj/item/reagent_containers/syringe/epinephrine{
+	pixel_x = 3;
+	pixel_y = -2
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
@@ -27944,6 +27945,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/machinery/medipen_refiller,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "clq" = (
@@ -66378,7 +66380,7 @@
 /obj/structure/sign/warning/nosmoking{
 	pixel_y = 30
 	},
-/obj/machinery/medipen_refiller,
+/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
 "mgJ" = (
@@ -159576,4 +159578,3 @@ oRp
 oRp
 oRp
 "}
-

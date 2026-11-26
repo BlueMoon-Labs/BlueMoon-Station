@@ -26181,7 +26181,7 @@
 /obj/structure/mirror{
 	pixel_y = -28
 	},
-/obj/machinery/vending/cola/random,
+/obj/machinery/vending/wardrobe/medi_wardrobe,
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
@@ -48225,9 +48225,11 @@
 /turf/open/floor/plasteel,
 /area/security/brig)
 "gSP" = (
+/obj/effect/turf_decal/tile/blue,
 /obj/effect/turf_decal/tile/blue{
-	dir = 1
+	dir = 8
 	},
+/obj/machinery/vending/medical,
 /turf/open/floor/plasteel/white,
 /area/medical/surgery)
 "gST" = (
@@ -62309,7 +62311,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
-/obj/machinery/vending/medical,
+/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
 "jRA" = (
@@ -116126,7 +116128,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
-/obj/machinery/vending/wardrobe/medi_wardrobe,
+/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
 "viq" = (
@@ -195192,4 +195194,3 @@ hZh
 hZh
 hZh
 "}
-

@@ -11,9 +11,6 @@
 /obj/machinery/light_switch{
 	pixel_x = 22
 	},
-/obj/structure/bed/roller,
-/obj/item/bedsheet/medical,
-/obj/machinery/iv_drip,
 /obj/item/radio/intercom{
 	broadcasting = 1;
 	frequency = 1485;
@@ -21,6 +18,7 @@
 	name = "Station Intercom (Medbay)";
 	pixel_y = 22
 	},
+/obj/machinery/rnd/production/techfab/department/medical,
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
 "abj" = (
@@ -12383,7 +12381,7 @@
 /obj/item/book/manual/wiki/security_space_law,
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_y = 24;
+	pixel_y = 24
 	},
 /obj/machinery/button/door{
 	id = "permacells2";
@@ -13791,7 +13789,7 @@
 /obj/item/book/manual/wiki/security_space_law,
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_y = 24;
+	pixel_y = 24
 	},
 /obj/item/pen{
 	pixel_x = 4;
@@ -15134,7 +15132,7 @@
 /obj/item/book/manual/wiki/security_space_law,
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_y = 24;
+	pixel_y = 24
 	},
 /obj/machinery/light/small{
 	dir = 8
@@ -39330,9 +39328,12 @@
 /turf/closed/wall/r_wall/rust,
 /area/maintenance/department/security/upper)
 "nzs" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 4
+	},
 /obj/machinery/smoke_machine,
 /turf/open/floor/plasteel/white,
-/area/medical/storage)
+/area/medical/medbay/central)
 "nzE" = (
 /obj/structure/closet{
 	name = "Costume Closet"
@@ -58159,7 +58160,7 @@
 /obj/item/book/manual/wiki/security_space_law,
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_y = 24;
+	pixel_y = 24
 	},
 /obj/machinery/button/door{
 	id = "permacells3";
@@ -64748,7 +64749,7 @@
 /turf/open/floor/plasteel/dark,
 /area/service/chapel/office)
 "wkd" = (
-/obj/machinery/rnd/production/techfab/department/medical,
+/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
 "wkx" = (
@@ -65543,6 +65544,9 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
+/obj/structure/bed/roller,
+/obj/item/bedsheet/medical,
+/obj/machinery/iv_drip,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "wxw" = (
@@ -96006,7 +96010,7 @@ pEu
 wDl
 sEQ
 ybK
-mtA
+wkd
 wkd
 tur
 kqh
@@ -96782,7 +96786,7 @@ cUE
 nmH
 vEi
 wGe
-nzs
+mtA
 osD
 tsn
 ygg
@@ -98834,7 +98838,7 @@ giQ
 mSY
 tgE
 xVz
-mSY
+nzs
 jlX
 jIE
 goT
@@ -136981,4 +136985,3 @@ chc
 chc
 chc
 "}
-

@@ -141,6 +141,11 @@
 	mask_type = /obj/item/clothing/mask/breath
 	mod_type = /obj/item/mod/control/pre_equipped/rescue
 
+/obj/machinery/suit_storage_unit/med
+	suit_type = /obj/item/clothing/suit/space/hardsuit/medical
+	mask_type = /obj/item/clothing/mask/breath
+	mod_type = /obj/item/mod/control/pre_equipped/medical
+
 /obj/machinery/suit_storage_unit/paramedic
 	name = "Paramedic Suit Storage Unit"
 	suit_type = /obj/item/clothing/suit/space/eva/paramedic

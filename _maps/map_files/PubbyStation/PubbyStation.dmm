@@ -2669,7 +2669,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_y = 24;
+	pixel_y = 24
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -4007,7 +4007,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_y = 24;
+	pixel_y = 24
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -26508,6 +26508,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/machinery/vending/wardrobe/medi_wardrobe,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "boF" = (
@@ -26536,6 +26537,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
+/obj/machinery/vending/medical,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "boH" = (
@@ -35784,23 +35786,14 @@
 /turf/open/floor/plasteel/white,
 /area/medical/virology)
 "bIc" = (
-/obj/machinery/vending/medical,
 /obj/effect/turf_decal/tile/blue,
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
-/turf/open/floor/plasteel/white,
-/area/medical/medbay/central)
-"bId" = (
 /obj/structure/closet/secure_closet/medical3,
-/obj/effect/turf_decal/tile/blue,
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "bIe" = (
-/obj/structure/closet/secure_closet/medical3,
 /obj/machinery/light,
 /obj/machinery/camera{
 	c_tag = "Medbay Equipment Room";
@@ -35811,14 +35804,15 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "bIf" = (
-/obj/machinery/vending/wardrobe/medi_wardrobe,
 /obj/effect/turf_decal/tile/blue,
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "bIg" = (
@@ -51475,7 +51469,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -25;
-	pixel_y = -2;
+	pixel_y = -2
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
@@ -92972,7 +92966,7 @@ bsA
 bEw
 naS
 bkh
-bId
+bIc
 bFO
 bEr
 bEr
@@ -131634,4 +131628,3 @@ rmC
 rmC
 rmC
 "}
-

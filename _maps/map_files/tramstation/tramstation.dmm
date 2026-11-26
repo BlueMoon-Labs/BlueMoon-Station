@@ -52519,6 +52519,7 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 9
 	},
+/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
 "oHp" = (
@@ -57147,6 +57148,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
+/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
 "pSQ" = (
@@ -219830,4 +219832,3 @@ uBU
 uBU
 uBU
 "}
-
