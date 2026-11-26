@@ -45,7 +45,7 @@
 	check_flags = AB_CHECK_RESTRAINED|AB_CHECK_STUN|AB_CHECK_CONSCIOUS
 
 /datum/action/item_action/heretic_escape/Grant(mob/user)
-	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
+	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user) || HAS_TRAIT(user, TRAIT_ACT_AS_HERETIC))
 		return ..()
 	Remove(owner)
 
@@ -61,7 +61,7 @@
 	if(!..())
 		return FALSE
 	var/obj/item/melee/sickly_blade/blade = target
-	return !QDELETED(blade) && (blade in owner.held_items) && !blade.escape_in_progress && !owner.incapacitated() && (IS_HERETIC(owner) || IS_HERETIC_MONSTER(owner))
+	return !QDELETED(blade) && (blade in owner.held_items) && !blade.escape_in_progress && !owner.incapacitated() && (IS_HERETIC(owner) || IS_HERETIC_MONSTER(owner) || HAS_TRAIT(owner, TRAIT_ACT_AS_HERETIC))
 
 /obj/item/melee/sickly_blade
 	COOLDOWN_DECLARE(escape_failure_log_cooldown)

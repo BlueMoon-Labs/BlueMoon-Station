@@ -640,8 +640,8 @@
 	layer = LOW_OBJ_LAYER
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
-/obj/effect/heretic_rune/big/proc/set_greyscale(color)
-	color = color
+/obj/effect/heretic_rune/big/proc/set_greyscale(new_color)
+	color = new_color
 
 /mob/living/simple_animal/hostile/fake_crewman
 	name = "crewmember"

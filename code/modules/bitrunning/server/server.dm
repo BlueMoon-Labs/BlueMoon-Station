@@ -783,7 +783,14 @@
 	var/current_index = 1
 	shuffle_inplace(generated_domain.mob_modules)
 
+	var/list/turf/domain_turfs = list()
+	for(var/datum/turf_reservation/reservation as anything in generated_domain.reservations)
+		for(var/turf/tile as anything in reservation.reserved_turfs)
+			domain_turfs[tile] = TRUE
+
 	for(var/obj/effect/landmark/bitrunning/mob_segment/landmark in GLOB.bitrunning_landmarks.Copy())
+		if(!domain_turfs[get_turf(landmark)])
+			continue
 		if(current_index > length(generated_domain.mob_modules))
 			stack_trace("vdom: mobs segments are set to unique, but there are more landmarks than available segments")
 			return FALSE

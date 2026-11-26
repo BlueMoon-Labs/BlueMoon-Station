@@ -124,6 +124,11 @@
 	pixel_y = 4
 	},
 /obj/item/gun/ballistic/rifle/boltaction,
+/obj/item/ammo_box/a762,
+/obj/item/ammo_box/a762,
+/obj/item/ammo_box/a762,
+/obj/item/ammo_box/a762,
+/obj/item/ammo_box/a762,
 /turf/template_noop,
 /area/virtual_domain/safehouse)
 "hH" = (
