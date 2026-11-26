@@ -54,12 +54,27 @@
 				M.shuffle_laws(list(LAW_INHERENT, LAW_SUPPLIED, LAW_ION))
 
 			log_game("Ion storm changed laws of [key_name(M)] to [english_list(M.laws.get_law_list(TRUE, TRUE))]")
+			// The event can replace an inherent law instead of adding to ion.
+			// Always tell shielded, linked cyborgs which ion law was attempted.
+			if(message)
+				for(var/mob/living/silicon/robot/R in M.connected_robots)
+					if(R.connected_ai == M && R.lawupdate)
+						var/obj/item/borg/upgrade/ion_shield/guard = R.get_ion_shield()
+						guard?.report_blocked_law(R, message)
 			M.post_lawchange()
 
 	//Generate Cyborg law change
 	for(var/mob/living/silicon/robot/M in GLOB.alive_mob_list)
 		M.laws_sanity_check()
 		if(M.stat != DEAD && M.see_in_dark != 0)
+			var/obj/item/borg/upgrade/ion_shield/guard = M.get_ion_shield()
+			if(guard)
+				// Reject ALL direct ion-storm mutations: random replacement,
+				// removal, injection and shuffling. Do not call post_lawchange.
+				// A healthy linked AI already reports its own ion law to this borg.
+				if(!(M.lawupdate && M.connected_ai && M.connected_ai.stat != DEAD && M.connected_ai.see_in_dark != 0))
+					guard.report_blocked_law(M, ionMessage || generate_ion_law())
+				continue
 			if(prob(replaceLawsetChance))
 				M.laws.pick_weighted_lawset()
 

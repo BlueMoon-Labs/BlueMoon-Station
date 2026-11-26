@@ -63,6 +63,82 @@
 		basic_modules.Swap(first_index, second_index)
 	return TRUE
 
+// BLUEMOON CYBORG ION SHIELD v10
+// Passive hardware upgrade: protects the bearer against the ion storm event.
+// It is not a law-upload board, does not alter ordinary AI commands, and has
+// no effect on manual admin / AI-module uploads to the cyborg.
+/obj/item/borg/upgrade/ion_shield
+	name = "Модуль экранирования"
+	desc = "Защищает матрицу законов киборга от ионных штормов. При подключении к ИИ отфильтровывает ионные директивы из входящей синхронизации."
+	icon_state = "cyborg_upgrade3"
+	var/mob/living/silicon/ai/observed_ai
+	var/list/observed_ion_laws = list()
+	// Ion storms can also insert their law into inherent/supplied.
+	var/list/blocked_storm_laws = list()
+	var/last_warning_tick = -1
+	var/last_warning_law
+
+/obj/item/borg/upgrade/ion_shield/action(mob/living/silicon/robot/R, user = usr)
+	. = ..()
+	if(!.)
+		return FALSE
+	if(R.shell)
+		to_chat(user, span_warning("Модуль нельзя установить в оболочку дистанционного управления ИИ."))
+		return FALSE
+	for(var/obj/item/borg/upgrade/ion_shield/existing in R.upgrades)
+		if(!QDELETED(existing))
+			to_chat(user, span_warning("У киборга уже установлен модуль экранирования."))
+			return FALSE
+	observed_ai = R.connected_ai
+	observed_ion_laws = observed_ai?.laws?.ion ? observed_ai.laws.ion.Copy() : list()
+	to_chat(R, span_notice("Модуль экранирования активирован. Ионные штормы не смогут напрямую переписывать ваши законы."))
+	return TRUE
+
+/obj/item/borg/upgrade/ion_shield/deactivate(mob/living/silicon/robot/R, user = usr)
+	. = ..()
+	if(!.)
+		return FALSE
+	observed_ai = null
+	observed_ion_laws = list()
+	blocked_storm_laws = list()
+	to_chat(R, span_warning("Модуль экранирования отключён. Защита от ионных штормов недоступна."))
+	return TRUE
+
+/obj/item/borg/upgrade/ion_shield/proc/report_blocked_law(mob/living/silicon/robot/R, law)
+	if(QDELETED(R) || !length(law))
+		return
+	blocked_storm_laws |= "[law]"
+	// AI synchronization and the event itself may report the same law in one tick.
+	if(last_warning_tick == world.time && last_warning_law == law)
+		return
+	last_warning_tick = world.time
+	last_warning_law = law
+	var/safe_law = html_encode_readable("[law]")
+	to_chat(R, span_notice("<b>Модуль экранирования сработал.</b> Ионный закон отклонён: <b>«[safe_law]»</b>"))
+	R.logevent("Ion shield blocked a proposed ion law.")
+
+// Notice only newly transmitted ion laws; ordinary remote laws still synchronize.
+/obj/item/borg/upgrade/ion_shield/proc/reject_remote_ion_laws(mob/living/silicon/robot/R, mob/living/silicon/ai/source_ai, list/incoming)
+	if(observed_ai != source_ai)
+		observed_ai = source_ai
+		observed_ion_laws = incoming ? incoming.Copy() : list()
+		return
+	if(!incoming)
+		observed_ion_laws = list()
+		return
+	for(var/law in incoming)
+		if(!(law in observed_ion_laws))
+			report_blocked_law(R, law)
+	observed_ion_laws = incoming.Copy()
+
+/mob/living/silicon/robot/proc/get_ion_shield()
+	if(shell)
+		return null
+	for(var/obj/item/borg/upgrade/ion_shield/shield in upgrades)
+		if(!QDELETED(shield) && shield.loc == src)
+			return shield
+	return null
+
 /obj/item/borg/upgrade/rename
 	name = "cyborg reclassification board"
 	desc = "Используется для переименования киборга."

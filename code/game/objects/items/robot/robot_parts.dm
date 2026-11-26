@@ -285,7 +285,26 @@
 					to_chat(user, "<span class='warning'>This [M.name] does not seem to fit!</span>")
 				return
 
+			// Offer the constructor an explicit lawset only for ordinary positronic MMIs.
+			// Existing Syndicate/InteQ and preprogrammed law datums are left untouched.
+			var/list/law_selection
+			if(istype(M, /obj/item/mmi/posibrain) && !M.overrides_aicore_laws && M.laws && M.laws.id == DEFAULT_AI_LAWID)
+				var/obj/item/mmi/posibrain/P = M
+				law_selection = choose_positronic_laws(user, P)
+				if(isnull(law_selection))
+					return
+				// Timed prompts must not bypass normal checks that ran before input.
+				if(!mind_ready(M.brainmob, user) || M.brainmob.stat == DEAD || jobban_isbanned(M.brainmob, "Cyborg"))
+					var/datum/ai_laws/invalidated_preset = law_selection["laws"]
+					if(invalidated_preset)
+						qdel(invalidated_preset)
+					return
+
 			if(!user.temporarilyRemoveItemFromInventory(W))
+				if(law_selection)
+					var/datum/ai_laws/unused_preset = law_selection["laws"]
+					if(unused_preset)
+						qdel(unused_preset)
 				return
 
 			var/mob/living/silicon/robot/O = new cyborg_type(get_turf(loc))
@@ -296,8 +315,16 @@
 			//Transfer debug settings to new mob
 			O.custom_name = created_name
 			O.locked = panel_locked
+			if(law_selection)
+				var/datum/ai_laws/preset = law_selection["laws"]
+				if(preset)
+					QDEL_NULL(M.laws)
+					M.laws = preset
+					log_law("[key_name(user)] programmed positronic brain laws ([law_selection["mode"]]) at [AREACOORD(user)]: [jointext(M.laws.inherent, " | ")]")
 			bind_to_station(O, M)
 			BM.mind.transfer_to(O)
+			if(law_selection && law_selection["laws"])
+				O.post_lawchange(TRUE)
 
 			if(O.mind && O.mind.special_role)
 				O.mind.store_memory("As a cyborg, you must obey your silicon laws and master AI above all else. Your objectives will consider you to be dead.")
@@ -369,6 +396,92 @@
 	else
 		return ..()
 
+// BLUEMOON POSIBRAIN LAW PICKER v9
+// Custom laws live in the positronic MMI and survive subsequent cyborg reconstruction.
+// This ID must differ from DEFAULT_AI_LAWID to prevent station lawsync overwriting it.
+/datum/ai_laws/ghost_role_custom
+	name = "Пользовательский свод позитронного мозга"
+	id = "ghost_role_posibrain_custom"
+	inherent = list()
+
+/// GHOSTROLE_TRAIT is a *source*, not a boolean trait. Check the source or the role datum.
+/obj/item/robot_suit/proc/can_author_ghost_role_laws(mob/living/user)
+	if(!user || QDELETED(user) || !user.client || !user.mind)
+		return FALSE
+	if(user.mind.has_antag_datum(/datum/antagonist/ghost_role))
+		return TRUE
+	for(var/trait in user.status_traits)
+		var/list/mob_trait_sources = user.status_traits[trait]
+		if(islist(mob_trait_sources) && (GHOSTROLE_TRAIT in mob_trait_sources))
+			return TRUE
+	for(var/trait in user.mind.status_traits)
+		var/list/mind_trait_sources = user.mind.status_traits[trait]
+		if(islist(mind_trait_sources) && (GHOSTROLE_TRAIT in mind_trait_sources))
+			return TRUE
+	return FALSE
+
+/// Recheck after every blocking prompt. A second person must not be able to finish an
+/// assembly which has been moved, or program an MMI which is no longer in the hand.
+/obj/item/robot_suit/proc/posibrain_law_setup_valid(mob/living/user, obj/item/mmi/posibrain/P)
+	return !QDELETED(src) && !QDELETED(user) && !QDELETED(P) && isturf(loc) && Adjacent(user) && P.loc == user && check_completion() && chest?.cell && P.brainmob
+
+/// Returns null on cancel/stale state; otherwise an associative list, possibly with no new datum.
+/obj/item/robot_suit/proc/choose_positronic_laws(mob/living/user, obj/item/mmi/posibrain/P)
+	if(!posibrain_law_setup_valid(user, P))
+		return null
+
+	var/list/choices = list(
+		"Законы станции (по умолчанию)" = "station",
+		"NT OS Safeguard (автономный)" = "safeguard",
+		"Asimov (автономный)" = "asimov",
+		"Corporate (автономный)" = "corporate"
+	)
+	if(can_author_ghost_role_laws(user))
+		choices["Собственный свод законов (гост-роль)"] = "custom"
+
+	var/picked = input(user, "Выберите законы для создаваемого киборга. Автономные своды отключают связь законов с ИИ.", "Программирование позитронного мозга") as null|anything in choices
+	if(!picked || !posibrain_law_setup_valid(user, P))
+		return null
+	var/mode = choices[picked]
+	var/datum/ai_laws/selected
+	switch(mode)
+		if("station")
+			return list("mode" = mode, "laws" = null)
+		if("safeguard")
+			selected = new /datum/ai_laws/default()
+		if("asimov")
+			selected = new /datum/ai_laws/default/asimov()
+		if("corporate")
+			selected = new /datum/ai_laws/default/corporate()
+		if("custom")
+			if(!can_author_ghost_role_laws(user))
+				return null
+			var/law_cap = min(8, CONFIG_GET(number/silicon_max_law_amount))
+			if(law_cap < 1)
+				to_chat(user, span_warning("На сервере отключено добавление законов."))
+				return null
+			var/law_count = input(user, "Введите количество законов (1-[law_cap]).", "Собственный свод", 3) as null|num
+			if(isnull(law_count) || !posibrain_law_setup_valid(user, P) || !can_author_ghost_role_laws(user))
+				return null
+			law_count = clamp(round(law_count), 1, law_cap)
+			selected = new /datum/ai_laws/ghost_role_custom()
+			for(var/i = 1, i <= law_count, i++)
+				var/law_text = stripped_input(user, "Введите текст закона №[i] (не более 350 символов).", "Закон [i]", "", 350)
+				if(!posibrain_law_setup_valid(user, P) || !can_author_ghost_role_laws(user) || !length(law_text) || (law_text in selected.inherent))
+					to_chat(user, span_warning("Программирование отменено: пустой/повторный закон или условия изменились."))
+					qdel(selected)
+					return null
+				selected.add_inherent_law(law_text)
+		else
+			return null
+
+	if(!posibrain_law_setup_valid(user, P) || (mode == "custom" && !can_author_ghost_role_laws(user)))
+		qdel(selected)
+		return null
+	return list("mode" = mode, "laws" = selected)
+
+// END BLUEMOON POSIBRAIN LAW PICKER v9
+
 /obj/item/robot_suit/proc/mind_ready(mob/living/brain/brain_mob, mob/user)
 	if(!brain_mob.key || !brain_mob.mind)
 		to_chat(user, "<span class='warning'>The MMI indicates that their mind is completely unresponsive; there's no point!</span>")
@@ -383,6 +496,9 @@
 	if(mmi.laws && mmi.laws.id != DEFAULT_AI_LAWID)
 		aisync = 0
 		lawsync = 0
+		// The shell creates a temporary default law datum; discard it when the MMI overrides it.
+		if(borg.laws && borg.laws != mmi.laws)
+			qdel(borg.laws)
 		borg.laws = mmi.laws
 		mmi.laws.associate(borg)
 	if(!aisync)
@@ -403,6 +519,7 @@
 			t1 += "Master AI: <A href='?src=[REF(src)];Master=1'>[(forced_ai ? "[forced_ai.name]" : "Automatic")]</a><br><br>\n"
 
 			t1 += "LawSync Port: <A href='?src=[REF(src)];Law=1'>[(lawsync ? "Open" : "Closed")]</a><br>\n"
+			t1 += "Законы позитронки: выбираются при установке; гост-роли могут вводить свои законы.<br>\n"
 			t1 += "AI Connection Port: <A href='?src=[REF(src)];AI=1'>[(aisync ? "Open" : "Closed")]</a><br>\n"
 			t1 += "Servo Motor Functions: <A href='?src=[REF(src)];Loco=1'>[(locomotion ? "Unlocked" : "Locked")]</a><br>\n"
 			t1 += "Panel Lock: <A href='?src=[REF(src)];Panel=1'>[(panel_locked ? "Engaged" : "Disengaged")]</a><br>\n"
