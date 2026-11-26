@@ -5986,7 +5986,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/obj/machinery/suit_storage_unit/med,
+/obj/machinery/medipen_refiller,
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
 "bum" = (
@@ -39281,15 +39281,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/service/hydroponics)
-"iEi" = (
-/obj/effect/turf_decal/trimline/blue/filled/line{
-	dir = 5
-	},
-/obj/machinery/vending/medical{
-	pixel_x = -2
-	},
-/turf/open/floor/plasteel/white,
-/area/medical/treatment_center)
 "iEo" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -53458,10 +53449,10 @@
 	icon_state = "0-1"
 	},
 /obj/machinery/power/apc/auto_name/south,
+/obj/machinery/vending/wardrobe/medi_wardrobe,
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 9
 	},
-/obj/machinery/medipen_refiller,
 /turf/open/floor/plasteel/dark,
 /area/medical/storage)
 "lOm" = (
@@ -89290,10 +89281,12 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/engineering/atmos)
 "tFZ" = (
+/obj/machinery/vending/medical{
+	pixel_x = -2
+	},
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 10
 	},
-/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/dark,
 /area/medical/storage)
 "tGd" = (
@@ -105036,7 +105029,6 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/trimline/blue/filled/line,
-/obj/machinery/vending/wardrobe/medi_wardrobe,
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
 "xcC" = (
@@ -279996,7 +279988,7 @@ nsn
 xMR
 ksu
 mVq
-iEi
+xRT
 eiG
 udo
 hMe
@@ -307346,3 +307338,4 @@ hzU
 hzU
 hzU
 "}
+

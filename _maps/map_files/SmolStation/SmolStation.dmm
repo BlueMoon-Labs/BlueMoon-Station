@@ -11224,7 +11224,6 @@
 	icon_state = "4-8"
 	},
 /obj/machinery/light,
-/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/zone3)
 "ihH" = (
@@ -14863,7 +14862,6 @@
 /obj/structure/cable{
 	icon_state = "0-4"
 	},
-/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/zone3)
 "kHn" = (
@@ -98525,3 +98523,4 @@ sME
 sME
 sME
 "}
+

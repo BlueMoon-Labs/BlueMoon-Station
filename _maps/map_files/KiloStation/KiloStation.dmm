@@ -21413,7 +21413,6 @@
 /obj/effect/turf_decal/tile/blue/half/contrasted{
 	dir = 4
 	},
-/obj/machinery/vending/medical,
 /turf/open/floor/plasteel/showroomfloor,
 /area/medical/medbay/central)
 "aQC" = (
@@ -21481,6 +21480,7 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/medical/storage)
 "aQH" = (
+/obj/machinery/vending/medical,
 /obj/effect/turf_decal/delivery,
 /obj/structure/disposalpipe/segment{
 	dir = 9
@@ -21488,7 +21488,6 @@
 /obj/effect/turf_decal/tile/neutral/half/contrasted{
 	dir = 1
 	},
-/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/dark,
 /area/medical/storage)
 "aQI" = (
@@ -22148,12 +22147,12 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/medical/medbay/central)
 "aRU" = (
+/obj/machinery/vending/wardrobe/medi_wardrobe,
 /obj/effect/turf_decal/bot,
 /obj/structure/extinguisher_cabinet/directional/west,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
-/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/dark,
 /area/medical/storage)
 "aRV" = (
@@ -22523,12 +22522,12 @@
 /turf/open/floor/plasteel,
 /area/medical/medbay/central)
 "aSA" = (
+/obj/machinery/vending/cola/random,
 /obj/machinery/airalarm/directional/south,
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/tile/neutral/half/contrasted{
 	dir = 8
 	},
-/obj/machinery/vending/wardrobe/medi_wardrobe,
 /turf/open/floor/plasteel/dark,
 /area/medical/storage)
 "aSB" = (
@@ -160348,3 +160347,4 @@ aaa
 aaa
 aaa
 "}
+

@@ -21647,6 +21647,9 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "aPg" = (
+/obj/item/kirbyplants{
+	icon_state = "plant-22"
+	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
@@ -21656,7 +21659,6 @@
 /obj/structure/disposalpipe/segment{
 	dir = 6
 	},
-/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/zone3)
 "aPh" = (
@@ -27707,9 +27709,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
-	},
-/obj/item/kirbyplants{
-	icon_state = "plant-22"
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/zone3)
@@ -108295,3 +108294,4 @@ jFP
 jFP
 jFP
 "}
+

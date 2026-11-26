@@ -48472,8 +48472,8 @@
 	},
 /area/command/gateway)
 "hYl" = (
+/obj/machinery/vending/wardrobe/medi_wardrobe,
 /obj/effect/turf_decal/tile/blue/full,
-/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white/textured/large,
 /area/medical/storage)
 "hYn" = (
@@ -51240,6 +51240,11 @@
 	dir = 1
 	},
 /area/commons/fitness)
+"jhx" = (
+/obj/machinery/vending/medical,
+/obj/effect/turf_decal/tile/blue/full,
+/turf/open/floor/plasteel/white/textured/large,
+/area/medical/storage)
 "jhA" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 10
@@ -62414,7 +62419,7 @@
 /area/security/execution)
 "nDV" = (
 /obj/machinery/light/small/directional/north,
-/obj/machinery/vending/wardrobe/medi_wardrobe,
+/obj/machinery/vending/snack/random,
 /turf/open/floor/plasteel/cafeteria{
 	dir = 5
 	},
@@ -83844,7 +83849,6 @@
 	dir = 5
 	},
 /obj/effect/turf_decal/trimline/blue/filled/warning,
-/obj/machinery/vending/medical,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "wkX" = (
@@ -125538,7 +125542,7 @@ oAo
 kod
 uvn
 bXf
-hYl
+jhx
 tBV
 bKH
 bzs
@@ -154172,3 +154176,4 @@ cNd
 cNd
 cNd
 "}
+

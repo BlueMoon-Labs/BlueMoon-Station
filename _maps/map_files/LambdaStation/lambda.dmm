@@ -1057,7 +1057,7 @@
 /obj/item/radio/intercom/prison{
 	desc = "In Space, no one can hear you scream, especially if the microphone has been disabled.";
 	name = "Prison Intercom";
-	pixel_x = 32
+	pixel_x = 32;
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/prison)
@@ -3385,7 +3385,7 @@
 /obj/item/radio/intercom/prison{
 	desc = "In Space, no one can hear you scream, especially if the  microphone has been disabled.";
 	name = "Prison Intercom";
-	pixel_y = -32
+	pixel_y = -32;
 	},
 /turf/open/floor/plasteel,
 /area/security/prison)
@@ -4498,7 +4498,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_y = 24
+	pixel_y = 24;
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel,
@@ -4525,7 +4525,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_y = 24
+	pixel_y = 24;
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -4578,7 +4578,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_y = 24
+	pixel_y = 24;
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -21325,7 +21325,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -25;
-	pixel_y = -2
+	pixel_y = -2;
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
@@ -21349,7 +21349,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -25;
-	pixel_y = -2
+	pixel_y = -2;
 	},
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -39819,7 +39819,6 @@
 	dir = 8;
 	light_color = "#e8eaff"
 	},
-/obj/machinery/suit_storage_unit/med,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "bHc" = (
@@ -70007,13 +70006,6 @@
 /obj/structure/fireplace,
 /turf/open/floor/wood,
 /area/commons/dorms)
-"hdm" = (
-/obj/effect/turf_decal/trimline/blue/filled/line{
-	dir = 4
-	},
-/obj/machinery/suit_storage_unit/med,
-/turf/open/floor/plasteel/white,
-/area/medical/medbay/zone2)
 "hdE" = (
 /obj/effect/spawner/lootdrop/maintenance{
 	lootcount = 3;
@@ -94077,13 +94069,6 @@
 	},
 /turf/open/floor/plasteel/dark/corner,
 /area/engineering/atmos)
-"xSL" = (
-/obj/effect/turf_decal/trimline/blue/filled/line{
-	dir = 8
-	},
-/obj/machinery/suit_storage_unit/med,
-/turf/open/floor/plasteel/white,
-/area/medical/medbay/central)
 "xSQ" = (
 /obj/machinery/camera{
 	c_tag = "MiniSat Antechamber Starboard";
@@ -138239,7 +138224,7 @@ bDh
 bEg
 bCl
 bHb
-xSL
+cKr
 bKb
 bxi
 bMB
@@ -196580,8 +196565,8 @@ ubv
 efq
 uwD
 gyW
-hdm
-hdm
+kVQ
+kVQ
 ktF
 mbT
 mbT
@@ -225758,3 +225743,4 @@ aab
 aab
 aab
 "}
+
