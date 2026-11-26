@@ -16,6 +16,8 @@
 	size = 2
 	tgui_id = "NtosCamera"
 	program_icon = "camera"
+	undeletable = TRUE
+	available_on_ntnet = FALSE
 	var/list/datum/picture/local_photos
 	var/flash_enabled = FALSE
 	var/capturing = FALSE
