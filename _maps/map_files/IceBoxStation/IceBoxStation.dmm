@@ -67446,35 +67446,6 @@
 /area/medical/morgue)
 "oRW" = (
 /obj/structure/safe/floor/syndi/armory,
-/obj/item/ammo_box/magazine/wt550m9/wtap,
-/obj/item/ammo_box/magazine/wt550m9/wtap,
-/obj/item/ammo_box/magazine/wt550m9/wtap,
-/obj/item/ammo_box/magazine/wt550m9/wtap,
-/obj/item/ammo_box/magazine/wt550m9/wtap,
-/obj/item/ammo_box/magazine/wt550m9/wtap,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/gun/energy/modular_laser_rifle/carbine,
-/obj/item/gun/energy/modular_laser_rifle/carbine,
-/obj/item/gun/energy/modular_laser_rifle/carbine,
-/obj/item/storage/firstaid/brute,
-/obj/item/storage/firstaid/toxin,
-/obj/item/storage/firstaid/fire,
-/obj/item/storage/firstaid/regular,
-/obj/item/ammo_box/magazine/wt550m9/wttx,
-/obj/item/ammo_box/magazine/wt550m9/wttx,
-/obj/item/ammo_box/magazine/wt550m9/wttx,
-/obj/item/stack/sheet/plasteel/fifty,
-/obj/item/stack/sheet/plasteel/fifty,
-/obj/item/stack/sheet/rglass/fifty,
-/obj/item/stack/sheet/rglass/fifty,
 /turf/open/floor/plasteel/dark/textured,
 /area/ai_monitored/security/armory)
 "oRY" = (
@@ -307367,3 +307338,4 @@ hzU
 hzU
 hzU
 "}
+

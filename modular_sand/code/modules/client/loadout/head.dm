@@ -1,14 +1,14 @@
 /datum/gear/head/slouch
 	name = "Slouch hat"
-	description = "An Australian Military slouch hat with one side turned up... Smells faintly of Kangaroos."
+	description = "Австралийская военная шляпа-«слауч» с одним загнутым краем... Слабо пахнет кенгуру."
 	path = /obj/item/clothing/head/slouch_hat
 
 /datum/gear/head/lawdog
 	name = "Law dog"
-	description = "Hat of the old west law bringers like bass reeves and wyatt erp."
+	description = "Шляпа старых законников Дикого запада, вроде Басса Ривза и Уайатта Эрпа."
 	path = /obj/item/clothing/head/lawdog
 
 /datum/gear/head/gunfighter
 	name = "Gun fighter"
-	description = "One hell of a bastard wears this hat upon their head... with its hat band made out of bullet casings folks can tell you mean business."
+	description = "Один адский ублюдок носит эту шляпу... лента из гильз говорят всем, что ты настроен серьёзно."
 	path = /obj/item/clothing/head/gunfighter

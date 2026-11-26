@@ -1,16 +1,16 @@
 /datum/gear/hands/paicard
 	name = "pAI device"
-	description = "A personal AI device for checking and downloading various personalities."
+	description = "Устройство личного ИИ для проверки и загрузки различных личностей."
 	path = /obj/item/paicard
 
 /datum/gear/hands/tailbag
 	name = "Tailbag"
-	description = "A bag for holding small personal items, which fastens around the base of the tail."
+	description = "Сумка для мелких личных вещей, которая застёгивается у основания хвоста."
 	path = /obj/item/storage/wallet/tailbag
 
 /datum/gear/hands/tarotdeck
 	name = "Tarot Deck"
-	description = "A full 78 card deck of Tarot Cards, no refunds on false predicitons."
+	description = "Полная колода из 78 карт Таро. Возвратов за ложные предсказания нет."
 	path = /obj/item/toy/cards/deck/tarot
 
 //MODIFIED COSTS - MODULAR SPLURT

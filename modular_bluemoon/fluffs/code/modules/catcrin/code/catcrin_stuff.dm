@@ -780,30 +780,35 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/revolver/Dies_Irae/maghlar)
 
 /datum/gear/donator/bm/catcrin_combatmask_one
 	name = "First Catcrin's tactical gasmask"
+	description = "Противогаз со специальным забралом и фильтрами, обычно используемый в армии каткринов."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version/catcrin_combatmask_one
 	ckeywhitelist = list(CATCRIN_GANG, "borisovych")
 
 /datum/gear/donator/bm/catcrin_combatmask_two
 	name = "Second Catcrin's tactical gasmask"
+	description = "Противогаз со специальным забралом и фильтрами, обычно используемый в армии каткринов."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version/catcrin_combatmask_two
 	ckeywhitelist = list(CATCRIN_GANG, "ghos7ik", "borisovych")
 
 /datum/gear/donator/bm/catcrin_combatmask_tree
 	name = "Thrid Catcrin's tactical gasmask"
+	description = "Противогаз со специальным забралом и фильтрами, обычно используемый в армии каткринов."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version/catcrin_combatmask_three
 	ckeywhitelist = list(CATCRIN_GANG, "borisovych")
 
 /datum/gear/donator/bm/catcrin_kit
 	name = "Catcrin kit"
+	description = "Военный ящик с полным набором снаряжения каткринов."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/catcrin_kit
 	ckeywhitelist = list(CATCRIN_GANG)
 
 /datum/gear/donator/bm/maskchalat
 	name = "Catcrin Maskhalat"
+	description = "Маскировка, используемая в регулярной армии каткринов. Окрашена в разные цвета, чтобы маскироваться в разных местностях и скрывать вещи под ней."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/neck/tie/maskchalat
 	ckeywhitelist = list(CATCRIN_GANG)
@@ -812,6 +817,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/revolver/Dies_Irae/maghlar)
 
 /datum/gear/donator/bm/mark45_ce
 	name = "Mk. 45 Master Engineer Specialist Helmet"
+	description = "Стандартное снаряжение охранника. Защищает голову от ударов."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/head/helmet/sec/mark45_ce
 	ckeywhitelist = list("silverfoxpaws")

@@ -502,7 +502,6 @@
 
 	GLOB.joined_player_list += character.ckey
 	GLOB.latejoiners += character
-	LAZYOR(character.client.prefs.slots_joined_as, character.client.prefs.default_slot)
 	LAZYOR(character.client.prefs.characters_joined_as, character.real_name)
 
 	if(CONFIG_GET(flag/allow_latejoin_antagonists) && humanc)	//Borgs aren't allowed to be antags. Will need to be tweaked if we get true latejoin ais.
@@ -562,6 +561,7 @@
 	client.prefs.apply_persistent_scars(H)
 
 	client.prefs.copy_to(H, initial_spawn = TRUE)
+	client.prefs.apply_persistent_nif(H)
 
 	// BLUEMOON ADD START - загрузка татуировок (после copy_to, чтобы regenerate_limbs() не уничтожил данные)
 	client.prefs.apply_tattoos_to_human(H)
@@ -575,6 +575,8 @@
 		player_mind.active = 0					//we wish to transfer the key manually
 		// Навык движения задаётся до входа в исходное тело, чтобы хвост не считался непривычным.
 		player_mind.set_original_character(H)
+		var/datum/preferences/prefs = client.prefs
+		LAZYSET(prefs.slots_joined_as, "[prefs.default_slot]", list("mind" = WEAKREF(player_mind), "scars_index" = prefs.scars_index))
 		player_mind.transfer_to(H)					//won't transfer key since the mind is not active
 
 	H.name = real_name

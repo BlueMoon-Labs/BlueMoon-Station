@@ -38,6 +38,7 @@
 
 /datum/gear/hands/syndicate_id_callsign
 	name = "Callsign Card"
+	description = "Карточка для удостоверения личности и определения доступа в различные объекты. Эта принадлежит NanoTrasen и имеет небольшую выгравированную надпись «Callsing Changing ID»."
 	path = /obj/item/card/id/callsign/loadout
 	slot = ITEM_SLOT_BACKPACK
 	cost = 0
@@ -50,6 +51,7 @@
 
 /datum/gear/hands/lawyerbriefcase
 	name = "Battered Briefcase"
+	description = "Старый портфель с золотой окантовкой. Ясно, что раньше делали их лучше. В комплекте клипса для ремня!"
 	path = /obj/item/storage/briefcase/lawyer/family/loadout
 	slot = ITEM_SLOT_HANDS
 	cost = 3

@@ -134,6 +134,14 @@
 		return FALSE
 	return TRUE
 
+/datum/preferences/proc/commit_character_save(savefile/source, slot, datum/player_save_character_transaction/transaction)
+	if(!transaction)
+		return commit_player_save(source, "/character[slot]")
+	if(!transaction.commit())
+		player_save_error(transaction.root.storage.error)
+		return FALSE
+	return TRUE
+
 /// Модульные расширения дописывают тот же документ в памяти, затем идёт одна запись.
 /datum/preferences/proc/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
 	var/blocking_started_ms = blocking_call_start()
@@ -194,7 +202,7 @@
 			pending_single_prefs = null
 			for(var/key in pending_before_write)
 				transaction.root.write(key, pending_before_write[key])
-		var/saved = transaction ? transaction.commit() : commit_player_save(result, "/character[default_slot]")
+		var/saved = commit_character_save(result, default_slot, transaction)
 		if(saved && pending_before_write && !length(pending_single_prefs) && single_pref_queue)
 			deltimer(single_pref_queue)
 			single_pref_queue = null
@@ -204,8 +212,6 @@
 				pending_before_write[key] = pending_single_prefs[key]
 			pending_single_prefs = pending_before_write
 		if(!saved)
-			if(transaction)
-				player_save_error(transaction.root.storage.error)
 			blocking_call_finish(blocking_started_ms, "JSON (персонаж)", "ошибка записи")
 			return FALSE
 	blocking_call_finish(blocking_started_ms, "JSON (персонаж)", "слот [default_slot]")

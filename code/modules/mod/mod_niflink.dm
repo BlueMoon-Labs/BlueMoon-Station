@@ -23,6 +23,8 @@
 	var/list/loaded_nifsofts = list()
 	var/recovery_timer
 	COOLDOWN_DECLARE(damage_grace)
+	// Модель импланта и её программы сохраняются между сменами.
+	var/nif_persistence = TRUE
 
 /obj/item/organ/cyberimp/brain/nif/Initialize(mapload)
 	. = ..()
@@ -126,6 +128,46 @@
 	program.linked_mob = linked_mob
 	return TRUE
 
+// Сохраняем типы модели и установленных программ из каталога.
+/obj/item/organ/cyberimp/brain/nif/proc/get_persistent_data()
+	var/list/saved_programs = list()
+	for(var/datum/nifsoft/program as anything in loaded_nifsofts)
+		if(program.type in GLOB.nifsoft_catalog)
+			saved_programs += "[program.type]"
+	return list(
+		"version" = 1,
+		"type" = "[type]",
+		"programs" = saved_programs,
+	)
+
+/datum/preferences/proc/apply_persistent_nif(mob/living/carbon/human/target)
+	if(!nif_persistent_data)
+		return
+	var/list/saved_data = safe_json_decode(nif_persistent_data)
+	if(!islist(saved_data) || saved_data["version"] != 1 || !istext(saved_data["type"]))
+		return
+	var/obj/item/organ/cyberimp/brain/nif/nif_type = text2path(saved_data["type"])
+	if(!ispath(nif_type, /obj/item/organ/cyberimp/brain/nif) || !initial(nif_type.nif_persistence))
+		return
+	var/obj/item/organ/cyberimp/brain/nif/saved_nif = target.getorganslot(ORGAN_SLOT_BRAIN_NIF)
+	if(saved_nif?.type != nif_type)
+		saved_nif = new nif_type
+		if(!saved_nif.Insert(target, drop_if_replaced = FALSE))
+			qdel(saved_nif)
+			return
+	saved_nif.stored_ckey = parent?.ckey
+	var/list/saved_programs = saved_data["programs"]
+	if(!islist(saved_programs))
+		return
+	for(var/program_path_text in saved_programs)
+		if(length(saved_nif.loaded_nifsofts) >= saved_nif.max_nifsofts)
+			break
+		if(!istext(program_path_text))
+			continue
+		var/program_path = text2path(program_path_text)
+		if(program_path in GLOB.nifsoft_catalog)
+			new program_path(saved_nif)
+
 /obj/item/organ/cyberimp/brain/nif/proc/on_wearer_death()
 	SIGNAL_HANDLER
 	for(var/datum/nifsoft/program in loaded_nifsofts)
@@ -166,6 +208,7 @@
 
 /obj/item/organ/cyberimp/brain/nif/standard/ghost_role
 	is_calibrated = TRUE
+	nif_persistence = FALSE
 
 /datum/nifsoft
 	var/name = "NIFSoft"

@@ -555,6 +555,13 @@ SUBSYSTEM_DEF(job)
 		handle_roundstart_items(H, M.ckey, H.mind.assigned_role, H.mind.special_role)
 		if(ishuman(H))
 			bm_deliver_metadollar_purchases(H, M.client)
+			if(M.client?.prefs?.amplify_department_radio)
+				var/mob/living/carbon/human/crew_member = H
+				var/obj/item/radio/headset/headset = crew_member.ears
+				if(!istype(headset))
+					headset = crew_member.ears_extra
+				if(istype(headset))
+					headset.amplify_department_channel()
 	to_chat(M, examine_block(flavor_display_text))
 
 	var/list/tcg_cards

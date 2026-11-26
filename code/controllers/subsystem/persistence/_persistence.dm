@@ -97,7 +97,7 @@ SUBSYSTEM_DEF(persistence)
 	CollectChiselMessages()
 	SavePhotoPersistence()						//THIS IS PERSISTENCE, NOT THE LOGGING PORTION.
 	SavePaintings()
-	SaveScars()
+	SaveCharacterPersistence()
 
 /**
  * Loads persistent data relevant to the current map: Objects, etc.
@@ -364,26 +364,20 @@ SUBSYSTEM_DEF(persistence)
 	fdel(json_file)
 	WRITE_FILE(json_file, json_encode(paintings))
 
-/datum/controller/subsystem/persistence/proc/SaveScars()
-	for(var/i in GLOB.joined_player_list)
-		var/mob/living/carbon/human/ending_human = get_mob_by_ckey(i)
-		if(!istype(ending_human) || !ending_human.mind || !ending_human.client || !ending_human.client.prefs || !ending_human.client.prefs.persistent_scars)
-			continue
-
-		var/mob/living/carbon/human/original_human = ending_human.mind.original_character?.resolve()
-		if(!original_human || original_human.stat == DEAD || !original_human.all_scars || !(original_human == ending_human))
-			if(ending_human.client) // i was told if i don't check this every step of the way byond might decide a client ceases to exist mid proc so here we go
-				ending_human.client.prefs.scars_list["[ending_human.client.prefs.scars_index]"] = ""
-		else
-			for(var/k in ending_human.all_wounds)
-				var/datum/wound/iter_wound = k
-				iter_wound.remove_wound() // so we can get the scars for open wounds
-			if(!ending_human.client)
-				return
-			ending_human.client.prefs.scars_list["[ending_human.client.prefs.scars_index]"] = ending_human.format_scars()
-		if(!ending_human.client)
-			return
-		ending_human.client.prefs.save_character()
+/datum/controller/subsystem/persistence/proc/SaveCharacterPersistence()
+	for(var/player_ckey in uniqueList(GLOB.joined_player_list))
+		var/datum/preferences/prefs = GLOB.preferences_datums[player_ckey]
+		for(var/slot in prefs?.slots_joined_as)
+			var/list/character = prefs.slots_joined_as[slot]
+			if(!character)
+				continue
+			var/datum/weakref/mind_ref = character["mind"]
+			var/datum/mind/player_mind = mind_ref?.resolve()
+			var/mob/living/carbon/human/ending_human = player_mind?.current
+			if(!istype(ending_human))
+				ending_human = null
+			var/survived = ending_human && ending_human.stat != DEAD && ending_human == player_mind.original_character?.resolve()
+			prefs.save_roundend_character(slot, character["scars_index"], ending_human, survived)
 
 /datum/controller/subsystem/persistence/proc/SaveTCGCards()
 	for(var/i in GLOB.joined_player_list)

@@ -46,6 +46,7 @@ em						{font-style: normal;	font-weight: bold;}
 .binarysay a			{color: #00ff00;}
 .binarysay a:active, .binarysay a:visited {color: #88ff88;}
 .radio					{color: #008000;}
+.radio_loudspeaker		{display: block;	border-left: 2px solid currentColor;	padding-left: 0.4em;}
 .sciradio				{color: #993399;}
 .comradio				{color: #948f02;}
 .secradio				{color: #a30000;}

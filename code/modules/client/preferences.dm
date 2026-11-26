@@ -15,7 +15,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/log_clicks = FALSE
 	/// Characters they have joined the round under - Lazylist of names
 	var/list/characters_joined_as
-	/// Slots they have joined the round under - Lazylist of numbers
+	// Слоты, которыми игрок вошёл в смену. Ключ — номер слота строкой, значение — данные для сохранения в конце смены.
 	var/list/slots_joined_as
 	/// Are we currently subject to respawn restrictions? Usually set by us using the "respawn" verb, but can be lifted by admins.
 	var/respawn_restrictions_active = FALSE
@@ -510,6 +510,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/scars_list = list("1" = "", "2" = "", "3" = "", "4" = "", "5" = "")
 	/// Which of the 5 persistent scar slots we randomly roll to load for this round, if enabled. Actually rolled in [/datum/preferences/proc/load_character(slot)]
 	var/scars_index = 1
+	// Сохранённая модель NIF и список установленных программ в JSON.
+	var/nif_persistent_data
 
 	var/hide_ckey = FALSE //pref for hiding if your ckey shows round-end or not
 
@@ -602,6 +604,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/health_analyzer_chat = FALSE
 	var/list/custom_emote_groups = list()
 	var/list/custom_emote_chat_order = list()
+	var/amplify_department_radio = FALSE
 
 /datum/preferences/proc/get_vending_layout(machine_type)
 	return vending_layouts["[machine_type]"] || "grid"
@@ -686,6 +689,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			continue
 		GLOB.preferences_datums -= registered_ckey
 		break
+	slots_joined_as = null
 	// Датум вида принадлежит только префам (все присвоения pref_species - new, мобу уходит
 	// тип, а не экземпляр), ссылок со стороны нет - хватает отпустить, рефкаунт освободит.
 	pref_species = null
