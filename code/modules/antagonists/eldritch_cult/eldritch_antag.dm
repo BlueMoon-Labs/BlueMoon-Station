@@ -79,6 +79,7 @@
 		return
 	role_removed = TRUE
 	clear_combat_resource_alert()
+	clear_evolution()
 	if(innate_body)
 		remove_innate_effects(innate_body)
 	STOP_PROCESSING(SSprocessing, src)

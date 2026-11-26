@@ -328,6 +328,7 @@
 #include "heretic_ash_lantern.dm"
 #include "heretic_comfort_tails.dm"
 #include "heretic_core_ritual.dm"
+#include "heretic_evolution.dm"
 #include "heretic_lead.dm"
 #include "heretic_lead_drum_comfort.dm"
 #include "heretic_lead_fx.dm"

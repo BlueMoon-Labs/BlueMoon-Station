@@ -26,6 +26,7 @@ GLOBAL_LIST_INIT(heretic_path_lessons, list(
 		return
 	while(path_stage < length(path.knowledge) && researched_knowledge[path.knowledge[path_stage + 1]])
 		path_stage++
+	refresh_evolution()
 
 /datum/antag_training_session
 	var/datum/heretic_path_lesson/path_lesson

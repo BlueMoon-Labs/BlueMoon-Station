@@ -115,6 +115,7 @@
 		QDEL_NULL(deed)
 	selected_path = null
 	path_stage = 0
+	refresh_evolution()
 	path_selected_at = 0
 	ability_hotkey_types = list(/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp)
 	collect_combat_spells(list())

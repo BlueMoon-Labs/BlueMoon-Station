@@ -291,6 +291,7 @@
 		"emergence_damage_cut" = HERETIC_ASCENDED_EMERGENCE_DAMAGE_CUT,
 		"blade_limit" = HERETIC_BLADE_LIMIT,
 		"escape_cooldown" = HERETIC_BLADE_ESCAPE_SECONDS,
+		"evolution_stages" = list(HERETIC_EVOLUTION_FIRST_STAGE, HERETIC_EVOLUTION_SECOND_STAGE),
 		"influences_harvested" = heretic.influences_harvested,
 		"influence_limit" = HERETIC_INFLUENCE_LIMIT,
 		"influence_initial_count" = HERETIC_INFLUENCE_INITIAL_COUNT,
