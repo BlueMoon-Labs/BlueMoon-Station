@@ -342,6 +342,7 @@
 #include "heretic_path_lessons.dm"
 #include "heretic_robe_armor.dm"
 #include "heretic_role_exit.dm"
+#include "heretic_side_lore.dm"
 #include "heretic_side_ranged.dm"
 #include "heretic_sounds.dm"
 #include "hilbert_room_slices.dm"

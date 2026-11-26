@@ -9,20 +9,30 @@ GLOBAL_LIST_INIT(heretic_paths, init_heretic_paths())
 GLOBAL_VAR_INIT(heretic_threat_warning_until, 0)
 GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 	/datum/eldritch_knowledge/spell/silence = 1,
+	/datum/eldritch_knowledge/eldritch_coin = 1,
+	/datum/eldritch_knowledge/prophet_greaves = 1,
 	/datum/eldritch_knowledge/armor = 2,
 	/datum/eldritch_knowledge/ashen_eyes = 2,
+	/datum/eldritch_knowledge/spell/mansus_whisper = 2,
+	/datum/eldritch_knowledge/amber_focus = 2,
 	/datum/eldritch_knowledge/essence = 3,
 	/datum/eldritch_knowledge/void_cloak = 3,
+	/datum/eldritch_knowledge/spell/wave_of_desperation = 3,
+	/datum/eldritch_knowledge/newborn_ether = 3,
 	/datum/eldritch_knowledge/spell/rust_wave = 4,
 	/datum/eldritch_knowledge/spell/mansus_veil = 4,
 	/datum/eldritch_knowledge/rune_carver = 4,
+	/datum/eldritch_knowledge/backdoor_keys = 4,
 	/datum/eldritch_knowledge/curse/corrosion = 5,
 	/datum/eldritch_knowledge/curse/paralysis = 5,
+	/datum/eldritch_knowledge/spell/lights_out = 5,
 	/datum/eldritch_knowledge/spell/blood_siphon = 6,
 	/datum/eldritch_knowledge/crucible = 6,
 	/datum/eldritch_knowledge/unshielded_mind = 6,
+	/datum/eldritch_knowledge/spell/space_phase = 6,
 	/datum/eldritch_knowledge/summon/ashy = 7,
 	/datum/eldritch_knowledge/summon/rusty = 7,
+	/datum/eldritch_knowledge/rust_sower = 7,
 	/datum/eldritch_knowledge/spell/cleave = 8,
 ))
 
@@ -382,7 +392,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 /// Что экипажу делать с подтверждённой угрозой: кто перед ними, как спасать похищенных и как держать задержанного.
 /proc/heretic_threat_announcement_text()
 	var/ascension = heretic_ascension_happened() ? "Один из них уже разорвал завесу, остальные могут последовать за ним." : "Вознесения пока не было: еретики остаются смертными людьми, их можно задержать обычными средствами."
-	return "Угроза подтверждена: последователи запретных путей (еретики) уже приносят членов экипажа в жертву. [ascension] Если начнётся заключительный обряд, станция получит отдельное оповещение, но не раньше чем через [DisplayTimeText(HERETIC_THREAT_WARNING_TIME)]. Сообщайте службе безопасности о кругах из чёрной смолы, разрывах в воздухе и пропавших людях. Нулевой жезл или Библия стирают круги и закрывают разрывы, а разрыв можно и разорвать руками за [DisplayTimeText(HERETIC_POCKET_TEAR_TIME)]: за ним держат похищенного. Задержанного держите в наручниках или смирительной рубашке: так он не колдует и не уходит через разбитый клинок. Имплант защиты разума глушит большинство еретиков, но не вознёсшихся и не тех, кто изучил защиту от него, поэтому одного импланта мало: держите задержанного скованным."
+	return "Угроза подтверждена: последователи запретных путей (еретики) уже приносят членов экипажа в жертву. [ascension] Если начнётся заключительный обряд, станция получит отдельное оповещение, но не раньше чем через [DisplayTimeText(HERETIC_THREAT_WARNING_TIME)]. Сообщайте службе безопасности о кругах из чёрной смолы, разрывах в воздухе и пропавших людях. Нулевой жезл или Библия стирают круги и закрывают разрывы, а разрыв можно и разорвать руками за [DisplayTimeText(HERETIC_POCKET_TEAR_TIME)]: за ним держат похищенного. Задержанного держите в смирительной рубашке или наручниках: так он не колдует и не уходит через разбитый клинок; наручники еретик может раз сорвать волной, рубашку - нет. Имплант защиты разума глушит большинство еретиков, но не вознёсшихся и не тех, кто изучил защиту от него, поэтому одного импланта мало: держите задержанного скованным."
 
 /datum/antagonist/heretic/proc/announce_threat()
 	if(ascension_notice_sent)

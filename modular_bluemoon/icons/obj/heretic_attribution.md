@@ -286,6 +286,27 @@
 | --- | --- | --- |
 | `heretic_side_actions.dmi` | `mansus_veil`, `veil_absorb` | Пелена: серая марля, парящая без опоры, ловит пулю, прогибается вмятиной, по ткани бежит кольцо ряби, а пуля осыпается пылью (24 x 1 дс). Рябь погашенного выстрела вокруг фигуры (8 x 1 дс, один раз). |
 
+## Побочные знания 2026-11
+
+Состояния из [tgstation/tgstation](https://github.com/tgstation/tgstation), снимок `5f093a8cfbbe269b15bc73535f230909218e38d6`, лицензия [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/). Рисунок и анимация сохранены, состояния переименованы и собраны в свои DMI.
+
+| Файл | Состояния | Источник | Авторы |
+| --- | --- | --- | --- |
+| `heretic_side_lore.dmi` | `coin_heretic`, `coin_blade`, `coin_heretic_flip`, `coin_blade_flip` | `icons/obj/economy.dmi`, те же имена | [история файла](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/obj/economy.dmi) |
+| `heretic_side_lore.dmi`, `heretic_side_lore_worn.dmi` | `greaves` | `hereticgreaves` из `icons/obj/clothing/shoes.dmi` и `icons/mob/clothing/feet.dmi` | EnterTheJake, [7809f0f5015](https://github.com/tgstation/tgstation/commit/7809f0f5015) |
+| `heretic_side_lore.dmi`, `heretic_side_lore_worn.dmi` | `amber_focus` | `eldritch_necklace` из `icons/obj/clothing/neck.dmi` и `icons/mob/clothing/neck.dmi` | MrMelbert, [dd747fcc5a4](https://github.com/tgstation/tgstation/commit/dd747fcc5a4) |
+| `heretic_side_lore.dmi` | `ether` | `poison_flask` из `icons/obj/antags/eldritch.dmi` | EnterTheJake, [7809f0f5015](https://github.com/tgstation/tgstation/commit/7809f0f5015) |
+| `heretic_side_lore.dmi` | `backdoor_card` | `eldritch` из `icons/obj/card.dmi` | EnterTheJake, [7809f0f5015](https://github.com/tgstation/tgstation/commit/7809f0f5015) |
+| `heretic_side_lore.dmi` | `rust_sower`, `rust_sower_active` | `rustgrenade`, `rustgrenade_active` из `icons/obj/weapons/grenade.dmi` | EnterTheJake, [7809f0f5015](https://github.com/tgstation/tgstation/commit/7809f0f5015) |
+
+Собственный рисунок, CC BY-SA 3.0; донорские пиксели не используются.
+
+| Файл | Состояния | Описание |
+| --- | --- | --- |
+| `heretic_side_lore.dmi` | `wave_of_desperation`, `heretic_whisper`, `lights_out`, `space_phase` | Кнопки: разорванные наручники разлетаются в кольце волны; бледное ухо, к которому вьются две жилы шёпота; лампочка мигает, гаснет, трескается и дымит; след босой ступни рассыпается в звёздную пыль (12-16 кадров). |
+| `heretic_side_lore.dmi` | `backdoor_glyph` | Знак скважины на шлюзе: зелёная кромка, фиолетовая глубина с точкой-глазом, медленный пульс (6 x 2 дс). |
+| `heretic_side_lore_lefthand.dmi`, `heretic_side_lore_righthand.dmi` | `amber_focus` | Подвеска медальона в руке из `heretic_medallion_*hand.dmi` (`watching_eye`), перекрашенная в янтарь. |
+
 ## Песок
 
 Собственный рисунок, CC BY-SA 3.0; донорские пиксели не используются.

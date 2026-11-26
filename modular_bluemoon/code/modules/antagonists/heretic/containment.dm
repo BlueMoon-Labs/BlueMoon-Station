@@ -1,14 +1,21 @@
 /// Причина, по которой задержанный еретик не может колдовать и разбить клинок, или null.
-/proc/heretic_containment_reason(mob/living/user)
+/proc/heretic_containment_reason(mob/living/user, breaks_cuffs = FALSE)
 	if(!istype(user))
 		return null
-	if(user.restrained(ignore_grab = TRUE))
+	if(user.restrained(ignore_grab = TRUE) && !(breaks_cuffs && heretic_only_cuffed(user)))
 		return "Скованные руки не складывают знаки: в наручниках и смирительной рубашке Мансус не отзывается."
 	if(heretic_mindshield_suppressed(user))
 		if(!user.has_status_effect(/datum/status_effect/heretic_mindshield))
 			user.apply_status_effect(/datum/status_effect/heretic_mindshield)
 		return "Щит разума перекрывает зов Мансуса: магия, обряды на руне и побег клинком недоступны. Выход - [IS_HERETIC(user) ? "знание «Разум за завесой» или " : ""]извлечь имплант, подробнее в значке «Щит разума»."
 	return null
+
+/// Держат только наручники: ни смирительной рубашки, ни других пут.
+/proc/heretic_only_cuffed(mob/living/carbon/user)
+	if(!iscarbon(user) || !user.handcuffed || HAS_TRAIT(user, TRAIT_RESTRAINED))
+		return FALSE
+	var/mob/living/carbon/human/body = user
+	return !ishuman(user) || !body.wear_suit?.breakouttime
 
 /proc/heretic_mindshield_suppressed(mob/living/user)
 	if(!HAS_TRAIT(user, TRAIT_MINDSHIELD) || HAS_TRAIT(user, TRAIT_HERETIC_ASCENDED))
@@ -76,7 +83,7 @@
 	summary = "Щит разума больше не глушит вашу магию, обряды и побег клинком."
 	details = list(
 		"С имплантом защиты разума магия, обряды на руне и побег клинком остаются доступны.",
-		"Наручники и смирительная рубашка по-прежнему держат вас.",
+		"Наручники и смирительная рубашка по-прежнему держат вас; наручники рвёт только Волна отчаяния.",
 		"Вознёсшегося щит не держит и без этого знания.",
 	)
 	role = HERETIC_ROLE_PASSIVE
@@ -89,7 +96,7 @@
 	// У всех способностей еретика этот фон кнопки, у чужих его нет.
 	if(!. || action_background_icon_state != "bg_ecult")
 		return
-	var/reason = heretic_containment_reason(user)
+	var/reason = heretic_containment_reason(user, heretic_breaks_cuffs)
 	if(reason)
 		heretic_check(user, FALSE, silent, reason)
 		if(!silent)
@@ -126,7 +133,7 @@
 
 /obj/item/implanter/mindshield/examine(mob/user)
 	. = ..()
-	. += span_notice("Щит разума глушит магию и обряды еретиков, пока имплант в теле. Еретик сопротивляется вводу, поэтому держите его скованным; сам себе он щит не введёт. Вознёсшегося и самых опытных еретиков щит не удерживает: для них надёжнее наручники.")
+	. += span_notice("Щит разума глушит магию и обряды еретиков, пока имплант в теле. Еретик сопротивляется вводу, поэтому держите его скованным; сам себе он щит не введёт. Вознёсшегося и самых опытных еретиков щит не удерживает: для них надёжнее смирительная рубашка, а наручники еретик может раз сорвать волной.")
 
 /obj/item/implant/mindshield/removed(mob/target, silent = FALSE, special = 0)
 	var/mob/living/owner = imp_in
