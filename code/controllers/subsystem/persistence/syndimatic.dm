@@ -5,6 +5,7 @@
 #define SYNDIMATIC_BLOCKS_FILE "[SYNDIMATIC_DIRECTORY]blocks.json"
 #define SYNDIMATIC_POST_LIFETIME 5
 #define SYNDIMATIC_MIN_POSTS 10
+#define SYNDIMATIC_MEDIA_CACHE_SIZE 12
 
 /datum/controller/subsystem/persistence
 	var/syndimatic_round = 0
@@ -19,6 +20,7 @@
 	var/list/datum/weakref/syndimatic_subscribers = list()
 	var/list/syndimatic_feed = list()
 	var/list/syndimatic_feed_photos = list()
+	var/list/syndimatic_media = list()
 
 /datum/controller/subsystem/persistence/proc/load_syndimatic()
 	syndimatic_blocks = read_syndimatic_record(SYNDIMATIC_BLOCKS_FILE) || list()
@@ -112,9 +114,14 @@
 	return syndimatic_thumbnails[id]
 
 /datum/controller/subsystem/persistence/proc/get_syndimatic_media(id)
+	if(id in syndimatic_media)
+		return syndimatic_media[id]
 	var/datum/picture/photo = read_pda_cloud_photo("[SYNDIMATIC_POSTS][id].sav", TRUE)
 	var/list/media = photo?.photo_ui_media()
 	qdel(photo)
+	syndimatic_media[id] = media
+	if(length(syndimatic_media) > SYNDIMATIC_MEDIA_CACHE_SIZE)
+		syndimatic_media.Cut(1, 2)
 	return media
 
 /datum/controller/subsystem/persistence/proc/get_syndimatic_profile(id)
@@ -256,6 +263,7 @@
 	syndimatic_posts -= id
 	syndimatic_feed -= id
 	syndimatic_thumbnails -= id
+	syndimatic_media -= id
 	var/author = post["author"]
 	var/list/author_posts = syndimatic_posts_by_author[author]
 	author_posts -= id
@@ -302,3 +310,4 @@
 #undef SYNDIMATIC_BLOCKS_FILE
 #undef SYNDIMATIC_POST_LIFETIME
 #undef SYNDIMATIC_MIN_POSTS
+#undef SYNDIMATIC_MEDIA_CACHE_SIZE

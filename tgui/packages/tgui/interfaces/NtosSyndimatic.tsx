@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, Icon, NoticeBox, Section, Stack, TextArea } from '../components';
@@ -15,6 +15,7 @@ type Post = {
   caption: string;
   likes: number;
   comments: number;
+  avatar?: PhotoMedia | null;
   thumbnail?: string | null;
   thumbnailUrl?: string | null;
 };
@@ -23,6 +24,7 @@ type Comment = {
   id: string;
   authorId: string;
   author: string;
+  avatar?: PhotoMedia | null;
   text: string;
   likes: number;
   dislikes: number;
@@ -37,7 +39,7 @@ type Profile = {
 };
 
 type SyndimaticData = {
-  view: 'feed' | 'profile' | 'post' | 'compose' | 'avatar' | 'blocks';
+  view: 'feed' | 'gallery' | 'profile' | 'post' | 'compose' | 'avatar' | 'blocks';
   canWrite: ByondFlag;
   canSetNotifications: ByondFlag;
   notifications: ByondFlag;
@@ -54,6 +56,10 @@ type SyndimaticData = {
   captionLimit: number;
   descriptionLimit: number;
   posts?: Post[];
+  feedPosts?: (Post & { liked: ByondFlag })[];
+  feedLimit: number;
+  feedHasMore: ByondFlag;
+  [key: `feedPhoto:${string}`]: PhotoMedia | null | undefined;
   post?: Post;
   liked?: ByondFlag;
   commentsOpen?: ByondFlag;
@@ -71,6 +77,139 @@ type SyndimaticData = {
 const multiline = { overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' } as const;
 const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const;
 const adminAction = 'Административное действие';
+
+const AuthorButton = ({ id, name, avatar, size = 2 }: {
+  id: string;
+  name: string;
+  avatar?: PhotoMedia | null;
+  size?: number;
+}) => {
+  const { act } = useBackend<SyndimaticData>();
+  return (
+    <Button
+      compact
+      transparent
+      role="button"
+      onClick={() => act('profile', { id })}
+    >
+      <Stack align="center">
+        <Stack.Item>
+          <Box
+            aria-hidden="true"
+            width={size}
+            height={size}
+            textAlign="center"
+            style={{ borderRadius: '50%', overflow: 'hidden', display: 'grid', placeItems: 'center' }}
+          >
+            {avatar ? <PhotoPreview {...avatar} /> : <Icon name="user-circle" size={size - 0.25} />}
+          </Box>
+        </Stack.Item>
+        <Stack.Item bold style={{ overflowWrap: 'anywhere' }}>{name}</Stack.Item>
+      </Stack>
+    </Button>
+  );
+};
+
+const PostLikeButton = ({ id, likes, liked }: { id: string; likes: number; liked?: ByondFlag }) => {
+  const { act, data } = useBackend<SyndimaticData>();
+  return (
+    <Button
+      icon="heart"
+      selected={!!liked}
+      disabled={!data.canWrite}
+      role="button"
+      aria-label={liked ? 'Убрать отметку «Нравится»' : 'Поставить отметку «Нравится»'}
+      aria-pressed={!!liked}
+      aria-disabled={!data.canWrite}
+      onClick={() => act('like', { id, liked: liked ? 0 : 1 })}
+    >
+      Нравится · {likes}
+    </Button>
+  );
+};
+
+const useFeedTrigger = (
+  scrollRef: RefObject<HTMLDivElement | null>,
+  enabled: boolean,
+  onVisible: () => void,
+) => {
+  const targetRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const target = targetRef.current;
+    if (!enabled || !target) {
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        observer.disconnect();
+        onVisible();
+      }
+    }, { root: scrollRef.current, rootMargin: '160px 0px' });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [scrollRef, enabled, onVisible]);
+  return targetRef;
+};
+
+const FeedPost = ({ post, scrollRef }: {
+  post: Post & { liked: ByondFlag };
+  scrollRef: RefObject<HTMLDivElement | null>;
+}) => {
+  const { act, data } = useBackend<SyndimaticData>();
+  const { id, author, authorId, avatar, caption, comments, likes, liked } = post;
+  const media = data[`feedPhoto:${id}`];
+  const loadPhoto = useCallback(() => act('feed_photo', { id }), [act, id]);
+  const photoRef = useFeedTrigger(scrollRef, media === undefined, loadPhoto);
+
+  return (
+    <Box as="article" mb={1} p={0.75} backgroundColor="rgba(0, 0, 0, 0.22)"
+      style={{ border: '1px solid #ffffff24', borderRadius: '0.35rem' }}>
+      <AuthorButton id={authorId} name={author} avatar={avatar} />
+      <div ref={photoRef} style={{ margin: '0.5rem 0' }}>
+        {media === undefined ? (
+          <Box
+            backgroundColor="#111"
+            style={{ aspectRatio: '1 / 1', display: 'grid', placeItems: 'center' }}
+          >
+            <Button icon="image" onClick={loadPhoto}>Загрузить фото</Button>
+          </Box>
+        ) : (
+          <PhotoPreview {...media} />
+        )}
+      </div>
+      <Stack align="center" wrap="wrap">
+        <Stack.Item><PostLikeButton id={id} likes={likes} liked={liked} /></Stack.Item>
+        <Stack.Item>
+          <Button icon="comment" role="button" onClick={() => act('open_post', { id, comments: 1 })}>
+            Комментарии · {comments}
+          </Button>
+        </Stack.Item>
+      </Stack>
+      {!!caption && <Box mt={0.5} style={multiline}>{caption}</Box>}
+    </Box>
+  );
+};
+
+const PostFeed = ({ scrollRef }: { scrollRef: RefObject<HTMLDivElement | null> }) => {
+  const { act, data } = useBackend<SyndimaticData>();
+  const { feedHasMore, feedLimit, feedPosts } = data;
+  const loadMore = useCallback(() => act('feed_more', { limit: feedLimit }), [act, feedLimit]);
+  const moreRef = useFeedTrigger(scrollRef, !!feedHasMore, loadMore);
+
+  if (!feedPosts?.length) {
+    return <NoticeBox>В ленте пока нет публикаций.</NoticeBox>;
+  }
+  return (
+    <>
+      {feedPosts.map((post) => <FeedPost key={post.id} post={post} scrollRef={scrollRef} />)}
+      {!!feedHasMore && (
+        <div ref={moreRef}>
+          <Button fluid icon="chevron-down" onClick={loadMore}>Загрузить ещё</Button>
+        </div>
+      )}
+    </>
+  );
+};
 
 const PostGallery = () => {
   const { act, data } = useBackend<SyndimaticData>();
@@ -94,7 +233,7 @@ const PostGallery = () => {
             onClick={() => act('open_post', { id })}
             footer={
               <>
-                {view === 'feed' && <Box bold style={ellipsis}>{author}</Box>}
+                {view === 'gallery' && <Box bold style={ellipsis}>{author}</Box>}
                 <Stack>
                   <Stack.Item><Icon name="heart" /> {likes}</Stack.Item>
                   <Stack.Item><Icon name="comment" /> {comments}</Stack.Item>
@@ -142,7 +281,7 @@ const Comments = ({ id }: { id: string }) => {
   const { act, data } = useBackend<SyndimaticData>();
   const { canWrite, comments, commentSerial, commentBlocked, commentsDisabled, isAdmin, page, pages } = data;
   return (
-    <Section title="Комментарии">
+    <Section title="Комментарии" data-syndimatic-comments>
       {commentsDisabled ? (
         <NoticeBox>Автор закрыл комментарии к публикации.</NoticeBox>
       ) : commentBlocked ? (
@@ -150,15 +289,9 @@ const Comments = ({ id }: { id: string }) => {
       ) : !!canWrite && <CommentForm key={`${id}:${commentSerial}`} id={id} />}
       {comments?.length ? (
         <Stack vertical mt={1}>
-          {comments.map(({ id: commentId, author, authorId, text, likes, dislikes, vote, ownComment }) => (
+          {comments.map(({ id: commentId, author, authorId, avatar, text, likes, dislikes, vote, ownComment }) => (
             <Stack.Item key={commentId}>
-              <Button
-                compact
-                transparent
-                icon="user"
-                content={author}
-                onClick={() => act('profile', { id: authorId })}
-              />
+              <AuthorButton id={authorId} name={author} avatar={avatar} size={1.5} />
               {!!isAdmin && (
                 <Button.Confirm
                   icon="trash"
@@ -212,14 +345,12 @@ const Comments = ({ id }: { id: string }) => {
 
 const PostPage = ({ post }: { post: Post }) => {
   const { act, data } = useBackend<SyndimaticData>();
-  const { canWrite, commentsOpen, commentsDisabled, isAdmin, ownPost, liked, media } = data;
-  const { id, authorId, author, caption, likes, comments } = post;
+  const { commentsOpen, commentsDisabled, isAdmin, ownPost, liked, media } = data;
+  const { id, authorId, author, avatar, caption, likes, comments } = post;
   return (
     <>
       <Section
-        title={
-          <Button transparent icon="user" content={author} onClick={() => act('profile', { id: authorId })} />
-        }
+        title={<AuthorButton id={authorId} name={author} avatar={avatar} />}
         buttons={(
           <>
             {(!!ownPost || !!isAdmin) && (
@@ -243,18 +374,7 @@ const PostPage = ({ post }: { post: Post }) => {
         {!!caption && <Box my={1} style={multiline}>{caption}</Box>}
         <Stack mt={1}>
           <Stack.Item>
-            <Button
-              icon="heart"
-              selected={!!liked}
-              disabled={!canWrite}
-              role="button"
-              aria-label={liked ? 'Убрать отметку «Нравится»' : 'Поставить отметку «Нравится»'}
-              aria-pressed={!!liked}
-              aria-disabled={!canWrite}
-              onClick={() => act('like', { id, liked: liked ? 0 : 1 })}
-            >
-              Нравится · {likes}
-            </Button>
+            <PostLikeButton id={id} likes={likes} liked={liked} />
           </Stack.Item>
           <Stack.Item>
             <Button
@@ -457,76 +577,121 @@ const NotificationOptions = () => {
 export const NtosSyndimatic = () => {
   const { act, data } = useBackend<SyndimaticData>();
   const { blocks, canWrite, draftId, isAdmin, myProfile, ownProfile, post, profile, publishBlocked, view } = data;
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const feedScrollTop = useRef(0);
+  const viewedPostId = view === 'post' ? post?.id : undefined;
+
+  useLayoutEffect(() => {
+    const content = scrollRef.current;
+    if (content) {
+      content.scrollTop = view === 'feed' ? feedScrollTop.current : 0;
+      if (view === 'post') {
+        content.querySelector('[data-syndimatic-comments]')?.scrollIntoView({ block: 'start' });
+      }
+    }
+  }, [view, viewedPostId]);
 
   return (
     <NtosWindow title="Syndimatic" width={550} height={620}>
-      <NtosWindow.Content scrollable>
-        <Stack mb={1}>
-          <Stack.Item>
-            <Button icon="images" selected={view === 'feed'} onClick={() => act('feed')}>
-              Лента
-            </Button>
+      <NtosWindow.Content fitted>
+        <Stack vertical fill>
+          <Stack.Item px={0.75} pt={0.75} pb={0.5}>
+            <Stack wrap="wrap" align="center">
+              <Stack.Item grow>
+                <Button
+                  icon="stream"
+                  selected={view === 'feed'}
+                  role="button"
+                  aria-pressed={view === 'feed'}
+                  onClick={() => act('feed')}
+                >
+                  Лента
+                </Button>
+                <Button
+                  icon="images"
+                  selected={view === 'gallery'}
+                  role="button"
+                  aria-pressed={view === 'gallery'}
+                  onClick={() => act('gallery')}
+                >
+                  Галерея
+                </Button>
+                <Button
+                  icon="user"
+                  selected={view === 'profile' && !!ownProfile}
+                  role="button"
+                  aria-pressed={view === 'profile' && !!ownProfile}
+                  aria-disabled={!myProfile}
+                  disabled={!myProfile}
+                  tooltip={!myProfile ? 'Профиль появится после первой публикации или комментария.' : undefined}
+                  onClick={() => act('profile')}
+                >
+                  Мой профиль
+                </Button>
+              </Stack.Item>
+              <Stack.Item>
+                {!!isAdmin && (
+                  <Button
+                    icon="ban"
+                    color="bad"
+                    role="button"
+                    aria-label="Блокировки"
+                    tooltip={`${adminAction} — открыть список блокировок`}
+                    onClick={() => act('blocks')}
+                  />
+                )}
+                <Button
+                  icon="plus"
+                  color="good"
+                  disabled={!canWrite || !!publishBlocked}
+                  tooltip={publishBlocked ? 'Вам заблокировано создание публикаций.' : undefined}
+                  onClick={() => act('pick_post')}
+                >
+                  Новый пост
+                </Button>
+              </Stack.Item>
+            </Stack>
           </Stack.Item>
-          <Stack.Item grow>
-            <Button
-              icon="user"
-              selected={view === 'profile' && !!ownProfile}
-              disabled={!myProfile}
-              tooltip={!myProfile ? 'Профиль появится после первой публикации или комментария.' : undefined}
-              onClick={() => act('profile')}
+          <Stack.Item grow minHeight={0}>
+            <Section
+              fill
+              scrollable
+              scrollableRef={scrollRef}
+              onScroll={() => {
+                if (view === 'feed' && scrollRef.current) {
+                  feedScrollTop.current = scrollRef.current.scrollTop;
+                }
+              }}
             >
-              Мой профиль
-            </Button>
-          </Stack.Item>
-          {!!isAdmin && (
-            <Stack.Item>
-              <Button
-                icon="ban"
-                color="bad"
-                tooltip={`${adminAction} — открыть список блокировок`}
-                onClick={() => act('blocks')}
-              >
-                Блокировки
-              </Button>
-            </Stack.Item>
-          )}
-          <Stack.Item>
-            <Button
-              icon="plus"
-              color="good"
-              disabled={!canWrite || !!publishBlocked}
-              tooltip={publishBlocked ? 'Вам заблокировано создание публикаций.' : undefined}
-              onClick={() => act('pick_post')}
-            >
-              Новый пост
-            </Button>
+              {view === 'feed' && (
+                <>
+                  <NotificationOptions />
+                  <PostFeed scrollRef={scrollRef} />
+                </>
+              )}
+              {view === 'gallery' && <PostGallery />}
+              {view === 'blocks' && !!isAdmin && (
+                <Section title="Заблокированные профили">
+                  {blocks?.length ? blocks.map(({ id, name }) => (
+                    <Button
+                      key={id}
+                      icon="user"
+                      color="bad"
+                      content={name}
+                      tooltip={`${adminAction} — открыть заблокированный профиль`}
+                      onClick={() => act('profile', { id })}
+                    />
+                  )) : <NoticeBox>Активных блокировок нет.</NoticeBox>}
+                </Section>
+              )}
+              {view === 'profile' && profile && <ProfilePage profile={profile} />}
+              {view === 'post' && post && <PostPage key={post.id} post={post} />}
+              {(view === 'compose' || view === 'avatar') && draftId && (
+                <PhotoDraft key={draftId} id={draftId} avatar={view === 'avatar'} />
+              )}
+            </Section>
           </Stack.Item>
         </Stack>
-        {view === 'feed' && (
-          <>
-            <NotificationOptions />
-            <PostGallery />
-          </>
-        )}
-        {view === 'blocks' && !!isAdmin && (
-          <Section title="Заблокированные профили">
-            {blocks?.length ? blocks.map(({ id, name }) => (
-              <Button
-                key={id}
-                icon="user"
-                color="bad"
-                content={name}
-                tooltip={`${adminAction} — открыть заблокированный профиль`}
-                onClick={() => act('profile', { id })}
-              />
-            )) : <NoticeBox>Активных блокировок нет.</NoticeBox>}
-          </Section>
-        )}
-        {view === 'profile' && profile && <ProfilePage profile={profile} />}
-        {view === 'post' && post && <PostPage key={post.id} post={post} />}
-        {(view === 'compose' || view === 'avatar') && draftId && (
-          <PhotoDraft key={draftId} id={draftId} avatar={view === 'avatar'} />
-        )}
       </NtosWindow.Content>
     </NtosWindow>
   );

@@ -1,4 +1,5 @@
 #define SYNDIMATIC_PAGE_SIZE 12
+#define SYNDIMATIC_FEED_BATCH_SIZE 6
 #define SYNDIMATIC_COMMENT_PAGE_SIZE 20
 
 /datum/mind/proc/set_syndimatic_character(datum/preferences/prefs, account_key, mob/living/carbon/human/character)
@@ -48,6 +49,8 @@
 	var/datum/picture/draft_photo
 	var/editing_profile = FALSE
 	var/viewing_blocks = FALSE
+	var/viewing_gallery = FALSE
+	var/feed_limit = SYNDIMATIC_FEED_BATCH_SIZE
 
 /datum/computer_file/program/syndimatic/Destroy()
 	close_syndimatic_window()
@@ -144,6 +147,8 @@
 	comment_serial = 0
 	editing_profile = FALSE
 	viewing_blocks = FALSE
+	viewing_gallery = FALSE
+	feed_limit = SYNDIMATIC_FEED_BATCH_SIZE
 	clear_syndimatic_draft()
 
 /datum/computer_file/program/syndimatic/proc/clear_syndimatic_draft()
@@ -182,7 +187,7 @@
 	data["canSetNotifications"] = !!actor
 	data["notifications"] = !!actor?.syndimatic_notifications
 	data["myProfile"] = !!SSpersistence.get_syndimatic_profile(viewer_profile_id)
-	data["view"] = "feed"
+	data["view"] = viewing_gallery ? "gallery" : "feed"
 	if(viewing_blocks && is_admin)
 		var/list/rows = list()
 		for(var/id in SSpersistence.syndimatic_blocks)
@@ -201,7 +206,7 @@
 		var/list/post = SSpersistence.get_visible_syndimatic_post(post_id)
 		if(post)
 			data["view"] = "post"
-			data["post"] = syndimatic_post_summary(post_id, post)
+			data["post"] = syndimatic_post_summary(post_id, post, include_avatar = TRUE)
 			data["ownPost"] = viewer_profile_id == post["author"]
 			data["commentsDisabled"] = !!post["comments_disabled"]
 			data["media"] = post_media
@@ -216,13 +221,15 @@
 				var/list/rows = list()
 				for(var/index = start to min(start + SYNDIMATIC_COMMENT_PAGE_SIZE - 1, length(comments)))
 					var/list/comment = comments[index]
+					var/list/author_profile = SSpersistence.get_syndimatic_profile(comment["author"])
 					var/list/comment_likes = comment["likes"]
 					var/list/comment_dislikes = comment["dislikes"]
 					var/vote = viewer_profile_id ? (comment_likes?[viewer_profile_id] ? 1 : (comment_dislikes?[viewer_profile_id] ? -1 : 0)) : 0
 					rows += list(list(
 						"id" = comment["id"],
 						"authorId" = comment["author"],
-						"author" = syndimatic_author_name(comment),
+						"author" = author_profile?["name"] || comment["name"],
+						"avatar" = author_profile?["avatar"],
 						"text" = comment["text"],
 						"likes" = length(comment_likes),
 						"dislikes" = length(comment_dislikes),
@@ -255,6 +262,21 @@
 
 	var/list/posts = SSpersistence.syndimatic_posts
 	var/list/ids = profile_id ? SSpersistence.syndimatic_posts_by_author[profile_id] : SSpersistence.syndimatic_feed
+	if(data["view"] == "feed")
+		var/feed_size = min(feed_limit, length(ids))
+		var/list/feed = list()
+		for(var/index in 1 to feed_size)
+			var/id = ids[index]
+			var/list/post = posts[id]
+			var/list/summary = syndimatic_post_summary(id, post, include_avatar = TRUE)
+			var/list/likes = post["likes"]
+			summary["liked"] = viewer_profile_id && !!likes[viewer_profile_id]
+			feed += list(summary)
+		data["feedPosts"] = feed
+		data["feedLimit"] = feed_limit
+		data["feedHasMore"] = feed_size < length(ids)
+		return data
+
 	var/pages = max(1, CEILING(length(ids) / SYNDIMATIC_PAGE_SIZE, 1))
 	gallery_page = clamp(gallery_page, 1, pages)
 	var/start = (gallery_page - 1) * SYNDIMATIC_PAGE_SIZE + 1
@@ -269,19 +291,21 @@
 	data["pages"] = pages
 	return data
 
-/datum/computer_file/program/syndimatic/proc/syndimatic_author_name(list/entry)
-	var/list/profile = SSpersistence.get_syndimatic_profile(entry["author"])
-	return profile?["name"] || entry["name"]
-
-/datum/computer_file/program/syndimatic/proc/syndimatic_post_summary(id, list/post)
-	return list(
+/datum/computer_file/program/syndimatic/proc/syndimatic_post_summary(id, list/post, include_avatar = FALSE)
+	var/list/profile = SSpersistence.get_syndimatic_profile(post["author"])
+	. = list(
 		"id" = id,
 		"authorId" = post["author"],
-		"author" = syndimatic_author_name(post),
+		"author" = profile?["name"] || post["name"],
 		"caption" = post["caption"],
 		"likes" = length(post["likes"]),
 		"comments" = length(post["comments"]),
 	)
+	if(include_avatar)
+		.["avatar"] = profile?["avatar"]
+
+/datum/computer_file/program/syndimatic/proc/is_viewing_syndimatic_feed()
+	return !viewing_gallery && !viewing_blocks && !profile_id && !post_id && !draft_photo
 
 /datum/computer_file/program/syndimatic/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	var/mob/user = ui?.user
@@ -293,9 +317,13 @@
 	var/datum/mind/actor = get_syndimatic_actor(user)
 	if(viewer_profile_id != actor?.syndimatic_profile_id)
 		return FALSE
-	var/list/post = post_id ? SSpersistence.get_visible_syndimatic_post(post_id) : null
+	var/is_feed = is_viewing_syndimatic_feed()
+	var/target_id = post_id
+	if(action == "like" && is_feed && istext(params["id"]))
+		target_id = params["id"]
+	var/list/post = target_id ? SSpersistence.get_visible_syndimatic_post(target_id) : null
 	switch(action)
-		if("feed", "profile", "blocks")
+		if("feed", "gallery", "profile", "blocks")
 			if(action == "blocks" && !check_rights_for(user.client, R_ADMIN))
 				return FALSE
 			var/id
@@ -310,14 +338,29 @@
 			gallery_page = 1
 			editing_profile = FALSE
 			viewing_blocks = action == "blocks"
+			if(action == "feed" || action == "gallery")
+				viewing_gallery = action == "gallery"
 			profile_id = id
+		if("feed_more")
+			var/feed_size = length(SSpersistence.syndimatic_feed)
+			if(!is_feed || params["limit"] != feed_limit || feed_limit >= feed_size)
+				return FALSE
+			feed_limit = min(feed_limit + SYNDIMATIC_FEED_BATCH_SIZE, feed_size)
+		if("feed_photo")
+			var/id = params["id"]
+			var/list/feed = SSpersistence.syndimatic_feed
+			if(!is_feed || !istext(id) || !feed.Find(id, 1, min(feed_limit, length(feed)) + 1))
+				return FALSE
+			// Передаём полноразмерный снимок отдельно от обновлений счётчиков.
+			ui.send_update(list("feedPhoto:[id]" = SSpersistence.get_syndimatic_media(id)))
+			return FALSE
 		if("open_post")
 			var/id = params["id"]
 			if(draft_photo || editing_profile || !istext(id) || !SSpersistence.get_visible_syndimatic_post(id))
 				return FALSE
 			post_id = id
 			post_media = SSpersistence.get_syndimatic_media(id)
-			comment_page = 0
+			comment_page = params["comments"] == TRUE ? 1 : 0
 		if("back")
 			clear_syndimatic_draft()
 			editing_profile = FALSE
@@ -350,7 +393,7 @@
 				return FALSE
 			editing_profile = TRUE
 		if("publish", "save_avatar", "save_profile", "like", "comment")
-			return actor && SSticker.HasRoundStarted() && change_syndimatic_data(action, params, user, actor, post)
+			return actor && SSticker.HasRoundStarted() && change_syndimatic_data(action, params, user, actor, post, target_id)
 		if("vote_comment")
 			return actor && SSticker.HasRoundStarted() && vote_on_syndimatic_comment(params, user, post)
 		if("delete_post", "delete_comment", "set_comments", "set_block")
@@ -406,7 +449,7 @@
 	open_syndimatic_ui(user)
 	return TRUE
 
-/datum/computer_file/program/syndimatic/proc/change_syndimatic_data(action, list/params, mob/user, datum/mind/actor, list/post)
+/datum/computer_file/program/syndimatic/proc/change_syndimatic_data(action, list/params, mob/user, datum/mind/actor, list/post, target_id)
 	if(!SSpersistence.start_syndimatic_round())
 		to_chat(user, span_warning("Syndimatic пока недоступен."))
 		return FALSE
@@ -455,7 +498,7 @@
 				changed_profile = actor_id
 				saved = TRUE
 		if("like", "comment")
-			if(!post || params["id"] != post_id || SSpersistence.syndimatic_posts[post_id] != post)
+			if(!post || params["id"] != target_id || SSpersistence.get_visible_syndimatic_post(target_id) != post)
 				return FALSE
 			var/list/updated_post = post.Copy()
 			if(action == "like")
@@ -490,11 +533,11 @@
 					"text" = message,
 				)))
 				updated_post["comments"] = comments
-			saved = SSpersistence.save_syndimatic_post(post_id, updated_post, action == "comment" ? actor : null)
+			saved = SSpersistence.save_syndimatic_post(target_id, updated_post, action == "comment" ? actor : null)
 			if(saved && action == "comment")
 				comment_page = 1
 				comment_serial++
-			changed_post = post_id
+			changed_post = target_id
 	if(!saved)
 		to_chat(user, span_warning("Не удалось сохранить изменения в Syndimatic."))
 		return FALSE
@@ -610,4 +653,5 @@
 	return saved
 
 #undef SYNDIMATIC_PAGE_SIZE
+#undef SYNDIMATIC_FEED_BATCH_SIZE
 #undef SYNDIMATIC_COMMENT_PAGE_SIZE
