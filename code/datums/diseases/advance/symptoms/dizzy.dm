@@ -28,8 +28,8 @@ Bonus
 	symptom_delay_min = 15
 	symptom_delay_max = 40
 	threshold_desc = list(
-		"Transmission 6" = "Также вызывает дурманящее зрение.",
-		"Stealth 4" = "Симптом остаётся скрытым до активации.",
+		"Передача 6" = "Также вызывает дурманящее зрение.",
+		"Скрытность 4" = "Симптом остаётся скрытым до активации.",
 	)
 
 /datum/symptom/dizzy/Start(datum/disease/advance/A)

@@ -12,9 +12,9 @@
 	var/trauma_heal_mild = FALSE
 	var/trauma_heal_severe = FALSE
 	threshold_desc = list(
-		"Resistance 6" = "Лечит лёгкие травмы мозга.",
-		"Resistance 9" = "Лечит тяжёлые травмы мозга.",
-		"Transmission 8" = "Выводит алкоголь из крови.",
+		"Сопротивление 6" = "Лечит лёгкие травмы мозга.",
+		"Сопротивление 9" = "Лечит тяжёлые травмы мозга.",
+		"Передача 8" = "Выводит алкоголь из крови.",
 	)
 
 /datum/symptom/mind_restoration/Start(datum/disease/advance/A)

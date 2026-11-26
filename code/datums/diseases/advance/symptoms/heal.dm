@@ -11,8 +11,8 @@
 	symptom_delay_max = 1
 	var/passive_message = "" //random message to infected but not actively healing people
 	threshold_desc = list(
-		"Stage Speed 6" = "Удваивает скорость лечения.",
-		"Stealth 4" = "Лечение больше не будет видно окружающим.",
+		"Скорость стадий 6" = "Удваивает скорость лечения.",
+		"Скрытность 4" = "Лечение больше не будет видно окружающим.",
 	)
 /datum/symptom/heal/Start(datum/disease/advance/A)
 	if(!..())
@@ -55,8 +55,8 @@
 	passive_message = "<span class='notice'>Вы скучаете по ощущению звёздного света на коже.</span>"
 	var/nearspace_penalty = 0.3
 	threshold_desc = list(
-		"Stage Speed 6" = "Увеличивает скорость лечения.",
-		"Transmission 6" = "Снимает штраф за нахождение только рядом с космосом.",
+		"Скорость стадий 6" = "Увеличивает скорость лечения.",
+		"Передача 6" = "Снимает штраф за нахождение только рядом с космосом.",
 	)
 
 /datum/symptom/heal/starlight/Start(datum/disease/advance/A)
@@ -108,8 +108,8 @@
 	var/food_conversion = FALSE
 	desc = "Вирус быстро расщепляет любые чужеродные химикаты в кровотоке."
 	threshold_desc = list(
-		"Resistance 7" = "Увеличивает скорость удаления химикатов.",
-		"Stage Speed 6" = "Потребляемые химикаты питают хозяина.",
+		"Сопротивление 7" = "Увеличивает скорость удаления химикатов.",
+		"Скорость стадий 6" = "Потребляемые химикаты питают хозяина.",
 	)
 
 /datum/symptom/heal/chem/Start(datum/disease/advance/A)
@@ -144,8 +144,8 @@
 	desc = "Вирус резко ускоряет метаболизм хозяина, заставляя его перерабатывать химикаты вдвое быстрее,\
 	 но также вызывая повышенный голод."
 	threshold_desc = list(
-		"Stealth 3" = "Снижает скорость голода.",
-		"Stage Speed 10" = "Метаболизация химикатов утраивается вместо удвоения.",
+		"Скрытность 3" = "Снижает скорость голода.",
+		"Скорость стадий 10" = "Метаболизация химикатов утраивается вместо удвоения.",
 	)
 /datum/symptom/heal/metabolism/Start(datum/disease/advance/A)
 	if(!..())
@@ -178,7 +178,7 @@
 	level = 6
 	passive_message = "<span class='notice'>Вы чувствуете покалывание на коже, когда свет проходит по ней.</span>"
 	threshold_desc = list(
-		"Stage Speed 8" = "Удваивает скорость лечения.",
+		"Скорость стадий 8" = "Удваивает скорость лечения.",
 	)
 /datum/symptom/heal/darkness/Start(datum/disease/advance/A)
 	if(!..())
@@ -229,9 +229,9 @@
 	var/stabilize = FALSE
 	var/active_coma = FALSE //to prevent multiple coma procs
 	threshold_desc = list(
-		"Stealth 2" = "Хозяин выглядит мёртвым при впадении в кому.",
-		"Resistance 4" = "Вирус также стабилизирует хозяина в критическом состоянии.",
-		"Stage Speed 7" = "Увеличивает скорость лечения.",
+		"Скрытность 2" = "Хозяин выглядит мёртвым при впадении в кому.",
+		"Сопротивление 4" = "Вирус также стабилизирует хозяина в критическом состоянии.",
+		"Скорость стадий 7" = "Увеличивает скорость лечения.",
 	)
 
 /datum/symptom/heal/coma/Start(datum/disease/advance/A)
@@ -324,8 +324,8 @@
 	passive_message = "<span class='notice'>Ваша кожа ощущается странно сухой...</span>"
 	var/absorption_coeff = 1
 	threshold_desc = list(
-		"Resistance 5" = "Вода расходуется гораздо медленнее.",
-		"Stage Speed 7" = "Увеличивает скорость лечения.",
+		"Сопротивление 5" = "Вода расходуется гораздо медленнее.",
+		"Скорость стадий 7" = "Увеличивает скорость лечения.",
 	)
 
 /datum/symptom/heal/water/Start(datum/disease/advance/A)
@@ -382,8 +382,8 @@
 	passive_message = "<span class='notice'>Вы чувствуете странное влечение к плазме.</span>"
 	var/temp_rate = 1
 	threshold_desc = list(
-		"Transmission 6" = "Дополнительно увеличивает скорость регулировки температуры и лечит любителей токсинов",
-		"Stage Speed 7" = "Увеличивает скорость лечения.",
+		"Передача 6" = "Дополнительно увеличивает скорость регулировки температуры и лечит любителей токсинов",
+		"Скорость стадий 7" = "Увеличивает скорость лечения.",
 	)
 /datum/symptom/heal/plasma/Start(datum/disease/advance/A)
 	if(!..())
@@ -450,8 +450,8 @@
 	passive_message = "<span class='notice'>Ваша кожа слабо светится на мгновение.</span>"
 	var/cellular_damage = FALSE
 	threshold_desc = list(
-	"Transmission 6" = "Дополнительно лечит клеточный урон и любителей токсинов.",
-	"Resistance 7" = "Увеличивает скорость лечения.",
+	"Передача 6" = "Дополнительно лечит клеточный урон и любителей токсинов.",
+	"Сопротивление 7" = "Увеличивает скорость лечения.",
 	)
 
 /datum/symptom/heal/radiation/Start(datum/disease/advance/A)

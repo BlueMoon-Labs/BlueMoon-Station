@@ -29,8 +29,8 @@ Bonus
 	symptom_delay_max = 90
 	var/fake_healthy = FALSE
 	threshold_desc = list(
-		"Stage Speed 7" = "Увеличивает количество галлюцинаций.",
-		"Stealth 4" = "Вирус имитирует положительные симптомы.",
+		"Скорость стадий 7" = "Увеличивает количество галлюцинаций.",
+		"Скрытность 4" = "Вирус имитирует положительные симптомы.",
 	)
 
 /datum/symptom/hallucigen/Start(datum/disease/advance/A)

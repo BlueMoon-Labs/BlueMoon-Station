@@ -36,7 +36,7 @@
 				"На коже образуются болезненные кисты!") + "</span>")
 				affected_mob.take_bodypart_damage(rand(1,5))
 			if(prob(5))
-				affected_mob.visible_message("<span class='danger'>Плоть [affected_mob] вздувается и отрывается от \him!</span>", \
+				affected_mob.visible_message("<span class='danger'>Плоть [affected_mob] вздувается и отрывается от тела!</span>", \
 				"<span class='userdanger'>" + pick("Вы чувствуете, как плоть вздувается и отрывается от вас!",
 				"Ваша плоть растёт и падает под вами!",
 				"Боль... крабовое мясо отваливается от вас!",

@@ -30,7 +30,7 @@ Bonus
 	symptom_delay_min = 15
 	symptom_delay_max = 45
 	threshold_desc = list(
-		"Stealth 4" = "Симптом менее заметен."
+		"Скрытность 4" = "Симптом менее заметен."
 	)
 
 /datum/symptom/weight_loss/Start(datum/disease/advance/A)

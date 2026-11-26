@@ -30,7 +30,7 @@
 	switch(stage)
 		if(1)
 			if(affected_mob.get_num_arms() >= 1 && prob(5))
-				to_chat(affected_mob, span_warning("Вы чувствуете, как ваша рука[affected_mob.get_num_arms() == 1 ? "" : "и"] начинает дрожать."))
+				to_chat(affected_mob, span_warning("Вы чувствуете, как [affected_mob.get_num_arms() == 1 ? "ваша рука начинает дрожать" : "ваши руки начинают дрожать"]."))
 				affected_mob.Jitter(40)
 			if(affected_mob.get_num_supporting_limbs() >= 1 && prob(5))
 				if(HAS_TRAIT(affected_mob, TRAIT_NAGA_ANATOMY))
@@ -47,7 +47,7 @@
 			affected_mob.adjustToxLoss(0.33)
 
 			if(affected_mob.get_num_arms() >= 1 && prob(5))
-				to_chat(affected_mob, span_warning("Вы чувствуете, как ваша рука[affected_mob.get_num_arms() == 1 ? "" : "и"] сильно дрожит."))
+				to_chat(affected_mob, span_warning("Вы чувствуете, как [affected_mob.get_num_arms() == 1 ? "ваша рука сильно дрожит" : "ваши руки сильно дрожат"]."))
 				affected_mob.Jitter(80)
 				if(prob(20))
 					affected_mob.drop_all_held_items()

@@ -29,8 +29,8 @@ Bonus
 	symptom_delay_min = 25
 	symptom_delay_max = 80
 	threshold_desc = list(
-		"Resistance 9" = "Вызывает постоянную глухоту вместо периодической.",
-		"Stealth 4" = "Симптом остаётся скрытым до активации.",
+		"Сопротивление 9" = "Вызывает постоянную глухоту вместо периодической.",
+		"Скрытность 4" = "Симптом остаётся скрытым до активации.",
 	)
 
 /datum/symptom/deafness/Start(datum/disease/advance/A)
