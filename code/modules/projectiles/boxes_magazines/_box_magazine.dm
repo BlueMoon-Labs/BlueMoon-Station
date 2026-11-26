@@ -1,4 +1,74 @@
 //Boxes of ammo
+
+/// Временный диагностический режим. Закомментируйте строку, чтобы убрать логи.
+//#define AMMO_DEBUG_LOGS
+
+#ifdef AMMO_DEBUG_LOGS
+/proc/log_ammo_debug(text)
+	log_world("AMMODBG: [text]")
+	WRITE_LOG(GLOB.world_game_log, "AMMODBG: [text]")
+
+/proc/ammo_dbg_value(value)
+	if(islist(value))
+		var/list/L = value
+		return "list(len=[L.len]):[L.Join(",")]"
+	if(isnull(value))
+		return "null"
+	return "[value] [istext(value) ? "(text)" : "(other)"]"
+
+/// Админский self-test: проверяет пары «контейнер / патрон» и пишет результат в логи.
+/client/proc/debug_ammo_selftest()
+	set category = "Debug"
+	set name = "Debug Ammo Compatibility"
+	set desc = "Run ammo caliber compatibility self-test and write results to AMMODBG logs."
+
+	if(!check_rights(R_ADMIN))
+		return
+
+	var/list/cases = list(
+		list(/obj/item/ammo_box/magazine/m10mm, /obj/item/ammo_casing/c10mm, TRUE),
+		list(/obj/item/ammo_box/magazine/acr5m30, /obj/item/ammo_casing/a58mm, TRUE),
+		list(/obj/item/ammo_box/magazine/acr5m30/ap, /obj/item/ammo_casing/a58mm/ap, TRUE),
+		list(/obj/item/ammo_box/magazine/internal/cylinder, /obj/item/ammo_casing/a357, TRUE),
+		list(/obj/item/ammo_box/magazine/internal/cylinder, /obj/item/ammo_casing/c38, TRUE),
+		list(/obj/item/ammo_box/magazine/rrcmag, /obj/item/ammo_casing/shotgun/buckshot, TRUE),
+		list(/obj/item/ammo_box/magazine/flechette/shredder, /obj/item/ammo_casing/caseless/flechetteshredder, TRUE),
+		list(/obj/item/ammo_box/magazine/m50/ctf, /obj/item/ammo_casing/a50/ctf, TRUE),
+		list(/obj/item/ammo_box/magazine/m10mm, /obj/item/ammo_casing/a58mm, FALSE),
+		list(/obj/item/ammo_box/magazine/internal/cylinder, /obj/item/ammo_casing/a357/requiem, FALSE)
+	)
+
+	var/passed = 0
+	var/failed = 0
+	log_ammo_debug("SELFTEST START by [key_name(src)] cases=[length(cases)]")
+
+	for(var/list/test_case in cases)
+		var/box_type = test_case[1]
+		var/casing_type = test_case[2]
+		var/expected = test_case[3]
+		var/obj/item/ammo_box/box = new box_type
+		var/obj/item/ammo_casing/casing = new casing_type
+		box.stored_ammo.Cut()
+		// cylinder/give_round() заменяет только существующие позиции, поэтому
+		// барабану нужны пустые слоты, а обычному магазину — пустой список.
+		if(istype(box, /obj/item/ammo_box/magazine/internal/cylinder))
+			for(var/i in 1 to box.max_ammo)
+				box.stored_ammo += null
+		var/compat = box.caliber_compatible(casing)
+		var/given = box.give_round(casing)
+		var/ok = (compat == expected && given == expected)
+		if(ok)
+			passed++
+		else
+			failed++
+		log_ammo_debug("SELFTEST [ok ? "PASS" : "FAIL"] box=[box_type] casing=[casing_type] expected=[expected] compat=[compat] give=[given] box_cal=[ammo_dbg_value(box.caliber)] casing_cal=[ammo_dbg_value(casing.caliber)] ammo_type=[box.ammo_type]")
+		qdel(box)
+		qdel(casing)
+
+	log_ammo_debug("SELFTEST END passed=[passed] failed=[failed]")
+	to_chat(src, "<span class='notice'>Ammo self-test: [passed] passed, [failed] failed. Смотри AMMODBG в логах.</span>")
+#endif
+
 /obj/item/ammo_box
 	name = "ammo box (null_reference_exception)"
 	desc = "A box of ammo."
@@ -70,40 +140,68 @@
 		return b
 
 /// Калибр магазина и гильзы может быть как строкой, так и списком калибров
-/// (например, револьверные барабаны). Раньше здесь было строгое `!=`, из-за чего
-/// любой список калибров не совпадал даже с той же строкой и патроны не вставлялись.
+/// (например, револьверные барабаны). Пустой список трактуется как «калибр не задан»,
+/// а не как отдельный калибр: раньше он не совпадал ни с одной строкой.
+/obj/item/ammo_box/proc/calibers_match(first, second)
+	if(islist(first))
+		if(islist(second))
+			for(var/check_caliber in first)
+				if(check_caliber in second)
+					return TRUE
+			return FALSE
+		return second in first
+
+	if(islist(second))
+		return first in second
+
+	return first == second
+
 /obj/item/ammo_box/proc/caliber_compatible(obj/item/ammo_casing/R)
 	if(!R)
+		#ifdef AMMO_DEBUG_LOGS
+		log_ammo_debug("compat 1 !R box=[src] ([src.type])")
+		#endif
 		return FALSE
 
 	var/box_caliber = caliber
 	var/round_caliber = R.caliber
+	var/box_has_caliber = !isnull(box_caliber) && (!islist(box_caliber) || length(box_caliber))
+	var/round_has_caliber = !isnull(round_caliber) && (!islist(round_caliber) || length(round_caliber))
 
-	// У коробок без калибра старый fallback - точный тип патрона.
-	if(!box_caliber)
-		return R.type == ammo_type
+	// Хотя бы у одной стороны нет калибра — fallback по типу патрона.
+	// Если калибр есть только у гильзы, не пускаем подтип с чужим калибром
+	// (например, requiem в обычный .357 барабан).
+	if(!box_has_caliber || !round_has_caliber)
+		var/type_ok = (R.type == ammo_type || istype(R, ammo_type))
+		if(type_ok && round_has_caliber && !box_has_caliber)
+			var/obj/item/ammo_casing/ammo_box_type = ammo_type
+			type_ok = calibers_match(initial(ammo_box_type.caliber), round_caliber)
 
-	if(islist(box_caliber))
-		if(islist(round_caliber))
-			for(var/check_caliber in round_caliber)
-				if(check_caliber in box_caliber)
-					return TRUE
-			return FALSE
-		return round_caliber in box_caliber
+		#ifdef AMMO_DEBUG_LOGS
+		log_ammo_debug("compat 2 fallback box=[src] ([src.type]) ammo_type=[ammo_type] box_cal=[ammo_dbg_value(box_caliber)] casing=[R.type] round_cal=[ammo_dbg_value(round_caliber)] type_ok=[type_ok] => [type_ok]")
+		#endif
+		return type_ok
 
-	if(islist(round_caliber))
-		return box_caliber in round_caliber
-
-	return box_caliber == round_caliber
+	var/result = calibers_match(box_caliber, round_caliber)
+	#ifdef AMMO_DEBUG_LOGS
+	log_ammo_debug("compat 3 match box=[src] ([src.type]) box_cal=[ammo_dbg_value(box_caliber)] casing=[R.type] round_cal=[ammo_dbg_value(round_caliber)] => [result]")
+	#endif
+	return result
 
 /obj/item/ammo_box/proc/give_round(obj/item/ammo_casing/R, replace_spent = 0)
 	// Boxes don't have a caliber type, magazines do. If we fail to find a caliber, then we fall back to ammo_type.
 	if(!caliber_compatible(R))
+		#ifdef AMMO_DEBUG_LOGS
+		log_ammo_debug("give_round REJECT box=[src] ([src.type]) casing=[R?.type] stored=[stored_ammo.len]/[max_ammo] replace_spent=[replace_spent]")
+		#endif
 		return FALSE
 
 	if (stored_ammo.len < max_ammo)
 		stored_ammo += R
 		R.forceMove(src)
+		#ifdef AMMO_DEBUG_LOGS
+		log_ammo_debug("give_round OK box=[src] ([src.type]) casing=[R.type] stored=[stored_ammo.len]/[max_ammo]")
+		#endif
 		return TRUE
 
 	//for accessibles magazines (e.g internal ones) when full, start replacing spent ammo
@@ -115,16 +213,28 @@
 
 				stored_ammo += R
 				R.forceMove(src)
+				#ifdef AMMO_DEBUG_LOGS
+				log_ammo_debug("give_round OK (replace_spent) box=[src] ([src.type]) casing=[R.type] stored=[stored_ammo.len]/[max_ammo]")
+				#endif
 				return TRUE
 
+	#ifdef AMMO_DEBUG_LOGS
+	log_ammo_debug("give_round FULL box=[src] ([src.type]) casing=[R.type] stored=[stored_ammo.len]/[max_ammo] replace_spent=[replace_spent]")
+	#endif
 	return FALSE
 
 /obj/item/ammo_box/proc/can_load(mob/user)
 	return TRUE
 
 /obj/item/ammo_box/attackby(obj/item/A, mob/user, params, silent = FALSE, replace_spent = 0)
+	#ifdef AMMO_DEBUG_LOGS
+	log_ammo_debug("attackby IN target=[src] ([src.type]) item=[A] ([A?.type]) user=[key_name(user)] replace_spent=[replace_spent]")
+	#endif
 	var/num_loaded = 0
 	if(!can_load(user))
+		#ifdef AMMO_DEBUG_LOGS
+		log_ammo_debug("attackby BLOCKED can_load target=[src] ([src.type]) user=[key_name(user)]")
+		#endif
 		return
 	if(istype(A, /obj/item/ammo_box))
 		var/obj/item/ammo_box/AM = A
@@ -141,6 +251,9 @@
 			user.transferItemToLoc(AC, src, TRUE)
 			num_loaded++
 
+	#ifdef AMMO_DEBUG_LOGS
+	log_ammo_debug("attackby OUT target=[src] ([src.type]) item=[A?.type] loaded=[num_loaded] stored=[stored_ammo.len]/[max_ammo]")
+	#endif
 	if(num_loaded)
 		if(!silent)
 			to_chat(user, "<span class='notice'>You load [num_loaded] shell\s into \the [src]!</span>")

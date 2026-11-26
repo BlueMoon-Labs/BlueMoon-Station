@@ -127,12 +127,20 @@
 	var/ammo_caliber = initial(ammo_type.caliber)
 	var/obj/item/ammo_casing/ammo_parent_type = type2parent(ammo_type)
 
+	#ifdef AMMO_DEBUG_LOGS
+	log_ammo_debug("workbench update_ammotypes IN [src] mag=[loaded_magazine.type] ammo_type=[ammo_type] ammo_cal=[ammo_dbg_value(ammo_caliber)] parent=[ammo_parent_type] parent_cal=[ammo_dbg_value(initial(ammo_parent_type.caliber))] multitype=[loaded_magazine.multitype]")
+	#endif
+
 	if(loaded_magazine.multitype)
 		if(ammo_caliber == initial(ammo_parent_type.caliber) && ammo_caliber != null)
 			ammo_type = ammo_parent_type
 		possible_ammo_types = typesof(ammo_type)
 	else
 		possible_ammo_types = list(ammo_type)
+
+	#ifdef AMMO_DEBUG_LOGS
+	log_ammo_debug("workbench update_ammotypes TYPES [src] chosen=[ammo_type] possible=[length(possible_ammo_types)] list=[possible_ammo_types.Join(", ")]")
+	#endif
 
 	for(var/obj/item/ammo_casing/our_casing as anything in possible_ammo_types)
 		if(!adminbus)
@@ -171,6 +179,10 @@
 		valid_casings += our_casing
 		casing_names[our_casing] = initial(our_casing.name)
 		casing_mat_strings += mat_string
+
+	#ifdef AMMO_DEBUG_LOGS
+	log_ammo_debug("workbench update_ammotypes OUT [src] valid=[length(valid_casings)] list=[valid_casings.Join(", ")]")
+	#endif
 
 /obj/machinery/ammo_workbench/ui_data(mob/user)
 	var/list/data = list()
@@ -334,7 +346,14 @@
 		error_message = ""
 		error_type = ""
 
+	#ifdef AMMO_DEBUG_LOGS
+	log_ammo_debug("workbench fill_magazine_start IN [src] casing=[casing_type] in_valid=[casing_type in valid_casings] valid=[valid_casings.Join(", ")] mag=[loaded_magazine?.type] stored=[loaded_magazine?.stored_ammo?.len]/[loaded_magazine?.max_ammo]")
+	#endif
+
 	if(!(casing_type in valid_casings))
+		#ifdef AMMO_DEBUG_LOGS
+		log_ammo_debug("workbench fill_magazine_start REJECT_VALID [src] casing=[casing_type]")
+		#endif
 		error_message = "НЕСООТВЕТСТВИЕ БОЕПРИПАСОВ"
 		error_type = "bad"
 		return
@@ -353,11 +372,17 @@
 		return
 
 	if(loaded_magazine.stored_ammo.len >= loaded_magazine.max_ammo)
+		#ifdef AMMO_DEBUG_LOGS
+		log_ammo_debug("workbench fill_magazine_start REJECT_FULL [src] casing=[casing_type] stored=[loaded_magazine.stored_ammo.len]/[loaded_magazine.max_ammo]")
+		#endif
 		error_message = "МАГАЗИН ЗАПОЛНЕН"
 		error_type = "good"
 		return
 
 	if(busy)
+		#ifdef AMMO_DEBUG_LOGS
+		log_ammo_debug("workbench fill_magazine_start REJECT_BUSY [src] casing=[casing_type] timer=[timer_id]")
+		#endif
 		return
 
 	busy = TRUE
@@ -397,8 +422,15 @@
 		qdel(new_casing)
 		return
 
+	#ifdef AMMO_DEBUG_LOGS
+	log_ammo_debug("workbench fill_round IN [src] casing=[new_casing.type] in_possible=[new_casing.type in possible_ammo_types] mag=[loaded_magazine.type] mag_cal=[ammo_dbg_value(loaded_magazine.caliber)] casing_cal=[ammo_dbg_value(new_casing.caliber)] compat=[loaded_magazine.caliber_compatible(new_casing)] stored=[loaded_magazine.stored_ammo.len]/[loaded_magazine.max_ammo]")
+	#endif
+
 	if(new_casing.type in possible_ammo_types)
 		if(!loaded_magazine.give_round(new_casing))
+			#ifdef AMMO_DEBUG_LOGS
+			log_ammo_debug("workbench fill_round REJECT_GIVE [src] casing=[new_casing.type]")
+			#endif
 			error_message = "НЕСООТВЕТСТВИЕ БОЕПРИПАСОВ"
 			error_type = "bad"
 			ammo_fill_finish(FALSE)
@@ -411,6 +443,9 @@
 		use_power(3000)
 		playsound(loc, 'sound/machines/piston/piston_raise.ogg', 60, 1)
 	else
+		#ifdef AMMO_DEBUG_LOGS
+		log_ammo_debug("workbench fill_round REJECT_TYPE [src] casing=[new_casing.type] possible=[possible_ammo_types.Join(", ")]")
+		#endif
 		qdel(new_casing)
 		ammo_fill_finish(FALSE)
 		return
