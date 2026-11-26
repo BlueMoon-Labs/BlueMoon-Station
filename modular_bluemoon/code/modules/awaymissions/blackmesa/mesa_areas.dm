@@ -203,3 +203,78 @@
 	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
 	ambientsounds = FALSE
 	has_gravity = TRUE
+
+
+
+//боссы
+// Apache и Benrey - обычная локация комплекса: зоны живут внутри
+// restricted_zone (наследуют outdoors и тихий эмбиент арены).
+// Gonarch и Nihilanth - зоны зена, родитель custom_walking не трогаем.
+
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone/apache
+	name = "Apache Boss Battle"
+	icon_state = "awaycontent1"
+
+/area/awaymission/ihategordon/custom_walking/gonarch
+	name = "Gonarch Boss Battle"
+	icon_state = "awaycontent2"
+
+/area/awaymission/ihategordon/custom_walking/nihilanth
+	name = "Nihilanth Boss Battle"
+	icon_state = "awaycontent4"
+
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone/benrey
+	name = "Benrey Boss Battle"
+	icon_state = "awaycontent4"
+
+// =============================================================================
+// НАГРАДЫ ЗА БОССОВ
+// При гибели босса метадоллары получают ВСЕ игроки, находящиеся
+// в его зоне в момент убийства (и только в ней).
+// =============================================================================
+
+GLOBAL_VAR_INIT(mesa_boss_zone_rewards, list(
+	/mob/living/simple_animal/hostile/megafauna/helicopter = list(/area/awaymission/ihategordon/outsideofmesa/restricted_zone/apache, 5),
+	/mob/living/simple_animal/hostile/asteroid/elite/gonarch = list(/area/awaymission/ihategordon/custom_walking/gonarch, 3),
+	/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth = list(/area/awaymission/ihategordon/custom_walking/nihilanth, 10),
+	/mob/living/simple_animal/hostile/boss/benrey = list(/area/awaymission/ihategordon/outsideofmesa/restricted_zone/benrey, 5),
+))
+
+/proc/mesa_boss_zone_reward(mob/living/boss)
+	if(QDELETED(boss))
+		return
+	var/list/reward = null
+	for(var/mob_type in GLOB.mesa_boss_zone_rewards)
+		if(istype(boss, mob_type))
+			reward = GLOB.mesa_boss_zone_rewards[mob_type]
+			break
+	if(!reward)
+		return
+	var/zone_type = reward[1]
+	var/reward_amount = reward[2]
+	var/paid = 0
+	for(var/client/C in GLOB.joined_player_list)
+		var/mob/living/M = C?.mob
+		if(!isliving(M) || M.stat == DEAD)
+			continue
+		var/turf/T = get_turf(M)
+		if(!T || !istype(get_area(T), zone_type))
+			continue
+		if(SSmetadollars)
+			SSmetadollars.add_amount(C, reward_amount, "mesa_boss")
+		paid++
+	if(paid)
+		var/announce = "<h2><span class='greenannounce big'><b>[boss] повержен! Награда [reward_amount] М$ получена всеми бойцами в зоне.</b></span></h2>"
+		for(var/client/C in GLOB.joined_player_list)
+			var/mob/living/M = C?.mob
+			if(!isliving(M) || M.stat == DEAD)
+				continue
+			var/area/A = get_area(M)
+			var/turf/MT = get_turf(M)
+			if(!A || !MT)
+				continue
+			if(!istype(A, /area/awaymission/ihategordon)
+				&& !(SSblackmesa_events && SSblackmesa_events.mesa_turf_in_mission(MT)))
+				continue
+			to_chat(M, announce)
+		log_game("MESA BOSS: [boss] погиб, награду в зоне получили [paid] игрок(ов).")

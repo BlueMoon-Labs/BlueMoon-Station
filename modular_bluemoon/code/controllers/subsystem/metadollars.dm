@@ -610,6 +610,8 @@ SUBSYSTEM_DEF(metadollars)
 			lines += "VIP-эвакуация (возвращение на ЦК): <b>[E["ruin_vip"]]</b> М$"
 		if(E["ruin_headhunt"])
 			lines += "Охота за головами (выживание): <b>[E["ruin_headhunt"]]</b> М$"
+		if(E["mesa_boss"])
+			lines += "Боссы ИhateGordon: <b>[E["mesa_boss"]]</b> М$"
 		if(C.mob?.mind?.job_priority_boost)
 			lines += "Роль была приоритетной на момент входа: ставка М$ за время на станции <b>×2</b>"
 		chunks += "<div class='panel stationborder'><span class='header'>Метадоллары за раунд</span><br>Всего начислено: <b>[total] М$</b>.<br><small>[lines.Join("<br>")]</small><br>Текущий баланс: <b>[balance] М$</b>.</div>"

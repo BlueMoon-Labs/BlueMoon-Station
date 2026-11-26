@@ -139,6 +139,8 @@ GLOBAL_LIST_INIT(bitflags, list(
 #define PASSFENCE		(1<<10) // Allow passing through fences
 /// Granted while jumping; put on pass_flags_self of jumpable dense objects that must still stop projectiles (no PASSTABLE).
 #define PASSJUMP		(1<<10)
+/// Nihilanth's own attacks phase through the arena barrier and its crystal pylons.
+#define PASSNIHILANTH	(1<<11)
 
 //Movement Types
 #define GROUND				(1<<0)

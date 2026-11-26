@@ -43,6 +43,10 @@
 	footstep_type = FOOTSTEP_MOB_SHOE
 	alert_sounds = list('modular_bluemoon/sound/creatures/mesa/benrey/benreylaugh.ogg','modular_bluemoon/sound/creatures/mesa/benrey/youdie.ogg')
 
+/mob/living/simple_animal/hostile/boss/benrey/death(gibbed)
+	mesa_boss_zone_reward(src)
+	. = ..(gibbed)
+
 
 /datum/action/boss/benrey_summon_sketelons
 	name = "Summon skeletons"

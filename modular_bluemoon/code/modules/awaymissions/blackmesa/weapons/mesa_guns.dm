@@ -329,6 +329,20 @@
 	var/mesa_pointblank_damage_boost_active = FALSE
 	var/mesa_pointblank_original_damage_multiplier
 
+/obj/item/gun/ballistic/shotgun/proc/mesa_apply_melee_knockback(mob/living/target, mob/living/user)
+	if(!mesa_melee_knockback || !istype(target, /mob/living) || !user)
+		return
+	if(user.a_intent == INTENT_HELP)
+		user.adjustStaminaLoss(5)
+	if(target == user && target.body_position == LYING_DOWN)
+		return
+	var/mob/living/victim = target
+	var/knockback_dir = get_dir(src, victim)
+	if(!knockback_dir)
+		knockback_dir = user ? user.dir : dir
+	var/throw_target = get_edge_target_turf(victim, knockback_dir)
+	victim.safe_throw_at(throw_target, rand(1, 2), 1, user)
+
 /obj/item/gun/ballistic/shotgun/before_firing(atom/target, mob/user)
 	. = ..()
 	if(!mesa_shotgun_bonus || !user || !target || get_dist(user, target) > 1)
@@ -555,13 +569,7 @@
 
 /obj/item/gun/ballistic/shotgun/m870/attack(mob/living/M, mob/user)
 	. = ..()
-	if(mesa_melee_knockback && istype(M, /mob/living))
-		var/mob/living/victim = M
-		var/knockback_dir = get_dir(src, victim)
-		if(!knockback_dir)
-			knockback_dir = user ? user.dir : dir
-		var/throw_target = get_edge_target_turf(victim, knockback_dir)
-		victim.safe_throw_at(throw_target, rand(1, 2), 1, user)
+	mesa_apply_melee_knockback(M, user)
 
 /obj/item/gun/ballistic/shotgun/m870/attack_self(mob/living/user)
 	if(recentpump > world.time)
@@ -650,13 +658,7 @@
 
 /obj/item/gun/ballistic/shotgun/spas/attack(mob/living/M, mob/user)
 	. = ..()
-	if(mesa_melee_knockback && istype(M, /mob/living))
-		var/mob/living/victim = M
-		var/knockback_dir = get_dir(src, victim)
-		if(!knockback_dir)
-			knockback_dir = user ? user.dir : dir
-		var/throw_target = get_edge_target_turf(victim, knockback_dir)
-		victim.safe_throw_at(throw_target, rand(1, 2), 1, user)
+	mesa_apply_melee_knockback(M, user)
 
 /obj/item/gun/ballistic/shotgun/spas/attack_self(mob/living/user)
 	if(recentpump > world.time)
@@ -745,13 +747,7 @@
 
 /obj/item/gun/ballistic/shotgun/m500/attack(mob/living/M, mob/user)
 	. = ..()
-	if(mesa_melee_knockback && istype(M, /mob/living))
-		var/mob/living/victim = M
-		var/knockback_dir = get_dir(src, victim)
-		if(!knockback_dir)
-			knockback_dir = user ? user.dir : dir
-		var/throw_target = get_edge_target_turf(victim, knockback_dir)
-		victim.safe_throw_at(throw_target, rand(1, 2), 1, user)
+	mesa_apply_melee_knockback(M, user)
 
 /obj/item/gun/ballistic/shotgun/m500/attack_self(mob/living/user)
 	if(recentpump > world.time)

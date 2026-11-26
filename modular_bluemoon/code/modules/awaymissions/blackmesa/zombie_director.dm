@@ -37,6 +37,7 @@
 	var/wave_failed_spawns = 0
 	var/wave_batch_size = 0
 	var/list/wave_special_types = null
+	var/wave_quiet = FALSE
 
 	// Generator horde state is rescanned at most every 5 seconds instead of
 	// iterating all generators in world on every 1s process() tick.
@@ -322,7 +323,7 @@
 	var/threat = round(base_threat * player_multiplier)
 	return threat
 
-/datum/ai_director/zombie_mission/proc/spawn_zombie_wave(threat_level, list/players)
+/datum/ai_director/zombie_mission/proc/spawn_zombie_wave(threat_level, list/players, quiet = FALSE)
 	if(!src)
 		return FALSE
 	if(spawning_wave)
@@ -350,6 +351,7 @@
 	// Spawning is split into addtimer batches - sleeping inside process()
 	// would stall the SSprocessing tick and stack concurrent spawn threads.
 	spawning_wave = TRUE
+	wave_quiet = quiet
 	wave_spawn_turfs = cached_spawn_turfs
 	wave_zombies_remaining = zombies_to_spawn
 	wave_spawned_zombies = list()
@@ -442,6 +444,7 @@
 	if(!current_players || !current_players.len)
 		log_world("[src] All targets dead or incapacitated, aborting wave spawn (spawned=[LAZYLEN(wave_spawned_zombies)])")
 		spawning_wave = FALSE
+		wave_quiet = FALSE
 		wave_spawn_turfs = null
 		wave_spawned_zombies = null
 		wave_zombies_remaining = 0
@@ -497,9 +500,11 @@
 		return
 
 	var/wave_size = wave_spawned_zombies.len
-	log_world("[src] Wave complete: intended=[wave_intended], spawned=[wave_size], failed=[wave_failed_spawns]")
-	announce_wave(wave_size)
+	log_world("[src] Wave complete: intended=[wave_intended], spawned=[wave_size], failed=[wave_failed_spawns], quiet=[wave_quiet]")
+	if(!wave_quiet)
+		announce_wave(wave_size)
 	spawning_wave = FALSE
+	wave_quiet = FALSE
 	wave_spawn_turfs = null
 	wave_spawned_zombies = null
 	wave_zombies_remaining = 0
@@ -837,3 +842,17 @@
 			continue
 		count++
 	return count
+
+// Точечный пульс alarm-радио: маленький отряд заражённых вокруг игроков,
+// зашедших в зону миссии. В отличие от trigger_horde не дёргает wave_timer
+// и не объявляет волну в консоль (quiet) - это часть уже анонсированной
+// сигнализации, а не самостоятельное событие.
+/datum/ai_director/zombie_mission/proc/spawn_horde_pulse(atom/center, pulse_size = 0)
+	if(!src || !center || QDELETED(center))
+		return FALSE
+	var/list/players = get_alive_players_in_mission()
+	if(!players || !players.len)
+		return FALSE
+	if(!pulse_size)
+		pulse_size = clamp(round(calculate_threat_level(players.len) / 4), 2, 6)
+	return spawn_zombie_wave(pulse_size, players, TRUE)

@@ -162,8 +162,8 @@
 	bound_height = 96
 	maptext_height = 64
 	maptext_width = 64
-	health = 5000
-	maxHealth = 5000
+	health = 7000
+	maxHealth = 7000
 
 	faction = list("hostile", FACTION_XEN, FACTION_BLACKOPS)
 	environment_smash = ENVIRONMENT_SMASH_NONE
@@ -218,7 +218,7 @@
 	heli_update_rotor_sound()
 	visible_message("<span class='boldannounce'>[src] enters the arena airspace!</span>")
 	if(SSblackmesa_events)
-		SSblackmesa_events.mesa_announce("Внимание! Вертолет Black Mesa вошел в зону операции. Держитесь подальше от точек сброса ракет!", "Airborne threat", 'sound/vehicles/high_eng.ogg')
+		SSblackmesa_events.mesa_announce("Внимание! Боевой вертолёт \"Apache\" вошёл в зону операции. Держитесь подальше от точек сброса ракет!", "Airborne threat", 'sound/vehicles/high_eng.ogg')
 
 /mob/living/simple_animal/hostile/megafauna/helicopter/Destroy()
 	stop_heli_sounds()
@@ -267,6 +267,7 @@
 /mob/living/simple_animal/hostile/megafauna/helicopter/death(gibbed, list/force_grant)
 	if(health <= 0 && !heli_died)
 		heli_died = TRUE
+		mesa_boss_zone_reward(src)
 		stop_heli_sounds()
 		new /datum/helicopter_death_fx(get_turf(src))
 		heli_spawn_death_portal()

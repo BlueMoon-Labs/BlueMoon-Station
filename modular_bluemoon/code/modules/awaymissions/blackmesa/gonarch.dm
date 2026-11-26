@@ -50,11 +50,8 @@
 
 	var/list/atom/movable/children_list = list()
 	var/charging = FALSE
-	/// Бросок-чардж как у charger-инфицированных: enter_charge() сам ведёт
-	/// кулдаун charge_cooldown/charge_frequency и делает throw_at-рывок.
+	/// Дальность рывка и меток-предупреждений charge (как у bubblegum).
 	charge_distance = 8
-	charge_frequency = 5 SECONDS
-	knockdown_time = 2 SECONDS
 	var/thebaby = /mob/living/simple_animal/hostile/headcrab/mesa
 	var/image/rage_tint = null
 	/// Varspeed/move delay to restore after rage. Boss variant runs faster,
@@ -126,6 +123,7 @@
 	return ..()
 
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/death(gibbed)
+	mesa_boss_zone_reward(src)
 	. = ..(gibbed)
 	// Children outlive the parent; detach our signal handlers so they don't
 	// keep PROC_REFs to a deleted mob around until they die themselves.
@@ -173,21 +171,51 @@
 		if(GONARCH_CALL_CHILDREN)
 			call_children()
 
-/// Charge: стандартный рывок hostile-мобов (как у charger): enter_charge
-/// ставит 1.5-секундный телеграф и бросает моба в цель через throw_at -
-/// один резкий рывок вместо пошагового forceMove. Урон и отброс цели -
-/// в throw_impact.
+/// Charge: один рывок как у bubblegum - метки-предупреждения на всём пути,
+/// затем throw_at в точку цели. Урон и отброс - в throw_impact, конец
+/// броска - в charge_end (колбэк throw_at).
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/proc/legionnaire_charge(atom/target)
 	if(QDELETED(src) || stat == DEAD || !target)
 		return
+	var/turf/T = get_turf(target)
+	var/turf/home = get_turf(src)
+	if(!T || !home || T == home)
+		return
 	visible_message(span_boldwarning("[src] опускает головой и готовится к рывку!"))
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchroar.ogg', 75, FALSE)
-	enter_charge(target)
+	// Метки на всём пути рывка - тот же приём, что у bubblegum/legionnaire,
+	// но со спрайтом gonarch_warning (64x64).
+	var/dir_to_target = get_dir(home, T)
+	var/turf/mark_turf = home
+	for(var/i in 1 to charge_distance)
+		mark_turf = get_step(mark_turf, dir_to_target)
+		if(!mark_turf)
+			break
+		new /obj/effect/temp_visual/dragon_swoop/gonarch(mark_turf)
+	charging = TRUE
+	DestroySurroundings()
+	setDir(get_dir(src, T))
+	var/obj/effect/temp_visual/decoy/D = new /obj/effect/temp_visual/decoy(loc, src)
+	animate(D, alpha = 0, color = "#FF0000", transform = matrix()*2, time = 5)
+	sleep(5)
+	if(QDELETED(src) || stat == DEAD)
+		charge_end()
+		return
+	if(!throw_at(T, get_dist(src, T), 1, src, 0, callback = CALLBACK(src, PROC_REF(charge_end))))
+		charge_end()
+
+/mob/living/simple_animal/hostile/asteroid/elite/gonarch/charge_end()
+	if(QDELETED(src))
+		return
+	charging = FALSE
+	update_icons()
+	update_mobility()
 
 /// Урон рывка: повторяет контракт /mob/living/simple_animal/hostile/throw_impact
 /// для charge_state, добавляя урон/стан/отброс как у infected charger.
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
-	if(!charge_state)
+	// charging - наш bubblegum-стиль рывок, charge_state - легаси enter_charge.
+	if(!charge_state && !charging)
 		return ..()
 
 	if(isliving(hit_atom) && hit_atom != src)
@@ -208,8 +236,10 @@
 
 	if(charge_state)
 		charge_state = FALSE
-		update_icons()
-		update_mobility()
+	if(charging)
+		charging = FALSE
+	update_icons()
+	update_mobility()
 
 /// Fires one acid spit projectile at the marker turf. is_trishot adds two
 /// extra shots at +/-15 degrees for the classic 3-way spread.
@@ -356,6 +386,18 @@
 	obj_damage = 75
 	melee_damage_lower = 25
 	melee_damage_upper = 35
+
+// Метка-предупреждение на пути рывка: тот же temp_visual, что у
+// bubblegum/legionnaire, но спрайт gonarch_warning (64x64) из gonarch.dmi.
+/obj/effect/temp_visual/dragon_swoop/gonarch
+	name = "gonarch warning"
+	desc = "Don't just stand there, move!"
+	icon = 'modular_bluemoon/icons/mob/gonarch.dmi'
+	icon_state = "gonarch_warning"
+	pixel_x = -32
+	pixel_y = -32
+	color = "#FF0000"
+	duration = 5
 
 // Gonarch-flavored acid spit: slightly hotter than the regular spitter blob.
 /obj/item/projectile/neurotox/acid_spit/gonarch

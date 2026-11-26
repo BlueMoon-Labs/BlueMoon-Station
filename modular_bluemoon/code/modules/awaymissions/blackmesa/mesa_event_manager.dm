@@ -31,8 +31,8 @@ SUBSYSTEM_DEF(blackmesa_events)
 	)
 	var/list/cached_mission_areas = null
 	// ckey -> world.time последней смерти игрока (в любой роли). Нужен для
-	// кулдауна входа в гост-роли HECU: недавно погибший не может сразу
-	// переродиться sleeper'ом.
+	// кулдауна входа в боевые sleeper-роли HECU/Black Ops: недавно погибший
+	// не может сразу переродиться sleeper'ом.
 	var/list/recent_player_deaths = list()
 
 /datum/controller/subsystem/blackmesa_events/Initialize(time, zlevel)
@@ -409,14 +409,14 @@ var/ihategordon_zone_pad = 8
 	to_chat(L, span_warning(text))
 
 // Records the moment a player-controlled mob dies, regardless of the role it
-// died in. Used by the HECU sleeper respawn cooldown.
+// died in. Used by the HECU/Black Ops sleeper respawn cooldown.
 /datum/controller/subsystem/blackmesa_events/proc/on_player_death(datum/source, mob/M, gibbed)
 	SIGNAL_HANDLER
 	if(!M || QDELETED(M) || !M.ckey || !M.mind || M.training_origin || M.voluntary_ghosted)
 		return
 	recent_player_deaths[M.ckey] = world.time
 
-// Ticks remaining before the player may take a HECU sleeper ghost role.
+// Ticks remaining before the player may take a HECU/Black Ops sleeper ghost role.
 // 0 means no cooldown is active.
 /datum/controller/subsystem/blackmesa_events/proc/mesa_hecu_death_cooldown(ckey)
 	if(!ckey)

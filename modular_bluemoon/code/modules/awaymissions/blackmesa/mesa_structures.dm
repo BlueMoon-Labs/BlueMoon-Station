@@ -432,6 +432,10 @@ GLOBAL_VAR_INIT(nihilanth_pylons, list())
 GLOBAL_VAR_INIT(nihilanth_sites, list())
 GLOBAL_VAR_INIT(nihilanth_site_ids, list())
 GLOBAL_VAR_INIT(nihilanth_site_used, list())
+// Реестры защиты Нихиланта: кристаллы-питатели и барьерные щиты арены.
+// Щиты убираются только когда список кристаллов пустеет полностью.
+GLOBAL_VAR_INIT(nihilanth_crystals, list())
+GLOBAL_VAR_INIT(nihilanth_barriers, list())
 
 // Особый подвид ксено-пилона: aegis-щит для ЛЮБОГО живого существа в радиусе
 // (игроки получают xen_aegis, блокирующий apply_damage), а не только для ксеномобов.
@@ -590,3 +594,74 @@ GLOBAL_VAR_INIT(nihilanth_site_used, list())
 				playsound(self_turf, 'sound/effects/space_wind.ogg', 90, FALSE, -4)
 
 #undef COMSIG_QDELETING
+
+// =============================================================================
+// NIHILANTH DEFENSE - кристаллы-питатели и неломаемый барьер арены
+// =============================================================================
+
+// Особый кристалл вокруг Нихиланта. Сам по себе никого не щитит - только
+// питает барьерный щит арены: барьер стоит, пока жив хотя бы один кристалл,
+// и рассыпается, когда разрушены все. Отдельный тип, а не подвид
+// /obj/structure/xen_pylon, чтобы не раздавать ксеномобам aegis-щиты.
+/obj/structure/xen_crystal_pylon
+	name = "xen crystal"
+	desc = "Кристалл, питающий защитный барьер Нихиланта."
+	icon = 'icons/obj/supermatter.dmi'
+	icon_state = "xencrystal"
+	max_integrity = 300
+	density = TRUE
+	anchored = TRUE
+	resistance_flags = LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	// Снаряды самого Нихиланта проходят сквозь кристалл (их pass_flags
+	// содержит PASSNIHILANTH) - кристаллы бьют только игроки.
+	pass_flags_self = PASSNIHILANTH
+
+/obj/structure/xen_crystal_pylon/Initialize(mapload)
+	. = ..()
+	GLOB.nihilanth_crystals += src
+
+/obj/structure/xen_crystal_pylon/Destroy()
+	var/list/crystals = GLOB.nihilanth_crystals
+	crystals -= src
+	if(!crystals.len)
+		drop_nihilanth_barrier()
+	. = ..()
+
+/obj/structure/xen_crystal_pylon/proc/drop_nihilanth_barrier()
+	var/turf/sound_turf = null
+	var/list/barriers = GLOB.nihilanth_barriers
+	for(var/obj/structure/emergency_shield/nihilanth/S in barriers.Copy())
+		if(!QDELETED(S))
+			if(!istype(sound_turf))
+				sound_turf = get_turf(S)
+			qdel(S)
+	barriers.Cut()
+	if(istype(sound_turf))
+		playsound(sound_turf, 'sound/magic/lightningbolt.ogg', 100, TRUE)
+	visible_message("<span class='boldwarning'>Все кристаллы Нихиланта разрушены - его барьер рассыпается!</span>")
+
+// Неломаемый барьер арены Нихиланта: тот же тайл-щит, что у emergency
+// shieldgen, но неуязвим и снимается только питателями-кристаллами.
+/obj/structure/emergency_shield/nihilanth
+	name = "nihilanth barrier"
+	desc = "Непробиваемый энергетический барьер, удерживаемый кристаллами Нихиланта."
+	max_integrity = 999999
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
+	// Барьер держит игроков снаружи, но собственные атаки Нихиланта
+	// (nihilanth_blast / xen_shock с PASSNIHILANTH) проходят насквозь.
+	pass_flags_self = PASSNIHILANTH
+
+/obj/structure/emergency_shield/nihilanth/Initialize(mapload)
+	. = ..()
+	GLOB.nihilanth_barriers += src
+
+/obj/structure/emergency_shield/nihilanth/Destroy()
+	var/list/barriers = GLOB.nihilanth_barriers
+	barriers -= src
+	..()
+
+/obj/structure/emergency_shield/nihilanth/emp_act(severity)
+	return
+
+/obj/structure/emergency_shield/nihilanth/take_damage(damage, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, attack_dir)
+	return FALSE

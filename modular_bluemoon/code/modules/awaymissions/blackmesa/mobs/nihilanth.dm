@@ -25,8 +25,8 @@
 	speed = 3
 	turns_per_move = 1
 	vision_range = 12
-	maxHealth = 8000
-	health = 8000
+	maxHealth = 10000
+	health = 10000
 	obj_damage = 50
 	harm_intent_damage = 50
 	melee_damage_lower = 30
@@ -42,7 +42,7 @@
 	minimum_distance = 4
 	retreat_distance = 6
 	// Метеоритный залп - снаряд benrey-босса, rapid=3 даёт залп из трёх.
-	projectiletype = /obj/item/projectile/bullet/shotgun_meteorslug/benrey
+	projectiletype = /obj/item/projectile/bullet/shotgun_meteorslug/nihilanth_blast
 	projectilesound = 'sound/weapons/flashbang.ogg'
 	status_flags = NONE
 	del_on_death = FALSE
@@ -110,9 +110,9 @@
 	if(trial_active || stat == DEAD || QDELETED(A))
 		return FALSE
 	var/is_tesla = (attack_style == "tesla")
-	projectiletype = is_tesla ? /obj/item/projectile/energy/tesla/xen_shock : /obj/item/projectile/bullet/shotgun_meteorslug/xen_blast
+	projectiletype = is_tesla ? /obj/item/projectile/energy/tesla/xen_shock : /obj/item/projectile/bullet/shotgun_meteorslug/nihilanth_blast
 	projectilesound = is_tesla ? 'sound/magic/lightningbolt.ogg' : 'modular_bluemoon/sound/weapons/mesa/sweetvoice.ogg'
-	ranged_message = is_tesla ? "discharges a xen shock" : "hurls xen blasts"
+	ranged_message = is_tesla ? "discharges a xen shock" : "hurls nihilanth blasts"
 	rapid = is_tesla ? 1 : 3
 	attack_style = is_tesla ? "meteor" : "tesla"
 	return ..()
@@ -156,10 +156,12 @@
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/start_trial()
 	// Портал встаёт в небольшом радиусе вокруг босса, но не ровно под ним:
 	// get_turf(src) у летающего моба - турф прямо под спрайтом.
-	var/turf/home = rift_turf_near(src, 4)
+	// Увеличенный радиус: разлом не должен вставать вплотную под боссом -
+	// игроки выходили бы прямо под ним и подставлялись под следующий залп.
+	var/turf/home = rift_turf_near(src, 8)
 	// Свободных турфов в радиусе может не оказаться - тогда обычный поиск.
 	if(!istype(home))
-		home = free_turf_near(src, 4)
+		home = free_turf_near(src, 8)
 	if(!istype(home) || !isopenturf(home) || home.density)
 		return FALSE
 	// Сначала ищем площадку - без неё испытание не начинаем,
@@ -479,6 +481,7 @@
 	// без boss_home (триала не было) spawn_death_portals просто выходил,
 	// и разломов на выход не появлялось.
 	var/turf/death_turf = get_turf(src)
+	mesa_boss_zone_reward(src)
 	// Триальный разлом не должен переживать босса - иначе он остаётся
 	// на арене и шлёт игроков на точку уже пройденного испытания.
 	if(istype(trial_portal) && !QDELETED(trial_portal))
@@ -594,11 +597,16 @@
 // СНАРЯДЫ НИХИЛАНТА
 // =============================================================================
 
-// "xen blast" - копия benrey-метеорита (тот же урон/нокдаун/иконка), но со
-// своим именем; звук залпа задаётся мобом (sweet voice).
-/obj/item/projectile/bullet/shotgun_meteorslug/xen_blast
-	name = "xen blast"
+// "nihilanth blast" - бывший "xen blast" (копия benrey-метеорита: тот же
+// урон/иконка), но без нокдауна - попадание лишь швыряет цель в сторону.
+// У benrey свой снаряд "deadly mesa sweet voice" с knockdown - не тронут.
+/obj/item/projectile/bullet/shotgun_meteorslug/nihilanth_blast
+	name = "nihilanth blast"
 	desc = "A slug of condensed xen energy."
+	knockdown = 0
+	// Залп проходит сквозь барьер арены и кристаллы-питатели - они
+	// плотные, но помечены PASSNIHILANTH именно для снарядов босса.
+	pass_flags = PASSTABLE | PASSNIHILANTH
 
 // "xen shock" - разряд на манер удара xen shockplant: при попадании
 // tesla_zap прыгает на несколько целей вокруг точки удара.
@@ -606,5 +614,6 @@
 	name = "xen shock"
 	desc = "A bolt of raw xen energy that arcs between targets."
 	power = 30000
+	pass_flags = PASSTABLE | PASSNIHILANTH
 	zap_range = 6
 	zap_flags = ZAP_MOB_DAMAGE | ZAP_OBJ_DAMAGE | ZAP_MOB_STUN

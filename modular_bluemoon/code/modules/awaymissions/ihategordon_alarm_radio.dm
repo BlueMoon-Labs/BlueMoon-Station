@@ -9,12 +9,13 @@
 	var/alarm_wave_index = 0
 	var/list/alarm_timer_ids = list()
 
-	var/alarm_charge_time = 30 SECONDS
 	var/alarm_wave_count = 3
 	var/alarm_wave_duration = 30 SECONDS
-	var/alarm_wave_retry_delay = 5 SECONDS
-	var/alarm_speech_delay = 3 SECONDS
-	var/alarm_door_delay = 4 SECONDS
+	var/alarm_spawn_interval = 5 SECONDS
+	var/alarm_spawn_count = 6
+	var/alarm_pulse_base = 5
+	var/alarm_pulse_growth = 3
+	var/alarm_breath_delay = 5 SECONDS
 
 	var/list/alarm_dialogue_lines = list(
 		"ХАХ... Ну что, твари",
@@ -47,6 +48,8 @@
 	return ..()
 
 /obj/machinery/negotiations_radio/alarm/attack_hand(mob/user)
+	if(!user || !src)
+		return
 	if(alarm_doors_retry)
 		if(doors_ready_or_warn(user))
 			alarm_doors_retry = FALSE
@@ -56,60 +59,70 @@
 	if(alarm_sequence_active)
 		to_chat(user, span_warning("Сигнализация уже активна."))
 		return
-	..()
-
-/obj/machinery/negotiations_radio/alarm/confirm_action(mob/user)
-	if(!user || !src)
+	if(dialogue_completed)
+		to_chat(user, span_warning("Радио больше не отвечает."))
 		return
-	if(!dialogue_active || !is_current_interactor(user))
-		return
-	end_dialogue()
-	start_alarm_sequence(user)
-
-/obj/machinery/negotiations_radio/alarm/proc/start_alarm_sequence(mob/user)
-	if(!src || !user || alarm_sequence_active)
-		return
+	// Один клик - и дальше радио говорит само, как distress radio вертолёта.
+	// dialogue_completed глушит ambient-болтовню и детект игроков в process(),
+	// пока идёт монолог и волны.
 	alarm_sequence_active = TRUE
-	alarm_wave_index = 0
-	to_chat(user, span_notice("Вы взводите сигнализацию..."))
-	if(do_after(user, alarm_charge_time, target = src, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_HELD_ITEM | IGNORE_INCAPACITATED))
-		schedule_alarm_callback(CALLBACK(src, PROC_REF(alarm_begin_waves)), 1 SECONDS)
-	else
-		alarm_sequence_active = FALSE
-		to_chat(user, span_warning("Активация сигнализации прервана."))
+	dialogue_completed = TRUE
+	INVOKE_ASYNC(src, PROC_REF(alarm_monologue))
 
-/obj/machinery/negotiations_radio/alarm/proc/alarm_begin_waves()
-	if(!src || !alarm_sequence_active)
+/obj/machinery/negotiations_radio/alarm/proc/alarm_monologue()
+	if(QDELETED(src))
 		return
+	icon_state = "radiohecu_talking"
+	var/datum/language/lang = null
+	if(/datum/language/modular_sand/solcommon in GLOB.language_datum_instances)
+		lang = /datum/language/modular_sand/solcommon
+	for(var/i in 1 to alarm_dialogue_lines.len)
+		if(QDELETED(src) || !alarm_sequence_active)
+			return
+		say(alarm_dialogue_lines[i], language = lang)
+		playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
+		sleep(i == alarm_dialogue_lines.len ? 50 : 40)
+	if(QDELETED(src) || !alarm_sequence_active)
+		return
+	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 10)
 	start_alarm_wave(1)
 
 /obj/machinery/negotiations_radio/alarm/proc/start_alarm_wave(wave_index)
 	if(!src || !alarm_sequence_active)
 		return
 	if(wave_index < 1 || wave_index > alarm_wave_count)
-		schedule_alarm_callback(CALLBACK(src, PROC_REF(alarm_open_doors)), alarm_door_delay)
+		schedule_alarm_callback(CALLBACK(src, PROC_REF(alarm_open_doors)), alarm_breath_delay)
 		return
 	alarm_wave_index = wave_index
+	// Сигнализация играет один раз на 30-секундную волну, без loop.
+	playsound(src, 'modular_bluemoon/sound/creatures/mesa/madsci/alarm.ogg', 80, FALSE, 10)
+	// Заражённые прибегают каждые 5 секунд с самого старта волны; орды растут
+	// от волны к волне (5/8/11 за пульс при текущих настройках).
+	var/pulse_size = alarm_pulse_base + (wave_index - 1) * alarm_pulse_growth
+	for(var/pulse in 0 to alarm_spawn_count - 1)
+		schedule_alarm_callback(CALLBACK(src, PROC_REF(alarm_spawn_pulse), wave_index, pulse_size), pulse * alarm_spawn_interval)
+	schedule_alarm_callback(CALLBACK(src, PROC_REF(alarm_wave_elapsed), wave_index), alarm_wave_duration)
+
+/obj/machinery/negotiations_radio/alarm/proc/alarm_spawn_pulse(wave_index, pulse_size)
+	if(!src || !alarm_sequence_active || wave_index != alarm_wave_index)
+		return
 	var/datum/ai_director/zombie_mission/director = GLOB.zombie_director
 	if(!director)
-		log_world("[src] Alarm radio cannot trigger infected waves: zombie director is not initialized.")
-		schedule_alarm_callback(CALLBACK(src, PROC_REF(alarm_open_doors)), alarm_door_delay)
+		log_world("[src] Alarm wave [wave_index]: zombie director is not initialized.")
 		return
-	if(!director.trigger_horde(TRUE))
-		schedule_alarm_callback(CALLBACK(src, PROC_REF(start_alarm_wave), wave_index), alarm_wave_retry_delay)
-		return
-	playsound(src, 'sound/machines/Alarm.ogg', 80, FALSE, 10)
-	schedule_alarm_callback(CALLBACK(src, PROC_REF(alarm_wave_elapsed), wave_index), alarm_wave_duration)
+	if(!director.spawn_horde_pulse(src, pulse_size))
+		log_world("[src] Alarm wave [wave_index]: no infected spawned (no valid targets or spawn turfs).")
 
 /obj/machinery/negotiations_radio/alarm/proc/alarm_wave_elapsed(wave_index)
 	if(!src || !alarm_sequence_active || wave_index != alarm_wave_index)
 		return
 	if(wave_index <= alarm_post_wave_lines.len)
 		alarm_play_line(alarm_post_wave_lines[wave_index])
+	// Пауза на передышку, после которой либо новая волна, либо открытие шлюзов.
 	if(wave_index >= alarm_wave_count)
-		schedule_alarm_callback(CALLBACK(src, PROC_REF(alarm_open_doors)), alarm_door_delay)
+		schedule_alarm_callback(CALLBACK(src, PROC_REF(alarm_open_doors)), alarm_breath_delay)
 	else
-		schedule_alarm_callback(CALLBACK(src, PROC_REF(start_alarm_wave), wave_index + 1), alarm_speech_delay)
+		schedule_alarm_callback(CALLBACK(src, PROC_REF(start_alarm_wave), wave_index + 1), alarm_breath_delay)
 
 /obj/machinery/negotiations_radio/alarm/proc/alarm_open_doors()
 	if(!src)

@@ -214,17 +214,17 @@
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
 	max_integrity = 80
 
-// Пятиминутный кулдаун после смерти для всех HECU-спавнеров. Дезертир
-// (/hecu/lost, faction = null) и Black Ops (/hecu/blackops, FACTION_BLACKOPS)
-// наследуют этот proc, но проверка по FACTION_HECU их пропускает.
+// Пятиминутный кулдаун после смерти для боевых sleeper-ролей HECU и Black Ops.
+// Дезертир (/hecu/lost, faction = null) и обычные роли Месы этот proc не
+// наследуют или пропускают проверкой по фракции.
 // Проверка стоит в attack_ghost, а не в allow_spawn: ветка black_mesa/attack_ghost
 // для чужой расы вызывает create() напрямую, минуя allow_spawn.
 /obj/effect/mob_spawn/human/black_mesa/hecu/attack_ghost(mob/user, latejoinercalling)
-	if(user?.ckey && faction && (FACTION_HECU in faction) && SSblackmesa_events)
+	if(user?.ckey && faction && ((FACTION_HECU in faction) || (FACTION_BLACKOPS in faction)) && SSblackmesa_events)
 		var/cooldown = SSblackmesa_events.mesa_hecu_death_cooldown(user.ckey)
 		if(cooldown > 0)
 			var/secs = ceil(cooldown / 10)
-			to_chat(user, span_warning("Вы недавно погибли - вход в гост-роли HECU будет доступен через [secs] сек."))
+			to_chat(user, span_warning("Вы недавно погибли - вход в эти гост-роли будет доступен через [secs] сек."))
 			return
 	return ..()
 
