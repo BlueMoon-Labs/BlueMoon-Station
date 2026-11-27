@@ -66616,15 +66616,7 @@
 /area/command/heads_quarters/hop)
 "mmM" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/food/drinks/sillycup{
-	pixel_x = -5;
-	pixel_y = 3
-	},
-/obj/item/reagent_containers/food/drinks/sillycup{
-	pixel_x = 5;
-	pixel_y = 3
-	},
-/obj/item/reagent_containers/food/drinks/sillycup,
+/obj/item/reagent_containers/glass/bucket/wood,
 /turf/open/floor/wood,
 /area/service/sauna)
 "mmU" = (
@@ -77672,7 +77664,7 @@
 /turf/open/floor/carpet,
 /area/command/bridge)
 "rcR" = (
-/obj/structure/reagent_dispensers/water_cooler,
+/obj/structure/reagent_dispensers/watertank/high,
 /turf/open/floor/wood,
 /area/service/sauna)
 "rcX" = (
@@ -88890,6 +88882,7 @@
 	pixel_x = -3;
 	pixel_y = 2
 	},
+/obj/machinery/light/small/directional/south,
 /turf/open/floor/wood,
 /area/service/sauna)
 "wjD" = (
@@ -159576,4 +159569,3 @@ oRp
 oRp
 oRp
 "}
-

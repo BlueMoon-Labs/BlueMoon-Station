@@ -4,7 +4,7 @@
 	desc = "Облегчённая версия Apocryphal для подразделения защиты активов Nanotrasen."
 	extended_desc = "Костюм подразделения защиты активов Nanotrasen сочетает броню, термостойкий корпус и усовершенствованные приводы. Он уступает Apocryphal в защите, но позволяет телохранителю свободно двигаться и пользоваться специализированными модулями."
 	default_skin = "asset_protection"
-	armor_type = /datum/armor/modsuit_asset_protection
+	armor_type = /datum/armor/deathsquad_and_officer
 	brc_mitigation_bonus = 20
 	complexity_max = DEFAULT_MAX_COMPLEXITY
 	skins = list(
@@ -36,17 +36,6 @@
 	. = ..()
 	for(var/obj/item/piece in modsuit.get_mod_parts(include_cell = FALSE, include_mod = TRUE))
 		piece.flags_1 |= PREVENT_CONTENTS_EXPLOSION_1
-
-/datum/armor/modsuit_asset_protection
-	melee = 50
-	bullet = 40
-	laser = 50
-	energy = 50
-	bomb = 50
-	bio = 100
-	fire = 100
-	acid = 100
-	wound = 15
 
 /obj/item/mod/control/pre_equipped/asset_protection
 	theme = /datum/mod_theme/asset_protection

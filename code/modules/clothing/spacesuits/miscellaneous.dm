@@ -22,7 +22,7 @@ Contains:
 	desc = "An advanced tactical space helmet."
 	icon_state = "deathsquad"
 	item_state = "deathsquad"
-	armor_type = /datum/armor/deathsquad_and_shielded
+	armor_type = /datum/armor/deathsquad_and_officer
 	strip_delay = 130
 	actions_types = list()
 
@@ -662,7 +662,7 @@ Contains:
 
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal/inquisitor/old
 	desc = "Powerful wards are built into this hardsuit, protecting the user from all manner of paranormal threats. Alas, this one looks pretty worn out and rusted. Its soles still grip wet surfaces."
-	armor_type = /datum/armor/paranormal_old
+	armor_type = /datum/armor/paranormal_damaged
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	slowdown = 0.5
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/inquisitor/old
@@ -670,7 +670,7 @@ Contains:
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/inquisitor/old
 	desc = "A helmet worn by those who deal with paranormal threats for a living. Alas, this one looks pretty worn out and rusted."
-	armor_type = /datum/armor/paranormal_old
+	armor_type = /datum/armor/paranormal_damaged
 	charges = 12
 
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal/beserker
@@ -693,7 +693,7 @@ Contains:
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal/beserker/old
 	rig_bulwark = FALSE
 	desc = "Voices echo from the hardsuit, driving the user insane. This one is pretty battle-worn, but still fearsome. Its battered frame still helps haul heavy burdens."
-	armor_type = /datum/armor/paranormal_old
+	armor_type = /datum/armor/paranormal_damaged
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	slowdown = 0.5
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/beserker/old
@@ -701,7 +701,7 @@ Contains:
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/beserker/old
 	desc = "Peering into the eyes of the helmet is enough to seal damnation. This one is pretty battle-worn, but still fearsome."
-	armor_type = /datum/armor/paranormal_old
+	armor_type = /datum/armor/paranormal_damaged
 	charges = 6
 
 /obj/item/clothing/head/helmet/space/fragile

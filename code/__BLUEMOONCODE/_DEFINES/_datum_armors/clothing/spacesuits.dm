@@ -209,15 +209,15 @@
 /datum/armor/deathsquad_and_officer
 	melee = 80
 	bullet = 80
-	laser = 50
-	energy = 50
+	laser = 80
+	energy = 80
 	bomb = 100
 	bio = 100
 	rad = 100
 	fire = 100
 	acid = 100
-	magic = 0
-	wound = 30
+	magic = 80
+	wound = 80
 
 /datum/armor/spacesuit_changeling
 	melee = 0

@@ -90,8 +90,8 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 			CRASH("Invalid base armor profile [source_type] on [armor_type]")
 		var/datum/armor/source_armor = resolve_armor_profile(source_type, armor_cache, resolving)
 		var/datum/armor/derived_armor = source_armor.setRating(\
-			bullet = max(0, source_armor.bullet - 15),\
-			laser = max(0, source_armor.laser - 15))
+			bullet = max(0, source_armor.bullet - 30),\
+			laser = max(0, source_armor.laser - 30))
 		armor_cache[armor_type] = derived_armor
 		resolving -= armor_type
 		return derived_armor

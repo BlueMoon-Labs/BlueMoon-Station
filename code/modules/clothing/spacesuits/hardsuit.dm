@@ -1200,7 +1200,7 @@
 	hardsuit_type = "syndi"
 	max_charges = 4
 	recharge_delay = 15
-	armor_type = /datum/armor/deathsquad_and_shielded
+	armor_type = /datum/armor/deathsquad_and_officer
 	brc_mitigation_bonus = 25  // BLUEMOON ADD
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -1213,7 +1213,7 @@
 	icon_state = "deathsquad"
 	item_state = "deathsquad"
 	hardsuit_type = "syndi"
-	armor_type = /datum/armor/deathsquad_and_shielded
+	armor_type = /datum/armor/deathsquad_and_officer
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	actions_types = list()
