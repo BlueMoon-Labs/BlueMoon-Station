@@ -216,6 +216,7 @@
 #define ORGAN_SLOT_BELLY "belly"
 #define ORGAN_SLOT_ANUS "anus"
 #define ORGAN_SLOT_ORGANIC_IMPLANT "osmodula" //bluemoon add
+#define ORGAN_SLOT_SYNTH_RADIO "synth_radio"
 
 ////organ defines
 #define STANDARD_ORGAN_THRESHOLD 	100

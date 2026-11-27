@@ -164,6 +164,7 @@
  * If visualsOnly is true, you can omit any work that doesn't visually appear on the character sprite
  */
 /datum/outfit/proc/equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
+	H.synth_outfit_equipping = TRUE
 	pre_equip(H, visualsOnly, preference_source)
 
 	//Start with uniform,suit,backpack for additional slots
@@ -265,6 +266,11 @@
 	// BLUEMOON ADD END
 
 	post_equip(H, visualsOnly, preference_source)
+	H.synth_outfit_equipping = FALSE
+	if(isrobotic(H))
+		H.dna.species.migrate_synth_headset_keys(H)
+		if(!visualsOnly)
+			H.dna.species.take_synth_pda(H)
 
 	if(!visualsOnly)
 		apply_fingerprints(H)

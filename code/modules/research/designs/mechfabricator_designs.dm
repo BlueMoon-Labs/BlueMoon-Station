@@ -66,6 +66,17 @@
 	category = list("Cybernetics")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
+/datum/design/ipc_radio
+	name = "IPC radio module"
+	desc = "Встроенная радиосистема синтетика с панелью для ключей шифрования."
+	id = "ipc_radio"
+	build_type = MECHFAB
+	construction_time = 40
+	materials = list(/datum/material/iron = 900, /datum/material/glass = 300, /datum/material/silver = 400)
+	build_path = /obj/item/organ/synthetic_radio
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
 /datum/design/ipc_heart
 	name = "IPC hydraulic pump"
 	desc = "Экранированный гидравлический насос, поддерживающий давление по всему корпусу IPC."

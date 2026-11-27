@@ -70,7 +70,6 @@
 		var/obj/item/radio/headset/dongle = ears
 		if(istype(dongle) && dongle.translate_binary)
 			return TRUE
-
 	return ..()
 // (ADD) Pe4henika Bluemoon -- end
 /mob/living/carbon/human/radio(message, message_mode, list/spans, language)
@@ -78,36 +77,34 @@
 	if(.)
 		return
 
+	var/obj/item/radio/used_radio = ears
+	if(!used_radio && ears_extra)
+		used_radio = ears_extra
+	if(!used_radio && isrobotic(src))
+		used_radio = synth_radio
+
 	switch(message_mode)
 		if(MODE_HEADSET)
-			if (ears)
-				ears.talk_into(src, message, , spans, language)
-			//skyrat edit
-			else if (ears_extra)
-				ears_extra.talk_into(src, message, , spans, language)
-			//
+			used_radio?.talk_into(src, message, , spans, language)
 			return ITALICS | REDUCE_RANGE
 
 		if(MODE_DEPARTMENT)
-			if (ears)
-				ears.talk_into(src, message, message_mode, spans, language)
-			//skyrat edit
-			else if (ears_extra)
-				ears_extra.talk_into(src, message, message_mode, spans, language)
-			//
+			used_radio?.talk_into(src, message, message_mode, spans, language)
 			return ITALICS | REDUCE_RANGE
 
 	if(message_mode in GLOB.radiochannels)
-		if(ears)
-			ears.talk_into(src, message, message_mode, spans, language)
+		if(used_radio)
+			used_radio.talk_into(src, message, message_mode, spans, language)
 			return ITALICS | REDUCE_RANGE
-		//skyrat edit
-		else if (ears_extra)
-			ears_extra.talk_into(src, message, , spans, language)
-			return ITALICS | REDUCE_RANGE
-		//
 
 	return FALSE
+
+/mob/living/carbon/human/show_heard_speech(atom/movable/speaker, datum/language/message_language, raw_message, radio_freq, list/spans, message_mode, atom/movable/source)
+	if(radio_freq && isrobotic(src) && synth_radio?.has_interference())
+		raw_message = synth_radio.corrupt_message(raw_message)
+		spans = spans ? spans.Copy() : list()
+		spans |= SPAN_RADIO_STATIC
+	return ..(speaker, message_language, raw_message, radio_freq, spans, message_mode, source)
 
 /mob/living/carbon/human/get_alt_name()
 	if(name != GetVoice())

@@ -506,6 +506,34 @@
 	emote_type = EMOTE_AUDIBLE
 	emote_cooldown = 3 SECONDS
 
+/datum/emote/sound/human/robotic_scream
+	key = "robotic_scream"
+	key_third_person = "robotic_screams"
+	name = "Механический крик"
+	message = "издает механический крик."
+	message_mime = "изображает механический крик!"
+	emote_type = EMOTE_AUDIBLE
+	sound = 'sound/voice/robotic_scream.ogg'
+	emote_cooldown = 3 SECONDS
+	emote_volume = 75
+	emote_range = 4
+	emote_pitch_variance = FALSE
+
+/datum/emote/sound/human/robotic_scream/run_emote(mob/user, params)
+	sound = 'sound/voice/robotic_scream.ogg'
+	. = ..()
+
+/datum/emote/sound/human/synth_laugh
+	key = "synthlaugh"
+	key_third_person = "synthlaughs"
+	name = "Смех синтетика"
+	message = "смеётся механическим смехом."
+	message_mime = "изображает механический смех!"
+	emote_type = EMOTE_AUDIBLE
+	sound = 'sound/voice/synth_laugh.ogg'
+	emote_cooldown = 3 SECONDS
+	emote_volume = 60
+
 /datum/emote/sound/human/scowl
 	key = "scowl"
 	key_third_person = "scowls"
@@ -826,6 +854,35 @@
 	message_param = "издаёт звуковые сигналы на %t."
 	sound = 'sound/machines/twobeep.ogg'
 	mob_type_allowed_typecache = list(/mob/living/brain, /mob/living/silicon, /mob/living/carbon/human, /mob/camera/aiEye)
+
+/datum/emote/sound/execute
+	name = "Исполнение команды"
+	key = "execute"
+	key_third_person = "executes"
+	message = "переходит к выполнению команды."
+	sound = 'sound/machines/synth_execute_01.ogg'
+	mob_type_allowed_typecache = list(/mob/living/brain, /mob/living/silicon, /mob/living/carbon/human, /mob/camera/aiEye)
+
+/datum/emote/sound/execute/run_emote(mob/user, params)
+	sound = pick('sound/machines/synth_execute_01.ogg', 'sound/machines/synth_execute_02.ogg')
+	. = ..()
+
+/datum/emote/sound/sequence
+	name = "Диагностическая последовательность"
+	key = "sequence"
+	key_third_person = "sequences"
+	message = "проигрывает диагностическую последовательность."
+	sound = 'sound/machines/synth_sequence_01.ogg'
+	mob_type_allowed_typecache = list(/mob/living/brain, /mob/living/silicon, /mob/living/carbon/human, /mob/camera/aiEye)
+
+/datum/emote/sound/sequence/run_emote(mob/user, params)
+	sound = pick(
+		'sound/machines/synth_sequence_01.ogg', 'sound/machines/synth_sequence_02.ogg',
+		'sound/machines/synth_sequence_03.ogg', 'sound/machines/synth_sequence_04.ogg',
+		'sound/machines/synth_sequence_05.ogg', 'sound/machines/synth_sequence_06.ogg',
+		'sound/machines/synth_sequence_07.ogg',
+	)
+	. = ..()
 
 /datum/emote/sound/human/circle
 	key = "circle"

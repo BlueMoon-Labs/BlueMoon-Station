@@ -34,7 +34,7 @@
 	languagewhitelist = list("Encoded Audio Language")
 
 	//special cybernetic organ for getting power from apcs
-	mutant_organs = list(/obj/item/organ/cyberimp/arm/power_cord)
+	mutant_organs = list(/obj/item/organ/cyberimp/arm/power_cord, /obj/item/organ/synthetic_radio)
 
 	exotic_bloodtype = "HF" // BLUEMOON EDIT - было "S"
 	exotic_blood_color = BLOOD_COLOR_OIL
@@ -53,8 +53,14 @@
 	var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
 	interface?.AddSource("SPECIES")
 	. = ..()
+	give_synth_battery(C)
+	give_synth_radio(C)
+	take_synth_pda(C)
 
 /datum/species/synthliz/on_species_loss(mob/living/carbon/human/C, datum/species/new_species, pref_load)
+	clear_synth_battery(C)
+	clear_synth_radio(C)
+	clear_synth_pda(C)
 	var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
 	interface?.RemoveSource("SPECIES")
 	. = ..()

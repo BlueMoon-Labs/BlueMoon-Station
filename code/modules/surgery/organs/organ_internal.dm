@@ -17,6 +17,7 @@
 	var/high_threshold	= STANDARD_ORGAN_THRESHOLD * 0.45		//when severe organ damage occurs
 	var/low_threshold	= STANDARD_ORGAN_THRESHOLD * 0.1		//when minor organ damage occurs
 	var/severe_cooldown	//cooldown for severe effects, used for synthetic organ emp effects.
+	var/emp_recovery_timer
 
 	///Organ variables for determining what we alert the owner with when they pass/clear the damage thresholds
 	var/prev_damage = 0
@@ -69,6 +70,17 @@
 /// Last chance for an organ to reconfigure itself for the zone surgery is installing it into.
 /obj/item/organ/proc/prepare_insert(mob/living/carbon/target, target_zone)
 	return
+
+/obj/item/organ/proc/schedule_emp_recovery()
+	if(emp_recovery_timer)
+		deltimer(emp_recovery_timer)
+	emp_recovery_timer = addtimer(CALLBACK(src, PROC_REF(clear_emp_damage)), rand(5 MINUTES, 15 MINUTES), TIMER_STOPPABLE)
+
+/obj/item/organ/proc/clear_emp_damage()
+	if(QDELETED(src))
+		return
+	emp_recovery_timer = null
+	organ_flags &= ~ORGAN_SYNTHETIC_EMP
 
 /obj/item/organ/proc/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
 	if(!iscarbon(M) || owner == M)

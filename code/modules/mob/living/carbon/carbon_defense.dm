@@ -232,6 +232,8 @@
 	for(var/X in internal_organs)
 		var/obj/item/organ/O = X
 		O.emp_act(severity)
+		if(O.organ_flags & ORGAN_SYNTHETIC_EMP)
+			O.schedule_emp_recovery()
 
 /mob/living/carbon/proc/rollback_emp_protection()
 	var/mob/living/carbon/human/H = src

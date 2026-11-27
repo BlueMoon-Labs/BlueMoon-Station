@@ -409,7 +409,23 @@
 	if(HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM))
 		hud_used?.coolant_display.jam(round(severity / 10, 1))	//Messes up the cooling system readout.
 		severity *= 0.5 //Robotpeople take less limb damage, but instead suffer system corruption (see carbon emp_act)
+		severity *= 0.5
 		do_not_stun = TRUE
+		if(synth_radio)
+			synth_radio.start_jamming()
+			to_chat(src, span_danger("ВНИМАНИЕ: радиопомехи! Встроенная радиосистема искажает сигнал."))
+		adjust_nutrition(-NUTRITION_LEVEL_FULL * 0.4)
+		if(synth_battery)
+			synth_battery.use(synth_battery.charge * 0.4)
+			synth_battery.update_icon()
+		refresh_synth_battery_state()
+		start_synth_emp_drain()
+		Stun(4 SECONDS, TRUE, TRUE)
+		emote("robotic_scream")
+		do_sparks(8, TRUE, src)
+		Jitter(200)
+		do_jitter_animation(jitteriness)
+		electrocution_animation(40)
 	for(var/obj/item/bodypart/L in src.bodyparts)
 		if(L.is_robotic_limb())
 			if(!informed)
@@ -423,6 +439,21 @@
 			L.receive_damage(0,severity/10)
 			if(!do_not_stun)	//Tiny bit better than checking for the trait another six times in succession
 				Stun(severity*2)
+
+/mob/living/carbon/human/proc/start_synth_emp_drain()
+	var/total_percent = rand(2, 20)
+	var/ticks = rand(2, 20)
+	synth_emp_drain_tick(total_percent / ticks, ticks)
+
+/mob/living/carbon/human/proc/synth_emp_drain_tick(percent, ticks_left)
+	if(QDELETED(src) || stat == DEAD || ticks_left <= 0)
+		return
+	adjust_nutrition(-NUTRITION_LEVEL_FULL * percent / 100)
+	if(synth_battery)
+		synth_battery.use(synth_battery.charge * percent / 100)
+		synth_battery.update_icon()
+	refresh_synth_battery_state()
+	addtimer(CALLBACK(src, PROC_REF(synth_emp_drain_tick), percent, ticks_left - 1), 1 SECONDS)
 
 /mob/living/carbon/human/acid_act(acidpwr, acid_volume, bodyzone_hit)
 	var/list/damaged = list()

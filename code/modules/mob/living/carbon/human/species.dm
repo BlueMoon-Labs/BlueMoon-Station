@@ -1320,6 +1320,11 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 	return
 
 /datum/species/proc/can_equip(obj/item/I, slot, disable_warning, mob/living/carbon/human/H, bypass_equip_delay_self = FALSE, clothing_check = FALSE, list/return_warning)
+	if(istype(I, /obj/item/radio/headset) && isrobotic(H) && !H.synth_outfit_equipping)
+		if(return_warning)
+			return_warning[1] = span_warning("Синтетики используют встроенную радиосистему, гарнитура им не нужна.")
+		return FALSE
+
 	if(slot in no_equip)
 		if(!I.species_exception || !is_type_in_list(src, I.species_exception))
 			return FALSE
@@ -1678,6 +1683,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				H.Jitter(5)
 			hunger_rate = 3 * HUNGER_FACTOR
 		hunger_rate *= H.physiology.hunger_mod
+		if(HAS_TRAIT(H, TRAIT_ROBOTIC_ORGANISM))
+			hunger_rate *= 2
 		H.adjust_nutrition(-hunger_rate)
 
 

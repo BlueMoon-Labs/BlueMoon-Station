@@ -138,20 +138,56 @@
 	name = "ipc cell"
 	icon_state = "stomach-ipc"
 	organ_flags = ORGAN_SYNTHETIC // BLUEMOON ADD - органы синтетиков не должны гнить и должны быть подвержены ЭМИ
+	var/battery_depleted = FALSE
 
 /obj/item/organ/stomach/ipc/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
 	. = ..()
 	if(owner)
 		RegisterSignal(owner, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, PROC_REF(charge))
+		update_battery_state()
 
 /obj/item/organ/stomach/ipc/Remove(mob/living/carbon/M, special = 0)
 	UnregisterSignal(owner, COMSIG_PROCESS_BORGCHARGER_OCCUPANT)
+	if(battery_depleted && owner && owner.stat != DEAD)
+		battery_depleted = FALSE
+		set_owner_unconscious(FALSE, FALSE)
 	. = ..()
+
+/obj/item/organ/stomach/ipc/proc/update_battery_state()
+	if(!owner || owner.stat == DEAD)
+		return
+	if(owner.nutrition > 0)
+		if(battery_depleted)
+			var/can_wake = TRUE
+			if(ishuman(owner))
+				var/mob/living/carbon/human/H = owner
+				can_wake = !!H.synth_battery
+			if(can_wake)
+				battery_depleted = FALSE
+				set_owner_unconscious(FALSE)
+		return
+	if(!battery_depleted)
+		battery_depleted = TRUE
+		owner.visible_message(
+			span_danger("[owner] падает без сознания: батарея разряжена!"),
+			span_danger("Батарея разряжена! Вы теряете сознание."),
+		)
+		playsound(owner, 'modular_bluemoon/sound/effects/restart-shutdown.ogg', 45, FALSE)
+	set_owner_unconscious(TRUE)
+
+/obj/item/organ/stomach/ipc/proc/set_owner_unconscious(depleted, notify = TRUE)
+	if(depleted)
+		owner.SetUnconscious(5 SECONDS, TRUE, TRUE)
+	else
+		owner.SetUnconscious(0, TRUE, TRUE)
+		if(notify)
+			to_chat(owner, span_notice("Батарея заряжена. Вы приходите в себя."))
 
 /obj/item/organ/stomach/ipc/proc/charge(datum/source, amount, repairs)
 	SIGNAL_HANDLER
 	if(owner)
 		owner.adjust_nutrition(amount / 10, NUTRITION_LEVEL_WELL_FED)
+		update_battery_state()
 
 /obj/item/organ/stomach/ipc/biogenerator
 	name = "biogenerator"
@@ -159,8 +195,9 @@
 	icon_state = "stomach-ipc"
 	organ_flags = ORGAN_SYNTHETIC
 
-/obj/item/organ/stomach/ipc/on_life()
+/obj/item/organ/stomach/ipc/on_life(seconds, times_fired)
 	. = ..()
+	update_battery_state()
 	if(!.)
 		return
 	if(HAS_TRAIT(owner, TRAIT_ROBOTIC_ORGANISM) && owner.nutrition >= NUTRITION_LEVEL_FED)

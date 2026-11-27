@@ -12,6 +12,16 @@
 	status_flags = CANSTUN|CANKNOCKDOWN|CANUNCONSCIOUS|CANPUSH|CANSTAGGER
 	has_field_of_vision = FALSE //Handled by species.
 
+	var/battery_panel_open = FALSE
+	var/obj/item/stock_parts/cell/synth_battery
+
+	var/synth_head_panel_open = FALSE
+	var/obj/item/radio/internal/synthetic/synth_radio
+	var/synth_outfit_equipping = FALSE
+
+	var/obj/item/modular_computer/pda/synth_pda
+	var/datum/action/item_action/synth_pda/synth_pda_action
+
 	blocks_emissive = EMISSIVE_BLOCK_UNIQUE
 
 	block_parry_data = /datum/block_parry_data/unarmed/human

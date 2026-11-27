@@ -629,6 +629,17 @@ GENETICS SCANNER
 				else if(L.damage && advanced)
 					damage_message += " " + span_info("Метаболизм препаратов сохранён.")
 
+			else if(istype(O, /obj/item/organ/synthetic_radio))
+				var/obj/item/organ/synthetic_radio/R = O
+				if(R.organ_flags & ORGAN_FAILING)
+					damage_message += " " + span_alert("Отказ встроенной радиосистемы; связь недоступна. Требуется ремонт в голове.")
+				else if(R.damage > R.high_threshold)
+					damage_message += " " + span_alert("Радиомодуль сильно повреждён; связь искажается. Требуется ремонт.")
+				else if(R.damage && advanced)
+					damage_message += " " + span_info("Радиомодуль повреждён; возможны помехи.")
+				else if(advanced)
+					temp_message += " " + span_info("Встроенная радиосистема исправна.")
+
 			else if(istype(O, /obj/item/organ/heart))
 				var/obj/item/organ/heart/He = O
 				if(He.organ_flags & ORGAN_FAILING)
@@ -791,6 +802,18 @@ GENETICS SCANNER
 		general_diagnosis += "\n" + span_info("<b>Обнаружены наниты</b>")
 	else if(HAS_TRAIT_FROM(M, TRAIT_NANITES_IMMUNITY, NANITES_IMMUNITY_FROM_REAGENT))
 		general_diagnosis += "\n" + span_info("<b>Обнаружено действие Nanite Protector.</b>")
+	if(ishuman(M) && isrobotic(M))
+		var/charge_percent = clamp(round(H.nutrition / NUTRITION_LEVEL_FULL * 100, 1), 0, 100)
+		var/battery_present = !!H.synth_battery
+		var/battery_icon = icon2base64html(battery_present ? H.synth_battery : /obj/item/stock_parts/cell, sourceonly = TRUE)
+		organ_data += list(list(
+			"name" = battery_present ? capitalize(H.synth_battery.name) : "Батарея",
+			"icon" = battery_icon,
+			"damage" = null,
+			"status" = battery_present ? "Заряд: [charge_percent]%." : "Батарея не установлена.",
+			"warning" = !battery_present || charge_percent <= 20,
+			"critical" = FALSE,
+		))
 	data["diagnosis"] = medical_scan_lines(general_diagnosis)
 	var/diagnosis_report = jointext(splittext(trim(general_diagnosis), "\n") - "", " · ")
 	msg = ""
