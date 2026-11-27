@@ -14,6 +14,11 @@ import {
   Tabs,
 } from '../components';
 import { Window } from '../layouts';
+import { sanitizeText } from '../sanitize';
+
+// Сообщения тикета приходят из DM и раньше вставлялись «как есть» через
+// dangerouslySetInnerHTML -> тот же XSS, что и в AdminTicketPanel.
+const safeTicketHtml = (html) => sanitizeText(html || '', false);
 
 const STATE_COLORS = {
   1: '#a855f7',
@@ -411,7 +416,7 @@ const TicketDetailPanel = (props) => {
                 borderRadius: '3px',
                 wordBreak: 'break-word',
               }}
-              dangerouslySetInnerHTML={{ __html: msg }}
+              dangerouslySetInnerHTML={{ __html: safeTicketHtml(msg) }}
             />
           ))}
           <AutoScrollToBottom triggerKey={(ticket.interactions || []).length} />
