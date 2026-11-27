@@ -1,7 +1,7 @@
 /**
  * Chat Customization Styles
  * Styles for chat visual presets, animations, hover effects,
- * custom color properties, timestamps, search, and gamification.
+ * custom color properties, timestamps, and gamification.
  */
 
 // ============================================================
@@ -415,40 +415,6 @@
   &::after {
     right: 5%;
   }
-}
-
-// ============================================================
-// In-chat search
-// ============================================================
-
-.Chat__searchBar {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  background: rgba(30, 30, 30, 0.95);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.Chat__searchCount {
-  font-size: 0.8em;
-  opacity: 0.6;
-  white-space: nowrap;
-  min-width: 4em;
-  text-align: center;
-}
-
-.Chat__searchMatch {
-  background-color: rgba(255, 200, 0, 0.3);
-  border-radius: 2px;
-  outline: 1px solid rgba(255, 200, 0, 0.5);
-}
-
-.Chat__searchMatch--active {
-  background-color: rgba(255, 200, 0, 0.6);
-  outline: 2px solid rgba(255, 200, 0, 0.9);
 }
 
 // ============================================================

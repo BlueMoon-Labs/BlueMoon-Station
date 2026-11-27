@@ -1,4 +1,4 @@
-import { highlightNode, linkifyNode, replaceInTextNode } from './replaceInTextNode';
+import { linkifyNode, replaceInTextNode } from './replaceInTextNode';
 
 // Helper: create a parent div with a text node child
 const createTextInDiv = (text) => {
@@ -120,83 +120,6 @@ describe('replaceInTextNode', () => {
     expect(div.childNodes[3].tagName).toBe('B');
     expect(div.childNodes[4].nodeType).toBe(3); // text
     expect(div.childNodes[4].textContent).toBe('Z');
-  });
-});
-
-describe('highlightNode', () => {
-  test('highlights text in direct text node children', () => {
-    const div = createTextInDiv('find me here');
-    const count = highlightNode(div, /find/g);
-
-    expect(count).toBe(1);
-    // Should have: <span>find</span> " me here"
-    expect(div.querySelector('span')).not.toBeNull();
-    expect(div.querySelector('span').textContent).toBe('find');
-  });
-
-  test('returns total match count across all text nodes', () => {
-    const div = document.createElement('div');
-    const span1 = document.createElement('span');
-    span1.textContent = 'hello world';
-    const span2 = document.createElement('span');
-    span2.textContent = 'hello again';
-    div.appendChild(span1);
-    div.appendChild(span2);
-
-    const count = highlightNode(div, /hello/g);
-    expect(count).toBe(2);
-  });
-
-  test('recursively processes nested elements', () => {
-    const div = document.createElement('div');
-    div.innerHTML = '<p><span>search term</span></p>';
-
-    const count = highlightNode(div, /search/g);
-    expect(count).toBe(1);
-    const highlighted = div.querySelector('p span span');
-    expect(highlighted).not.toBeNull();
-    expect(highlighted.textContent).toBe('search');
-  });
-
-  test('only processes text nodes (nodeType 3)', () => {
-    const div = document.createElement('div');
-    const child = document.createElement('span');
-    child.setAttribute('class', 'find-me');
-    child.textContent = 'no match in attributes';
-    div.appendChild(child);
-
-    // The regex should not match against element attribute values
-    const count = highlightNode(div, /find-me/g);
-    expect(count).toBe(0);
-  });
-
-  test('uses default highlight style when no createNode provided', () => {
-    const div = createTextInDiv('highlight me');
-    highlightNode(div, /highlight/g);
-
-    const span = div.querySelector('span');
-    expect(span).not.toBeNull();
-    expect(span.getAttribute('style')).toContain('background-color');
-  });
-
-  test('uses custom createNode when provided', () => {
-    const div = createTextInDiv('custom highlight');
-    const factory = jest.fn((text) => {
-      const em = document.createElement('em');
-      em.textContent = text;
-      return em;
-    });
-
-    highlightNode(div, /custom/g, factory);
-
-    expect(factory).toHaveBeenCalledWith('custom');
-    expect(div.querySelector('em')).not.toBeNull();
-  });
-
-  test('handles node with no text content', () => {
-    const div = document.createElement('div');
-    const count = highlightNode(div, /anything/g);
-    expect(count).toBe(0);
   });
 });
 

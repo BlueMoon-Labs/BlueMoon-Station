@@ -227,16 +227,8 @@ const createApplySettings = () => {
   return (settings) => {
     const prev = lastAppliedSettings;
 
-    if (anyChanged(prev, settings,
-      ['highlightText', 'highlightColor', 'matchWord', 'matchCase'])) {
-      chatRenderer.setHighlight(
-        settings.highlightText,
-        settings.highlightColor,
-        settings.matchWord,
-        settings.matchCase);
-    }
-    if (anyChanged(prev, settings, ['highlightSoundEnabled'])) {
-      chatRenderer.setHighlightSound(settings.highlightSoundEnabled);
+    if (anyChanged(prev, settings, ['highlightSettings'])) {
+      chatRenderer.setHighlightSettings(settings.highlightSettings);
     }
 
     if (anyChanged(prev, settings,
@@ -335,6 +327,7 @@ const createApplySettings = () => {
 export const chatMiddleware = store => {
   let initialized = false;
   let loaded = false;
+  let stateErrorShown = false;
   const applySettings = createApplySettings();
   const saveChat = createChatSaver();
   chatRenderer.events.on('batchProcessed', countByType => {
@@ -407,6 +400,18 @@ export const chatMiddleware = store => {
         payload?.reason,
         'size:',
         payload?.size);
+      // Сохранение повторяется на каждую правку: предупреждаем один раз.
+      if (!stateErrorShown) {
+        stateErrorShown = true;
+        chatRenderer.processBatch([createMessage({
+          type: 'internal/state_error',
+          avoidHighlighting: true,
+          html: '<span class="warning">Настройки чата не сохранились на'
+            + ' сервере: их объём больше лимита. Они остались только в этом'
+            + ' браузере. Сократите подсветку или удалите лишние вкладки.'
+            + '</span>',
+        })]);
+      }
       return next(action);
     }
     if (type === 'chat/message') {

@@ -46,52 +46,6 @@ export const replaceInTextNode = (regex, createNode) => node => {
 };
 
 
-// Highlight
-// --------------------------------------------------------
-
-/**
- * Default highlight node.
- */
-const createHighlightNode = text => {
-  const node = document.createElement('span');
-  node.setAttribute('style',
-    'background-color:#fd4;color:#000');
-  node.textContent = text;
-  return node;
-};
-
-/**
- * Highlights the text in the node based on the provided regular expression.
- *
- * @param {Node} node Node which you want to process
- * @param {RegExp} regex Regular expression to highlight
- * @param {(text: string) => Node} createNode Highlight node creator
- * @returns {number} Number of matches
- */
-export const highlightNode = (
-  node,
-  regex,
-  createNode = createHighlightNode,
-) => {
-  if (!createNode) {
-    createNode = createHighlightNode;
-  }
-  let n = 0;
-  const childNodes = node.childNodes;
-  for (let i = 0; i < childNodes.length; i++) {
-    const node = childNodes[i];
-    // Is a text node
-    if (node.nodeType === 3) {
-      n += replaceInTextNode(regex, createNode)(node);
-    }
-    else {
-      n += highlightNode(node, regex, createNode);
-    }
-  }
-  return n;
-};
-
-
 // Linkify
 // --------------------------------------------------------
 

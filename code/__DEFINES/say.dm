@@ -91,6 +91,10 @@
 #define SPAN_MUFFLED "muffled_speech"
 #define SPAN_RADIO_STATIC "radio_static"
 
+/// Сама реплика без глагола речи и действия (attach_spans). По нему подсветка
+/// tgui-panel в режиме "Только речь" отличает сказанное от "говорит" и "!машет".
+#define SPAN_SPEECH "speech"
+
 #define SPEECH_FX_JITTER_MIN 100
 #define SPEECH_FX_DRUNK_MIN 30
 /// Как у "I can't breathe!" в vocal_cords.dm; при 50 carbon уже без сознания и не говорит.

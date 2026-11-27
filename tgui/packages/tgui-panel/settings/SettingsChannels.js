@@ -5,9 +5,9 @@ import { Box, Button, Divider, Dropdown, Flex, Section, Table, Tooltip } from 't
 import { updateSettings } from './actions';
 import { createChannelEditor, isEntryEdited } from './channelsModel';
 import { ChatPreview } from './ChatPreview';
+import { ColorInput } from './ColorInput';
 import { CHANNEL_TYPES, CHAT_ANIMATIONS } from './constants';
 import { selectSettings } from './selectors';
-import { ColorInput } from './SettingsPanel';
 
 const ANIM_OPTIONS = [
   { id: '', name: 'Как у чата' },

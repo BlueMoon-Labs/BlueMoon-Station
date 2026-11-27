@@ -7,7 +7,7 @@
 import { toFixed } from 'common/math';
 import { useDispatch, useSelector } from 'common/redux';
 import { useState } from 'react';
-import { Box, Button, ColorPicker, Divider, Dropdown, Flex, Icon, Input, LabeledList, NumberInput, Section, Stack, Tabs, TextArea, Tooltip } from 'tgui/components';
+import { Box, Button, Divider, Dropdown, Flex, Input, LabeledList, NumberInput, Section, Stack, Tabs, TextArea, Tooltip } from 'tgui/components';
 
 import { ChatPageSettings } from '../chat';
 import { clearChat, rebuildChat, saveChatToDisk } from '../chat/actions';
@@ -15,123 +15,13 @@ import { THEMES } from '../themes';
 import { changeSettingsTab, updateSettings } from './actions';
 import { decodeAppearance, encodeAppearance } from './appearanceCode';
 import { ChatPreview } from './ChatPreview';
+import { ColorInput } from './ColorInput';
 import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FONTS, MESSAGE_LIMITS, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, SETTINGS_TABS, TEXT_GLOW_OPTIONS, TIME_DIVIDER_INTERVALS, TIMESTAMP_FORMATS } from './constants';
 import { selectActiveTab, selectSettings } from './selectors';
 import { SettingsChannels } from './SettingsChannels';
 import { SettingsEffects } from './SettingsEffects';
+import { SettingsHighlights } from './SettingsHighlights';
 import { SettingsRadioJobs } from './SettingsRadioJobs';
-
-const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
-
-// Diagonal line: "no color", so an empty value does not read as black.
-const EMPTY_SWATCH_BG = 'linear-gradient(to top right, transparent 45%,'
-  + ' rgba(255, 90, 90, 0.8) 45%, rgba(255, 90, 90, 0.8) 55%, transparent 55%)';
-
-const ColorSwatch = (props) => {
-  const { value, defaultColor, onChange } = props;
-  const displayColor = value || defaultColor;
-  const empty = !HEX_COLOR.test(displayColor || '');
-  return (
-    <Box
-      position="relative"
-      style={{ width: '22px', height: '22px' }}>
-      <ColorPicker
-        value={empty ? null : displayColor}
-        width="22px"
-        height="22px"
-        onCommit={onChange}
-      />
-      {empty && (
-        <Box
-          className="ColorSwatch__empty"
-          style={{
-            position: 'absolute',
-            inset: '0',
-            borderRadius: '2px',
-            pointerEvents: 'none',
-            background: EMPTY_SWATCH_BG + ', #9a9a9a',
-          }}
-        />
-      )}
-    </Box>
-  );
-};
-
-/**
- * Color input with the shared TGUI picker and a text field.
- * compact: only the swatch, the value goes into the tooltip.
- */
-export const ColorInput = (props) => {
-  const {
-    value,
-    defaultColor,
-    placeholder,
-    compact,
-    onChange,
-    onClear,
-  } = props;
-  if (compact) {
-    return (
-      <Box inline nowrap>
-        <Tooltip content={value || placeholder}>
-          <Box inline verticalAlign="middle">
-            <ColorSwatch
-              value={value}
-              defaultColor={defaultColor}
-              onChange={onChange} />
-          </Box>
-        </Tooltip>
-        {onClear && (
-          <Tooltip content="Убрать цвет">
-            <Box
-              inline
-              className="ColorInput__clear"
-              color="label"
-              verticalAlign="middle"
-              textAlign="center"
-              style={{
-                width: '12px',
-                cursor: 'pointer',
-                visibility: value ? 'visible' : 'hidden',
-              }}
-              onClick={onClear}>
-              <Icon name="times" />
-            </Box>
-          </Tooltip>
-        )}
-      </Box>
-    );
-  }
-  return (
-    <Stack inline align="center">
-      <Stack.Item>
-        <ColorSwatch
-          value={value}
-          defaultColor={defaultColor}
-          onChange={onChange}
-        />
-      </Stack.Item>
-      <Stack.Item>
-        <Input
-          width="6em"
-          monospace
-          placeholder={placeholder}
-          value={value}
-          onInput={(e, v) => onChange(v)}
-        />
-      </Stack.Item>
-      {!!value && onClear && (
-        <Stack.Item>
-          <Button
-            icon="times"
-            ml={1}
-            onClick={onClear}
-          />
-        </Stack.Item>
-      )}
-    </Stack>
-  );
-};
 
 export const SettingsPanel = (props) => {
   const activeTab = useSelector(selectActiveTab);
@@ -162,6 +52,9 @@ export const SettingsPanel = (props) => {
         {activeTab === 'general' && (
           <SettingsGeneral />
         )}
+        {activeTab === 'highlights' && (
+          <SettingsHighlights />
+        )}
         {activeTab === 'appearance' && (
           <SettingsAppearance />
         )}
@@ -188,11 +81,7 @@ export const SettingsGeneral = (props) => {
     fontFamily,
     fontSize,
     lineHeight,
-    highlightText,
-    highlightColor,
-    highlightSoundEnabled,
-    matchWord,
-    matchCase,
+    highlightSettings = [],
     enableTimestamps,
     timestampFormat,
     enableTimeDividers,
@@ -293,53 +182,22 @@ export const SettingsGeneral = (props) => {
         </LabeledList.Item>
       </LabeledList>
       <Divider />
-      <Box>
-        <Flex mb={1} color="label" align="baseline">
-          <Flex.Item grow={1}>
-            Подсветка текста (через запятую):
-          </Flex.Item>
-          <Flex.Item shrink={0}>
-            <ColorInput
-              value={highlightColor}
-              defaultColor="#ffdd44"
-              placeholder="#ffdd44"
-              onChange={v => dispatch(updateSettings({
-                highlightColor: v,
-              }))}
-            />
-          </Flex.Item>
-        </Flex>
-        <TextArea
-          height="3em"
-          scrollbar
-          value={highlightText}
-          onInput={(e, value) => dispatch(updateSettings({
-            highlightText: value,
-          }))} />
-        <Button.Checkbox
-          checked={highlightSoundEnabled}
-          onClick={() => dispatch(updateSettings({
-            highlightSoundEnabled: !highlightSoundEnabled,
-          }))}>
-          Звук при подсветке
-        </Button.Checkbox>
-        <Button.Checkbox
-          checked={matchWord}
-          tooltipPosition="bottom-start"
-          tooltip="Не совместимо с пунктуацией."
-          onClick={() => dispatch(updateSettings({
-            matchWord: !matchWord,
-          }))}>
-          Целое слово
-        </Button.Checkbox>
-        <Button.Checkbox
-          checked={matchCase}
-          onClick={() => dispatch(updateSettings({
-            matchCase: !matchCase,
-          }))}>
-          Учитывать регистр
-        </Button.Checkbox>
-      </Box>
+      <Flex align="baseline">
+        <Flex.Item grow={1} color="label">
+          {'Подсветка текста: групп - '
+            + highlightSettings.filter(item => item.enabled !== false
+              && item.highlightText?.trim()).length}
+        </Flex.Item>
+        <Flex.Item shrink={0}>
+          <Button
+            icon="highlighter"
+            onClick={() => dispatch(changeSettingsTab({
+              tabId: 'highlights',
+            }))}>
+            Настроить
+          </Button>
+        </Flex.Item>
+      </Flex>
       <Divider />
       <Button.Checkbox
         checked={enableTimestamps}

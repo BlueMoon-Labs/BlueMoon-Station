@@ -202,12 +202,6 @@
       var(--vaporwave-stripe, #cc4488), var(--vaporwave-stripe, #0099bb)) 1;
   }
 
-  // Search bar light theme
-  .Chat__searchBar {
-    background: rgba(240, 240, 240, 0.95);
-    border-bottom-color: rgba(0, 0, 0, 0.1);
-  }
-
   // Time divider light theme
   .Chat__timeDivider {
     color: var(--chat-accent, rgba(0, 0, 0, 0.3));

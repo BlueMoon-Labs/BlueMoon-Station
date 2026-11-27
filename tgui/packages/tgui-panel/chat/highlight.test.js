@@ -1,0 +1,464 @@
+import { compileHighlightSettings, createHighlightSetting, DEFAULT_HIGHLIGHT_COLOR, highlightMessageNode, MAX_HIGHLIGHT_SETTINGS, migrateHighlightSettings, parseHighlightTerms } from './highlight';
+
+// Разметка как у compose_message в code/game/say.dm
+const SAY = '<span class="game say"><span class="name">Ваня Петров</span>'
+  + ' <span class="message">говорит, "<span class="">Ваня, иди сюда!</span>"'
+  + '</span></span>';
+const RADIO = '<span class="secradio"><span class="name">[Охрана] '
+  + '<span class="radiojob">[Офицер] </span>Анна</span>'
+  + ' <span class="message">сообщает, "<span class="">Ваня на мостике</span>"'
+  + '</span></span>';
+const EMOTE = '<span class="emote"><b>Ваня Петров</b> чешет затылок.</span>';
+const OOC = '<span class="ooc"><span class="prefix">OOC:</span>'
+  + ' <EM>Ваня:</EM> <span class="message">Ваня тут</span></span>';
+const SYSTEM = '<span class="notice">Ваня Петров хлопает вас по плечу.</span>';
+
+const render = (html, settings) => {
+  const node = document.createElement('div');
+  node.innerHTML = html;
+  const result = highlightMessageNode(node,
+    compileHighlightSettings(settings));
+  const marks = [...node.querySelectorAll('.Chat__highlight')]
+    .map(mark => [mark.textContent, mark.style.backgroundColor]);
+  return { result, marks, words: marks.map(mark => mark[0]) };
+};
+
+const group = fields => createHighlightSetting(fields);
+
+describe('parseHighlightTerms', () => {
+  test('splits by comma and new line, drops short terms', () => {
+    expect(parseHighlightTerms('Ваня, Иван\nкэп , a,  '))
+      .toEqual(['Ваня', 'Иван', 'кэп']);
+  });
+});
+
+describe('compileHighlightSettings', () => {
+  test('skips disabled, empty and colorless groups', () => {
+    expect(compileHighlightSettings([
+      group({ highlightText: 'Ваня', enabled: false }),
+      group({ highlightText: ' , a' }),
+      group({ highlightText: 'Ваня', highlightColor: '' }),
+    ])).toEqual([]);
+    expect(compileHighlightSettings(undefined)).toEqual([]);
+  });
+
+  test('escapes regex characters', () => {
+    const { words } = render('<span>a.b axb (c)</span>', [
+      group({ highlightText: 'a.b, (c)' }),
+    ]);
+    expect(words).toEqual(['a.b', '(c)']);
+  });
+});
+
+describe('highlightMessageNode', () => {
+  test('highlights everywhere without speechOnly', () => {
+    expect(render(EMOTE, [group({ highlightText: 'Ваня' })]).words)
+      .toEqual(['Ваня']);
+  });
+
+  test('speechOnly highlights speech and radio text only', () => {
+    const settings = [group({ highlightText: 'Ваня', speechOnly: true })];
+    expect(render(SAY, settings).words).toEqual(['Ваня']);
+    expect(render(RADIO, settings).words).toEqual(['Ваня']);
+    expect(render(EMOTE, settings).result).toBeNull();
+    expect(render(OOC, settings).result).toBeNull();
+    expect(render(SYSTEM, settings).result).toBeNull();
+  });
+
+  test('speechOnly ignores speaker name and radio job', () => {
+    expect(render(SAY, [
+      group({ highlightText: 'Петров', speechOnly: true }),
+    ]).result).toBeNull();
+    expect(render(RADIO, [
+      group({ highlightText: 'Офицер, Анна', speechOnly: true }),
+    ]).result).toBeNull();
+  });
+
+  test('each group keeps its color, upper group wins', () => {
+    const { result, marks } = render(RADIO, [
+      group({ highlightText: 'мостик', highlightColor: '#ff0000' }),
+      group({ highlightText: 'Ваня, мостик', highlightColor: '#00ff00' }),
+    ]);
+    expect(result).toEqual({ color: '#ff0000', sound: false });
+    expect(marks).toEqual([
+      ['Ваня', 'rgb(0, 255, 0)'],
+      ['мостик', 'rgb(255, 0, 0)'],
+    ]);
+  });
+
+  test('sound comes from any matched group', () => {
+    const settings = [
+      group({ highlightText: 'Ваня' }),
+      group({ highlightText: 'сюда', sound: true }),
+      group({ highlightText: 'нигде', sound: true }),
+    ];
+    expect(render(SAY, settings).result.sound).toBe(true);
+    expect(render(RADIO, settings).result.sound).toBe(false);
+  });
+
+  test('match word works with Cyrillic', () => {
+    const settings = [group({ highlightText: 'Ваня', matchWord: true })];
+    expect(render('<span>Ванялка, Ваня! Ваня,Ваня</span>', settings)
+      .words).toEqual(['Ваня', 'Ваня', 'Ваня']);
+  });
+
+  test('ignores case unless matchCase is set', () => {
+    expect(render('<span>ВАНЯ</span>', [
+      group({ highlightText: 'ваня' }),
+    ]).words).toEqual(['ВАНЯ']);
+    expect(render('<span>ваня</span>', [
+      group({ highlightText: 'Ваня', matchCase: true }),
+    ]).result).toBeNull();
+  });
+
+  test('prefers longer phrases inside one group', () => {
+    expect(render('<span>Иван Петров</span>', [
+      group({ highlightText: 'Иван, Иван Петров' }),
+    ]).words).toEqual(['Иван Петров']);
+  });
+
+  test('inside one group the leftmost match wins, then the longest', () => {
+    expect(render('<span>абвг</span>', [group({ highlightText: 'аб, бвг' })])
+      .words).toEqual(['аб']);
+    expect(render('<span>абвг</span>', [group({ highlightText: 'бвг, аб' })])
+      .words).toEqual(['аб']);
+    expect(render('<span>абвг</span>', [group({ highlightText: 'аб, абв' })])
+      .words).toEqual(['абв']);
+  });
+
+  test('falls back to a shorter phrase when the longer one is not a word', () => {
+    expect(render('<span>Иван Петрович</span>', [
+      group({ highlightText: 'Иван, Иван Петров', matchWord: true }),
+    ]).words).toEqual(['Иван']);
+  });
+});
+
+describe('word boundaries across groups', () => {
+  test('a word cut by an upper group is not a separate word below', () => {
+    const { marks } = render('<span>Роботех и тех</span>', [
+      group({ highlightText: 'робо', highlightColor: '#ff0000' }),
+      group({ highlightText: 'тех', highlightColor: '#00ff00',
+        matchWord: true }),
+    ]);
+    expect(marks).toEqual([
+      ['Робо', 'rgb(255, 0, 0)'],
+      ['тех', 'rgb(0, 255, 0)'],
+    ]);
+  });
+
+  test('word start and word end', () => {
+    const text = '<span>роботех киборобот техник тех</span>';
+    expect(render(text, [group({ highlightText: 'робо', matchStart: true })])
+      .words).toEqual(['робо']);
+    expect(render(text, [group({ highlightText: 'тех', matchEnd: true })])
+      .words).toEqual(['тех', 'тех']);
+    expect(render(text, [group({ highlightText: 'тех', matchStart: true })])
+      .words).toEqual(['тех', 'тех']);
+    expect(render(text, [group({ highlightText: 'тех', matchWord: true })])
+      .words).toEqual(['тех']);
+  });
+
+  test('matchWord overrides word start/end flags', () => {
+    expect(render('<span>техник</span>', [
+      group({ highlightText: 'тех', matchWord: true, matchStart: true }),
+    ]).result).toBeNull();
+  });
+
+  test('a word split by markup is still one word', () => {
+    expect(render('<span>Ва<b>ня</b>шка, <i>Ва</i>ня</span>', [
+      group({ highlightText: 'Ваня', matchWord: true }),
+    ]).words).toEqual(['Ва', 'ня']);
+  });
+
+  test('zero width space after emphasis markup does not split a word', () => {
+    // say_emphasis: "|Ва|ня" -> "<i>Ва</i>&#8203;ня"
+    const html = '<span class="game say"><span class="name">Анна</span>'
+      + ' <span class="message">говорит, "<span><b>Ва</b>&#8203;ня,'
+      + ' <i>Ва</i>&#8203;нюша</span>"</span></span>';
+    const node = document.createElement('div');
+    node.innerHTML = html;
+    const result = highlightMessageNode(node, compileHighlightSettings([
+      group({ highlightText: 'Ваня', matchWord: true, speechOnly: true }),
+    ]));
+    expect(result).not.toBeNull();
+    const marks = [...node.querySelectorAll('.Chat__highlight')]
+      .map(mark => mark.textContent);
+    // Невидимый символ остаётся в тексте, но вне подсветки
+    expect(marks).toEqual(['Ва', 'ня']);
+    expect(node.textContent).toContain('Ва\u200Bня');
+  });
+
+  test('timestamp is not part of the first word', () => {
+    const node = document.createElement('div');
+    node.innerHTML = '<span class="ChatMessage__timestamp">12:30</span>'
+      + '<span>Ваня тут</span>';
+    const result = highlightMessageNode(node, compileHighlightSettings([
+      group({ highlightText: 'Ваня', matchWord: true }),
+      group({ highlightText: '30Ва' }),
+    ]));
+    expect(result).toEqual({ color: DEFAULT_HIGHLIGHT_COLOR, sound: false });
+    expect([...node.querySelectorAll('.Chat__highlight')]
+      .map(mark => mark.textContent)).toEqual(['Ваня']);
+    expect(node.querySelector('.ChatMessage__timestamp').textContent)
+      .toBe('12:30');
+  });
+});
+
+describe('speechOnly for AI messages', () => {
+  // robot_talk в code/modules/mob/living/silicon/say.dm, говорит ИИ
+  const BINARY_AI = '<span class="binarysay"><span class="binarysay">Robotic'
+    + ' Talk,</span> <font size="3"><b>ИИ Ваня</b></font> <font size="3">'
+    + '<span class="command"><b>states, "<span class="robot speech">Ваня на связи'
+    + '</span>"</b></span></font>'
+    + '</span>';
+  // То же, говорит киборг
+  const BINARY_BORG = '<span class="binarysay"><span class="binarysay">Robotic'
+    + ' Talk,</span> <span class="name">Ваня</span>'
+    + ' <span class="message">states, "<span class="robot speech">Ваня тут</span>"'
+    + '</span></span>';
+  // relay_speech и relay_emote в code/modules/mob/living/silicon/ai/ai.dm
+  const RELAYED_SPEECH = '<i><span class="game say">Relayed Speech: '
+    + '<span class="name"><a href="#">Ваня (Инженер)</a> </span>'
+    + '<span class="message">говорит, "<span class="speech">Ваня тут</span>"'
+    + '</span></span></i>';
+  const RELAYED_EMOTE = '<i><span class="game say relayed_emote">Relayed'
+    + ' Emote: <span class="name"><a href="#">Ваня (Инженер)</a> </span>'
+    + '<span class="message">машет Ване.</span></span></i>';
+
+  const settings = [group({ highlightText: 'Ваня, Ване', speechOnly: true })];
+
+  test('AI speech in binary chat is speech, its name is not', () => {
+    expect(render(BINARY_AI, settings).words).toEqual(['Ваня']);
+    expect(render(BINARY_BORG, settings).words).toEqual(['Ваня']);
+  });
+
+  test('relayed speech counts, relayed emote does not', () => {
+    expect(render(RELAYED_SPEECH, settings).words).toEqual(['Ваня']);
+    expect(render(RELAYED_EMOTE, settings).result).toBeNull();
+  });
+
+  test('relayed emote from history without the class is not speech', () => {
+    const old = RELAYED_EMOTE.replace(' relayed_emote', '');
+    expect(old).not.toContain('relayed_emote');
+    expect(render(old, settings).result).toBeNull();
+    expect(render(old, [group({ highlightText: 'Ване' })]).words)
+      .toEqual(['Ване']);
+  });
+});
+
+describe('migrateHighlightSettings', () => {
+  test('turns legacy single highlight into the first group', () => {
+    const list = migrateHighlightSettings({
+      highlightText: 'Ваня',
+      highlightColor: '#123456',
+      highlightSoundEnabled: true,
+      matchWord: true,
+    });
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({
+      highlightText: 'Ваня',
+      highlightColor: '#123456',
+      sound: true,
+      matchWord: true,
+      matchCase: false,
+      speechOnly: false,
+      enabled: true,
+    });
+    expect(list[0].id).toBeTruthy();
+  });
+
+  test('returns null when settings carry no highlight at all', () => {
+    expect(migrateHighlightSettings({ version: 1, theme: 'dark' })).toBeNull();
+    expect(migrateHighlightSettings(undefined)).toBeNull();
+    expect(migrateHighlightSettings({ matchCase: false })).toHaveLength(1);
+  });
+
+  test('keeps groups, fills missing fields, fixes ids and limit', () => {
+    const list = migrateHighlightSettings({
+      highlightText: 'ignored',
+      highlightSettings: [
+        { id: 'a', highlightText: 'x1' },
+        null,
+        'junk',
+        { id: 'a', highlightText: 'x2' },
+        ...Array.from({ length: 20 }, () => ({})),
+      ],
+    });
+    expect(list).toHaveLength(MAX_HIGHLIGHT_SETTINGS);
+    expect(list[0]).toMatchObject({ id: 'a', highlightText: 'x1',
+      speechOnly: false, sound: false });
+    expect(list[1].highlightText).toBe('x2');
+    expect(new Set(list.map(item => item.id)).size).toBe(list.length);
+  });
+});
+
+describe('invisible characters and nested emote markers', () => {
+  test('a term copied from chat with a zero width space still matches', () => {
+    expect(parseHighlightTerms('Ва\u200Bня, \u200B\u200B, ко\u00ADт'))
+      .toEqual(['Ваня', 'кот']);
+    const html = '<span class="game say"><span class="name">Анна</span>'
+      + ' <span class="message">говорит, "<span><b>Ва</b>&#8203;ня</span>"'
+      + '</span></span>';
+    expect(render(html, [group({ highlightText: 'Ва\u200Bня',
+      matchWord: true, speechOnly: true })]).words).toEqual(['Ва', 'ня']);
+  });
+
+  test('"Relayed Emote" inside a speech reply is still speech', () => {
+    const html = '<span class="game say"><span class="name">Анна</span>'
+      + ' <span class="message"><span>Relayed Emote: Ваня машет</span>'
+      + '</span></span>';
+    expect(render(html, [group({ highlightText: 'Ваня', speechOnly: true })])
+      .words).toEqual(['Ваня']);
+  });
+
+  test('nothing inside a relayed emote becomes speech', () => {
+    const html = '<i><span class="game say relayed_emote">Relayed Emote: '
+      + '<span class="name">Ваня (Инженер)</span> <span class="message">'
+      + '<span class="say">Ваня</span> машет</span></span></i>';
+    expect(render(html, [group({ highlightText: 'Ваня', speechOnly: true })])
+      .result).toBeNull();
+  });
+});
+describe('word breaks between elements', () => {
+  // build_priority_announcement в code/__HELPERS/priority_announce.dm
+  const ANNOUNCE = '<span class="priority_announcement">'
+    + '<span class="priority_announcement__badge">PRIORITY</span>'
+    + '<span class="priority_announcement__header">'
+    + '<span class="priority_announcement__source">Заголовок</span></span>'
+    + '<span class="priority_announcement__body">Сообщение</span></span>';
+
+  test('announcement title and body are separate words', () => {
+    expect(render(ANNOUNCE, [group({ highlightText: 'Сообщение',
+      matchWord: true })]).words).toEqual(['Сообщение']);
+    expect(render(ANNOUNCE, [group({ highlightText: 'Заголовок',
+      matchWord: true })]).words).toEqual(['Заголовок']);
+    expect(render(ANNOUNCE, [group({ highlightText: 'ЗаголовокСообщение' })])
+      .result).toBeNull();
+    expect(render(ANNOUNCE, [group({ highlightText: 'PRIORITYЗаголовок' })])
+      .result).toBeNull();
+  });
+
+  test('inline formatting and plain spans keep the word whole', () => {
+    expect(render('<span>Ва<span>ня</span> <font color="red">Ва</font>ня'
+      + ' <u>Ва</u><s>ня</s></span>', [group({ highlightText: 'Ваня',
+      matchWord: true })]).words).toEqual(['Ва', 'ня', 'Ва', 'ня', 'Ва', 'ня']);
+  });
+
+  test('a classed span breaks the word', () => {
+    expect(render('<span><span class="a">Ва</span><span class="b">ня</span>'
+      + '</span>', [group({ highlightText: 'Ваня' })]).result).toBeNull();
+  });
+});
+
+describe('radio job and speaker name', () => {
+  // compose_message в code/game/say.dm с тегом должности
+  const RADIO_JOB = '<span class="medradio"><span class="name">[Медицинский] '
+    + '<span class="radiojob-icon med"></span>'
+    + '<span class="radiojob-legacy-med radiojob med">[Medical Doctor] </span>'
+    + '<span class="radiojob-name med">Чертила</span></span>'
+    + ' <span class="message">говорит, "<span>Приём</span>"</span></span>';
+
+  test('job and name copied together are found as on screen', () => {
+    expect(render(RADIO_JOB, [group({
+      highlightText: '[Medical Doctor] Чертила' })]).words)
+      .toEqual(['[Medical Doctor] ', 'Чертила']);
+    expect(render(RADIO_JOB, [group({ highlightText: 'Чертила',
+      matchWord: true })]).words).toEqual(['Чертила']);
+    expect(render(RADIO_JOB, [group({ highlightText: 'Medical Doctor',
+      matchWord: true })]).words).toEqual(['Medical Doctor']);
+  });
+
+  test('announcement parts without spaces still do not glue', () => {
+    const html = '<span class="system_notice"><span class="system_notice__title">'
+      + 'Заголовок</span><span class="system_notice__body">Сообщение</span>'
+      + '</span>';
+    expect(render(html, [group({ highlightText: 'ЗаголовокСообщение' })])
+      .result).toBeNull();
+    expect(render(html, [group({ highlightText: 'Заголовок Сообщение' })])
+      .result).toBeNull();
+  });
+});
+describe('line breaks', () => {
+  test('a phrase never crosses <br>, with or without a space before it', () => {
+    for (const html of [
+      '<span>Первая строка <br>Вторая строка</span>',
+      '<span>Первая строка<br>Вторая строка</span>',
+      '<span>Первая строка<br> Вторая строка</span>',
+      '<span><div>Первая строка </div><div>Вторая строка</div></span>',
+      '<span><center>Первая строка </center>Вторая строка</span>',
+    ]) {
+      expect(render(html, [group({ highlightText: 'строка Вторая' })]).result)
+        .toBeNull();
+      expect(render(html, [group({ highlightText: 'строка',
+        matchWord: true })]).words).toEqual(['строка', 'строка']);
+      expect(render(html, [group({ highlightText: 'Вторая строка' })]).words)
+        .toEqual(['Вторая строка']);
+    }
+  });
+
+  test('minor_announce title and text are different lines', () => {
+    // minor_announce: span_minorannounce("<font color = red>[title]</font><BR>[message]")
+    const html = '<span class="minorannounce"><font color="red">Внимание! '
+      + '</font><br>Шаттл прибыл</span>';
+    expect(render(html, [group({ highlightText: 'Внимание! Шаттл' })]).result)
+      .toBeNull();
+  });
+});
+describe('speechOnly: only the reply itself', () => {
+  // compose_message + say_quote: глагол речи и действие лежат в span.message
+  // голым текстом, сама реплика - span.speech (attach_spans)
+  const say = message => '<span class="game say"><span class="name">Анна'
+    + '</span> <span class="message">' + message + '</span></span>';
+  const settings = [group({ highlightText: 'говорит, машет, Ване, Ваня',
+    matchWord: true, speechOnly: true })];
+
+  test('the say verb is not speech', () => {
+    expect(render(say('говорит, "<span class="speech">Ваня, привет</span>"'),
+      settings).words).toEqual(['Ваня']);
+  });
+
+  test('a "!" action is not speech', () => {
+    // "!машет рукой Ване": attach_spans пуст, say_mod вернул действие
+    expect(render(say('машет рукой Ване'), settings).result).toBeNull();
+  });
+
+  test('a "*" custom verb is not speech, the reply after it is', () => {
+    // "машет*Привет, Ваня"
+    expect(render(say('машет, "<span class="speech">Привет, Ваня</span>"'),
+      settings).words).toEqual(['Ваня']);
+  });
+
+  test('history without the speech class: only the inner span', () => {
+    expect(render(say('говорит, "<span class="">Ваня, привет</span>"'),
+      settings).words).toEqual(['Ваня']);
+    expect(render(say('машет рукой Ване'), settings).result).toBeNull();
+  });
+
+  test('a radio channel missing from SPEECH_ROOT_CLASSES still works', () => {
+    const html = '<span class="xenoradio"><span class="name">Анна</span>'
+      + ' <span class="message">сообщает, "<span class="speech">Ваня тут'
+      + '</span>"</span></span>';
+    expect(render(html, [group({ highlightText: 'Анна, Ваня',
+      speechOnly: true })]).words).toEqual(['Ваня']);
+  });
+
+  test('dead chat and hivemind replies are speech too', () => {
+    // deadchat_broadcast (mob/say.dm) и alien_talk: реплика через say_quote
+    const dead = '<span class="game"><span class="prefix">DEAD:</span>'
+      + ' <span class="name">Петя</span> <span class="message">говорит,'
+      + ' "<span class="speech">Ваня тут</span>"</span></span>';
+    const hive = '<i><span class="alien">Hivemind, <span class="name">Ваня'
+      + '</span> <span class="message">шипит, "<span class="speech">Ваня'
+      + ' тут</span>"</span></span></i>';
+    for (const html of [dead, hive]) {
+      expect(render(html, [group({ highlightText: 'Ваня, Петя',
+        speechOnly: true })]).words).toEqual(['Ваня']);
+    }
+  });
+
+  test('without speechOnly the verb and action are highlighted too', () => {
+    expect(render(say('машет рукой Ване'), [group({
+      highlightText: 'машет, Ване', matchWord: true })]).words)
+      .toEqual(['машет', 'Ване']);
+  });
+});

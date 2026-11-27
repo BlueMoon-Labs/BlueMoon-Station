@@ -4,7 +4,6 @@
  * @license MIT
  */
 
-import { useState } from 'react';
 import { sendMessage } from 'tgui/backend';
 import { Button, Section, Stack } from 'tgui/components';
 import { KitchenSink, useDebug } from 'tgui/debug';
@@ -12,7 +11,7 @@ import { IS_DEVELOPMENT } from 'tgui/env';
 import { Pane } from 'tgui/layouts';
 
 import { NowPlayingWidget, useAudio } from './audio';
-import { ChatHistoryButton, ChatPanel, ChatScrollButton, ChatSearchBar, ChatTabs } from './chat';
+import { ChatHistoryButton, ChatPanel, ChatScrollButton, ChatTabs } from './chat';
 import { EmotePanel, useEmotes } from './emotes';
 import { useGame } from './game';
 import { Notifications } from './Notifications';
@@ -24,7 +23,6 @@ export const Panel = (props) => {
   const audio = useAudio();
   const settings = useSettings();
   const game = useGame();
-  const [searchOpen, setSearchOpen] = useState(false);
   if (IS_DEVELOPMENT) {
     const debug = useDebug();
     if (debug.kitchenSink) {
@@ -44,15 +42,6 @@ export const Panel = (props) => {
                 overflowX="auto"
                 style={{ minWidth: 0 }}>
                 <ChatTabs />
-              </Stack.Item>
-              <Stack.Item shrink={0}>
-                <Button
-                  color="grey"
-                  selected={searchOpen}
-                  icon="search"
-                  tooltip="Поиск"
-                  tooltipPosition="bottom-start"
-                  onClick={() => setSearchOpen(!searchOpen)} />
               </Stack.Item>
               <Stack.Item shrink={0}>
                 <Button
@@ -112,10 +101,6 @@ export const Panel = (props) => {
         )}
         <Stack.Item grow basis={0} minHeight="max(8em, 30%)">
           <Section fill fitted position="relative">
-            {searchOpen && (
-              <ChatSearchBar
-                onClose={() => setSearchOpen(false)} />
-            )}
             <Pane.Content scrollable>
               <ChatPanel lineHeight={settings.lineHeight} />
             </Pane.Content>

@@ -13,8 +13,7 @@ const mockChatRenderer = {
     off: jest.fn(),
     emit: jest.fn(),
   },
-  setHighlight: jest.fn(),
-  setHighlightSound: jest.fn(),
+  setHighlightSettings: jest.fn(),
   setChatClasses: jest.fn(),
   setBgAnimation: jest.fn(),
   setCustomColors: jest.fn(),
@@ -121,8 +120,7 @@ describe('chatMiddleware applySettings diffing', () => {
     store.dispatch(updateSettings({ highlightText: 'foo' }));
     await flushPromises();
 
-    expect(mockChatRenderer.setHighlight).toHaveBeenCalledTimes(1);
-    expect(mockChatRenderer.setHighlightSound).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setHighlightSettings).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setChatClasses).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setBgAnimation).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setCustomColors).toHaveBeenCalledTimes(1);
@@ -136,7 +134,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setTimeDividers).toHaveBeenCalledTimes(1);
   });
 
-  test('typing in highlightText only re-runs setHighlight', async () => {
+  test('typing in a highlight group only re-runs setHighlightSettings', async () => {
     const store = createTestStore();
     // Establish baseline (first dispatch always applies everything)
     store.dispatch(updateSettings({ highlightText: '' }));
@@ -145,14 +143,16 @@ describe('chatMiddleware applySettings diffing', () => {
     clearRendererSpies();
 
     // Simulate three keystrokes
-    store.dispatch(updateSettings({ highlightText: 'a' }));
-    store.dispatch(updateSettings({ highlightText: 'ab' }));
-    store.dispatch(updateSettings({ highlightText: 'abc' }));
+    const [group] = store.getState().settings.highlightSettings;
+    for (const text of ['a', 'ab', 'abc']) {
+      store.dispatch(updateSettings({
+        highlightSettings: [{ ...group, highlightText: text }],
+      }));
+    }
     await flushPromises();
 
-    expect(mockChatRenderer.setHighlight).toHaveBeenCalledTimes(3);
+    expect(mockChatRenderer.setHighlightSettings).toHaveBeenCalledTimes(3);
     // None of the unrelated DOM-touching methods should re-run.
-    expect(mockChatRenderer.setHighlightSound).not.toHaveBeenCalled();
     expect(mockChatRenderer.setChatClasses).not.toHaveBeenCalled();
     expect(mockChatRenderer.setBgAnimation).not.toHaveBeenCalled();
     expect(mockChatRenderer.setCustomColors).not.toHaveBeenCalled();
@@ -166,21 +166,21 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setTimeDividers).not.toHaveBeenCalled();
   });
 
-  test('highlight regex args propagate correctly', async () => {
+  test('highlight groups propagate to the renderer', async () => {
     const store = createTestStore();
-    store.dispatch(updateSettings({
-      highlightText: 'foo',
-      highlightColor: '#ff0000',
-      matchWord: true,
-      matchCase: true,
-    }));
+    const highlightSettings = [
+      { id: 'a', highlightText: 'foo', highlightColor: '#ff0000',
+        matchWord: true, matchCase: true, speechOnly: true, sound: true },
+      { id: 'b', highlightText: 'bar', highlightColor: '#00ff00' },
+    ];
+    store.dispatch(updateSettings({ highlightSettings }));
     await flushPromises();
 
-    expect(mockChatRenderer.setHighlight).toHaveBeenLastCalledWith(
-      'foo', '#ff0000', true, true);
+    expect(mockChatRenderer.setHighlightSettings)
+      .toHaveBeenLastCalledWith(highlightSettings);
   });
 
-  test('changing only color triggers setCustomColors but not setHighlight', async () => {
+  test('changing only color triggers setCustomColors but not setHighlightSettings', async () => {
     const store = createTestStore();
     store.dispatch(updateSettings({ chatBgColor: '#111111' }));
     await flushPromises();
@@ -192,7 +192,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setCustomColors).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setCustomColors).toHaveBeenLastCalledWith(
       '#222222', '', '');
-    expect(mockChatRenderer.setHighlight).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setHighlightSettings).not.toHaveBeenCalled();
     expect(mockChatRenderer.setBgAnimation).not.toHaveBeenCalled();
     expect(mockChatRenderer.setChatClasses).not.toHaveBeenCalled();
   });
@@ -210,7 +210,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setBgAnimation).toHaveBeenLastCalledWith(
       'stars', 0.5);
     expect(mockChatRenderer.setCustomColors).not.toHaveBeenCalled();
-    expect(mockChatRenderer.setHighlight).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setHighlightSettings).not.toHaveBeenCalled();
   });
 
   test('setCustomProperties only pushes the changed CSS property', async () => {
@@ -297,7 +297,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(overrides.emote).toEqual({ color: '#ff0000', disabled: false });
     expect(overrides.whisper).toEqual({});
     expect(spanAnimations).toBe(true);
-    expect(mockChatRenderer.setHighlight).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setHighlightSettings).not.toHaveBeenCalled();
     expect(mockChatRenderer.setCustomProperties).not.toHaveBeenCalled();
   });
 
@@ -395,18 +395,25 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
   });
 
-  test('matchWord toggle re-runs setHighlight', async () => {
+  test('legacy highlight from loadSettings reaches the renderer as a group', async () => {
     const store = createTestStore();
-    store.dispatch(updateSettings({ highlightText: 'foo' }));
+    store.dispatch(updateSettings({ chatBgColor: '#111111' }));
     await flushPromises();
     clearRendererSpies();
 
-    store.dispatch(updateSettings({ matchWord: true }));
+    store.dispatch(loadSettings({
+      version: 7,
+      highlightText: 'foo',
+      matchWord: true,
+      highlightSoundEnabled: true,
+    }));
     await flushPromises();
 
-    expect(mockChatRenderer.setHighlight).toHaveBeenCalledTimes(1);
-    expect(mockChatRenderer.setHighlight).toHaveBeenLastCalledWith(
-      'foo', '#ffdd44', true, false);
+    expect(mockChatRenderer.setHighlightSettings).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setHighlightSettings.mock.calls[0][0]).toEqual([
+      expect.objectContaining({ highlightText: 'foo',
+        highlightColor: '#ffdd44', matchWord: true, sound: true }),
+    ]);
   });
 
   test('loadSettings is also diffed: identical state triggers no calls', async () => {
@@ -420,8 +427,7 @@ describe('chatMiddleware applySettings diffing', () => {
     store.dispatch(loadSettings(baselineSettings));
     await flushPromises();
 
-    expect(mockChatRenderer.setHighlight).not.toHaveBeenCalled();
-    expect(mockChatRenderer.setHighlightSound).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setHighlightSettings).not.toHaveBeenCalled();
     expect(mockChatRenderer.setChatClasses).not.toHaveBeenCalled();
     expect(mockChatRenderer.setBgAnimation).not.toHaveBeenCalled();
     expect(mockChatRenderer.setCustomColors).not.toHaveBeenCalled();
@@ -778,5 +784,19 @@ describe('chatMiddleware clear and limit', () => {
     expect(mockChatRenderer.setVisibleLimit).toHaveBeenCalledTimes(1);
     store.dispatch(updateSettings({ visibleMessageLimit: 500 }));
     expect(mockChatRenderer.setVisibleLimit).toHaveBeenLastCalledWith(500);
+  });
+
+  test('server rejecting the state warns in chat once', () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    const store = createTestStore();
+    const error = { type: 'panel/state_error',
+      payload: { reason: 'too_large', size: 20000 } };
+    store.dispatch(error);
+    store.dispatch(error);
+    expect(mockChatRenderer.processBatch).toHaveBeenCalledTimes(1);
+    const [message] = mockChatRenderer.processBatch.mock.calls[0][0];
+    expect(message.type).toBe('internal/state_error');
+    expect(message.avoidHighlighting).toBe(true);
+    expect(message.html).toContain('не сохранились на сервере');
   });
 });
