@@ -1863,7 +1863,7 @@
 	description = "Нарукавная нашивка одного из превосходящих сил Federal Agencies на территории SolGov. Эта принадлежит Агенту."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/accessory/armband/sfparmband
-	ckeywhitelist = list("pingvas", "ordinarylife", "leony24", "kennedykiller", "theatlasplay", "ninjapikachushka", "devildeadspace", "trustmeimengineer", "izakfromrus", "silyamg")
+	ckeywhitelist = list("pingvas", "ordinarylife", "leony24", "kennedykiller", "theatlasplay", "ninjapikachushka", "devildeadspace", "trustmeimengineer", "izakfromrus", "silyamg", "hartty")
 
 /datum/gear/donator/bm/bongepop_boxers
 	name = "Bongepop Boxers"
@@ -3114,7 +3114,7 @@
 	description = "Брюки из секонд-хенда, которые кто-то перешил, добавил ремни от старого рюкзака и назвал это «стилем». Кто-то явно хотел выглядеть элитным наёмником, а получилось как у охранника торгового центра. Они прикрывают твою задницу. Спасибо."
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/mall_cop_chic
-	ckeywhitelist = list("sawwarrr", "boroven")
+	ckeywhitelist = list("sawwarrr", "boroven", "hartty")
 
 /datum/gear/donator/bm/arsmaid_suit
 	name = "Maid Suit"
