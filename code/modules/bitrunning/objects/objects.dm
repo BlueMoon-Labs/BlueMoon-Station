@@ -760,27 +760,13 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 
 	var/list/rewards = list(
 		/obj/item/storage/belt/utility/full,
-		/obj/item/gun/energy/laser,
-		/obj/item/clothing/suit/armor/vest/alt,
-		/obj/item/clothing/glasses/thermal,
-		/obj/item/disk/bitrunning/item/tier1,
+		/obj/item/storage/firstaid/brute,
+		/obj/item/clothing/glasses/hud/health,
 		/obj/item/disk/bitrunning/ability/tier1,
 		/obj/item/reagent_containers/pill/mannitol,
 		/obj/item/reagent_containers/pill/neurine,
 		/obj/item/reagent_containers/pill/psicodine,
 	)
-	if(difficulty_cache >= BITRUNNER_DIFFICULTY_MEDIUM)
-		rewards += list(
-			/obj/item/gun/energy/e_gun,
-			/obj/item/disk/bitrunning/item/tier2,
-			/obj/item/disk/bitrunning/ability/tier2,
-		)
-	if(difficulty_cache >= BITRUNNER_DIFFICULTY_HIGH)
-		rewards += list(
-			/obj/item/clothing/suit/space/hardsuit/security,
-			/obj/item/disk/bitrunning/item/tier3,
-			/obj/item/disk/bitrunning/ability/tier3,
-		)
 
 	var/reward_count = difficulty_cache >= BITRUNNER_DIFFICULTY_HIGH ? 2 : 1
 	for(var/i in 1 to reward_count)

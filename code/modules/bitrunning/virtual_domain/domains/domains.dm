@@ -765,8 +765,7 @@
 		/obj/item/toy/beach_ball = 2,
 		/obj/item/clothing/shoes/sandal = 1,
 		/obj/item/clothing/glasses/sunglasses = 1,
-		/obj/item/gun/energy/laser/chameleon = 1,
-		/obj/item/disk/bitrunning/item/mini_uzi = 1,
+		/obj/item/stack/spacecash/c500 = 2,
 	)
 
 /datum/lazy_template/virtual_domain/island_brawl/setup_domain(list/created_atoms)
@@ -1009,10 +1008,10 @@
 	cost = BITRUNNER_COST_HIGH
 	desc = "Воссоздайте события давно минувшей «горячей» части Пограничной войны в роли ударной группы Солариан, зачищающей базы CIN; при поддержке энтузиастов-реконструкторов SolFed. Многопользовательское прохождение и тщательная подготовка настоятельно рекомендуются."
 	completion_loot = list(
-		/obj/item/stack/spacecash/c500 = 4,
-		/obj/item/storage/firstaid/regular = 2,
-		/obj/item/clothing/suit/armor/vest = 2,
-		/obj/item/gun/ballistic/automatic/pistol = 2,
+		/obj/item/stack/spacecash/c500 = 2,
+		/obj/item/storage/firstaid/regular = 1,
+		/obj/item/clothing/suit/armor/vest = 1,
+		/obj/item/gun/ballistic/automatic/pistol = 1,
 	)
 	difficulty = BITRUNNER_DIFFICULTY_HIGH
 	help_text = "Последняя часть домена может оказаться весьма PvP-ориентированной. Лучше не ходить одному и пронести с собой диски способностей и снаряжения."
@@ -1026,10 +1025,10 @@
 		/obj/item/stack/spacecash/c500 = 3,
 		/obj/item/disk/bitrunning/item/ancient_milsim = 3,
 		/obj/item/choice_beacon/ancient_milsim = 2,
-		/obj/item/gun/ballistic/automatic/pistol = 2,
+		/obj/item/gun/ballistic/automatic/pistol = 1,
 		/obj/item/storage/firstaid/regular = 2,
-		/obj/item/grenade/empgrenade = 2,
-		/obj/item/clothing/suit/armor/vest = 2,
+		/obj/item/grenade/empgrenade = 1,
+		/obj/item/clothing/suit/armor/vest = 1,
 	)
 
 /datum/outfit/solfed_bitrun
@@ -1239,15 +1238,15 @@
 	switch(domain.key)
 		if("abductor_ship")
 			return list(
-				/obj/item/gun/energy/alien = 1,
-				/obj/item/abductor/baton = 1,
-				/obj/item/stack/spacecash/c1000 = 1,
+				/obj/item/stack/spacecash/c500 = 2,
+				/obj/item/reagent_containers/hypospray/medipen = 1,
+				/obj/item/stack/sheet/mineral/plasma = 5,
 			)
 		if("ash_drake")
 			return list(
-				/obj/item/clothing/suit/hooded/cloak/drake = 1,
 				/obj/item/stack/sheet/animalhide/ashdrake = 2,
 				/obj/item/toy/plush/drake = 1,
+				/obj/item/stack/sheet/bone = 5,
 			)
 		if("beach_bar")
 			return list(
@@ -1257,9 +1256,9 @@
 			)
 		if("blood_drunk_miner")
 			return list(
-				/obj/item/gun/energy/kinetic_accelerator = 1,
-				/obj/item/kinetic_crusher = 1,
+				/obj/item/reagent_containers/hypospray/medipen/survival = 1,
 				/obj/item/stack/sheet/animalhide/goliath_hide = 2,
+				/obj/item/stack/sheet/bone = 5,
 			)
 		if("breeze_bay")
 			return list(
@@ -1271,18 +1270,18 @@
 			return list(
 				/obj/item/toy/plush/bubbleplush = 1,
 				/obj/item/stack/sheet/bone = 5,
-				/obj/item/stack/spacecash/c1000 = 1,
+				/obj/item/stack/spacecash/c500 = 2,
 			)
 		if("clown_planet")
 			return list(
 				/obj/item/clothing/shoes/clown_shoes/banana_shoes = 1,
 				/obj/item/bikehorn = 1,
-				/obj/item/gun/magic/staff/honk = 1,
+				/obj/item/grown/bananapeel/bluespace = 1,
 			)
 		if("colossus")
 			return list(
-				/obj/item/stack/sheet/mineral/diamond = 10,
-				/obj/item/stack/sheet/mineral/plasma = 10,
+				/obj/item/stack/sheet/mineral/diamond = 5,
+				/obj/item/stack/sheet/mineral/plasma = 5,
 				/obj/item/stack/sheet/bone = 5,
 			)
 		if("fredingtonfastingbear")
@@ -1299,33 +1298,33 @@
 			)
 		if("grasslands_hunt")
 			return list(
-				/obj/item/gun/ballistic/rifle/boltaction = 1,
-				/obj/item/ammo_box/a762 = 3,
-				/obj/item/kitchen/knife/combat = 1,
+				/obj/item/kitchen/knife = 1,
+				/obj/item/stack/sheet/animalhide/generic = 2,
+				/obj/item/reagent_containers/food/snacks/meat/slab = 2,
 			)
 		if("heretic_hunt")
 			return list(
-				/obj/item/melee/sickly_blade = 1,
-				/obj/item/clothing/suit/hooded/cultrobes/eldritch = 1,
-				/obj/item/clothing/neck/eldritch_amulet = 1,
+				/obj/item/clothing/head/hooded/cult_hoodie/eldritch = 1,
+				/obj/item/reagent_containers/hypospray/medipen = 1,
+				/obj/item/stack/spacecash/c500 = 2,
 			)
 		if("hierophant")
 			return list(
-				/obj/item/hierophant_club = 1,
-				/obj/item/stack/sheet/mineral/plasma = 10,
-				/obj/item/stack/sheet/mineral/diamond = 10,
+				/obj/item/stack/sheet/mineral/plasma = 5,
+				/obj/item/stack/sheet/mineral/diamond = 5,
+				/obj/item/stack/sheet/bone = 5,
 			)
 		if("island_brawl")
 			return list(
 				/obj/item/toy/beach_ball = 1,
 				/obj/item/clothing/glasses/sunglasses = 1,
-				/obj/item/gun/energy/laser/chameleon = 1,
+				/obj/item/stack/spacecash/c500 = 2,
 			)
 		if("meta_central")
 			return list(
-				/obj/item/clothing/suit/armor/vest/alt = 1,
-				/obj/item/melee/baton/loaded = 1,
-				/obj/item/storage/box/sec_kit = 1,
+				/obj/item/clothing/glasses/hud/security/sunglasses = 1,
+				/obj/item/storage/firstaid/regular = 1,
+				/obj/item/stack/spacecash/c500 = 2,
 			)
 		if("pipedream")
 			return list(
@@ -1336,10 +1335,9 @@
 			)
 		if("pirates")
 			return list(
-				/obj/item/melee/sabre = 1,
 				/obj/item/clothing/head/pirate = 1,
 				/obj/item/clothing/suit/pirate = 1,
-				/obj/item/stack/spacecash/c1000 = 2,
+				/obj/item/stack/spacecash/c1000 = 1,
 			)
 		if("psyker_shuffle")
 			return list(
@@ -1349,17 +1347,15 @@
 			)
 		if("psyker_zombies")
 			return list(
-				/obj/item/clothing/suit/space/hardsuit/security/hos = 1,
-				/obj/item/gun/energy/laser = 1,
 				/obj/item/stock_parts/cell/high = 2,
 				/obj/item/storage/firstaid/brute = 1,
+				/obj/item/stack/spacecash/c500 = 2,
 			)
 		if("ancient_milsim")
 			return list(
-				/obj/item/gun/ballistic/automatic/pistol = 2,
-				/obj/item/ammo_box/magazine/m10mm = 3,
-				/obj/item/clothing/suit/armor/vest = 1,
+				/obj/item/storage/firstaid/regular = 1,
 				/obj/item/stack/spacecash/c500 = 2,
+				/obj/item/toy/plush/nukeplushie = 1,
 			)
 		if("stairs_and_cliffs")
 			return list(
@@ -1370,16 +1366,15 @@
 			)
 		if("syndicate_assault")
 			return list(
-				/obj/item/gun/ballistic/automatic/c20r/unrestricted = 1,
-				/obj/item/ammo_box/magazine/smgm45 = 2,
-				/obj/item/clothing/suit/armor/vest = 1,
 				/obj/item/toy/plush/nukeplushie = 1,
+				/obj/item/storage/firstaid/regular = 1,
+				/obj/item/stack/spacecash/c1000 = 1,
 			)
 		if("vaporwave")
 			return list(
 				/obj/item/toy/plush/lizardplushie = 1,
 				/obj/item/clothing/suit/jacket/leather_trenchcoat = 1,
-				/obj/item/stack/spacecash/c1000 = 2,
+				/obj/item/stack/spacecash/c1000 = 1,
 				/obj/item/clothing/glasses/sunglasses = 1,
 			)
 		if("wendigo")
@@ -1392,7 +1387,7 @@
 			return list(
 				/obj/item/stack/sheet/animalhide/xeno = 2,
 				/obj/item/reagent_containers/food/snacks/meat/slab/xeno = 2,
-				/obj/item/gun/energy/laser = 1,
-				/obj/item/clothing/suit/space/hardsuit/security = 1,
+				/obj/item/storage/firstaid/brute = 1,
+				/obj/item/stack/spacecash/c500 = 2,
 			)
 	return list()
