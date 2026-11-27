@@ -74,6 +74,7 @@ GLOBAL_LIST(round_end_notifiees)
 	GLOB.round_end_notifiees[sender.mention] = TRUE
 	return new /datum/tgs_message_content("I will notify [sender.mention] when the round ends.")
 
+#ifdef ENABLE_SDQL2
 /datum/tgs_chat_command/sdql
 	name = "sdql"
 	help_text = "Runs an SDQL query"
@@ -99,6 +100,7 @@ GLOBAL_LIST(round_end_notifiees)
 				L += "[ref]"
 		refs = L
 	. = new /datum/tgs_message_content("[text_res.Join("\n")][refs ? "\nRefs: [refs.Join(" ")]" : ""]")
+#endif
 
 /datum/tgs_chat_command/reload_admins
 	name = "reload_admins"

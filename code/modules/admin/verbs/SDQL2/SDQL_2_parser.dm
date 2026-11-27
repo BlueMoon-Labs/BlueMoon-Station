@@ -3,6 +3,8 @@
 
 //Spec
 
+#ifdef ENABLE_SDQL2
+
 //////////
 //
 //	query				:	select_query | delete_query | update_query | call_query | explain
@@ -632,3 +634,5 @@
 		i = variable(i, node)
 
 	return i
+
+#endif

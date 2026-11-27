@@ -47,7 +47,9 @@
 #define STATPANEL_CHANNEL_VOTING "voting"
 #define STATPANEL_CHANNEL_SPELLS "spells"
 #define STATPANEL_CHANNEL_TICKETS "tickets"
+#ifdef ENABLE_SDQL2
 #define STATPANEL_CHANNEL_SDQL2 "sdql2"
+#endif
 #define STATPANEL_CHANNEL_READYPLAYERS "readyplayers"
 /// Ready players payload is rebuilt at most this often (deciseconds).
 #define STATPANEL_READYPLAYERS_CACHE_DELAY 15
@@ -385,6 +387,7 @@ SUBSYSTEM_DEF(statpanels)
 				if(target.statpanel_last_sent[STATPANEL_CHANNEL_TICKETS] != cached_tickets_encoded)
 					target << output("[cached_tickets_encoded];", "statbrowser:update_tickets")
 					target.statpanel_last_sent[STATPANEL_CHANNEL_TICKETS] = cached_tickets_encoded
+#ifdef ENABLE_SDQL2
 			if(!length(GLOB.sdql2_queries) && ("SDQL2" in target.panel_tabs))
 				target << output("", "statbrowser:remove_sdql2")
 				target.statpanel_last_sent -= STATPANEL_CHANNEL_SDQL2
@@ -400,6 +403,7 @@ SUBSYSTEM_DEF(statpanels)
 				if(target.statpanel_last_sent[STATPANEL_CHANNEL_SDQL2] != raw_sdql)
 					target << output(url_encode(raw_sdql), "statbrowser:update_sdql2")
 					target.statpanel_last_sent[STATPANEL_CHANNEL_SDQL2] = raw_sdql
+#endif
 
 		if(target.mob)
 			if(istype(target.mob, /mob/dead/new_player) && !SSticker.HasRoundStarted())
@@ -1322,6 +1326,8 @@ SUBSYSTEM_DEF(statpanels)
 #undef STATPANEL_CHANNEL_VOTING
 #undef STATPANEL_CHANNEL_SPELLS
 #undef STATPANEL_CHANNEL_TICKETS
+#ifdef ENABLE_SDQL2
 #undef STATPANEL_CHANNEL_SDQL2
+#endif
 #undef STATPANEL_CHANNEL_READYPLAYERS
 #undef STATPANEL_READYPLAYERS_CACHE_DELAY

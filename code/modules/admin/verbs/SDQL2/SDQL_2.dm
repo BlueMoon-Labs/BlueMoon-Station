@@ -1,3 +1,5 @@
+#ifdef ENABLE_SDQL2
+
 #define SDQL_qdel_datum(d) qdel(d)
 
 //SDQL2 datumized, /tg/station special!
@@ -1219,3 +1221,5 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 		log_game("[key_name(usr)] non-holder clicked on a statclick! ([src])")
 		return
 	usr.client.debug_variables(GLOB.sdql2_queries)
+
+#endif
