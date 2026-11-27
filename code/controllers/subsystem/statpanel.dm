@@ -1284,6 +1284,7 @@ SUBSYSTEM_DEF(statpanels)
 	init_verbs()
 	// Re-apply theme and favorites after byondStorage is guaranteed available
 	src << output("1", "statbrowser:reapply_storage")
+	tgui_panel?.emotes_send_sync_state()
 	// Send current ping immediately so the ping bar appears without waiting for stagger cycle
 	var/ping_str = "%5B[round(lastping, 1)]%2C[round(avgping, 1)]%2C[round(avgping_jitter, 1)]%5D"
 	var/list/tidi = list(

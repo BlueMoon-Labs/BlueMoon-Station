@@ -116,6 +116,17 @@ function addGridRow(parent, themeState, opts) {
 	};
 }
 
+function update_emote_sync(payload) {
+	var sync = safeParse(payload);
+	if (!sync) return;
+	State.emoteSync = sync;
+	var checkbox = document.getElementById("settings-emote-sync");
+	if (checkbox) {
+		checkbox.checked = !!sync.enabled;
+		checkbox.disabled = false;
+	}
+}
+
 function draw_settings() {
 	finishEmoteDrag();
 	_settingsActive = true;
@@ -465,6 +476,21 @@ function draw_settings() {
 
 	var emoteSection = el("div", "settings-section");
 	emoteSection.appendChild(el("div", "settings-section-title", "Эмоции"));
+	var emoteSyncRow = el("label", "settings-row");
+	var emoteSyncCheckbox = el("input", "settings-checkbox");
+	emoteSyncCheckbox.id = "settings-emote-sync";
+	emoteSyncCheckbox.type = "checkbox";
+	emoteSyncCheckbox.checked = !!(State.emoteSync && State.emoteSync.enabled);
+	emoteSyncCheckbox.disabled = !State.emoteSync;
+	emoteSyncCheckbox.onchange = function() {
+		var sync = State.emoteSync;
+		var enabled = emoteSyncCheckbox.checked;
+		emoteSyncCheckbox.checked = !!sync.enabled;
+		byond_bridge_call("", { statpanel_emotes: "emotes/setSync", slot: sync.slot, enabled: enabled ? "1" : "0" });
+	};
+	emoteSyncRow.appendChild(el("span", "settings-label", "Синхронизировать эмоции со звёздочкой"));
+	emoteSyncRow.appendChild(emoteSyncCheckbox);
+	emoteSection.appendChild(emoteSyncRow);
 	var emoteSortRow = el("label", "settings-row");
 	var emoteSortCheckbox = el("input", "settings-checkbox");
 	emoteSortCheckbox.type = "checkbox";

@@ -1857,10 +1857,14 @@ GLOBAL_VAR(player_save_migration_timer)
 	job_preferences = SANITIZE_LIST(job_preferences)
 	READ_PLAYER_SAVE(S, document, "pda_theme", pda_theme)
 
-	// Панель эмоций
+	// Избранные эмоции
 	READ_PLAYER_SAVE(S, document, "custom_emote_panel", custom_emote_panel)
 	READ_PLAYER_SAVE(S, document, "custom_emote_groups", custom_emote_groups)
 	READ_PLAYER_SAVE(S, document, "custom_emote_chat_order", custom_emote_chat_order)
+	custom_emote_chat_panel = null
+	custom_emote_sync = FALSE
+	READ_PLAYER_SAVE(S, document, "custom_emote_chat_panel", custom_emote_chat_panel)
+	READ_PLAYER_SAVE(S, document, "custom_emote_sync", custom_emote_sync)
 
 	//Quirks
 	READ_PLAYER_SAVE(S, document, "all_quirks", all_quirks)
@@ -2393,7 +2397,14 @@ GLOBAL_VAR(player_save_migration_timer)
 	// Очищаем старые названия эмоций, чтобы их снова можно было переименовать и удалить.
 	custom_emote_panel = sanitize_custom_emote_panel(custom_emote_panel)
 	custom_emote_groups = sanitize_custom_emote_groups(custom_emote_groups)
-	custom_emote_chat_order = sanitize_custom_emote_chat_order(custom_emote_chat_order, custom_emote_panel)
+	if(isnull(custom_emote_chat_panel))
+		// В старых сохранениях обе панели использовали один список.
+		custom_emote_chat_panel = list()
+		copy_missing_custom_emotes(custom_emote_chat_panel, custom_emote_panel)
+	else
+		custom_emote_chat_panel = sanitize_custom_emote_panel(custom_emote_chat_panel)
+	custom_emote_chat_order = sanitize_custom_emote_chat_order(custom_emote_chat_order, custom_emote_chat_panel)
+	custom_emote_sync = sanitize_integer(custom_emote_sync, FALSE, TRUE, FALSE)
 	for(var/emote_name in custom_emote_panel)
 		var/list/entry = custom_emote_panel[emote_name]
 		if(islist(entry) && (entry["group"] == EMOTE_PANEL_UNGROUPED_COLOR_KEY || !(entry["group"] in custom_emote_groups)))
@@ -2885,10 +2896,12 @@ GLOBAL_VAR(player_save_migration_timer)
 	WRITE_PLAYER_SAVE(S, document, "job_preferences" , job_preferences)
 	WRITE_PLAYER_SAVE(S, document, "hide_ckey"		, hide_ckey)
 
-	// Панель эмоций
+	// Избранные эмоции
 	WRITE_PLAYER_SAVE(S, document, "custom_emote_panel"	, custom_emote_panel)
 	WRITE_PLAYER_SAVE(S, document, "custom_emote_groups"	, custom_emote_groups)
 	WRITE_PLAYER_SAVE(S, document, "custom_emote_chat_order"	, custom_emote_chat_order)
+	WRITE_PLAYER_SAVE(S, document, "custom_emote_chat_panel", custom_emote_chat_panel)
+	WRITE_PLAYER_SAVE(S, document, "custom_emote_sync", custom_emote_sync)
 
 	//Quirks
 	WRITE_PLAYER_SAVE(S, document, "all_quirks"			, all_quirks)

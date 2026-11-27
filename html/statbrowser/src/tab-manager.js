@@ -2,7 +2,7 @@ function getTabOrder(name) {
 	if (name === "Status") return 1;
 	if (name === "MC") return 2;
 	if (name === "Избранное") return 3;
-	if (name === STATPANEL_EMOTES_TAB) return 4;
+	if (name === STATPANEL_EMOTES_TAB) name = "Say";
 	return 100 + name.charCodeAt(0);
 }
 
@@ -36,6 +36,11 @@ function createStatusTab(name) {
 		tabBar.insertBefore(btn, spacerEl);
 	} else {
 		tabBar.appendChild(btn);
+	}
+	if (display === "Say" || display === STATPANEL_EMOTES_TAB) {
+		var sayTab = document.getElementById("tab-Say");
+		var emotesTab = document.getElementById("tab-" + STATPANEL_EMOTES_TAB);
+		if (sayTab && emotesTab) sayTab.after(emotesTab);
 	}
 	SendTabToByond(display);
 	spacer.style.height = tabBar.offsetHeight + "px";
@@ -110,15 +115,6 @@ function tab_change(tab) {
 
 function set_byond_tab(tab) {
 	send_byond_command("Set-Tab " + tab);
-}
-
-function open_emote_tab() {
-	if (State.currentTab === STATPANEL_EMOTES_TAB && _settingsActive) {
-		_settingsActive = false;
-		renderCurrentTab();
-		return;
-	}
-	tab_change(STATPANEL_EMOTES_TAB);
 }
 
 function SendTabsToByond() {

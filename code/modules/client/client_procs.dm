@@ -240,15 +240,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 	last_activity = world.time
 
-	if(href_list["open_statpanel_emotes"])
-		if(statbrowser_ready)
-			src << output("", "statbrowser:open_emote_tab")
-		return
-
 	var/emote_action = href_list["statpanel_emotes"]
 	if(emote_action)
-		if(statbrowser_ready && prefs && (emote_action == "emotes/resetOrder" || (stat_tab == STATPANEL_EMOTES_TAB && text2num(href_list["slot"]) == prefs.default_slot)))
-			tgui_panel?.emotes_handle_stat_action(href_list)
+		if(statbrowser_ready && prefs)
+			if(emote_action == "emotes/resetOrder" || (text2num(href_list["slot"]) == prefs.default_slot && (stat_tab == STATPANEL_EMOTES_TAB || emote_action == "emotes/setSync")))
+				tgui_panel?.emotes_handle_stat_action(href_list)
 		return
 
 	//byond bug ID:2256651
@@ -2005,6 +2001,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	// Fallback for clients where Panel-Ready bridge callback is delayed/missing.
 	statbrowser_ready = TRUE
 	init_verbs()
+	tgui_panel?.emotes_send_sync_state()
 	if(mob?.listed_turf)
 		open_listed_turf(mob.listed_turf)
 

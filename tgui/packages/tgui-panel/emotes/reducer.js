@@ -1,6 +1,6 @@
 const initialState = {
-  enabled: false,
   visible: false,
+  syncEnabled: false,
   list: {},
   order: [],
   slot: null,
@@ -18,8 +18,7 @@ export const emotesReducer = (state = initialState, action) => {
   if (type === 'emotes/setList') {
     return {
       ...state,
-      enabled: !!payload.enabled,
-      visible: !!payload.enabled && state.visible,
+      syncEnabled: !!payload.syncEnabled,
       list: payload.list,
       order: payload.order,
       slot: payload.slot,

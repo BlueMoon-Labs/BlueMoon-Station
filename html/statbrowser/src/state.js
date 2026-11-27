@@ -44,6 +44,7 @@ var State = {
 	// Favorites
 	favorites: {},
 	emotePanel: null,
+	emoteSync: null,
 	// Images
 	storedImages: {},
 	imageRetryDelay: 500,
