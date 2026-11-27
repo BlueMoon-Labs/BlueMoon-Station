@@ -42,7 +42,7 @@ GLOBAL_LIST_EMPTY(typing_indicator_overlays)
 		state_override = generate_typing_indicator()
 	if(isMe)
 		var/state_of_bubble = "emotetyping"
-		var/mutable_appearance/bubble_overlay = mutable_appearance('icons/mob/talk.dmi', state_of_bubble, plane = RUNECHAT_PLANE)
+		var/mutable_appearance/bubble_overlay = mutable_appearance(SPEECH_BUBBLE_ICON, state_of_bubble, plane = RUNECHAT_PLANE)
 		SET_PLANE_EXPLICIT(bubble_overlay, RUNECHAT_PLANE, src)
 		typing_indicator_current = bubble_overlay
 		bubble_overlay.appearance_flags = RESET_COLOR | RESET_TRANSFORM | TILE_BOUND | PIXEL_SCALE
@@ -67,7 +67,7 @@ GLOBAL_LIST_EMPTY(typing_indicator_overlays)
 /// Default typing indicator
 /obj/effect/overlay/typing_indicator
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	icon = 'icons/mob/talk.dmi'
+	icon = SPEECH_BUBBLE_ICON
 	icon_state = "normal_typing"
 	appearance_flags = RESET_COLOR | TILE_BOUND | PIXEL_SCALE
 	layer = ABOVE_FLY_LAYER
@@ -76,7 +76,7 @@ GLOBAL_LIST_EMPTY(typing_indicator_overlays)
 	icon_state = "machine_typing"
 
 /obj/effect/overlay/typing_indicator/machine/dogborg
-	icon = 'icons/mob/talk_64x64.dmi'
+	icon = SPEECH_BUBBLE_ICON_64X64
 
 /obj/effect/overlay/typing_indicator/slime
 	icon_state = "slime_typing"

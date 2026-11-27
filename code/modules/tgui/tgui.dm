@@ -39,6 +39,8 @@
 	var/needs_update = FALSE
 	/// md5 последнего частичного обновления: такое же повторно клиенту не шлём.
 	var/last_update_digest
+	// Полное обновление после первого ответа окна, если исходные данные успели устареть.
+	var/update_on_ready = FALSE
 	/// Rate limit client refreshes to prevent DoS.
 	COOLDOWN_DECLARE(refresh_cooldown)
 	/// The Parent UI
@@ -502,14 +504,14 @@
 			SStgui.update_uis(src_object)
 		return FALSE
 	switch(type)
-		if("ready")
-			last_update_digest = null
-			// Send a full update when the user manually refreshes the UI
-			if(initialized)
+		if("ready", "pingReply")
+			if(type == "ready")
+				last_update_digest = null
+			var/refresh = update_on_ready || (type == "ready" && initialized)
+			initialized = TRUE
+			update_on_ready = FALSE
+			if(refresh)
 				send_full_update()
-			initialized = TRUE
-		if("pingReply")
-			initialized = TRUE
 		if("suspend")
 			close(can_be_suspended = TRUE)
 		if("close")

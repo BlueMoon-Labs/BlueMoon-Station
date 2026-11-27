@@ -194,11 +194,10 @@
 	if(!spawn_items)
 		return
 	var/mob/living/carbon/human/H = quirk_holder
-	var/obj/item/storage/photo_album/photo_album = new(get_turf(H))
+	var/obj/item/storage/photo_album/personal/photo_album = new(get_turf(H))
+	photo_album.load_for_account(H.mind?.key || H.key)
 	H.put_in_hands(photo_album)
 	H.equip_to_slot(photo_album, ITEM_SLOT_BACKPACK)
-	photo_album.persistence_id = "personal_[H.mind.key]" // this is a persistent album, the ID is tied to the account's key to avoid tampering
-	photo_album.persistence_load()
 	photo_album.name = "[H.real_name] Photo Album"
 	var/obj/item/camera/camera = new(get_turf(H))
 	camera.name = "[H.real_name] Camera"

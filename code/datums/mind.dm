@@ -105,6 +105,11 @@
 
 	///Weakref to the character we spawned in as- either at roundstart or latejoin, so we know for persistent scars if we ended as the same person or not
 	var/datum/weakref/original_character
+	var/syndimatic_profile_id
+	var/syndimatic_owner_ckey
+	var/syndimatic_character_name
+	var/syndimatic_first_portrait
+	var/syndimatic_notifications = FALSE
 
 	/// A lazy list of statuses to add next to this mind in the traitor panel
 	var/list/special_statuses
@@ -133,6 +138,7 @@
 	var/silicon_flavor_text
 	var/list/headshot_links = list()
 	var/list/headshot_naked_links = list()
+	var/syndimatic_owner_account
 
 /datum/mind/New(key)
 	skill_holder = new(src)
@@ -142,6 +148,7 @@
 
 /datum/mind/Destroy()
 	SSticker.minds -= src
+	SSpersistence?.syndimatic_subscribers?.Remove(weak_reference)
 	QDEL_NULL(tgui_panel)
 	// Снятие последней роли обнуляет antag_datums внутри Destroy антагониста.
 	for(var/datum/antagonist/antagonist as anything in antag_datums?.Copy())

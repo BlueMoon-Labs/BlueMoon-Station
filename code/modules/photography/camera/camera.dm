@@ -1,10 +1,13 @@
 
 #define CAMERA_PICTURE_SIZE_HARD_LIMIT 21
+#define CAMERA_EDITOR_ASK "ask"
+#define CAMERA_EDITOR_OPEN "open"
+#define CAMERA_EDITOR_SKIP "skip"
 
 /obj/item/camera
 	name = "camera"
+	desc = "Фотоаппарат мгновенной печати."
 	icon = 'icons/obj/items_and_weapons.dmi'
-	desc = "A polaroid camera."
 	icon_state = "camera"
 	item_state = "camera"
 	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
@@ -19,44 +22,112 @@
 	var/flash_enabled = TRUE
 	var/state_on = "camera"
 	var/state_off = "camera_off"
-	var/pictures_max = 10
-	var/pictures_left = 10
+	var/pictures_max = 30
+	var/pictures_left = -1 // -1 = pictures_max
 	var/on = TRUE
-	var/cooldown = 64
+	var/cooldown = 6 SECONDS
 	var/blending = FALSE		//lets not take pictures while the previous is still processing!
 	var/see_ghosts = CAMERA_NO_GHOSTS //for the spoop of it
 	var/obj/item/disk/holodisk/disk
 	var/sound/custom_sound
 	var/silent = FALSE
-	var/picture_size_x = 2
-	var/picture_size_y = 2
+	var/picture_size_x = 4
+	var/picture_size_y = 4
 	var/picture_size_x_min = 1
 	var/picture_size_y_min = 1
 	var/picture_size_x_max = 4
 	var/picture_size_y_max = 4
 	var/can_customise = TRUE
 	var/default_picture_name
+	var/editor_mode = CAMERA_EDITOR_ASK
 
-/obj/item/camera/attack_self(mob/user)
-	if(!disk)
-		return
-	to_chat(user, "<span class='notice'>You eject [disk] out the back of [src].</span>")
-	user.put_in_hands(disk)
-	disk = null
+/obj/item/camera/Initialize(mapload)
+	. = ..()
+	if(pictures_left < 0)
+		pictures_left = pictures_max
 
 /obj/item/camera/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Alt-click to change its focusing, allowing you to set how big of an area it will capture.</span>"
+	if(initial(flash_enabled))
+		. += span_notice("Вспышка [flash_enabled ? "включена" : "выключена"]. Alt+ЛКМ переключает вспышку. При выключенной вспышке на снимке сохраняется освещение сцены.")
+	. += "Осталось кадров: [pictures_left]."
 
 /obj/item/camera/AltClick(mob/user)
 	. = ..()
-	if(!user.canUseTopic(src, BE_CLOSE, check_resting = FALSE))
+	if(!initial(flash_enabled) || !user.canUseTopic(src, BE_CLOSE, check_resting = FALSE))
 		return
-	var/desired_x = input(user, "How high do you want the camera to shoot, between [picture_size_x_min] and [picture_size_x_max]?", "Zoom", picture_size_x) as num
-	var/desired_y = input(user, "How wide do you want the camera to shoot, between [picture_size_y_min] and [picture_size_y_max]?", "Zoom", picture_size_y) as num
-	picture_size_x = min(clamp(desired_x, picture_size_x_min, picture_size_x_max), CAMERA_PICTURE_SIZE_HARD_LIMIT)
-	picture_size_y = min(clamp(desired_y, picture_size_y_min, picture_size_y_max), CAMERA_PICTURE_SIZE_HARD_LIMIT)
+	flash_enabled = !flash_enabled
+	to_chat(user, span_notice("Вспышка [flash_enabled ? "включена" : "выключена"]."))
+	SStgui.update_uis(src)
 	return TRUE
+
+/obj/item/camera/attack_self(mob/user)
+	ui_interact(user)
+
+/obj/item/camera/ui_state(mob/user)
+	return GLOB.hands_state
+
+/obj/item/camera/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "PhotoCamera", "Настройки камеры")
+		ui.set_autoupdate(FALSE)
+		if(!ui.open())
+			qdel(ui)
+
+/obj/item/camera/ui_static_data(mob/user)
+	return list(
+		"canFlash" = initial(flash_enabled),
+		"minWidth" = picture_size_x_min * 2 - 1,
+		"maxWidth" = min(picture_size_x_max, CAMERA_PICTURE_SIZE_HARD_LIMIT) * 2 - 1,
+		"minHeight" = picture_size_y_min * 2 - 1,
+		"maxHeight" = min(picture_size_y_max, CAMERA_PICTURE_SIZE_HARD_LIMIT) * 2 - 1,
+	)
+
+/obj/item/camera/ui_data(mob/user)
+	return list(
+		"width" = picture_size_x * 2 - 1,
+		"height" = picture_size_y * 2 - 1,
+		"flashEnabled" = flash_enabled,
+		"editorMode" = can_customise ? editor_mode : null,
+		"hasDisk" = !QDELETED(disk),
+	)
+
+/obj/item/camera/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	if(..())
+		return FALSE
+	switch(action)
+		if("set_width", "set_height")
+			var/size = params["size"]
+			if(!isnum(size))
+				return FALSE
+			// Кадр включает центральный тайл и одинаковый отступ с каждой стороны.
+			var/setting = round(size / 2) + 1
+			if(action == "set_width")
+				picture_size_x = clamp(setting, picture_size_x_min, min(picture_size_x_max, CAMERA_PICTURE_SIZE_HARD_LIMIT))
+			else
+				picture_size_y = clamp(setting, picture_size_y_min, min(picture_size_y_max, CAMERA_PICTURE_SIZE_HARD_LIMIT))
+			return TRUE
+		if("toggle_flash")
+			if(!initial(flash_enabled))
+				return FALSE
+			flash_enabled = !flash_enabled
+			return TRUE
+		if("set_editor_mode")
+			var/mode = params["mode"]
+			if(!can_customise || !(mode in list(CAMERA_EDITOR_ASK, CAMERA_EDITOR_OPEN, CAMERA_EDITOR_SKIP)))
+				return FALSE
+			editor_mode = mode
+			return TRUE
+		if("eject_disk")
+			if(QDELETED(disk))
+				return FALSE
+			var/obj/item/disk/holodisk/ejected_disk = disk
+			disk = null
+			to_chat(ui.user, span_notice("Вы извлекаете [ejected_disk] из камеры."))
+			ui.user.put_in_hands(ejected_disk)
+			return TRUE
+	return FALSE
 
 /obj/item/camera/attack(mob/living/carbon/human/M, mob/user)
 	return
@@ -64,46 +135,48 @@
 /obj/item/camera/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/camera_film))
 		if(pictures_left)
-			to_chat(user, "<span class='notice'>[src] still has some film in it!</span>")
+			to_chat(user, span_notice("В камере ещё осталась плёнка!"))
 			return
 		if(!user.temporarilyRemoveItemFromInventory(I))
 			return
-		to_chat(user, "<span class='notice'>You insert [I] into [src].</span>")
+		to_chat(user, span_notice("Вы вставляете кассету с плёнкой в камеру."))
 		qdel(I)
 		pictures_left = pictures_max
 		return
 	if(istype(I, /obj/item/disk/holodisk))
 		if (!disk)
 			if(!user.transferItemToLoc(I, src))
-				to_chat(user, "<span class='warning'>[I] is stuck to your hand!</span>")
+				to_chat(user, span_warning("[I] прилип к вашей руке!"))
 				return TRUE
-			to_chat(user, "<span class='notice'>You slide [I] into the back of [src].</span>")
+			to_chat(user, span_notice("Вы вставляете голодиск в разъём на задней стороне камеры."))
 			disk = I
+			SStgui.update_uis(src)
 		else
-			to_chat(user, "<span class='warning'>There's already a disk inside [src].</span>")
+			to_chat(user, span_warning("В камере уже есть голодиск."))
 		return TRUE //no afterattack
 	..()
-
-/obj/item/camera/examine(mob/user)
-	. = ..()
-	. += "It has [pictures_left] photos left."
 
 //user can be atom or mob
 /obj/item/camera/proc/can_target(atom/target, mob/user, prox_flag)
 	if(!on || blending || !pictures_left)
 		return FALSE
-	var/turf/T = get_turf(target)
-	if(!T)
+	return camera_can_target(get_turf(target), user, flash_enabled)
+
+/proc/camera_can_target(turf/T, mob/user, flash_enabled)
+	if(!T || (isAI(user) && !GLOB.cameranet.checkTurfVis(T)))
 		return FALSE
+	if(flash_enabled)
+		var/turf/view_center = get_turf(user)
+		if(istype(user) && user.client && user.client.view != world.view && !(T in dview(user.client.view, view_center)))
+			return FALSE
+		return T in dview(world.view, view_center)
 	if(istype(user))
-		if(isAI(user) && !GLOB.cameranet.checkTurfVis(T))
+		if(user.client && !(T in get_hear(user.client.view, user)))
 			return FALSE
-		else if(user.client && !(get_turf(target) in get_hear(user.client.view, user)))
-			return FALSE
-		else if(!(get_turf(target) in get_hear(world.view, user)))
+		else if(!(T in get_hear(world.view, user)))
 			return FALSE
 	else					//user is an atom
-		if(!(get_turf(target) in view(world.view, user)))
+		if(!(T in view(world.view, user)))
 			return FALSE
 	return TRUE
 
@@ -118,7 +191,7 @@
 			disk.record.caller_name = M.name
 			disk.record.set_caller_image(M)
 		else
-			to_chat(user, "<span class='warning'>Invalid holodisk target.</span>")
+			to_chat(user, span_warning("Голодиск не может записать эту цель."))
 			return
 
 	if(!can_target(target, user, flag))
@@ -143,59 +216,80 @@
 	on = TRUE
 
 /obj/item/camera/proc/show_picture(mob/user, datum/picture/selection)
-	var/obj/item/photo/P = new(src, selection)
-	P.show(user)
-	to_chat(user, P.desc)
-	qdel(P)
+	selection?.ui_interact(user)
 
 /obj/item/camera/proc/captureimage(atom/target, mob/user, flag, size_x = 1, size_y = 1)
-	if(flash_enabled)
+	var/use_flash = flash_enabled
+	if(use_flash)
 		flash_lighting_fx(8, light_power, light_color)
 	blending = TRUE
-	var/turf/target_turf = get_turf(target)
-	if(!isturf(target_turf))
-		blending = FALSE
-		return FALSE
-	size_x = clamp(size_x, 0, CAMERA_PICTURE_SIZE_HARD_LIMIT)
-	size_y = clamp(size_y, 0, CAMERA_PICTURE_SIZE_HARD_LIMIT)
-	var/list/desc = list("This is a photo of an area of [size_x*2 + 1] meters by [size_y*2 + 1] meters.")
+	try
+		var/turf/target_turf = get_turf(target)
+		var/datum/picture/picture
+		if(target_turf)
+			picture = capture_camera_picture(target_turf, user, size_x, size_y, use_flash, see_ghosts, target)
+		if(picture)
+			if(QDELETED(src))
+				qdel(picture)
+			else
+				if(!silent)
+					play_camera_shutter(loc, custom_sound)
+				after_picture(user, picture, flag)
+	catch(var/exception/error)
+		stack_trace("Ошибка съёмки фотоаппаратом: [error]")
+	blending = FALSE
+
+/proc/camera_frame_turfs(turf/target_turf, mob/user, size_x, size_y, flash_enabled, atom/target = target_turf)
 	var/ai_user = isAI(user)
 	var/list/seen
-	var/list/viewlist = user?.client ? getviewsize(user.client.view) : getviewsize(world.view)
-	var/viewr = max(viewlist[1], viewlist[2]) + max(size_x, size_y)
-	// Must match can_target(): living mobs use their mob for get_hear(), not client.eye (eye can be a remote camera).
-	var/atom/view_center = istype(user, /mob) ? user : (user?.client?.eye || target)
-	seen = get_hear(viewr, view_center)
+	if(flash_enabled)
+		// Вспышка освещает открытые участки кадра, даже если расчёт света ещё не обновился.
+		var/turf/view_center = get_turf(user) || target_turf
+		var/view_radius = max(abs(view_center.x - target_turf.x) + size_x, abs(view_center.y - target_turf.y) + size_y)
+		seen = dview(view_radius, view_center)
+	else
+		var/list/viewlist = user?.client ? getviewsize(user.client.view) : getviewsize(world.view)
+		var/view_radius = max(viewlist[1], viewlist[2]) + max(size_x, size_y)
+		var/atom/view_center = istype(user) ? user : target
+		var/turf/view_turf = get_turf(view_center)
+		if(view_turf)
+			// За пределами этого радиуса нет ни одного тайла кадра.
+			view_radius = min(view_radius, max(abs(view_turf.x - target_turf.x) + size_x, abs(view_turf.y - target_turf.y) + size_y))
+		seen = get_hear(view_radius, view_center)
 	var/list/turfs = list()
-	var/list/mobs = list()
-	var/blueprints = FALSE
-	var/clone_area = SSmapping.RequestBlockReservation(size_x * 2 + 1, size_y * 2 + 1)
-	for(var/turf/T in block(locate(target_turf.x - size_x, target_turf.y - size_y, target_turf.z), locate(target_turf.x + size_x, target_turf.y + size_y, target_turf.z)))
+	var/turf/bottom_left = locate(max(1, target_turf.x - size_x), max(1, target_turf.y - size_y), target_turf.z)
+	var/turf/top_right = locate(min(world.maxx, target_turf.x + size_x), min(world.maxy, target_turf.y + size_y), target_turf.z)
+	for(var/turf/T in block(bottom_left, top_right))
 		if((ai_user && GLOB.cameranet.checkTurfVis(T)) || (T in seen))
 			turfs += T
-			for(var/mob/M in T)
+	return turfs
+
+/proc/capture_camera_picture(turf/target_turf, mob/user, size_x, size_y, flash_enabled, see_ghosts = FALSE, atom/target = target_turf)
+	size_x = clamp(size_x, 0, CAMERA_PICTURE_SIZE_HARD_LIMIT)
+	size_y = clamp(size_y, 0, CAMERA_PICTURE_SIZE_HARD_LIMIT)
+	var/list/photo_description = list("На снимке участок размером [size_x * 2 + 1] × [size_y * 2 + 1] м.")
+	var/list/turfs = camera_frame_turfs(target_turf, user, size_x, size_y, flash_enabled, target)
+	var/list/mobs = list()
+	var/blueprints = FALSE
+	for(var/turf/T as anything in turfs)
+		for(var/mob/M in T)
+			if(camera_can_render_subject(M, see_ghosts))
 				mobs += M
-			if(locate(/obj/item/areaeditor/blueprints) in T)
-				blueprints = TRUE
+		if(locate(/obj/item/areaeditor/blueprints) in T)
+			blueprints = TRUE
 	if(!length(turfs))
 		turfs += target_turf
 	for(var/i in mobs)
 		var/mob/M = i
-		desc += M.get_photo_description(src)
+		photo_description += M.get_photo_description(see_ghosts)
 
 	var/psize_x = (size_x * 2 + 1) * world.icon_size
 	var/psize_y = (size_y * 2 + 1) * world.icon_size
-	var/get_icon = camera_get_icon(turfs, target_turf, psize_x, psize_y, clone_area, size_x, size_y, (size_x * 2 + 1), (size_y * 2 + 1))
-	qdel(clone_area)
-	var/icon/temp = icon('icons/effects/camera_image_base.dmi',"")
-	temp.Blend("#000", ICON_OVERLAY)
-	temp.Scale(psize_x, psize_y)
-	temp.Blend(get_icon, ICON_OVERLAY)
-
-	var/datum/picture/P = new("picture", desc.Join(" "), temp, null, psize_x, psize_y, blueprints)
-	P.subjects_seen = photo_subjects_seen(mobs)
-	after_picture(user, P, flag)
-	blending = FALSE
+	var/list/subjects = photo_subjects_seen(mobs)
+	var/icon/captured = render_camera_frame(turfs, target_turf, psize_x, psize_y, !flash_enabled, see_ghosts)
+	var/datum/picture/P = new("picture", photo_description.Join(" "), captured, null, psize_x, psize_y, blueprints)
+	P.subjects_seen = subjects
+	return P
 
 /obj/item/camera/proc/after_picture(mob/user, datum/picture/picture, proximity_flag)
 	printpicture(user, picture)
@@ -203,26 +297,18 @@
 /obj/item/camera/proc/printpicture(mob/user, datum/picture/picture) //Normal camera proc for creating photos
 	var/obj/item/photo/p = new(get_turf(src), picture)
 	if(in_range(src, user)) //needed because of TK
+		if(default_picture_name)
+			picture.picture_name = default_picture_name
+		p.set_picture(picture, TRUE, TRUE)
 		user.put_in_hands(p)
 		pictures_left--
-		to_chat(user, "<span class='notice'>[pictures_left] photos left.</span>")
-		var/customise = "No"
-		if(can_customise)
-			customise = alert(user, "Do you want to customize the photo?", "Customization", "Yes", "No")
-		if(customise == "Yes")
-			var/name1 = stripped_input(user, "Set a name for this photo, or leave blank. 32 characters max.", "Name", max_length = 32)
-			var/desc1 = stripped_input(user, "Set a description to add to photo, or leave blank. 128 characters max.", "Caption", max_length = 128)
-			var/caption = stripped_input(user, "Set a caption for this photo, or leave blank. 256 characters max.", "Caption", max_length = 256)
-			if(name1)
-				picture.picture_name = name1
-			if(desc1)
-				picture.picture_desc = "[desc1] - [picture.picture_desc]"
-			if(caption)
-				picture.caption = caption
-		else
-			if(default_picture_name)
-				picture.picture_name = default_picture_name
+		to_chat(user, span_notice("Осталось кадров: [pictures_left]."))
+		if(can_customise && editor_mode != CAMERA_EDITOR_SKIP && !QDELETED(p) && user.client)
+			p.offer_camera_editor(user, editor_mode == CAMERA_EDITOR_ASK)
+			return
+	if(CONFIG_GET(flag/picture_logging_camera))
+		picture.log_to_file()
 
-		p.set_picture(picture, TRUE, TRUE)
-		if(CONFIG_GET(flag/picture_logging_camera))
-			picture.log_to_file()
+#undef CAMERA_EDITOR_ASK
+#undef CAMERA_EDITOR_OPEN
+#undef CAMERA_EDITOR_SKIP

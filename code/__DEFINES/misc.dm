@@ -615,6 +615,19 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define CAMERA_SEE_GHOSTS_BASIC 1
 #define CAMERA_SEE_GHOSTS_ORBIT 2
 
+#define PHOTO_NAME_LIMIT 32
+#define PHOTO_DESCRIPTION_LIMIT 128
+#define PHOTO_CAPTION_LIMIT 256
+
+#define SYNDIMATIC_ACCOUNT_LIMIT 30
+#define SYNDIMATIC_TIER_1_LIMIT 60
+#define SYNDIMATIC_TIER_2_LIMIT 120
+
+// Значение 1 соответствует подпискам, сохранённым до появления уведомлений.
+#define SYNDIMATIC_FOLLOW_NOTIFY_DEFAULT 1
+#define SYNDIMATIC_FOLLOW_NOTIFY_ON 2
+#define SYNDIMATIC_FOLLOW_NOTIFY_OFF 3
+
 #define CLIENT_FROM_VAR(I) (ismob(I) ? I:client : (istype(I, /client) ? I : (istype(I, /datum/mind) ? I:current?:client : null)))
 
 #define AREASELECT_CORNERA "corner A"

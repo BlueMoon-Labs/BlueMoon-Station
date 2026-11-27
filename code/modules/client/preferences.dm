@@ -7,6 +7,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/default_slot = 1				//Holder so it doesn't default to slot 1, rather the last one used
 	var/max_save_slots = 40
 	var/character_slot_name = ""
+	var/syndimatic_character_id
 	var/last_ip
 	/// Last CID the person was seen on
 	var/last_id
@@ -100,6 +101,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/adminhelp_windowflash = TRUE
 	var/windownoise = TRUE
 	var/examine_headshots = TRUE
+	var/syndimatic_notifications = TRUE
 	var/mood_vignette = TRUE
 	var/toggles = TOGGLES_DEFAULT
 	var/sound_toggles = SOUND_BUTTONS
@@ -603,6 +605,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/custom_emote_groups = list()
 	var/list/custom_emote_chat_order = list()
 	var/amplify_department_radio = FALSE
+	// Ноль означает максимальный лимит фотографий для текущего уровня подписки.
+	var/syndimatic_photo_limit = 0
+	var/syndimatic_follow_notifications = TRUE
 	var/list/custom_emote_chat_panel = list()
 	var/custom_emote_sync = FALSE
 	var/alt_click_turf_mode = ALT_CLICK_TURF_ALWAYS

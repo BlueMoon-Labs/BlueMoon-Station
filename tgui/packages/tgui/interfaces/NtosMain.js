@@ -2,10 +2,18 @@ import { useBackend } from '../backend';
 import { Button, Section, Stack } from '../components';
 import { NtosWindow } from '../layouts';
 
+const HEADER_PROGRAM_LABELS = {
+  ntsoftwarehub: 'Загрузчик программ NT',
+  syndownloader: 'Загрузчик программ Синдиката',
+  filemanager: 'Файловый менеджер',
+  compconfig: 'Конфигурация оборудования',
+};
+
 export const NtosMain = (props) => {
   const { act, data } = useBackend();
   const {
     device_theme,
+    is_pda,
     programs = [],
     has_light,
     light_on,
@@ -19,6 +27,27 @@ export const NtosMain = (props) => {
     security_level,
     security_level_color,
   } = data;
+  const camera = programs.find(program => program.name === 'Camera');
+  const messenger = is_pda && programs.find(program => program.name === 'nt_messenger');
+  const headerPrograms = is_pda
+    ? Object.keys(HEADER_PROGRAM_LABELS)
+      .map(name => programs.find(program => program.name === name))
+      .filter(Boolean)
+    : [];
+  const hasId = !!cardholder && !!login.IDName;
+  const securityIndicator = !!security_level && (
+    <span
+      title={security_level.toUpperCase()}
+      style={{
+        display: 'inline-block',
+        width: '8px',
+        height: '8px',
+        borderRadius: '50%',
+        backgroundColor: security_level_color,
+        marginLeft: '6px',
+        verticalAlign: 'middle',
+      }} />
+  );
 
   return (
     <NtosWindow
@@ -28,26 +57,38 @@ export const NtosMain = (props) => {
       height={560}>
       <NtosWindow.Content>
         <Stack vertical fill>
-          {/* ID Details */}
-          {!!cardholder && login.IDName && (
+          {(hasId || !!messenger) && (
             <Stack.Item>
               <Section
                 title="Данные"
+                fitted={!hasId}
+                buttons={!!messenger && (
+                  <Button
+                    color={messenger.alert ? 'yellow' : 'default'}
+                    icon={messenger.icon}
+                    selected={!!messenger.running}
+                    onClick={() => act('PC_runprogram', { name: messenger.name })}>
+                    Мессенджер
+                    {securityIndicator}
+                  </Button>
+                )}
                 style={{ margin: '8px 10px 0 10px' }}>
-                <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
-                  <div>
-                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>
-                      Владелец:{' '}
-                    </span>
-                    <b>{login.IDName}</b>
+                {hasId && (
+                  <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
+                    <div>
+                      <span style={{ color: 'rgba(255,255,255,0.5)' }}>
+                        Владелец:{' '}
+                      </span>
+                      <b>{login.IDName}</b>
+                    </div>
+                    <div>
+                      <span style={{ color: 'rgba(255,255,255,0.5)' }}>
+                        Должность:{' '}
+                      </span>
+                      <b>{login.IDJob || 'Нет'}</b>
+                    </div>
                   </div>
-                  <div>
-                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>
-                      Должность:{' '}
-                    </span>
-                    <b>{login.IDJob || 'Нет'}</b>
-                  </div>
-                </div>
+                )}
               </Section>
             </Stack.Item>
           )}
@@ -101,13 +142,25 @@ export const NtosMain = (props) => {
           )}
 
           {/* Applications */}
-          <Stack.Item grow>
+          <Stack.Item grow minHeight={0} mx="10px" mb="8px">
             <Section
+              className="NtosMain__programs"
               title="Приложения"
+              buttons={headerPrograms.map(program => (
+                <Button
+                  key={program.name}
+                  icon={program.icon}
+                  color={program.alert ? 'yellow' : 'default'}
+                  selected={!!program.running}
+                  tooltip={HEADER_PROGRAM_LABELS[program.name]}
+                  aria-label={HEADER_PROGRAM_LABELS[program.name]}
+                  onClick={() => act('PC_runprogram', { name: program.name })}
+                />
+              ))}
               fill
-              style={{ margin: '8px 10px' }}>
+              scrollable>
               <Stack vertical>
-                {programs.map(program => (
+                {programs.map(program => program !== camera && program !== messenger && !headerPrograms.includes(program) && (
                   <Stack.Item key={program.name}>
                     <Button
                       fluid
@@ -116,19 +169,7 @@ export const NtosMain = (props) => {
                       onClick={() =>
                         act('PC_runprogram', { name: program.name })}>
                       {program.desc}
-                      {program.name === 'nt_messenger' && security_level && (
-                        <span
-                          title={security_level.toUpperCase()}
-                          style={{
-                            display: 'inline-block',
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: security_level_color,
-                            marginLeft: '6px',
-                            verticalAlign: 'middle',
-                          }} />
-                      )}
+                      {program.name === 'nt_messenger' && securityIndicator}
                       {!!program.running && (
                         <span style={{
                           marginLeft: '8px',
@@ -146,7 +187,7 @@ export const NtosMain = (props) => {
           </Stack.Item>
 
           {/* Bottom bar */}
-          <Stack.Item>
+          <Stack.Item shrink={0}>
             <div style={{
               borderTop: '1px solid rgba(255,255,255,0.08)',
               padding: '6px 10px',
@@ -170,6 +211,15 @@ export const NtosMain = (props) => {
                     Цвет
                   </Button>
                 </>
+              )}
+              {camera && (
+                <Button
+                  icon={camera.icon}
+                  color={camera.alert ? 'yellow' : 'transparent'}
+                  selected={!!camera.running}
+                  onClick={() => act('PC_runprogram', { name: camera.name })}>
+                  {camera.desc}
+                </Button>
               )}
               <Button
                 icon="palette"

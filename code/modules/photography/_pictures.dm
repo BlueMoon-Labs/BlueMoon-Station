@@ -1,6 +1,6 @@
 /datum/picture
 	var/picture_name = "picture"
-	var/picture_desc = "This is a picture."
+	var/picture_desc = "Это фотография."
 	var/caption
 	var/icon/picture_image
 	var/icon/picture_icon
@@ -19,6 +19,9 @@
 	var/base64_cache
 	var/icon/base64_cache_source
 	var/id							//this var is NOT protected because the worst you can do with this that you couldn't do otherwise is overwrite photos, and photos aren't going to be used as attack logs/investigations anytime soon.
+	var/station_capture_time
+	var/capture_time_zone
+	var/server_capture_time
 
 /datum/picture/New(name, desc, image, icon, size_x, size_y, bp, caption_, autogenerate_icon)
 	if(!isnull(name))
@@ -49,6 +52,37 @@
 		base64_cache_source = picture_image
 	return base64_cache
 
+/datum/picture/proc/photo_ui_media()
+	if(picture_url)
+		return list("url" = html_decode(picture_url))
+	return list("image" = get_base64())
+
+/datum/picture/ui_state(mob/user)
+	return GLOB.always_state
+
+/datum/picture/ui_interact(mob/user, datum/tgui/ui)
+	if(!picture_image && !picture_url)
+		return FALSE
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(ui)
+		return TRUE
+	ui = new(user, src, "PhotoViewer", picture_name)
+	ui.set_autoupdate(FALSE)
+	if(ui.open())
+		return TRUE
+	qdel(ui)
+	return FALSE
+
+/datum/picture/ui_static_data(mob/user)
+	return photo_ui_media()
+
+/datum/picture/ui_data(mob/user)
+	return list(
+		"photoName" = html_decode(picture_name),
+		"description" = html_decode(picture_desc),
+		"caption" = caption ? html_decode(caption) : null,
+	)
+
 /datum/picture/proc/get_small_icon(iconstate)
 	if(!picture_icon)
 		regenerate_small_icon(iconstate)
@@ -73,20 +107,32 @@
 	.["pixel_size_y"] = psize_y
 	.["blueprints"] = has_blueprints
 	.["logpath"] = logpath
+	if(station_capture_time)
+		.["station_capture_time"] = station_capture_time
+	if(capture_time_zone)
+		.["capture_time_zone"] = capture_time_zone
+	if(server_capture_time)
+		.["server_capture_time"] = server_capture_time
 
 /datum/picture/deserialize_list(list/input, list/options)
 	if(!input["logpath"] || !fexists(input["logpath"]) || !input["id"] || !input["pixel_size_x"] || !input["pixel_size_y"])
 		return
 	picture_image = icon(file(input["logpath"]))
+	return deserialize_metadata(input)
+
+/datum/picture/proc/deserialize_metadata(list/input)
 	logpath = input["logpath"]
 	id = input["id"]
 	psize_x = input["pixel_size_x"]
 	psize_y = input["pixel_size_y"]
+	station_capture_time = input["station_capture_time"]
+	capture_time_zone = input["capture_time_zone"]
+	server_capture_time = input["server_capture_time"]
 	if(input["blueprints"])
 		has_blueprints = input["blueprints"]
 	if(input["caption"])
 		caption = input["caption"]
-	if(input["desc"])
+	if(istext(input["desc"]))
 		picture_desc = input["desc"]
 	if(input["name"])
 		picture_name = input["name"]
@@ -110,12 +156,13 @@
 	var/json_path = file("[dir]/metadata.json")
 	if(!fexists(json_path))
 		return
-	var/list/json = json_decode(file2text(json_path))
-	if(!json[id])
+	var/list/json = safe_json_decode(file2text(json_path))
+	if(!json?[id])
 		return
 	var/datum/picture/P = new
-	P.deserialize_json(json[id])
-	return P
+	if(P.deserialize_json(json[id]))
+		return P
+	qdel(P)
 
 /proc/log_path_from_picture_ID(id)
 	if(!istext(id))
@@ -137,7 +184,7 @@
 			. += "[year]/[month]/[day]/round-[round]"
 		if("O")
 			var/list/path = data.Copy(2, data.len)
-			. += path.Join("")
+			. += path.Join("_")
 		else
 			return null
 	var/n = data[data.len]
@@ -171,6 +218,10 @@
 	var/datum/picture/P = new
 	P.picture_name = picture_name
 	P.picture_desc = picture_desc
+	P.caption = caption
+	P.station_capture_time = station_capture_time
+	P.capture_time_zone = capture_time_zone
+	P.server_capture_time = server_capture_time
 	if(picture_image)
 		P.picture_image = icon(picture_image)	//Copy, not reference.
 	if(picture_icon)
