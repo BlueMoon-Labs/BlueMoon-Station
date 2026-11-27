@@ -23,9 +23,9 @@
 	src.proctype = proctype
 	src.escape_on_find = escape_on_find
 
-	RegisterSignal(target, COMSIG_ATOM_REQUESTING_CONTEXT_FROM_ITEM, PROC_REF(on_requesting_context_from_item))
-	RegisterSignal(target, COMSIG_CLICK_ALT, PROC_REF(mob_try_pickup))
-	RegisterSignal(target, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine))
+	RegisterSignal(target, COMSIG_ATOM_REQUESTING_CONTEXT_FROM_ITEM, PROC_REF(on_requesting_context_from_item), override = TRUE)
+	RegisterSignal(target, COMSIG_CLICK_ALT, PROC_REF(mob_try_pickup), override = TRUE)
+	RegisterSignal(target, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine), override = TRUE)
 
 /datum/element/mob_holder/Detach(datum/source, force)
 	. = ..()
@@ -113,6 +113,10 @@
 	if(right_hand)
 		righthand_file = right_hand
 	slot_flags = slots
+	// On the neck, render the pet slightly above hats without changing other neck items.
+	// build_worn_icon() uses negative layer values, hence HEAD_LAYER - 0.05.
+	if(slots & ITEM_SLOT_NECK)
+		alternate_worn_layer = HEAD_LAYER - 0.05
 
 /obj/item/clothing/head/mob_holder/proc/assimilate(mob/living/target)
 	target.setDir(SOUTH)

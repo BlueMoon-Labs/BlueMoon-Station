@@ -1,9 +1,7 @@
 /datum/export/food
-	k_elasticity = 1/200 //BLUEMOON CHANGE
 	include_subtypes = TRUE
 
 /datum/export/booze //Like the kind you bottle!
-	k_elasticity = 1/200 //BLUEMOON CHANGE
 	unit_name = "brand unit of booze"
 	include_subtypes = TRUE
 

@@ -135,6 +135,9 @@ SUBSYSTEM_DEF(director)
 	var/pending_timer_id
 	/// Снапшот сигналов момента выбора pending_action (last_signals мутируется on_latejoin внутри окна)
 	var/datum/director_signals/pending_signals
+	/// The last hourly slot that actually spawned a Team-Based wave.
+	var/team_based_wave_hour = 0
+	var/datum/dynamic_ruleset/team_based_wave_pending
 	/// Подмена world.time для оффлайн-симулятора (director_simulator.dm): 0 значит "часы реальные".
 	/// Все расчёты бита в этом файле идут через now(), а не через world.time напрямую.
 	var/time_override = 0
@@ -363,20 +366,16 @@ SUBSYSTEM_DEF(director)
 /// Целевая антаг-нагрузка раунда: масштабируется от живого экипажа, а не от фиксированного
 /// потолка intensity. 3 стелс-антага - норма на 20 экипажа и голод на 60 телах.
 /datum/controller/subsystem/director/proc/antag_target(crew)
-	return crew * profile.antag_intensity_per_crew
+	return profile ? crew * profile.antag_intensity_per_crew : 0
 
-/// Актуализация копилок антаг-пулов: у пула без цели (или с протухшей - can_fire отвалился,
-/// например кончились кандидаты-призраки, либо живой вес затух до нуля) роллится новая.
-/// Валидная цель не перевыбирается - пул последовательно копит и исполняет план.
+// Копилка выбирает новую цель, если прежняя недоступна, потеряла кандидатов или её вес обнулился.
+// Пока цель доступна, пул продолжает копить на неё.
 /datum/controller/subsystem/director/proc/ensure_pool_targets(datum/director_signals/signals)
 	// Контент-код (can_fire) не должен логировать отказы при проверке плана - это не решение о запуске.
 	quiet_eval = TRUE
 	for(var/sev in list(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST))
 		var/datum/director_action/target = pool_saving[sev]
-		// Живой вес - часть валидности плана: у действий с изменяемым весом условие может
-		// пропасть уже после выбора цели (вес Lone Operative затухает, когда диск снова
-		// носят - nuclearbomb.dm). План с нулевым весом висел бы до исполнения, и оперативник
-		// приходил бы спустя полчаса после того, как диск унесли, - "спавн без причины".
+		// Условие может исчезнуть после выбора цели: вес Lone Operative обнуляется при смене клетки диска.
 		if(QDELETED(target) || action_recently_failed(target) || !target.can_fire(signals) || !action_preflight(target) || target.get_weight(signals) <= 0)
 			roll_pool_target(sev, signals)
 			continue
@@ -1001,6 +1000,8 @@ SUBSYSTEM_DEF(director)
 	// Живое окно отмены: новый пик перезаписал бы pending без deltimer. Это ожидание, не решение - без лога.
 	if(pending_action)
 		return DIRECTOR_BEAT_IDLE
+	if(!forced && try_team_based_wave(signals))
+		return DIRECTOR_BEAT_SCHEDULED
 	// План антаг-пулов: цель накопления на каждый пул (roll_pool_target). Здесь, а не в
 	// filter_candidates: фильтр зовётся и оценкой пула для панели, план - только боевым битом.
 	ensure_pool_targets(signals)
@@ -1052,6 +1053,32 @@ SUBSYSTEM_DEF(director)
 	else
 		announce_pick(picked, candidates, guaranteed, signals)
 	return guaranteed ? DIRECTOR_BEAT_GUARANTEED : DIRECTOR_BEAT_FIRED
+
+/datum/controller/subsystem/director/proc/try_team_based_wave(datum/director_signals/signals)
+	if(dry_run || GLOB.round_type != ROUNDTYPE_DYNAMIC_TEAMBASED || team_based_wave_pending)
+		return FALSE
+	if(floor((now() - SSticker.round_start_time) / (1 HOURS)) <= team_based_wave_hour)
+		return FALSE
+	var/list/candidates = list()
+	var/list/reinforcements = list()
+	for(var/datum/dynamic_ruleset/midround/rule in actions)
+		if(!rule.team_based_hourly || rule.execution_pending || action_recently_failed(rule) || !rule.can_fire(signals, TRUE))
+			continue
+		if(rule.weight <= 0 || !action_preflight(rule))
+			continue
+		if(rule.hourly_reinforcement_team())
+			reinforcements[rule] = rule.weight
+		else
+			candidates[rule] = rule.weight
+	for(var/list/pool as anything in list(candidates, reinforcements))
+		while(length(pool))
+			var/datum/dynamic_ruleset/rule = pickweight(pool)
+			if(spend_and_execute(rule, "team-based hourly"))
+				team_based_wave_pending = rule
+				director_log_beat(signals, rule, DIRECTOR_BEAT_SCHEDULED, detail = "почасовая командная волна")
+				return TRUE
+			pool -= rule
+	return FALSE
 
 /// Отбор кандидатов с фильтрами темпа. guaranteed: только MINOR/MODERATE, бюджет игнорируется
 /// (allow_ghost_guarantee дополнительно открывает GHOST - с честным гейтом кошелька).
@@ -1413,6 +1440,10 @@ SUBSYSTEM_DEF(director)
 /// Возвращаются не только бюджет/intensity, но и все паузы: провальный Ratvar не имеет права
 /// закрыть ANTAG-пул на полчаса. Само действие получает короткий карантин, затем ищется замена.
 /datum/controller/subsystem/director/proc/note_failed_action(datum/director_action/action, refund_budget = FALSE, retry_replacement = FALSE)
+	if(action == team_based_wave_pending)
+		team_based_wave_pending = null
+		record_action_failure(action)
+		retry_replacement = FALSE // Другую команду предложит следующий почасовой бит.
 	if(action.occurrences > 0)
 		action.occurrences--
 	// Латеджойн note_fired() намеренно не входит в доли битов, откатывать там нечего.
@@ -1499,6 +1530,9 @@ SUBSYSTEM_DEF(director)
 	action_attempt_rollbacks -= action
 
 /datum/controller/subsystem/director/proc/confirm_action_success(datum/director_action/action)
+	if(action == team_based_wave_pending)
+		team_based_wave_hour = floor((now() - SSticker.round_start_time) / (1 HOURS))
+		team_based_wave_pending = null
 	action_attempt_rollbacks -= action
 	action_failure_cooldowns -= action
 	action_failure_delays -= action
@@ -1764,11 +1798,14 @@ SUBSYSTEM_DEF(director)
 	var/was_guaranteed = pending_guaranteed
 	var/list/retry_candidates = pending_candidates
 	var/detail = selection_detail(fired_action, retry_candidates)
-	var/executed = spend_and_execute(fired_action, was_guaranteed ? "guaranteed" : "beat")
+	var/cancel_reason = fired_action.pending_cancel_reason()
+	var/executed = !cancel_reason && spend_and_execute(fired_action, was_guaranteed ? "guaranteed" : "beat")
 	var/result = was_guaranteed ? DIRECTOR_BEAT_GUARANTEED : DIRECTOR_BEAT_FIRED
+	var/skip_reason
 	if(!executed)
-		result = DIRECTOR_BEAT_FAILED
-		detail = "[execution_failure_detail(fired_action)]; [detail]"
+		result = cancel_reason ? DIRECTOR_BEAT_CANCELLED : DIRECTOR_BEAT_FAILED
+		skip_reason = cancel_reason || execution_failure_detail(fired_action)
+		detail = "[skip_reason]; [detail]"
 	else if(fired_action.director_kind == DIRECTOR_KIND_RULESET)
 		result = DIRECTOR_BEAT_SCHEDULED
 	director_log_beat(fired_signals, fired_action, result, null, detail)
@@ -1776,8 +1813,7 @@ SUBSYSTEM_DEF(director)
 	pending_candidates = null
 	pending_signals = null
 	pending_timer_id = null
-	// Кандидат мог исчезнуть за окно отмены. Не сжигаем весь бит: убираем провалившийся
-	// вариант и даём админам такое же окно отмены для следующего всё ещё готового кандидата.
+	// После отмены или ошибки повторно проверяем остальных кандидатов перед выбором замены.
 	if(!executed && length(retry_candidates))
 		retry_candidates -= fired_action
 		var/datum/director_signals/retry_signals = collect_signals()
@@ -1792,7 +1828,7 @@ SUBSYSTEM_DEF(director)
 			retry_candidates[retry] = current_candidates[retry]
 		if(length(retry_candidates))
 			var/datum/director_action/next_pick = pickweight(retry_candidates)
-			message_admins("DIRECTOR: [fired_action.action_name()] не запустился ([execution_failure_detail(fired_action)]), выбираю замену.")
+			message_admins("DIRECTOR: [fired_action.action_name()] не запустился ([skip_reason]), выбираю замену.")
 			announce_pick(next_pick, retry_candidates, was_guaranteed, retry_signals)
 
 /datum/controller/subsystem/director/Topic(href, href_list)

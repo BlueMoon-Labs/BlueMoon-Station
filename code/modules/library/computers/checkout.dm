@@ -299,7 +299,7 @@
 				return
 			qdel(query)
 			log_admin("LIBRARY: [key_name(usr)] has deleted [query.affected] books written by [tckey]!")
-			message_admins("[key_name_admin(usr)] has deleted [query.affected] books written by [tckey]!")
+			message_admins("[key_name_admin(usr)] удалил книги автора [tckey] ([query.affected] шт.).")
 			src.updateUsrDialog()
 			return
 

@@ -55,6 +55,57 @@
 	unregister_fake_player(fake_player)
 	qdel(controller)
 
+///Шаг пауна, после которого окно ячеек грида остаётся тем же
+/datum/unit_test/proc/step_inside_cell_window(mob/living/pawn)
+	var/datum/cell_tracker/tracker = pawn.ai_controller.our_cells
+	for(var/direction in GLOB.cardinals)
+		var/turf/candidate = get_step(pawn, direction)
+		if(candidate && !candidate.density && tracker.window_unchanged(candidate))
+			return candidate
+	return null
+
+///Игрок рядом выпал из канала клиентов (смерть, SSD), не уходя с клетки: первый же шаг моба в тех же ячейках усыпляет контроллер
+/datum/unit_test/ai_scheduler_sleeps_after_nearby_client_leaves/Run()
+	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/mob/living/carbon/human/pawn = allocate(/mob/living/carbon/human, center)
+	var/mob/living/carbon/human/fake_player = allocate(/mob/living/carbon/human)
+	register_fake_player(fake_player, get_step(center, NORTH))
+	var/datum/ai_controller/unit_test_dormant/controller = new(pawn)
+	TEST_ASSERT_EQUAL(controller.ai_status, AI_STATUS_ON, "Sanity: controller next to a player must be ON")
+
+	unregister_fake_player(fake_player)
+	TEST_ASSERT_EQUAL(controller.ai_status, AI_STATUS_ON, "Sanity: a client gone next to the pawn does not put it to sleep by itself")
+	var/turf/step_turf = step_inside_cell_window(pawn)
+	TEST_ASSERT_NOTNULL(step_turf, "Sanity: the floor must have a step inside the same grid cells")
+	pawn.forceMove(step_turf)
+	TEST_ASSERT_EQUAL(controller.ai_status, AI_STATUS_IDLE, "The first step after the nearby client left must put the controller to sleep")
+	qdel(controller)
+
+///Урон будит спящего моба, но без игроков рядом первый шаг в тех же ячейках снова усыпляет
+/datum/unit_test/ai_scheduler_damage_wake_sleeps_on_step/Run()
+	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, center)
+	var/mob/living/carbon/human/fake_player = allocate(/mob/living/carbon/human)
+	var/turf/far_turf = locate(1, 1, center.z)
+	if(get_dist(far_turf, center) <= 40)
+		far_turf = locate(world.maxx - 1, world.maxy - 1, center.z)
+	register_fake_player(fake_player, far_turf)
+	var/datum/ai_controller/unit_test_dormant/controller = new(pawn)
+	TEST_ASSERT_EQUAL(controller.ai_status, AI_STATUS_IDLE, "Sanity: controller with only a far-away player must be IDLE")
+
+	pawn.adjustHealth(5)
+	TEST_ASSERT_EQUAL(controller.ai_status, AI_STATUS_ON, "Sanity: damage must wake a sleeping controller")
+	var/turf/step_turf = step_inside_cell_window(pawn)
+	TEST_ASSERT_NOTNULL(step_turf, "Sanity: the floor must have a step inside the same grid cells")
+	pawn.forceMove(step_turf)
+	TEST_ASSERT_EQUAL(controller.ai_status, AI_STATUS_IDLE, "A damage-woken controller with no players near must fall asleep on its first step")
+
+	var/windows_before = GLOB.ai_metrics.cell_windows
+	pawn.forceMove(step_inside_cell_window(pawn))
+	TEST_ASSERT_EQUAL(GLOB.ai_metrics.cell_windows, windows_before, "A step inside the same grid cells must still skip the window rebuild")
+	unregister_fake_player(fake_player)
+	qdel(controller)
+
 ///Пустой z (ноль клиентов) = AI_STATUS_OFF, не IDLE
 /datum/unit_test/ai_scheduler_off_on_empty_z/Run()
 	var/mob/living/carbon/human/pawn = allocate(/mob/living/carbon/human)

@@ -112,6 +112,7 @@
 	.["windowflashing"] = windowflashing
 	.["adminhelp_windowflash"] = adminhelp_windowflash
 	.["windownoise"] = windownoise
+	.["examine_headshots"] = examine_headshots
 	.["mood_vignette"] = mood_vignette
 
 	// Gameplay toggles
@@ -123,6 +124,7 @@
 	.["action_buttons_hide"] = action_buttons_hide_on_spawn
 	.["autostand"] = autostand
 	.["long_strip_menu"] = long_strip_menu
+	.["amplify_department_radio"] = amplify_department_radio
 	.["right_click_mode"] = right_click_mode()
 	.["shift_right_click_mode"] = shift_right_click_mode()
 	var/list/menu_style = list()
@@ -137,6 +139,7 @@
 	.["context_menu_presets"] = menu_presets
 	.["context_menu_preset"] = current_context_menu_preset()
 	.["shift_invites"] = shift_invites
+	.["nearsigh_darkening"] = nearsigh_darkening
 
 	// Gameplay: combat
 	.["disable_combat_cursor"] = disable_combat_cursor
@@ -473,6 +476,9 @@
 				if("windownoise")
 					windownoise = !windownoise
 					dirty_var = "windownoise"
+				if("examine_headshots")
+					examine_headshots = !examine_headshots
+					dirty_var = "examine_headshots"
 				if("auto_capitalize_enabled")
 					auto_capitalize_enabled = !auto_capitalize_enabled
 					dirty_var = "auto_capitalize_enabled"
@@ -512,6 +518,15 @@
 				if("long_strip_menu")
 					long_strip_menu = !long_strip_menu
 					dirty_var = "long_strip_menu"
+				if("amplify_department_radio")
+					amplify_department_radio = !amplify_department_radio
+					dirty_var = "amplify_department_radio"
+				if("nearsigh_darkening")
+					nearsigh_darkening = !nearsigh_darkening
+					dirty_var = "nearsigh_darkening"
+					if(isliving(user))
+						var/mob/living/L = user
+						L.update_nearsighted_effect()
 				if("shift_invites")
 					shift_invites = !shift_invites
 					dirty_var = "shift_invites"

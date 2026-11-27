@@ -16,7 +16,18 @@
 /datum/ai_movement/hybrid/start_moving_towards(datum/ai_controller/controller, atom/current_movement_target, min_distance)
 	. = ..()
 	controller.blackboard[BB_AI_DIRECT_FAILS] = 0
+	if(AI_PATH_SAVINGS && keep_live_route(controller, current_movement_target, min_distance))
+		return
 	start_direct_loop(controller, current_movement_target)
+
+///Живой JPS-маршрут уже ведёт туда же, куда повёл бы новый: меняем лупу цель вместо нового
+///прямого лупа, который упёрся бы в ту же преграду и снова искал путь
+/datum/ai_movement/hybrid/proc/keep_live_route(datum/ai_controller/controller, atom/new_target, min_distance)
+	var/datum/move_loop/has_target/jps/loop = controller.active_move_loop
+	if(!istype(loop) || QDELETED(loop) || loop.moving != controller.pawn || loop.repath_in_progress || !loop.route_serves(new_target, min_distance))
+		return FALSE
+	loop.retarget(new_target)
+	return TRUE
 
 ///Прямой bee-line луп
 /datum/ai_movement/hybrid/proc/start_direct_loop(datum/ai_controller/controller, atom/current_movement_target)
@@ -46,6 +57,8 @@
 	if(!loop)
 		return
 	controller.track_move_loop(loop)
+	var/datum/move_loop/has_target/jps/jps_loop = loop
+	jps_loop.defer_failed_step_repath = AI_PATH_SAVINGS
 	RegisterSignal(loop, COMSIG_MOVELOOP_PREPROCESS_CHECK, PROC_REF(pre_move_jps))
 	RegisterSignal(loop, COMSIG_MOVELOOP_POSTPROCESS, PROC_REF(post_move_jps))
 	RegisterSignal(loop, COMSIG_MOVELOOP_JPS_REPATH, PROC_REF(repath_incoming))
@@ -184,12 +197,15 @@
 	if(succeeded)
 		AI_METRIC_INC(successful_moves)
 		source.avoid = null
+		source.mob_block_streak = 0
 		controller.clear_mob_congestion(source.target)
 		return
 	var/turf/blocked_step = length(source.movement_path) ? source.movement_path[1] : null
 	if(!controller.is_mob_only_blocked_step(blocked_step))
 		controller.clear_mob_congestion_streak()
 		increment_pathing_failures(controller)
+		if(blocked_step && source.defer_failed_step_repath && !QDELETED(source))
+			INVOKE_ASYNC(source, TYPE_PROC_REF(/datum/move_loop/has_target/jps, recalculate_path))
 		return
 	AI_METRIC_INC(failed_moves)
 	controller.note_mob_congestion(source.target)
@@ -198,12 +214,57 @@
 	//обтекают body-block игрока. Обход остаётся для союзников/нейтралов.
 	if(ai_step_blocker_attackable(source.moving, blocked_step))
 		return
+	if(AI_PATH_SAVINGS && wait_out_ally(source, controller, blocked_step))
+		return
 	//JPS не учитывает динамических мобов. Исключаем занятый тайл из следующего
 	//маршрута вместо бесконечного пересчёта того же пути через блокера.
 	source.avoid = blocked_step
 	source.movement_path = null
 	COOLDOWN_RESET(source, repath_cooldown)
 	INVOKE_ASYNC(source, TYPE_PROC_REF(/datum/move_loop/has_target/jps, recalculate_path))
+
+///Союзник на маршруте без полного поиска: шаг в сторону, иначе шаг ожидания (в толчее сосед
+///обычно уходит сам, как и в прямом режиме), на втором упоре подряд - короткий обход
+/datum/ai_movement/hybrid/proc/wait_out_ally(datum/move_loop/has_target/jps/source, datum/ai_controller/controller, turf/blocked_step)
+	if(sidestep_mob_blocker(source, controller, blocked_step))
+		source.mob_block_streak = 0
+		return TRUE
+	if(!source.mob_block_streak++)
+		return TRUE
+	source.mob_block_streak = 0
+	INVOKE_ASYNC(source, TYPE_PROC_REF(/datum/move_loop/has_target/jps, repair_path), blocked_step)
+	return TRUE
+
+///Союзник встал на следующую клетку маршрута: шагнуть в соседнюю свободную клетку, от которой
+///маршрут продолжается, вместо полного поиска в обход. FALSE - такой клетки нет.
+/datum/ai_movement/hybrid/proc/sidestep_mob_blocker(datum/move_loop/has_target/jps/source, datum/ai_controller/controller, turf/blocked_step)
+	var/list/route = source.movement_path
+	if(length(route) < 2)
+		return FALSE
+	var/atom/movable/pawn = source.moving
+	var/turf/here = pawn.loc
+	var/turf/rejoin = route[2]
+	if(!isturf(here) || rejoin.z != here.z || get_dist(here, rejoin) > 2)
+		return FALSE
+	var/turf/detour
+	for(var/direction in GLOB.alldirs)
+		var/turf/candidate = get_step(here, direction)
+		if(!candidate || candidate == blocked_step || get_dist(candidate, rejoin) > 1)
+			continue
+		if(candidate == source.avoid || candidate.is_blocked_turf(source_atom = pawn) || !controller.can_enter_turf(candidate))
+			continue
+		if(here.LinkBlockedWithAccess(candidate, pawn, source.id) || (candidate != rejoin && candidate.LinkBlockedWithAccess(rejoin, pawn, source.id)))
+			continue
+		detour = candidate
+		if(candidate == rejoin)
+			break
+	if(!detour)
+		return FALSE
+	if(detour == rejoin)
+		route.Cut(1, 2)
+	else
+		route[1] = detour
+	return TRUE
 
 ///Перед перепрокладкой обновить доступ и минимальную дистанцию из контроллера
 /datum/ai_movement/hybrid/proc/repath_incoming(datum/move_loop/has_target/jps/source)

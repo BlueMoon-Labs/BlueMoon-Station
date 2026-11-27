@@ -4,6 +4,7 @@
 	/// чтобы в кэше оставалось только настоящее изображение персонажа (по нему ходят тесты и
 	/// код, который считает свечение).
 	var/list/overlays_emissive_blockers[TOTAL_LAYERS]
+	var/arms_bound_behind_back = FALSE
 
 /mob/living/carbon/proc/apply_overlay(cache_index)
 	if((. = overlays_standing[cache_index]))
@@ -48,8 +49,28 @@
 		var/blocker = emissive_blocker_copy(im, src)
 		if(blocker)
 			LAZYADD(blockers, blocker)
+	if(length(blockers) > 1)
+		blockers = pack_emissive_blockers(blockers)
 	if(blockers)
 		overlays_emissive_blockers[cache_index] = blockers
+
+/mob/living/carbon/proc/pack_emissive_blockers(list/blockers)
+	var/list/by_layer = list()
+	for(var/mutable_appearance/blocker as anything in blockers)
+		if(blocker.blend_mode != BLEND_DEFAULT)
+			return blockers
+		LAZYADD(by_layer["[blocker.layer]"], blocker)
+	. = list()
+	for(var/layer_key in by_layer)
+		var/list/layer_blockers = by_layer[layer_key]
+		var/mutable_appearance/first_blocker = layer_blockers[1]
+		if(length(layer_blockers) == 1)
+			. += first_blocker
+			continue
+		// Один оверлей на слой сохраняет порядок перекрытия собственного свечения.
+		var/mutable_appearance/group = mutable_appearance('icons/effects/effects.dmi', "nothing", first_blocker.layer, first_blocker.plane, appearance_flags = KEEP_TOGETHER | TILE_BOUND | PIXEL_SCALE)
+		group.overlays = layer_blockers
+		. += group
 
 /mob/living/carbon/proc/remove_emissive_blockers(cache_index)
 	var/blockers = overlays_emissive_blockers[cache_index]
@@ -116,6 +137,8 @@
 
 	for(var/X in bodyparts)
 		var/obj/item/bodypart/BP = X
+		if(arms_bound_behind_back && (BP.body_part & ARMS))
+			continue
 		if(BP.dmg_overlay_type)
 			if(BP.brutestate)
 				damage_overlay.add_overlay("[BP.dmg_overlay_type]_[BP.body_zone]_[BP.brutestate]0")	//we're adding icon_states of the base image as overlays
@@ -143,6 +166,8 @@
 	var/mutable_appearance/wound_overlay
 	var/wound_color = get_wound_color()
 	for(var/obj/item/bodypart/iter_part as anything in bodyparts)
+		if(arms_bound_behind_back && (iter_part.body_part & ARMS))
+			continue
 		if(iter_part.bleed_overlay_icon)
 			wound_overlay ||= mutable_appearance('icons/mob/effects/bleed_overlays.dmi', "blank", -WOUND_LAYER, appearance_flags = KEEP_TOGETHER)
 			wound_overlay.color = wound_color
@@ -160,6 +185,8 @@
 
 	var/mutable_appearance/bandage_overlay
 	for(var/obj/item/bodypart/bodypart as anything in bodyparts)
+		if(arms_bound_behind_back && (bodypart.body_part & ARMS))
+			continue
 		if(istype(bodypart, /obj/item/bodypart/l_leg/naga_tail))
 			continue
 		var/obj/item/stack/medical/gauze/our_gauze = bodypart.current_gauze
@@ -200,11 +227,9 @@
 		inv.update_icon()
 
 	if(wear_neck)
-		if(!(head && (head.flags_inv & HIDENECK)))
-			var/chosen_icon = 'icons/mob/clothing/neck.dmi'
-			if(dna.species.icon_neck)
-				chosen_icon = dna.species.icon_neck
-			overlays_standing[NECK_LAYER] = wear_neck.build_worn_icon(default_layer = NECK_LAYER, default_icon_file = chosen_icon, override_state = wear_neck.icon_state)
+		if(!(head && (head.flags_inv & HIDENECK)) || istype(wear_neck, /obj/item/clothing/head/mob_holder))
+			var/chosen_icon = dna.species.species_worn_icon(dna.species.icon_neck, wear_neck.icon_state) || wear_neck.mob_overlay_icon || 'icons/mob/clothing/neck.dmi'
+			overlays_standing[NECK_LAYER] = wear_neck.build_worn_icon(default_layer = NECK_LAYER, default_icon_file = chosen_icon, override_state = wear_neck.icon_state, use_mob_overlay_icon = FALSE)
 		update_hud_neck(wear_neck)
 
 	apply_overlay(NECK_LAYER)
@@ -217,10 +242,8 @@
 		inv?.update_icon()
 
 	if(back)
-		var/chosen_icon = 'icons/mob/clothing/back.dmi'
-		if(dna.species.icon_back)
-			chosen_icon = dna.species.icon_back
-		overlays_standing[BACK_LAYER] = back.build_worn_icon(default_layer = BACK_LAYER, default_icon_file = chosen_icon, override_state = back.icon_state)
+		var/chosen_icon = dna.species.species_worn_icon(dna.species.icon_back, back.icon_state) || back.mob_overlay_icon || 'icons/mob/clothing/back.dmi'
+		overlays_standing[BACK_LAYER] = back.build_worn_icon(default_layer = BACK_LAYER, default_icon_file = chosen_icon, override_state = back.icon_state, use_mob_overlay_icon = FALSE)
 		update_hud_back(back)
 
 	apply_overlay(BACK_LAYER)
@@ -245,7 +268,8 @@
 /mob/living/carbon/update_inv_handcuffed()
 	remove_overlay(HANDCUFF_LAYER)
 	if(handcuffed)
-		var/mutable_appearance/cuffs = mutable_appearance('icons/mob/clothing/restraints.dmi', handcuffed.item_state, -HANDCUFF_LAYER)
+		var/worn_icon = handcuffed.mob_overlay_icon || 'icons/mob/clothing/restraints.dmi'
+		var/mutable_appearance/cuffs = mutable_appearance(worn_icon, handcuffed.item_state, -handcuffed.handcuff_worn_layer)
 		cuffs.color = handcuffed.color
 
 		overlays_standing[HANDCUFF_LAYER] = cuffs
@@ -333,6 +357,8 @@
 	var/list/new_limbs = list()
 	for(var/X in bodyparts)
 		var/obj/item/bodypart/BP = X
+		if(arms_bound_behind_back && (BP.body_part & ARMS))
+			continue
 		if(is_taur && leg_day[BP.type])
 			continue
 		new_limbs += BP.get_limb_icon()
@@ -426,8 +452,14 @@
 /mob/living/carbon/set_plane_offset(new_offset)
 	. = ..()
 	update_body()
+	var/emissive_plane = GET_NEW_PLANE(EMISSIVE_PLANE, new_offset)
 	for(var/cache_index in GLOB.emissive_blocked_layers)
-		if(!overlays_emissive_blockers[cache_index])
+		var/list/blockers = overlays_emissive_blockers[cache_index]
+		if(!blockers)
+			continue
+		var/mutable_appearance/first_blocker = blockers[1]
+		// Уже обновлённый блокер тела стоит перед свечением своего слоя.
+		if(first_blocker.plane == emissive_plane)
 			continue
 		refresh_emissive_blockers(cache_index)
 		if(overlays_emissive_blockers[cache_index])

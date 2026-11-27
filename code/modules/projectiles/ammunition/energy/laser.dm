@@ -43,8 +43,10 @@
 
 /obj/item/ammo_casing/energy/laser/heavy
 	projectile_type = /obj/item/projectile/beam/laser/heavylaser
+	e_cost = 200
 	select_name = "anti-vehicle"
 	fire_sound = 'sound/weapons/lasercannonfire.ogg'
+	click_cooldown_override = 3 // капитанский лазер: fire_delay=3 ниже CLICK_CD_RANGE, поэтому нужен override для get_clickcd()
 
 /obj/item/ammo_casing/energy/laser/hellfire
 	projectile_type = /obj/item/projectile/beam/laser/hellfire

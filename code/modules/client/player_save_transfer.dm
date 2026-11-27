@@ -1,0 +1,828 @@
+// Публичный формат отделён от доверенного дискового: никаких ImportText и произвольных типов.
+#define PLAYER_TRANSFER_MAX_BYTES (2 * 1024 * 1024)
+#define PLAYER_TRANSFER_MAX_NODES 20000
+#define PLAYER_TRANSFER_MAX_DEPTH 6
+/// Сколько копий заменённых импортом персонажей хранится на аккаунт.
+#define PLAYER_TRANSFER_BACKUPS_KEPT 10
+
+/// Только явно проверенные поля. Новое поле дискового сейва НЕ становится переносимым автоматически.
+/proc/player_transfer_fields()
+	var/static/list/fields = list(
+		"age" = "scalar",
+		"all_quirks" = "list",
+		"alt_titles_preferences" = "list",
+		"backbag" = "scalar",
+		"bark_id" = "scalar",
+		"bark_pitch" = "scalar",
+		"bark_speed" = "scalar",
+		"bark_variance" = "scalar",
+		"bgstate" = "scalar",
+		"blood_color" = "scalar",
+		"body_is_always_random" = "scalar",
+		"body_model" = "scalar",
+		"body_size" = "scalar",
+		"body_weight" = "scalar",
+		"chosen_limb_id" = "scalar",
+		"custom_blood_color" = "scalar",
+		"custom_emote_chat_order" = "list",
+		"custom_emote_groups" = "list",
+		"custom_emote_panel" = "list",
+		"custom_interactions" = "interactions",
+		"custom_laugh" = "scalar",
+		"custom_moan_sounds" = "list",
+		"custom_species" = "name",
+		"custom_speech_verb" = "scalar",
+		"custom_tongue" = "scalar",
+		"distant_start_enabled" = "scalar",
+		"egg_shell" = "scalar",
+		"enable_personal_chat_color" = "scalar",
+		"erp_pref" = "scalar",
+		"extreme_harm" = "scalar",
+		"extreme_pref" = "scalar",
+		"eye_type" = "scalar",
+		"facial_hair_color" = "scalar",
+		"facial_style_name" = "scalar",
+		"feature_allow_emissives" = "scalar",
+		"feature_anus_accessible" = "scalar",
+		"feature_anus_color" = "scalar",
+		"feature_anus_shape" = "scalar",
+		"feature_anus_stuffing" = "scalar",
+		"feature_anus_visibility" = "scalar",
+		"feature_arachnid_legs" = "scalar",
+		"feature_arachnid_mandibles" = "scalar",
+		"feature_arachnid_spinneret" = "scalar",
+		"feature_ass_photo" = "photo",
+		"feature_balls_accessible" = "scalar",
+		"feature_balls_color" = "scalar",
+		"feature_balls_fluid" = "fluid",
+		"feature_balls_shape" = "scalar",
+		"feature_balls_size" = "scalar",
+		"feature_balls_stuffing" = "scalar",
+		"feature_balls_visibility" = "scalar",
+		"feature_belly_accessible" = "scalar",
+		"feature_belly_color" = "scalar",
+		"feature_belly_size" = "scalar",
+		"feature_belly_stuffing" = "scalar",
+		"feature_belly_visibility" = "scalar",
+		"feature_breasts_accessible" = "scalar",
+		"feature_breasts_color" = "scalar",
+		"feature_breasts_fluid" = "fluid",
+		"feature_breasts_nipples" = "scalar",
+		"feature_breasts_nipples_color" = "scalar",
+		"feature_breasts_producing" = "scalar",
+		"feature_breasts_shape" = "scalar",
+		"feature_breasts_size" = "scalar",
+		"feature_breasts_sprite_variant" = "scalar",
+		"feature_breasts_stuffing" = "scalar",
+		"feature_breasts_visibility" = "scalar",
+		"feature_butt_accessible" = "scalar",
+		"feature_butt_color" = "scalar",
+		"feature_butt_size" = "scalar",
+		"feature_butt_stuffing" = "scalar",
+		"feature_butt_visibility" = "scalar",
+		"feature_cock_accessible" = "scalar",
+		"feature_cock_color" = "scalar",
+		"feature_cock_diameter_ratio" = "scalar",
+		"feature_cock_length" = "scalar",
+		"feature_cock_shape" = "scalar",
+		"feature_cock_stuffing" = "scalar",
+		"feature_cock_taur" = "scalar",
+		"feature_cock_visibility" = "scalar",
+		"feature_color_scheme" = "scalar",
+		"feature_custom_deathgasp" = "emote",
+		"feature_custom_deathsound" = "deathsound",
+		"feature_custom_species_lore" = "text",
+		"feature_deco_wings" = "scalar",
+		"feature_emissive_eyes" = "scalar",
+		"feature_emissive_parts" = "json",
+		"feature_flavor_text" = "text",
+		"feature_fuzzy" = "scalar",
+		"feature_genitals_use_skintone" = "scalar",
+		"feature_hardsuit_with_tail" = "scalar",
+		"feature_has_anus" = "scalar",
+		"feature_has_balls" = "scalar",
+		"feature_has_belly" = "scalar",
+		"feature_has_breasts" = "scalar",
+		"feature_has_butt" = "scalar",
+		"feature_has_cock" = "scalar",
+		"feature_has_vag" = "scalar",
+		"feature_has_womb" = "scalar",
+		"feature_horns_color" = "scalar",
+		"feature_human_ears" = "scalar",
+		"feature_human_tail" = "scalar",
+		"feature_inert_eggs" = "scalar",
+		"feature_insect_fluff" = "scalar",
+		"feature_insect_markings" = "scalar",
+		"feature_insect_wings" = "scalar",
+		"feature_ipc_antenna" = "scalar",
+		"feature_ipc_screen" = "scalar",
+		"feature_lizard_frills" = "scalar",
+		"feature_lizard_horns" = "scalar",
+		"feature_lizard_legs" = "scalar",
+		"feature_lizard_snout" = "scalar",
+		"feature_lizard_spines" = "scalar",
+		"feature_lizard_tail" = "scalar",
+		"feature_mam_body_markings" = "json",
+		"feature_mam_ears" = "scalar",
+		"feature_mam_snouts" = "scalar",
+		"feature_mam_tail" = "scalar",
+		"feature_mam_tail_animated" = "scalar",
+		"feature_mcolor" = "scalar",
+		"feature_mcolor2" = "scalar",
+		"feature_mcolor3" = "scalar",
+		"feature_meat" = "scalar",
+		"feature_naked_flavor_text" = "text",
+		"feature_neckfire" = "scalar",
+		"feature_neckfire_color" = "scalar",
+		"feature_ooc_notes" = "private_text",
+		"feature_puddle_slime_fea" = "scalar",
+		"feature_silicon_flavor_text" = "text",
+		"feature_taur" = "scalar",
+		"feature_vag_accessible" = "scalar",
+		"feature_vag_color" = "scalar",
+		"feature_vag_shape" = "scalar",
+		"feature_vag_stuffing" = "scalar",
+		"feature_vag_visibility" = "scalar",
+		"feature_wings_color" = "scalar",
+		"feature_womb_fluid" = "fluid",
+		"feature_xeno_dors" = "scalar",
+		"feature_xeno_head" = "scalar",
+		"feature_xeno_tail" = "scalar",
+		"features_balls_max_size" = "scalar",
+		"features_balls_min_size" = "scalar",
+		"features_belly_max_size" = "scalar",
+		"features_belly_min_size" = "scalar",
+		"features_breasts_max_size" = "scalar",
+		"features_breasts_min_size" = "scalar",
+		"features_butt_max_size" = "scalar",
+		"features_butt_min_size" = "scalar",
+		"features_cock_max_length" = "scalar",
+		"features_cock_min_length" = "scalar",
+		"fertile" = "scalar",
+		"gender" = "scalar",
+		"grad_color" = "scalar",
+		"grad_style" = "scalar",
+		"hair_color" = "scalar",
+		"hair_style_name" = "scalar",
+		"job_preferences" = "list",
+		"joblessrole" = "scalar",
+		"jumpsuit_style" = "scalar",
+		"language" = "list",
+		"left_eye_color" = "scalar",
+		"loadout" = "loadout",
+		"loadout_enabled" = "scalar",
+		"loadout_slot" = "scalar",
+		"lust_tolerance" = "scalar",
+		"medical_records" = "encoded",
+		"mobsex_pref" = "scalar",
+		"modified_limbs" = "limbs",
+		"name_is_always_random" = "scalar",
+		"nameless" = "scalar",
+		"noncon_pref" = "scalar",
+		"normalized_size" = "scalar",
+		"onelife_death_type" = "scalar",
+		"pda_color" = "scalar",
+		"pda_ringtone" = "scalar",
+		"pda_skin" = "scalar",
+		"pda_style" = "scalar",
+		"pda_theme" = "scalar",
+		"personal_chat_color" = "scalar",
+		"phobia_type" = "scalar",
+		"prefered_security_department" = "scalar",
+		"preferred_ai_core_display" = "scalar",
+		"pregnancy_breast_growth" = "scalar",
+		"pregnancy_inflation" = "scalar",
+		"real_name" = "name",
+		"right_eye_color" = "scalar",
+		"security_records" = "encoded",
+		"sexual_potency" = "scalar",
+		"shirt_color" = "scalar",
+		"shriek_type" = "scalar",
+		"silicon_lawset" = "scalar",
+		"skin_tone" = "scalar",
+		"socks" = "scalar",
+		"socks_color" = "scalar",
+		"species" = "scalar",
+		"split_eye_colors" = "scalar",
+		"summon_nickname" = "name",
+		"tattoo_pref" = "scalar",
+		"undershirt" = "scalar",
+		"underwear" = "scalar",
+		"undie_color" = "scalar",
+		"unholyhard_pref" = "scalar",
+		"unholypref" = "scalar",
+		"uplink_loc" = "scalar",
+		"use_custom_moan_sounds" = "scalar",
+		"use_custom_skin_tone" = "scalar",
+		"virile" = "scalar",
+		"vore_flags" = "scalar",
+		"vore_pref" = "scalar",
+		"vore_smell" = "encoded",
+		"vore_taste" = "encoded",
+	)
+	return fields
+
+
+/proc/player_transfer_field_mode(key)
+	var/mode = player_transfer_fields()[key]
+	if(mode)
+		return mode
+	var/static/list/dynamic_fields
+	if(!dynamic_fields)
+		dynamic_fields = list()
+		for(var/id in GLOB.preferences_custom_names)
+			dynamic_fields["[id]_name"] = "name"
+		for(var/i in 1 to MAX_HEADSHOTS)
+			dynamic_fields["headshot[i == 1 ? null : i - 1]"] = "photo"
+		for(var/i in 1 to MAX_HEADSHOTS_NAKED)
+			dynamic_fields["headshot_naked[i == 1 ? null : i - 1]"] = "photo"
+		// Только зарегистрированные аксессуары; список строится один раз, а не для каждого поля файла.
+		for(var/feature in GLOB.mutant_reference_list)
+			var/list/accessories = GLOB.mutant_reference_list[feature]
+			for(var/name in accessories)
+				var/datum/sprite_accessory/accessory = accessories[name]
+				if(!istype(accessory))
+					continue
+				var/part = accessory.mutant_part_string
+				if(!part && istype(accessory, /datum/sprite_accessory/mam_body_markings))
+					part = "mam_body_markings"
+				if(part)
+					for(var/suffix in list("primary", "secondary", "tertiary"))
+						dynamic_fields["feature_[part]_[suffix]"] = "color"
+	return dynamic_fields[key]
+
+/// Эти поля уходят только в файл самого игрока, передача персонажа по коду их не отдаёт.
+/proc/player_transfer_private_modes()
+	var/static/list/modes = list("private_text", "photo")
+	return modes
+
+/// Проверяется всё дерево ДО вызова внутреннего декодера; byond/path/matrix не допускаются.
+/proc/player_transfer_validate_value(value, list/budget, depth = 0)
+	if(depth > PLAYER_TRANSFER_MAX_DEPTH || --budget[1] < 0)
+		throw EXCEPTION("Слишком сложный файл персонажа")
+	if(isnull(value) || isnum(value))
+		return
+	if(istext(value))
+		if(length(value) > 65536)
+			throw EXCEPTION("Слишком длинное поле персонажа")
+		return
+	if(!islist(value))
+		throw EXCEPTION("Недопустимое значение")
+	var/list/node = value
+	switch(node["type"])
+		if("number", "text")
+			if(node.len != 2 || !istext(node["value"]) || length(node["value"]) > 65536)
+				throw EXCEPTION("Некорректное скалярное значение")
+		if("list")
+			var/list/items = node["items"]
+			var/list/associations = node["associations"]
+			if(node.len != 3 || !islist(items) || !islist(associations) || items.len != associations.len || items.len > 4096)
+				throw EXCEPTION("Некорректный список")
+			for(var/i in 1 to items.len)
+				player_transfer_validate_value(items[i], budget, depth + 1)
+				player_transfer_validate_value(associations[i], budget, depth + 1)
+		else
+			throw EXCEPTION("Этот тип данных нельзя импортировать")
+
+/proc/player_transfer_interaction_fields()
+	var/static/list/fields = list("name", "message", "interaction_type", "arousal_level", "partner_arousal_level", "self_orgasm", "partner_orgasm", "scope", "self_required_body_parts", "partner_required_body_parts", "self_arousal_organ", "partner_arousal_organ", "self_orgasm_target", "partner_orgasm_target", "self_orgasm_organ", "partner_orgasm_organ", "self_requires_tail", "partner_requires_tail", "self_requires_telekinesis", "partner_requires_telekinesis", "max_distance", "sound_keys", "requires_review")
+	return fields
+
+/// Поля файлов обмена до разделения требований на себя и партнёра: принимаются, но действие уходит на проверку.
+/proc/player_transfer_legacy_interaction_fields()
+	var/static/list/fields = list("required_body_parts", "requires_tail", "requires_telekinesis")
+	return fields
+
+/proc/player_transfer_encode_field(mode, value)
+	if(mode == "fluid")
+		return ispath(value) ? "[value]" : null
+	if(mode == "interactions")
+		var/list/result = list()
+		for(var/datum/interaction/custom/custom as anything in value)
+			if(!istype(custom))
+				continue
+			var/list/entry = list()
+			for(var/key in player_transfer_interaction_fields())
+				entry[key] = custom.vars[key]
+			result += list(entry)
+		value = result
+	return player_save_encode_value(value)
+
+/proc/player_transfer_decode_field(key, mode, encoded, list/budget)
+	player_transfer_validate_value(encoded, budget)
+	var/value = player_save_decode_value(encoded)
+	if(isnull(value))
+		return null
+	var/static/list/text_modes = list("text", "private_text", "photo", "name", "encoded", "emote", "deathsound")
+	if((mode in text_modes) && !istext(value))
+		throw EXCEPTION("Поле [key] должно быть строкой")
+	switch(mode)
+		// Ссылка, которую редактор не принял бы, просто не переносится.
+		if("photo")
+			return length(value) ? sanitize_headshot_link(html_decode(value)) : value
+		if("scalar")
+			if(!istext(value) && !isnum(value))
+				throw EXCEPTION("Поле [key] должно быть строкой или числом")
+		// Текст приводится к виду, в котором его сохраняет редактор персонажа.
+		if("name")
+			return reject_bad_name(value, TRUE)
+		if("encoded")
+			return html_encode_readable(html_decode(value))
+		if("emote")
+			return strip_html_simple(value, MAX_DEATHGASP_LEN)
+		if("deathsound")
+			return (value in GLOB.deathgasp_sounds) ? value : null
+		if("color")
+			if(!istext(value))
+				throw EXCEPTION("Некорректный дополнительный цвет")
+			return sanitize_hexcolor(value, 6, FALSE)
+		if("fluid")
+			if(!istext(value))
+				throw EXCEPTION("Некорректная жидкость")
+			var/resolved = text2path(value)
+			if(!ispath(resolved, /datum/reagent) || !(find_reagent_object_from_type(resolved) in GLOB.genital_fluids_list))
+				throw EXCEPTION("Недоступная жидкость")
+			return resolved
+		if("list", "interactions")
+			if(!islist(value))
+				throw EXCEPTION("Поле [key] должно быть списком")
+			if(key == "custom_emote_panel" || key == "custom_emote_groups" || key == "custom_emote_chat_order")
+				value = player_transfer_escape_list(value)
+		if("json", "loadout", "limbs")
+			if(!istext(value))
+				throw EXCEPTION("Некорректные данные [key]")
+			player_transfer_check_json_depth(value)
+			var/list/decoded = json_decode(value)
+			if(!islist(decoded))
+				throw EXCEPTION("Некорректный список [key]")
+			player_transfer_validate_value(player_save_encode_value(decoded), budget)
+			if(mode == "loadout")
+				decoded = player_transfer_escape_list(decoded)
+			value = json_encode(decoded)
+			if(mode == "limbs")
+				var/prosthetics = 0
+				for(var/zone in decoded)
+					var/list/limb = decoded[zone]
+					if(!(zone in LOADOUT_ALLOWED_LIMB_TARGETS) || !islist(limb) || !length(limb) || !(limb[1] in LOADOUT_LIMBS))
+						throw EXCEPTION("Недопустимая модификация конечности")
+					if(limb[1] == LOADOUT_LIMB_PROSTHETIC)
+						if(limb.len != 2 || !(limb[2] in (list("prosthetic") + GLOB.prosthetic_limb_types)))
+							throw EXCEPTION("Неизвестный протез")
+						prosthetics++
+					else if(limb.len != 1)
+						throw EXCEPTION("Некорректная модификация конечности")
+				if(prosthetics > MAXIMUM_LOADOUT_PROSTHETICS)
+					throw EXCEPTION("Превышен лимит протезов")
+			if(mode == "loadout")
+				// Слот пресета SAVE_0 редактор хранит рядом с общими SAVE_1..SAVE_N.
+				if(decoded.len > MAXIMUM_LOADOUT_SAVES - LOADOUT_PRESET_SLOT + 1)
+					throw EXCEPTION("Слишком много наборов экипировки")
+				for(var/slot in decoded)
+					var/slot_number = istext(slot) ? text2num(copytext(slot, 6)) : null
+					if(!isnum(slot_number) || slot_number != round(slot_number) || slot_number < LOADOUT_PRESET_SLOT || slot_number > MAXIMUM_LOADOUT_SAVES || slot != "SAVE_[slot_number]")
+						throw EXCEPTION("Неизвестный набор экипировки")
+					var/list/entries = decoded[slot]
+					if(!islist(entries) || entries.len > 100)
+						throw EXCEPTION("Слишком много предметов экипировки")
+					for(var/list/entry as anything in entries)
+						if(!islist(entry) || !istext(entry[LOADOUT_ITEM]))
+							throw EXCEPTION("Неизвестный предмет экипировки")
+						// Несуществующий путь (вещь переименовали или убрали) отсеивается при сборке набора.
+						var/gear_path = text2path(entry[LOADOUT_ITEM])
+						if(gear_path && !ispath(gear_path, /datum/gear))
+							throw EXCEPTION("Неизвестный предмет экипировки")
+	if(mode == "interactions")
+		var/list/result = list()
+		if(length(value) > 100)
+			throw EXCEPTION("Слишком много пользовательских действий")
+		for(var/list/entry as anything in value)
+			if(!islist(entry))
+				throw EXCEPTION("Некорректное пользовательское действие")
+			var/legacy_fields = FALSE
+			for(var/key_name in entry)
+				if(key_name in player_transfer_legacy_interaction_fields())
+					legacy_fields = TRUE
+					continue
+				if(!(key_name in player_transfer_interaction_fields()))
+					throw EXCEPTION("Недопустимое поле действия")
+				if(key_name == "sound_keys")
+					if(!islist(entry[key_name]))
+						throw EXCEPTION("Некорректный список звуков")
+				else if(!istext(entry[key_name]) && !isnum(entry[key_name]) && !isnull(entry[key_name]))
+					throw EXCEPTION("Некорректное значение действия")
+			var/datum/interaction/custom/custom = new
+			for(var/key_name in entry)
+				if(key_name in player_transfer_interaction_fields())
+					custom.vars[key_name] = entry[key_name]
+			custom.requires_review = legacy_fields || !!custom.requires_review
+			custom.sanitize_values()
+			result += custom
+		return result
+	return value
+
+/datum/preferences
+	var/tmp/player_transfer_error
+	/// Что импорт поправил сам: убранные вещи экипировки, сброшенные квирки.
+	var/tmp/list/player_transfer_notices
+	var/tmp/player_transfer_busy = FALSE
+	var/tmp/player_transfer_cooldown = 0
+
+/// Возвращает только данные текущего персонажа, без чтения корня аккаунта. OOC-заметки и картинки - только с include_private.
+/datum/preferences/proc/export_character_json(include_private = FALSE)
+	player_transfer_error = null
+	try
+		var/savefile/source = write_character(TRUE, TRUE, TRUE)
+		if(!istype(source))
+			throw EXCEPTION("Не удалось подготовить персонажа")
+		var/list/fields = list()
+		var/list/budget = list(PLAYER_TRANSFER_MAX_NODES)
+		for(var/key in source.dir)
+			var/mode = player_transfer_field_mode(key)
+			if(!mode || (!include_private && (mode in player_transfer_private_modes())))
+				continue
+			var/value
+			source[key] >> value
+			var/encoded = player_transfer_encode_field(mode, value)
+			// Без имени поля игрок не поймёт, какую настройку поправить.
+			try
+				player_transfer_validate_value(encoded, budget)
+			catch(var/exception/field_failure)
+				throw EXCEPTION("[field_failure.name] (поле [key])")
+			fields[key] = encoded
+		var/text = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = fields))
+		if(length(text) > PLAYER_TRANSFER_MAX_BYTES)
+			throw EXCEPTION("Персонаж превышает лимит файла 2 МиБ")
+		return text
+	catch(var/exception/failure)
+		player_transfer_error = failure.name
+		return null
+
+/// Файл сначала полностью проверяется; миграции дискового формата здесь никогда не запускаются.
+/proc/player_transfer_parse(text)
+	if(!istext(text) || !length(text) || length(text) > PLAYER_TRANSFER_MAX_BYTES)
+		throw EXCEPTION("Нужен JSON персонажа размером не более 2 МиБ")
+	player_transfer_check_json_depth(text)
+	var/list/document = json_decode(text)
+	if(!islist(document) || document.len != 3 || document["format"] != "bluemoon-character" || document["version"] != 1)
+		throw EXCEPTION("Неподдерживаемый формат персонажа")
+	var/list/fields = document["fields"]
+	if(!islist(fields) || !length(fields) || fields.len > 512)
+		throw EXCEPTION("Некорректный набор полей")
+	var/list/result = list()
+	var/list/budget = list(PLAYER_TRANSFER_MAX_NODES)
+	for(var/key in fields)
+		if(!istext(key))
+			throw EXCEPTION("Некорректное имя поля")
+		var/mode = player_transfer_field_mode(key)
+		if(!mode)
+			throw EXCEPTION("Поле [copytext(key, 1, 64)] нельзя переносить")
+		result[key] = player_transfer_decode_field(key, mode, fields[key], budget)
+	return result
+
+/// Пробная загрузка не касается живых prefs. Публикуется только разрешённая часть результата.
+/datum/preferences/proc/import_character_json(text)
+	player_transfer_error = null
+	player_transfer_notices = list()
+	var/datum/preferences/transfer_staging/staged
+	try
+		var/list/fields = player_transfer_parse(text)
+		if(player_save_blocked || !path)
+			throw EXCEPTION("Хранилище персонажа недоступно")
+		var/savefile/current = write_character(TRUE, TRUE, TRUE)
+		var/savefile/baseline = new
+		if(!current)
+			throw EXCEPTION("Не удалось подготовить текущий слот")
+		player_save_copy_tree(current, baseline)
+		for(var/key in fields)
+			baseline[key] << fields[key]
+		staged = new
+		staged.interaction_limit = get_custom_interaction_limit()
+		if(length(fields["custom_interactions"]) > staged.interaction_limit)
+			throw EXCEPTION("Превышен доступный вашему аккаунту лимит пользовательских действий")
+		if(!staged.load_character(null, TRUE, baseline))
+			throw EXCEPTION("Не удалось проверить персонажа")
+		validate_character_transfer_access(staged, fields)
+		var/savefile/sanitized = staged.write_character(TRUE, TRUE, TRUE)
+		var/savefile/destination = open_player_save("/character[default_slot]")
+		if(!sanitized || !destination)
+			throw EXCEPTION("Не удалось подготовить запись персонажа")
+		destination.cd = "/character[default_slot]"
+		// Не теряем ещё не записанные изменения текущего персонажа, включая коллекции.
+		if(length(destination.dir) && savefile_needs_update(destination) == -2)
+			throw EXCEPTION("Версия выбранного слота не поддерживается")
+		player_save_copy_tree(current, destination)
+		for(var/key in fields)
+			var/value
+			sanitized[key] >> value
+			destination[key] << value
+		var/current_version
+		baseline["version"] >> current_version
+		destination["version"] << current_version
+		if(!commit_player_save(destination, "/character[default_slot]"))
+			throw EXCEPTION("Не удалось записать персонажа; исходный слот сохранён")
+		qdel(staged)
+		staged = null
+		// Все потенциально опасные разборы уже выполнены на пробном объекте.
+		return !!load_character(default_slot, TRUE)
+	catch(var/exception/failure)
+		if(staged)
+			qdel(staged)
+		player_transfer_error = failure.name
+		return FALSE
+
+/datum/preferences/proc/download_character_json(mob/user)
+	var/text = export_character_json(TRUE)
+	if(!text)
+		to_chat(user, span_warning("Экспорт не выполнен: [html_encode(player_transfer_error)]"))
+		return
+	var/static/sequence = 0
+	var/temp_path = "data/player_transfer/export_[num2text(world.realtime, 12)]_[++sequence].json"
+	fdel(temp_path)
+	if(!text2file(text, temp_path))
+		to_chat(user, span_warning("Не удалось создать файл экспорта."))
+		return
+	var/resource = fcopy_rsc(temp_path)
+	fdel(temp_path)
+	user << ftp(resource, "bluemoon-character.json")
+
+/datum/preferences/proc/upload_character_json(mob/user)
+	if(player_transfer_busy || world.time < player_transfer_cooldown)
+		return
+	player_transfer_busy = TRUE
+	player_transfer_cooldown = world.time + 10 SECONDS
+	var/slot = default_slot
+	var/upload = input(user, "Выберите JSON персонажа (до 2 МиБ). Изменится только выбранный слот.", "Импорт персонажа") as file|null
+	if(!upload || user.client?.prefs != src || slot != default_slot)
+		player_transfer_busy = FALSE
+		return
+	if(length(upload) > PLAYER_TRANSFER_MAX_BYTES)
+		to_chat(user, span_warning("Размер файла превышает 2 МиБ."))
+		player_transfer_busy = FALSE
+		return
+	var/text = file2text(upload)
+	try
+		player_transfer_parse(text)
+	catch(var/exception/failure)
+		to_chat(user, span_warning("Импорт отклонён: [html_encode(failure.name)]"))
+		player_transfer_busy = FALSE
+		return
+	. = confirm_character_import(user, text, slot)
+	player_transfer_busy = FALSE
+
+/// Старая копия из локального хранилища BYOND (client.Export до перехода на JSON-файл).
+/datum/preferences/proc/upload_legacy_character(mob/user)
+	if(player_transfer_busy || world.time < player_transfer_cooldown || !user?.client)
+		return
+	player_transfer_busy = TRUE
+	player_transfer_cooldown = world.time + 10 SECONDS
+	var/slot = default_slot
+	var/text = legacy_character_json(user.client.Import())
+	if(!text)
+		to_chat(user, span_warning("Старая копия не загружена: [html_encode(player_transfer_error)]"))
+	else if(user.client?.prefs == src && slot == default_slot)
+		. = confirm_character_import(user, text, slot)
+	player_transfer_busy = FALSE
+
+/// Импорт заменяет персонажа слота целиком, поэтому по умолчанию предлагается свободный слот.
+/datum/preferences/proc/confirm_character_import(mob/user, text, slot)
+	var/incoming_name
+	try
+		var/list/fields = player_transfer_parse(text)
+		incoming_name = fields["real_name"]
+	catch
+		// Ошибку разбора покажет сам импорт.
+		incoming_name = null
+	var/list/slot_names = get_slot_names()
+	var/current_name = slot_names?[slot]
+	var/free_slot
+	if(current_name)
+		for(var/candidate in 1 to max_save_slots)
+			if(!slot_names[candidate])
+				free_slot = candidate
+				break
+	var/incoming_label = istext(incoming_name) ? "«[incoming_name]»" : "персонажа из файла"
+	var/to_free = "В свободный слот [free_slot]"
+	var/to_replace = current_name ? "Заменить «[current_name]»" : "Импортировать"
+	var/list/choices = free_slot ? list(to_free, to_replace, "Отмена") : list(to_replace, "Отмена")
+	var/question = "Импорт [incoming_label]."
+	if(current_name)
+		question += " Сейчас в слоте [slot] «[current_name]»: замена перезапишет его, копия останется у администрации."
+	question += " Валюта, коллекции и закрытые данные не меняются."
+	var/confirmed = tgui_alert(user, question, "Импорт персонажа", choices)
+	if(!confirmed || confirmed == "Отмена" || user.client?.prefs != src || default_slot != slot)
+		return FALSE
+	var/replaced_name
+	var/backup_path
+	if(confirmed == to_free)
+		// Несохранённые правки текущего персонажа записываются, как при переключении слота с автосохранением.
+		if(!save_character(bypass_cooldown = TRUE, silent = TRUE) || !create_character(free_slot))
+			to_chat(user, span_warning("Импорт не выполнен: не удалось подготовить слот [free_slot]."))
+			return FALSE
+		save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+		slot = free_slot
+	else if(current_name)
+		replaced_name = current_name
+		backup_path = backup_character_before_import(slot)
+		if(!backup_path)
+			to_chat(user, span_warning("Импорт не выполнен: не удалось сохранить копию «[html_encode(current_name)]». Импортируйте в свободный слот."))
+			return FALSE
+	if(!import_character_json(text))
+		to_chat(user, span_warning("Импорт не выполнен: [html_encode(player_transfer_error)]"))
+		return FALSE
+	log_character_replacement("импорт файла", slot, incoming_name, replaced_name, backup_path)
+	to_chat(user, span_notice("Персонаж импортирован и сохранён в слот [slot]."))
+	if(length(player_transfer_notices))
+		to_chat(user, span_warning("При импорте [html_encode(jointext(player_transfer_notices, "; "))]."))
+	return TRUE
+
+/// Копия персонажа слота перед заменой импортом. Файл того же формата, что экспорт: администрация может отдать его игроку для импорта.
+/datum/preferences/proc/backup_character_before_import(slot)
+	var/text = export_character_json(TRUE)
+	if(!text || !path)
+		return null
+	var/directory = "[copytext(path, 1, findlasttext(path, "/") + 1)]import_backups/"
+	// Время первым: по имени файлы идут от старых к новым.
+	var/backup_path = "[directory][time2text(world.realtime, "YYYYMMDD-hhmmss")]-slot[slot]-[rand(1000, 9999)].json"
+	if(!text2file(text, backup_path))
+		return null
+	var/list/existing = sort_list(flist(directory))
+	while(length(existing) > PLAYER_TRANSFER_BACKUPS_KEPT)
+		fdel("[directory][existing[1]]")
+		existing.Cut(1, 2)
+	return backup_path
+
+/datum/preferences/proc/log_character_replacement(source, slot, incoming_name, replaced_name, backup_path)
+	var/message = "Перенос персонажа: [player_save_ckey()] - [source] «[incoming_name]» в слот [slot]"
+	if(replaced_name)
+		message += " вместо «[replaced_name]», копия [backup_path]"
+	log_game(message)
+
+/**
+ * Старая копия - доверенный когда-то savefile, но приходит от клиента. Чтение объекта из savefile создаёт его,
+ * поэтому до чтения в тексте файла допускаются только объекты пользовательских действий.
+ * Дальше копия идёт тем же путём, что JSON-файл: загрузка в пробные prefs, экспорт и полная проверка импорта.
+ */
+/datum/preferences/proc/legacy_character_json(source_file)
+	player_transfer_error = null
+	var/datum/preferences/transfer_staging/staging
+	try
+		if(!source_file)
+			throw EXCEPTION("в этом клиенте нет старой копии персонажа")
+		if(length(source_file) > PLAYER_TRANSFER_MAX_BYTES)
+			throw EXCEPTION("старая копия больше 2 МиБ")
+		var/savefile/legacy = new(source_file)
+		player_transfer_check_legacy_objects(legacy.ExportText("/"))
+		staging = new
+		staging.interaction_limit = get_custom_interaction_limit()
+		if(!staging.load_character(null, TRUE, legacy))
+			throw EXCEPTION("старая копия не читается")
+		var/text = staging.export_character_json(TRUE)
+		if(!text)
+			throw EXCEPTION(staging.player_transfer_error || "не удалось подготовить персонажа")
+		qdel(staging)
+		return text
+	catch(var/exception/failure)
+		if(staging)
+			qdel(staging)
+		player_transfer_error = failure.name
+		return null
+
+/proc/player_transfer_check_legacy_objects(text)
+	if(!istext(text) || !length(text))
+		throw EXCEPTION("старая копия пуста")
+	var/static/regex/type_line = regex(@"^\s*type\s*=\s*(.*?)\s*$")
+	for(var/line in splittext(text, "\n"))
+		if(type_line.Find(line) && type_line.group[1] != "[/datum/interaction/custom]")
+			throw EXCEPTION("в старой копии недопустимые данные")
+
+
+/// Те же ограничения, что в редакторе: файл не выдаёт доступ к донатным предметам и обликам.
+/datum/preferences/proc/validate_character_transfer_access(datum/preferences/staged, list/fields)
+	var/recipient = parent?.ckey
+	if("species" in fields)
+		var/available = FALSE
+		for(var/name in GLOB.roundstart_race_names)
+			if(GLOB.roundstart_race_names[name] == staged.pref_species.id)
+				available = TRUE
+				break
+		if(!available)
+			throw EXCEPTION("Этот вид недоступен в редакторе персонажа")
+	if("bark_id" in fields)
+		var/datum/bark/bark = GLOB.bark_list[staged.bark_id]
+		var/list/allowed = initial(bark.ckeys_allowed)
+		if(initial(bark.ignore) || (length(allowed) && !is_key_in_whitelist(recipient, allowed)))
+			throw EXCEPTION("Этот голос недоступен вашему аккаунту")
+	for(var/feature in GLOB.mutant_reference_list)
+		var/list/accessories = GLOB.mutant_reference_list[feature]
+		var/selected = staged.features[feature]
+		var/list/selections = islist(selected) ? selected : list(selected)
+		for(var/selection in selections)
+			if(!istext(selection))
+				continue
+			var/datum/sprite_accessory/accessory = accessories[selection]
+			if(istype(accessory) && length(accessory.ckeys_allowed) && !accessory.is_allowed_for(recipient))
+				throw EXCEPTION("Один из элементов внешности недоступен вашему аккаунту")
+	if("language" in fields)
+		if(CONFIG_GET(number/max_languages) >= 0 && length(staged.language) > CONFIG_GET(number/max_languages))
+			throw EXCEPTION("Превышен лимит языков")
+	if(("all_quirks" in fields) || ("body_weight" in fields) || ("modified_limbs" in fields))
+		var/list/known = list()
+		for(var/quirk in staged.all_quirks)
+			if(istext(quirk) && SSquirks.quirks[quirk] && !(quirk in known))
+				known += quirk
+		if(length(known) != length(staged.all_quirks))
+			player_transfer_notices += "убраны неизвестные квирки"
+			fields["all_quirks"] = known
+		staged.all_quirks = known
+		// Баланс считается так же, как в редакторе; файл с другим балансом не отклоняется, квирки сбрасываются, как при входе.
+		if(staged.quirk_balance() < 0 || staged.GetPositiveQuirkCount() > MAX_QUIRKS || SSquirks.check_blacklist_conflicts(staged.all_quirks))
+			staged.all_quirks = list()
+			fields["all_quirks"] = list()
+			player_transfer_notices += "квирки сброшены: набор не проходит ограничения редактора"
+		if(staged.quirk_balance() < 0)
+			throw EXCEPTION("Вес и модификации тела дороже доступного баланса квирков")
+	if("loadout" in fields)
+		var/points = CONFIG_GET(number/initial_gear_points)
+		if(recipient)
+			points += (IS_CKEY_DONATOR_GROUP(recipient, DONATOR_GROUP_TIER_1) ? CONFIG_GET(number/subscriber_extra_gear_points) : 0)
+			points += (IS_CKEY_DONATOR_GROUP(recipient, DONATOR_GROUP_TIER_2) ? CONFIG_GET(number/sponsor_extra_gear_points) : 0)
+		// Недоступное аккаунту и не влезающее в бюджет убирается из набора, а не отклоняет весь файл.
+		var/list/dropped = list()
+		var/unknown = 0
+		for(var/slot in staged.loadout_data)
+			var/list/entries = staged.loadout_data[slot]
+			if(!islist(entries))
+				continue
+			var/list/kept = list()
+			var/list/seen = list()
+			var/remaining = points
+			for(var/list/entry as anything in entries)
+				var/datum/gear/gear_type = istext(entry[LOADOUT_ITEM]) ? text2path(entry[LOADOUT_ITEM]) : entry[LOADOUT_ITEM]
+				var/datum/gear/gear
+				if(ispath(gear_type, /datum/gear))
+					var/list/categories = GLOB.loadout_items[initial(gear_type.category)]
+					var/list/subcategories = categories?[initial(gear_type.subcategory)]
+					gear = subcategories?[initial(gear_type.name)]
+				if(!gear)
+					unknown++
+					continue
+				if(gear_type in seen)
+					continue
+				seen += gear_type
+				if((gear.donoritem && (!recipient || !gear.donator_ckey_check(recipient))) || (istype(gear, /datum/gear/unlockable) && !can_use_unlockable(gear)) || gear.cost > remaining)
+					dropped |= gear.name
+					continue
+				remaining -= gear.cost
+				kept += list(entry)
+			staged.loadout_data[slot] = kept
+		if(length(dropped))
+			player_transfer_notices += "из экипировки убрано: [jointext(dropped, ", ")]"
+		if(unknown)
+			player_transfer_notices += "из экипировки убраны вещи, которых больше нет в игре: [unknown]"
+
+
+/proc/player_transfer_escape_list(value)
+	if(istext(value))
+		return html_encode_readable(html_decode(value))
+	if(!islist(value))
+		return value
+	var/list/source = value
+	var/list/result = list()
+	for(var/i in 1 to source.len)
+		var/key = source[i]
+		var/safe_key = player_transfer_escape_list(key)
+		result += list(safe_key)
+		if(!isnull(key) && !isnum(key) && !isnull(source[key]))
+			result[safe_key] = player_transfer_escape_list(source[key])
+	return result
+
+
+/// BYOND молча обрезает очень глубокий JSON. Проверяем исходный текст до json_decode.
+/proc/player_transfer_check_json_depth(text)
+	var/depth = 0
+	var/in_string = FALSE
+	var/escaped = FALSE
+	for(var/i in 1 to length(text))
+		var/character = text2ascii(text, i)
+		if(in_string)
+			if(escaped)
+				escaped = FALSE
+			else if(character == 92)
+				escaped = TRUE
+			else if(character == 34)
+				in_string = FALSE
+		else if(character == 34)
+			in_string = TRUE
+		else if(character == 91 || character == 123)
+			if(++depth > 16)
+				throw EXCEPTION("Слишком глубокий JSON персонажа")
+		else if(character == 93 || character == 125)
+			depth--
+
+
+/// Пробный объект не привязан к клиенту, но учитывает полученные от сервера лимиты аккаунта.
+/datum/preferences/transfer_staging
+	var/interaction_limit
+
+/datum/preferences/transfer_staging/get_custom_interaction_limit()
+	return interaction_limit || ..()

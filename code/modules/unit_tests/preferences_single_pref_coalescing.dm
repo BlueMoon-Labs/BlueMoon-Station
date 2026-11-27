@@ -107,6 +107,34 @@
 	qdel(prefs)
 
 /**
+ * Ленивый ключ своего сброса не заводит и уезжает с чужим.
+ *
+ * Остаток минут до М$ писался отдельным открытием savefile на каждое начисление
+ * каждому живому игроку. Ленивый ключ ждёт ближайшего сброса этого игрока.
+ */
+/datum/unit_test/preferences_single_pref_lazy_waits_for_flush
+
+/datum/unit_test/preferences_single_pref_lazy_waits_for_flush/Run()
+	var/datum/preferences/prefs = new
+
+	prefs.buffer_single_pref("metadollar_minute_pool", 12, lazy = TRUE)
+	TEST_ASSERT_EQUAL(LAZYACCESS(prefs.pending_single_prefs, "metadollar_minute_pool"), 12, "ленивый ключ не попал в буфер")
+	TEST_ASSERT_NULL(prefs.single_pref_queue, "ленивый ключ завёл свой сброс - это лишнее открытие savefile")
+
+	prefs.buffer_single_pref("metadollar_minute_pool", 30, lazy = TRUE)
+	TEST_ASSERT_EQUAL(prefs.pending_single_prefs["metadollar_minute_pool"], 30, "повтор ленивого ключа не схлопнулся до последнего значения")
+	TEST_ASSERT_NULL(prefs.single_pref_queue, "повтор ленивого ключа завёл сброс")
+
+	prefs.buffer_single_pref("tgui_panel_theme", "dark")
+	TEST_ASSERT_NOTNULL(prefs.single_pref_queue, "обычный ключ после ленивого не завёл сброс")
+	TEST_ASSERT_EQUAL(length(prefs.pending_single_prefs), 2, "ленивый ключ не уедет вместе с обычным")
+
+	deltimer(prefs.single_pref_queue)
+	prefs.single_pref_queue = null
+	prefs.pending_single_prefs = null
+	qdel(prefs)
+
+/**
  * Полная запись префов уже в очереди - второй таймер заводить нельзя.
  *
  * Полный save_preferences открывает тот же самый savefile и дописывает буфер в конце,
@@ -157,13 +185,15 @@
 	var/leftover_keys = length(prefs.pending_single_prefs)
 	var/leftover_timer = prefs.single_pref_queue
 
-	var/savefile/readback = new /savefile(prefs.path)
+	var/savefile/readback = prefs.open_player_save()
 	readback.cd = "/"
 	var/written_theme
 	var/written_state
 	READ_FILE(readback["tgui_panel_theme"], written_theme)
 	READ_FILE(readback["tgui_panel_state"], written_state)
 	readback = null
+	fdel("[prefs.path].json")
+	fdel("[prefs.path].json.recovery")
 	fdel(prefs.path)
 	qdel(prefs)
 
@@ -171,6 +201,31 @@
 	TEST_ASSERT_NULL(leftover_timer, "сброс буфера не снял свой таймер")
 	TEST_ASSERT_EQUAL(written_theme, "dark", "ключ, положенный в буфер первым, не доехал до диска")
 	TEST_ASSERT_EQUAL(written_state, "{\"v\":7}", "ключ, положенный в буфер последним, не доехал до диска")
+
+/// Запись персонажа открывает тот же файл и забирает буфер в корень; экспорт буфер не трогает.
+/datum/unit_test/preferences_save_character_flushes_single_prefs
+
+/datum/unit_test/preferences_save_character_flushes_single_prefs/Run()
+	var/datum/preferences/prefs = new
+	prefs.load_path("unit_test_save_character_single_prefs")
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+
+	prefs.buffer_single_pref("metadollar_minute_pool", 42, lazy = TRUE)
+	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE, export = TRUE, update_active_preset = FALSE)
+	var/kept_on_export = LAZYACCESS(prefs.pending_single_prefs, "metadollar_minute_pool")
+	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
+	var/leftover_keys = length(prefs.pending_single_prefs)
+
+	var/datum/player_save_json/account/reader = new(prefs.path)
+	var/datum/player_save_document/readback = reader.snapshot(null, FALSE)
+	var/written_pool = readback?.read("metadollar_minute_pool")
+	fdel(copytext(prefs.path, 1, findlasttext(prefs.path, "/") + 1))
+	prefs.path = null
+	qdel(prefs)
+
+	TEST_ASSERT_EQUAL(kept_on_export, 42, "экспорт персонажа забрал буфер одиночных ключей")
+	TEST_ASSERT_EQUAL(leftover_keys, 0, "запись персонажа не забрала буфер одиночных ключей")
+	TEST_ASSERT_EQUAL(written_pool, 42, "ленивый ключ не доехал до диска с записью персонажа")
 
 /// Настройка, положенная через буфер, обязана лечь в savefile так же, как её кладёт
 /// полная запись, и пережить следующую полную запись.
@@ -196,7 +251,7 @@
 	var/buffered_keys = length(prefs.pending_single_prefs)
 	prefs.flush_single_prefs()
 
-	var/savefile/readback = new /savefile(prefs.path)
+	var/savefile/readback = prefs.open_player_save()
 	readback.cd = "/"
 	var/buffered_fancy
 	var/buffered_length
@@ -212,7 +267,7 @@
 
 	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 
-	var/savefile/after_full = new /savefile(prefs.path)
+	var/savefile/after_full = prefs.open_player_save()
 	after_full.cd = "/"
 	var/full_fancy
 	var/full_length
@@ -227,6 +282,8 @@
 	after_full = null
 
 	var/leftover_keys = length(prefs.pending_single_prefs)
+	fdel("[prefs.path].json")
+	fdel("[prefs.path].json.recovery")
 	fdel(prefs.path)
 	qdel(prefs)
 
@@ -254,7 +311,7 @@
 	prefs.load_path("unit_test_single_pref_stale")
 	var/savefile/seed = new /savefile(prefs.path)
 	seed.cd = "/"
-	WRITE_FILE(seed["version"], 0)
+	WRITE_FILE(seed["version"], 79)
 	seed = null
 
 	prefs.clientfps = 77
@@ -262,7 +319,7 @@
 	prefs.save_pref_var("max_chat_length")
 	prefs.flush_single_prefs()
 
-	var/savefile/readback = new /savefile(prefs.path)
+	var/savefile/readback = prefs.open_player_save()
 	readback.cd = "/"
 	var/version_after
 	var/unbuffered_after
@@ -271,10 +328,12 @@
 	READ_FILE(readback["clientfps"], unbuffered_after)
 	READ_FILE(readback["max_chat_length"], buffered_after)
 	readback = null
+	fdel("[prefs.path].json")
+	fdel("[prefs.path].json.recovery")
 	fdel(prefs.path)
 	qdel(prefs)
 
-	TEST_ASSERT(version_after > 0, "сброс буфера в файл нулевой версии обязан уходить полной записью и поднимать версию")
+	TEST_ASSERT(version_after > 0, "сброс буфера в файл поддерживаемой старой версии обязан уходить полной записью и поднимать версию")
 	TEST_ASSERT_EQUAL(unbuffered_after, 77, "полная запись из сброса обязана положить и небуферизованные ключи")
 	TEST_ASSERT_EQUAL(buffered_after, 321, "буферизованный ключ обязан дойти до файла и через полную запись")
 
@@ -313,7 +372,7 @@
 		"ambientocclusion", "widescreenpref", "fullscreen", "auto_fit_viewport", "outline_enabled",
 		"screentip_pref", "screentip_images", "tgui_fancy", "tgui_lock", "chat_on_map", "chat_on_map_looc",
 		"see_chat_non_mob", "see_chat_emotes", "hud_toggle_flash", "mood_vignette", "view_pixelshift",
-		"parallax", "clientfps", "runechat_anim", "windowflash", "windownoise", "auto_capitalize_enabled",
+		"parallax", "clientfps", "runechat_anim", "windowflash", "windownoise", "examine_headshots", "auto_capitalize_enabled",
 		"action_buttons_hide_on_spawn", "autostand", "long_strip_menu", "shift_invites", "disable_combat_cursor",
 		"disable_combat_mouse_lock", "ticket_nickname", "adminhelp_windowflash",
 		"screenshake", "damagescreenshake", "recoil_screenshake",
@@ -326,7 +385,7 @@
 		"sound_volume_jukeboxes", "sound_volume_personal_jukeboxes", "sound_volume_emote", "sound_volume_heretic_dance", "sound_volume_heretic_sky",
 		"sound_volume_mentorhelp", "sound_volume_fax",
 		"modern_button_shape", "modern_ui_language", "ui_decoration_level", "collapse_empty_character_slots",
-		"enable_tips", "tip_delay", "lastchangelog", "lastchangelog_date",
+		"enable_tips", "tip_delay", "lastchangelog", "lastchangelog_date", "menuoptions", "inquisitive_ghost",
 		"chem_dispenser_classic_view", "chem_dispenser_use_reagent_color", "chem_dispenser_show_icons",
 		"chem_dispenser_alphabetical_sort",
 		"tgui_panel_state", "tgui_panel_theme",
@@ -339,10 +398,12 @@
 	prefs.load_path("unit_test_single_pref_keys")
 	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 
-	var/savefile/written = new /savefile(prefs.path)
+	var/savefile/written = prefs.open_player_save()
 	written.cd = "/"
 	var/list/root_keys = written.dir.Copy()
 	written = null
+	fdel("[prefs.path].json")
+	fdel("[prefs.path].json.recovery")
 	fdel(prefs.path)
 	qdel(prefs)
 
@@ -391,10 +452,19 @@
 			for(var/slot in 1 to 2)
 				writer.default_slot = slot
 				writer.save_character(bypass_cooldown = TRUE, silent = TRUE, update_active_preset = FALSE)
+			// Новые сейвы пишутся в JSON; старый .sav для миграции собираем из того же дерева.
+			var/savefile/written = writer.open_player_save()
+			TEST_ASSERT(written, "Не прочитан записанный JSON")
+			var/legacy_text = written.ExportText("/")
+			written = null
+			writer.path = null
 			qdel(writer)
 			writer = null
+			for(var/suffix in list("", ".json", ".json.recovery", ".json.d/"))
+				fdel("[test_path][suffix]")
 
 			var/savefile/seed = new /savefile(test_path)
+			seed.ImportText("/", legacy_text)
 			seed.cd = "/"
 			var/current_version
 			seed["version"] >> current_version
@@ -409,9 +479,9 @@
 				var/datum/preferences/reader = new
 				reader.path = test_path
 				var/loaded = reader.load_preferences(bypass_cooldown = TRUE)
-				if(!istype(loaded, /savefile))
+				if(!loaded)
 					TEST_FAIL("Не загрузились преференсы версии [old_version], вход [login].")
-				var/savefile/readback = new /savefile(test_path)
+				var/savefile/readback = reader.open_player_save()
 				readback.cd = "/"
 				for(var/key in expected)
 					var/expected_json = json_encode(expected[key])
@@ -427,7 +497,8 @@
 					TEST_FAIL("Версия [old_version] не обновилась до [current_version].")
 				readback = null
 				loaded = null
+				reader.path = null
 				qdel(reader)
 				reader = null
-			fdel(test_path)
-			fdel("[test_path].updatebac")
+			for(var/suffix in list("", ".json", ".json.recovery", ".json.d/", ".updatebac"))
+				fdel("[test_path][suffix]")

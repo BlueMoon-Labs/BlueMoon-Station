@@ -30,9 +30,9 @@
 /obj/item/gun/ballistic/automatic/acr5m30/pinstation
 	pin = /obj/item/firing_pin
 
-/obj/item/gun/ballistic/automatic/acr5m30/pinvanguard
+/* /obj/item/gun/ballistic/automatic/acr5m30/pinvanguard
 	pin = /obj/item/firing_pin/explorer
-	projectile_simple_mob_damage_multiplier = 1.5
+	projectile_simple_mob_damage_multiplier = 1.5 */
 
 //ACR modification for 7.62
 /obj/item/gun/ballistic/automatic/acrm

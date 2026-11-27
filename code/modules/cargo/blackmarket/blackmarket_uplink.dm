@@ -8,6 +8,9 @@
 	var/selected_item
 	var/buying
 	var/money = 0 // How much money is inserted into the uplink.
+	/// Происхождение внесённых денег и все ли они сняты со счёта: выведенный голочип наследует их
+	var/money_origin
+	var/money_withdrawn = FALSE
 	var/list/accessible_markets = list(/datum/blackmarket_market/blackmarket,
 									   /datum/blackmarket_market/syndi) // List of typepaths for "/datum/blackmarket_market"s that this uplink can access.
 
@@ -24,6 +27,12 @@
 		var/worth = I.get_item_credit_value()
 		if(!worth)
 			to_chat(user, "<span class='warning'>[I] doesn't seem to be worth anything!</span>")
+			return
+		if(!SSeconomy.cash_in(list(I), null, worth, user, "Наличные в аплинк чёрного рынка", reason = ECON_BLACKMARKET))
+			to_chat(user, span_warning("[src] не принимает [I]."))
+			return
+		money_withdrawn = (money ? money_withdrawn : TRUE) && econ_cash_withdrawn(I)
+		money_origin = econ_cash_origin_join(money ? money_origin : null, econ_cash_origin_of(I))
 		money += worth
 		to_chat(user, "<span class='notice'>You slot [I] into [src] and it reports a total of [money] credits inserted.</span>")
 		qdel(I)
@@ -41,11 +50,23 @@
 	if(amount_to_remove > money)
 		to_chat(user, "<span class='warning'>There is only [money] credits in [src]</span>")
 		return
+	withdraw_money(user, amount_to_remove)
+
+/// Вывод денег аплинка голочипом в руки user: чип наследует происхождение внесённых денег.
+/obj/item/blackmarket_uplink/proc/withdraw_money(mob/user, amount_to_remove)
+	SSeconomy.move(null, SSeconomy.cash_account, amount_to_remove, ECON_BLACKMARKET, user, "Наличные из аплинка чёрного рынка")
 	var/obj/item/holochip/holochip = new (user.drop_location(), amount_to_remove)
+	econ_cash_pass_on(holochip, money_origin, money_withdrawn, "из аплинка чёрного рынка,")
 	money -= amount_to_remove
 	holochip.name = "washed " + holochip.name
 	user.put_in_hands(holochip)
 	to_chat(user, "<span class='notice'>You withdraw [amount_to_remove] credits into a holochip.</span>")
+	return holochip
+
+/obj/item/blackmarket_uplink/examine(mob/user)
+	. = ..()
+	. += span_notice("Цены лотов идут за рынком контрабанды в секторе, сейчас ×[round(econ_blackmarket_price(100) / 100, 0.01)] к прайсу: изъятия СБ и таможни NT поднимают их.")
+	. += span_notice("Купленное здесь NT и Вольные торговцы выкупают не дороже [round(econ_import_resale_factor() * 100)]% уплаченного.")
 
 /obj/item/blackmarket_uplink/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -69,22 +90,13 @@
 	if(viewing_category && market)
 		if(market.available_items[viewing_category])
 			for(var/datum/blackmarket_item/I in market.available_items[viewing_category])
-				if(user.mind?.has_antag_datum(/datum/antagonist/rev/head))
-					data["items"] += list(list(
-						"id" = I.type,
-						"name" = I.name,
-						"cost" = I.price/100, // скидка хедревам
-						"amount" = I.stock,
-						"desc" = I.desc || I.name
-					))
-				else
-					data["items"] += list(list(
-						"id" = I.type,
-						"name" = I.name,
-						"cost" = I.price,
-						"amount" = I.stock,
-						"desc" = I.desc || I.name
-					))
+				data["items"] += list(list(
+					"id" = I.type,
+					"name" = I.name,
+					"cost" = market.item_price(I, user),
+					"amount" = I.stock,
+					"desc" = I.desc || I.name
+				))
 	return data
 
 /obj/item/blackmarket_uplink/ui_static_data(mob/user)

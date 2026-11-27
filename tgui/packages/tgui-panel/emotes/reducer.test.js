@@ -23,20 +23,24 @@ describe('emotesReducer', () => {
     expect(state.visible).toBe(false);
   });
 
-  test('emotes/setList replaces list with payload', () => {
+  test('emotes/setList applies the current character list and order', () => {
     const emoteList = { wave: { name: 'wave' }, smile: { name: 'smile' } };
+    const order = ['smile', 'wave'];
     const state = emotesReducer(
       { visible: false, list: {} },
-      { type: 'emotes/setList', payload: emoteList },
+      { type: 'emotes/setList', payload: { enabled: true, list: emoteList, order, slot: 2, revision: 7 } },
     );
 
     expect(state.list).toEqual(emoteList);
+    expect(state.order).toEqual(order);
+    expect(state.slot).toBe(2);
+    expect(state.revision).toBe(7);
   });
 
-  test('setList does not affect visible', () => {
+  test('setList keeps an enabled panel open', () => {
     const state = emotesReducer(
       { visible: true, list: {} },
-      { type: 'emotes/setList', payload: { test: 1 } },
+      { type: 'emotes/setList', payload: { enabled: true, list: {}, order: [], slot: 1, revision: 1 } },
     );
     expect(state.visible).toBe(true);
   });

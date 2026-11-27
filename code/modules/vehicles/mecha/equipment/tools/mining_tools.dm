@@ -129,6 +129,8 @@
 
 /obj/item/mecha_parts/mecha_equipment/drill/detach(atom/moveto)
 	..()
+	if(QDELETED(src))
+		return
 	var/datum/component/butchering/butchering = src.GetComponent(/datum/component/butchering)
 	butchering.butchering_enabled = FALSE
 

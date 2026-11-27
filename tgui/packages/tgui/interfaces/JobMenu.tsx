@@ -148,6 +148,7 @@ const GHOST_CATEGORIES: Record<
   special: { label: 'Особые', icon: 'heart', color: '#b98fe0' },
   offstation: { label: 'Оффстаншн', icon: 'person-digging', color: '#6fd08c' },
   trauma: { label: 'Травма', icon: 'heartbeat', color: '#f08a9a' },
+  swarmer: { label: 'Свармеры', icon: 'robot', color: '#6fd08c' },
 };
 
 const GHOST_CATEGORY_ORDER = [
@@ -159,6 +160,7 @@ const GHOST_CATEGORY_ORDER = [
   'special',
   'offstation',
   'trauma',
+  'swarmer',
 ];
 
 const ghostCategory = (key?: string) =>
@@ -534,6 +536,8 @@ export const JobMenu = () => {
   const round = data?.round || {};
   const joblessrole = data?.joblessrole;
   const isLatejoin = mode === 'latejoin';
+  const isGhost = mode === 'ghost';
+  const canJoin = isLatejoin || isGhost;
 
   const [tab, setTab] = useState<'jobs' | 'ghosts'>('jobs');
 
@@ -546,8 +550,8 @@ export const JobMenu = () => {
     (job) => job.title === selected,
   );
 
-  // Гост роль показываем только когда стоим на её вкладке
-  const showGhost = isLatejoin && tab === 'ghosts' && !!selectedGhost;
+  const showGhostList = isGhost || (isLatejoin && tab === 'ghosts');
+  const showGhost = showGhostList && !!selectedGhost;
   const ghostRole = showGhost
     ? ghostRoles.find((role) => role.name === selectedGhost)
     : undefined;
@@ -590,7 +594,7 @@ export const JobMenu = () => {
     <Window width={1000} height={700}>
       <Window.Content>
         <Stack vertical fill>
-          {isLatejoin && (
+          {(isLatejoin || isGhost) && (
             <Stack.Item shrink={0}>
               <Box
                 px={1}
@@ -643,8 +647,10 @@ export const JobMenu = () => {
                 previewMap={previewMap}
                 previewLayout={previewLayout}
                 previewZoom={previewZoom}
-                onGhostTab={isLatejoin && tab === 'ghosts'}
+                onGhostTab={showGhostList}
                 isLatejoin={isLatejoin}
+                isGhost={isGhost}
+                canJoin={canJoin}
                 act={act}
               />
 
@@ -654,6 +660,8 @@ export const JobMenu = () => {
                 selected={selected}
                 selectedGhost={selectedGhost}
                 isLatejoin={isLatejoin}
+                isGhost={isGhost}
+                showGhostList={showGhostList}
                 tab={tab}
                 onTabChange={setTab}
                 jobColumns={jobColumns}
@@ -665,7 +673,7 @@ export const JobMenu = () => {
             </Stack>
           </Stack.Item>
 
-          {!isLatejoin && (
+          {mode === 'prefs' && (
             <Stack.Item shrink={0}>
               <Section fitted>
                 <Stack fill align="center" px={1} py={0.5}>
@@ -718,22 +726,33 @@ export const JobMenu = () => {
 
 /** Креплю кнопку захода в хату. Первым делом при прибытии на станцию персонаж говорит "Кто тут у нас петушок, кого ебать в пердак с просвистоном" */
 const buildJoinButton = (
-  isLatejoin: boolean,
+  canJoin: boolean,
+  isGhost: boolean,
   selectedJob: JobEntry | undefined,
   selectedGhost: string | null,
   act: (action: string, params?: Record<string, unknown>) => void,
 ): ReactNode => {
-  if (!isLatejoin) {
+  if (!canJoin) {
     return null;
   }
   if (selectedGhost) {
     return (
-      <Button
-        color="good"
-        icon="sign-in-alt"
-        content="Присоединиться"
-        onClick={() => act('join_ghost', { spawner: selectedGhost })}
-      />
+      <>
+        <Button
+          color="good"
+          icon="sign-in-alt"
+          content="Присоединиться"
+          onClick={() => act('join_ghost', { spawner: selectedGhost })}
+        />
+        {isGhost && (
+          <Button
+            color="transparent"
+            icon="map-marker-alt"
+            content="Переместиться"
+            onClick={() => act('jump', { spawner: selectedGhost })}
+          />
+        )}
+      </>
     );
   }
   if (selectedJob) {
@@ -766,6 +785,8 @@ const InfoColumn = (props: {
   previewZoom: number;
   onGhostTab: boolean;
   isLatejoin: boolean;
+  isGhost: boolean;
+  canJoin: boolean;
   act: (action: string, params?: Record<string, unknown>) => void;
 }) => {
   const {
@@ -782,6 +803,8 @@ const InfoColumn = (props: {
     previewZoom,
     onGhostTab,
     isLatejoin,
+    isGhost,
+    canJoin,
     act,
   } = props;
 
@@ -798,7 +821,8 @@ const InfoColumn = (props: {
   }
 
   const joinButton = buildJoinButton(
-    isLatejoin,
+    canJoin,
+    isGhost,
     selectedJob,
     selectedGhost,
     act,
@@ -1077,6 +1101,8 @@ const SelectColumn = (props: {
   selected: string | null;
   selectedGhost: string | null;
   isLatejoin: boolean;
+  isGhost: boolean;
+  showGhostList: boolean;
   tab: 'jobs' | 'ghosts';
   onTabChange: (tab: 'jobs' | 'ghosts') => void;
   jobColumns: Department[][];
@@ -1090,6 +1116,8 @@ const SelectColumn = (props: {
     selected,
     selectedGhost,
     isLatejoin,
+    isGhost,
+    showGhostList,
     tab,
     onTabChange,
     jobColumns,
@@ -1125,15 +1153,21 @@ const SelectColumn = (props: {
             </Stack.Item>
           </Stack>
         )}
+        {isGhost && (
+          <Box bold>
+            <Icon name="user-astronaut" mr="4px" />
+            Гост-роли ({ghostRoles.length})
+          </Box>
+        )}
         <Box
-          mt={isLatejoin ? 1 : 0}
+          mt={isLatejoin || isGhost ? 1 : 0}
           style={{
             flex: '1 1 auto',
             minHeight: 0,
             overflowY: 'auto',
             overflowX: 'hidden',
           }}>
-          {tab === 'jobs' && (
+          {!showGhostList && (
             <JobColumns
               columns={jobColumns}
               empty={visibleGroups.length === 0}
@@ -1143,7 +1177,7 @@ const SelectColumn = (props: {
             />
           )}
 
-          {tab === 'ghosts' &&
+          {showGhostList &&
             (ghostRoles.length === 0 ? (
               <Box color="red" fontSize="12px">
                 В настоящее время нет гост-спавнеров.

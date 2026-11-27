@@ -615,6 +615,19 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define CAMERA_SEE_GHOSTS_BASIC 1
 #define CAMERA_SEE_GHOSTS_ORBIT 2
 
+#define PHOTO_NAME_LIMIT 32
+#define PHOTO_DESCRIPTION_LIMIT 128
+#define PHOTO_CAPTION_LIMIT 256
+
+#define SYNDIMATIC_ACCOUNT_LIMIT 30
+#define SYNDIMATIC_TIER_1_LIMIT 60
+#define SYNDIMATIC_TIER_2_LIMIT 120
+
+// Значение 1 соответствует подпискам, сохранённым до появления уведомлений.
+#define SYNDIMATIC_FOLLOW_NOTIFY_DEFAULT 1
+#define SYNDIMATIC_FOLLOW_NOTIFY_ON 2
+#define SYNDIMATIC_FOLLOW_NOTIFY_OFF 3
+
 #define CLIENT_FROM_VAR(I) (ismob(I) ? I:client : (istype(I, /client) ? I : (istype(I, /datum/mind) ? I:current?:client : null)))
 
 #define AREASELECT_CORNERA "corner A"
@@ -634,8 +647,8 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define PREF_SAVE_MAX_DEFER 15 SECONDS
 
 /// Окно склейки одиночных записей префов (save_single_pref) в одну.
-/// Цена сброса - открытие savefile (~6 мс заморозки процесса), а игрок в среднем пишет одиночный ключ раз в несколько минут: при окне в 5 с склеивать было нечего, и в раунде 10669 4490 сбросов дали 26 с заморозок. Буфер уходит на диск и раньше - на логауте, перед чтением префов и на ребуте; при падении сервера теряется не больше окна правок интерфейса.
-#define PREF_SINGLE_SAVE_DEBOUNCE 10 MINUTES
+/// Сброс живого игрока дописывает журнал рядом с savefile, не открывая сам savefile (десятки микросекунд вместо ~6 мс заморозки процесса), поэтому окно короткое: при падении сервера теряется не больше окна правок интерфейса. Буфер уходит на диск и раньше - на логауте, перед чтением префов и на ребуте.
+#define PREF_SINGLE_SAVE_DEBOUNCE 30 SECONDS
 
 // Решения pref_defer_decision() - что делать с очередной отложенной записью savefile.
 /// Очереди не было: завести крайний срок и зарядить таймер.

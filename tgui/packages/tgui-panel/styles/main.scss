@@ -64,3 +64,24 @@
 
 // Goonchat styles
 @include meta.load-css('./goon/chat-dark.scss');
+
+// Shared examine layout overrides global sprite image rules.
+@include meta.load-css('./components/Examine.scss');
+
+.ChatEmoteButton {
+  touch-action: none;
+  user-select: none;
+}
+
+.ChatEmoteDragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.ChatEmoteBefore {
+  box-shadow: -0.16em 0 currentColor;
+}
+
+.ChatEmoteAfter {
+  box-shadow: 0.16em 0 currentColor;
+}

@@ -77,6 +77,8 @@
 	var/director_untracked_since = 0
 	var/antag_hud_icon_state = null //this mind's ANTAG_HUD should have this icon_state
 	var/datum/atom_hud/antag/antag_hud = null //this mind's antag HUD
+	/// Все антаг-худы разума: худ -> icon_state значка
+	var/list/datum/atom_hud/antag/antag_hud_states
 	var/datum/traitor_panel_tgui/tgui_panel // cached TGUI traitor panel
 	var/damnation_type = 0
 	var/datum/mind/soulOwner //who owns the soul.  Under normal circumstances, this will point to src
@@ -103,6 +105,11 @@
 
 	///Weakref to the character we spawned in as- either at roundstart or latejoin, so we know for persistent scars if we ended as the same person or not
 	var/datum/weakref/original_character
+	var/syndimatic_profile_id
+	var/syndimatic_owner_ckey
+	var/syndimatic_character_name
+	var/syndimatic_first_portrait
+	var/syndimatic_notifications = FALSE
 
 	/// A lazy list of statuses to add next to this mind in the traitor panel
 	var/list/special_statuses
@@ -131,6 +138,7 @@
 	var/silicon_flavor_text
 	var/list/headshot_links = list()
 	var/list/headshot_naked_links = list()
+	var/syndimatic_owner_account
 
 /datum/mind/New(key)
 	skill_holder = new(src)
@@ -140,6 +148,7 @@
 
 /datum/mind/Destroy()
 	SSticker.minds -= src
+	SSpersistence?.syndimatic_subscribers?.Remove(weak_reference)
 	QDEL_NULL(tgui_panel)
 	// Снятие последней роли обнуляет antag_datums внутри Destroy антагониста.
 	for(var/datum/antagonist/antagonist as anything in antag_datums?.Copy())
@@ -251,7 +260,7 @@
 	if(iscarbon(new_character))
 		var/mob/living/carbon/C = new_character
 		C.last_mind = src
-	transfer_antag_huds(hud_to_transfer)				//inherit the antag HUD
+	transfer_antag_huds(hud_to_transfer, old_current)				//inherit the antag HUD
 	transfer_actions(new_character)
 	transfer_martial_arts(new_character)
 	if(active || force_key_move)
@@ -588,7 +597,7 @@
 		output += "<B>Текущие цели:</B>"
 		var/obj_count = 1
 		for(var/datum/objective/objective in all_objectives)
-			output += "<br><B>Цель #[obj_count++]</B>: [objective.explanation_text]"
+			output += "<br><B>Цель #[obj_count++]</B>: [objective.current_explanation()]"
 			var/list/datum/mind/other_owners = objective.get_owners() - src
 			if(other_owners.len)
 				output += "<ul>"
@@ -780,6 +789,8 @@ GLOBAL_LIST(objective_choices)
 	for(var/t in allowed_types)
 		var/datum/objective/type_cast = t
 		GLOB.objective_choices[initial(type_cast.name)] = t
+	for(var/datum/objective/economy/economic as anything in subtypesof(/datum/objective/economy))
+		GLOB.objective_choices["economy: [initial(economic.name)]"] = economic
 
 
 /datum/mind/proc/on_objectives_request_cd_end(datum/source)
@@ -1384,6 +1395,8 @@ GLOBAL_LIST(objective_choices)
 					request_target.explanation_text = requested_obj_change["text"]
 				else
 					request_target.admin_edit(usr)
+				if(QDELETED(request_target))
+					return
 				antag_datum.objectives += request_target
 				message_admins("[key_name_admin(usr)] approved a requested objective from [current]: [request_target.explanation_text]")
 				log_admin("[key_name(usr)] approved a requested objective from [current]: [request_target.explanation_text]")
@@ -1609,6 +1622,8 @@ GLOBAL_LIST(objective_choices)
 			new_objective = new selected_type
 			new_objective.owner = src
 			new_objective.admin_edit(usr)
+			if(QDELETED(new_objective))
+				return
 			target_antag.objectives += new_objective
 
 			message_admins("[key_name_admin(usr)] added a new objective for [current]: [new_objective.explanation_text]")
@@ -1617,12 +1632,16 @@ GLOBAL_LIST(objective_choices)
 			if(old_objective.type == selected_type)
 				//Edit the old
 				old_objective.admin_edit(usr)
+				if(QDELETED(old_objective))
+					return
 				new_objective = old_objective
 			else
 				//Replace the old
 				new_objective = new selected_type
 				new_objective.owner = src
 				new_objective.admin_edit(usr)
+				if(QDELETED(new_objective))
+					return
 				target_antag.objectives -= old_objective
 				target_antag.objectives.Insert(objective_pos, new_objective)
 			message_admins("[key_name_admin(usr)] edited [current]'s objective to [new_objective.explanation_text]")

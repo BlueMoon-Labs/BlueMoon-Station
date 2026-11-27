@@ -383,8 +383,7 @@
 	parts += medal_report()
 	//Station Goals
 	parts += goal_report()
-	//Economy & Money
-//	parts += market_report()
+	parts += "<div class='panel stationborder'>[jointext(econ_market_report(), "<br>")]</div>"
 	//Ambitions
 	parts += ambitions_report()
 
@@ -481,16 +480,51 @@
 	text2file(content, filename)
 
 /datum/controller/subsystem/ticker/proc/show_roundend_report(client/C, report_type = null)
+	var/list/data
+
+	if(report_type == PERSONAL_LAST_ROUND) //Look at this player's last round
+		data = load_roundend_tgui_data(C.roundend_report_tgui_file())
+	else if(report_type == SERVER_LAST_ROUND) //Look at the last round that this server has seen
+		data = load_roundend_tgui_data(server_roundend_tgui_file())
+	else //report_type is null, so show the snapshot captured at the end of the current round
+		// Не пересобираем отчёт при повторном открытии: длительность считается от
+		// world.time, а статус выживания — от текущего состояния моба, поэтому
+		// свежая сборка покажет уже другие данные.
+		data = C.roundend_report_ui?.current_round_data
+		if(!data)
+			data = load_roundend_tgui_data(C.roundend_report_tgui_file())
+		// Файл мог остаться от прошлого раунда — тогда собираем новый снимок.
+		if(data && (!islist(data) || !islist(data["round_info"]) || "[data["round_info"]["id"]]" != "[GLOB.round_id]"))
+			data = null
+		if(!data)
+			data = build_roundend_tgui_data(C, GLOB.roundend_popcount)
+			save_roundend_tgui_data(C.roundend_report_tgui_file(), data)
+		remove_verb(C, /client/proc/show_previous_roundend_report)
+
+	if(!data)
+		// Снимка tgui нет (отчёт остался от старой версии). Всё равно открываем
+		// современный интерфейс, подложив старый HTML в сводку отчёта.
+		data = build_legacy_roundend_tgui_data(C, report_type)
+
+	if(!istype(C.roundend_report_ui))
+		C.roundend_report_ui = new(C)
+	C.roundend_report_ui.report_data = data
+	if(isnull(report_type))
+		C.roundend_report_ui.current_round_data = data
+	C.roundend_report_ui.ui_interact(C.mob)
+
+/// Резервный путь для отчётов, сохранённых в HTML до появления tgui-версии.
+/datum/controller/subsystem/ticker/proc/show_roundend_report_legacy(client/C, report_type = null)
 	var/datum/browser/roundend_report = new(C, "roundend")
 	roundend_report.width = 800
 	roundend_report.height = 600
 	var/content
 	var/filename = C.roundend_report_file()
-	if(report_type == PERSONAL_LAST_ROUND) //Look at this player's last round
+	if(report_type == PERSONAL_LAST_ROUND)
 		content = file2text(filename)
-	else if (report_type == SERVER_LAST_ROUND) //Look at the last round that this server has seen
+	else if(report_type == SERVER_LAST_ROUND)
 		content = file2text("data/server_last_roundend_report.html")
-	else //report_type is null, so make a new report based on the current round and show that to the player
+	else
 		var/list/report_parts = list(personal_report(C), GLOB.common_report)
 		content = report_parts.Join()
 		remove_verb(C, /client/proc/show_previous_roundend_report)
@@ -537,8 +571,17 @@
 /datum/controller/subsystem/ticker/proc/display_report(popcount)
 	GLOB.common_report = build_roundend_report()
 	GLOB.survivor_report = survivor_report(popcount)
+	GLOB.roundend_popcount = popcount
 	log_roundend_report()
+	save_roundend_tgui_data(server_roundend_tgui_file(), build_roundend_tgui_data(null, popcount))
 	for(var/client/C in GLOB.clients)
+		// Фиксируем снимок один раз в момент завершения раунда.
+		if(!istype(C.roundend_report_ui))
+			C.roundend_report_ui = new(C)
+		var/list/data = build_roundend_tgui_data(C, popcount)
+		C.roundend_report_ui.report_data = data
+		C.roundend_report_ui.current_round_data = data
+		save_roundend_tgui_data(C.roundend_report_tgui_file(), data)
 		show_roundend_report(C)
 		give_show_report_button(C)
 		CHECK_TICK
@@ -624,31 +667,6 @@
 			var/datum/station_goal/G = V
 			parts += G.get_result()
 		return "<div class='panel stationborder'><ul>[parts.Join()]</ul></div>"
-
-///Generate a report for how much money is on station, as well as the richest crewmember on the station.
-///datum/controller/subsystem/ticker/proc/market_report()
-//	var/list/parts = list()
-//	///This is the richest account on station at roundend.
-//	var/datum/bank_account/mr_moneybags
-//	///This is the station's total wealth at the end of the round.
-//	var/station_vault = 0
-//	///How many players joined the round.
-//	var/total_players = GLOB.joined_player_list.len
-//	for(var/obj/item/card/id/id in SSeconomy.bank_accounts)
-//		var/datum/bank_account/current_acc = SSeconomy.bank_accounts[id]
-//		station_vault += current_acc.account_balance
-//		if(!mr_moneybags || mr_moneybags.account_balance < current_acc.account_balance)
-//			mr_moneybags = current_acc
-//	parts += "<div class='panel stationborder'><span class='header'>Экономический отчёт</span><br>"
-//	parts += "Всего было заработано [SSeconomy.station_total] кредитов экипажем.<br>"
-//	if(total_players > 0)
-//		parts += "В среднем каждый заработал [SSeconomy.station_total/total_players] кредитов.<br>"
-//		log_econ("Roundend credit total: [station_vault] credits. Average Credits: [station_vault/total_players]")
-//	if(mr_moneybags)
-//		parts += "Самый богатый член экипажа был <b>[mr_moneybags.account_holder] с [mr_moneybags.account_balance]</b> заработанными кредитами!</div>"
-//	else
-//		parts += "Чудесным образом никто не заработал кредиты за эту смену! Придётся резать бюджеты...</div>"
-//	return parts
 
 /datum/controller/subsystem/ticker/proc/ambitions_report()
 	var/list/parts = list()
@@ -855,7 +873,9 @@
 	var/list/objective_parts = list()
 	var/count = 1
 	for(var/datum/objective/objective in objectives)
-		if(objective.check_completion())
+		if(!objective.completable)
+			objective_parts += "<b>Цель #[count]</b>: [objective.explanation_text]"
+		else if(objective.check_completion())
 			objective_parts += "<b>Цель #[count]</b>: [objective.explanation_text] <span class='greentext'>Успех!</span>"
 		else
 			objective_parts += "<b>Цель #[count]</b>: [objective.explanation_text] <span class='redtext'>Провал.</span>"

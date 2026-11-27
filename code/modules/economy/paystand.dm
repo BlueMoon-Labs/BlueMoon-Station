@@ -1,6 +1,6 @@
 /obj/machinery/paystand
 	name = "unregistered pay stand"
-	desc = "See title."
+	desc = "Стенд оплаты. Проведите по нему ID-картой с личным счётом, чтобы привязать его к себе."
 	icon = 'icons/obj/economy.dmi'
 	icon_state = "card_scanner"
 	density = TRUE
@@ -34,49 +34,53 @@
 			var/obj/item/card/id/assistant_mains_need_to_die = W
 			if(!assistant_mains_need_to_die.registered_account)
 				return
-			var/msg = stripped_input(user, "Name of pay stand:", "Paystand Naming", "[user]'s Awesome Paystand")
+			var/msg = stripped_input(user, "Название стенда оплаты:", "Название стенда", "Стенд оплаты [user]")
 			if(!msg)
 				return
 			name = msg
-			desc = "Owned by [assistant_mains_need_to_die.registered_account.account_holder], pays directly into [user.ru_ego()] account."
+			desc = "Стенд оплаты [assistant_mains_need_to_die.registered_account.account_holder]: оплата идёт прямо на этот счёт."
 			my_card = assistant_mains_need_to_die
-			to_chat(user, "You link the stand to your account.")
+			to_chat(user, span_notice("Стенд привязан к вашему счёту."))
 			return
 		var/obj/item/card/id/vbucks = W
 		if(vbucks.registered_account)
+			var/payment_problem = card_payment_problem(vbucks.registered_account)
+			if(payment_problem)
+				to_chat(user, span_warning(payment_problem))
+				return
+		if(vbucks.registered_account)
 			var/momsdebitcard = 0
 			if(!force_fee)
-				momsdebitcard = input(user, "How much would you like to deposit?", "Money Deposit") as null|num
+				momsdebitcard = input(user, "Сколько заплатить?", "Оплата") as null|num
 			else
 				momsdebitcard = force_fee
 			if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
 				return
-			if(momsdebitcard < 1)
-				to_chat(user, "<span class='warning'>ERROR: Invalid amount designated.</span>")
+			var/payment_problem = card_payment_problem(vbucks.registered_account)
+			if(payment_problem)
+				to_chat(user, span_warning(payment_problem))
 				return
-			if(vbucks.registered_account.adjust_money(-momsdebitcard))
-				purchase(vbucks.registered_account.account_holder, momsdebitcard)
-				to_chat(user, "Thanks for purchasing! The vendor has been informed.")
+			if(momsdebitcard < 1)
+				to_chat(user, span_warning("Сумма должна быть не меньше 1 кр."))
+				return
+			momsdebitcard = round(momsdebitcard)
+			if(purchase(vbucks.registered_account.account_holder, momsdebitcard, vbucks.registered_account, user))
+				to_chat(user, span_notice("Оплачено [momsdebitcard] кр., владелец стенда получил уведомление."))
 				return
 			else
-				to_chat(user, "<span class='warning'>ERROR: Account has insufficient funds to make transaction.</span>")
+				to_chat(user, span_warning("Оплата не прошла: на счёте не хватает денег."))
 				return
 		else
-			to_chat(user, "<span class='warning'>ERROR: No bank account assigned to identification card.</span>")
+			to_chat(user, span_warning("У этой карты нет банковского счёта."))
 			return
 	if(istype(W, /obj/item/holochip))
 		var/obj/item/holochip/H = W
-		var/cashmoney = input(user, "How much would you like to deposit?", "Money Deposit") as null|num
+		var/cashmoney = input(user, "Сколько заплатить с голочипа?", "Оплата") as null|num
 		if(!(cashmoney >= 1))
-			to_chat(user, "<span class='warning'>ERROR: Invalid amount designated.</span>")
+			to_chat(user, span_warning("Сумма должна быть не меньше 1 кр."))
 			return
-		if(H.spend(cashmoney, FALSE))
-			purchase(user, cashmoney)
-			to_chat(user, "Thanks for purchasing! The vendor has been informed.")
-			return
-		else
-			to_chat(user, "<span class='warning'>ERROR: Insufficient funds to make transaction.</span>")
-			return
+		pay_holochip(user, H, round(cashmoney))
+		return
 	if(istype(W, /obj/item/stack/spacecash))
 		to_chat(user, "What is this, the 2000s? We only take card here.")
 		return
@@ -119,13 +123,43 @@
 	else
 		return ..()
 
-/obj/machinery/paystand/proc/purchase(buyer, price)
-	my_card.registered_account.adjust_money(price)
-	my_card.registered_account.bank_card_talk("Purchase made at your vendor by [buyer] for [price] credits.")
+/obj/machinery/paystand/proc/card_payment_problem(datum/bank_account/payer)
+	return SSeconomy.personal_account_problem(payer, TRUE) || SSeconomy.personal_account_problem(my_card?.registered_account, FALSE)
+
+/// Оплата с голочипа в руке user: деньги чипа уходят из "Наличных в обороте" владельцу стенда, состав - в econ.log, если он того стоит. Чип, отданный, пока user вводил сумму, не тратится.
+/obj/machinery/paystand/proc/pay_holochip(mob/user, obj/item/holochip/H, cashmoney)
+	if(QDELETED(H) || !user.is_holding(H) || !user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
+		return FALSE
+	var/seller_problem = SSeconomy.personal_account_problem(my_card?.registered_account, FALSE)
+	if(seller_problem)
+		to_chat(user, span_warning(seller_problem))
+		return FALSE
+	if(H.credits < cashmoney)
+		to_chat(user, span_warning("На голочипе не хватает кредитов."))
+		return FALSE
+	if(!econ_amount_valid(cashmoney))
+		to_chat(user, span_warning(econ_cash_refusal_text(H.name, cashmoney)))
+		return FALSE
+	var/list/cash_note = econ_cash_note(list(H))
+	var/found = SSeconomy.cash_shortfall(cashmoney)
+	var/seller_name = my_card.registered_account.account_holder
+	if(!purchase(user, cashmoney, SSeconomy.cash_account, user))
+		to_chat(user, span_warning("Оплата не прошла, голочип цел."))
+		return FALSE
+	H.spend(cashmoney, FALSE)
+	SSeconomy.note_cash_in(cash_note, cashmoney, "стенд [name], владелец [seller_name]", user, found)
+	to_chat(user, span_notice("Оплачено [cashmoney] кр., владелец стенда получил уведомление."))
+	return TRUE
+
+/obj/machinery/paystand/proc/purchase(buyer, price, datum/bank_account/payer, mob/user)
+	if(!my_card?.registered_account || !SSeconomy.move(payer, my_card.registered_account, price, ECON_PURCHASE, user, "Оплата на стенде: [name]"))
+		return FALSE
+	my_card.registered_account.bank_card_talk("Стенд оплаты: [buyer] заплатил [price] кр.")
 	amount_deposited = amount_deposited + price
 	if(signaler && amount_deposited >= signaler_threshold)
 		signaler.activate()
 		amount_deposited = 0
+	return TRUE
 
 /obj/machinery/paystand/default_unfasten_wrench(mob/user, obj/item/I, time = 20)
 	if(locked)
@@ -135,7 +169,8 @@
 
 /obj/machinery/paystand/examine(mob/user)
 	. = ..()
+	. += span_notice("Оплата картой или голочипом сразу уходит на личный счёт владельца стенда, без налога и без доли NT. Платить можно только с личного счёта, бюджетные карты отделов не принимаются.")
 	if(force_fee)
-		. += "<span class='warning'>This paystand forces a payment of <b>[force_fee]</b> credit\s per swipe instead of a variable amount.</span>"
+		. += span_warning("Стенд берёт фиксированную плату: <b>[force_fee]</b> кр. за каждое касание картой.")
 	if(user.get_active_held_item() == my_card)
 		. += "<span class='notice'>Paystands can be edited through swiping your card with different intents. <b>Disarm</b> allows editing the name while <b>Grab</b> changes payment functionality.</span>"

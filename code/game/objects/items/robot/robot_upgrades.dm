@@ -89,6 +89,9 @@
 	one_use = TRUE
 
 /obj/item/borg/upgrade/restart/action(mob/living/silicon/robot/R, user = usr)
+	if(R.stat == DEAD && !R.can_be_medically_revived())
+		to_chat(user, span_warning("Сознание киборга недоступно для перезапуска."))
+		return FALSE
 	if(R.health < 0)
 		to_chat(user, "<span class='warning'>You have to repair the cyborg before using this module!</span>")
 		return FALSE
@@ -97,7 +100,7 @@
 		R.mind.grab_ghost()
 		playsound(loc, 'sound/voice/liveagain.ogg', 75, 1)
 
-	R.revive()
+	R.revive(medical_revive = TRUE)
 
 /obj/item/borg/upgrade/vtec
 	name = "cyborg VTEC module"
@@ -166,11 +169,13 @@
 
 /obj/item/borg/upgrade/disablercooler/deactivate(mob/living/silicon/robot/R, user = usr)
 	. = ..()
-	if (.)
+	if(.)
+		var/restored_any = FALSE
 		for(var/obj/item/gun/energy/T in R.module.modules)
 			T.charge_delay = initial(T.charge_delay)
-			return .
-		return FALSE
+			restored_any = TRUE
+		if(!restored_any)
+			return FALSE
 
 /obj/item/borg/upgrade/thrusters
 	name = "ion thruster upgrade"
@@ -217,6 +222,8 @@
 
 	var/D_index = find_module_index(R, /obj/item/pickaxe/drill/cyborg)
 	D = D_index ? R.module.modules[D_index] : null
+	if(!D)
+		return FALSE // No original instrument to replace.
 
 	DD = new(R.module)
 	R.module.basic_modules += DD
@@ -310,10 +317,14 @@
 	if (!.)
 		return
 
+	var/replaced_premium_ka = FALSE
 	for(var/obj/item/gun/energy/kinetic_accelerator/premiumka/cyborg/PKA in R.module)
+		replaced_premium_ka = TRUE
 		for(var/obj/item/borg/upgrade/modkit/M in PKA.modkits)
 			M.uninstall(PKA)
 		R.module.remove_module(PKA, TRUE)
+	if(!replaced_premium_ka)
+		return // ResetModule already replaced this tool.
 
 	var/obj/item/gun/energy/kinetic_accelerator/cyborg/KA = new (R.module)
 	R.module.basic_modules += KA
@@ -344,6 +355,8 @@
 
 	var/oldbag_index = find_module_index(R, /obj/item/storage/bag/trash/cyborg)
 	oldbag = oldbag_index ? R.module.modules[oldbag_index] : null
+	if(!oldbag)
+		return FALSE // No original instrument to replace.
 
 	bsbag = new(R.module)
 	R.module.basic_modules += bsbag
@@ -396,6 +409,8 @@
 
 	var/oldmop_index = find_module_index(R, /obj/item/mop/cyborg)
 	oldmop = oldmop_index ? R.module.modules[oldmop_index] : null
+	if(!oldmop)
+		return FALSE // No original instrument to replace.
 
 	advmop = new(R.module)
 	R.module.basic_modules += advmop
@@ -693,6 +708,8 @@
 
 	var/AHBasic_index = find_module_index(R, /obj/item/healthanalyzer/cyborg)
 	AHBasic = AHBasic_index ? R.module.modules[AHBasic_index] : null
+	if(!AHBasic)
+		return FALSE // No original instrument to replace.
 
 	AHAdv = new(R.module)
 	R.module.basic_modules += AHAdv
@@ -816,6 +833,8 @@
 
 	var/RPED_index = find_module_index(R, /obj/item/storage/part_replacer/cyborg)
 	RPED = RPED_index ? R.module.modules[RPED_index] : null
+	if(!RPED)
+		return FALSE // No original instrument to replace.
 
 	BSRPED = new(R.module)
 	R.module.basic_modules += BSRPED

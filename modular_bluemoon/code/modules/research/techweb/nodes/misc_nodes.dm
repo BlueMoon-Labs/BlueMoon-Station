@@ -3,7 +3,7 @@
 /datum/techweb_node/joule_was_wrong
 	id = "joule_was_wrong"
 	display_name = "Infinite Power Theory"
-	description = "Seems like Dr. Prescott Joule was wrong. We got energy-replenishment data after researching into slime power cells. It does have a lot of potential, but more to do."
+	description = "Похоже, доктор Прескотт Джоуль ошибался. Мы получили данные о восстановлении энергии после исследований слизевых элементов питания. Потенциал большой, но работы ещё много."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("datatheory")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
@@ -16,7 +16,7 @@
 /datum/techweb_node/vortex_cell
 	id = "vortex_cell"
 	display_name = "Vortex Power Cell"
-	description = "The pinacle of power storage science. The One cell that can hold and replenish from nothing, for true... And without drawbacks."
+	description = "Вершина науки о накоплении энергии. Та самая ячейка, которая может хранить и восполнять энергию из ничего — правда... и без недостатков."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("bluespace_power_reactor", "alien_stockparts")
 	design_ids = list("vortex_cell")

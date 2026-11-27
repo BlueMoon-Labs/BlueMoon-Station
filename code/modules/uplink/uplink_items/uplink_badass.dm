@@ -122,7 +122,7 @@
 	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/badass/syndie_spraycan
-	name = "Стильный балончик Syndicate"
+	name = "Syndicate Spraycan"
 	desc = "Стильный Syndicate spraycan. \
 		Этим баллончиком можно нанести узор областью 3х3. Краски хватает ровно на один финальный слой."
 	item = /obj/item/traitor_spraycan

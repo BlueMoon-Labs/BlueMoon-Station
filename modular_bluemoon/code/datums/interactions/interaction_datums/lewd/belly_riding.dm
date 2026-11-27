@@ -20,31 +20,31 @@
 /datum/interaction/lewd/belly_riding/proc/pick_message(mob/living/user, mob/living/partner, is_fucking = TRUE)
 	return
 
-/datum/interaction/lewd/belly_riding/special_check(mob/living/user, mob/living/target)
+/datum/interaction/lewd/belly_riding/special_check(mob/living/user, mob/living/target, is_hidden)
 	. = ..()
 	if(!. || !target_organ)
 		return FALSE
 
 /datum/interaction/lewd/belly_riding/display_interaction(mob/living/user, mob/living/partner, is_hidden)
-	var/distance = 7
+	var/distance = 3
 	if(is_hidden)
 		distance = 1
 	var/picked_hidden = pick(hidden_additional)
 	var/is_fucking = user.is_fucking(partner, target_organ)
-	var/message = "[is_hidden ? (picked_hidden) : null]" +  pick_message(user, partner, is_fucking)
+	var/message = "[is_hidden ? (picked_hidden) : null]" + pick_message(user, partner, is_fucking)
 	if(!is_fucking)
 		user.set_is_fucking(partner, target_organ, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	user.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, target_organ, partner, ORGAN_SLOT_PENIS)
+		user.handle_post_sex(NORMAL_LUST, target_organ, partner, ORGAN_SLOT_PENIS, is_hidden = is_hidden)
 
 	if(user.has_strapon())
 		var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()
-		user_strapon.attached_dildo.target_reaction(partner, user, 0, target_organ, CUM_TARGET_PENIS, user.a_intent == INTENT_HARM)
+		user_strapon.attached_dildo.target_reaction(partner, user, 0, target_organ, CUM_TARGET_PENIS, user.a_intent == INTENT_HARM, is_hidden = is_hidden)
 	else
-		partner.handle_post_sex(NORMAL_LUST, (target_organ == CUM_TARGET_VAGINA ? CUM_TARGET_PENIS : null), user, target_organ)
-		try_apply_knot(user, partner, target_organ) // Проверка на узлирование.
+		partner.handle_post_sex(NORMAL_LUST, (target_organ == CUM_TARGET_VAGINA ? CUM_TARGET_PENIS : null), user, target_organ, is_hidden = is_hidden)
+		try_apply_knot(user, partner, target_organ, is_hidden = is_hidden) // Проверка на узлирование.
 
 	if(!prob(partner.get_lust() / partner.get_climax_threshold() * 50)) // 50%
 		return
@@ -69,7 +69,7 @@
 	message = pick(reactions)
 
 
-	partner.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	partner.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = distance, visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 
 
 /datum/interaction/lewd/belly_riding/vagina
@@ -131,3 +131,64 @@
 			"USER хватает TARGET и начинает насаживать попкой на свой [shape_desc]",
 			"USER мощным толчком погружает свой [shape_desc] внутрь сфинктера TARGET",
 			"USER с силой загоняет [shape_desc] в анальное колечко TARGET, заставляя повиснуть на нем")
+
+/datum/interaction/lewd/belly_riding/oral
+	description = "Belly riding. Запихнуть в рот."
+	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
+	required_from_target = INTERACTION_REQUIRE_MOUTH
+	interaction_sound = list(
+		'modular_sand/sound/interactions/oral1.ogg',
+		'modular_sand/sound/interactions/oral2.ogg',
+	)
+	p13user_emote = PLUG13_EMOTE_PENIS
+	p13target_emote = PLUG13_EMOTE_MOUTH
+	target_organ = CUM_TARGET_THROAT
+
+/datum/interaction/lewd/belly_riding/oral/display_interaction(mob/living/user, mob/living/partner, is_hidden)
+	. = ..()
+	if(user.a_intent != INTENT_HARM)
+		return
+
+	partner.adjustOxyLoss(1)
+	var/gasp_chance = 0
+	var/twitch_chance = 0
+	switch(partner.stat)
+		if(CONSCIOUS)
+			gasp_chance = 5
+		if(SOFT_CRIT)
+			gasp_chance = 35
+			twitch_chance = 20
+		if(UNCONSCIOUS)
+			gasp_chance = 70
+			twitch_chance = 60
+	if(prob(gasp_chance))
+		partner.emote("gasp")
+	if(prob(twitch_chance))
+		partner.emote("twitch")
+
+/datum/interaction/lewd/belly_riding/oral/pick_message(mob/living/user, mob/living/partner, is_fucking = TRUE)
+	var/shape_desc = user.has_strapon() ? "дилдо" : get_penis_shape_desc(user)
+	if(is_fucking)
+		if(user.a_intent == INTENT_HARM)
+			. = pick(
+				"При движении, USER долбится в ротик TARGET, заставляя задыхаться",
+				"USER глубоко вводит свой [shape_desc] в горло TARGET, перекрывая дыхание",
+				"В движении, [shape_desc] TARGET скользит по горлу USER, не оставляя место воздуху",
+				"[user.has_balls() ? "Яйца" : "Бедра"] USER шлепаются о лицо TARGET, пока [partner.ru_who()] задыхается, глоткой насаженная на [shape_desc]",
+				"USER ритмично двигается, заставляя TARGET издавать хлюпающие звуки и закатывать глаза от недостатка воздуха",
+				"TARGET дергается в ремнях, задыхаясь, насаженная ротиком на [shape_desc] USER")
+			return span_danger(.)
+		else
+			return pick(
+				"При движении, USER долбится в ротик TARGET, заставляя скрепеть ремни",
+				"USER глубоко вводит свой [shape_desc] в горло TARGET",
+				"В движении, [shape_desc] TARGET скользит по горлу USER",
+				"[user.has_balls() ? "Яйца" : "Бедра"] USER шлепаются о лицо TARGET, пока [partner.ru_ego()] глотка насаженна на [shape_desc]",
+				"USER ритмично двигается, заставляя TARGET издавать хлюпающие звуки при каждом толчке",
+				"TARGET покачивается в ремнях, насаженная ротиком на [shape_desc] USER")
+	else
+		return pick(
+			"USER медленно вводит свой [shape_desc] в рот TARGET, надежно фиксируя",
+			"USER плотно прижимает TARGET к себе и проталкивает в горло [shape_desc]",
+			"USER с силой загоняет [shape_desc] в глотку TARGET, используя как насадку",
+			"USER мощным толчком погружает свой [shape_desc] внутрь ротика TARGET, смотря за раздувшися горлом")

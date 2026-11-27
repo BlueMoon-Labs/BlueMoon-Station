@@ -94,6 +94,9 @@
 
 /// Our ChangeTurf drops every signal of the replaced turf, so the new turf under us is listened to again
 /obj/structure/transport/linear/HandleTurfChange(turf/T)
+	// До Initialize подписки ставит он сам на все locs.
+	if(!(flags_1 & INITIALIZED_1))
+		return
 	set_movement_registrations(list(T))
 
 /obj/structure/transport/linear/proc/uncrossed_remove_item_from_transport(datum/source, atom/movable/gone, direction)

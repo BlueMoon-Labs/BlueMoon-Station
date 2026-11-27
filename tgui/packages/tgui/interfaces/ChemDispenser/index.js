@@ -312,6 +312,27 @@ const resolveOptimisticPrefs = (optPrefs, data) => {
   };
 };
 
+/** Ближайший момент, когда истечёт хоть одно оптимистичное состояние, или null. */
+const getNextOptimisticExpiry = (stamped, pendingActions) => {
+  const now = Date.now();
+  let next = null;
+  const consider = (expiry) => {
+    if (expiry > now && (next === null || expiry < next)) {
+      next = expiry;
+    }
+  };
+  for (const state of stamped) {
+    if (state) {
+      consider(state.timestamp + OPTIMISTIC_TIMEOUT);
+    }
+  }
+  for (const key in pendingActions) {
+    const info = pendingActions[key];
+    consider(info.ts + (info.ttl ?? OPTIMISTIC_TIMEOUT));
+  }
+  return next;
+};
+
 const resolveOptimisticAmount = (optAmount, data) => {
   if (optAmount && data.amount === optAmount.serverAmount && Date.now() - optAmount.timestamp < OPTIMISTIC_TIMEOUT) {
     return optAmount.value;
@@ -374,6 +395,23 @@ export const ChemDispenser = (props) => {
   });
 
   const [optimistic, setOptimistic] = useState(null);
+
+  // Одинаковые обновления сервер не шлёт, поэтому к сроку истечения окно перерисовывается само.
+  const [expiryTick, setExpiryTick] = useState(0);
+  const nextExpiry = getNextOptimisticExpiry(
+    [optimistic, optPrefs, optAmount, optRecording, optDeletedRecipes],
+    pendingActions
+  );
+  useEffect(() => {
+    if (nextExpiry === null) {
+      return;
+    }
+    const timer = setTimeout(
+      () => setExpiryTick((tick) => tick + 1),
+      Math.max(0, nextExpiry - Date.now()) + 1
+    );
+    return () => clearTimeout(timer);
+  }, [nextExpiry, expiryTick]);
 
   // Derived validity check; avoids render-time state updates.
   const isOptimisticActive = checkOptimisticActive(optimistic, data);

@@ -115,9 +115,9 @@
 	var/randombody = client.prefs.be_random_body
 	if(randombody && (nameless || randomname))
 		return TRUE			// somewhat unrecognizable
-	if(client.prefs.slots_joined_as && (client.prefs.default_slot in client.prefs.slots_joined_as))
+	if(client.prefs.slots_joined_as && ("[client.prefs.default_slot]" in client.prefs.slots_joined_as))
 		if(notify)
-			to_chat(src, "<span class='userdanger'>You cannot respawn on the same slot. Joined slots: [english_list(client.prefs.slots_joined_as)].")
+			to_chat(src, span_userdanger("Нельзя повторно войти в смену тем же слотом. Использованные слоты: [jointext(client.prefs.slots_joined_as, ", ")]."))
 		return FALSE
 	if((!nameless && !randomname) && (client.prefs.characters_joined_as && (client.prefs.real_name in client.prefs.characters_joined_as)))
 		if(notify)

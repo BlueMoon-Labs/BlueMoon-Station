@@ -40,21 +40,6 @@
 		if(right_blood_type) // || right_blood_reagent)
 			mail_goodies += blood_bag
 
-/datum/quirk/depression
-	name = "Депрессия"
-	desc = "Иногда вы просто ненавидите жизнь."
-	mob_trait = TRAIT_DEPRESSION
-	value = -1
-	gain_text = "<span class='danger'>У вас начинается депрессия.</span>"
-	medical_record_text = "У пациента наблюдаются серьёзные перепады настроения, вызывающие острые периоды депрессии."
-	lose_text = "<span class='notice'>У вас больше нет депрессии.</span>" //if only it were that easy!
-	mood_quirk = TRUE
-	processing_quirk = TRUE
-
-/datum/quirk/depression/on_process()
-	if(prob(0.05))
-		SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "depression", /datum/mood_event/depression)
-
 /datum/quirk/family_heirloom
 	name = "Семейная реликвия"
 	desc = "Вы владелец реликвии, передающейся из поколения в поколение. Её нужно беречь!"
@@ -383,7 +368,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	name = "Диссоциативное расстройство"
 	desc = "Вы страдаете от тяжелого расстройства и видите яркие галлюцинации. ЛСД подавляет болезнь, к побочному эффекту этого вещества у вас невосприимчивость. <b>Это не даёт разрешение на гриферство.</b>"
 	value = -2
-	//no mob trait because it's handled uniquely
+	mob_trait = TRAIT_INSANITY
 	gain_text = "<span class='userdanger'>...</span>"
 	lose_text = "<span class='notice'>Вы чувствуете себя в гармонии с миром.</span>"
 	medical_record_text = "Пациент страдает от острого диссоциативного расстройства и испытывает яркие галлюцинации."
@@ -509,8 +494,8 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	quirk_holder.cure_blind(ROUNDSTART_TRAIT)
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
 
-/datum/quirk/blindness/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
-	examine_list += "<span class='warning'>[quirk_holder.ru_ego(TRUE)] глаза мутные и остекленелые...</span>"
+/datum/quirk/blindness/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list, anonymous = FALSE)
+	examine_list += "<span class='warning'>[anonymous ? "Его" : quirk_holder.ru_ego(TRUE)] глаза мутные и остекленелые...</span>"
 
 /datum/quirk/coldblooded
 	name = "Холоднокровие"
@@ -524,6 +509,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 /datum/quirk/monophobia
 	name = "Монофобия"
 	desc = "Вы испытываете стресс, когда не находитесь в компании других, вызывающий реакции от болезненного состояния до инфарктов."
+	mob_trait = TRAIT_MONOPHOBIA
 	value = -3 // Might change it to 4.
 	gain_text = "<span class='danger'>Вы чувствуете себя одиноко...</span>"
 	lose_text = "<span class='notice'>Вы чувствуете, что одному быть не так уж и плохо.</span>"
@@ -538,15 +524,6 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	. = ..()
 	var/mob/living/carbon/human/H = quirk_holder
 	H?.cure_trauma_type(/datum/brain_trauma/severe/monophobia, TRAUMA_RESILIENCE_ABSOLUTE)
-
-/datum/quirk/no_smell
-	name = "Аносмия"
-	desc = "Вы не ощущаете запахи! Вы не сможете обнаружать определенные бесцветные газы."
-	value = -1
-	mob_trait = TRAIT_ANOSMIA
-	gain_text = "<span class='notice'>Вы не чувствуете запахов!</span>"
-	lose_text = "<span class='notice'>Вы снова чувствуете запахи!</span>"
-	medical_record_text = "Пациент страдает от аносмии и не может различать запахи газов и частиц."
 
 /datum/quirk/paper_skin
 	name = "Бумажная Кожа"

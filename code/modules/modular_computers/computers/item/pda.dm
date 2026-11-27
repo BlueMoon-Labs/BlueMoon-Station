@@ -49,9 +49,12 @@
 	///Static list of default PDA apps to install on Initialize.
 	var/static/list/datum/computer_file/pda_programs = list(
 		/datum/computer_file/program/messenger,
+		/datum/computer_file/program/pda_camera,
+		/datum/computer_file/program/syndimatic,
 		/datum/computer_file/program/notepad,
 		/datum/computer_file/program/crew_manifest,
-		/datum/computer_file/program/banking,
+		/datum/computer_file/program/department_budget,
+		/datum/computer_file/program/wallet,
 	)
 	///List of items that can be stored in a PDA
 	var/static/list/contained_item = list(
@@ -184,6 +187,11 @@
 		. += "<span class='notice'>Заряд батареи: [battery]%.</span>"
 	if(device_theme)
 		. += "<span class='notice'>Тема: [device_theme].</span>"
+	var/datum/computer_file/program/wallet/wallet = find_file_by_name("wallet")
+	if(istype(wallet) && (loc == user || owner == user.real_name))
+		var/spend_hint = econ_wallet_examine_hint(wallet.wallet_account(user), user)
+		if(spend_hint)
+			. += spend_hint
 	. += stored_id ? "<span class='notice'>Alt-click для извлечения ID-карты.</span>" : ""
 	if(inserted_item && (!isturf(loc)))
 		. += "<span class='notice'>Ctrl-click для извлечения [inserted_item].</span>"

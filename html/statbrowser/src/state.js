@@ -21,10 +21,14 @@ var State = {
 	mcServerData: {},
 	mcSSData: [],
 	mcIteration: -1,
-	mcSortCol: SS_COST,
+	mcSortCol: SS_LOAD,
 	mcSortAsc: false,
 	mcFilterText: "",
-	mcSections: { server: true, ping: false, key: true, subsystems: true },
+	mcSections: { summary: true, budget: true, controller: false, net: false, key: true, subsystems: true },
+	mcHideIdle: false,
+	mcHotOnly: false,
+	mcPinned: {},
+	mcExpanded: {},
 	// Tickets
 	tickets: [],
 	interviewManager: { status: "", interviews: [] },
@@ -39,6 +43,7 @@ var State = {
 	turfContentsRaw: "",
 	// Favorites
 	favorites: {},
+	emotePanel: null,
 	// Images
 	storedImages: {},
 	imageRetryDelay: 500,

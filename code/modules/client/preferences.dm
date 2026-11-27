@@ -7,6 +7,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/default_slot = 1				//Holder so it doesn't default to slot 1, rather the last one used
 	var/max_save_slots = 40
 	var/character_slot_name = ""
+	var/syndimatic_character_id
 	var/last_ip
 	/// Last CID the person was seen on
 	var/last_id
@@ -14,7 +15,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/log_clicks = FALSE
 	/// Characters they have joined the round under - Lazylist of names
 	var/list/characters_joined_as
-	/// Slots they have joined the round under - Lazylist of numbers
+	// Слоты, которыми игрок вошёл в смену. Ключ — номер слота строкой, значение — данные для сохранения в конце смены.
 	var/list/slots_joined_as
 	/// Are we currently subject to respawn restrictions? Usually set by us using the "respawn" verb, but can be lifted by admins.
 	var/respawn_restrictions_active = FALSE
@@ -99,6 +100,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/windowflashing = TRUE
 	var/adminhelp_windowflash = TRUE
 	var/windownoise = TRUE
+	var/examine_headshots = TRUE
+	var/syndimatic_notifications = TRUE
 	var/mood_vignette = TRUE
 	var/toggles = TOGGLES_DEFAULT
 	var/sound_toggles = SOUND_BUTTONS
@@ -241,6 +244,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "cock_shape" = DEF_COCK_SHAPE,
 "cock_length" = COCK_SIZE_DEF,
 "cock_diameter_ratio" = COCK_DIAMETER_RATIO_DEF,
+"cock_dynamic_size" = FALSE,
+"cock_flaccid_length" = COCK_SIZE_DEF,
+"cock_flaccid_width" = COCK_SIZE_DEF * COCK_DIAMETER_RATIO_DEF,
+"cock_erect_length" = COCK_SIZE_DEF,
+"cock_erect_width" = COCK_SIZE_DEF * COCK_DIAMETER_RATIO_DEF,
 "cock_color" = "ffffff",
 "cock_taur" = FALSE,
 "has_balls" = FALSE,
@@ -397,6 +405,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/lighting_lamp_brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
 	var/lighting_bloom_intensity = LIGHTING_BLOOM_INTENSITY_DEFAULT
 	var/lighting_quality = LIGHTING_QUALITY_DEFAULT
+	/// Затемнение экрана вместо блюра при близорукости.
+	var/nearsigh_darkening = FALSE
 	///Should we automatically fit the viewport?
 	var/auto_fit_viewport = FALSE
 	///Should we be in the widescreen mode set by the config?
@@ -500,6 +510,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/scars_list = list("1" = "", "2" = "", "3" = "", "4" = "", "5" = "")
 	/// Which of the 5 persistent scar slots we randomly roll to load for this round, if enabled. Actually rolled in [/datum/preferences/proc/load_character(slot)]
 	var/scars_index = 1
+	// Сохранённая модель NIF и список установленных программ в JSON.
+	var/nif_persistent_data
 
 	var/hide_ckey = FALSE //pref for hiding if your ckey shows round-end or not
 
@@ -590,6 +602,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/podlauncher_presets = list()
 	// Формат отчётов всех медицинских анализаторов пользователя; по умолчанию TGUI.
 	var/health_analyzer_chat = FALSE
+	var/list/custom_emote_groups = list()
+	var/list/custom_emote_chat_order = list()
+	var/amplify_department_radio = FALSE
+	// Ноль означает максимальный лимит фотографий для текущего уровня подписки.
+	var/syndimatic_photo_limit = 0
+	var/syndimatic_follow_notifications = TRUE
 
 /datum/preferences/proc/get_vending_layout(machine_type)
 	return vending_layouts["[machine_type]"] || "grid"
@@ -647,10 +665,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	return
 
 /datum/preferences/Destroy(force)
-	// Буфер одиночных записей дописываем: это одно открытие файла и только если
+	// Буфер одиночных записей дописываем (в журнал или открытый файл) и только если
 	// в буфере что-то есть. Полную запись (pref_queue/char_queue) НЕ форсируем -
 	// она стоит сотню WRITE_FILE, а её данные и так лежат в переменных датума.
 	flush_single_prefs()
+	GLOB.player_save_migration_queue -= src
+	// Перенос без буфера никому не нужен до следующей правки; копия .sav закрывается.
+	player_save_storage?.abort_migration()
 	if(pref_queue)
 		deltimer(pref_queue)
 		pref_queue = null
@@ -671,6 +692,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			continue
 		GLOB.preferences_datums -= registered_ckey
 		break
+	slots_joined_as = null
 	// Датум вида принадлежит только префам (все присвоения pref_species - new, мобу уходит
 	// тип, а не экземпляр), ссылок со стороны нет - хватает отпустить, рефкаунт освободит.
 	pref_species = null
@@ -863,6 +885,7 @@ GLOBAL_LIST_INIT(body_mod_organ_groups, list(
 			list("id" = "organic", "label" = "Обычные", "cost" = 0),
 			list("id" = "robotic", "label" = "Кибернетические", "cost" = 0, "path" = /obj/item/organ/eyes/robotic),
 			list("id" = "glow", "label" = "Светящиеся", "cost" = 1, "path" = /obj/item/organ/eyes/robotic/toggled/glow),
+			list("id" = "kiroshi", "label" = "Оптика Кироши", "cost" = 1, "path" = /obj/item/organ/cyberimp/eyes/optical/kiroshi),
 		),
 	),
 	list(
@@ -926,6 +949,15 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	list("id" = "disrobe", "label" = "Мгновенное раздевание", "desc" = "Кнопка мгновенно сбрасывает всю надетую одежду.", "cost" = 0, "path" = /obj/item/implant/disrobe),
 	list("id" = "genital_fluid", "label" = "Жидкостный индуктор", "desc" = "Позволяет вырабатывать генитальную жидкость заданного реагента. (груди)", "cost" = 0, "path" = /obj/item/implant/genital_fluid),
 	list("id" = "breathing_tube", "label" = "Дыхательная трубка", "desc" = "Киберимплант в горле: позволяет дышать без лёгких и не снимать шлем ради дыхания.", "cost" = 1, "path" = /obj/item/organ/cyberimp/mouth/breathing_tube, "organ" = TRUE),
+	// Кибернетические импланты из обновления: одна и та же группа занимает одни и те же слоты.
+	list("id" = "lynx_paws", "label" = "Лапы рыси", "desc" = "Звукопоглощающие подушечки и искусственные нервы в обеих стопах. Шаги становятся беззвучными.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/lynx_paws, "organ" = TRUE, "group" = "leg_augments"),
+	list("id" = "reinforced_tendons", "label" = "Усиленные сухожилия", "desc" = "Синтетические сухожилия обеих ног с микросерво: позволяют совершить второй прыжок в воздухе.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/tendons, "organ" = TRUE, "group" = "leg_augments"),
+	list("id" = "fortified_ankles", "label" = "Усиленные лодыжки", "desc" = "Гидравлические поршни в лодыжках: рывок вперёд по направлению взгляда.", "cost" = 1, "path" = /obj/item/organ/cyberimp/leg/ankles, "organ" = TRUE, "group" = "leg_augments"),
+	list("id" = "corp_blood_pump", "label" = "Корпоративная кровяная помпа", "desc" = "Насос перекачивает кровь и ускоряет заживление, а при активации мгновенно восстанавливает синтетическую плоть.", "cost" = 4, "path" = /obj/item/organ/cyberimp/chest/blood_pump/sec_level, "organ" = TRUE),
+	list("id" = "razor_claws", "label" = "Выдвижные когти", "desc" = "Пара выдвижных когтей из лёгкого сплава: при выборе в редакторе имплант получают обе руки.", "cost" = 3, "path" = /obj/item/organ/cyberimp/arm/razor_claws, "offhand_path" = /obj/item/organ/cyberimp/arm/razor_claws/left, "organ" = TRUE, "group" = "arm_augments"),
+	list("id" = "subdermal_armor", "label" = "Подкожная броня", "desc" = "Композитные пластины под кожей: снижают урон от ближнего боя, пуль и лазеров.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/subdermal_armor, "organ" = TRUE),
+	list("id" = "reinforced_skeleton", "label" = "Усиленный скелет", "desc" = "Углеродный эндоскелет: увеличивает запас здоровья.", "cost" = 6, "path" = /obj/item/organ/cyberimp/chest/reinforced_skeleton, "organ" = TRUE),
+	list("id" = "nutriment_pump", "label" = "Питательный насос", "desc" = "Синтезирует небольшую порцию питательных веществ в кровь при голоде.", "cost" = 1, "path" = /obj/item/organ/cyberimp/chest/nutriment, "organ" = TRUE),
 ))
 
 /datum/preferences/proc/body_mod_organ_group(slot)
@@ -936,6 +968,16 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 
 /datum/preferences/proc/body_mod_has_robotic_eyes()
 	return pref_species && (ROBOTIC_LIMBS in pref_species.species_traits) && pref_species.mutanteyes != /obj/item/organ/eyes
+
+/// У некоторых видов (синты, IPC и т.п.) в руке уже стоит встроенный киберимплант —
+/// например, силовой кабель. Он занимает слот руки, поэтому выбирать импланты рук нельзя.
+/datum/preferences/proc/body_mod_has_mutant_arm_augment()
+	if(!pref_species || !islist(pref_species.mutant_organs))
+		return FALSE
+	for(var/organ_path in pref_species.mutant_organs)
+		if(ispath(organ_path, /obj/item/organ/cyberimp/arm))
+			return TRUE
+	return FALSE
 
 /// Общий датум для эээ ну вы поняли тут понятно все
 /datum/preferences/proc/body_mod_organ_option_available(slot, list/option)
@@ -966,6 +1008,51 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		if(option["id"] == implant_id)
 			return option
 	return null
+
+/// Импланты, которые занимают те же слоты, что и указанный: их выбор взаимоисключающий.
+/datum/preferences/proc/body_mod_implant_conflicts(implant_id, list/selected_implants = implant_mods)
+	. = list()
+	var/list/option = body_mod_implant_option(implant_id)
+	if(!option)
+		return
+	var/group = option["group"]
+	var/organ_slot = option["organ_slot"]
+	for(var/other_id in selected_implants)
+		if(other_id == implant_id)
+			continue
+		var/list/other = body_mod_implant_option(other_id)
+		if(!other)
+			continue
+		if(group && other["group"] == group)
+			. += other_id
+		else if(organ_slot && other["organ_slot"] == organ_slot)
+			. += other_id
+
+/// Причина, по которой имплант нельзя выбрать в редакторе, или null.
+/datum/preferences/proc/body_mod_implant_lock_reason(list/option)
+	if(!option)
+		return null
+	if(option["group"] == "arm_augments" && body_mod_has_mutant_arm_augment())
+		return "У этого вида в руке уже установлен встроенный киберимплант, поэтому дополнительные импланты рук недоступны."
+	return null
+
+/// Имплант нельзя поставить, если вид запрещает замену занимаемого им органа (например, глаза у вида с мутантными глазами).
+/datum/preferences/proc/body_mod_implant_locked(list/option)
+	if(!option)
+		return FALSE
+	if(body_mod_implant_lock_reason(option))
+		return TRUE
+	if(!option["organ_slot"])
+		return FALSE
+	return body_mod_organ_locked(option["organ_slot"])
+
+/// Стоимость импланта с учётом возврата за снимаемые конфликтующие импланты.
+/datum/preferences/proc/body_mod_implant_swap_refund(implant_id, list/selected_implants = implant_mods)
+	. = 0
+	for(var/conflicting_id in body_mod_implant_conflicts(implant_id, selected_implants))
+		var/list/conflicting = body_mod_implant_option(conflicting_id)
+		if(conflicting && !body_mod_implant_locked(conflicting))
+			. += conflicting["cost"]
 
 /datum/preferences/proc/body_mod_organ_locked(slot)
 	if(!pref_species)
@@ -1008,10 +1095,21 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 			. += option["cost"]
 	for(var/implant_id in selected_implants)
 		var/list/option = body_mod_implant_option(implant_id)
-		if(option)
+		if(option && !body_mod_implant_locked(option))
 			. += option["cost"]
 
+/// Кироши раньше был отдельным имплантом, теперь это выбор в группе глаз.
+/datum/preferences/proc/migrate_kiroshi_body_mod(list/selected_organs = organ_mods, list/selected_implants = implant_mods)
+	if(!islist(selected_organs) || !islist(selected_implants))
+		return
+	if(!selected_implants["kiroshi_optics"])
+		return
+	selected_implants -= "kiroshi_optics"
+	if(!body_mod_organ_locked(ORGAN_SLOT_EYES))
+		selected_organs[ORGAN_SLOT_EYES] = "kiroshi"
+
 /datum/preferences/proc/sanitize_body_mods()
+	migrate_kiroshi_body_mod()
 	if(islist(organ_mods) && organ_mods[ORGAN_SLOT_BREATHING_TUBE])
 		if(!islist(implant_mods))
 			implant_mods = list()
@@ -1029,8 +1127,14 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	if(islist(implant_mods))
 		for(var/implant_id in implant_mods)
 			var/list/option = body_mod_implant_option("[implant_id]")
-			if(!option)
+			if(!option || body_mod_implant_locked(option))
 				continue
+			// Взаимоисключающие импланты (руки, ноги, глаза) оставляем только первый.
+			if(length(body_mod_implant_conflicts(option["id"], clean_implants)))
+				continue
+			// Имплант заменяет выбранный в той же вкладке орган; приоритет у импланта.
+			if(option["organ_slot"])
+				organ_mods -= option["organ_slot"]
 			clean_implants[option["id"]] = TRUE
 	implant_mods = clean_implants
 
@@ -1041,8 +1145,17 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 			dropped += slot
 	for(var/slot in dropped)
 		organ_mods -= slot
+	// Импланты, недоступные виду (например, руки у синтов с силовым кабелем), тоже снимаем.
+	var/list/dropped_implants = list()
+	for(var/implant_id in implant_mods)
+		var/list/option = body_mod_implant_option(implant_id)
+		if(option && body_mod_implant_locked(option))
+			dropped_implants += implant_id
+	for(var/implant_id in dropped_implants)
+		implant_mods -= implant_id
 
 /datum/preferences/proc/migrate_legacy_body_mods(list/quirks = all_quirks, list/selected_organs = organ_mods, list/selected_implants = implant_mods)
+	migrate_kiroshi_body_mod(selected_organs, selected_implants)
 	if(islist(selected_organs) && selected_organs[ORGAN_SLOT_BREATHING_TUBE])
 		if(!islist(selected_implants))
 			selected_implants = list()
@@ -1119,14 +1232,22 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		new_organ.Insert(character)
 	for(var/implant_id in implant_mods)
 		var/list/option = body_mod_implant_option(implant_id)
-		if(!option || !option["path"])
+		if(!option || !option["path"] || body_mod_implant_locked(option))
 			continue
 		var/new_path = option["path"]
 		if(option["organ"])
-			if(locate(new_path) in character.internal_organs)
-				continue
-			var/obj/item/organ/new_organ = new new_path
-			new_organ.Insert(character)
+			// Некоторые импланты (когти) в редакторе ставятся парой: отдельный однорукий
+			// имплант на каждую руку. Сам тип при этом не занимает оба слота принудительно.
+			var/list/organ_paths = list(new_path)
+			var/offhand_path = option["offhand_path"]
+			if(offhand_path)
+				organ_paths += offhand_path
+			for(var/organ_path in organ_paths)
+				if(locate(organ_path) in character.internal_organs)
+					continue
+				var/obj/item/organ/new_organ = new organ_path
+				// drop_if_replaced = FALSE: заменённый орган удаляется, а не падает на пол при спавне.
+				new_organ.Insert(character, FALSE, FALSE)
 			continue
 		if(locate(new_path) in character.implants)
 			continue
@@ -1134,8 +1255,41 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		if(!new_implant.implant(character, null, TRUE, TRUE))
 			qdel(new_implant)
 
+/// Боевые импланты (флаг "combat_permit" в ростере) требуют именного разрешения на использование.
+/// Выдаёт пермит и вешает его на форму; вызывается после выдачи экипировки, когда есть форма и ID-карта.
+/datum/preferences/proc/apply_combat_implant_permits(mob/living/carbon/human/character)
+	if(!ishuman(character) || !islist(implant_mods))
+		return
+	var/list/authorized = list()
+	for(var/implant_id in implant_mods)
+		var/list/option = body_mod_implant_option(implant_id)
+		if(!option || !option["combat_permit"] || !option["path"] || body_mod_implant_locked(option))
+			continue
+		var/obj/item/organ/implant_path = option["path"]
+		var/min_code = initial(implant_path.active_security_level)
+		if(isnull(min_code))
+			continue
+		authorized += list(list("name" = option["label"], "code" = min_code))
+	if(!length(authorized))
+		return
+	var/obj/item/clothing/under/uniform = character.get_item_by_slot(ITEM_SLOT_ICLOTHING)
+	if(!istype(uniform))
+		return
+	// Повторная выдача не плодит дубликаты: существующий пермит просто переоформляется.
+	var/obj/item/clothing/accessory/permit/special/combat_implants/permit = locate() in uniform.accessories_attached
+	if(permit)
+		permit.authorize_implants(authorized)
+		if(!permit.first_inited)
+			permit.bind_to_user(character, TRUE)
+		return
+	permit = new(character)
+	permit.authorize_implants(authorized)
+	permit.bind_to_user(character, TRUE)
+	if(!uniform.attach_accessory(permit, character, TRUE))
+		character.equip_to_slot_or_del(permit, ITEM_SLOT_BACKPACK, TRUE)
+
 /datum/preferences/proc/quirk_balance(list/selected_quirks = all_quirks)
-	var/bal = 0
+	var/bal = BASE_QUIRK_BALANCE
 	for(var/V in selected_quirks)
 		var/datum/quirk/T = SSquirks.quirks[V]
 		if(T)
@@ -1369,6 +1523,19 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		character.update_body()
 		character.update_hair()
 
+/datum/preferences/proc/copy_appearance_to(mob/living/carbon/human/character, icon_updates = 1)
+	var/list/original_features = features
+	var/list/appearance_features = features.Copy()
+	appearance_features["body_size"] = RESIZE_DEFAULT_SIZE
+	features = appearance_features
+	copy_to(character, icon_updates, roundstart_checks = FALSE)
+	features = original_features
+
+	character.mob_weight = MOB_WEIGHT_NORMAL
+	character.update_weight(MOB_WEIGHT_NORMAL)
+	character.dna.features["body_size"] = RESIZE_DEFAULT_SIZE
+	character.update_size(RESIZE_DEFAULT_SIZE)
+
 /// Применяет к character сохранённые в префах модификации конечностей (протезы/ампутации).
 /// Сбрасывает все робо-конечности до плотских, регенерирует отсутствующие и затем
 /// накатывает modified_limbs из префов. Вызывается из copy_to() при initial_spawn,
@@ -1401,8 +1568,36 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 				new_limb.icon = file("icons/mob/augmentation/cosmetic_prosthetic/[prosthetic_type].dmi")
 			new_limb.replace_limb(character)
 		qdel(old_part)
+	apply_amputation_paralysis(character)
+
+/// Ампутация в редакторе даёт очки квирков, поэтому пришитая в раунде конечность
+/// не должна снова заработать. Вешаем несъёмный паралич (как у квирка "Парализованный"):
+/// трейт живёт на мобе и переживает пересадку или замену конечности.
+/datum/preferences/proc/apply_amputation_paralysis(mob/living/carbon/human/character)
+	var/static/list/paralysis_traits = list(
+		BODY_ZONE_L_ARM = TRAIT_PARALYSIS_L_ARM,
+		BODY_ZONE_R_ARM = TRAIT_PARALYSIS_R_ARM,
+		BODY_ZONE_L_LEG = TRAIT_PARALYSIS_L_LEG,
+		BODY_ZONE_R_LEG = TRAIT_PARALYSIS_R_LEG,
+	)
+	for(var/zone in paralysis_traits)
+		REMOVE_TRAIT(character, paralysis_traits[zone], "character_setup_amputation")
+	// Желе отращивает конечности и за ампутацию очков не получает — паралич ей не нужен.
+	if(!isjellyperson(character))
+		for(var/zone in modified_limbs)
+			if(modified_limbs[zone][1] != LOADOUT_LIMB_AMPUTATED)
+				continue
+			// Наге ноги в редакторе не ампутируют, поэтому и паралича на них быть не должно.
+			if(HAS_TRAIT(character, TRAIT_NAGA_ANATOMY) && (zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG))
+				continue
+			var/trait = paralysis_traits[zone]
+			if(!trait)
+				continue
+			ADD_TRAIT(character, trait, "character_setup_amputation")
+	character.update_disabled_bodyparts()
 
 /datum/preferences/proc/post_copy_to(mob/living/carbon/human/character)
+	apply_combat_implant_permits(character)
 	//if no legs, and not a paraplegic or a slime, give them a free wheelchair
 	if(modified_limbs[BODY_ZONE_L_LEG] == LOADOUT_LIMB_AMPUTATED && modified_limbs[BODY_ZONE_R_LEG] == LOADOUT_LIMB_AMPUTATED && !character.has_quirk(/datum/quirk/paraplegic) && !isjellyperson(character))
 		if(character.buckled)
@@ -1471,14 +1666,14 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 /datum/preferences/proc/find_gear_with_property(save_slot, property, value)
 	var/list/gear_list = loadout_data["SAVE_[save_slot]"]
 	for(var/loadout_gear in gear_list)
-		if(loadout_gear[property] == value)
+		if(islist(loadout_gear) && loadout_gear[property] == value)
 			return loadout_gear
 	return FALSE
 
 /datum/preferences/proc/has_loadout_gear(save_slot, gear_type)
 	var/list/gear_list = loadout_data["SAVE_[save_slot]"]
 	for(var/loadout_gear in gear_list)
-		if(loadout_gear[LOADOUT_ITEM] == gear_type)
+		if(islist(loadout_gear) && loadout_gear[LOADOUT_ITEM] == gear_type)
 			return loadout_gear
 	return FALSE
 
@@ -1551,18 +1746,23 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
  * здесь остаётся только проверка формата и длины.
  */
 /datum/preferences/proc/validate_headshot_link(user, usr_input)
-	var/static/link_regex = regex("^https?://.*\\.(jpg|png|jpeg|gif|webm|mp4)(\[?#].*)?$", "i")
-
 	if (length(usr_input) > HEADSHOT_LINK_MAX_LENGTH)
 		to_chat(user, span_warning("The link is too long! Max length: [HEADSHOT_LINK_MAX_LENGTH] characters!"))
 		return ACTION_HEADSHOT_LINK_NOOP
 
-	if(!findtext(usr_input, link_regex))
+	var/link = sanitize_headshot_link(usr_input)
+	if(!link)
 		to_chat(user, span_warning("The link must be a direct http(s):// image/video URL ending with .png, .jpg, .jpeg, .gif, .webm, or .mp4!"))
 		return ACTION_HEADSHOT_LINK_NOOP
+	return link
 
+/// Ссылка в том виде, в каком её сохраняет редактор, или null, если редактор бы её не принял.
+/proc/sanitize_headshot_link(link)
+	var/static/link_regex = regex("^https?://.*\\.(jpg|png|jpeg|gif|webm|mp4)(\[?#].*)?$", "i")
+	if(!istext(link) || length(link) > HEADSHOT_LINK_MAX_LENGTH || !findtext(link, link_regex))
+		return null
 	var/static/list/repl_chars = list("\n"="#","\t"="#","'"="","\""=""," "="")
-	return sanitize(usr_input, repl_chars)
+	return sanitize(link, repl_chars)
 
 /proc/headshot_preview_html(link, width = 140, height = 140)
 	if(!link)

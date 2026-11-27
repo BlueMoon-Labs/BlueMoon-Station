@@ -145,6 +145,12 @@
 		return icon(minimap_icon, minimap_icon_state)
 	return getFlatIcon(image(src), no_anim = TRUE)
 
+// Совпадает у атомов, для которых get_minimap_icon() без типа рисует одно и то же.
+/atom/proc/get_minimap_icon_key()
+	if(minimap_icon)
+		return "minimap|[minimap_icon]|[minimap_icon_state]"
+	return flat_icon_cache_key(src)
+
 /**
  * Called when an atom is created in byond (built in engine proc)
  *
@@ -280,8 +286,10 @@
 		LAZYREMOVE(M.do_afters, src)
 	targeted_by = null
 
-	if(GLOB.lighting_deferred_atoms.Remove(src)) // кэш отложенных z протухает только если атом реально был запаркован
-		GLOB.lighting_deferred_z_cache = null
+	if(flags_1 & LIGHTING_DEFERRED_PARKED_1)
+		flags_1 &= ~LIGHTING_DEFERRED_PARKED_1
+		if(GLOB.lighting_deferred_atoms.Remove(src))
+			GLOB.lighting_deferred_z_cache = null
 	if(light)
 		QDEL_NULL(light)
 
@@ -947,7 +955,11 @@
 			try
 				var/icon/splatter = icon(initial(icon), initial(icon_state), , 1)		//we only want to apply blood-splatters to the initial icon_state for each object
 				splatter.Blend("#fff", ICON_ADD) 			//fills the icon_state with white (except where it's transparent)
-				splatter.Blend(icon('icons/effects/blood.dmi', "itemblood"), ICON_MULTIPLY) //adds blood and the remaining white areas become transparant
+				// Маска крови теперь накладывается правильно на предметы больше чем 32 на 32
+				var/icon/blood_mask = icon('icons/effects/blood.dmi', "itemblood")
+				for(var/blood_x = 0, blood_x < splatter.Width(), blood_x += blood_mask.Width())
+					for(var/blood_y = 0, blood_y < splatter.Height(), blood_y += blood_mask.Height())
+						splatter.Blend(blood_mask, ICON_MULTIPLY, blood_x, blood_y)
 				splatter.Blend(blood_DNA_to_color(), ICON_MULTIPLY)
 				cached_splatter = fcopy_rsc(splatter)
 			catch(var/exception/icon_error)
@@ -989,30 +1001,32 @@
 	if(wear_suit)
 		wear_suit.add_blood_DNA(blood_dna, diseases)
 		update_inv_wear_suit()
-	else if(w_uniform)
+	// Каждый слой защищён только одеждой, которая реально закрывает его.
+	if(w_uniform && !(wear_suit && (wear_suit.flags_inv & HIDEJUMPSUIT)))
 		w_uniform.add_blood_DNA(blood_dna, diseases)
 		update_inv_w_uniform()
-	//skyrat edit
-	else if(w_underwear)
+	if(w_underwear && !underwear_hidden())
 		w_underwear.add_blood_DNA(blood_dna, diseases)
 		update_inv_w_underwear()
-	else if(w_socks)
+	if(w_socks && !socks_hidden())
 		w_socks.add_blood_DNA(blood_dna, diseases)
 		update_inv_w_socks()
-	else if(w_shirt)
+	if(w_shirt && !undershirt_hidden())
 		w_shirt.add_blood_DNA(blood_dna, diseases)
 		update_inv_w_shirt()
-	else if(wrists)
+	var/wrists_cover_flags = wear_suit?.flags_inv | w_uniform?.flags_inv | gloves?.flags_inv
+	if(wrists && !(wrists_cover_flags & HIDEWRISTS) && !(wear_suit && (wear_suit.flags_inv & HIDEGLOVES)))
 		wrists.add_blood_DNA(blood_dna, diseases)
 		update_inv_wrists()
-	//
-	if(gloves)
-		var/obj/item/clothing/gloves/G = gloves
-		G.add_blood_DNA(blood_dna, diseases)
-	else
-		transfer_blood_dna(blood_dna, diseases)
-		bloody_hands = rand(2, 4)
-	update_inv_gloves()	//handles bloody hands overlays and updating
+	// Space suits include their own hand covering over gloves or bare hands.
+	if(!(wear_suit && (wear_suit.body_parts_covered & HANDS)))
+		if(gloves)
+			var/obj/item/clothing/gloves/G = gloves
+			G.add_blood_DNA(blood_dna, diseases)
+		else
+			transfer_blood_dna(blood_dna, diseases)
+			bloody_hands = rand(2, 4)
+		update_inv_gloves()	//handles bloody hands overlays and updating
 	return TRUE
 
 /atom/proc/blood_DNA_to_color()
@@ -1171,20 +1185,26 @@
 	Resets the atom's color to null, and then sets it to the highest priority
 	colour available
 */
+/// Матрица в color хранит прозрачность в себе и при смене сбрасывает её, поэтому alpha возвращается вручную.
 /atom/proc/update_atom_colour()
 	if(!atom_colours)
 		atom_colours = list()
 		atom_colours.len = COLOUR_PRIORITY_AMOUNT //four priority levels currently.
+	var/kept_alpha = alpha
+	var/matrix_applied = FALSE
 	color = null
 	for(var/C in atom_colours)
 		if(islist(C))
 			var/list/L = C
 			if(L.len)
 				color = L
-				return
+				matrix_applied = TRUE
+				break
 		else if(C)
 			color = C
-			return
+			break
+	if(matrix_applied || alpha != kept_alpha)
+		alpha = kept_alpha
 
 /atom/vv_edit_var(var_name, var_value)
 	if(!GLOB.Debug2)

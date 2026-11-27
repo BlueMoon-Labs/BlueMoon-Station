@@ -1,6 +1,6 @@
 /datum/nanite_program
 	var/name = "Generic Nanite Program"
-	var/desc = "Warn a coder if you can read this."
+	var/desc = "Предупреждение разработчику: если вы это читаете..."
 
 	var/datum/component/nanites/nanites
 	var/mob/living/host_mob

@@ -106,8 +106,8 @@
 
 /datum/view_data/proc/zoomOut(radius = 0, offset = 0, direction = FALSE)
 	if(chief.mob)
-		var/turf/mob_turf = get_turf(chief.mob)
-		if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
+		var/area/mob_area = get_area(chief.mob)
+		if(mob_area && is_hilbert_hotel_area(mob_area))
 			to_chat(chief.mob, span_warning("Отель Гилберта, запрещает смотреть за свои границы."))
 			return
 	if(direction)

@@ -130,7 +130,7 @@
 	name = "Grimoire Libidine"
 	program_desc = "Создаёт голографические версии игрушек и аксессуаров KinkMate. Одновременно доступны пять предметов."
 	purchase_price = 150
-	summonable_items = list(/obj/item/dildo/custom, /obj/item/buttplug/small, /obj/item/buttplug/med, /obj/item/clothing/mask/muzzle/ballgag, /obj/item/clothing/neck/petcollar, /obj/item/restraints/handcuffs/fake/kinky, /obj/item/clothing/glasses/sunglasses/blindfold, /obj/item/clothing/gloves/evening)
+	summonable_items = list(/obj/item/dildo/custom, /obj/item/buttplug/small, /obj/item/buttplug/med, /obj/item/buttplug/big, /obj/item/clothing/mask/muzzle/ballgag, /obj/item/clothing/neck/petcollar, /obj/item/restraints/handcuffs/fake/kinky, /obj/item/clothing/glasses/sunglasses/blindfold, /obj/item/clothing/gloves/evening)
 
 /datum/nifsoft/summoner/job
 	max_summoned_items = 2

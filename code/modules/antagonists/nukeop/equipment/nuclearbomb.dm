@@ -666,6 +666,8 @@ This is here to make the tiles around the station mininuke change when it's arme
 	drop_sound = 'sound/items/handling/disk_drop.ogg'
 	pickup_sound = 'sound/items/handling/disk_pickup.ogg'
 
+#define NUKE_DISK_OPERATIVE_WEIGHT_INTERVAL (2 MINUTES)
+
 /obj/item/disk/nuclear
 	name = "nuclear authentication disk"
 	desc = "Better keep this safe."
@@ -677,8 +679,8 @@ This is here to make the tiles around the station mininuke change when it's arme
 	var/fake = FALSE
 	var/stationloving = TRUE
 	var/turf/lastlocation
-	var/last_disk_move
 	var/process_tick = 0
+	var/next_operative_weight_at
 
 /obj/item/disk/nuclear/Initialize(mapload)
 	. = ..()
@@ -686,7 +688,8 @@ This is here to make the tiles around the station mininuke change when it's arme
 
 	if(!fake)
 		GLOB.poi_list |= src
-		last_disk_move = world.time
+		lastlocation = get_turf(src)
+		next_operative_weight_at = world.time + NUKE_DISK_OPERATIVE_WEIGHT_INTERVAL
 		START_PROCESSING(SSobj, src)
 
 /obj/item/disk/nuclear/ComponentInitialize()
@@ -700,36 +703,35 @@ This is here to make the tiles around the station mininuke change when it's arme
 		STOP_PROCESSING(SSobj, src)
 		CRASH("A fake nuke disk tried to call process(). Who the fuck and how the fuck")
 	var/turf/newturf = get_turf(src)
+	var/current_time = world.time
 
-	if(newturf && lastlocation == newturf)
+	if(newturf != lastlocation)
+		lastlocation = newturf
+		next_operative_weight_at = current_time + NUKE_DISK_OPERATIVE_WEIGHT_INTERVAL
+		reset_operative_weights(newturf)
+		return
+	if(!newturf)
+		return
 
-	// How comfy is disky?
+	if(current_time >= next_operative_weight_at)
+		grow_operative_weights(newturf)
+		next_operative_weight_at = current_time + NUKE_DISK_OPERATIVE_WEIGHT_INTERVAL
+
+	if(!(process_tick % 30))
+		// Кровать и одеяло нужны только для сообщения о спящем диске.
 		var/disk_comfort_level = 0
-
-		// Checking for items that make disky comfy
 		for(var/obj/comfort_item in loc)
 			if(istype(comfort_item, /obj/item/bedsheet) || istype(comfort_item, /obj/structure/bed))
 				disk_comfort_level++
+		if(disk_comfort_level >= 2)
+			visible_message(span_notice("[src] крепко спит."))
 
-		if(disk_comfort_level >= 2) //Sleep tight, disky.
-			if(!(process_tick % 30))
-				visible_message("<span class='notice'>[src] sleeps soundly. Sleep tight, disky.</span>")
-		if(last_disk_move < world.time - 5000 && prob((world.time - 5000 - last_disk_move)*0.0001 / max(disk_comfort_level,1)))
-			grow_operative_weights(newturf)
+#undef NUKE_DISK_OPERATIVE_WEIGHT_INTERVAL
 
-	else
-		lastlocation = newturf
-		last_disk_move = world.time
-		decay_operative_weights(newturf)
-
-/// Оперативные контролы, чей вес вправе расти в этом профиле. Боевой одиночка и защитник
-/// диска разделены по типам раундов (operative.dm), так что в пуле всегда ровно один из
-/// них, а растущий вес читается как "диск лежит". Контролу, недоступному текущему профилю,
-/// вес не трогаем: ненулевой вес там был бы мёртвым числом в панели и в логах.
+// Вес растёт только у события текущего режима: боевого одиночки или защитника диска.
 /obj/item/disk/nuclear/proc/operative_controls()
 	var/list/controls = list()
-	// Без as anything: типизированный for отсекает все прочие события директора
-	for(var/datum/round_event_control/operative/control in SSdirector.event_controls())
+	for(var/datum/round_event_control/operative/control in SSdirector.actions)
 		if(control.required_round_type && !(GLOB.round_type in control.required_round_type))
 			continue
 		controls += control
@@ -742,8 +744,7 @@ This is here to make the tiles around the station mininuke change when it's arme
 		if(control.occurrences >= control.max_occurrences)
 			continue
 		control.weight += 1
-		// Вес растёт на единицу каждый тик, то есть примерно раз в пару секунд. Логировать
-		// каждое изменение - значит писать в лог по две сотни строк за лежащий диск.
+		// Пишем в лог каждую десятую прибавку веса, чтобы не засорять его.
 		if(control.weight % 10)
 			continue
 		log_game("[src] is stationary for too long in [loc_name(where)], and has increased the weight of the [control.name] event to [control.weight].")
@@ -752,18 +753,13 @@ This is here to make the tiles around the station mininuke change when it's arme
 		if(SSticker.totalPlayers > 1 && CONFIG_GET(flag/admin_disk_inactive_msg))
 			message_admins("[src] is stationary in [ADMIN_VERBOSEJMP(where)]. The weight of [control.name] is now [control.weight].")
 
-/// -1 к весу, пока диск носят: оперативник должен прилетать по лежащему диску, а не
-/// через полчаса после того, как его давно унесли (жалоба прода "спавнится рандомно").
-/obj/item/disk/nuclear/proc/decay_operative_weights(turf/where)
-	for(var/datum/round_event_control/operative/control as anything in operative_controls())
-		if(control.occurrences >= control.max_occurrences || !prob(control.weight))
+// Смена клетки обнуляет накопленный вес и у событий, недоступных в текущем режиме.
+/obj/item/disk/nuclear/proc/reset_operative_weights(turf/where)
+	for(var/datum/round_event_control/operative/control in SSdirector.actions)
+		if(control.weight <= 0)
 			continue
-		control.weight = max(control.weight - 1, 0)
-		// Затухание веса в админ-чат не выводится вовсе: сообщение о том, что вес упал с 5
-		// до 4, не сообщает админу ничего, а флага-гейта у него, в отличие от роста, нет.
-		if(control.weight % 10)
-			continue
-		log_game("[src] being on the move has reduced the weight of the [control.name] event to [control.weight].")
+		control.weight = 0
+		log_game("Ядерный диск переместился ([loc_name(where)]). Вес события [control.name] сброшен до нуля.")
 
 /obj/item/disk/nuclear/examine(mob/user)
 	. = ..()
@@ -772,7 +768,8 @@ This is here to make the tiles around the station mininuke change when it's arme
 
 /obj/item/disk/nuclear/examine_more(mob/user)
 	. = ..()
-	if(HAS_TRAIT(user?.mind, TRAIT_DISK_VERIFIER))
+	var/datum/mind/viewer_mind = user?.mind
+	if(viewer_mind && HAS_TRAIT(viewer_mind, TRAIT_DISK_VERIFIER))
 		. += span_notice("The serial numbers on [src] are [fake ? "in" : ""]correct.")
 	else
 		. += span_notice("It has a serial number on it, but it doesn't mean anything to you.")

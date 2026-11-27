@@ -27,11 +27,23 @@ GLOBAL_LIST_EMPTY(log_viewer_instances)
 	GLOB.log_viewer_instances += src
 	if(target)
 		target_mob = target
-		target_client = target.client
+		set_target_client(target.client)
 		if(target_client)
 			source_type = LOGSRC_CLIENT
 		else
 			source_type = LOGSRC_MOB
+
+/// Цель, вышедшая из игры, пока админ листает её логи, не держится здесь (иначе BYOND искал бы её клиента обходом мира).
+/datum/log_viewer/proc/set_target_client(client/new_client)
+	if(target_client)
+		UnregisterSignal(target_client, COMSIG_PARENT_QDELETING)
+	target_client = new_client
+	if(target_client)
+		RegisterSignal(target_client, COMSIG_PARENT_QDELETING, PROC_REF(on_target_client_deleted))
+
+/datum/log_viewer/proc/on_target_client_deleted(client/source)
+	SIGNAL_HANDLER
+	target_client = null
 
 /datum/log_viewer/Destroy()
 	target_mob = null
@@ -161,10 +173,10 @@ GLOBAL_LIST_EMPTY(log_viewer_instances)
 				var/mob/M = get_mob_by_ckey(ckey)
 				if(M)
 					target_mob = M
-					target_client = M.client
+					set_target_client(M.client)
 				else
 					target_mob = null
-					target_client = null
+					set_target_client(null)
 			return TRUE
 
 		if("set_source")

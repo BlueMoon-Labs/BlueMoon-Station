@@ -75,11 +75,12 @@
 	appearance_flags = RESET_COLOR | RESET_TRANSFORM
 
 
-/proc/remove_image_from_clients(image/I, list/clients)
-	if(!I || !clients)
+/proc/remove_image_from_clients(image/I, list/client_refs)
+	if(!I || !client_refs)
 		return
-	for(var/client/C in clients)
-		C.images -= I
+	for(var/datum/weakref/client_ref as anything in client_refs)
+		var/client/C = client_ref.resolve()
+		C?.images -= I
 	qdel(I)
 
 
@@ -121,7 +122,7 @@
 
 			I.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
-		LAZYADD(clients_shown, M.client)
+		LAZYADD(clients_shown, WEAKREF(M.client))
 		M.client.images += I
 
 	if(clients_shown)

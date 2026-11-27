@@ -12,6 +12,7 @@
 	return "[caste_name][state_name]"
 
 /mob/living/carbon/alien/humanoid/update_icons()
+	update_fire()
 	cut_overlays()
 	for(var/I in overlays_standing)
 		add_overlay(I)
@@ -63,6 +64,7 @@
 
 // TGMC queen.dmi: Queen Walking, Queen Dead, Queen Knocked Down, Queen Sleeping
 /mob/living/carbon/alien/humanoid/royal/update_icons()
+	update_fire()
 	cut_overlays()
 	for(var/I in overlays_standing)
 		add_overlay(I)
@@ -152,3 +154,12 @@
 
 	overlays_standing[HANDS_LAYER] = hands
 	apply_overlay(HANDS_LAYER)
+
+/mob/living/carbon/alien/humanoid/update_fire()
+	remove_overlay(FIRE_LAYER)
+	if(!on_fire)
+		return
+	var/fire_state = lying ? "alien_fire_lying" : "alien_fire"
+	fire_overlay = mutable_appearance(icon, fire_state, -FIRE_LAYER)
+	overlays_standing[FIRE_LAYER] = fire_overlay
+	apply_overlay(FIRE_LAYER)

@@ -124,7 +124,10 @@
 	var/datum/position/P = mouse_absolute_datum_map_position_from_client(M.client)
 	if(!P)
 		return
+	// Курсор за краем карты: турфа под ним нет.
 	var/turf/T = P.return_turf()
+	if(!T)
+		return
 	LAZYINITLIST(last_location)
 	if(length(last_location) == 3 && last_location[1] == T.x && last_location[2] == T.y && last_location[3] == T.z)
 		return			//Same turf, don't bother.
@@ -163,7 +166,9 @@
 	if(!M.client)
 		return FALSE
 	var/datum/position/current = mouse_absolute_datum_map_position_from_client(M.client)
-	var/turf/target = current.return_turf()
+	var/turf/target = current?.return_turf()
+	if(!target)
+		return FALSE
 	var/list/atom/targets = get_nearest(target, target_typecache, lock_amount, lock_cursor_range)
 	if(targets == LOCKON_IGNORE_RESULT)
 		return

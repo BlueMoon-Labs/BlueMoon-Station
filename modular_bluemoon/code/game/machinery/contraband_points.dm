@@ -363,6 +363,14 @@
 		/obj/item/gun/ballistic/revolver/gatfruit = 0, //Спасибо дорогой публику ДС-1!
 		/obj/item/clothing/under/syndicate/maid/civil = 0,
 		/obj/item/gun/ballistic/automatic/ak12/r = 0, // ПОШЁЛ НАХУЙ НОКС!!!
+		/obj/item/gun/ballistic/automatic/pistol/sigsauer = 0,
+		//biomass
+		/obj/item/broken/terror_spider_egg/tier1 = 4500,
+		/obj/item/broken/terror_spider_egg/tier2 = 5750,
+		/obj/item/broken/terror_spider_egg/tier3 = 7000,
+		/obj/item/broken/terror_spider_egg/tier4 = 12000,
+		/obj/item/broken/necromorph_biomass = 2500,
+		/obj/item/broken/necromorph_biomass/dense = 4500,
 		//Mechs
 		/obj/vehicle/sealed/mecha/combat/five_stars = 100000,
 		/obj/vehicle/sealed/mecha/combat/durand/zeus = 25000,

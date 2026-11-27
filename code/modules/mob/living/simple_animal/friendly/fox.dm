@@ -31,7 +31,7 @@
 
 /mob/living/simple_animal/pet/fox/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/mob_holder, held_icon)
+	AddElement(/datum/element/mob_holder, held_icon, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)
 
 //Captain fox
 /mob/living/simple_animal/pet/fox/Renault
@@ -140,3 +140,11 @@
 	maxHealth = 50
 	health = 50
 	gender = MALE
+
+/mob/living/simple_animal/pet/syndifox/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)
+
+/mob/living/simple_animal/tegu/entertains_the_hostages/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/mob_holder, worn_state = icon_state, inv_slots = mob_size <= MOB_SIZE_SMALL ? (ITEM_SLOT_HEAD | ITEM_SLOT_NECK) : NONE)

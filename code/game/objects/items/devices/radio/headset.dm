@@ -31,15 +31,17 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 	canhear_range = 0 // can't hear headsets from very far away
 
 	slot_flags = ITEM_SLOT_EARS
-	var/obj/item/encryptionkey/keyslot2 = null
 	dog_fashion = null
-	var/bowman = FALSE
 
 	// headset is too small to display overlays
 	overlay_speaker_idle = null
 	overlay_speaker_active = null
 	overlay_mic_idle = null
 	overlay_mic_active = null
+
+	var/obj/item/encryptionkey/keyslot2 = null
+	var/bowman = FALSE
+	var/list/amplified_frequencies
 
 /obj/item/radio/headset/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] begins putting \the [src]'s antenna up [user.ru_ego()] nose! It looks like [user.ru_who()] trying to give себя cancer!</span>")
@@ -77,7 +79,43 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 
 /obj/item/radio/headset/Destroy()
 	QDEL_NULL(keyslot2)
+	amplified_frequencies = null
 	return ..()
+
+/obj/item/radio/headset/ui_data(mob/user)
+	. = ..()
+	.["amplifiedFrequency"] = (frequency in amplified_frequencies)
+	var/list/amplified_channels = list()
+	if(amplified_frequencies)
+		for(var/channel in channels)
+			if(GLOB.radiochannels[channel] in amplified_frequencies)
+				amplified_channels[channel] = TRUE
+	.["amplifiedChannels"] = amplified_channels
+
+/obj/item/radio/headset/proc/toggle_receive_amplification(list/params)
+	var/target_frequency = frequency
+	var/channel = params["channel"]
+	if(!isnull(channel))
+		if(!istext(channel) || !(channel in channels))
+			return
+		target_frequency = GLOB.radiochannels[channel]
+	else if(params["frequency"] != frequency)
+		return
+	if(!target_frequency)
+		return
+	if(target_frequency in amplified_frequencies)
+		LAZYREMOVE(amplified_frequencies, target_frequency)
+	else
+		LAZYADD(amplified_frequencies, target_frequency)
+	return TRUE
+
+/obj/item/radio/headset/proc/amplify_department_channel()
+	if(!length(channels))
+		return
+	// Первый канал ключа используется для связи со своим отделом через :р.
+	var/department_frequency = GLOB.radiochannels[channels[1]]
+	if(department_frequency)
+		LAZYOR(amplified_frequencies, department_frequency)
 
 /obj/item/radio/headset/talk_into(mob/living/M, message, channel, list/spans,datum/language/language)
 	if (!listening)

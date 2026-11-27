@@ -5,35 +5,42 @@
 
 /datum/gear/neck/bluetie
 	name = "Blue tie"
+	description = "Неосилковый галстук-клипса."
 	subcategory = LOADOUT_SUBCATEGORY_NECK_TIE
 	path = /obj/item/clothing/neck/tie/blue
 
 /datum/gear/neck/redtie
 	name = "Red tie"
+	description = "Неосилковый галстук-клипса."
 	subcategory = LOADOUT_SUBCATEGORY_NECK_TIE
 	path = /obj/item/clothing/neck/tie/red
 
 /datum/gear/neck/blacktie
 	name = "Black tie"
+	description = "Неосилковый галстук-клипса."
 	subcategory = LOADOUT_SUBCATEGORY_NECK_TIE
 	path = /obj/item/clothing/neck/tie/black
 
 /datum/gear/neck/collar
 	name = "Collar"
+	description = "Это для питомцев. Хоть ты и сам мог бы это надеть, но неизбежно стал бы посмешищем. Похоже, сделано из полихромного материала."
 	path = /obj/item/clothing/neck/petcollar
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#00BBBB")
 
 /datum/gear/neck/leathercollar
 	name = "Leather collar"
+	description = "Это для питомцев. Хоть ты и сам мог бы это надеть, но неизбежно стал бы посмешищем. Похоже, сделано из полихромного материала."
 	path = /obj/item/clothing/neck/petcollar/leather
 
 /datum/gear/neck/choker
 	name = "Choker"
+	description = "Довольно модно... если вы только что прочитали свой первый эротический роман на тему БДСМ."
 	path = /obj/item/clothing/neck/petcollar/choker
 
 /datum/gear/neck/cowbell
 	name = "Cowbell collar"
+	description = "Кто бы это надел? Сними это, ты не корова — ты просто ужасный выродок."
 	path = /obj/item/clothing/neck/necklace/cowbell
 
 /datum/gear/neck/scarf
@@ -87,40 +94,47 @@
 
 /datum/gear/neck/headphones
 	name = "Headphones"
+	description = "Унц-унц-унц-унц. Бип!"
 	path = /obj/item/clothing/ears/headphones
 
 /datum/gear/neck/polycloak
 	name = "Polychromatic Cloak"
+	description = "Для тех случаев, когда хочешь похвастать ужасным умением сочетать цвета."
 	path = /obj/item/clothing/neck/cloak/polychromic
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#FFFFFF", "#808080")
 
 /datum/gear/neck/altpolycloak
 	name = "Alternate Cloak"
+	description = "Лохматый плащ. Он напоминает тебе о месте неподалёку отсюда."
 	path = /obj/item/clothing/neck/cloak/alt/polychromic
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#676767", "#4C4C4C")
 
 /datum/gear/neck/cancloak
 	name = "Canvas Cloak"
+	description = "Грубый плащ из брезента."
 	path = /obj/item/clothing/neck/cloak/cancloak/polychromic
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#585858", "#373737", "#BEBEBE")
 
 /datum/gear/neck/maid
 	name = "Polychromatic Maid Collar"
+	description = "Ошейник, подходящий к полихромному наряду горничной."
 	path = /obj/item/clothing/neck/maid
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#333333", "#FFFFFF")
 
 /datum/gear/neck/ranger_poncho
 	name = "Polychromatic Ranger Poncho"
+	description = "Целься в сердце, Рамон."
 	path = /obj/item/clothing/neck/cloak/ranger_poncho
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#877251")
 
 /datum/gear/neck/ranger_cape
 	name = "Polychromatic Ranger Cape"
+	description = "Целься в сердце, Рамон."
 	path = /obj/item/clothing/neck/cloak/ranger_cape
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#543C2F")

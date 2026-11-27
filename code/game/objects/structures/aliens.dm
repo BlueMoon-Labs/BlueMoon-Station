@@ -123,6 +123,42 @@ GLOBAL_VAR_INIT(alien_weeds_revision, 0)
 	var/growth_cooldown_low = 150
 	var/growth_cooldown_high = 200
 	var/static/list/blacklisted_turfs
+	var/obj/structure/alien/weeds/node/parent_node
+
+/obj/structure/alien/weeds/Destroy()
+	if(parent_node)
+		UnregisterSignal(parent_node, COMSIG_PARENT_QDELETING)
+		parent_node = null
+	return ..()
+
+/**
+ * Called when the parent node is destroyed
+ */
+/obj/structure/alien/weeds/proc/after_parent_destroyed()
+	if(!find_new_parent())
+		addtimer(CALLBACK(src, PROC_REF(do_qdel)), rand(2 SECONDS, 8 SECONDS))
+
+/**
+ * Called when trying to find a new parent after our previous parent died
+ * Will return false if it can't find a new_parent
+ * Will return the new parent if it can find one
+ */
+/obj/structure/alien/weeds/proc/find_new_parent()
+	var/previous_node = parent_node
+	parent_node = null
+	for(var/obj/structure/alien/weeds/node/new_parent in range(NODERANGE, src))
+		if(new_parent == previous_node)
+			continue
+		parent_node = new_parent
+		RegisterSignal(parent_node, COMSIG_PARENT_QDELETING, PROC_REF(after_parent_destroyed))
+		return new_parent
+	return FALSE
+
+/**
+ * Called to delete the weed
+ */
+/obj/structure/alien/weeds/proc/do_qdel()
+	qdel(src)
 
 /obj/structure/alien/weeds/Initialize(mapload)
 	pixel_x = -4
@@ -153,19 +189,20 @@ GLOBAL_VAR_INIT(alien_weeds_revision, 0)
 	GLOB.alien_weeds_revision++
 
 /obj/structure/alien/weeds/proc/expand()
+	if(!parent_node)
+		return FALSE
 	var/turf/U = get_turf(src)
 	if(is_type_in_typecache(U, blacklisted_turfs))
 		qdel(src)
 		return FALSE
-
 	for(var/turf/T in U.GetAtmosAdjacentTurfs())
 		if(locate(/obj/structure/alien/weeds) in T)
 			continue
-
 		if(is_type_in_typecache(T, blacklisted_turfs))
 			continue
-
-		new /obj/structure/alien/weeds(T)
+		var/obj/structure/alien/weeds/check_weed = new /obj/structure/alien/weeds(T)
+		check_weed.parent_node = parent_node
+		check_weed.RegisterSignal(parent_node, COMSIG_PARENT_QDELETING, PROC_REF(after_parent_destroyed))
 	return TRUE
 
 /obj/structure/alien/weeds/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
@@ -202,6 +239,7 @@ GLOBAL_VAR_INIT(alien_weeds_revision, 0)
 	icon = 'icons/obj/smooth_structures/alien/weednode.dmi'
 	. = ..()
 	set_light(lon_range)
+	parent_node = src
 	var/obj/structure/alien/weeds/W = locate(/obj/structure/alien/weeds) in loc
 	if(W && W != src)
 		qdel(W)

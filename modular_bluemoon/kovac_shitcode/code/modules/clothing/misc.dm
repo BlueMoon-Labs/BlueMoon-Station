@@ -150,7 +150,7 @@
 
 /obj/effect/overlay/typing_indicator/lawyer
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	icon = 'icons/mob/talk.dmi'
+	icon = SPEECH_BUBBLE_ICON
 	icon_state = "lawyer_typing"
 	appearance_flags = RESET_COLOR | TILE_BOUND | PIXEL_SCALE
 	layer = ABOVE_FLY_LAYER
@@ -159,7 +159,7 @@
 
 /datum/uplink_item/stealthy_weapons/akimbo
 	name = "Akimbo Guide"
-	desc = "A book that provides the agent some abilities to shoot heavy two-handed weapons easily using just one arm with a sacrifice to shoot in auto."
+	desc = "Книга, которая наделяет агента способностью без труда использовать тяжелое двуручное оружие одной рукой, а так же эффективно стрелять по-македонски."
 	item = /obj/item/book/granter/trait/akimbo
 	cost = 6
 	purchasable_from = UPLINK_TRAITORS
@@ -167,7 +167,7 @@
 
 /obj/item/book/granter/trait/akimbo
 	name = "The Rules of Engagement"
-	desc = "Allows to shoot two-handed weapons more effectively after reading. A red line says: \"disallows you to shoot weapons in automatic mode\"."
+	desc = "После прочтения позволяет эффективнее вести стрельбу из оружия. Точность стрельбы с двух рук вырастет в разы, а так же появится возможность стрелять одной рукой с двурочного оружия."
 	oneuse = TRUE
 	granted_trait = TRAIT_AKIMBO
 	traitname = "akimbo"

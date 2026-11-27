@@ -255,9 +255,6 @@
 /obj/effect/turf_decal/loading_area{
 	dir = 8
 	},
-/obj/item/storage/secure/safe/rangers{
-	pixel_y = -29
-	},
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/exploration)
 "I" = (
@@ -320,6 +317,10 @@
 /area/shuttle/exploration)
 "T" = (
 /obj/machinery/light/directional/east,
+/obj/structure/ship_hold{
+	pixel_y = -1;
+	pixel_x = 26
+	},
 /turf/open/floor/mineral/titanium,
 /area/shuttle/exploration)
 "U" = (

@@ -79,6 +79,12 @@ SUBSYSTEM_DEF(spatial_grid)
 	/// Only channel-aware movables are indexed here. The recorded cell is the
 	/// source of truth when legacy direct loc writes bypass Moved().
 	var/list/registered_cells = list()
+	/// Удаления атомов с ключом грида, но без записи в registered_cells.
+	var/unregistered_removals = 0
+	/// Сколько из них сверено полным обходом ячеек.
+	var/hanging_ref_scans = 0
+	/// Каждое какое такое удаление сверяется полным обходом ячеек.
+	var/hanging_scan_sample = 64
 
 	var/cells_on_x_axis = 0
 	var/cells_on_y_axis = 0
@@ -552,9 +558,15 @@ SUBSYSTEM_DEF(spatial_grid)
 		registered_cells -= to_remove
 		return
 
-	// Pre-bookkeeping or corrupt entries have no O(1) owner. This path is
-	// exceptional; scan once to prevent a permanent reverse reference.
-	find_hanging_cell_refs_for_movable(to_remove, remove_from_cells = TRUE)
+	// Каждый вход в ячейку пишет registered_cells, так что без записи атома нет ни в одной ячейке.
+	// Так удаляется всё слышащее вне карты (рации, вещи удалённого моба), а полный обход грида
+	// стоил 1-2 мс на предмет, поэтому сверка с ячейками идёт выборкой.
+	if(hanging_scan_sample > 1 && (++unregistered_removals % hanging_scan_sample))
+		return
+	hanging_ref_scans++
+	var/list/hanging = find_hanging_cell_refs_for_movable(to_remove, remove_from_cells = TRUE)
+	if(length(hanging))
+		stack_trace("[to_remove.type] висел в [length(hanging)] ячейках без записи в registered_cells")
 
 ///убрать movable из конкретной ячейки
 /datum/controller/subsystem/spatial_grid/proc/force_remove_from_cell(atom/movable/to_remove, datum/spatial_grid_cell/input_cell)

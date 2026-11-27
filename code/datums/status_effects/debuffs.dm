@@ -1578,3 +1578,44 @@
 	heretic_corrosion(owner, HERETIC_RUST_FLOOR_CORROSION * tick_s)
 
 /////////////////////////////////////////////////////
+
+
+/datum/status_effect/swarmer_stamina_block
+	id = "swarmer_stamina_block"
+	duration = 1 SECONDS
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = null
+
+/datum/status_effect/swarmer_stamina_block/on_apply()
+	. = ..()
+	ADD_TRAIT(owner, TRAIT_NO_STAMINA_REGENERATION, id)
+	return TRUE
+
+/datum/status_effect/swarmer_stamina_block/on_remove()
+	. = ..()
+	REMOVE_TRAIT(owner, TRAIT_NO_STAMINA_REGENERATION, id)
+
+/datum/status_effect/swarmer_metabolism_block
+	id = "swarmer_metabolism_block"
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = null
+	var/mutable_appearance/strike_overlay
+
+/datum/status_effect/swarmer_metabolism_block/on_creation(mob/living/new_owner, new_duration, mutable_appearance/new_overlay)
+	duration = new_duration
+	strike_overlay = new_overlay
+	return ..()
+
+/datum/status_effect/swarmer_metabolism_block/on_apply()
+	. = ..()
+	ADD_TRAIT(owner, TRAIT_NOMETABOLISM, id)
+	owner.add_overlay(strike_overlay)
+	return TRUE
+
+/datum/status_effect/swarmer_metabolism_block/on_remove()
+	. = ..()
+	REMOVE_TRAIT(owner, TRAIT_NOMETABOLISM, id)
+	owner.cut_overlay(strike_overlay)
+
+/datum/status_effect/swarmer_metabolism_block/refresh(effect, new_duration, mutable_appearance/new_overlay)
+	duration = world.time + new_duration

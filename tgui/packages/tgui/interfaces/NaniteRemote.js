@@ -38,10 +38,20 @@ export const NaniteRemoteContent = (props) => {
     "Relay",
   ];
 
+  // Ключи режимов приходят с бэкенда и используются в логике, поэтому
+  // переводится только отображаемая подпись.
+  const modeLabels = {
+    Off: 'Выкл.',
+    Local: 'Локальный',
+    Targeted: 'На цель',
+    Area: 'По области',
+    Relay: 'Ретрансляция',
+  };
+
   if (locked) {
     return (
       <NoticeBox>
-        This interface is locked.
+        Этот интерфейс заблокирован.
       </NoticeBox>
     );
   }
@@ -49,15 +59,15 @@ export const NaniteRemoteContent = (props) => {
   return (
     <>
       <Section
-        title="Nanite Control"
+        title="Управление нанитами"
         buttons={(
           <Button
             icon="lock"
-            content="Lock Interface"
+            content="Заблокировать интерфейс"
             onClick={() => act('lock')} />
         )}>
         <LabeledList>
-          <LabeledList.Item label="Name">
+          <LabeledList.Item label="Название">
             <Input
               value={program_name}
               maxLength={14}
@@ -67,10 +77,10 @@ export const NaniteRemoteContent = (props) => {
               })} />
             <Button
               icon="save"
-              content="Save"
+              content="Сохранить"
               onClick={() => act('save')} />
           </LabeledList.Item>
-          <LabeledList.Item label={comms ? "Comm Code" : "Signal Code"}>
+          <LabeledList.Item label={comms ? "Код связи" : "Код сигнала"}>
             <NumberInput
               value={code}
               minValue={0}
@@ -83,7 +93,7 @@ export const NaniteRemoteContent = (props) => {
               })} />
           </LabeledList.Item>
           {!!comms && (
-            <LabeledList.Item label="Message">
+            <LabeledList.Item label="Сообщение">
               <Input
                 value={message}
                 width="270px"
@@ -93,7 +103,7 @@ export const NaniteRemoteContent = (props) => {
             </LabeledList.Item>
           )}
           {mode === "Relay" && (
-            <LabeledList.Item label="Relay Code">
+            <LabeledList.Item label="Код ретрансляции">
               <NumberInput
                 value={relay_code}
                 minValue={0}
@@ -106,11 +116,11 @@ export const NaniteRemoteContent = (props) => {
                 })} />
             </LabeledList.Item>
           )}
-          <LabeledList.Item label="Signal Mode">
+          <LabeledList.Item label="Режим сигнала">
             {modes.map(key => (
               <Button
                 key={key}
-                content={key}
+                content={modeLabels[key]}
                 selected={mode === key}
                 onClick={() => act('select_mode', {
                   mode: key,
@@ -119,21 +129,21 @@ export const NaniteRemoteContent = (props) => {
           </LabeledList.Item>
         </LabeledList>
       </Section>
-      <Section title="Saved Settings">
+      <Section title="Сохранённые настройки">
         {saved_settings.length > 0 ? (
           <Table>
             <Table.Row header>
               <Table.Cell width="35%">
-                Name
+                Название
               </Table.Cell>
               <Table.Cell width="20%">
-                Mode
+                Режим
               </Table.Cell>
               <Table.Cell collapsing>
-                Code
+                Код
               </Table.Cell>
               <Table.Cell collapsing>
-                Relay
+                Ретрансляция
               </Table.Cell>
             </Table.Row>
             {saved_settings.map(setting => (
@@ -144,7 +154,7 @@ export const NaniteRemoteContent = (props) => {
                   {setting.name}:
                 </Table.Cell>
                 <Table.Cell>
-                  {setting.mode}
+                  {modeLabels[setting.mode] || setting.mode}
                 </Table.Cell>
                 <Table.Cell>
                   {setting.code}
@@ -171,7 +181,7 @@ export const NaniteRemoteContent = (props) => {
           </Table>
         ) : (
           <NoticeBox>
-            No settings currently saved
+            Нет сохранённых настроек
           </NoticeBox>
         )}
       </Section>

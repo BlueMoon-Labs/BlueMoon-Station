@@ -17,7 +17,7 @@
 	TEST_ASSERT(message.measuring, "замер текста не начался")
 	qdel(speaker)
 	sleep(3 SECONDS)
-	TEST_ASSERT_EQUAL(refcount(speaker), 1, "ожидание замера держит удалённого говорящего")
+	TEST_ASSERT_EQUAL(EXTERNAL_REFCOUNT(speaker), 0, "ожидание замера держит удалённого говорящего")
 	speaker = null
 	sleep(3 SECONDS)
 	TEST_ASSERT(QDELETED(message), "сообщение удалённого говорящего не удалилось после замера")

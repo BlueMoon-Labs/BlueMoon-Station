@@ -17,7 +17,7 @@ Bonus
 
 /datum/symptom/shivering
 	name = "Shivering"
-	desc = "The virus inhibits the body's thermoregulation, cooling the body down."
+	desc = "Вирус подавляет терморегуляцию организма, охлаждая его."
 	stealth = 0
 	resistance = 2
 	stage_speed = 3
@@ -28,8 +28,8 @@ Bonus
 	symptom_delay_max = 30
 	var/unsafe = FALSE //over the cold threshold
 	threshold_desc = list(
-		"Stage Speed 5" = "Increases cooling speed,; the host can fall below safe temperature levels.",
-		"Stage Speed 10" = "Further increases cooling speed."
+		"Скорость стадий 5" = "Увеличивает скорость охлаждения; хозяин может опуститься ниже безопасной температуры.",
+		"Скорость стадий 10" = "Ещё больше увеличивает скорость охлаждения."
 	)
 
 /datum/symptom/shivering/Start(datum/disease/advance/A)
@@ -46,9 +46,9 @@ Bonus
 		return
 	var/mob/living/carbon/M = A.affected_mob
 	if(!unsafe || A.stage < 4)
-		to_chat(M, "<span class='warning'>[pick("You feel cold.", "You shiver.")]</span>")
+		to_chat(M, "<span class='warning'>[pick("Вам холодно.", "Вы дрожите.")]</span>")
 	else
-		to_chat(M, "<span class='userdanger'>[pick("You feel your blood run cold.", "You feel ice in your veins.", "You feel like you can't heat up.", "You shiver violently." )]</span>")
+		to_chat(M, "<span class='userdanger'>[pick("Вы чувствуете, как кровь стынет в жилах.", "Вы чувствуете лёд в венах.", "Вы чувствуете, что не можете согреться.", "Вы яростно дрожите." )]</span>")
 	if(M.bodytemperature > BODYTEMP_COLD_DAMAGE_LIMIT || unsafe)
 		Chill(M, A)
 

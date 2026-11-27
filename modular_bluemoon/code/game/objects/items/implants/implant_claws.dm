@@ -417,6 +417,9 @@
 	icon_state = "wolverine"
 	zone = BODY_ZONE_R_ARM
 	holder = /obj/item/kitchen/knife/razor_claws
+	// Однорукий имплант: сам по себе не забирает оба слота рук.
+	// Редактор персонажа ставит пару — /razor_claws и /razor_claws/left.
+	occupies_both_arms = FALSE
 
 /obj/item/organ/cyberimp/arm/razor_claws/ExtendPlaySound(obj/item/I)
 	. = ..()
@@ -513,6 +516,8 @@
 	organ_flags = NONE
 	zone = BODY_ZONE_R_ARM
 	holder = /obj/item/kitchen/knife/claws/natural
+	// Как и боевые когти, органические однорукие: квирк ставит отдельно левую и правую руки.
+	occupies_both_arms = FALSE
 
 /obj/item/organ/cyberimp/arm/claws/emp_act(severity)
 	return

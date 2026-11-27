@@ -255,18 +255,7 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 			return TRUE
 
 		if("PDA_viewMessages")
-			if(viewing_messages_of in saved_chats)
-				var/datum/pda_chat/chat = saved_chats[viewing_messages_of]
-				chat.unread_messages = 0
-
-			viewing_messages_of = params["ref"]
-
-			if(viewing_messages_of in saved_chats)
-				var/datum/pda_chat/chat = saved_chats[viewing_messages_of]
-				chat.visible_in_recents = TRUE
-
-			selected_image = null
-			return TRUE
+			return view_messages(params["ref"], params["message"])
 
 		if("PDA_closeMessages")
 			var/target = params["ref"]
@@ -277,6 +266,8 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 			var/datum/pda_chat/chat = saved_chats[target]
 			chat.visible_in_recents = FALSE
 			if(viewing_messages_of == target)
+				if(istext(params["message"]))
+					chat.message_draft = trim(params["message"], MAX_PDA_MESSAGE_LEN)
 				viewing_messages_of = null
 			return TRUE
 
@@ -389,7 +380,32 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 					return FALSE
 				return disk.send_virus(computer, target_messenger.computer, usr, params["message"])
 
+			if(istype(target, /datum/pda_chat))
+				return send_chat_message(usr, params["message"], target)
 			return send_message(usr, params["message"], list(target))
+
+		if("PDA_openPhotoGallery")
+			var/datum/computer_file/program/pda_camera/camera = locate() in computer.get_all_files()
+			var/mob/user = ui.user
+			if(!user?.client || !user.ckey || !camera || computer.active_program != src || !sending_and_receiving || sending_virus || !istext(params["message"]))
+				return FALSE
+			var/datum/ui_state/camera_state = camera.ui_state(user)
+			if(camera_state.can_use_topic(computer, user) != UI_INTERACTIVE)
+				return FALSE
+			var/datum/pda_chat/chat = get_compose_chat()
+			if(!chat?.can_reply || chat.blocked || !computer.switch_program(camera, user))
+				return FALSE
+			chat.message_draft = trim(params["message"], MAX_PDA_MESSAGE_LEN)
+			viewing_messages_of = REF(chat)
+			camera.open_camera_ui(user, chat)
+			return TRUE
+
+		if("PDA_clearPhotoAttachment")
+			var/datum/pda_chat/chat = saved_chats[viewing_messages_of]
+			if(!chat)
+				return FALSE
+			chat.photo_attachment = null
+			return TRUE
 
 		if("PDA_clearPhoto")
 			selected_image = null
@@ -467,6 +483,9 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 	data["alert_silenced"] = alert_silenced
 	data["sending_and_receiving"] = sending_and_receiving
 	data["open_chat"] = viewing_messages_of
+	var/datum/pda_chat/open_chat = saved_chats[viewing_messages_of]
+	data["photo_attachment"] = open_chat?.photo_attachment
+	data["has_camera_gallery"] = istype(computer, /obj/item/modular_computer/pda)
 
 	data["stored_photos"] = list()
 	data["selected_photo_path"] = null
@@ -501,6 +520,8 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 		credits_balance = sender_comp.stored_id.registered_account.account_balance
 	data["credits_balance"] = credits_balance
 	data["metadollar_balance"] = user?.client?.ckey ? SSmetadollars.get_metadollars(user.client.ckey) : 0
+	data["credits_transfer_max"] = SSeconomy.settings.transfer_max
+	data["credits_transfer_cooldown"] = SSeconomy.settings.transfer_cooldown_seconds
 	return data
 
 /datum/computer_file/program/messenger/ui_assets(mob/user)
@@ -565,8 +586,9 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 		to_chat(user, span_warning("Укажите сумму больше нуля."))
 		return FALSE
 	amount = round(amount)
-	if(amount > 1000000)
-		to_chat(user, span_warning("Сумма слишком большая (максимум 1 000 000)."))
+	var/amount_max = currency == "credits" ? SSeconomy.settings.transfer_max : 1000000
+	if(amount > amount_max)
+		to_chat(user, span_warning("Сумма слишком большая: не больше [amount_max] [currency == "credits" ? "кр." : "M$"] за раз."))
 		return FALSE
 	if(!user.canUseTopic(computer, BE_CLOSE, check_resting = FALSE))
 		return FALSE
@@ -615,9 +637,9 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 
 	if(currency == "metadollars")
 		return transfer_metadollars_to_chat(user, target_messenger, target_chat, amount, sender_name, recipient_name)
-	return transfer_credits_to_chat(user, target_messenger, target_chat, amount, sender_name, recipient_name)
+	return transfer_credits_to_chat(user, target_messenger, target_chat, amount, recipient_name)
 
-/datum/computer_file/program/messenger/proc/transfer_credits_to_chat(mob/living/user, datum/computer_file/program/messenger/target_messenger, datum/pda_chat/target_chat, amount, sender_name, recipient_name)
+/datum/computer_file/program/messenger/proc/transfer_credits_to_chat(mob/living/user, datum/computer_file/program/messenger/target_messenger, datum/pda_chat/target_chat, amount, recipient_name)
 	var/obj/item/modular_computer/sender_comp = computer
 	if(!istype(sender_comp) || !sender_comp.stored_id)
 		to_chat(user, span_warning("Карта не вставлена в PDA. Вставьте ID-карту для перевода."))
@@ -626,40 +648,19 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 	if(!sender_acc)
 		to_chat(user, span_warning("На вставленной ID-карте нет банковского счёта."))
 		return FALSE
-	var/datum/bank_account/recipient_acc = null
-	var/obj/item/modular_computer/pda/recip_pda = target_messenger.computer
-	if(istype(recip_pda) && recip_pda.stored_id?.registered_account)
-		recipient_acc = recip_pda.stored_id.registered_account
+	var/datum/bank_account/recipient_acc = messenger_recipient_account(target_messenger)
 	if(!recipient_acc)
-		// Fallback: счёт ID у моба-держателя PDA получателя
-		var/obj/item/modular_computer/recip_comp = target_messenger.computer
-		var/mob/living/holder = null
-		if(isliving(recip_comp.loc))
-			holder = recip_comp.loc
-		else if(isliving(recip_comp.loc?.loc))
-			holder = recip_comp.loc.loc
-		if(istype(holder))
-			recipient_acc = holder.get_bank_account()
-	if(!recipient_acc)
-		to_chat(user, span_warning("У получателя нет банковского счёта."))
+		to_chat(user, span_warning("Не удалось найти счёт получателя [recipient_name]: счёта нет или на это имя их несколько. Деньги не отправлены."))
 		return FALSE
-	if(sender_acc == recipient_acc)
-		to_chat(user, span_warning("Нельзя перевести деньги самому себе."))
-		return FALSE
-	if(!sender_acc.has_money(amount))
-		to_chat(user, span_warning("Недостаточно кредитов. Баланс: [sender_acc.account_balance] кр."))
-		return FALSE
-	// dest.transfer_money(from, amount)
-	if(!recipient_acc.transfer_money(sender_acc, amount))
-		to_chat(user, span_warning("Перевод не удался. Проверьте счёт получателя."))
+	var/error = SSeconomy.send_transfer(sender_acc, recipient_acc, amount, user)
+	if(error)
+		to_chat(user, span_warning("Перевод не прошёл: [error]"))
 		return FALSE
 
-	log_econ("[sender_name] ([sender_acc.account_holder]) перевёл [amount] кр. получателю [recipient_name] ([recipient_acc.account_holder]) через PDA Messenger.")
-	sender_acc.bank_card_talk("Перевод [amount] кр. → [recipient_acc.account_holder]. Баланс: [sender_acc.account_balance] кр.", TRUE)
-	recipient_acc.bank_card_talk("Получен перевод [amount] кр. от [sender_acc.account_holder]. Баланс: [recipient_acc.account_balance] кр.", TRUE)
+	sender_acc.bank_card_talk("Перевод [amount] кр. → [recipient_acc.account_holder], без налога. Баланс: [sender_acc.account_balance] кр.", TRUE)
 
 	var/time_now = STATION_TIME_TIMESTAMP(PDA_MESSAGE_TIMESTAMP_FORMAT, world.time)
-	var/datum/pda_message/out_msg = new("💵 Перевод: [amount] сr. → [recipient_name]. Баланс: [sender_acc.account_balance] сr.", TRUE, time_now, null, FALSE)
+	var/datum/pda_message/out_msg = new("💵 Перевод: [amount] кр. → [recipient_acc.account_holder]. Баланс: [sender_acc.account_balance] кр.", TRUE, time_now, null, FALSE)
 	target_chat.add_message(out_msg, show_in_recents = TRUE)
 	target_chat.unread_messages = 0
 
@@ -668,15 +669,28 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 	if(!istype(recip_chat))
 		recip_chat = target_messenger.create_chat(REF(src))
 	if(istype(recip_chat))
-		var/datum/pda_message/in_msg = new("💵 Получен перевод: [amount] сr. от [sender_name]. Баланс: [recipient_acc.account_balance] сr.", FALSE, time_now, null, FALSE)
+		var/datum/pda_message/in_msg = new("💵 Получен перевод: [amount] кр. от [sender_acc.account_holder]. Баланс: [recipient_acc.account_balance] кр.", FALSE, time_now, null, FALSE)
 		recip_chat.add_message(in_msg)
 		recip_chat.unread_messages++
 
-	to_chat(user, span_notice("Перевод [amount] сr. отправлен: [recipient_name]."))
+	to_chat(user, span_notice("Перевод [amount] кр. отправлен: [recipient_acc.account_holder]."))
 	SStgui.update_uis(computer)
 	if(target_messenger.computer)
 		SStgui.update_uis(target_messenger.computer)
 	return TRUE
+
+/// Счёт владельца КПК получателя: вставленная карта на его имя, иначе единственный счёт с этим именем. Держатель КПК не в счёт.
+/datum/computer_file/program/messenger/proc/messenger_recipient_account(datum/computer_file/program/messenger/target_messenger)
+	var/obj/item/modular_computer/recipient_comp = target_messenger?.computer
+	if(!recipient_comp)
+		return null
+	var/owner_name = recipient_comp.saved_identification
+	if(!owner_name)
+		return null
+	var/datum/bank_account/inserted = recipient_comp.stored_id?.registered_account
+	if(inserted && lowertext(inserted.account_holder) == lowertext(trim(owner_name)))
+		return inserted
+	return SSeconomy.find_account_by_name(owner_name)
 
 /datum/computer_file/program/messenger/proc/transfer_metadollars_to_chat(mob/living/user, datum/computer_file/program/messenger/target_messenger, datum/pda_chat/target_chat, amount, sender_name, recipient_name)
 	var/sender_ckey = user.client?.ckey
@@ -786,26 +800,77 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 
 	return parse_emoji_message(message)
 
+/datum/computer_file/program/messenger/proc/view_messages(target_ref, message)
+	var/datum/pda_chat/previous_chat = saved_chats[viewing_messages_of]
+	if(istext(message))
+		var/draft = trim(message, MAX_PDA_MESSAGE_LEN)
+		if(!previous_chat && length(draft))
+			previous_chat = get_compose_chat()
+		if(previous_chat)
+			previous_chat.message_draft = draft
+			if(length(draft))
+				previous_chat.visible_in_recents = TRUE
+	if(previous_chat)
+		previous_chat.unread_messages = 0
+
+	var/datum/pda_chat/next_chat
+	if(istext(target_ref))
+		next_chat = saved_chats[target_ref] || find_chat_by_recipient(target_ref)
+	if(next_chat)
+		next_chat.visible_in_recents = TRUE
+	viewing_messages_of = next_chat ? REF(next_chat) : target_ref
+	selected_image = null
+	return TRUE
+
+/datum/computer_file/program/messenger/proc/get_compose_chat()
+	if(!viewing_messages_of)
+		return null
+	var/datum/pda_chat/chat = saved_chats[viewing_messages_of]
+	if(chat)
+		return chat
+	var/list/contacts = get_messengers()
+	if(!(viewing_messages_of in contacts))
+		return null
+	var/datum/computer_file/program/messenger/recipient = locate(viewing_messages_of)
+	if(!istype(recipient) || QDELETED(recipient) || training_side_differs(recipient))
+		return null
+	if(!(viewing_messages_of in GLOB.pda_messengers))
+		add_messenger(recipient)
+	return find_chat_by_recipient(viewing_messages_of) || create_chat(viewing_messages_of)
+
+/datum/computer_file/program/messenger/proc/encode_photo_attachment(datum/picture/photo)
+	var/base64 = photo.get_base64()
+	if(base64)
+		return "data:image/png;base64,[base64]"
+	var/url = html_decode(photo.picture_url)
+	if(findtext(url, "https://", 1, 9) == 1 || findtext(url, "http://", 1, 8) == 1)
+		return url
+	return null
+
+/datum/computer_file/program/messenger/proc/send_chat_message(mob/user, message, datum/pda_chat/chat)
+	if(!send_message(user, message, list(chat), photo_attachment = chat.photo_attachment))
+		return FALSE
+	chat.photo_attachment = null
+	chat.message_draft = ""
+	return TRUE
+
 /// Sends a message to targets via PDA
-/datum/computer_file/program/messenger/proc/send_message(atom/source, message, list/targets, everyone = FALSE)
+/datum/computer_file/program/messenger/proc/send_message(atom/source, message, list/targets, everyone = FALSE, photo_attachment)
 	var/mob/living/sender
 	if(isliving(source))
 		sender = source
 
-	var/photo_path = null
-	var/photo_asset = null
+	var/photo_path = photo_attachment
 	var/obj/item/modular_computer/pda/pda_device = computer
-	if(istype(pda_device) && pda_device.picture)
+	if(!photo_attachment && istype(pda_device) && pda_device.picture)
 		var/datum/picture/pic = pda_device.picture
 		var/base64 = pic?.get_base64()
 		if(base64)
 			photo_path = "data:image/png;base64,[base64]"
-			photo_asset = photo_path
 			pda_device.picture = null
 
-	if(admin_photo_url)
+	if(!photo_attachment && admin_photo_url)
 		photo_path = admin_photo_url
-		photo_asset = admin_photo_url
 		admin_photo_url = null
 
 	message = sanitize_pda_message(message, sender)
@@ -871,7 +936,7 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 		return FALSE
 
 	// Log in our chat
-	var/datum/pda_message/message_datum = new(message, TRUE, STATION_TIME_TIMESTAMP(PDA_MESSAGE_TIMESTAMP_FORMAT, world.time), photo_asset, everyone)
+	var/datum/pda_message/message_datum = new(message, TRUE, STATION_TIME_TIMESTAMP(PDA_MESSAGE_TIMESTAMP_FORMAT, world.time), photo_path, everyone)
 	for(var/datum/pda_chat/target_chat as anything in target_chats)
 		if(!target_chat)
 			continue

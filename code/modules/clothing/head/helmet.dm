@@ -264,6 +264,8 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	flash_protect = -1
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
 	color_cutoffs = list(10, 25, 10)
+	/// Пороги цвета ПНВ при опущенном забрале
+	var/list/nvg_color_cutoffs = list(10, 25, 10)
 	mutantrace_variation = STYLE_MUZZLE
 	armor_type = /datum/armor/hecu
 	cold_protection = HEAD
@@ -294,7 +296,11 @@ GLOBAL_PROTECT(aventail_pride_colors)
 			flags_inv ^= visor_flags_inv
 			flags_cover ^= visor_flags_cover
 			icon_state = "[replacetext("[icon_state]", "_up", "")][up ? "_up" : ""]"
-			darkness_view = 0
+			// ПНВ стоит на забрале: поднял - прибор не работает, опустил - снова видно в темноте
+			darkness_view = up ? 0 : initial(darkness_view)
+			lighting_alpha = up ? null : initial(lighting_alpha)
+			color_cutoffs = up ? null : nvg_color_cutoffs.Copy()
+			flash_protect = up ? 0 : initial(flash_protect)
 			to_chat(user, "[up ? alt_toggle_message : toggle_message] \the [src]")
 
 			user.update_inv_head()

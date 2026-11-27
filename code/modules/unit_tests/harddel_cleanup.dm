@@ -463,7 +463,7 @@
 	TEST_ASSERT_EQUAL(item.failures, 0, "[label] не прошёл softcheck")
 	TEST_ASSERT_EQUAL(item.warnfail_count, 0, "[label] дошёл до warnfail")
 	TEST_ASSERT_EQUAL(item.hard_deletes, 0, "[label] ушёл в hard delete")
-	TEST_ASSERT(!(target["ref"] in SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK]), "[label] остался в очереди softcheck")
+	TEST_ASSERT(!SSgarbage.IsRefQueued(GC_QUEUE_SOFTCHECK, target["ref"]), "[label] остался в очереди softcheck")
 
 /datum/unit_test/harddel_cleanup_soft_gc/Run()
 	configure_immediate_gc()
@@ -479,7 +479,7 @@
 
 	for(var/list/target in targets)
 		var/label = target["label"]
-		TEST_ASSERT(target["ref"] in SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK], "[label] не был поставлен в очередь softcheck")
+		TEST_ASSERT(SSgarbage.IsRefQueued(GC_QUEUE_SOFTCHECK, target["ref"]), "[label] не был поставлен в очередь softcheck")
 	var/start_soft_passes = SSgarbage.pass_counts[GC_QUEUE_SOFTCHECK]
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	TEST_ASSERT(SSgarbage.pass_counts[GC_QUEUE_SOFTCHECK] >= start_soft_passes + length(targets), "SSgarbage не обработал все проверяемые softcheck-записи")

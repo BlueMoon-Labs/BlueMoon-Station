@@ -3,7 +3,7 @@
 
 /datum/mutation/human/nervousness
 	name = "Nervousness"
-	desc = "Causes the holder to stutter."
+	desc = "Заставляет носителя заикаться."
 	quality = MINOR_NEGATIVE
 	text_gain_indication = "<span class='danger'>You feel nervous.</span>"
 
@@ -14,7 +14,7 @@
 
 /datum/mutation/human/wacky
 	name = "Wacky"
-	desc = "Unknown."
+	desc = "Неизвестно."
 	quality = MINOR_NEGATIVE
 	text_gain_indication = "<span class='sans'>You feel an off sensation in your voicebox.</span>"
 	text_lose_indication = "<span class='notice'>The off sensation passes.</span>"
@@ -36,7 +36,7 @@
 
 /datum/mutation/human/mute
 	name = "Mute"
-	desc = "Completely inhibits the vocal section of the brain."
+	desc = "Полностью подавляет речевой отдел мозга."
 	quality = NEGATIVE
 	text_gain_indication = "<span class='danger'>You feel unable to express yourself at all.</span>"
 	text_lose_indication = "<span class='danger'>You feel able to speak freely again.</span>"
@@ -56,7 +56,7 @@
 
 /datum/mutation/human/smile
 	name = "Smile"
-	desc = "Causes the user to be in constant mania."
+	desc = "Заставляет носителя постоянно пребывать в мании."
 	quality = MINOR_NEGATIVE
 	text_gain_indication = "<span class='notice'>You feel so happy. Nothing can be wrong with anything. :)</span>"
 	text_lose_indication = "<span class='notice'>Everything is terrible again. :(</span>"
@@ -122,7 +122,7 @@
 
 /datum/mutation/human/unintelligible
 	name = "Unintelligible"
-	desc = "Partially inhibits the vocal center of the brain, severely distorting speech."
+	desc = "Частично подавляет речевой центр мозга, сильно искажая речь."
 	quality = NEGATIVE
 	text_gain_indication = "<span class='danger'>You can't seem to form any coherent thoughts!</span>"
 	text_lose_indication = "<span class='danger'>Your mind feels more clear.</span>"
@@ -142,7 +142,7 @@
 
 /datum/mutation/human/swedish
 	name = "Swedish"
-	desc = "A horrible mutation originating from the distant past. Thought to be eradicated after the incident in 2037."
+	desc = "Ужасная мутация, пришедшая из далёкого прошлого. Считалась уничтоженной после инцидента 2037 года."
 	quality = MINOR_NEGATIVE
 	locked = TRUE
 	text_gain_indication = "<span class='notice'>You feel Swedish, however that works.</span>"
@@ -175,7 +175,7 @@
 
 /datum/mutation/human/chav
 	name = "Chav"
-	desc = "Unknown"
+	desc = "Неизвестно"
 	quality = MINOR_NEGATIVE
 	text_gain_indication = "<span class='notice'>Ye feel like a reet prat like, innit?</span>"
 	text_lose_indication = "<span class='notice'>You no longer feel like being rude and sassy.</span>"
@@ -222,7 +222,7 @@
 
 /datum/mutation/human/elvis
 	name = "Elvis"
-	desc = "A terrifying mutation named after its 'patient-zero'."
+	desc = "Жуткая мутация, названная в честь своего «нулевого пациента»."
 	quality = MINOR_NEGATIVE
 	locked = TRUE
 	text_gain_indication = "<span class='notice'>You feel pretty good, honeydoll.</span>"
@@ -269,7 +269,7 @@
 
 /datum/mutation/human/stoner
 	name = "Stoner"
-	desc = "A common mutation that severely decreases intelligence."
+	desc = "Распространённая мутация, сильно снижающая интеллект."
 	quality = NEGATIVE
 	locked = TRUE
 	text_gain_indication = "<span class='notice'>You feel...totally chill, man!</span>"

@@ -23,3 +23,9 @@
   font-family: Consolas, monospace;
   font-size: base.em(14px);
 }
+
+.NtosWindow__content .NtosMain__programs.Section--scrollable {
+  > .Section__rest > .Section__content {
+    overflow-y: auto;
+  }
+}

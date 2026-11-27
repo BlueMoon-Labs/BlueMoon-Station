@@ -23,6 +23,13 @@
 	fluid_transfer_factor = 0.5
 	layer_index = BREASTS_LAYER_INDEX
 	var/prev_size //former cached_size value, to allow update_size() to early return should be there no significant changes.
+	/// Lazy fluid bookkeeping: -1 means not initialized.
+	var/stored_fluid = -1
+	var/last_fluid_update = 0
+	/// Snapshot used for conservative nutrition-aware lazy regeneration.
+	var/last_nutrition_factor = 1
+	var/applied_volume_bonus = 0
+	var/applied_rate_bonus = 0
 
 /obj/item/organ/genital/breasts/update_appearance()
 	. = ..()
@@ -129,6 +136,83 @@
 		toggle_visibility(GEN_ALLOW_EGG_STUFFING, FALSE)
 	if(D.features["breasts_accessible"])
 		toggle_accessibility(TRUE)
+
+
+// Lazy reserves. No per-life processing, only O(1) time arithmetic on demand.
+/obj/item/organ/genital/breasts/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	// Parent Insert() emits organ signals; reset BEFORE their listeners run.
+	if(iscarbon(M) && owner != M)
+		last_fluid_update = world.time
+		last_nutrition_factor = 1
+	. = ..()
+
+/obj/item/organ/genital/breasts/Remove(special = FALSE)
+	if(owner)
+		update_fluid_reserve()
+	. = ..()
+	last_fluid_update = world.time
+	last_nutrition_factor = 1
+
+/obj/item/organ/genital/breasts/proc/update_fluid_reserve()
+	if(stored_fluid < 0)
+		// Preserve current game behaviour: the first available use starts full.
+		stored_fluid = max(0, fluid_max_volume)
+		last_fluid_update = world.time
+		return
+	var/elapsed = max(0, world.time - last_fluid_update)
+	last_fluid_update = world.time
+	// Detached organs do not produce fluid or accrue elapsed regeneration.
+	if(!owner || QDELETED(owner))
+		last_nutrition_factor = 1
+		stored_fluid = clamp(stored_fluid, 0, max(0, fluid_max_volume))
+		return
+	var/nutrition_factor = 1
+	if(owner.nutrition <= NUTRITION_LEVEL_STARVING)
+		nutrition_factor = GENITAL_MILK_STARVING_FACTOR
+	else if(owner.nutrition <= NUTRITION_LEVEL_HUNGRY)
+		nutrition_factor = GENITAL_MILK_HUNGRY_FACTOR
+	// A meal must not retroactively regenerate milk for a starving interval.
+	// Conservative lower bound if nutrition changed since last access.
+	if(elapsed && owner && owner.stat != DEAD && (genital_flags & GENITAL_FUID_PRODUCTION))
+		stored_fluid += max(0, fluid_rate * fluid_mult) * elapsed / (10 SECONDS) * min(last_nutrition_factor, nutrition_factor)
+	last_nutrition_factor = nutrition_factor
+	stored_fluid = clamp(stored_fluid, 0, max(0, fluid_max_volume))
+
+/obj/item/organ/genital/breasts/get_fluid()
+	if(!(genital_flags & GENITAL_FUID_PRODUCTION) || !fluid_id)
+		return 0
+	update_fluid_reserve()
+	return stored_fluid
+
+/obj/item/organ/genital/breasts/get_fluid_fraction()
+	if(fluid_max_volume <= 0)
+		return 0
+	return clamp(get_fluid() / fluid_max_volume, 0, 1)
+
+/// Transfer only stored liquid. All scripts/containers MUST use this method.
+/obj/item/organ/genital/breasts/proc/transfer_fluid(datum/reagents/destination, requested_amount)
+	if(!destination || !isnum(requested_amount) || requested_amount <= 0)
+		return 0
+	if(!(genital_flags & GENITAL_FUID_PRODUCTION) || !fluid_id)
+		return 0
+	destination.update_total()
+	var/free = max(0, destination.maximum_volume - destination.total_volume)
+	var/amount = min(requested_amount, get_fluid(), free)
+	if(amount <= 0)
+		return 0
+	// Deduct before chemical reaction. add_reagent() can return FALSE even when
+	// its reaction produces secondary effects (water + acid smoke).
+	stored_fluid -= amount
+	destination.add_reagent(fluid_id, amount, owner?.get_blood_data())
+	return amount
+
+// Standard climax and milk-to-other-organ paths use the SAME reserve.
+/obj/item/organ/genital/breasts/generate_fluid(datum/reagents/R)
+	if(!R)
+		return FALSE
+	R.clear_reagents()
+	R.maximum_volume = max(0, fluid_max_volume)
+	return transfer_fluid(R, get_fluid()) > 0
 
 /obj/item/organ/genital/breasts/proc/get_lactation_amount_modifier()
 	switch(size)

@@ -415,6 +415,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		return
 	if(!user)
 		return
+	if(ismob(user) && user.GetComponent(/datum/component/virtual_entity) && is_protected_bitrunning_objective(src, user))
+		return
 	if(anchored)
 		return
 	if(loc == user && current_equipped_slot && current_equipped_slot != ITEM_SLOT_HANDS)
@@ -479,6 +481,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 /obj/item/attack_paw(mob/user)
 	if(!user)
+		return
+	if(ismob(user) && user.GetComponent(/datum/component/virtual_entity) && is_protected_bitrunning_objective(src, user))
 		return
 	if(anchored)
 		return
@@ -1559,3 +1563,74 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 /// Special stuff you want to do when an outfit equips this item.
 /obj/item/proc/on_outfit_equip(mob/living/carbon/human/outfit_wearer, visuals_only, item_slot)
 	return
+
+/obj/item/ammo_box/magazine/m9mm
+	parent_type = /obj/item/ammo_box/magazine/uzim9mm
+
+/obj/item/boulder
+	parent_type = /obj/item/stack/ore/iron
+	name = "boulder"
+	icon = 'icons/obj/mining.dmi'
+	icon_state = "boulder_large"
+	item_state = "boulder_large"
+
+/obj/item/clothing/gloves/latex
+	parent_type = /obj/item/clothing/gloves/color/latex
+
+/obj/item/food/cake/birthday
+	parent_type = /obj/item/reagent_containers/food/snacks/store/cake/birthday
+
+/obj/item/food/grown/banana/bunch
+	parent_type = /obj/item/reagent_containers/food/snacks/grown/banana
+
+/obj/item/food/grown/watermelon
+	parent_type = /obj/item/reagent_containers/food/snacks/grown/watermelon
+
+/obj/item/food/pizza/margherita
+	parent_type = /obj/item/reagent_containers/food/snacks/pizza/margherita
+
+/obj/item/gun/ballistic/rifle/boltaction
+	parent_type = /obj/item/gun/ballistic/shotgun/boltaction
+
+MAPPING_DIRECTIONAL_HELPERS(/obj/item/radio/intercom, 27)
+MAPPING_DIRECTIONAL_HELPERS(/obj/item/radio/intercom/command, 27)
+
+/obj/item/reagent_containers/cup/glass/coffee
+	parent_type = /obj/item/reagent_containers/food/drinks/coffee
+
+/obj/item/reagent_containers/cup/glass/drinkingglass/filled/pina_colada
+	parent_type = /obj/item/reagent_containers/food/drinks/drinkingglass/filled
+	name = "pina colada"
+	list_reagents = list(/datum/reagent/consumable/ethanol/pina_colada = 50)
+
+/obj/item/secateurs
+	parent_type = /obj/item/cultivator
+
+/obj/item/stack/cannonball/four
+
+/obj/item/stack/package_wrap
+	parent_type = /obj/item/stack/wrapping_paper
+
+/obj/item/stack/sheet/iron
+	parent_type = /obj/item/stack/sheet/metal
+
+/obj/item/stack/sheet/iron/fifty
+	parent_type = /obj/item/stack/sheet/metal/fifty
+
+/obj/item/storage/backpack/duffelbag/syndie/c4
+
+/obj/item/storage/belt/security/full
+
+/obj/item/storage/belt/security/webbing
+
+/obj/item/tank/internals/plasma/full
+
+/obj/item/toy/plush/moth
+
+/obj/item/clothing/neck/beads
+
+/obj/structure/closet/secure_closet/bar/lavaland_bartender_clothes/PopulateContents()
+	new /obj/item/clothing/neck/beads(src)
+	new /obj/item/clothing/glasses/sunglasses/reagent(src)
+	new /obj/item/clothing/suit/toggle/jacket/hawaiian(src)
+	new /obj/item/clothing/shoes/sandal(src)

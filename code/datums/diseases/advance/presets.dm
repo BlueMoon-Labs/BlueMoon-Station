@@ -16,6 +16,14 @@
 	symptoms = list(new/datum/symptom/cough)
 	..()
 
+// Viral Evolutionary Acceleration
+/datum/disease/advance/viral_elolutionary
+	copy_type = /datum/disease/advance
+
+/datum/disease/advance/viral_elolutionary/New(make_typecache = TRUE)
+	symptoms = list(new/datum/symptom/viralevolution)
+	..()
+
 //Randomly generated Disease, for virus crates and events
 /datum/disease/advance/random
 	name = "Experimental Disease"

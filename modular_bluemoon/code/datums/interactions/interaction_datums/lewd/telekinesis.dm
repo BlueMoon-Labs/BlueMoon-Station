@@ -87,7 +87,6 @@
 
 /datum/interaction/lewd/simplified_interaction/TK_interaction/things
 	description = "Телекинез. Схватить бёдра."
-	require_target_legs = REQUIRE_ANY
 	write_log_user = "TK-things-groped"
 	write_log_target = "was TK-things-groped by"
 	p13target_emote = PLUG13_EMOTE_BREASTS

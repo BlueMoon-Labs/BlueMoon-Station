@@ -96,7 +96,7 @@
 	icon = 'modular_splurt/icons/obj/ammo.dmi'
 	icon_state = "rrcmag"
 	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
-	caliber = "12g"
+	caliber = "shotgun"
 	max_ammo = 8
 
 /obj/item/ammo_box/magazine/rrcmag/update_icon()

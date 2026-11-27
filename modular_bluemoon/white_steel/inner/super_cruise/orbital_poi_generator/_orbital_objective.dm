@@ -23,6 +23,11 @@
 	//WHITE-STEEL PORT: ckey'и авангардцев, зафиксированные на борту шаттла в момент старта миссии.
 	//null - снимок не сделан (ограничение по очкам не применяется), list() - на шаттле никого не было.
 	var/list/expedition_crew_ckeys
+	//WHITE-STEEL FIX: ДНК авангардцев на старте миссии. По нему узнаём тела без mind и ckey
+	//(после ghost'а) - тот же ключ, что использует find_brainless_body() при фултоне останков.
+	var/list/expedition_crew_enzymes
+	//WHITE-STEEL FIX: чтобы не спамить лог, пока заражение блокирует авто-возврат.
+	var/mission_shuttle_infection_blocked = FALSE
 
 /datum/orbital_objective/New()
 	. = ..()
@@ -131,17 +136,70 @@
 		return
 	if(world.time - mission_shuttle_empty_since < MISSION_SHUTTLE_EMPTY_GRACE)
 		return
+	//WHITE-STEEL FIX: заражённая яйцами ужаса экспедиция не уезжает на станцию.
+	//Проверяем и трупы на руине, и всё, что уже на борту, до фултона и moveShuttle.
+	if(expedition_has_terror_eggs())
+		if(!mission_shuttle_infection_blocked)
+			log_game("[name]: авто-возврат заблокирован — в экспедиции обнаружены яйца пауков ужаса.")
+			mission_shuttle_infection_blocked = TRUE
+		return
+	mission_shuttle_infection_blocked = FALSE
 	mission_shuttle_dispatched = TRUE
 	log_game("[name]: вся команда на руине (z=[objective_z_level]) мертва, шаттл авангарда возвращается на базу.")
 	//Тела погибших — на приёмный маяк авангарда (а если маяка на карте нет, то на мостик шаттла),
 	//чтобы уехали домой и не были зачищены аннигилятором уровня.
 	fulton_dead_expeditors_home()
+	//WHITE-STEEL FIX: шаттл ушёл сам после гибели экспедиции — пауки ужаса на борту
+	//не должны добраться до станции.
+	purge_terror_spiders_from_shuttle(exploration)
 	SSzclear.temp_keep_z(exploration.z)
 	var/obj/docking_port/stationary/home_port = SSshuttle.getDock("exploration_home")
 	if(home_port)
 		SSzclear.temp_keep_z(home_port.z)
 	if(SSshuttle.moveShuttle("exploration", "exploration_home", 1) == 0)
 		broadcast_auto_return()
+
+//WHITE-STEEL FIX: экспедиция заражена яйцами пауков ужаса? Смотрим живых и трупы авангардцев
+//на руине, плюс всё содержимое шаттла (орган может лежать в трупе/рюкзаке, а не в mob_living_list).
+/datum/orbital_objective/proc/expedition_has_terror_eggs()
+	var/obj/docking_port/mobile/exploration = SSshuttle.getShuttle("exploration")
+	var/atom/movable/npc_target = get_target()
+	for(var/mob/living/carbon/C as anything in GLOB.mob_living_list)
+		if(QDELETED(C) || !iscarbon(C) || C == npc_target)
+			continue
+		var/turf/T = get_turf(C)
+		if(!T)
+			continue
+		var/on_ruin = (T.z == objective_z_level)
+		var/on_shuttle = exploration && (get_area(C) in exploration.shuttle_areas)
+		if(!on_ruin && !on_shuttle)
+			continue
+		//После ghost'а у трупа может не быть ни mind, ни ckey - страхуемся снимком ckey
+		//и ДНК на старте миссии (ДНК - тот же ключ, что в find_brainless_body()).
+		if(on_ruin && !is_expedition_body(C) && !on_shuttle)
+			continue
+		if(C.getorgan(/obj/item/organ/body_egg/terror_eggs))
+			return TRUE
+	if(exploration)
+		for(var/area/A in exploration.shuttle_areas)
+			for(var/atom/movable/AM in A.GetAllContents())
+				if(istype(AM, /obj/item/organ/body_egg/terror_eggs))
+					return TRUE
+				if(iscarbon(AM))
+					var/mob/living/carbon/C = AM
+					if(C.getorgan(/obj/item/organ/body_egg/terror_eggs))
+						return TRUE
+	return FALSE
+
+//WHITE-STEEL FIX: убрать всех пауков ужаса (и их выводок) с шаттла перед возвратом на базу.
+//qdel, а не gib: Destroy() сам чистит GLOB.ts_spiderlist / ts_egg_list / ts_spiderling_list.
+/datum/orbital_objective/proc/purge_terror_spiders_from_shuttle(obj/docking_port/mobile/exploration)
+	if(!exploration)
+		return
+	for(var/area/A in exploration.shuttle_areas)
+		for(var/atom/movable/AM in A.GetAllContents())
+			if(isterrorspider(AM) || istype(AM, /obj/structure/spider/spiderling/terror_spiderling) || istype(AM, /obj/structure/spider/eggcluster/terror_eggcluster))
+				qdel(AM)
 
 //WHITE-STEEL PORT: фултон тел погибших на приёмный маяк авангарда (/obj/structure/fulton_beacon),
 //который игрок ставит на карте. Если маяка на карте нет - старое поведение: тела едут на мостик
@@ -173,14 +231,25 @@
 	if(!beacon && !bridge && !shuttle_fallback)
 		return
 	var/atom/movable/npc_target = get_target()
+	var/skipped_mindless = 0
 	for(var/mob/living/L as anything in GLOB.mob_living_list)
-		if(QDELETED(L) || L == npc_target || !L.mind)
+		if(QDELETED(L) || L == npc_target)
 			continue
 		var/turf/start = get_turf(L)
 		if(start?.z != objective_z_level)
 			continue
 		//Только авангард: трупы живцов руины и цель миссии на маяк не летят.
-		if(!is_expedition_crew(L))
+		//После ghost'а у трупа нет ни mind, ни ckey — узнаём его по ДНК, снятой на старте
+		//миссии. stat == DEAD не даёт фултонуть живого человека с совпавшей ДНК.
+		var/is_crew = FALSE
+		if(L.mind)
+			is_crew = is_expedition_crew(L)
+		else if(iscarbon(L) && L.stat == DEAD)
+			var/mob/living/carbon/body = L
+			is_crew = is_expedition_body(body)
+			if(!is_crew)
+				skipped_mindless++
+		if(!is_crew)
 			continue
 		//Сознание в отрубленной голове, мозге или MMI: сам он с руины не уйдёт, везём носитель.
 		var/atom/movable/remains = L
@@ -189,10 +258,14 @@
 		else if(L.stat != DEAD)
 			continue
 		//Останки уходят на маяк (на свободный пол рядом с ним) или, если маяка нет, на мостик шаттла.
-		if(!send_remains_home(remains, beacon ? beacon.get_delivery_turf() : (bridge || shuttle_fallback)))
+		var/turf/destination = beacon ? beacon.get_delivery_turf() : (bridge || shuttle_fallback)
+		if(!send_remains_home(remains, destination))
 			continue
+		log_game("[name]: останки [key_name(L)] отправлены с руины (z=[objective_z_level]) домой.")
 		if(isbrain(L))
-			send_remains_home(find_brainless_body(L), beacon ? beacon.get_delivery_turf() : (bridge || shuttle_fallback))
+			send_remains_home(find_brainless_body(L), destination)
+	if(skipped_mindless)
+		log_game("[name]: на руине (z=[objective_z_level]) осталось [skipped_mindless] мёртвых тел без mind/ckey, не совпавших со снимком экипажа.")
 
 /datum/orbital_objective/proc/send_remains_home(atom/movable/remains, turf/destination)
 	if(QDELETED(remains) || !destination)
@@ -240,6 +313,15 @@
 	if(!L.mind || !L.mind.assigned_role)
 		return FALSE
 	return istype(SSjob.GetJob(L.mind.assigned_role), /datum/job/expeditor)
+
+//WHITE-STEEL FIX: труп авангардца, у которого после ghost'а нет ни mind, ни ckey.
+//Сначала старая проверка (профессия / ckey из снимка), затем ДНК из снимка - тем же
+//unique_enzymes, по которому find_brainless_body() находит безмозглое тело для фултона.
+/datum/orbital_objective/proc/is_expedition_body(mob/living/carbon/C)
+	if(is_expedition_crew(C) || (expedition_crew_ckeys && C.ckey && (C.ckey in expedition_crew_ckeys)))
+		return TRUE
+	var/enzymes = C.dna?.unique_enzymes
+	return !isnull(enzymes) && expedition_crew_enzymes && (enzymes in expedition_crew_enzymes)
 
 //WHITE-STEEL PORT: приёмный маяк для тел экспедиции. Приоритет у маяков на станции (их ставит
 //игрок на карте сам), если таких нет - берём любой маяк. null - маяков на карте нет вообще.
@@ -345,8 +427,10 @@
 	var/obj/docking_port/mobile/exploration = SSshuttle.getShuttle("exploration")
 	if(!exploration)
 		expedition_crew_ckeys = list()
+		expedition_crew_enzymes = list()
 		return
 	expedition_crew_ckeys = list()
+	expedition_crew_enzymes = list()
 	for(var/mob/living/carbon/human/H as() in GLOB.human_list)
 		if(QDELETED(H) || H.stat == DEAD || !H.mind || !H.ckey)
 			continue
@@ -354,6 +438,28 @@
 		if(!A || !(A in exploration.shuttle_areas))
 			continue
 		expedition_crew_ckeys += H.ckey
+		if(H.dna?.unique_enzymes)
+			expedition_crew_enzymes += H.dna.unique_enzymes
+
+/datum/controller/subsystem/economy
+	/// Сколько денег орбитальные задания выпустили за смену: людям и доля снабжения
+	var/orbital_paid = 0
+
+/// Какую часть награды payout NT оплатит, если задание закрыть сейчас: до orbital_shift_cap за смену - всю (и задание, которое его перешагнёт), после - orbital_overcap_share процентов.
+/datum/controller/subsystem/economy/proc/orbital_payable(payout)
+	var/cap = settings.orbital_shift_cap
+	if(!cap || orbital_paid < cap)
+		return payout
+	return round(payout * settings.orbital_overcap_share / 100)
+
+/// Оплачиваемая часть награды payout; вся эмиссия задания идёт в счёт потолка смены.
+/datum/controller/subsystem/economy/proc/claim_orbital_payout(payout)
+	. = orbital_payable(payout)
+	orbital_paid += . + round(. * settings.orbital_cargo_mult)
+
+/datum/controller/subsystem/economy/proc/orbital_payout_left()
+	var/cap = settings.orbital_shift_cap
+	return cap ? max(cap - orbital_paid, 0) : null
 
 /datum/orbital_objective/proc/complete_objective()
 	if(completed)
@@ -361,25 +467,31 @@
 		QDEL_NULL(SSorbits.current_objective)
 		return
 	completed = TRUE
-	//Handle payout
-	var/rangers_count = 0
-	for(var/I in SSjob.occupations)
-		var/datum/job/J = I
-		if(istype(J, /datum/job/expeditor))
-			rangers_count = J.current_positions
-
-	var/israel = 0
-	if(rangers_count)
-		israel = round((payout / 2) / rangers_count)
-	var/goyam  = round((payout / 2) / max(SSeconomy.generated_accounts.len, 1))
-	for(var/B in SSeconomy.bank_accounts_by_id)
-		var/datum/bank_account/A = SSeconomy.bank_accounts_by_id[B]
-		if(istype(A.account_job, /datum/job/expeditor))
-			A.bank_card_talk("Было получено [israel] кредитов за выполнение задания.")
-			A.adjust_money(israel)
+	var/paid = SSeconomy.claim_orbital_payout(payout)
+	var/cap_note = paid < payout ? " Задания смены вместе с долей снабжения уже выпустили больше [SSeconomy.settings.orbital_shift_cap] кр., поэтому NT платит [SSeconomy.settings.orbital_overcap_share]% награды: [paid] из [payout] кр." : ""
+	var/list/datum/bank_account/ranger_accounts = list()
+	var/list/datum/bank_account/crew_accounts = list()
+	for(var/datum/bank_account/payee_account as anything in SSeconomy.bank_accounts)
+		if(payee_account.offstation || payee_account.state != ACCOUNT_ACTIVE || !payee_account.owner_ref)
+			continue
+		if(istype(payee_account, /datum/bank_account/department) || istype(payee_account, /datum/bank_account/system))
+			continue
+		if(istype(payee_account.account_job, /datum/job/expeditor))
+			ranger_accounts += payee_account
 		else
-			A.bank_card_talk("Было получено [goyam] кредитов за содействие выполнению поручений NanoTrasen.")
-			A.adjust_money(goyam)
+			crew_accounts += payee_account
+	var/ranger_share = length(ranger_accounts) ? round((paid / 2) / length(ranger_accounts)) : 0
+	for(var/datum/bank_account/payee_account as anything in ranger_accounts)
+		var/net = SSeconomy.pay_personal(null, payee_account, ranger_share, ECON_ORBITAL, memo = "Орбитальное задание")
+		if(net)
+			payee_account.bank_card_talk("Орбитальное задание: [ranger_share] кр. до налога, на руки [net] кр.[cap_note]", balloon = "задание +[net] кр")
+		else if(!paid)
+			payee_account.bank_card_talk("Орбитальное задание выполнено, но задания смены уже выпустили больше [SSeconomy.settings.orbital_shift_cap] кр., а сверх этого NT сейчас не платит: денег за него не будет, очки Авангарда - участникам вылета.")
+	var/crew_share = length(crew_accounts) ? round((paid / 2) / length(crew_accounts)) : 0
+	for(var/datum/bank_account/payee_account as anything in crew_accounts)
+		var/net = SSeconomy.pay_personal(null, payee_account, crew_share, ECON_ORBITAL, memo = "Содействие орбитальному заданию")
+		if(net)
+			payee_account.bank_card_talk("Содействие орбитальному заданию NT: [crew_share] кр. до налога, на руки [net] кр.", quiet = TRUE)
 	//WHITE-STEEL PORT: очки задания. Половина пула начисляется на общий счёт карго,
 	//каждый действующий авангард дополнительно получает В ДВА раза больше очков на свой ID.
 	var/cargo_share = round(payout / 2)
@@ -410,10 +522,10 @@
 			continue
 		id_card.contraband_points += cargo_share * 2
 		to_chat(H, span_notice("Вы получили [cargo_share * 2] очков Авангарда за выполнение задания."))
-	//WHITE-STEEL PORT: на счёт карго дополнительно поступают деньги в полуторном размере от награды за задание.
 	var/datum/bank_account/department/cargo_dep = SSeconomy.get_dep_account(ACCOUNT_CAR)
-	if(cargo_dep)
-		var/cargo_money = round(payout * 1.5)
-		cargo_dep.adjust_money(cargo_money)
+	var/cargo_money = round(paid * SSeconomy.settings.orbital_cargo_mult)
+	if(cargo_dep && cargo_money > 0)
+		cargo_dep.credit(cargo_money, ECON_ORBITAL, memo = "Орбитальное задание")
+	log_econ("Орбитальное задание \"[name]\" выполнено: награда [payout] кр., оплачено [paid] кр., рейнджерам [length(ranger_accounts)] x [ranger_share], экипажу [length(crew_accounts)] x [crew_share], снабжению [cargo_dep ? cargo_money : 0]")
 	//Delete
 	QDEL_NULL(SSorbits.current_objective)

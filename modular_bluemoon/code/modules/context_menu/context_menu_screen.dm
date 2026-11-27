@@ -162,9 +162,10 @@
 	origin_x = view_pixels[1] / 2
 	origin_y = view_pixels[2] / 2
 	var/static/regex/screen_loc_regex = regex(@"(\d+):(\d+),(\d+):(\d+)$")
-	if(screen_loc && screen_loc_regex.Find(screen_loc))
-		origin_x = (text2num(screen_loc_regex.group[1]) - 1) * world.icon_size + text2num(screen_loc_regex.group[2])
-		origin_y = (text2num(screen_loc_regex.group[3]) - 1) * world.icon_size + text2num(screen_loc_regex.group[4])
+	var/regex/cursor_pattern = screen_loc_regex
+	if(screen_loc && cursor_pattern.Find(screen_loc))
+		origin_x = (text2num(cursor_pattern.group[1]) - 1) * world.icon_size + text2num(cursor_pattern.group[2])
+		origin_y = (text2num(cursor_pattern.group[3]) - 1) * world.icon_size + text2num(cursor_pattern.group[4])
 
 /// Вид меню из настроек игрока; без клиента (тесты) - по умолчанию
 /datum/context_menu/proc/load_style()
@@ -172,6 +173,7 @@
 	scale = context_menu_style_option(style, "scale") / 100
 	font_id = context_menu_style_option(style, "font")
 	use_html = context_menu_style_option(style, "renderer") == "html" && !!user?.client
+	html_control = context_menu_html_control(style)
 	// на карте сглажены только Calibri и Candara (см. context_menu_font_families): по умолчанию там Calibri,
 	// шрифт, для которого нет таблицы ширин, тоже заменяется им
 	if(!use_html && (!style?["font"] || !(font_id in GLOB.context_menu_map_fonts)))
@@ -468,7 +470,7 @@
 	hint_row = null
 	if(!length(hint_objects))
 		return
-	user?.client?.screen -= hint_objects
+	menu_client()?.screen -= hint_objects
 	QDEL_LIST(hint_objects)
 
 /datum/context_menu/proc/add_row(datum/context_menu_entry/entry, text, x, y, background, hint, atom/icon_source, height)

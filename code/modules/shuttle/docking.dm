@@ -95,12 +95,13 @@
 
 	GLOB.lighting_defer_active = FALSE
 
-	// Initialize lighting on the destination z-level if it was deferred (e.g., transit/reserved)
+	// Отложенный свет уровня назначения в идущем раунде поднимается, только если его есть кому увидеть:
+	// пустой шаттл уровень не поднимает, первый вошедший туда живой поднимет его сам через update_z.
 	if(SSlighting.initialized && SSmapping?.initialized && new_dock)
 		var/dest_z = new_dock.z
 		if(dest_z >= 1 && dest_z <= SSmapping.z_list.len)
 			var/datum/space_level/level = SSmapping.z_list[dest_z]
-			if(!level.lighting_initialized)
+			if(!level.lighting_initialized && (!SSticker.HasRoundStarted() || zlevel_has_lighting_viewer(dest_z)))
 				create_lighting_for_zlevel(dest_z, LIGHTING_INIT_REASON_DOCKING)
 
 	// Expand deferred starlight into space turfs, queue for SSlighting Phase -1
@@ -140,6 +141,17 @@
 	// remove any stragglers just in case, and clear the list
 	remove_ripples()
 	return DOCKING_SUCCESS
+
+/// Есть ли на уровне тот, ради кого строят его свет: жилец по правилам SSlighting или живой игрок,
+/// прилетевший внутри шкафа или меха - такой в реестр клиентов уровня не попадает, update_z ему не звали.
+/proc/zlevel_has_lighting_viewer(z)
+	if(SSlighting.zlevel_has_occupant(z))
+		return TRUE
+	for(var/mob/living/player in GLOB.player_list)
+		var/turf/player_turf = get_turf(player)
+		if(player_turf?.z == z)
+			return TRUE
+	return FALSE
 
 /obj/docking_port/mobile/proc/preflight_check(list/old_turfs, list/new_turfs, list/areas_to_move, rotation)
 	for(var/i in 1 to length(old_turfs))

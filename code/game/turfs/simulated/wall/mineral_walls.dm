@@ -223,9 +223,9 @@
 
 //sub-type to be used for interior shuttle walls
 //won't get an underlay of the destination turf on shuttle move
-/turf/closed/wall/mineral/titanium/interior/copyTurf(turf/T)
+/turf/closed/wall/mineral/titanium/interior/copyTurf(turf/T, copy_air = FALSE, changeturf_flags = NONE)
 	if(T.type != type)
-		T.ChangeTurf(type)
+		T.ChangeTurf(type, null, changeturf_flags)
 		if(underlays.len)
 			T.underlays = underlays
 	if(T.icon_state != icon_state)
@@ -284,9 +284,9 @@
 	fixed_underlay = list("space"=1)
 
 //have to copypaste this code
-/turf/closed/wall/mineral/plastitanium/interior/copyTurf(turf/T)
+/turf/closed/wall/mineral/plastitanium/interior/copyTurf(turf/T, copy_air = FALSE, changeturf_flags = NONE)
 	if(T.type != type)
-		T.ChangeTurf(type)
+		T.ChangeTurf(type, null, changeturf_flags)
 		if(underlays.len)
 			T.underlays = underlays
 	if(T.icon_state != icon_state)

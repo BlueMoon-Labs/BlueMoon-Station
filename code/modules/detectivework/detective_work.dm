@@ -1,14 +1,15 @@
 //CONTAINS: Suit fibers and Detective's Scanning Computer
 
 /atom/proc/add_fibers(mob/living/carbon/human/M)
-	if(M.gloves && istype(M.gloves, /obj/item/clothing/))
-		var/obj/item/clothing/gloves/G = M.gloves
-		if(G.transfer_blood > 1) //bloodied gloves transfer blood to touched objects
-			if(add_blood_DNA(G.blood_DNA)) //only reduces the bloodiness of our gloves if the item wasn't already bloody
-				G.transfer_blood--
-	else if(M.bloody_hands > 1)
-		if(add_blood_DNA(M.blood_DNA, M.diseases))
-			M.bloody_hands--
+	if(!(M.wear_suit && (M.wear_suit.body_parts_covered & HANDS)))
+		if(M.gloves && istype(M.gloves, /obj/item/clothing/))
+			var/obj/item/clothing/gloves/G = M.gloves
+			if(G.transfer_blood > 1) //bloodied gloves transfer blood to touched objects
+				if(add_blood_DNA(G.blood_DNA)) //only reduces the bloodiness of our gloves if the item wasn't already bloody
+					G.transfer_blood--
+		else if(M.bloody_hands > 1)
+			if(add_blood_DNA(M.blood_DNA, M.diseases))
+				M.bloody_hands--
 	LAZYINITLIST(suit_fibers)
 	var/fibertext
 	var/item_multiplier = isitem(src)?1.2:1
@@ -41,6 +42,8 @@
 			suit_fibers += "Material from a pair of [M.gloves.name]."
 
 
+#define HIDDEN_PRINT_LAST_SEPARATOR " | "
+
 /atom/proc/add_hiddenprint(mob/living/M)
 	if(!M || !M.key)
 		return
@@ -56,14 +59,20 @@
 
 	var/current_time = TIME_STAMP("hh:mm:ss", FALSE)
 	if(!fingerprintshidden[M.key])
-		fingerprintshidden[M.key] = "First: [M.real_name]\[[current_time]\][hasgloves]. Ckey: [M.ckey]"
+		fingerprintshidden[M.key] = hidden_print_text("First", current_time, M.real_name, hasgloves, M.ckey)
 	else
-		var/laststamppos = findtext(fingerprintshidden[M.key], " Last: ")
+		var/laststamppos = findtext(fingerprintshidden[M.key], HIDDEN_PRINT_LAST_SEPARATOR)
 		if(laststamppos)
 			fingerprintshidden[M.key] = copytext(fingerprintshidden[M.key], 1, laststamppos)
-		fingerprintshidden[M.key] += " Last: [M.real_name]\[[current_time]\][hasgloves]. Ckey: [M.ckey]"
+		fingerprintshidden[M.key] += "[HIDDEN_PRINT_LAST_SEPARATOR][hidden_print_text("Last", current_time, M.real_name, hasgloves, M.ckey)]"
 
 	fingerprintslast = M.ckey
+
+/// Метка времени первой: её минута - якорь дерева строк (string_tree_anchors.dm), и записи одного персонажа подряд по секундам не тянут ветку.
+/proc/hidden_print_text(label, stamp, real_name, hasgloves, ckey)
+	return "[stamp] [label]: [real_name][hasgloves]. Ckey: [ckey]"
+
+#undef HIDDEN_PRINT_LAST_SEPARATOR
 
 //Set ignoregloves to add prints irrespective of the mob having gloves on.
 /atom/proc/add_fingerprint(mob/living/M, ignoregloves = FALSE)

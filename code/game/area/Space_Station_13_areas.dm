@@ -714,6 +714,9 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	sound_environment = SOUND_AREA_SMALL_SOFTFLOOR
 	light_temperature = LIGHT_TEMP_WARM
 
+/area/commons/fishing_nook
+	name = "Fishing Nook"
+
 /area/commons/arcade
 	name = "Arcade"
 	icon_state = "abandoned_g_den"
@@ -1691,6 +1694,13 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/cargo/qm
 	name = "Quartermaster's Office"
 	icon_state = "quart_office"
+
+/area/station/cargo/bitrunning
+	name = "Bitrunning"
+
+/area/station/cargo/bitrunning/den
+	name = "Bitrunning Den"
+	desc = "Офис битраннеров, здесь хранится их снаряжение."
 
 /area/cargo/qm/private
 	name = "Quartermaster's Private Quarters"

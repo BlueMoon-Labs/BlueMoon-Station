@@ -111,6 +111,7 @@
 #define JOB_DISPLAY_ORDER_ASSISTANT 42
 #define JOB_DISPLAY_ORDER_PRISONER 43 //BlueMoon
 #define JOB_DISPLAY_ORDER_STOWAWAY 44 // Сплюрт, сука.
+#define JOB_DISPLAY_ORDER_BITRUNNER 45
 
 #define DEPARTMENT_UNASSIGNED "No department assigned"
 

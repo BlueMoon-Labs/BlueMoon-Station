@@ -158,7 +158,9 @@
 
 /turf/open/floor/engine/cult/Initialize(mapload)
 	. = ..()
-	new /obj/effect/temp_visual/cult/turf/floor(src)
+	// The glow marks a floor turning to cult; maps and templates load with nobody watching.
+	if(!mapload)
+		new /obj/effect/temp_visual/cult/turf/floor(src)
 	realappearance = new /obj/effect/clockwork/overlay/floor/bloodcult(src)
 	realappearance.linked = src
 

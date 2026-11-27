@@ -94,6 +94,10 @@
 	var/area/alarmed = get_area(src)
 	alarmed.burglaralert(src)
 
+	// The captain's display case also raises a fire alarm so firedoors in the area close.
+	if(istype(src, /obj/structure/displaycase/captain))
+		alarmed?.firealert(src)
+
 	alarm_manager.send_alarm(ALARM_BURGLAR)
 	addtimer(CALLBACK(alarm_manager, /datum/alarm_handler/proc/clear_alarm, ALARM_BURGLAR), 1 MINUTES)
 
@@ -116,6 +120,10 @@
 /obj/structure/displaycase/attackby(obj/item/W, mob/user, params)
 	if(W.GetID() && !broken && openable)
 		if(allowed(user))
+			// The captain's display case requires at least Amber Code while on the station.
+			if(!open && istype(src, /obj/structure/displaycase/captain) && is_station_level(src.z) && !SSsecurity_level.security_level_is_at_least(SEC_LEVEL_AMBER))
+				to_chat(user, span_alert("Витрина с антикварным лазерным пистолетом недопустима к открытию до Янтарного Кода."))
+				return
 			to_chat(user, span_notice("You [open ? "close":"open"] [src]."))
 			toggle_lock(user)
 		else
@@ -431,13 +439,14 @@
 			if(!account)
 				to_chat(usr, span_notice("[potential_acc] не имеет зарегистрированного аккаунта!"))
 				return
-			if(!account.has_money(sale_price))
+			var/payment_problem = SSeconomy.personal_account_problem(account, TRUE) || SSeconomy.personal_account_problem(payments_acc, FALSE)
+			if(payment_problem)
+				to_chat(usr, span_warning(payment_problem))
+				return TRUE
+			if(!SSeconomy.move(account, payments_acc, sale_price, ECON_PURCHASE, usr, "Покупка: [showpiece]"))
 				to_chat(usr, span_notice("У меня нет средств, чтобы купить это. Нужно больше золота."))
 				return TRUE
 			else
-				account.adjust_money(-sale_price)
-				if(payments_acc)
-					payments_acc.adjust_money(sale_price)
 				usr.put_in_hands(showpiece)
 				to_chat(usr, span_notice("Покупаю [showpiece] по цене в [sale_price] кредит[get_num_string(sale_price)]."))
 				playsound(src, 'sound/effects/cashregister.ogg', 40, TRUE)
@@ -544,6 +553,7 @@
 	. = ..()
 	if(showpiece && !open)
 		. += span_notice("[showpiece] is for sale for [sale_price] credits.")
+	. += span_notice("Платить можно только с личного счёта, бюджетные карты отделов не принимаются.")
 	if(broken)
 		. += span_notice("[src] is sparking and the hover field generator seems to be overloaded. Use a multitool to fix it.")
 

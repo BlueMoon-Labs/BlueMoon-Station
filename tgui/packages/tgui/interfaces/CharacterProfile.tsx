@@ -26,11 +26,13 @@ const getTagColor = (erptag) => {
 interface CharacterProfileContext {
   directory_visible: boolean;
   is_unknown: boolean;
+  profile_name: string;
   headshot_links?: (string | null)[];
   headshot_naked_links?: (string | null)[]; // BLUEMOON ADD
   character_ref: any,
   flavortext: string;
   flavortext_naked: string;
+  hide_body_description?: boolean;
   silicon_flavor_text: string;
   erp_verbs: string; // BLUEMOON - mechanical_erp_verbs_examine
   oocnotes: string;
@@ -69,7 +71,7 @@ export const CharacterProfile = (props) => {
   ];
 
   return (
-    <Window resizable width={950} height={740}>
+    <Window title={`Профиль персонажа ${data.profile_name}`} resizable width={950} height={740}>
       <Window.Content scrollable>
         <Flex>
           <Flex.Item width="276px" shrink={0} style={{ overflow: 'hidden' }}>
@@ -77,16 +79,18 @@ export const CharacterProfile = (props) => {
             <CharacterModelImageElement />
           </Flex.Item>
           <Flex.Item pl="10px" grow>
-            <Collapsible title="Описание Персонажа" open>
-              <Section>
-                <Box dangerouslySetInnerHTML={{ __html: data.flavortext || "———" }} />
-              </Section>
-            </Collapsible>
+            {!data.hide_body_description && data.flavortext ? (
+              <Collapsible title="Описание Персонажа" open>
+                <Section>
+                  <Box dangerouslySetInnerHTML={{ __html: data.flavortext }} />
+                </Section>
+              </Collapsible>
+            ) : (<Box />)}
 
-            {data.flavortext_naked ? (
+            {!data.hide_body_description && data.flavortext_naked ? (
                <Collapsible title="Описание Голого Тела Персонажа" open>
                 <Section>
-                  <Box dangerouslySetInnerHTML={{ __html: data.flavortext_naked || "———" }} />
+                  <Box dangerouslySetInnerHTML={{ __html: data.flavortext_naked }} />
                 </Section>
                </Collapsible>
             ) : (<Box />)}
@@ -107,11 +111,13 @@ export const CharacterProfile = (props) => {
               </Collapsible>
             ) : (<Box />)}
 
-            <Collapsible title={`Раса - ${data.species_name}`} open>
-              <Section>
-                <Box dangerouslySetInnerHTML={{ __html: data.custom_species_lore || "———" }} />
-              </Section>
-            </Collapsible>
+            {data.custom_species_lore ? (
+              <Collapsible title={`Вид – ${data.species_name}`} open>
+                <Section>
+                  <Box dangerouslySetInnerHTML={{ __html: data.custom_species_lore }} />
+                </Section>
+              </Collapsible>
+            ) : (<Box />)}
             <Collapsible title="Внеигровые заметки" open>
               <Section>
                 <Box dangerouslySetInnerHTML={{ __html: data.oocnotes || "———" }} />

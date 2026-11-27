@@ -336,6 +336,7 @@
 // Roundstart trait system
 
 #define MAX_QUIRKS 6 // The maximum amount of quirks one character can have at roundstart
+#define BASE_QUIRK_BALANCE 3 // Базовый минимум очков выдаваемый без каких-либо условий
 
 #define MAX_REVIVE_FIRE_DAMAGE  180
 #define MAX_REVIVE_BRUTE_DAMAGE 180
@@ -383,6 +384,7 @@
 #define EMISSIVE_DARKSIGHT_RANGE	8
 
 #define SILENCE_RANGED_MESSAGE	(1<<0)
+#define SIMPLE_MOB_PROJECTILE_ARMOR (1<<1)
 
 // Body position defines.
 /// Mob is standing up, usually associated with lying_angle value of 0.

@@ -19,12 +19,16 @@ export const Radio = (props) => {
     useCommand,
     subspace,
     subspaceSwitchable,
+    headset,
+    amplifiedFrequency,
+    amplifiedChannels,
   } = data;
   const tunedChannel = RADIO_CHANNELS
     .find(channel => channel.freq === frequency);
   const channels = map((value, key) => ({
     name: key,
     status: !!value,
+    amplified: !!amplifiedChannels?.[key],
   }))(data.channels);
   // Calculate window height
   let height = 106;
@@ -43,15 +47,15 @@ export const Radio = (props) => {
       <Window.Content>
         <Section>
           <LabeledList>
-            <LabeledList.Item label="Frequency">
+            <LabeledList.Item label="Частота">
               {freqlock && (
                 <Box inline color="light-gray">
-                  {toFixed(frequency / 10, 1) + ' kHz'}
+                  {toFixed(frequency / 10, 1) + ' кГц'}
                 </Box>
               ) || (
                 <NumberInput
                   animate
-                  unit="kHz"
+                  unit="кГц"
                   step={0.2}
                   stepPixelSize={10}
                   minValue={minFrequency / 10}
@@ -67,8 +71,15 @@ export const Radio = (props) => {
                   [{tunedChannel.name}]
                 </Box>
               )}
+              {!!headset && (
+                <Button.Checkbox
+                  ml={1}
+                  checked={!!amplifiedFrequency}
+                  tooltip="Крупный текст при приёме на этой частоте"
+                  onClick={() => act('amplify', { frequency })} />
+              )}
             </LabeledList.Item>
-            <LabeledList.Item label="Audio">
+            <LabeledList.Item label="Звук">
               <Button
                 textAlign="center"
                 width="37px"
@@ -86,7 +97,7 @@ export const Radio = (props) => {
                   ml={1}
                   icon="bullhorn"
                   selected={useCommand}
-                  content={`High volume ${useCommand ? 'ON' : 'OFF'}`}
+                  content={`Громкая связь ${useCommand ? 'ВКЛ' : 'ВЫКЛ'}`}
                   onClick={() => act('command')} />
               )}
               {!!subspaceSwitchable && (
@@ -94,15 +105,15 @@ export const Radio = (props) => {
                   ml={1}
                   icon="bullhorn"
                   selected={subspace}
-                  content={`Subspace Tx ${subspace ? 'ON' : 'OFF'}`}
+                  content={`Подпространство ${subspace ? 'ВКЛ' : 'ВЫКЛ'}`}
                   onClick={() => act('subspace')} />
               )}
             </LabeledList.Item>
             {!!subspace && (
-              <LabeledList.Item label="Channels">
+              <LabeledList.Item label="Каналы">
                 {channels.length === 0 && (
                   <Box inline color="bad">
-                    No encryption keys installed.
+                    Ключи шифрования не установлены.
                   </Box>
                 )}
                 {channels.map(channel => (
@@ -114,6 +125,13 @@ export const Radio = (props) => {
                       onClick={() => act('channel', {
                         channel: channel.name,
                       })} />
+                    {!!headset && (
+                      <Button.Checkbox
+                        ml={1}
+                        checked={channel.amplified}
+                        content="Крупный текст"
+                        onClick={() => act('amplify', { channel: channel.name })} />
+                    )}
                   </Box>
                 ))}
               </LabeledList.Item>

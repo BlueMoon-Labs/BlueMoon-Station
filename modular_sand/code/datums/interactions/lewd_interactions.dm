@@ -31,6 +31,26 @@
 
 
 
+	// Validate special constructions for BOTH carbon anatomy and synthetic profiles.
+	// These flags were previously declared but never enforced in evaluate_user().
+	if(required_from_user & (INTERACTION_REQUIRE_KNOT | INTERACTION_REQUIRE_DOUBLE_PENIS))
+		var/knot_capability = user.get_knotting_capability()
+		var/has_double_penis = FALSE
+		if(iscyborg(user))
+			var/mob/living/silicon/robot/R = user
+			if(R.synthetic_profile_selected)
+				knot_capability = R.synthetic_knot_style
+				has_double_penis = R.synthetic_knot_style >= SYNTHETIC_KNOT_DOUBLE
+		else if(iscarbon(user))
+			var/mob/living/carbon/C = user
+			var/obj/item/organ/genital/penis/P = C.getorganslot(ORGAN_SLOT_PENIS)
+			if(P && !QDELETED(P))
+				// Match the criterion which sets this flag in the interaction menu.
+				has_double_penis = !!findtext(get_penis_shape_desc(C), "двойн")
+		if((required_from_user & INTERACTION_REQUIRE_KNOT) && knot_capability < SYNTHETIC_KNOT_SINGLE)
+			return FALSE
+		if((required_from_user & INTERACTION_REQUIRE_DOUBLE_PENIS) && !has_double_penis)
+			return FALSE
 	var/has_penis = user.has_penis(TRUE) || user.has_strapon()
 	var/penis_is_exposed = has_penis == TRUE || has_penis == HAS_EXPOSED_GENITAL
 
@@ -262,7 +282,7 @@
 	. = ..()
 	if(!.)
 		return FALSE
-	if((required_from_target & INTERACTION_FLAG_TARGET_NOT_TIRED) && !COOLDOWN_FINISHED(target, refractory_period))
+	if((interaction_flags & INTERACTION_FLAG_TARGET_NOT_TIRED) && !COOLDOWN_FINISHED(target, refractory_period))
 		if(!silent) //same with this
 			to_chat(user, span_warning("They're still exhausted from the last time. They need to wait [DisplayTimeText(COOLDOWN_TIMELEFT(target, refractory_period), 1)] until you can do that!"))
 		return FALSE
@@ -505,68 +525,5 @@
 	user.cleartimer = addtimer(CALLBACK(user, TYPE_PROC_REF(/mob/living, clear_lewd_datum)), 300, TIMER_STOPPABLE)
 	return ..()
 
-/mob/living/list_interaction_attributes(mob/living/LM)
-	. = ..()
-	if(!COOLDOWN_FINISHED(LM, refractory_period))
-		. += "...ощущается сексуальную истощённость."
-	switch(a_intent)
-		if(INTENT_HELP)
-			. += "...ведёт себя мягко."
-		if(INTENT_DISARM)
-			. += "...ведёт себя игриво."
-		if(INTENT_GRAB)
-			. += "...ведёт себя грубо."
-		if(INTENT_HARM)
-			. += "...выглядит агрессивно!"
-	//Here comes the fucking weird shit.
-	if(client)
-		var/client/cli = client
-		var/client/ucli = LM.client
-		if(cli.prefs.extremepref != "No")
-			if(!ucli || (ucli.prefs.extremepref != "No"))
-				if(!get_item_by_slot(ITEM_SLOT_EARS_LEFT) && !get_item_by_slot(ITEM_SLOT_EARS_RIGHT))
-					if(has_ears())
-						. += "...уши открыты."
-					else
-						. += "...ушная раковина открыта и в свободном доступе."
-				else
-					. += "...уши прикрыты."
-				if(!get_item_by_slot(ITEM_SLOT_EYES))
-					if(has_eyes())
-						. += "...глаза открыты."
-					else
-						. += "...имеются открытые глазные впадины."
-				else
-					. += "...глаза прикрыты."
-	//
-	// check those loops only once, thanks
-	var/is_topless = is_topless()
-	var/is_bottomless = is_bottomless()
-	if(is_topless && is_bottomless)
-		. += "...одежда отсутствует."
-	else
-		if((is_topless && !is_bottomless) || (!is_topless && is_bottomless))
-			. += "...обладает открытой одеждой."
-		else
-			. += "...обладает закрытой одеждой."
-	if(has_breasts() == HAS_EXPOSED_GENITAL)
-		. += "...обладает грудью."
-	if(has_penis() == HAS_EXPOSED_GENITAL)
-		. += "...обладает пенисом."
-	if(has_strapon() == HAS_EXPOSED_GENITAL)
-		. += "...держит готовый страпон."
-	if(has_balls() == HAS_EXPOSED_GENITAL)
-		. += "...обладает семенниками."
-	if(has_vagina() == HAS_EXPOSED_GENITAL)
-		. += "...обладает вагиной."
-	if(has_anus() == HAS_EXPOSED_GENITAL)
-		. += "...обладает анальным кольцом."
-	if(has_feet() == HAS_EXPOSED_GENITAL)
-		switch(get_num_feet())
-			if(2)
-				. += "...обладает двумя ногами."
-			if(1)
-				. += "...обладает одной ногой."
-
-/datum/interaction/proc/special_check(mob/living/user, mob/living/target)
+/datum/interaction/proc/special_check(mob/living/user, mob/living/target, is_hidden = FALSE)
 	return TRUE

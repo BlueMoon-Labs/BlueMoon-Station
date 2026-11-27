@@ -124,6 +124,10 @@
 /// initializing = TRUE только из Initialize: датчики турфов там ещё не
 /// зарегистрированы и пересматривать нечего, а группа файрлоков ещё не собрана.
 /obj/machinery/door/firedoor/proc/CalculateAffectingAreas(initializing = FALSE)
+	// Модуль карты, догруженный до SSatoms, зовёт AfterChange по своей рамке: без
+	// Initialize ещё нет ни кэша типов для группы, ни подписок, а зоны он посчитает сам.
+	if(!(flags_1 & INITIALIZED_1))
+		return
 	remove_from_areas()
 	affecting_areas = get_adjacent_open_areas(src) | get_base_area(src)
 	for(var/I in affecting_areas)
@@ -746,6 +750,9 @@
 	return emergency_close_timer - world.time <= FIRELOCK_MANUAL_OVERRIDE_GRACE
 
 /obj/machinery/door/firedoor/proc/block_automatic_closing(duration)
+	// Зовётся и после спящей анимации open(), дверь к тому моменту могли удалить.
+	if(QDELETED(src))
+		return
 	emergency_close_timer = max(emergency_close_timer, world.time + duration)
 	nextstate = null
 	// Уже закрытая автоматикой дверь должна сохранять возможность открыться сама.
@@ -852,7 +859,7 @@
 	schedule_auto_reopen()
 
 /obj/machinery/door/firedoor/proc/schedule_auto_reopen()
-	if(!auto_closed)
+	if(!auto_closed || QDELETED(src))
 		return
 	// Одноразовый таймер с самоперевзводом: TIMER_LOOP тут не годится, из него
 	// нельзя сняться собственным deltimer. Джиттер разводит двери, закрытые
@@ -922,7 +929,8 @@
 	qdel(src)
 
 /obj/machinery/door/firedoor/proc/latetoggle()
-	if(operating || machine_stat & NOPOWER || !nextstate)
+	// Анимация open()/close() спит, дверь могли удалить посреди неё.
+	if(QDELETED(src) || operating || machine_stat & NOPOWER || !nextstate)
 		return
 	switch(nextstate)
 		if(FIREDOOR_OPEN, FIREDOOR_OPEN_MANUAL)

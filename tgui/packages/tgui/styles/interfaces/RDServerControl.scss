@@ -1,0 +1,199 @@
+$rd-green: #20b142;
+$rd-green-bright: #7dff9b;
+$rd-green-dim: #2f6b3a;
+$rd-green-ghost: rgba(32, 177, 66, 0.05);
+$rd-amber: #f0b429;
+$rd-red: #ff5c5c;
+
+@keyframes rd-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.RDServerControl {
+  padding-bottom: 6px;
+  font-family: Consolas, 'Lucida Console', 'Courier New', monospace;
+}
+
+.RDServerControl__banner {
+  position: relative;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1px solid $rd-green-dim;
+  background:
+    linear-gradient(180deg, rgba(32, 177, 66, 0.1), rgba(0, 0, 0, 0) 70%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(32, 177, 66, 0.04) 0,
+      rgba(32, 177, 66, 0.04) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  box-shadow: inset 0 0 24px rgba(32, 177, 66, 0.08);
+}
+
+.RDServerControl__logo {
+  color: $rd-green-bright;
+  filter: drop-shadow(0 0 6px rgba(32, 177, 66, 0.8));
+}
+
+.RDServerControl__title {
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: $rd-green-bright;
+  text-shadow: 0 0 8px rgba(32, 177, 66, 0.7);
+}
+
+.RDServerControl__subtitle {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: $rd-green-dim;
+}
+
+.RDServerControl__boot {
+  padding-top: 8px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: rgba(150, 255, 150, 0.65);
+  white-space: pre-wrap;
+  border-top: 1px dashed rgba(32, 177, 66, 0.25);
+}
+
+.RDServerControl__prompt {
+  font-weight: bold;
+  color: $rd-green-bright;
+}
+
+.RDServerControl__ok {
+  font-weight: bold;
+  color: $rd-green-bright;
+}
+
+.RDServerControl__stat {
+  height: 100%;
+  padding: 8px 10px;
+  border: 1px solid rgba(32, 177, 66, 0.22);
+  background: $rd-green-ghost;
+  box-shadow: inset 0 0 12px rgba(32, 177, 66, 0.05);
+}
+
+.RDServerControl__statLabel {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: rgba(150, 255, 150, 0.55);
+}
+
+.RDServerControl__statValue {
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.RDServerControl__server {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(32, 177, 66, 0.22);
+  border-left: 3px solid $rd-green;
+  background:
+    linear-gradient(90deg, rgba(32, 177, 66, 0.06), transparent 40%),
+    rgba(0, 0, 0, 0.12);
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+
+  &:hover {
+    border-color: rgba(32, 177, 66, 0.45);
+    background-color: rgba(32, 177, 66, 0.04);
+  }
+}
+
+.RDServerControl__serverIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(32, 177, 66, 0.35);
+  background: rgba(32, 177, 66, 0.08);
+}
+
+.RDServerControl__serverIcon--online {
+  color: $rd-green-bright;
+  border-color: rgba(32, 177, 66, 0.6);
+}
+
+.RDServerControl__serverIcon--warning {
+  color: $rd-amber;
+  border-color: rgba(240, 180, 41, 0.5);
+  background: rgba(240, 180, 41, 0.06);
+}
+
+.RDServerControl__serverIcon--offline {
+  color: $rd-red;
+  border-color: rgba(255, 92, 92, 0.5);
+  background: rgba(255, 92, 92, 0.06);
+}
+
+.RDServerControl__serverTitle {
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: $rd-green-bright;
+}
+
+.RDServerControl__serverPath {
+  font-size: 10px;
+  color: rgba(150, 255, 150, 0.45);
+}
+
+.RDServerControl__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.RDServerControl__badge--online {
+  color: $rd-green-bright;
+  background: rgba(32, 177, 66, 0.1);
+  border-color: rgba(32, 177, 66, 0.55);
+}
+
+.RDServerControl__badge--warning {
+  color: $rd-amber;
+  background: rgba(240, 180, 41, 0.08);
+  border-color: rgba(240, 180, 41, 0.55);
+}
+
+.RDServerControl__badge--offline {
+  color: $rd-red;
+  background: rgba(255, 92, 92, 0.08);
+  border-color: rgba(255, 92, 92, 0.55);
+}
+
+.RDServerControl__barText {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: rgba(150, 255, 150, 0.75);
+}
+
+.RDServerControl__footer {
+  padding: 6px 2px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: rgba(150, 255, 150, 0.55);
+}
+
+.RDServerControl__cursor {
+  display: inline-block;
+  width: 7px;
+  height: 13px;
+  margin-left: 4px;
+  vertical-align: text-bottom;
+  background: $rd-green-bright;
+  animation: rd-blink 1s step-end infinite;
+}

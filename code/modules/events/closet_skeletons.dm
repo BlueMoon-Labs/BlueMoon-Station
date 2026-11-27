@@ -36,6 +36,8 @@
 /datum/round_event/closet_skeletons/start()
 	var/list/obj/structure/closet/candidates = list()
 	for(var/obj/structure/closet/hideout in world)
+		if(QDELETED(hideout))
+			continue
 		// Каламбур именно про шкафы: ящики карго с гремящими костями - уже другой жанр
 		if(istype(hideout, /obj/structure/closet/crate))
 			continue

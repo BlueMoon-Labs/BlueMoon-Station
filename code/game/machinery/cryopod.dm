@@ -1,4 +1,4 @@
-#define AHELP_FIRST_MESSAGE "Please adminhelp before leaving the round, even if there are no administrators online!"
+#define AHELP_FIRST_MESSAGE "Пожалуйста, напишите в админхелп перед выходом из раунда, даже если администраторы сейчас не в сети!"
 
 /*
  * Cryogenic refrigeration unit. Basically a despawner.
@@ -280,34 +280,32 @@ GLOBAL_LIST_EMPTY(ghost_records)
 						to_chat(objective.owner.current, "<BR>[span_userdanger("Contract target out of reach. Contract rerolled.")]")
 						break
 			else
-				var/old_target = objective.target
+				var/datum/mind/old_target = objective.target
 				objective.target = null
-				if(!objective)
-					return
 				objective.find_target()
-				if(!objective.target && objective.owner)
-					to_chat(objective.owner.current, "<BR>[span_userdanger("Your target is no longer within reach. Objective removed!")]")
-					for(var/datum/antagonist/antag in objective.owner.antag_datums)
-						antag.objectives -= objective
-				if (!objective.team)
-					objective.update_explanation_text()
-					objective.owner.announce_objectives()
-					to_chat(objective.owner.current, "<BR>[span_userdanger("You get the feeling your target is no longer within reach. Time for Plan [pick("A","B","C","D","X","Y","Z")]. Objectives updated!")]")
-				else
-					var/list/objectivestoupdate
-					for(var/datum/mind/objective_owner in objective.get_owners())
-						to_chat(objective_owner.current, "<BR>[span_userdanger("You get the feeling your target is no longer within reach. Time for Plan [pick("A","B","C","D","X","Y","Z")]. Objectives updated!")]")
-						for(var/datum/objective/update_target_objective in objective_owner.get_all_objectives())
-							LAZYADD(objectivestoupdate, update_target_objective)
-					objectivestoupdate += objective.team.objectives
-					for(var/datum/objective/update_objective in objectivestoupdate)
-						if(update_objective.target != old_target || !istype(update_objective,objective.type))
+				var/list/datum/mind/objective_owners = objective.get_owners()
+				if(!objective.target)
+					for(var/datum/mind/objective_owner as anything in objective_owners)
+						for(var/datum/antagonist/antag as anything in objective_owner.antag_datums)
+							antag.objectives -= objective
+						to_chat(objective_owner.current, "<BR>[span_userdanger("Your target is no longer within reach. Objective removed!")]")
+						objective_owner.announce_objectives()
+					if(objective.team)
+						objective.team.objectives -= objective
+					qdel(objective)
+					continue
+				if(objective.team)
+					var/list/datum/objective/objectives_to_update = objective.team.objectives.Copy()
+					for(var/datum/mind/objective_owner as anything in objective_owners)
+						objectives_to_update |= objective_owner.get_all_objectives()
+					for(var/datum/objective/update_objective as anything in objectives_to_update)
+						if(update_objective.target != old_target || !istype(update_objective, objective.type))
 							continue
 						update_objective.target = objective.target
 						update_objective.update_explanation_text()
-						to_chat(objective.owner.current, "<BR>[span_userdanger("You get the feeling your target is no longer within reach. Time for Plan [pick("A","B","C","D","X","Y","Z")]. Objectives updated!")]")
-						update_objective.owner.announce_objectives()
-				qdel(objective)
+				for(var/datum/mind/objective_owner as anything in objective_owners)
+					to_chat(objective_owner.current, "<BR>[span_userdanger("You get the feeling your target is no longer within reach. Time for Plan [pick("A","B","C","D","X","Y","Z")]. Objectives updated!")]")
+					objective_owner.announce_objectives()
 
 /obj/machinery/cryopod/proc/should_preserve_item(obj/item/item)
 	for(var/datum/objective_item/steal/possible_item in GLOB.possible_items)
@@ -334,34 +332,34 @@ GLOBAL_LIST_EMPTY(ghost_records)
 			to_chat(user, span_danger("You can't put [target] into [src]. [target.p_theyre(capitalized = TRUE)] conscious."))
 		return
 	else if(target.client) // mob has client
-		if(tgalert(target, "Would you like to [tele ? "be teleported out" : "enter cryosleep"]?", "Enter Cryopod?", "Yes", "No") != "Yes")
+		if(tgui_alert(target, "Хотите [tele ? "телепортироваться отсюда" : "погрузиться в криосон"]?", "Войти в криокапсулу?", list("Да", "Нет")) != "Да")
 			return
 
 	if(target == user && world.time - target.client.cryo_warned > 5 MINUTES)
 		var/list/caught_string
 		var/addendum = ""
 		if(target.mind.assigned_role in GLOB.command_positions)
-			LAZYADD(caught_string, "Head of Staff")
-			addendum = " Be sure to put your locker items back into your locker!"
+			LAZYADD(caught_string, "глава отдела")
+			addendum = " Не забудьте вернуть вещи из шкафчика обратно в шкафчик!"
 		//SPLURT CHANGES (Addendums changed, only tells antags to ahelp and not heads)
 		if(iscultist(target) || is_servant_of_ratvar(target))
-			LAZYADD(caught_string, "Cultist")
+			LAZYADD(caught_string, "культист")
 			addendum = AHELP_FIRST_MESSAGE
 		if(is_devil(target))
-			LAZYADD(caught_string, "Devil")
+			LAZYADD(caught_string, "дьявол")
 			addendum = AHELP_FIRST_MESSAGE
 		if(target.mind.has_antag_datum(/datum/antagonist/gang))
-			LAZYADD(caught_string, "Gangster")
+			LAZYADD(caught_string, "гангстер")
 			addendum = AHELP_FIRST_MESSAGE
 		if(target.mind.has_antag_datum(/datum/antagonist/rev/head))
-			LAZYADD(caught_string, "Head Revolutionary")
+			LAZYADD(caught_string, "глава революции")
 			addendum = AHELP_FIRST_MESSAGE
 		if(target.mind.has_antag_datum(/datum/antagonist/rev))
-			LAZYADD(caught_string, "Revolutionary")
+			LAZYADD(caught_string, "революционер")
 			addendum = AHELP_FIRST_MESSAGE
 
 		if(caught_string)
-			tgui_alert(target, "You're a [english_list(caught_string)]. [addendum]")
+			tgui_alert(target, "Вы — [jointext(caught_string, ", ")]. [addendum]")
 			target.client.cryo_warned = world.time
 
 	if(!istype(target) || !can_interact(user) || !target.Adjacent(user) || !ismob(target) || isanimal(target) || !istype(user.loc, /turf) || target.buckled)

@@ -410,7 +410,7 @@
 	var/datum/ai_movement/hybrid/mover = SSai_movement.movement_types[/datum/ai_movement/hybrid]
 	mover.start_moving_towards(controller, prey, 1)
 	TEST_ASSERT_NOTNULL(SSmove_manager.processing_on(pawn, SSai_movement), "Sanity: an active chase must have a move loop")
-	TEST_ASSERT_EQUAL(mover.moving_controllers[controller], prey, "Sanity: the mover must track the chase target")
+	TEST_ASSERT(mover.is_moving_towards(controller, prey), "Sanity: the mover must track the chase target")
 
 	//Игрок берёт моба: контроллер уходит в OFF (как в on_sentience_gained). Запланированного
 	//движ-поведения нет, поэтому CancelActions() луп не тронет - его обязан снять сам переход.
@@ -515,6 +515,10 @@
 	TEST_ASSERT(blocker.density, "Sanity: the blocking mob must be dense")
 	loop.movement_path = list(blocker_turf)
 
+	//первый упор - ждём шаг, как прямой режим: в толчее союзник обычно уходит сам
+	mover.post_move_jps(loop, FALSE)
+	TEST_ASSERT_NULL(loop.avoid, "The first mob-blocked step must wait instead of rerouting")
+	TEST_ASSERT_EQUAL(length(loop.movement_path), 1, "Waiting for the ally must keep the route")
 	mover.post_move_jps(loop, FALSE)
 	TEST_ASSERT_EQUAL(loop.avoid, blocker_turf, "A mob-blocked next step must become the temporary JPS avoidance turf")
 

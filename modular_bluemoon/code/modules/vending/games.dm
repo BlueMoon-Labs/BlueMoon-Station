@@ -45,6 +45,8 @@
 			"products" = list(
 				/obj/item/camera = 3,
 				/obj/item/camera_film = 5,
+				/obj/item/broadcast_camera = 3, // BLUEMOON FINK ADD
+				/obj/item/radio/microphone = 3, // BLUEMOON FINK ADD
 				/obj/item/toy/crayon/spraycan = 6,
 				/obj/item/clothing/neck/link_scryer/loaded = 6,
 				/obj/item/cardpack/series_one = 100,
@@ -98,6 +100,7 @@
 		/obj/item/disk/holodisk = 5,
 		/obj/item/melee/skateboard/pro = 3,
 		/obj/item/melee/skateboard/hoverboard = 1,
+		/obj/item/melee/skateboard/hoverboard/flying_carpet = 1,
 		/obj/item/choice_beacon/box/plushie = 5,
 		/obj/item/tattoo_gun = 2,
 	)

@@ -97,7 +97,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	var/mob/current = M.current
 	if(!current)
 		// A gibbed/dusted target no longer has a body by round end. Cryo targets are
-		// rerolled by cryo_handle_objectives() before their body is deleted.
+		// rerolled (or the objective removed) by cryo_handle_objectives() before their body is deleted.
 		return TRUE
 	if(isobserver(current))
 		return TRUE
@@ -189,6 +189,10 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 				break
 
 	update_explanation_text()
+
+/// Текст цели для окна антага и заметок: цели с прогрессом пересчитывают его при показе.
+/datum/objective/proc/current_explanation()
+	return explanation_text
 
 /datum/objective/proc/update_explanation_text()
 	if(team_explanation_text && LAZYLEN(get_owners()) > 1)
@@ -1611,6 +1615,8 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 			return TRUE
 	// 2) Перма-бриг: шкафчик генпоп оформлен на имя цели
 	for(var/obj/structure/closet/secure_closet/genpop/genpop_locker in world)
+		if(QDELETED(genpop_locker))
+			continue
 		if(genpop_locker.locked && genpop_locker.registered_id && genpop_locker.registered_id.registered_name == target_name)
 			return TRUE
 	// 3) Гулаг: цель отправлена через трудовой телепорт

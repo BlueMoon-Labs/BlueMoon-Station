@@ -24,8 +24,7 @@
 	user.now_pushing = 0
 	user.micro_move_to_target_turf(target)
 	user.sizediffStamLoss(target)
-	user.add_movespeed_modifier(/datum/movespeed_modifier/stomp, TRUE) //Full stop
-	addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, remove_movespeed_modifier), "STEPPY", TRUE), 3) //0.3 seconds
+	user.apply_stomp_slowdown(3) //Full stop, 0.3 seconds
 	if(iscarbon(user))
 		if(istype(user) && user.dna.features["taur"] == "Naga" || user.dna.features["taur"] == "Tentacle")
 			target.visible_message("<span class='danger'>[user] carefully rolls their tail over [target]!</span>", "<span class='danger'>[user]'s huge tail rolls over you!</span>")
@@ -48,8 +47,7 @@
 	user.sizediffStamLoss(target)
 	user.sizediffBruteloss(target)
 	playsound(user.loc, 'sound/misc/splort.ogg', 50, 1)
-	user.add_movespeed_modifier(/datum/movespeed_modifier/stomp, TRUE)
-	addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, remove_movespeed_modifier), "STEPPY", TRUE), 3) //0.3 second
+	user.apply_stomp_slowdown(3)
 	if(iscarbon(user))
 		if(HAS_TRAIT(user, TRAIT_NAGA_ANATOMY) || (istype(user) && (user.dna.features["taur"] == "Naga" || user.dna.features["taur"] == "Tentacle")))
 			target.visible_message(span_danger("[user] придавливает [target] хвостом!"), span_userdanger("[user] безжалостно придавливает вас хвостом!"))
@@ -98,6 +96,10 @@
 
 	if(user.mob_weight < MOB_WEIGHT_NORMAL && get_size(user) > 1 && get_size(target) > 0.6) //Лёгкие большие персонажи не могут навредить кому-либо больше 60
 		to_chat(user, span_warning("Я вешу слишком мало, чтобы наступить на [target]!"))
+		return FALSE
+
+	if(user.is_weightless_over(target))
+		to_chat(user, span_warning("Без опоры под ногами мне не раздавить [target]!"))
 		return FALSE
 
 	if(target.mind?.martial_art?.id && target.mind.martial_art.can_use(target)) // нельзя давить тех, кто обучен и может применять боевые искусства

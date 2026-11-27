@@ -63,6 +63,7 @@
 	var/unread_messages = 0
 	/// Whether messages from this user are blocked
 	var/blocked = FALSE
+	var/photo_attachment
 
 /datum/pda_chat/New(datum/computer_file/program/messenger/recipient)
 	src.recipient = WEAKREF(recipient)

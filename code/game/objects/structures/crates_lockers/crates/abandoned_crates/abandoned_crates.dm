@@ -13,6 +13,7 @@
 	var/code_length = 4
 	var/qdel_on_open = FALSE
 	var/spawned_loot = FALSE
+	var/open_once = FALSE
 	tamperproof = 90
 	interaction_flags_atom = INTERACT_ATOM_ATTACK_HAND
 
@@ -204,12 +205,11 @@
 
 /obj/structure/closet/crate/secure/loot/togglelock(mob/user, silent = FALSE)
 	if(!locked)
+		if(open_once)
+			return
 		. = ..() //Run the normal code.
-		if(locked) //Double check if the crate actually locked itself when the normal code ran.
-			//reset the anti-tampering, number of attempts and last attempt when the lock is re-enabled.
-			tamperproof = initial(tamperproof)
-			attempts = initial(attempts)
-			previous_attempts = list()
+		if(locked) // насрали
+			tamperproof = 0
 		return
 	if(tamperproof)
 		return
@@ -223,6 +223,7 @@
 
 /obj/structure/closet/crate/secure/loot/after_open(mob/living/user, force)
 	. = ..()
+	open_once = TRUE
 	if(qdel_on_open)
 		qdel(src)
 

@@ -16,7 +16,7 @@ export const ExosuitControlConsole = (props) => {
       <Window.Content overflow="auto">
         {mechs.length === 0 && (
           <NoticeBox>
-            No exosuits detected
+            Экзокостюмы не обнаружены
           </NoticeBox>
         )}
         {mechs.map(mech => (
@@ -27,7 +27,7 @@ export const ExosuitControlConsole = (props) => {
               <>
                 <Button
                   icon="envelope"
-                  content="Message"
+                  content="Сообщение"
                   disabled={!mech.pilot}
                   onClick={() => act('send_message', {
                     tracker_ref: mech.tracker_ref,
@@ -35,8 +35,8 @@ export const ExosuitControlConsole = (props) => {
                 <Button
                   icon="wifi"
                   content={mech.emp_recharging
-                    ? 'Recharging...'
-                    : 'EMP Burst'}
+                    ? 'Перезарядка...'
+                    : 'ЭМИ-импульс'}
                   color="bad"
                   disabled={mech.emp_recharging}
                   onClick={() => act('shock', {
@@ -45,7 +45,7 @@ export const ExosuitControlConsole = (props) => {
               </>
             )}>
             <LabeledList>
-              <LabeledList.Item label="Integrity">
+              <LabeledList.Item label="Целостность">
                 <Box
                   color={(
                     mech.integrity <= 30 && 'bad'
@@ -55,7 +55,7 @@ export const ExosuitControlConsole = (props) => {
                   {mech.integrity}%
                 </Box>
               </LabeledList.Item>
-              <LabeledList.Item label="Charge">
+              <LabeledList.Item label="Заряд">
                 <Box
                   color={(
                     mech.charge <= 30 && 'bad'
@@ -64,17 +64,17 @@ export const ExosuitControlConsole = (props) => {
                   )}>
                   {typeof mech.charge === 'number'
                     && mech.charge + '%'
-                    || 'Not Found'}
+                    || 'Не найдено'}
                 </Box>
               </LabeledList.Item>
-              <LabeledList.Item label="Airtank">
+              <LabeledList.Item label="Баллон">
                 {typeof mech.airtank === 'number' && (
                   <AnimatedNumber
                     value={mech.airtank}
-                    format={value => toFixed(value, 2) + ' kPa'} />
-                ) || 'Not Equipped'}
+                    format={value => toFixed(value, 2) + ' кПа'} />
+                ) || 'Не установлен'}
               </LabeledList.Item>
-              <LabeledList.Item label="Pilot">
+              <LabeledList.Item label="Пилот">
                 {mech.pilot.length > 0 && (
                   mech.pilot.map(pilot => (
                     <Box
@@ -82,16 +82,16 @@ export const ExosuitControlConsole = (props) => {
                       inline>
                       {pilot}{mech.pilot.length > 1 ? '|' : ''}
                     </Box>
-                  ))) || 'None'}
+                  ))) || 'Нет'}
               </LabeledList.Item>
-              <LabeledList.Item label="Location">
-                {mech.location || 'Unknown'}
+              <LabeledList.Item label="Местоположение">
+                {mech.location || 'Неизвестно'}
               </LabeledList.Item>
-              <LabeledList.Item label="Active Equipment">
-                {mech.active_equipment || 'None'}
+              <LabeledList.Item label="Активное оборудование">
+                {mech.active_equipment || 'Нет'}
               </LabeledList.Item>
               {mech.cargo_space >= 0 && (
-                <LabeledList.Item label="Used Cargo Space">
+                <LabeledList.Item label="Использовано грузового места">
                   <Box
                     color={(
                       mech.cargo_space <= 30 && 'good'

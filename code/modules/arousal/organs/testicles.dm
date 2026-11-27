@@ -17,6 +17,9 @@
 	shape = DEF_BALLS_SHAPE
 	fluid_id = /datum/reagent/consumable/semen
 	fluid_max_volume = BALLS_VOLUME_BASE
+	/// -1 means the first access starts with a filled reservoir.
+	var/stored_fluid = -1
+	var/last_fluid_update = 0
 	masturbation_verb = "massage"
 	layer_index = TESTICLES_LAYER_INDEX
 
@@ -112,3 +115,52 @@
 		AddComponent(/datum/component/ovipositor)
 	if(D.features["balls_accessible"])
 		toggle_accessibility(TRUE)
+// BLUEMOON INTEGRITY SUITE 2026-11
+
+/obj/item/organ/genital/testicles/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	// Prevent organ-add signal handlers from accruing time spent detached.
+	if(iscarbon(M) && owner != M)
+		last_fluid_update = world.time
+	. = ..()
+
+/obj/item/organ/genital/testicles/Remove(special = FALSE)
+	if(owner)
+		update_fluid_reserve()
+	. = ..()
+	last_fluid_update = world.time
+
+/obj/item/organ/genital/testicles/proc/update_fluid_reserve()
+	if(stored_fluid < 0)
+		stored_fluid = max(0, fluid_max_volume)
+		last_fluid_update = world.time
+		return
+	var/elapsed = max(0, world.time - last_fluid_update)
+	last_fluid_update = world.time
+	if(elapsed && owner && owner.stat != DEAD && (genital_flags & GENITAL_FUID_PRODUCTION))
+		stored_fluid += max(0, fluid_rate * fluid_mult) * elapsed / (10 SECONDS)
+	stored_fluid = clamp(stored_fluid, 0, max(0, fluid_max_volume))
+
+/obj/item/organ/genital/testicles/get_fluid()
+	if(!(genital_flags & GENITAL_FUID_PRODUCTION) || !fluid_id)
+		return 0
+	update_fluid_reserve()
+	return stored_fluid
+
+/obj/item/organ/genital/testicles/get_fluid_fraction()
+	if(fluid_max_volume <= 0)
+		return 0
+	return clamp(get_fluid() / fluid_max_volume, 0, 1)
+
+/obj/item/organ/genital/testicles/proc/transfer_ejaculate(datum/reagents/destination)
+	if(!destination || !(genital_flags & GENITAL_FUID_PRODUCTION) || !fluid_id)
+		return 0
+	destination.update_total()
+	var/free = max(0, destination.maximum_volume - destination.total_volume)
+	var/available = min(get_fluid(), free)
+	if(available <= 0)
+		return 0
+	// Keep most of the reservoir for later events; never make new liquid.
+	var/amount = min(available, max(1, fluid_max_volume * rand(GENITAL_EJACULATION_MIN_PERCENT, GENITAL_EJACULATION_MAX_PERCENT) / 100))
+	stored_fluid -= amount
+	destination.add_reagent(fluid_id, amount, owner?.get_blood_data())
+	return amount

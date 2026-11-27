@@ -42,7 +42,7 @@
 
 /datum/bounty/item/silly/sunglasses
 	name = "Sunglasses"
-	description = "A famous blues duo is passing through the sector, but they've lost their shades and they can't perform. Ship new sunglasses to CentCom to rectify this."
+	description = "Знаменитый блюзовый дуэт потерял тёмные очки и не может выступать. Купленные в автомате не подойдут, а свои из лоадаута, очки квартирмейстера, бармена или найденные в техтоннелях - вполне."
 	reward = 2400
 	required_count = 2
 	wanted_types = list(/obj/item/clothing/glasses/sunglasses)
@@ -64,3 +64,4 @@
 	description = "Nanotrasen has secured a contract in a reenactment of a famous movie, but we only have lethal energy based swords. Send us some convincing replicas so we save on medical costs."
 	reward = 5200
 	required_count = 3
+	wanted_types = list(/obj/item/toy/sword)

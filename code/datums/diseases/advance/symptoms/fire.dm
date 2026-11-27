@@ -18,7 +18,7 @@ Bonus
 /datum/symptom/fire
 
 	name = "Spontaneous Combustion"
-	desc = "The virus turns fat into an extremely flammable compound, and raises the body's temperature, making the host burst into flames spontaneously."
+	desc = "Вирус превращает жир в чрезвычайно воспламеняющееся вещество и повышает температуру тела, заставляя хозяина самовозгораться."
 	stealth = -1
 	resistance = -2
 	stage_speed = -3
@@ -30,10 +30,10 @@ Bonus
 	symptom_delay_max = 75
 	var/infective = FALSE
 	threshold_desc = list(
-		"Stage Speed 4" = "Increases the intensity of the flames.",
-		"Stage Speed 8" = "Further increases flame intensity.",
-		"Transmission 8" = "Host will spread the virus through skin flakes when bursting into flame.",
-		"Stealth 4" = "The symptom remains hidden until active.",
+		"Скорость стадий 4" = "Увеличивает интенсивность пламени.",
+		"Скорость стадий 8" = "Дополнительно увеличивает интенсивность пламени.",
+		"Передача 8" = "Хозяин будет распространять вирус через чешуйки кожи при самовозгорании.",
+		"Скрытность 4" = "Симптом остаётся скрытым до активации.",
 	)
 /datum/symptom/fire/Start(datum/disease/advance/A)
 	if(!..())
@@ -54,17 +54,17 @@ Bonus
 	switch(A.stage)
 		if(3)
 			if(prob(base_message_chance) && !suppress_warning)
-				to_chat(M, "<span class='warning'>[pick("You feel hot.", "You hear a crackling noise.", "You smell smoke.")]</span>")
+				to_chat(M, "<span class='warning'>[pick("Вам жарко.", "Вы слышите потрескивание.", "Вы чувствуете запах дыма.")]</span>")
 		if(4)
 			Firestacks_stage_4(M, A)
 			M.IgniteMob()
-			to_chat(M, "<span class='userdanger'>Your skin bursts into flames!</span>")
+			to_chat(M, "<span class='userdanger'>Ваша кожа вспыхивает!</span>")
 			if(!HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
 				M.emote("scream")
 		if(5)
 			Firestacks_stage_5(M, A)
 			M.IgniteMob()
-			to_chat(M, "<span class='userdanger'>Your skin erupts into an inferno!</span>")
+			to_chat(M, "<span class='userdanger'>Ваша кожа превращается в инферно!</span>")
 			if(!HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
 				M.emote("realagony")
 
@@ -102,7 +102,7 @@ Bonus
 
 /datum/symptom/alkali
 	name = "Alkali perspiration"
-	desc = "The virus attaches to sudoriparous glands, synthesizing a chemical that bursts into flames when reacting with water, leading to self-immolation."
+	desc = "Вирус прикрепляется к потовым железам, синтезируя вещество, которое вспыхивает при контакте с водой, приводя к самовозгоранию."
 	stealth = 2
 	resistance = -2
 	stage_speed = -2
@@ -114,9 +114,9 @@ Bonus
 	symptom_delay_max = 90
 	var/chems = FALSE
 	var/explosion_power = 1
-	threshold_desc = list("Resistance 9" = "Doubles the intensity of the effect, but reduces its frequency.",
-					  "Stage Speed 8" = "Increases explosion radius when the host is wet.",
-					  "Transmission 8" = "Additionally synthesizes chlorine trifluoride and napalm inside the host.")
+	threshold_desc = list("Сопротивление 9" = "Удваивает интенсивность эффекта, но снижает его частоту.",
+					  "Скорость стадий 8" = "Увеличивает радиус взрыва, если хозяин мокрый.",
+					  "Передача 8" = "Дополнительно синтезирует трифторид хлора и напалм в организме хозяина.")
 
 /datum/symptom/alkali/Start(datum/disease/advance/A)
 	if(!..())
@@ -137,21 +137,21 @@ Bonus
 	switch(A.stage)
 		if(3)
 			if(prob(base_message_chance))
-				to_chat(M, "<span class='warning'>[pick("Your veins boil.", "You feel hot.", "You smell meat cooking.")]</span>")
+				to_chat(M, "<span class='warning'>[pick("Ваши вены кипят.", "Вам жарко.", "Вы чувствуете запах жарящегося мяса.")]</span>")
 		if(4)
 			Alkali_fire_stage_4(M, A)
 			M.IgniteMob()
-			to_chat(M, "<span class='userdanger'>Your sweat bursts into flames!</span>")
+			to_chat(M, "<span class='userdanger'>Ваш пот вспыхивает!</span>")
 			if(!HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
 				M.emote("scream")
 		if(5)
 			Alkali_fire_stage_5(M, A)
 			M.IgniteMob()
-			to_chat(M, "<span class='userdanger'>Your skin erupts into an inferno!</span>")
+			to_chat(M, "<span class='userdanger'>Ваша кожа превращается в инферно!</span>")
 			if(!HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
 				M.emote("realagony")
 			if(M.fire_stacks < 0)
-				M.visible_message("<span class='warning'>[M]'s sweat sizzles and pops on contact with water!</span>")
+				M.visible_message("<span class='warning'>Пот [M] шипит и трещит при контакте с водой!</span>")
 				explosion(get_turf(M),0,0,2 * explosion_power)
 				Alkali_fire_stage_5(M, A)
 

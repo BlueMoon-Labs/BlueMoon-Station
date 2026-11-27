@@ -24,6 +24,21 @@
 	var/prev_length = 6 //really should be renamed to prev_length
 	var/diameter = 4.38
 	var/diameter_ratio = COCK_DIAMETER_RATIO_DEF //0.25; check citadel_defines.dm
+	var/dynamic_size = FALSE
+	var/flaccid_length = COCK_SIZE_DEF
+	var/erect_length = COCK_SIZE_DEF
+	var/flaccid_width = COCK_SIZE_DEF * COCK_DIAMETER_RATIO_DEF
+	var/erect_width = COCK_SIZE_DEF * COCK_DIAMETER_RATIO_DEF
+
+/obj/item/organ/genital/penis/set_aroused_state(new_state, cause = "manual toggle")
+	var/previous_state = aroused_state
+	. = ..()
+	if(dynamic_size && aroused_state != previous_state)
+		apply_dynamic_size()
+
+/obj/item/organ/genital/penis/proc/apply_dynamic_size()
+	length = aroused_state ? erect_length : flaccid_length
+	update()
 
 /obj/item/organ/genital/penis/modify_size(modifier, min = -INFINITY, max = INFINITY)
 	var/new_value = clamp(length + modifier, max(min, min_size ? min_size : -INFINITY), min(max_length ? max_length : INFINITY, max))
@@ -59,6 +74,11 @@
 	// Раньше тут была проверка на размер яиц после увелечения члена, теперь вот так вот.
 	size = new_size
 
+	if(dynamic_size)
+		diameter = aroused_state ? erect_width : flaccid_width
+	else
+		diameter = length * diameter_ratio
+
 	if(owner)
 		if (round(length) > round(prev_length))
 			to_chat(owner, "<span class='warning'>Твой [pick(GLOB.dick_nouns)] начинает [pick("разбухать до", "расцветать до", "расширяться до", "пухнуть до", "расти с нетерпением до", "увеличиваться до")] [uppertext(round(length*get_size(owner)))]-см. Да!</b></span>")
@@ -70,6 +90,7 @@
 
 /obj/item/organ/genital/penis/update_appearance()
 	. = ..()
+	update_knotting_from_shape()
 
 	var/datum/sprite_accessory/S = GLOB.cock_shapes_list[shape]
 
@@ -144,10 +165,16 @@
 		color = SKINTONE2HEX(H.skin_tone)
 	else
 		color = "#[D.features["cock_color"]]"
-	length = D.features["cock_length"]
+	dynamic_size = !!D.features["cock_dynamic_size"]
+	flaccid_length = isnum(D.features["cock_flaccid_length"]) ? D.features["cock_flaccid_length"] : D.features["cock_length"]
+	erect_length = isnum(D.features["cock_erect_length"]) ? D.features["cock_erect_length"] : D.features["cock_length"]
+	flaccid_width = isnum(D.features["cock_flaccid_width"]) ? D.features["cock_flaccid_width"] : D.features["cock_length"] * D.features["cock_diameter_ratio"]
+	erect_width = isnum(D.features["cock_erect_width"]) ? D.features["cock_erect_width"] : D.features["cock_length"] * D.features["cock_diameter_ratio"]
+	length = dynamic_size ? (aroused_state ? erect_length : flaccid_length) : D.features["cock_length"]
 	max_length = D.features["cock_max_length"]
 	min_length = D.features["cock_min_length"]
 	diameter_ratio = D.features["cock_diameter_ratio"]
+	diameter = dynamic_size ? (aroused_state ? erect_width : flaccid_width) : length * diameter_ratio
 	shape = D.features["cock_shape"]
 	prev_length = length
 	toggle_visibility(D.features["cock_visibility"], FALSE)

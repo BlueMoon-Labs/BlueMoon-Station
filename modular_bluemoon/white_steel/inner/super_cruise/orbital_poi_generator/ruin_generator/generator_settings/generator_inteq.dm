@@ -27,15 +27,15 @@
 		/mob/living/simple_animal/hostile/inteq/ranged/smg/space/stormtrooper = 0.5,
 		/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space = 0.5,
 		/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/stormtrooper = 0.25,
-		/obj/effect/mob_spawn/human/corpse/inteq_dead = 2,
+		//WHITE-STEEL: трупов солдат интека в 4 раза меньше.
+		/obj/effect/mob_spawn/human/corpse/inteq_dead = 0.5,
 		/obj/item/storage/fancy/cigarettes/cigpack_inteq = 2,
 		/obj/item/storage/box/inteq_box = 1,
 		/obj/item/storage/box/inteq_box/inteq_clothes = 1,
-		/obj/item/documents/inteq = 0.1,
-		/obj/item/folder/inteq = 0.1,
+		/obj/item/documents/inteq = 0.05,
+		/obj/item/folder/inteq = 0.05,
 		/obj/item/clothing/under/inteq = 1,
 		/obj/item/storage/toolbox/inteq = 1,
-		/obj/item/gun/ballistic/revolver/inteq = 0.1,
 		null = 130,
 	)
 	. += get_broken_stuff()
@@ -61,7 +61,8 @@
 /datum/generator_settings/inteq/get_non_directional_walltrash()
 	return list(
 		/obj/item/radio/intercom = 1,
-		/obj/structure/sign/flag/inteq = 2,
+		//WHITE-STEEL: флагов на стенах в 2 раза меньше.
+		/obj/structure/sign/flag/inteq = 1,
 		/obj/structure/sign/poster/contraband/inteq/inteq_recruitment = 1,
 		/obj/structure/sign/poster/contraband/inteq/inteq_better_dead = 1,
 		/obj/machinery/airalarm/inteq = 2,

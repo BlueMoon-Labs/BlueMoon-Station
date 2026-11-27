@@ -30,7 +30,7 @@
 	var/datum/game_mode/dynamic/mode
 	if(istype(SSticker.mode,/datum/game_mode/dynamic))
 		mode = SSticker.mode
-	if(try_forge_assassinate_objective(T, mode))
+	if(try_forge_assassinate_objective(T, mode) || try_forge_economy_objective(T))
 		return TRUE
 	else
 		if(prob(14) && GLOB.round_type != ROUNDTYPE_DYNAMIC_LIGHT)	// BLUEMOON CHANGE - в Лайт-Динамик протекта не даём: защищать не от кого, пусть предатель занимается чем-то другим
@@ -67,7 +67,9 @@
 		else if(prob(100/3)) // cum. not counting download: 20%.
 			var/datum/objective/sabotage/sabotage_objective = new
 			sabotage_objective.owner = T.owner
-			sabotage_objective.find_target()
+			if(!sabotage_objective.find_target())
+				qdel(sabotage_objective)
+				return FALSE
 			T.add_objective(sabotage_objective)
 		else  // cum. not counting download: 40%
 			var/datum/objective/flavor/traitor/flavor_objective = new

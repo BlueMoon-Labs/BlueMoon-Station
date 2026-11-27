@@ -49,7 +49,13 @@
 		rotate()
 
 /obj/item/ammo_box/magazine/internal/cylinder/give_round(obj/item/ammo_casing/R, replace_spent = 0)
-	if(!R || (caliber && !(R.caliber in caliber)) || (!caliber && R.type != ammo_type))
+	#ifdef AMMO_DEBUG_LOGS
+	log_ammo_debug("cylinder give_round IN [src] ([src.type]) casing=[R?.type] stored=[stored_ammo.len]/[max_ammo]")
+	#endif
+	if(!caliber_compatible(R))
+		#ifdef AMMO_DEBUG_LOGS
+		log_ammo_debug("cylinder give_round REJECT [src] ([src.type]) casing=[R?.type]")
+		#endif
 		return FALSE
 
 	for(var/i in 1 to stored_ammo.len)
@@ -60,6 +66,12 @@
 
 			if(bullet)
 				bullet.forceMove(drop_location())
+			#ifdef AMMO_DEBUG_LOGS
+			log_ammo_debug("cylinder give_round OK [src] ([src.type]) casing=[R.type] slot=[i] stored=[stored_ammo.len]/[max_ammo]")
+			#endif
 			return TRUE
 
+	#ifdef AMMO_DEBUG_LOGS
+	log_ammo_debug("cylinder give_round NO_SLOT [src] ([src.type]) casing=[R.type] stored=[stored_ammo.len]/[max_ammo]")
+	#endif
 	return FALSE

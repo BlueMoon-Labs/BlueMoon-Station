@@ -269,6 +269,8 @@
 		new /obj/item/storage/box/lethalshot(src)
 	for(var/k in 1 to 9)
 		new /obj/item/kitchen/knife/combat(src)
+	new /obj/item/storage/bag/marksman(src)
+	new /obj/item/storage/bag/marksman(src)
 
 /obj/structure/closet/secure_closet/labor_camp_security
 	name = "labor camp security locker"

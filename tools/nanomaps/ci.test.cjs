@@ -5,7 +5,8 @@ const { spawnSync } = require('node:child_process');
 const { test } = require('node:test');
 const { pathToFileURL } = require('node:url');
 const { crc32, inflateSync } = require('node:zlib');
-const { selectCompatibleRenderer } = require('./renderer.cjs');
+const crypto = require('node:crypto');
+const { DownloadError, download, selectCompatibleRenderer } = require('./renderer.cjs');
 
 const root = path.resolve(__dirname, '../..');
 const manifest = 'code/modules/asset_cache/assets/nanomaps.dm';
@@ -54,7 +55,7 @@ function fixture(t) {
     Juke.chdir('.', import.meta.url);
     Juke.setup({ file: import.meta.url }).then(code => process.exit(code));
   `);
-  const run = () => {
+  const run = (expectedStatus = 0) => {
     const result = spawnSync(process.execPath, ['build.mjs', 'nanomaps'], {
       cwd: directory,
       encoding: 'utf8',
@@ -62,7 +63,8 @@ function fixture(t) {
       env: { ...process.env, PATH: `${path.dirname(process.execPath)}${path.delimiter}${process.env.PATH || ''}` },
     });
     assert.equal(result.error, undefined);
-    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.equal(result.status, expectedStatus, result.stdout + result.stderr);
+    return result;
   };
   const renders = () => fs.readFileSync(path.join(directory, 'renders.txt'), 'utf8').split('render').length - 1;
   const change = name => {
@@ -271,4 +273,131 @@ test('ошибка самой локальной сборки передаётс
     platform: 'linux', run: () => { throw new Error('GLIBC_2.39 not found'); },
     build: async () => { throw error; },
   }), candidate => candidate === error);
+});
+
+test('успешная загрузка не повторяется', async t => {
+  const f = fixture(t);
+  const data = Buffer.from('renderer');
+  const checksum = crypto.createHash('sha256').update(data).digest('hex');
+  const fetch = t.mock.method(globalThis, 'fetch', async () => new Response(data));
+  const file = path.join(f.directory, 'download');
+  await download('https://nanomaps.invalid/renderer', file, checksum);
+  assert.equal(fetch.mock.callCount(), 1);
+  assert.deepEqual(fs.readFileSync(file), data);
+});
+
+test('после ошибок сети, чтения тела и HTTP выполняется по одному повтору в секунду', async t => {
+  const f = fixture(t);
+  const data = Buffer.from('renderer');
+  const checksum = crypto.createHash('sha256').update(data).digest('hex');
+  const started = [];
+  t.mock.method(globalThis, 'fetch', async () => {
+    started.push(performance.now());
+    if (started.length === 1) throw new TypeError('fetch failed');
+    if (started.length === 2) return { ok: true, arrayBuffer: async () => { throw new Error('Body interrupted'); } };
+    if (started.length === 3) return new Response('unavailable', { status: 503 });
+    return new Response(data);
+  });
+  const errors = t.mock.method(console, 'error', () => {});
+  const file = path.join(f.directory, 'download');
+  await download('https://nanomaps.invalid/renderer', file, checksum);
+  assert.equal(started.length, 4);
+  for (let i = 1; i < started.length; i++) assert.ok(started[i] - started[i - 1] >= 950);
+  assert.deepEqual(fs.readFileSync(file), data);
+  assert.equal(errors.mock.callCount(), 0);
+});
+
+test('полный отказ загрузки выводит URL и исходную причину', async t => {
+  const f = fixture(t);
+  const cause = new Error('Connection reset');
+  const failure = new TypeError('fetch failed', { cause });
+  const url = 'https://nanomaps.invalid/renderer';
+  const fetch = t.mock.method(globalThis, 'fetch', async () => { throw failure; });
+  const errors = t.mock.method(console, 'error', () => {});
+  const file = path.join(f.directory, 'download');
+  await assert.rejects(download(url, file, 'unused'), error => error instanceof DownloadError && error.cause === failure);
+  assert.equal(fetch.mock.callCount(), 4);
+  assert.ok(errors.mock.calls.some(call => call.arguments.some(argument => typeof argument === 'string' && argument.includes(url))));
+  assert.ok(errors.mock.calls.some(call => call.arguments.includes(cause)));
+  assert.ok(!fs.existsSync(file));
+});
+
+test('при отказе загрузки используется сохранённый файл с правильной SHA-256', async t => {
+  const f = fixture(t);
+  const data = Buffer.from('cached patch');
+  const checksum = crypto.createHash('sha256').update(data).digest('hex');
+  const file = path.join(f.directory, 'download');
+  fs.writeFileSync(file, data);
+  const past = new Date(Date.now() - 60000);
+  fs.utimesSync(file, past, past);
+  t.mock.method(globalThis, 'fetch', async () => { throw new TypeError('fetch failed'); });
+  t.mock.method(console, 'error', () => {});
+  t.mock.method(console, 'warn', () => {});
+  await download('https://nanomaps.invalid/patch', file, checksum);
+  assert.deepEqual(fs.readFileSync(file), data);
+  assert.equal(fs.statSync(file).mtimeMs, past.getTime());
+});
+
+test('неверная SHA-256 скачанного и сохранённого файла не позволяет продолжить сборку', async t => {
+  const f = fixture(t);
+  const file = path.join(f.directory, 'download');
+  fs.writeFileSync(file, 'old invalid file');
+  const fetch = t.mock.method(globalThis, 'fetch', async () => new Response('new invalid file'));
+  t.mock.method(console, 'error', () => {});
+  await assert.rejects(download('https://nanomaps.invalid/patch', file, 'unused'), DownloadError);
+  assert.equal(fetch.mock.callCount(), 4);
+  assert.equal(fs.readFileSync(file, 'utf8'), 'old invalid file');
+});
+
+function offlineFixture(t, error = 'new DownloadError("https://nanomaps.invalid/renderer", new Error("fetch failed"))') {
+  const f = fixture(t);
+  f.run();
+  const renderer = path.join(root, 'tools/nanomaps/renderer.cjs');
+  fs.writeFileSync(path.join(f.directory, 'tools/nanomaps/renderer.cjs'), `
+    const { DownloadError } = require(${JSON.stringify(renderer)});
+    module.exports = { DownloadError, ensureRenderer: async () => { throw ${error}; } };
+  `);
+  const file = path.join(f.directory, 'tools/nanomaps/render.cjs');
+  const original = fs.readFileSync(file, 'utf8');
+  fs.copyFileSync(path.join(root, 'tools/nanomaps/render.cjs'), file);
+  // Используем настоящий PNG: фиктивные изображения обычных тестов зависимостей не подходят.
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64');
+  fs.writeFileSync(path.join(f.directory, image), png);
+  fs.writeFileSync(path.join(f.directory, secondImage), png);
+  return { ...f, file, original, marker: path.join(f.directory, 'data/nanomaps-offline') };
+}
+
+test('без сети сборка использует все сохранённые PNG и повторяет обновление до восстановления', t => {
+  const f = offlineFixture(t);
+  const before = fs.readFileSync(path.join(f.directory, image));
+  const manifestBefore = fs.readFileSync(path.join(f.directory, manifest));
+  assert.match(f.run().stderr, /используются сохранённые PNG/);
+  assert.ok(fs.existsSync(f.marker));
+  assert.match(f.run().stderr, /используются сохранённые PNG/);
+  assert.deepEqual(fs.readFileSync(path.join(f.directory, image)), before);
+  assert.deepEqual(fs.readFileSync(path.join(f.directory, manifest)), manifestBefore);
+  fs.writeFileSync(f.file, f.original + '\nfs.rmSync("data/nanomaps-offline", { force: true });\n');
+  f.run();
+  assert.ok(!fs.existsSync(f.marker));
+  assert.equal(f.renders(), 2);
+  f.run();
+  assert.equal(f.renders(), 2);
+});
+
+for (const damage of ['missing', 'empty', 'invalid', 'truncated']) {
+  test(`без сети неполный или повреждённый комплект PNG не используется: ${damage}`, t => {
+    const f = offlineFixture(t);
+    const file = path.join(f.directory, secondImage);
+    if (damage === 'missing') fs.unlinkSync(file);
+    else if (damage === 'truncated') fs.truncateSync(file, 24);
+    else fs.writeFileSync(file, damage === 'empty' ? '' : 'invalid PNG');
+    f.run(1);
+    assert.ok(!fs.existsSync(f.marker));
+  });
+}
+
+test('посторонняя ошибка рендерера не скрывается сохранёнными PNG', t => {
+  const f = offlineFixture(t, 'new Error("Permission denied")');
+  assert.match(f.run(1).stderr, /Permission denied/);
+  assert.ok(!fs.existsSync(f.marker));
 });

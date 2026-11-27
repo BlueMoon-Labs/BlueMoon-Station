@@ -733,7 +733,8 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 	to_chat(owner, "<span class='warning'>You are no longer able to shunt your core to APCs.</span>")
 	adjust_uses(-1)
 
-/mob/living/silicon/ai/proc/remove_transformer_image(client/C, image/I, turf/T)
+/mob/living/silicon/ai/proc/remove_transformer_image(datum/weakref/client_ref, image/I, turf/T)
+	var/client/C = client_ref?.resolve()
 	if(C && I.loc == T)
 		C.images -= I
 
@@ -760,7 +761,7 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 		I.loc = T
 		client.images += I
 		I.icon_state = "[success ? "green" : "red"]Overlay" //greenOverlay and redOverlay for success and failure respectively
-		addtimer(CALLBACK(src, PROC_REF(remove_transformer_image), client, I, T), 30)
+		addtimer(CALLBACK(src, PROC_REF(remove_transformer_image), WEAKREF(client), I, T), 30)
 	if(!success)
 		to_chat(src, "<span class='warning'>[alert_msg]</span>")
 	return success

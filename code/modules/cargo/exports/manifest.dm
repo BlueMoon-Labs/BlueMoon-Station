@@ -2,7 +2,6 @@
 // +200 credits flat.
 /datum/export/manifest_correct
 	cost = 200
-	k_elasticity = 0
 	unit_name = "approved manifest"
 	export_types = list(/obj/item/paper/fluff/jobs/cargo/manifest)
 
@@ -16,10 +15,9 @@
 	return FALSE
 
 // Correctly denied manifest.
-// Refunds the package cost minus the cost of crate.
+// Refunds what cargo paid for the package minus the cost of crate, but never less than an approved manifest.
 /datum/export/manifest_error_denied
 	cost = -500
-	k_elasticity = 0
 	unit_name = "correctly denied manifest"
 	export_types = list(/obj/item/paper/fluff/jobs/cargo/manifest)
 
@@ -34,7 +32,7 @@
 
 /datum/export/manifest_error_denied/get_cost(obj/O)
 	var/obj/item/paper/fluff/jobs/cargo/manifest/M = O
-	return ..() + M.order_cost
+	return max(..() + M.order_cost, /datum/export/manifest_correct::cost)
 
 
 // Erroneously approved manifest.
@@ -58,9 +56,9 @@
 
 
 // Erroneously denied manifest.
-// Substracts the package cost minus the cost of crate.
+// Never pays: a denied correct order is not worth a refund.
 /datum/export/manifest_correct_denied
-	cost = 500
+	cost = -500
 	unit_name = "erroneously denied manifest"
 	export_types = list(/obj/item/paper/fluff/jobs/cargo/manifest)
 

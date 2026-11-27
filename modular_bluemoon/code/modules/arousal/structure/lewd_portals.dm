@@ -28,7 +28,7 @@
 /proc/is_lewd_portal_relay_interaction(mob/user, mob/target)
 	if(!istype(user) || !istype(target))
 		return FALSE
-	for(var/obj/lewd_portal_relay/R in range(1, user))
+	for(var/obj/lewd_portal_relay/R in range(1, get_interaction_anchor(user)))
 		if(R.owner == target)
 			return TRUE
 	return FALSE

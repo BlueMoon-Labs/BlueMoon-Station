@@ -1,6 +1,7 @@
 
 /obj/item/camera/siliconcam
 	name = "silicon photo camera"
+	can_customise = FALSE
 	var/in_camera_mode = FALSE
 	var/list/datum/picture/stored = list()
 
@@ -16,27 +17,27 @@
 
 /obj/item/camera/siliconcam/proc/camera_mode_off(mob/user)
 	in_camera_mode = FALSE
-	to_chat(user, "<B>Camera Mode deactivated</B>")
+	to_chat(user, span_boldnotice("Режим съёмки выключен."))
 
 /obj/item/camera/siliconcam/proc/camera_mode_on(mob/user)
 	in_camera_mode = TRUE
-	to_chat(user, "<B>Camera Mode activated</B>")
+	to_chat(user, span_boldnotice("Режим съёмки включён."))
 
 /obj/item/camera/siliconcam/proc/selectpicture(mob/user)
-	var/list/nametemp = list()
-	var/find
-	if(!stored.len)
-		to_chat(usr, "<span class='boldannounce'>No images saved</span>")
+	if(!user.client)
 		return
-	var/list/temp = list()
-	for(var/i in stored)
-		var/datum/picture/p = i
-		nametemp += p.picture_name
-		temp[p.picture_name] = p
-	find = input(user, "Select image") in nametemp|null
-	if(!find)
+	if(!length(stored))
+		to_chat(user, span_boldannounce("Нет сохранённых снимков."))
 		return
-	return temp[find]
+	var/list/photos_by_label = list()
+	var/list/used_labels = list()
+	for(var/datum/picture/photo as anything in stored)
+		var/label = avoid_assoc_duplicate_keys(html_decode(photo.picture_name) || "Снимок", used_labels)
+		photos_by_label[label] = photo
+	var/selected_label = tgui_input_list(user, "Выберите снимок.", "Сохранённые снимки", photos_by_label)
+	if(QDELETED(src) || !user.client || isnull(selected_label))
+		return
+	return photos_by_label[selected_label]
 
 /obj/item/camera/siliconcam/proc/viewpictures(mob/user)
 	var/datum/picture/selection = selectpicture(user)
@@ -47,7 +48,7 @@
 	var/number = stored.len
 	picture.picture_name = "Image [number] (taken by [loc.name])"
 	stored[picture] = TRUE
-	to_chat(usr, "<span class='unconscious'>Image recorded</span>")
+	to_chat(user, span_unconscious("Снимок сохранён."))
 
 /obj/item/camera/siliconcam/robot_camera
 	name = "Cyborg photo camera"
@@ -59,12 +60,12 @@
 		var/number = C.connected_ai.aicamera.stored.len
 		picture.picture_name = "Image [number] (taken by [loc.name])"
 		C.connected_ai.aicamera.stored[picture] = TRUE
-		to_chat(usr, "<span class='unconscious'>Image recorded and saved to remote database</span>")
+		to_chat(user, span_unconscious("Снимок сохранён в удалённой базе данных."))
 	else
 		var/number = stored.len
 		picture.picture_name = "Image [number] (taken by [loc.name])"
 		stored[picture] = TRUE
-		to_chat(usr, "<span class='unconscious'>Image recorded and saved to local storage. Upload will happen automatically if unit is lawsynced.</span>")
+		to_chat(user, span_unconscious("Снимок сохранён в локальной памяти. Он автоматически загрузится в базу данных при синхронизации законов с ИИ."))
 
 /obj/item/camera/siliconcam/robot_camera/selectpicture(mob/user)
 	var/mob/living/silicon/robot/R = loc
@@ -85,15 +86,17 @@
 /obj/item/camera/siliconcam/robot_camera/proc/borgprint(mob/user)
 	var/mob/living/silicon/robot/C = loc
 	if(!istype(C) || C.toner < 20)
-		to_chat(user, "<span class='warning'>Insufficent toner to print image.</span>")
+		to_chat(user, span_warning("Недостаточно тонера для печати снимка."))
 		return
 	var/datum/picture/selection = selectpicture(user)
-	if(!istype(selection))
-		to_chat(user, "<span class='warning'>Invalid Image.</span>")
+	if(!istype(selection) || QDELETED(src) || QDELETED(C) || loc != C || C.stat == DEAD)
+		return
+	if(C.toner < 20)
+		to_chat(user, span_warning("Недостаточно тонера для печати снимка."))
 		return
 	var/obj/item/photo/p = new /obj/item/photo(C.loc, selection)
 	p.pixel_x = rand(-10, 10)
 	p.pixel_y = rand(-10, 10)
 	C.toner -= printcost	 //All fun allowed.
-	visible_message("[C.name] spits out a photograph from a narrow slot on its chassis.")
-	to_chat(usr, "<span class='notice'>You print a photograph.</span>")
+	visible_message("Из узкой щели на корпусе [C.name] выезжает фотография.")
+	to_chat(user, span_notice("Вы печатаете фотографию."))

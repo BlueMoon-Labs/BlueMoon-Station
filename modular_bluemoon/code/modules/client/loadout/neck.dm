@@ -1,35 +1,43 @@
 /datum/gear/neck/cross
 	name = "Christian Cross Necklace"
+	description = "Аминь."
 	subcategory = LOADOUT_SUBCATEGORY_NECK_TIE
 	path = /obj/item/clothing/neck/tie/cross
 
 /datum/gear/neck/bandagewraps
 	name = "Bandage wraps"
+	description = "Бедный солдат. Возьми аптечку."
 	subcategory = LOADOUT_SUBCATEGORY_NECK_TIE
 	path = /obj/item/clothing/neck/tie/bandagewraps
 
 /datum/gear/neck/cape_blue
 	name = "Blue Cape"
+	description = "Стильно."
 	path = /obj/item/clothing/neck/cloak/cape_blue
 
 /datum/gear/neck/armplate_blue
 	name = "Blue Armplate"
+	description = "Стильно."
 	path =/obj/item/clothing/neck/cloak/armplate_blue
 
 /datum/gear/neck/sol_cape
 	name = "SolFed Cape"
+	description = "Носят слуги Сола."
 	path = /obj/item/clothing/neck/cloak/cape
 
 /datum/gear/neck/nri_cape
 	name = "Russian Empire Cape"
+	description = "Носят слуги NRI."
 	path = /obj/item/clothing/neck/cloak/nri_cape
 
 /datum/gear/neck/chronos_cape
 	name = "New Mecca Cape"
+	description = "Плащ, пахнущий кровью кромагов, солдат Новой Мекки, а также шлюх из лимузина."
 	path = /obj/item/clothing/neck/cloak/chronos
 
 /datum/gear/neck/poly_cape
 	name = "polychromic cape"
+	description = "Накидка, которую можно носить на шее."
 	path = /obj/item/clothing/neck/cloak/poly_cape
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#0d8dc0", "#ffffff", "#ffe600")
@@ -37,11 +45,13 @@
 
 /datum/gear/neck/windy_scarf
 	name = "A windy scarf"
+	description = "Здесь вроде бы не ветрено, но шарф всё равно извивается, словно змея."
 	path = /obj/item/clothing/neck/bm/windy_scarf
 	loadout_initial_colors = list("#AF3D3D")
 
 /datum/gear/neck/scarf/cow
 	name = "Holly's Scarf"
+	description = "Стильный шарф."
 	path = /obj/item/clothing/neck/scarf/cow
 
 /datum/gear/neck/scarf/christmas

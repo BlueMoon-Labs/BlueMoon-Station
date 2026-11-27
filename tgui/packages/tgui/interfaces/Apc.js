@@ -18,40 +18,40 @@ export const Apc = (props) => {
 const powerStatusMap = {
   2: {
     color: 'good',
-    externalPowerText: 'External Power',
-    chargingText: 'Fully Charged',
+    externalPowerText: 'Внешнее питание',
+    chargingText: 'Полностью заряжен',
   },
   1: {
     color: 'average',
-    externalPowerText: 'Low External Power',
-    chargingText: 'Charging',
+    externalPowerText: 'Низкое внешнее питание',
+    chargingText: 'Заряжается',
   },
   0: {
     color: 'bad',
-    externalPowerText: 'No External Power',
-    chargingText: 'Not Charging',
+    externalPowerText: 'Нет внешнего питания',
+    chargingText: 'Не заряжается',
   },
 };
 
 const malfMap = {
   1: {
     icon: 'terminal',
-    content: 'Override Programming',
+    content: 'Перехват управления',
     action: 'hack',
   },
   2: {
     icon: 'caret-square-down',
-    content: 'Shunt Core Process',
+    content: 'Перенаправить процесс ядра',
     action: 'occupy',
   },
   3: {
     icon: 'caret-square-left',
-    content: 'Return to Main Core',
+    content: 'Вернуться в главное ядро',
     action: 'deoccupy',
   },
   4: {
     icon: 'caret-square-down',
-    content: 'Shunt Core Process',
+    content: 'Перенаправить процесс ядра',
     action: 'occupy',
   },
 };
@@ -69,50 +69,57 @@ const ApcContent = (props) => {
   if (data.failTime > 0) {
     return (
       <NoticeBox>
-        <b><h3>SYSTEM FAILURE</h3></b>
+        <b><h3>СИСТЕМНЫЙ СБОЙ</h3></b>
         <i>
-          I/O regulators malfunction detected!
-          Waiting for system reboot...
+          Обнаружен сбой регуляторов ввода/вывода!
+          Ожидание перезагрузки системы...
         </i>
         <br />
-        Automatic reboot in {data.failTime} seconds...
+        Автоматическая перезагрузка через {data.failTime} сек...
         <Button
           icon="sync"
-          content="Reboot Now"
+          content="Перезагрузить"
           onClick={() => act('reboot')} />
       </NoticeBox>
     );
   }
   return (
     <>
-      <InterfaceLockNoticeBox />
-      <Section title="Power Status">
+      <InterfaceLockNoticeBox
+        lockLabel="Блокировка интерфейса:"
+        lockedText="Заблокирован"
+        unlockedText="Разблокирован"
+        swipeText={`Приложите карту доступа, чтобы ${
+          locked ? 'разблокировать' : 'заблокировать'
+        } интерфейс.`}
+      />
+      <Section title="Состояние питания">
         <LabeledList>
           <LabeledList.Item
-            label="Main Breaker"
+            label="Главный выключатель"
             color={externalPowerStatus.color}
             buttons={(
               <Button
                 icon={data.isOperating ? 'power-off' : 'times'}
-                content={data.isOperating ? 'On' : 'Off'}
+                content={data.isOperating ? 'Вкл' : 'Выкл'}
                 selected={data.isOperating && !locked}
                 disabled={locked}
                 onClick={() => act('breaker')} />
             )}>
             [ {externalPowerStatus.externalPowerText} ]
           </LabeledList.Item>
-          <LabeledList.Item label="Power Cell">
+          <LabeledList.Item label="Аккумулятор">
             <ProgressBar
               color="good"
               value={adjustedCellChange} />
           </LabeledList.Item>
           <LabeledList.Item
-            label="Charge Mode"
+            label="Режим зарядки"
             color={chargingStatus.color}
             buttons={(
               <Button
                 icon={data.chargeMode ? 'sync' : 'times'}
-                content={data.chargeMode ? 'Auto' : 'Off'}
+                content={data.chargeMode ? 'Авто' : 'Выкл'}
                 disabled={locked}
                 onClick={() => act('charge')} />
             )}>
@@ -120,7 +127,7 @@ const ApcContent = (props) => {
           </LabeledList.Item>
         </LabeledList>
       </Section>
-      <Section title="Power Channels">
+      <Section title="Каналы питания">
         <LabeledList>
           {channelArray.map(channel => {
             const { topicParams } = channel;
@@ -132,11 +139,11 @@ const ApcContent = (props) => {
                   <>
                     <Box inline mx={2}
                       color={channel.status >= 2 ? 'good' : 'bad'}>
-                      {channel.status >= 2 ? 'On' : 'Off'}
+                      {channel.status >= 2 ? 'Вкл' : 'Выкл'}
                     </Box>
                     <Button
                       icon="sync"
-                      content="Auto"
+                      content="Авто"
                       selected={!locked && (
                         channel.status === 1 || channel.status === 3
                       )}
@@ -144,13 +151,13 @@ const ApcContent = (props) => {
                       onClick={() => act('channel', topicParams.auto)} />
                     <Button
                       icon="power-off"
-                      content="On"
+                      content="Вкл"
                       selected={!locked && channel.status === 2}
                       disabled={locked}
                       onClick={() => act('channel', topicParams.on)} />
                     <Button
                       icon="times"
-                      content="Off"
+                      content="Выкл"
                       selected={!locked && channel.status === 0}
                       disabled={locked}
                       onClick={() => act('channel', topicParams.off)} />
@@ -160,13 +167,13 @@ const ApcContent = (props) => {
               </LabeledList.Item>
             );
           })}
-          <LabeledList.Item label="Total Load">
+          <LabeledList.Item label="Общая нагрузка">
             <b>{data.totalLoad}</b>
           </LabeledList.Item>
         </LabeledList>
       </Section>
       <Section
-        title="Misc"
+        title="Прочее"
         buttons={!!data.siliconUser && (
           <>
             {!!data.malfStatus && (
@@ -178,56 +185,56 @@ const ApcContent = (props) => {
             )}
             <Button
               icon="lightbulb-o"
-              content="Overload"
+              content="Перегрузка"
               onClick={() => act('overload')} />
           </>
         )}>
         <LabeledList>
           <LabeledList.Item
-            label="Cover Lock"
+            label="Блокировка крышки"
             buttons={(
               <Button
                 icon={data.coverLocked ? 'lock' : 'unlock'}
-                content={data.coverLocked ? 'Engaged' : 'Disengaged'}
+                content={data.coverLocked ? 'Заблокирована' : 'Разблокирована'}
                 disabled={locked}
                 onClick={() => act('cover')} />
             )} />
           <LabeledList.Item
-            label="Emergency Lighting"
+            label="Аварийное освещение"
             buttons={(
               <Button
                 icon="lightbulb-o"
-                content={data.emergencyLights ? 'Enabled' : 'Disabled'}
+                content={data.emergencyLights ? 'Включено' : 'Отключено'}
                 disabled={locked}
                 onClick={() => act('emergency_lighting')} />
             )} />
           <LabeledList.Item
-            label="Night Shift Lighting"
+            label="Ночное освещение"
             buttons={(
               <Button
                 icon="lightbulb-o"
-                content={data.nightshiftLights ? 'Enabled' : 'Disabled'}
+                content={data.nightshiftLights ? 'Включено' : 'Отключено'}
                 onClick={() => act('toggle_nightshift')} />
             )} />
           {data.hijackable === 1 && (
             <LabeledList.Item
-              title="Hijacking"
+              title="Захват"
               buttons={(
                 <>
                   <Button
                     icon="unlock"
-                    content="Hijack"
+                    content="Захватить"
                     disabled={data.hijacker}
                     onClick={() => act('hijack')} />
                   <Button
                     icon="lock"
-                    content="Lockdown"
-                    isabled={!data.lockdownavail && data.hijacked === 1}
+                    content="Локаут"
+                    disabled={!data.lockdownavail || !data.hijacker}
                     onClick={() => act('lockdown')} />
                   <Button
                     icon="lightbulb-o"
-                    content="Drain"
-                    disabled={!data.drainavail && data.hijacked === 1}
+                    content="Слить заряд"
+                    disabled={!data.drainavail || !data.hijacker}
                     onClick={() => act('drain')} />
                 </>
               )} />

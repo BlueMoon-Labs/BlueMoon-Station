@@ -95,7 +95,9 @@
 	. = ..()
 	if(.)
 		var/damage = .
-		return attack_threshold_check(damage, M.melee_damage_type)
+		var/damage_applied = attack_threshold_check(damage, M.melee_damage_type)
+		// Иммунитет к стамине не отменяет ожог и опрокидывание от незаблокированного удара свармера.
+		return isswarmer(M) ? damage : damage_applied
 
 /mob/living/simple_animal/attack_slime(mob/living/simple_animal/slime/M)
 	. = ..()
@@ -128,7 +130,13 @@
 	if(!Proj)
 		return
 	SEND_SIGNAL(src, COMSIG_ATOM_BULLET_ACT, Proj, def_zone)
-	apply_damage(Proj.damage * Proj.simple_mob_damage_multiplier, Proj.damage_type, 0, piercing_hit)
+	var/blocked = piercing_hit
+	if(simple_mob_flags & SIMPLE_MOB_PROJECTILE_ARMOR)
+		blocked = max(blocked, run_armor_check(def_zone, Proj.flag, armour_penetration = Proj.armour_penetration, silent = TRUE))
+	var/damage = Proj.damage
+	if(!client) // активный игрок отсутствует: mind может остаться после SSD, но тело уже не управляется
+		damage = damage * Proj.simple_mob_damage_multiplier + Proj.simple_mob_no_mind_damage_bonus
+	apply_damage(damage, Proj.damage_type, 0, blocked)
 	Proj.on_hit(src)
 	return BULLET_ACT_HIT
 

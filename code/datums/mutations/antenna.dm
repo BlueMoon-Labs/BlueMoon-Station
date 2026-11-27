@@ -1,6 +1,6 @@
 /datum/mutation/human/antenna
 	name = "Antenna"
-	desc = "The affected person sprouts an antenna. This is known to allow them to access common radio channels passively."
+	desc = "У носителя вырастает антенна. Известно, что она позволяет пассивно получать доступ к общим радиоканалам."
 	quality = POSITIVE
 	mutator_security_level = ANTENNA_PRINT_CODE
 	text_gain_indication = "<span class='notice'>You feel an antenna sprout from your forehead.</span>"
@@ -42,7 +42,7 @@
 
 /datum/mutation/human/mindreader
 	name = "Mind Reader"
-	desc = "The affected person can look into the recent memories of others."
+	desc = "Носитель может заглядывать в недавние воспоминания других."
 	quality = POSITIVE
 	mutator_security_level = MINDREAD_PRINT_CODE
 	text_gain_indication = "<span class='notice'>You hear distant voices at the corners of your mind.</span>"

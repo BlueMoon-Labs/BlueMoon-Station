@@ -285,7 +285,7 @@
 				H.emote(pick("giggle", "laugh"))
 				SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "chemical_euphoria", /datum/mood_event/chemical_euphoria)
 		else
-			SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "chemical_euphoria")
+			owner.clear_mood_event_if_set("chemical_euphoria")
 
 	// BZ
 
@@ -462,7 +462,7 @@
 					owner.adjust_disgust(0.1 * miasma_pp)
 			breath.adjust_moles(GAS_MIASMA, -gas_breathed)
 		else
-			SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "smell")
+			owner.clear_mood_event_if_set("smell")
 
 		handle_breath_temperature(breath, H)
 	return TRUE
@@ -668,6 +668,8 @@
 	. = ..()
 	if(. & EMP_PROTECT_SELF)
 		return
+	// У базовой модели риск малого взрыва растёт с силой ЭМИ: 50% при severity 100.
+	try_basic_cybernetic_detonation(severity * 0.5)
 	if(!COOLDOWN_FINISHED(src, severe_cooldown)) //So we cant just spam emp to kill people.
 		owner.losebreath += 20
 		COOLDOWN_START(src, severe_cooldown, 30 SECONDS)

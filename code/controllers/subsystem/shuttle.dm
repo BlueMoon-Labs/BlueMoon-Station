@@ -18,6 +18,8 @@ SUBSYSTEM_DEF(shuttle)
 
 	var/list/transit_requesters = list()
 	var/list/transit_request_failures = list()
+	/// shuttle_id шаттлов, которые летают почти каждый раунд и получают транзит заранее.
+	var/list/pregenerated_transit_ids = list("arrivals", "supply", "mining", "laborcamp", "emergency")
 
 		//emergency shuttle stuff
 	var/obj/docking_port/mobile/emergency/emergency
@@ -120,6 +122,15 @@ SUBSYSTEM_DEF(shuttle)
 	for(var/s in stationary)
 		var/obj/docking_port/stationary/S = s
 		S.load_roundstart()
+		CHECK_TICK
+	pregenerate_transit_docks()
+
+/// Транзит регулярно летающих шаттлов строится при инициализации: в раунде это один неделимый кусок на 30-70 мс.
+/datum/controller/subsystem/shuttle/proc/pregenerate_transit_docks()
+	for(var/obj/docking_port/mobile/port as anything in mobile)
+		if(QDELETED(port) || port.assigned_transit || !(port.shuttle_id in pregenerated_transit_ids))
+			continue
+		generate_transit_dock(port)
 		CHECK_TICK
 
 /datum/controller/subsystem/shuttle/fire()
@@ -439,9 +450,10 @@ SUBSYSTEM_DEF(shuttle)
 		priority_announce("На станции обнаружено особо враждебное присутствие. Отлет отложен на неопределенный срок до разрешения конфликта.", null, 'sound/misc/notice1.ogg', "Priority")
 	if(!emergencyNoEscape && (emergency.mode == SHUTTLE_STRANDED))
 		emergency.mode = SHUTTLE_DOCKED
-		emergency.setTimer(emergencyDockTime)
+		var/boarding_time = EMERGENCY_BOARDING_TIME(emergency)
+		emergency.setTimer(boarding_time)
 		priority_announce("Враждебное присутствие искоренено. \
-			У вас есть три минуты, чтобы взойти на борт шаттла.",
+			Время на посадку: [DisplayTimeText(boarding_time)].",
 			null, "shuttledock", "Priority")
 #endif
 
@@ -1070,7 +1082,7 @@ SUBSYSTEM_DEF(shuttle)
 					to_chat(user, span_warning("Эвакуационный шаттл не в транзите (гиперпространство)."))
 					return
 				var/obj/docking_port/mobile/emergency/eshut = M
-				var/evac_duration = emergencyEscapeTime * eshut.engine_coeff
+				var/evac_duration = EMERGENCY_RETURN_FLIGHT_TIME(eshut)
 				var/datum/shuttle_event/new_event = eshut.add_shuttle_event(event_type)
 				new_event?.start_up_event(evac_duration, TRUE)
 				message_admins("[key_name_admin(usr)] forced hyperspace event [event_type] on the evacuation shuttle.")

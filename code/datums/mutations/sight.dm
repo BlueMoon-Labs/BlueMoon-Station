@@ -1,7 +1,7 @@
 //Nearsightedness restricts your vision by several tiles.
 /datum/mutation/human/nearsight
 	name = "Near Sightness"
-	desc = "The holder of this mutation has poor eyesight."
+	desc = "Носитель этой мутации плохо видит."
 	quality = MINOR_NEGATIVE
 	text_gain_indication = "<span class='danger'>You can't see very well.</span>"
 
@@ -19,7 +19,7 @@
 //Blind makes you blind. Who knew?
 /datum/mutation/human/blind
 	name = "Blindness"
-	desc = "Renders the subject completely blind."
+	desc = "Делает носителя полностью слепым."
 	quality = NEGATIVE
 	text_gain_indication = "<span class='danger'>You can't seem to see anything.</span>"
 
@@ -41,7 +41,7 @@
 ///Thermal Vision lets you see mobs through walls
 /datum/mutation/human/thermal
 	name = "Thermal Vision"
-	desc = "The user of this genome can visually percieve the unique human thermal signature."
+	desc = "Носитель этого генома может визуально различать уникальную тепловую сигнатуру человека."
 	quality = POSITIVE
 	mutator_security_level = THERMAL_PRINT_CODE
 	difficulty = 18
@@ -67,7 +67,7 @@
 ///X-ray Vision lets you see through walls. BlueMoon 03.07-23 - removed prior the rework
 /datum/mutation/human/thermal/x_ray
 	name = "X-Ray Vision"
-	desc = "An unstable former X-Ray genome, now simply applying the thermal vision for user." //actual x-ray would mean you'd constantly be blasting rads, wich might be fun for later //hmb
+	desc = "Нестабильный бывший рентгеновский геном, теперь просто дающий носителю тепловое зрение." //actual x-ray would mean you'd constantly be blasting rads, wich might be fun for later //hmb
 	mutator_security_level = XRAY_PRINT_CODE
 	text_gain_indication = "<span class='notice'>The walls suddenly disappear!</span>"
 	instability = 50
@@ -76,9 +76,11 @@
 
 
 //Laser Eyes lets you shoot lasers from your eyes!
+// Скорострельность фиксированная: /mob/living/LaserEyes() проверяет КД с ignore_mod = TRUE,
+// поэтому ускорение атаки (например, берсеркер) на ген не влияет.
 /datum/mutation/human/laser_eyes
 	name = "Laser Eyes"
-	desc = "Reflects concentrated light back from the eyes."
+	desc = "Отражает концентрированный свет от глаз."
 	quality = POSITIVE
 	mutator_security_level = LASEREYES_PRINT_CODE
 	locked = TRUE
@@ -101,10 +103,23 @@
 			return
 		owner.LaserEyes(target, mouseparams)
 
+/// Только реальный выстрел лазерных глаз снимает модификаторы скорости с общего гейта клика.
+/mob/living/carbon/human/laser_eyes_click(atom/A)
+	if(a_intent != INTENT_HARM || throw_mode || restrained() || get_active_held_item() || !dna || HAS_TRAIT(src, TRAIT_PACIFISM))
+		return FALSE
+	var/carries_laser_eyes = FALSE
+	for(var/datum/mutation/human/laser_eyes/LE in dna.mutations)
+		carries_laser_eyes = TRUE
+		break
+	// Должен быть тот же путь, что ведёт в RangedAttack(), иначе гейт меняется для других действий.
+	if(!carries_laser_eyes || in_direct_access(A) || !loc || !loc.AllowClick() || CanReach(A, null))
+		return FALSE
+	return TRUE
+
 /// Flash Protection — immune to handheld flashes and flashbangs (not welding arcs).
 /datum/mutation/human/flash_protection
 	name = "Flash Protection"
-	desc = "The host's eyes resist blinding light from flashes and flashbangs."
+	desc = "Глаза носителя устойчивы к слепящему свету вспышек и светошумовых гранат."
 	quality = POSITIVE
 	mutator_security_level = FLASHPROTECT_PRINT_CODE
 	difficulty = 12

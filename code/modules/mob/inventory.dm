@@ -30,7 +30,7 @@
 		other_hand = active_hand_index-1 //finding the matching "left" limb
 	else
 		other_hand = active_hand_index+1 //finding the matching "right" limb
-	if(other_hand < 0 || other_hand > held_items.len)
+	if(other_hand < 0 || other_hand > length(held_items))
 		other_hand = 0
 	return other_hand
 
@@ -186,6 +186,8 @@
 	// поцелуй) - forceMove мертвецу пинил его ссылкой из contents и давал "doMove qdel-нутого"
 	// (прод-раунд 9834). Сторона сброса такой гард уже имеет.
 	if(QDELETED(I))
+		return FALSE
+	if(ismob(src) && src.GetComponent(/datum/component/virtual_entity) && is_protected_bitrunning_objective(I, src))
 		return FALSE
 	if(forced || can_put_in_hand(I, hand_index))
 		if(isturf(I.loc) && !ignore_anim)

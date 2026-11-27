@@ -2,7 +2,7 @@
 
 /datum/nanite_program/regenerative
 	name = "Accelerated Regeneration"
-	desc = "The nanites boost the host's natural regeneration, increasing their healing speed. Will not consume nanites while the host is unharmed."
+	desc = "Наниты усиливают естественную регенерацию носителя, ускоряя заживление. Не расходуют наниты, пока носитель невредим."
 	use_rate = 0.5
 	rogue_types = list(/datum/nanite_program/necrotic)
 
@@ -37,7 +37,7 @@
 
 /datum/nanite_program/temperature
 	name = "Temperature Adjustment"
-	desc = "The nanites adjust the host's internal temperature to an ideal level. Will not consume nanites while the host is at a normal body temperature."
+	desc = "Наниты поддерживают внутреннюю температуру носителя на идеальном уровне. Не расходуют наниты при нормальной температуре тела."
 	use_rate = 3.5
 	rogue_types = list(/datum/nanite_program/skin_decay)
 
@@ -54,7 +54,7 @@
 
 /datum/nanite_program/purging
 	name = "Blood Purification"
-	desc = "The nanites purge toxins and chemicals from the host's bloodstream, however it is dangerous to slime biology due to inaccuracy."
+	desc = "Наниты выводят токсины и химикаты из крови носителя, однако из-за неточности это опасно для биологии слизней."
 	use_rate = 1
 	rogue_types = list(/datum/nanite_program/suffocating, /datum/nanite_program/necrotic)
 
@@ -76,7 +76,7 @@
 
 /datum/nanite_program/purging_synth
 	name = "Purge Corruption"
-	desc = "Nanites clean the circuits in the host's positronic brain from corrosion."
+	desc = "Наниты очищают схемы позитронного мозга носителя от коррозии."
 	use_rate = 1
 	rogue_types = list(/datum/nanite_program/suffocating, /datum/nanite_program/necrotic)
 
@@ -90,7 +90,7 @@
 
 /datum/nanite_program/brain_heal
 	name = "Neural Regeneration"
-	desc = "The nanites fix neural connections in the host's brain, reversing brain damage and minor traumas. Will not consume nanites while it would not have an effect."
+	desc = "Наниты восстанавливают нейронные связи в мозге носителя, устраняя повреждения мозга и лёгкие травмы. Не расходуют наниты, если эффект невозможен."
 	use_rate = 1.5
 	rogue_types = list(/datum/nanite_program/brain_decay)
 
@@ -113,7 +113,7 @@
 
 /datum/nanite_program/blood_restoring
 	name = "Blood Regeneration"
-	desc = "The nanites stimulate and boost blood cell production in the host. Will not consume nanites while the host has a safe blood level."
+	desc = "Наниты стимулируют и ускоряют выработку клеток крови у носителя. Не расходуют наниты, пока уровень крови в норме."
 	use_rate = 1
 	rogue_types = list(/datum/nanite_program/suffocating)
 
@@ -133,7 +133,7 @@
 
 /datum/nanite_program/repairing
 	name = "Mechanical Repair"
-	desc = "The nanites fix damage in the host's mechanical limbs. Will not consume nanites while the host's mechanical limbs are undamaged, or while the host has no mechanical limbs."
+	desc = "Наниты ремонтируют повреждения механических конечностей носителя. Не расходуют наниты, если механические конечности не повреждены или их нет."
 	use_rate = 0.5
 	rogue_types = list(/datum/nanite_program/necrotic)
 
@@ -170,8 +170,7 @@
 
 /datum/nanite_program/purging_advanced
 	name = "Selective Blood Purification"
-	desc = "The nanites purge toxins and dangerous chemicals from the host's bloodstream, while ignoring beneficial chemicals. \
-			The added processing power required to analyze the chemicals severely increases the nanite consumption rate. This program is safe with slime biology due to the increased precision."
+	desc = "Наниты выводят токсины и опасные химикаты из крови носителя, не трогая полезные вещества. Дополнительные вычисления, требуемые для анализа химикатов, значительно увеличивают расход нанитов. Благодаря повышенной точности программа безопасна для биологии слизней."
 	use_rate = 2
 	rogue_types = list(/datum/nanite_program/suffocating, /datum/nanite_program/necrotic)
 
@@ -193,8 +192,7 @@
 
 /datum/nanite_program/regenerative_advanced
 	name = "Bio-Reconstruction"
-	desc = "The nanites manually repair and replace organic cells, acting much faster than normal regeneration. \
-			However, this program cannot detect the difference between harmed and unharmed, causing it to consume nanites even if it has no effect."
+	desc = "Наниты вручную восстанавливают и заменяют органические клетки, действуя намного быстрее обычной регенерации. Однако программа не различает повреждённые и неповреждённые клетки и расходует наниты, даже если эффекта нет."
 	use_rate = 5.5
 	rogue_types = list(/datum/nanite_program/suffocating, /datum/nanite_program/necrotic)
 
@@ -217,7 +215,7 @@
 
 /datum/nanite_program/brain_heal_advanced
 	name = "Neural Reimaging"
-	desc = "The nanites are able to backup and restore the host's neural connections, potentially replacing entire chunks of missing or damaged brain matter."
+	desc = "Наниты способны создавать резервные копии и восстанавливать нейронные связи носителя, потенциально заменяя целые участки утраченного или повреждённого вещества мозга."
 	use_rate = 3
 	rogue_types = list(/datum/nanite_program/brain_decay, /datum/nanite_program/brain_misfire)
 
@@ -240,7 +238,7 @@
 
 /datum/nanite_program/defib
 	name = "Defibrillation"
-	desc = "The nanites shock the host's heart when triggered, bringing them back to life if the body can sustain it."
+	desc = "При срабатывании наниты бьют током по сердцу носителя, возвращая его к жизни, если организм это выдержит."
 	can_trigger = TRUE
 	trigger_cost = 25
 	trigger_cooldown = 120
@@ -254,7 +252,7 @@
 	if(!iscarbon(host_mob)) //nonstandard biology
 		return FALSE
 	var/mob/living/carbon/C = host_mob
-	if(C.get_ghost())
+	if(!C.client)
 		return FALSE
 	return C.can_revive()
 
@@ -271,7 +269,7 @@
 		if(C.health < HEALTH_THRESHOLD_FULLCRIT && oxydamage)
 			var/diff = C.health - HEALTH_THRESHOLD_FULLCRIT
 			C.adjustOxyLoss(diff)	//Heal their oxydamage up to hardcrit (or if less, as much as they have, since the proc has sanity)
-		C.revive(full_heal = FALSE, admin_revive = FALSE, post_revive_effects = TRUE)
+		C.revive(full_heal = FALSE, admin_revive = FALSE, post_revive_effects = TRUE, medical_revive = TRUE)
 		if(breathless)
 			C.emote("twitch")
 		else
@@ -286,7 +284,7 @@
 
 /datum/nanite_program/hard_reboot
 	name = "Hard Reboot Protocol"
-	desc = "Nanomachines store protocols for rebooting the host's positronic brain."
+	desc = "Наномашины хранят протоколы перезагрузки позитронного мозга носителя."
 	can_trigger = TRUE
 	trigger_cost = 25
 	trigger_cooldown = 120
@@ -305,7 +303,7 @@
 	var/mob/living/carbon/target = host_mob
 	target.adjustOxyLoss(-50, 0)
 	target.updatehealth()
-	if(target.revive())
+	if(target.revive(medical_revive = TRUE))
 		target.visible_message("...[target]'s posibrain flickers to life once again!")
 		target.emote("ping")
 		// BLUEMOON EDIT START - изменение памяти после смерти
@@ -318,7 +316,7 @@
 
 /datum/nanite_program/heal_wounds
 	name = "Recovery Wounds"
-	desc = "Nanites use themselves to restore the body, replacing damage and thus healing wounds."
+	desc = "Наниты расходуют себя для восстановления тела, заменяя повреждения и тем самым заживляя раны."
 	use_rate = 10
 	rogue_types = list(/datum/nanite_program/necrotic)
 

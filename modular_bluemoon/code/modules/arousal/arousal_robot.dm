@@ -18,7 +18,7 @@
 	var/list/full_options = list()
 	LAZYADD(full_options, GLOB.genital_fluids_list)
 	new_fluid = tgui_input_list(src, "Silicon Liquid", "Liquid selection", full_options)
-	if(new_fluid && iscyborg(src))
+	if(new_fluid && (new_fluid in GLOB.genital_fluids_list) && iscyborg(src) && !QDELETED(src))
 		var/mob/living/silicon/robot/R = src
 		R.current_fluid = new_fluid
 		refill_fluid(R)
@@ -87,7 +87,7 @@
 			R.silicon_fluid.copy_to(copy, R.silicon_fluid.total_volume)
 			if(istype(receiver, /obj/item/organ/genital/vagina) || istype(receiver, /obj/item/organ/genital/anus))
 				cummed_on.apply_status_effect(STATUS_EFFECT_DRIPPING_CUM, copy, get_blood_dna_list(), receiver)
-		R.silicon_fluid.trans_to(target,R.silicon_fluid.total_volume, log = TRUE)
+		R.silicon_fluid.trans_to(resolve_pleasuremaw_fluid_target(target, spill), R.silicon_fluid.total_volume, log = TRUE)
 
 	if(!Process_Spacemove(turn(dir, 180)))
 		newtonian_move(turn(dir, 180))
@@ -221,6 +221,7 @@
 					partner = forced_partner
 			if(partner)
 				mob_climax_partner_silicon(R, partner, forced_spillage, 0, forced_receiving_genital, forced_climax, anonymous)
+				return // One release, never also produce a second outside.
 		mob_climax_outside_silicon(R, mb_time = 0)
 		return
 
@@ -251,3 +252,136 @@
 			var/mob/living/partner = pick_partner_silicon()
 			if(partner)
 				mob_climax_over_silicon(R, partner, TRUE)
+
+// ============================================================
+// CYBORG SYNTHETIC KNOT ADAPTER
+// ============================================================
+// No carbon organs are inserted into the cyborg. This detached proxy is only
+// the stateful control object reused by the existing knotting implementation.
+/obj/item/organ/genital/penis/silicon_knot
+	name = "synthetic knot controller"
+	shape = "knotted"
+	var/mob/living/silicon/robot/silicon_owner
+
+/obj/item/organ/genital/penis/silicon_knot/update_knotting_from_shape()
+	// Real appearance data is not owned by this proxy object.
+	knot_size = silicon_owner?.synthetic_knot_style || SYNTHETIC_KNOT_NONE
+
+/obj/item/organ/genital/penis/silicon_knot/Destroy()
+	var/mob/living/silicon/robot/R = silicon_owner
+	. = ..()
+	if(!QDELETED(R) && R.synthetic_knot_module == src)
+		R.synthetic_knot_module = null
+	silicon_owner = null
+
+/mob/living/silicon/robot
+	/// 0 disables the synthetic extension; 1 single, 2 paired.
+	var/synthetic_knot_style = SYNTHETIC_KNOT_NONE
+	/// 0 ordinary, 1 knotted, 2 double knotted.
+	var/synthetic_profile_selected = FALSE
+	/// These are explicit synthetic attachments, not carbon organ slots.
+	var/list/synthetic_knot_slots
+	var/obj/item/organ/genital/penis/silicon_knot/synthetic_knot_module
+
+/mob/living/silicon/robot/proc/get_synthetic_knot()
+	if(!synthetic_knot_style)
+		return null
+	if(QDELETED(synthetic_knot_module))
+		synthetic_knot_module = new(src)
+		synthetic_knot_module.silicon_owner = src
+	synthetic_knot_module.knot_size = synthetic_knot_style
+	return synthetic_knot_module
+
+/mob/living/silicon/robot/verb/configure_synthetic_knot()
+	set name = "Genital Configuration"
+	set category = "Robot Commands"
+	if(active_knot?.knot_locked)
+		to_chat(src, span_warning("Нельзя менять конфигурацию во время соединения."))
+		return
+	var/selection = tgui_input_list(src, "Конфигурация синтетического узла", "Synthetic Knot", list("Обычный", "С узлом", "Двойной с узлами"))
+	if(isnull(selection))
+		return
+	var/reception = tgui_input_list(src, "Какие синтетические принимающие интерфейсы установлены?", "Synthetic Slots", list("Нет", "Рот", "Влагалище", "Анус", "Влагалище и анус", "Все"))
+	if(isnull(reception) || QDELETED(src) || active_knot?.knot_locked)
+		return
+	// Commit the two choices together; waiting in either dialog must not mutate
+	// a controller participating in a newly established connection.
+	var/new_style = SYNTHETIC_KNOT_NONE
+	switch(selection)
+		if("С узлом")
+			new_style = SYNTHETIC_KNOT_SINGLE
+		if("Двойной с узлами")
+			new_style = SYNTHETIC_KNOT_DOUBLE
+	var/list/new_slots = list()
+	switch(reception)
+		if("Рот")
+			new_slots += list(CUM_TARGET_MOUTH, CUM_TARGET_THROAT)
+		if("Влагалище")
+			new_slots += CUM_TARGET_VAGINA
+		if("Анус")
+			new_slots += CUM_TARGET_ANUS
+		if("Влагалище и анус")
+			new_slots += list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS)
+		if("Все")
+			new_slots += list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS, CUM_TARGET_MOUTH, CUM_TARGET_THROAT)
+	// No yields between this check and applying the new profile.
+	if(active_knot?.knot_locked)
+		return
+	synthetic_knot_style = new_style
+	synthetic_profile_selected = TRUE
+	has_penis = TRUE
+	synthetic_knot_slots = new_slots
+	if(synthetic_knot_style == SYNTHETIC_KNOT_NONE)
+		if(!QDELETED(synthetic_knot_module))
+			qdel(synthetic_knot_module)
+	else
+		get_synthetic_knot()
+	to_chat(src, span_notice("Синтетические интерфейсы настроены."))
+
+/mob/living/silicon/robot/verb/try_synthetic_knot()
+	set name = "Try Synthetic Knot"
+	set category = "Robot Commands"
+	if(!client?.prefs?.sexknotting)
+		to_chat(src, span_warning("Необходимо включить настройку sexknotting."))
+		return
+	var/obj/item/organ/genital/penis/P = get_synthetic_knot()
+	if(!P)
+		to_chat(src, span_warning("Сначала установите синтетический узел в настройках."))
+		return
+	var/list/targets = list()
+	for(var/mob/living/L in orange(1, src))
+		if(!QDELETED(L) && (ishuman(L) || iscyborg(L)) && L.client?.prefs?.sexknotting)
+			targets += L
+	if(!length(targets))
+		to_chat(src, span_notice("Поблизости нет согласных участников."))
+		return
+	var/mob/living/partner = tgui_input_list(src, "Выберите участника", "Synthetic Knot", targets)
+	if(QDELETED(src) || !partner || QDELETED(partner) || !(partner in targets))
+		return
+	// The user can reconfigure the synthetic module while the dialog is open.
+	P = get_synthetic_knot()
+	if(QDELETED(P) || active_knot?.knot_locked)
+		return
+	var/list/zones = list()
+	if(P.calculate_zone_modifier(partner, CUM_TARGET_VAGINA) > -100)
+		zones["Влагалище"] = CUM_TARGET_VAGINA
+	if(P.calculate_zone_modifier(partner, CUM_TARGET_ANUS) > -100)
+		zones["Анус"] = CUM_TARGET_ANUS
+	if(P.calculate_zone_modifier(partner, CUM_TARGET_MOUTH) > -100)
+		zones["Рот"] = CUM_TARGET_MOUTH
+	if(P.calculate_zone_modifier(partner, CUM_TARGET_THROAT) > -100)
+		zones["Горло"] = CUM_TARGET_THROAT
+	if(!length(zones))
+		to_chat(src, span_warning("У цели нет совместимых принимающих интерфейсов."))
+		return
+	var/selected = tgui_input_list(src, "Выберите принимающий интерфейс", "Synthetic Knot", zones)
+	if(isnull(selected) || !(selected in zones))
+		return
+	var/consent = tgui_alert(partner, "[src] предлагает подключить синтетический узел. Согласны?", "Synthetic Knot", list("Да", "Нет"))
+	if(consent != "Да" || QDELETED(src) || QDELETED(partner))
+		return
+	P = get_synthetic_knot()
+	if(QDELETED(P) || active_knot?.knot_locked)
+		return
+	if(!try_apply_knot(src, partner, zones[selected]))
+		to_chat(src, span_notice("Подключение не удалось: проверьте расстояние, настройки и условия."))

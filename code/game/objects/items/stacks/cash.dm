@@ -13,8 +13,11 @@
 	resistance_flags = FLAMMABLE
 	grind_results = list(/datum/reagent/cellulose = 10)
 	var/value = 0
+	/// Когда, где и каким проком создана пачка: строка найденных наличных в econ.log называет по ней источник денег
+	var/origin
 
 /obj/item/stack/spacecash/Initialize(mapload, new_amount, merge = TRUE)
+	origin = econ_cash_origin(src, mapload)
 	. = ..()
 	update_desc()
 
@@ -26,8 +29,18 @@
 	return (amount*value)
 
 /obj/item/stack/spacecash/merge(obj/item/stack/S)
+	var/obj/item/stack/spacecash/target = S
+	var/merged_origin = origin
 	. = ..()
+	if(. && istype(target))
+		target.origin = econ_cash_origin_join(target.origin, merged_origin)
 	update_desc()
+
+/obj/item/stack/spacecash/split_stack(mob/user, amount)
+	var/obj/item/stack/spacecash/part = ..()
+	if(part)
+		part.origin = origin
+	return part
 
 /obj/item/stack/spacecash/use(used, transfer = FALSE)
 	. = ..()
@@ -37,18 +50,8 @@
 	. = ..()
 	if(istype(W, /obj/item/card/id))
 		var/obj/item/card/id/ID = W
-		if(!ID.registered_account)
-			to_chat(user, "<span class='warning'>[ID] doesn't have a linked account to deposit into!</span>")
-			return
-		var/atom/location = src.loc
-		if(!location)
-			return
-		for(var/obj/item/holochip/money in location.contents)
-			ID.attackby(money, user)
-		for(var/obj/item/stack/spacecash/money in location.contents)
-			ID.attackby(money, user)
-		for(var/obj/item/coin/money in location.contents)
-			ID.attackby(money, user)
+		if(loc)
+			ID.insert_money_pile(src, user)
 
 /obj/item/stack/spacecash/c1
 	icon_state = "spacecash"

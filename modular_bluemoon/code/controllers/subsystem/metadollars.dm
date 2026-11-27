@@ -19,6 +19,18 @@ SUBSYSTEM_DEF(metadollars)
 /proc/bm_metadollar_json_path(target_ckey)
 	return "data/player_saves/[target_ckey[1]]/[target_ckey]/metadollars.json"
 
+/// Баланс из metadollars.json или null, если файла нет или он не читается: пустой, оборванный, без числа.
+/proc/bm_read_metadollar_json(target_ckey)
+	var/json_path = bm_metadollar_json_path(target_ckey)
+	if(!fexists(json_path))
+		return null
+	var/raw = file2text(json_path)
+	var/list/loaded = rustg_json_is_valid(raw) ? json_decode(raw) : null
+	if(!islist(loaded) || !isnum(loaded["metadollar_count"]))
+		log_world("Metadollars: [json_path] не читается, баланс считается нулевым")
+		return null
+	return max(0, round(loaded["metadollar_count"]))
+
 /proc/bm_ckey_from_prefs_path(prefs_path)
 	if(!prefs_path)
 		return null
@@ -41,7 +53,10 @@ SUBSYSTEM_DEF(metadollars)
 		var/datum/relief_join/join = relief_joins[joined_ckey]
 		deltimer(join.check_timer)
 	relief_joins = list()
+	// Тестовые миры делят один data/player_saves и стартуют разом: обход сейвов - дело тестов лидерборда.
+#ifndef UNIT_TESTS
 	INVOKE_ASYNC(src, PROC_REF(refresh_metadollar_leaderboard_from_saves))
+#endif
 
 /datum/controller/subsystem/metadollars/proc/get_round_limited_purchase_count(limit_key)
 	if(!limit_key)
@@ -78,32 +93,49 @@ SUBSYSTEM_DEF(metadollars)
 /datum/controller/subsystem/metadollars/proc/metadollar_save(target_ckey)
 	if(!target_ckey || !(target_ckey in metadollar_amount_cache))
 		return
-	var/list/saving_data = list("metadollar_count" = metadollar_amount_cache[target_ckey])
-	var/target_file = file(bm_metadollar_json_path(target_ckey))
-	var/backup_file = file("[bm_metadollar_json_path(target_ckey)].backup")
-	if(fexists(backup_file))
-		fdel(backup_file)
-	WRITE_FILE(backup_file, json_encode(saving_data))
-	fcopy("[backup_file]", "[target_file]")
-	fdel(backup_file)
+	var/json_path = bm_metadollar_json_path(target_ckey)
+	// Своё имя временного файла на каждую запись: общий .backup второй мир на тех же сейвах
+	// удалял посреди чужой записи, и metadollars.json оставался пустым.
+	var/temp_path = "[json_path].[world.port]-[rand(1, 999999)].tmp"
+	fdel(temp_path)
+	if(!text2file(json_encode(list("metadollar_count" = metadollar_amount_cache[target_ckey])), temp_path))
+		return
+	fcopy(temp_path, json_path)
+	fdel(temp_path)
 
 /proc/bm_read_metadollars_from_savefile_path(prefs_path)
-	if(!prefs_path || !fexists(prefs_path))
+	if(!prefs_path)
 		return 0
-	var/savefile/S = new /savefile(prefs_path)
-	S.cd = "/"
-	var/amount = 0
-	READ_FILE(S["metadollars"], amount)
+	var/datum/player_save_json/account/storage = new(prefs_path)
+	if(!storage.exists())
+		return 0
+	var/amount
+	if(storage.legacy_only())
+		// Старый .sav читается без разбора анкет: нужен один ключ корня.
+		var/savefile/view = storage.legacy_view("/")
+		if(!view)
+			return null
+		view["metadollars"] >> amount
+	else
+		var/datum/player_save_document/document = storage.snapshot()
+		if(!document)
+			return null
+		amount = document.read("metadollars")
 	return isnum(amount) ? max(0, round(amount)) : 0
 
 /proc/bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
 	if(!target_ckey)
 		return 0
 	var/base = "data/player_saves/[target_ckey[1]]/[target_ckey]"
-	var/best = 0
-	for(var/suffix in list("/preferences.sav", "/preferences.sav.updatebac"))
-		best = max(best, bm_read_metadollars_from_savefile_path("[base][suffix]"))
-	return best
+	var/prefs_path = "[base]/preferences.sav"
+	var/amount = bm_read_metadollars_from_savefile_path(prefs_path)
+	// После перехода на JSON резервная копия SAV уже не отражает актуальный баланс.
+	if(fexists("[prefs_path].json") || fexists("[prefs_path].json.recovery"))
+		return amount
+	var/backup_amount = bm_read_metadollars_from_savefile_path("[prefs_path].updatebac")
+	if(isnull(amount) || isnull(backup_amount))
+		return null
+	return max(amount, backup_amount)
 
 /datum/controller/subsystem/metadollars/proc/reconcile_legacy_balance(target_ckey, legacy_hint = null)
 	if(!target_ckey)
@@ -115,20 +147,17 @@ SUBSYSTEM_DEF(metadollars)
 	var/legacy = legacy_hint
 	if(!isnum(legacy) || legacy < 0)
 		legacy = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
-	legacy = max(0, round(legacy))
-	if(legacy <= 0)
+	if(isnull(legacy))
 		return FALSE
+	legacy = max(0, round(legacy))
 	var/current = 0
 	if(target_ckey in metadollar_amount_cache)
 		current = metadollar_amount_cache[target_ckey]
-	else if(fexists(bm_metadollar_json_path(target_ckey)))
-		var/list/loaded = json_decode(file2text(file(bm_metadollar_json_path(target_ckey))))
-		if(islist(loaded) && isnum(loaded["metadollar_count"]))
-			current = max(0, round(loaded["metadollar_count"]))
+	// Нулевой баланс тоже завершает перенос: лидерборд не импортирует SAV каждый раунд.
+	metadollar_amount_cache[target_ckey] = max(current, legacy)
+	metadollar_save(target_ckey)
 	if(legacy <= current)
 		return FALSE
-	metadollar_amount_cache[target_ckey] = legacy
-	metadollar_save(target_ckey)
 	log_game("Metadollars: restored [legacy] M$ for [target_ckey] (was [current] M$).")
 	return TRUE
 
@@ -140,16 +169,13 @@ SUBSYSTEM_DEF(metadollars)
 		return 0
 	if(target_ckey in metadollar_amount_cache)
 		return metadollar_amount_cache[target_ckey]
-	var/json_path = bm_metadollar_json_path(target_ckey)
-	var/target_file = file(json_path)
-	var/amount = 0
-	if(fexists(target_file))
-		var/list/loaded = json_decode(file2text(target_file))
-		if(islist(loaded) && isnum(loaded["metadollar_count"]))
-			amount = max(0, round(loaded["metadollar_count"]))
-		metadollar_amount_cache[target_ckey] = amount
-		return amount
-	amount = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
+	if(fexists(bm_metadollar_json_path(target_ckey)))
+		var/json_amount = bm_read_metadollar_json(target_ckey) || 0
+		metadollar_amount_cache[target_ckey] = json_amount
+		return json_amount
+	var/amount = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
+	if(isnull(amount))
+		return 0
 	reconcile_legacy_balance(target_ckey, amount)
 	if(target_ckey in metadollar_amount_cache)
 		return metadollar_amount_cache[target_ckey]
@@ -173,6 +199,9 @@ SUBSYSTEM_DEF(metadollars)
 	if(!target_ckey || !amt)
 		return
 	get_metadollars(target_ckey)
+	if(!(target_ckey in metadollar_amount_cache))
+		log_game("Metadollars: изменение на [amt] M$ для [target_ckey] пропущено, старый баланс не прочитан.")
+		return
 	metadollar_amount_cache[target_ckey] = max(0, round(metadollar_amount_cache[target_ckey] + amt))
 	metadollar_save(target_ckey)
 	var/display_key = client_key
@@ -200,23 +229,24 @@ SUBSYSTEM_DEF(metadollars)
 			return display_key
 	return save_dir_name || target_ckey
 
-/// С recover найденный в preferences.sav баланс сразу переносится в metadollars.json.
+/// С recover найденный в preferences.sav баланс сразу переносится в metadollars.json. Нечитаемый
+/// metadollars.json даёт ноль и не заменяется балансом из .sav: перенос уже был.
 /datum/controller/subsystem/metadollars/proc/read_metadollar_balance_from_save(target_ckey, recover = FALSE)
 	if(!target_ckey)
 		return 0
 	if(target_ckey in metadollar_amount_cache)
 		return metadollar_amount_cache[target_ckey]
-	var/json_path = bm_metadollar_json_path(target_ckey)
-	if(fexists(json_path))
-		var/list/loaded = json_decode(file2text(file(json_path)))
-		if(islist(loaded) && isnum(loaded["metadollar_count"]))
-			return max(0, round(loaded["metadollar_count"]))
-	var/legacy = max(0, round(bm_read_legacy_metadollars_from_prefs_sav(target_ckey)))
-	if(recover && legacy > 0 && reconcile_legacy_balance(target_ckey, legacy))
+	if(fexists(bm_metadollar_json_path(target_ckey)))
+		return bm_read_metadollar_json(target_ckey) || 0
+	var/legacy = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
+	if(isnull(legacy))
+		return 0
+	if(recover && reconcile_legacy_balance(target_ckey, legacy))
 		legacy_balances_recovered++
 	return legacy
 
-/datum/controller/subsystem/metadollars/proc/refresh_metadollar_leaderboard_from_saves()
+/// only_letters - каталоги-буквы data/player_saves для обхода, по умолчанию все.
+/datum/controller/subsystem/metadollars/proc/refresh_metadollar_leaderboard_from_saves(list/only_letters)
 	if(leaderboard_refresh_running)
 		return FALSE
 	leaderboard_refresh_running = TRUE
@@ -224,6 +254,8 @@ SUBSYSTEM_DEF(metadollars)
 	var/list/rebuilt_ckeys = list()
 	if(fexists("data/player_saves"))
 		for(var/letterdir in flist("data/player_saves/"))
+			if(only_letters && !(copytext(letterdir, 1, 2) in only_letters))
+				continue
 			var/prefix = "data/player_saves/[letterdir]"
 			if(!fexists(prefix))
 				continue
@@ -388,11 +420,8 @@ SUBSYSTEM_DEF(metadollars)
 	round_earnings[ck][category] += amount
 	round_earnings[ck]["total"] = (round_earnings[ck]["total"] || 0) + amount
 	if(category == "living")
-		// Тут сохраняется только metadollar_minute_pool (баланс уже лёг в metadollars.json).
-		// Полный сейв префов это ~124 WRITE_FILE подряд ради одного числа, поэтому кладём
-		// ключ в буфер склейки: он уйдёт на диск одним открытием savefile вместе с
-		// остальными одиночными ключами игрока.
-		C.prefs.save_single_pref("metadollar_minute_pool", C.prefs.metadollar_minute_pool)
+		// Остаток минут до М$ (баланс уже в metadollars.json) уезжает с ближайшей записью префов.
+		C.prefs.save_single_pref("metadollar_minute_pool", C.prefs.metadollar_minute_pool, lazy = TRUE)
 	if(category == "living" && isliving(C.mob))
 		to_chat(C.mob, span_purple("Вы получили [amount] М$ за работу."))
 		SEND_SOUND(C.mob, sound('sound/machines/terminal_success.ogg', volume = 35))

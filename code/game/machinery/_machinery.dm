@@ -252,10 +252,19 @@ Class Procs:
 		register_power_change_area(null)
 
 ///Signal wrapper: power_change() returns TRUE on a state flip, which must not leak into the signal's return bitfield.
+///APC щёлкает каналами по одному, а сигнал слышит вся область: машина, которой щелчок ничего не меняет, его пропускает.
 /obj/machinery/proc/on_area_power_change(datum/source)
 	SIGNAL_HANDLER
 	SHOULD_CALL_PARENT(TRUE)
+	if(!area_power_change_relevant())
+		return
 	power_change()
+
+///Сменит ли power_change() флаг NOPOWER машины.
+/obj/machinery/proc/area_power_change_relevant()
+	var/has_power = powered(power_channel) ? TRUE : FALSE
+	var/flagged_unpowered = (machine_stat & NOPOWER) ? TRUE : FALSE
+	return has_power == flagged_unpowered
 
 /obj/machinery/proc/locate_machinery()
 	return
@@ -517,11 +526,8 @@ Class Procs:
 		return FALSE
 
 	if(transaction_cost)
-		if(!account.adjust_money(-transaction_cost))
+		if(!SSeconomy.move(account, SSeconomy.get_dep_account(payment_department), transaction_cost, ECON_PURCHASE, memo = "Оплата: [name]"))
 			return FALSE
-		var/datum/bank_account/D = SSeconomy.get_dep_account(payment_department)
-		if(D)
-			D.adjust_money(transaction_cost)
 	return TRUE
 
 /obj/machinery/proc/check_nap_violations()
@@ -537,13 +543,10 @@ Class Procs:
 				nap_violation(L)
 				return FALSE
 			else
-				if(!insurance.adjust_money(-fair_market_price))
+				if(!SSeconomy.move(insurance, SSeconomy.get_dep_account(payment_department), fair_market_price, ECON_PURCHASE, L, "Оплата: [name]"))
 					say("[market_verb] NAP Violation: Невозможно оплатить.")
 					nap_violation(L)
 					return FALSE
-				var/datum/bank_account/D = SSeconomy.get_dep_account(payment_department)
-				if(D)
-					D.adjust_money(fair_market_price)
 		else
 			say("[market_verb] NAP Violation: Карта не найдена.")
 			nap_violation(L)
@@ -982,3 +985,36 @@ Class Procs:
 ///Called when the value of `is_operational` changes, so we can react to it.
 /obj/machinery/proc/on_set_is_operational(old_value)
 	return
+
+// Направленные подтипы для карт: смещения задаются здесь, а не в каждом объекте.
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/motion, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/entertainment, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/forgotten_ship/sci, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/defibrillator_mount, 28)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/digital_clock, 28)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/right, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/left, 0)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/flasher, 26)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/health_station, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/incident_display/delam, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/iv_drip/health_station, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/auto_name, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/requests_console, 30)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/ticket_machine, 32)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/wall_healer/free, 32)
+
+// Карты используют путь через /power/, а сам генератор объявлен без него.
+/obj/machinery/power/shieldwallgen
+	parent_type = /obj/machinery/shieldwallgen
+
+/obj/machinery/power/shieldwallgen/anchored
+	anchored = TRUE
+
+/obj/machinery/power/shieldwallgen/unlocked
+	locked = FALSE
+
+/obj/machinery/vending/boozeomat/syndicate
+	parent_type = /obj/machinery/vending/boozeomat/syndicate_access
+

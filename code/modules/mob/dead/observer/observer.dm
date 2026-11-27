@@ -55,10 +55,12 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	// of the mob
 	var/deadchat_name
 	var/datum/orbit_menu/orbit_menu
-	var/datum/spawners_menu/spawners_menu
+	var/datum/job_menu/spawners_menu
 	var/lastclienttime = 0 //BLUEMOON ADD фиксируем время выхода игрока
 
 /mob/dead/observer/Initialize(mapload, mob/body)
+	// Гост из лобби получает клиента только после stoplag(); с нулём автокрио удалял его в этом окне как SSD с начала раунда.
+	lastclienttime = world.time
 	set_invisibility(GLOB.observer_default_invisibility)
 
 	add_verb(src, GLOB.ghost_verbs)
@@ -150,9 +152,9 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	//Add coords to status panel
 	. += "X:[src.x] Y:[src.y] Z:[src.z]"
 
-/mob/dead/observer/get_photo_description(obj/item/camera/camera)
-	if(!invisibility || camera.see_ghosts)
-		return "You can also see a g-g-g-g-ghooooost!"
+/mob/dead/observer/get_photo_description(see_ghosts)
+	if(!invisibility || see_ghosts)
+		return "На снимке также видно п-п-п-привидение!"
 
 /mob/dead/observer/narsie_act()
 	var/old_color = color
@@ -206,13 +208,17 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	// the departing images are removed from GLOB.ghost_images_* they would stay in
 	// other observer client.images unless we explicitly remove them first.
 	if(departing_default || departing_simple)
+		// Клиенту выдан только набор его lastsetting, а каждое снятие - проход по всему client.images.
 		for(var/mob/dead/observer/O in GLOB.player_list)
 			if(!O.client)
 				continue
-			if(departing_default)
-				O.client.images -= departing_default
-			if(departing_simple)
-				O.client.images -= departing_simple
+			switch(O.lastsetting)
+				if(GHOST_OTHERS_DEFAULT_SPRITE)
+					if(departing_default)
+						O.client.images -= departing_default
+				if(GHOST_OTHERS_SIMPLE)
+					if(departing_simple)
+						O.client.images -= departing_simple
 
 	GLOB.ghost_images_default -= ghostimage_default
 	QDEL_NULL(ghostimage_default)
@@ -347,6 +353,11 @@ Works together with spawning an observer, noted above.
 			P.respawn_did_cryo = cryo
 	transfer_ckey(ghost, FALSE)
 	ghost.client?.init_verbs()
+	// Гост SSD-игрока продолжает его отсчёт автокрио, а не начинает новый от смерти тела.
+	if(!ghost.client && isliving(src))
+		var/mob/living/body = src
+		if(body.lastclienttime)
+			ghost.lastclienttime = body.lastclienttime
 	if(penalize)
 		var/penalty = CONFIG_GET(number/suicide_reenter_round_timer) MINUTES
 		var/roundstart_quit_limit = CONFIG_GET(number/roundstart_suicide_time_limit) MINUTES
@@ -506,6 +517,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		return
 
 	can_reenter_corpse = FALSE
+	mind?.current?.loc?.on_log(FALSE)
 	client.prefs?.dnr_triggered = TRUE
 	to_chat(src, span_userdanger("Вы больше не сможете быть реанимированы!"))
 	return TRUE
@@ -561,6 +573,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		to_chat(usr, "No area available.")
 		return
 	usr.forceMove(pick(L))
+	leave_observed_view()
 
 /mob/dead/observer/proc/view_gas()
 	set category = "Ghost"
@@ -641,6 +654,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 			if(T && isturf(T))	//Make sure the turf exists, then move the source to that destination.
 				A.forceMove(T)
+				leave_observed_view()
 			else
 				to_chat(A, "This mob is not located in the game world.")
 
@@ -761,11 +775,12 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			continue
 		if(!O.ghostvision)
 			continue
+		// Картинка создана только что и ни у кого её ещё нет: проверка |= прошла бы весь client.images впустую.
 		switch(O.lastsetting)
 			if(GHOST_OTHERS_DEFAULT_SPRITE)
-				O.client.images |= ghostimage_default
+				O.client.images += ghostimage_default
 			if(GHOST_OTHERS_SIMPLE)
-				O.client.images |= ghostimage_simple
+				O.client.images += ghostimage_simple
 
 /mob/dead/observer/proc/updateghostimages()
 	if (!client)
@@ -890,6 +905,13 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 /mob/dead/observer/mind_initialize()
 	return
 
+/// Худ до входа клиента: Login() застанет его готовым и только покажет
+/mob/dead/observer/proc/prebuild_hud()
+	if(hud_used)
+		return
+	set_hud_used(new hud_type(src))
+	SEND_SIGNAL(src, COMSIG_MOB_HUD_CREATED)
+
 /mob/dead/observer/proc/show_data_huds()
 	for(var/hudtype in datahuds)
 		var/datum/atom_hud/H = GLOB.huds[hudtype]
@@ -1012,7 +1034,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	set name = "Observe"
 	set category = "OOC"
 
-	var/list/creatures = getpois()
+	var/list/creatures = getpois(mobs_only = TRUE)
 
 	reset_perspective(null)
 
@@ -1023,7 +1045,9 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	if (!eye_name)
 		return
 
-	do_observe(creatures[eye_name])
+	var/mob/mob_eye = creatures[eye_name]
+	if(ismob(mob_eye) && mob_eye != src && !QDELETED(mob_eye))
+		observe_with_orbit(mob_eye)
 
 /mob/dead/observer/proc/do_observe(mob/mob_eye)
 	// Наблюдать самого себя нельзя: запись src в собственном observers - это самоссылка,
@@ -1120,11 +1144,11 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	GLOB.observer_default_invisibility = amount
 
 /mob/dead/observer/proc/open_spawners_menu()
-	set name = "Spawners Menu"
-	set desc = "See all currently available spawners"
+	set name = "Ghost Role Spawners"
+	set desc = "See all currently available ghost roles"
 	set category = "Ghost"
-	if(!spawners_menu)
-		spawners_menu = new(src)
+	if(QDELETED(spawners_menu))
+		spawners_menu = new /datum/job_menu/ghost(client?.prefs)
 
 	spawners_menu.ui_interact(src)
 

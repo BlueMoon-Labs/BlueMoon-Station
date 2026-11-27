@@ -8,6 +8,8 @@
 /atom/MouseDrop(atom/over, src_location, over_location, src_control, over_control, params)
 	if(!usr || !over)
 		return
+	if(mouse_event_side_button_key(params))
+		return
 	if(SEND_SIGNAL(src, COMSIG_MOUSEDROP_ONTO, over, usr) & COMPONENT_NO_MOUSEDROP)	//Whatever is receiving will verify themselves for adjacency.
 		return
 	if(over == src)
@@ -24,6 +26,10 @@
 
 /client/MouseDown(datum/object, location, control, params)
 	if(!control)
+		return
+	var/side_key = mouse_event_side_button_key(params)
+	if(side_key)
+		mouse_side_button_down(side_key)
 		return
 	if(QDELETED(object)) //Yep, you can click on qdeleted things before they have time to nullspace. Fun.
 		return
@@ -48,6 +54,10 @@
 
 /client/MouseUp(object, location, control, params)
 	if(!control)
+		return
+	var/side_key = mouse_event_side_button_key(params)
+	if(side_key)
+		keyUp(side_key)
 		return
 	if(SEND_SIGNAL(src, COMSIG_CLIENT_MOUSEUP, object, location, control, params) & COMPONENT_CLIENT_MOUSEUP_INTERCEPT)
 		click_intercept_time = world.time

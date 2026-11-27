@@ -45,7 +45,7 @@ excluded_listeners - Список мобов, которым не отправл
 */
 
 /proc/playsound(atom/source, soundin, vol as num, vary, extrarange as num, falloff_exponent = SOUND_FALLOFF_EXPONENT, frequency = null, channel = 0, pressure_affected = TRUE, ignore_walls = TRUE,
-	falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, envwet = -10000, envdry = 0, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, distance_multiplier_min_range = SOUND_DEFAULT_MULTIPLIER_EFFECT_RANGE, list/excluded_listeners)
+	falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, envwet = -10000, envdry = 0, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, distance_multiplier_min_range = SOUND_DEFAULT_MULTIPLIER_EFFECT_RANGE, list/excluded_listeners, local_only = FALSE)
 	if(isarea(source))
 		CRASH("playsound(): source is an area")
 
@@ -56,8 +56,8 @@ excluded_listeners - Список мобов, которым не отправл
 
 	var/maxdistance = SOUND_RANGE + extrarange
 	var/source_z = turf_source.z
-	var/turf/above_turf = SSmapping.get_turf_above(turf_source)
-	var/turf/below_turf = SSmapping.get_turf_below(turf_source)
+	var/turf/above_turf = local_only ? null : SSmapping.get_turf_above(turf_source)
+	var/turf/below_turf = local_only ? null : SSmapping.get_turf_below(turf_source)
 
 	var/list/listeners
 	// Extra listener lists to iterate separately when we can avoid Copy()

@@ -1,6 +1,6 @@
 /datum/mutation/human/telepathy
 	name = "Telepathy"
-	desc = "A rare mutation that allows the user to telepathically communicate to others."
+	desc = "Редкая мутация, позволяющая носителю телепатически общаться с другими."
 	quality = POSITIVE
 	text_gain_indication = "<span class='notice'>You can hear your own voice echoing in your mind!</span>"
 	text_lose_indication = "<span class='notice'>You don't hear your mind echo anymore.</span>"
@@ -14,7 +14,7 @@
 
 /datum/mutation/human/firebreath
 	name = "Fire Breath"
-	desc = "An ancient mutation that gives lizards breath of fire."
+	desc = "Древняя мутация, дающая ящерицам огненное дыхание."
 	quality = POSITIVE
 	mutator_security_level = FIREBREATH_PRINT_CODE
 	difficulty = 12
@@ -99,7 +99,7 @@
 
 /datum/mutation/human/void
 	name = "Void Magnet"
-	desc = "A rare genome that attracts odd forces not usually observed."
+	desc = "Редкий геном, притягивающий странные силы, которые обычно не наблюдаются."
 	quality = MINOR_NEGATIVE //upsides and downsides
 	mutator_security_level = VOID_PRINT_CODE
 	text_gain_indication = "<span class='notice'>You feel a heavy, dull force just beyond the walls watching you.</span>"
@@ -137,7 +137,7 @@
 
 /datum/mutation/human/shock
 	name = "Shock Touch"
-	desc = "The affected can channel excess electricity through their hands without shocking themselves, allowing them to shock others."
+	desc = "Носитель может пропускать избыточное электричество через руки, не поражая себя, что позволяет ему бить током других."
 	quality = POSITIVE
 	mutator_security_level = SHOCKTOUCH_PRINT_CODE
 	locked = TRUE
@@ -192,7 +192,7 @@
 
 /datum/mutation/human/olfaction
 	name = "Transcendent Olfaction"
-	desc = "Your sense of smell is comparable to that of a canine."
+	desc = "Ваше обоняние сравнимо с собачьим."
 	quality = POSITIVE
 	difficulty = 12
 	text_gain_indication = "<span class='notice'>Smells begin to make more sense...</span>"
@@ -287,7 +287,7 @@
 
 /datum/mutation/human/self_amputation
 	name = "Autotomy"
-	desc = "Allows a creature to voluntary discard a random appendage."
+	desc = "Позволяет существу добровольно отбросить случайную конечность."
 	quality = POSITIVE
 	text_gain_indication = "<span class='notice'>Your joints feel loose.</span>"
 	instability = 20
@@ -328,7 +328,7 @@
 //spider webs
 /datum/mutation/human/webbing
 	name = "Webbing Production"
-	desc = "Allows the user to lay webbing, and travel through it."
+	desc = "Позволяет носителю плести паутину и передвигаться по ней."
 	quality = POSITIVE
 	text_gain_indication = "<span class='notice'>Your skin feels webby.</span>"
 	instability = 15
@@ -368,7 +368,7 @@
 
 /datum/mutation/human/tongue_spike
 	name = "Tongue Spike"
-	desc = "Allows a creature to voluntary shoot their tongue out as a deadly weapon."
+	desc = "Позволяет существу добровольно выстреливать языком как смертоносным оружием."
 	quality = POSITIVE
 	text_gain_indication = "<span class='notice'>Your feel like you can throw your voice.</span>"
 	instability = 15
@@ -446,7 +446,7 @@
 
 /datum/mutation/human/tongue_spike/chem
 	name = "Chem Spike"
-	desc = "Allows a creature to voluntary shoot their tongue out as biomass, allowing a long range transfer of chemicals."
+	desc = "Позволяет существу добровольно выстреливать языком как биомассой, обеспечивая передачу химикатов на расстоянии."
 	quality = POSITIVE
 	text_gain_indication = "<span class='notice'>Your feel like you can really connect with people by throwing your voice.</span>"
 	instability = 15

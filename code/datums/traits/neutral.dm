@@ -10,6 +10,15 @@
 	lose_text = "<span class='notice'>Вы снова чувствуете вкус!</span>"
 	medical_record_text = "Пациент страдает от авгезии и не способен чувствовать вкус."
 
+/datum/quirk/no_smell
+	name = "Аносмия"
+	desc = "Вы не ощущаете запахи! Вы не сможете обнаружать определенные бесцветные газы."
+	value = 0
+	mob_trait = TRAIT_ANOSMIA
+	gain_text = "<span class='notice'>Вы не чувствуете запахов!</span>"
+	lose_text = "<span class='notice'>Вы снова чувствуете запахи!</span>"
+	medical_record_text = "Пациент страдает от аносмии и не может различать запахи газов и частиц."
+
 /datum/quirk/snob
 	name = "Сноб"
 	desc = "Вас волнуют вещи утонченные, если комната выглядит некрасиво, она просто не стоит того, верно?"
@@ -185,11 +194,10 @@
 	if(!spawn_items)
 		return
 	var/mob/living/carbon/human/H = quirk_holder
-	var/obj/item/storage/photo_album/photo_album = new(get_turf(H))
+	var/obj/item/storage/photo_album/personal/photo_album = new(get_turf(H))
+	photo_album.load_for_account(H.mind?.key || H.key)
 	H.put_in_hands(photo_album)
 	H.equip_to_slot(photo_album, ITEM_SLOT_BACKPACK)
-	photo_album.persistence_id = "personal_[H.mind.key]" // this is a persistent album, the ID is tied to the account's key to avoid tampering
-	photo_album.persistence_load()
 	photo_album.name = "[H.real_name] Photo Album"
 	var/obj/item/camera/camera = new(get_turf(H))
 	camera.name = "[H.real_name] Camera"
@@ -207,32 +215,40 @@
 	gain_text = span_notice("Вы чувствуете давление в груди.")
 	lose_text = span_notice("Вы чувствуете, что ваша грудь стала легче.")
 	medical_record_text = "Грудь пациента демонстрируют высокую продуктивность."
-	var/increasedcum
+	var/obj/item/organ/genital/breasts/modified_organ
 
 /datum/quirk/milk_plus/add()
-	var/mob/living/carbon/M = quirk_holder
-	if(M.getorganslot(ORGAN_SLOT_BREASTS))
-		var/obj/item/organ/genital/breasts/T = M.getorganslot(ORGAN_SLOT_BREASTS)
-		T.fluid_mult += 0.5 //Base is 1
-		T.fluid_max_volume *= 1.75 //Fixes this.
+	RegisterSignal(quirk_holder, COMSIG_MOB_ORGAN_ADD, PROC_REF(sync_organ_bonus))
+	RegisterSignal(quirk_holder, COMSIG_MOB_ORGAN_REMOVE, PROC_REF(sync_organ_bonus))
+	sync_organ_bonus()
 
 /datum/quirk/milk_plus/remove()
+	UnregisterSignal(quirk_holder, list(COMSIG_MOB_ORGAN_ADD, COMSIG_MOB_ORGAN_REMOVE))
+	if(!QDELETED(modified_organ))
+		modified_organ.update_fluid_reserve()
+		modified_organ.fluid_mult -= GENITAL_FLUID_QUIRK_RATE_BONUS
+		modified_organ.fluid_max_volume /= GENITAL_FLUID_QUIRK_CAPACITY_MULTIPLIER
+		modified_organ.stored_fluid = min(modified_organ.stored_fluid, modified_organ.fluid_max_volume)
+	modified_organ = null
+
+/datum/quirk/milk_plus/proc/sync_organ_bonus(datum/source)
+	SIGNAL_HANDLER
 	var/mob/living/carbon/M = quirk_holder
 	if(!M)
 		return
-	if(quirk_holder.getorganslot(ORGAN_SLOT_BREASTS))
-		var/obj/item/organ/genital/breasts/T = M.getorganslot(ORGAN_SLOT_BREASTS)
-		T.fluid_mult -= 0.5 //Base is 1
-		T.fluid_max_volume *= 0.25 //Base is 50
-
-/datum/quirk/milk_plus/on_process()
-	var/mob/living/carbon/M = quirk_holder //If you get balls later, then this will still proc
-	if(M.getorganslot(ORGAN_SLOT_BREASTS))
-		var/obj/item/organ/genital/breasts/T = M.getorganslot(ORGAN_SLOT_BREASTS)
-		if(!increasedcum)
-			T.fluid_mult = 1.5 //Base is 0.133
-			T.fluid_max_volume *= 1.75
-			increasedcum = TRUE
+	var/obj/item/organ/genital/breasts/current = M.getorganslot(ORGAN_SLOT_BREASTS)
+	if(current == modified_organ)
+		return
+	if(!QDELETED(modified_organ))
+		modified_organ.update_fluid_reserve()
+		modified_organ.fluid_mult -= GENITAL_FLUID_QUIRK_RATE_BONUS
+		modified_organ.fluid_max_volume /= GENITAL_FLUID_QUIRK_CAPACITY_MULTIPLIER
+		modified_organ.stored_fluid = min(modified_organ.stored_fluid, modified_organ.fluid_max_volume)
+	modified_organ = current
+	if(!QDELETED(current))
+		current.update_fluid_reserve()
+		current.fluid_mult += GENITAL_FLUID_QUIRK_RATE_BONUS
+		current.fluid_max_volume *= GENITAL_FLUID_QUIRK_CAPACITY_MULTIPLIER
 
 /datum/quirk/kartavii
 	name = "Картавый"
@@ -378,8 +394,8 @@
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
 
 // Quirk examine text.
-/datum/quirk/russian/proc/quirk_examine_russian(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
-	examine_list += "[quirk_holder.ru_who(TRUE)] излучает русский дух..."
+/datum/quirk/russian/proc/quirk_examine_russian(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list, anonymous = FALSE)
+	examine_list += "[anonymous ? "Он" : quirk_holder.ru_who(TRUE)] излучает русский дух..."
 
 /datum/quirk/waddle
 	name = "Неуклюжесть"

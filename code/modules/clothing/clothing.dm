@@ -490,8 +490,13 @@ BLIND     // can't see anything
 			if(istext(alpha_masks))
 				alpha_masks = list(alpha_masks)
 			for(var/alpha_state in alpha_masks)
-				var/icon/alpha = icon('icons/mob/clothing/alpha_masks.dmi', alpha_state)
-				I.Blend(alpha, ICON_MULTIPLY, -15, -15)
+				var/is_armbinder_mask = alpha_state == "armbinder_sleeves"
+				var/mask_file = is_armbinder_mask ? 'modular_splurt/icons/mob/clothing/lewd_clothing/armbinder_masks.dmi' : 'icons/mob/clothing/alpha_masks.dmi'
+				var/icon/alpha = icon(mask_file, alpha_state)
+				if(is_armbinder_mask)
+					I.Blend(alpha, ICON_MULTIPLY, 1 + round((I.Width() - alpha.Width()) / 2), 1 + round((I.Height() - alpha.Height()) / 2))
+				else
+					I.Blend(alpha, ICON_MULTIPLY, -15, -15)
 		. = GLOB.alpha_masked_worn_icons[index] = fcopy_rsc(I)
 	catch(var/exception/icon_error)
 		return note_icon_alloc_failure("одежда с альфа-маской [index]", icon_error)
@@ -546,15 +551,18 @@ BLIND     // can't see anything
 			Shreds.desc = "The sad remains of what used to be [name]."
 		deconstruct(FALSE)
 	else if(!(damage_flag in list(ACID, FIRE)))
-		damaged_clothes = CLOTHING_SHREDDED
-		body_parts_covered = NONE
-		name = "shredded [initial(name)]"
-		update_clothes_damaged_state(CLOTHING_SHREDDED)
-		if(ismob(loc))
-			var/mob/M = loc
-			M.visible_message("<span class='danger'>[M]'s [src.name] is completely shredded!</span>", "<span class='userdanger'>Your [src.name] is completely shredded!</span>", vision_distance = COMBAT_MESSAGE_RANGE)
+		shred_clothing()
 	else
 		..()
+
+/obj/item/clothing/proc/shred_clothing(vision_distance = COMBAT_MESSAGE_RANGE, visible_message_flags = NONE)
+	damaged_clothes = CLOTHING_SHREDDED
+	body_parts_covered = NONE
+	name = "shredded [initial(name)]"
+	update_clothes_damaged_state(CLOTHING_SHREDDED)
+	if(ismob(loc))
+		var/mob/wearer = loc
+		wearer.visible_message(span_danger("Одежда на [wearer] разрывается в клочья!"), span_userdanger("Твоя одежда разрывается в клочья!"), vision_distance = vision_distance, visible_message_flags = visible_message_flags)
 
 //Species-restricted clothing check. - Thanks Oraclestation, BS13, /vg/station etc.
 /obj/item/clothing/mob_can_equip(M, equipper, slot, disable_warning = TRUE, bypass_equip_delay_self)

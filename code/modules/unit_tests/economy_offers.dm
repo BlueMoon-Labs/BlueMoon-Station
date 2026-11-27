@@ -1,0 +1,1359 @@
+/// Спецзаказы на свежих партнёрах из конфига репозитория; рынок, контракты, бюджеты и сообщение ЦК возвращаются.
+/datum/unit_test/economy_offers
+	abstract_type = /datum/unit_test/economy_offers
+	var/list/saved_market
+	var/list/stashed_contracts
+	var/saved_centcom_message
+	var/saved_export_categories
+	var/datum/bank_account/department/cargo
+	var/saved_cargo
+	var/datum/economy_department/medical
+	var/saved_medical
+	/// list(offer, success) на каждый COMSIG_MARKET_OFFER_RESOLVED
+	var/list/resolved = list()
+
+/datum/unit_test/economy_offers/New()
+	..()
+	saved_market = econ_test_swap_market()
+	SSmarket.next_shift = world.time + 1 HOURS
+	SSmarket.next_restock = world.time + 1 HOURS
+	SSmarket.next_offers = world.time + 1 HOURS
+	stashed_contracts = econ_test_stash_contracts()
+	saved_centcom_message = SSshuttle.centcom_message
+	saved_export_categories = SSshuttle.supply.export_categories
+	cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	saved_cargo = cargo.account_balance
+	medical = SSeconomy.get_department(ACCOUNT_MED)
+	saved_medical = medical.account.account_balance
+	RegisterSignal(SSmarket, COMSIG_MARKET_OFFER_RESOLVED, PROC_REF(on_resolved))
+
+/datum/unit_test/economy_offers/Destroy()
+	UnregisterSignal(SSmarket, COMSIG_MARKET_OFFER_RESOLVED)
+	SSshuttle.centcom_message = saved_centcom_message
+	SSshuttle.supply.export_categories = saved_export_categories
+	econ_test_restore_contracts(stashed_contracts)
+	econ_test_set_balance(cargo, saved_cargo)
+	econ_test_set_balance(medical.account, saved_medical)
+	cargo = null
+	medical = null
+	econ_test_restore_market(saved_market)
+	return ..()
+
+/datum/unit_test/economy_offers/proc/on_resolved(datum/source, datum/market_offer/offer, success)
+	SIGNAL_HANDLER
+	resolved += list(list(offer, success))
+
+/datum/unit_test/economy_offers/proc/add_offer(partner_id, wanted_type, quantity, multiplier, unit_price, reagent, volume)
+	var/datum/trade_partner/partner = SSmarket.get_partner(partner_id)
+	var/datum/market_offer/offer = new(partner_id, wanted_type, "тест", quantity, multiplier, unit_price, reagent, volume)
+	partner.offers += offer
+	return offer
+
+/datum/unit_test/economy_offers/proc/shuttle_floor()
+	for(var/area/shuttle/shuttle_area as anything in SSshuttle.supply.shuttle_areas)
+		for(var/turf/open/floor in shuttle_area)
+			if(!floor.is_blocked_turf())
+				return floor
+
+/datum/unit_test/economy_offers/proc/shuttle_crate()
+	var/turf/open/floor = shuttle_floor()
+	TEST_ASSERT_NOTNULL(floor, "Есть пол шаттла снабжения")
+	return allocate(/obj/structure/closet/crate, floor)
+
+/datum/unit_test/economy_offers/proc/make_technician(turf/where)
+	var/mob/living/carbon/human/technician = allocate(/mob/living/carbon/human, where)
+	var/datum/bank_account/account = new("econ_test_offer_technician")
+	account.department_id = ACCOUNT_CAR
+	technician.account_id = account.account_id
+	allocated += account
+	return technician
+
+/// Окно консоли снабжения для act от лица user; uid - то, что консоль отдала в ui_data.
+/datum/unit_test/economy_offers/proc/console_act(obj/machinery/computer/cargo/console, mob/living/carbon/human/user, action, uid)
+	var/datum/tgui/window = allocate(/datum/tgui, user, console, "Cargo")
+	window.status = UI_INTERACTIVE
+	usr = user
+	. = console.ui_act(action, list("uid" = uid), window)
+	usr = null
+
+/datum/unit_test/economy_offers/proc/sale_value(atom/movable/thing)
+	return econ_export_report_value(export_item_and_contents(thing, EXPORT_CARGO, delete_unsold = FALSE, dry_run = TRUE))
+
+/// Взятый в станционной консоли спецзаказ выполняется отгрузкой ящика с его накладной: за штуку база при отгрузке, маржа снабжению при выполнении, лишнее продано обычным порядком, партнёру репутация.
+/datum/unit_test/economy_offers/fulfilled/Run()
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/plasma, 10, 2, 100)
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo, station_turf)
+	var/obj/machinery/computer/cargo/other_console = allocate(/obj/machinery/computer/cargo, station_turf)
+	var/mob/living/carbon/human/technician = make_technician(station_turf)
+	var/list/entries = console.ui_data(technician)["special_offers"]
+	TEST_ASSERT_EQUAL(length(entries), 1, "Спецзаказ в данных консоли")
+	TEST_ASSERT_EQUAL(entries[1]["reward"], 2000, "Награда в данных консоли")
+	TEST_ASSERT_EQUAL(entries[1]["premium"], 1000, "Маржа в данных консоли")
+	var/uid = entries[1]["uid"]
+	TEST_ASSERT(isnum(uid), "uid в данных консоли - число")
+	console_act(console, technician, "print_offer_manifest", uid)
+	TEST_ASSERT(!(locate(/obj/item/export_manifest) in technician.held_items), "Накладная невзятого спецзаказа напечатана")
+	console_act(console, technician, "accept_offer", uid)
+	TEST_ASSERT(offer.accepted, "Спецзаказ не взят")
+	TEST_ASSERT(abs(offer.deadline - (world.time + SSmarket.offer_deadline_minutes MINUTES)) < 1, "Срок от взятия")
+	console_act(console, technician, "print_offer_manifest", "[uid]")
+	var/obj/item/export_manifest/manifest = locate() in technician.held_items
+	TEST_ASSERT_NOTNULL(manifest, "Накладная спецзаказа не в руках")
+	TEST_ASSERT_EQUAL(manifest.special_offer_id, offer.uid, "Накладная привязана к спецзаказу")
+	technician.dropItemToGround(manifest)
+	console_act(other_console, technician, "print_offer_manifest", uid)
+	TEST_ASSERT(!(locate(/obj/item/export_manifest) in technician.held_items), "Кулдаун печати не на счёте сотрудника")
+	TEST_ASSERT(findtext(jointext(manifest.examine(technician), "\n"), "принято 0 из 10, 100 кр. за штуку при отгрузке и 100 кр. за штуку маржи"), "Осмотр накладной не описывает спецзаказ")
+	var/obj/structure/closet/crate/crate = shuttle_crate()
+	var/obj/item/stack/sheet/mineral/plasma/extra = allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 5)
+	var/extra_value = sale_value(extra)
+	TEST_ASSERT(extra_value > 0, "Плазма продаётся")
+	qdel(extra)
+	new /obj/item/stack/sheet/mineral/plasma(crate, 15)
+	manifest.forceMove(crate)
+	var/cargo_before = cargo.account_balance
+	var/reputation_before = prospectors.reputation
+	SSshuttle.supply.sell()
+	TEST_ASSERT(QDELETED(offer), "Спецзаказ не закрыт")
+	TEST_ASSERT(length(resolved) == 1 && resolved[1][1] == offer && resolved[1][2], "Нет сигнала выполнения")
+	var/gain = cargo.account_balance - cargo_before
+	var/deposit = econ_packaging_value(/obj/structure/closet/crate)
+	TEST_ASSERT(abs(gain - (2000 + extra_value + deposit)) <= 1, "Карго получило [gain] вместо 2000 за спецзаказ, [extra_value] за лишнее и [deposit] за ящик")
+	TEST_ASSERT(prospectors.reputation >= reputation_before + MARKET_OFFER_REPUTATION_SUCCESS, "Репутация за выполнение: [prospectors.reputation - reputation_before]")
+	TEST_ASSERT(findtext(SSshuttle.centcom_message, "принято 10 шт. \"тест\" (10 из 10), 1000 кр.") && findtext(SSshuttle.centcom_message, "маржа снабжению 1000 кр."), "Сообщение ЦК не описывает спецзаказ: [SSshuttle.centcom_message]")
+	TEST_ASSERT(findtext(SSshuttle.centcom_message, "Выручка: [gain] кр."), "Выручка в сообщении ЦК не сходится: [SSshuttle.centcom_message]")
+
+/// Купленное через снабжение не засчитывается и продаётся по потолку выкупа; частичная поставка платит базу, маржа - при выполнении; напечатанное оплачивается по потолку материалов.
+/datum/unit_test/economy_offers/imported_and_printed/Run()
+	var/datum/market_offer/metal_offer = add_offer("nt_logistics", /obj/item/stack/sheet/metal, 20, 2, 5)
+	TEST_ASSERT(metal_offer.accept(), "Спецзаказ на металл взят")
+	var/obj/structure/closet/crate/crate = shuttle_crate()
+	var/obj/item/storage/box/box = new(crate)
+	var/obj/item/stack/sheet/metal/imported = new(box, 10)
+	econ_mark_imported(crate)
+	TEST_ASSERT(imported.econ_imported, "Металл помечен купленным")
+	var/imported_value = sale_value(box)
+	new /obj/item/stack/sheet/metal(crate, 15)
+	print_offer_manifest(metal_offer, crate)
+	var/cargo_before = cargo.account_balance
+	SSshuttle.supply.sell()
+	TEST_ASSERT_EQUAL(metal_offer.delivered, 15, "Засчитано не своё или не всё своё")
+	TEST_ASSERT(!QDELETED(metal_offer), "Неполная поставка закрыла спецзаказ")
+	var/deposit = econ_packaging_value(/obj/structure/closet/crate)
+	var/gain = cargo.account_balance - cargo_before
+	TEST_ASSERT(abs(gain - (15 * 5 + imported_value + deposit)) <= 1, "Карго получило [gain]: база спецзаказа 75, коробка купленного металла по выкупу [imported_value], ящик [deposit]")
+	TEST_ASSERT(findtext(SSshuttle.centcom_message, "(15 из 20)"), "Сообщение ЦК о частичной поставке: [SSshuttle.centcom_message]")
+	crate = shuttle_crate()
+	new /obj/item/stack/sheet/metal(crate, 10)
+	print_offer_manifest(metal_offer, crate)
+	cargo_before = cargo.account_balance
+	SSshuttle.supply.sell()
+	TEST_ASSERT(QDELETED(metal_offer), "Остаток поставки не закрыл спецзаказ")
+	var/rest_value = cargo.account_balance - cargo_before - 5 * 5 - 20 * 5 - deposit
+	TEST_ASSERT(rest_value >= 0, "Маржа за весь спецзаказ не выплачена при выполнении: [cargo.account_balance - cargo_before]")
+	var/datum/market_offer/shovel_offer = add_offer("nt_logistics", /obj/item/shovel, 2, 2, 50)
+	shovel_offer.accept()
+	var/obj/machinery/autolathe/lathe = allocate(/obj/machinery/autolathe)
+	lathe.being_built = SSresearch.techweb_designs["shovel"]
+	lathe.make_item(0, list(), list(), 1, 1, FALSE, null)
+	var/obj/item/shovel/printed = locate() in lathe.drop_location()
+	TEST_ASSERT_NOTNULL(printed, "Автолейт напечатал лопату")
+	var/cap = econ_cap_value(printed.econ_print_cap)
+	TEST_ASSERT(cap < 100, "Потолок лопаты [cap] не ниже награды")
+	crate = shuttle_crate()
+	printed.forceMove(crate)
+	new /obj/item/shovel(crate)
+	print_offer_manifest(shovel_offer, crate)
+	cargo_before = cargo.account_balance
+	SSshuttle.supply.sell()
+	TEST_ASSERT(QDELETED(shovel_offer), "Лопаты не закрыли спецзаказ")
+	TEST_ASSERT_EQUAL(cargo.account_balance - cargo_before, 100 + cap + deposit, "Напечатанная лопата оплачена выше материалов")
+
+/// В спецзаказ идёт только точный тип: с реагентом - где реагента не меньше нужного, подтип не годится.
+/datum/unit_test/economy_offers/exact_match/Run()
+	var/datum/market_offer/offer = add_offer("vey_med", /obj/item/reagent_containers/pill, 3, 2, 40, /datum/reagent/medicine/bicaridine, 10)
+	offer.accept()
+	var/obj/structure/closet/crate/crate = shuttle_crate()
+	var/obj/item/reagent_containers/pill/full = new(crate)
+	full.reagents.add_reagent(/datum/reagent/medicine/bicaridine, 15)
+	var/obj/item/reagent_containers/pill/weak = new(crate)
+	weak.reagents.add_reagent(/datum/reagent/medicine/bicaridine, 5)
+	var/obj/item/reagent_containers/pill/other = new(crate)
+	other.reagents.add_reagent(/datum/reagent/medicine/kelotane, 15)
+	var/obj/item/reagent_containers/pill/patch/patch = new(crate)
+	patch.reagents.add_reagent(/datum/reagent/medicine/bicaridine, 15)
+	print_offer_manifest(offer, crate)
+	SSshuttle.supply.sell()
+	TEST_ASSERT_EQUAL(offer.delivered, 1, "Засчитано таблеток")
+	TEST_ASSERT_EQUAL(offer.paid, 40, "База за таблетку")
+	TEST_ASSERT_EQUAL(offer.premium_due, 40, "Маржа за таблетку копится до выполнения")
+	TEST_ASSERT(findtext(offer.manifest_text(), "не меньше 10 ед."), "Накладная не называет объём реагента")
+	var/datum/market_offer/pizza_offer = add_offer("prospectors", /obj/item/reagent_containers/food/snacks/pizza/margherita, 2, 2, 100)
+	pizza_offer.accept()
+	crate = shuttle_crate()
+	new /obj/item/reagent_containers/food/snacks/pizza/margherita/robo(crate)
+	print_offer_manifest(pizza_offer, crate)
+	SSshuttle.supply.sell()
+	TEST_ASSERT_EQUAL(pizza_offer.delivered, 0, "Подтип засчитан как точный тип")
+
+/// С накладной отдела в том же ящике база спецзаказа делится, как выручка ящика, а маржа уходит снабжению; товар без покупателя спецзаказ забирает, остальное возвращается.
+/datum/unit_test/economy_offers/department_and_embargo/Run()
+	for(var/id in SSmarket.partners)
+		var/datum/trade_partner/partner = SSmarket.partners[id]
+		partner.buys -= COMMODITY_METALS
+		partner.buys -= PARTNER_ANY
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/metal, 5, 2, 10)
+	offer.accept()
+	var/obj/structure/closet/crate/crate = shuttle_crate()
+	var/obj/item/stack/sheet/metal/sheets = new(crate, 8)
+	allocated += sheets
+	print_offer_manifest(offer, crate)
+	medical.print_manifest(crate)
+	var/cargo_before = cargo.account_balance
+	var/medical_before = medical.account.account_balance
+	SSshuttle.supply.sell()
+	TEST_ASSERT(QDELETED(offer), "Спецзаказ не выполнен")
+	var/fee = round(50 * SSeconomy.settings.cargo_handling_fee / 100)
+	var/deposit = econ_packaging_value(/obj/structure/closet/crate)
+	var/deposit_fee = round(deposit * SSeconomy.settings.cargo_handling_fee / 100)
+	var/medical_share = 50 - fee + deposit - deposit_fee
+	TEST_ASSERT_EQUAL(medical.account.account_balance - medical_before, medical_share, "Доля отдела от базы спецзаказа и ящика")
+	TEST_ASSERT_EQUAL(cargo.account_balance - cargo_before, fee + deposit_fee + 50, "Карго получило сборы и маржу")
+	TEST_ASSERT(!QDELETED(sheets) && sheets.amount == 3 && isturf(sheets.loc), "Непроданный остаток металла не вернулся на шаттл")
+	TEST_ASSERT(findtext(SSshuttle.centcom_message, "Не нашлось покупателя: 1 шт. возвращено."), "Сообщение ЦК о возвращённом: [SSshuttle.centcom_message]")
+	TEST_ASSERT(findtext(SSshuttle.centcom_message, "[medical.name] - [medical_share] кр."), "Сообщение ЦК о доле отдела: [SSshuttle.centcom_message]")
+
+/// Спецзаказ контрабандного партнёра принимает только отгрузка с допуском контрабанды; в ящике учитывается один спецзаказ.
+/datum/unit_test/economy_offers/contraband_and_second_manifest/Run()
+	var/datum/trade_partner/free_traders = SSmarket.get_partner("free_traders")
+	free_traders.unlocked = TRUE
+	var/datum/market_offer/offer = add_offer("free_traders", /obj/item/stack/sheet/bone, 5, 2, 20)
+	offer.accept()
+	var/datum/market_offer/second = add_offer("vey_med", /obj/item/stack/sheet/bone, 5, 2, 20)
+	second.accept()
+	SSshuttle.supply.export_categories = EXPORT_CARGO
+	var/obj/structure/closet/crate/crate = shuttle_crate()
+	new /obj/item/stack/sheet/bone(crate, 5)
+	print_offer_manifest(offer, crate)
+	SSshuttle.supply.sell()
+	TEST_ASSERT_EQUAL(offer.delivered, 0, "Контрабандный спецзаказ принят без допуска")
+	TEST_ASSERT(findtext(econ_cargo_message("", TRUE), "только отгрузка с допуском контрабанды"), "Взломанная консоль не видит отказ: [econ_cargo_message("", TRUE)]")
+	TEST_ASSERT(!findtext(econ_cargo_message("", FALSE), "допуском контрабанды"), "Отказ контрабандного спецзаказа в общем сообщении ЦК: [SSshuttle.centcom_message]")
+	SSshuttle.supply.export_categories = EXPORT_CARGO | EXPORT_CONTRABAND
+	crate = shuttle_crate()
+	new /obj/item/stack/sheet/bone(crate, 5)
+	print_offer_manifest(offer, crate)
+	print_offer_manifest(second, crate)
+	SSshuttle.supply.sell()
+	TEST_ASSERT(QDELETED(offer), "Контрабандный спецзаказ не принят с допуском")
+	TEST_ASSERT_EQUAL(second.delivered, 0, "Второй спецзаказ в ящике засчитан")
+	TEST_ASSERT(findtext(SSshuttle.centcom_message, "В ящике учитывается только один спецзаказ"), "Сообщение ЦК о второй накладной: [SSshuttle.centcom_message]")
+
+/// Спецзаказ сдаётся на паде подработки: первая сдача берёт его, база за штуки - отделу сдавшего (сбор снабжению, доля лично), маржа при выполнении - тому же отделу; контрабандный и купленное - не принимаются.
+/datum/unit_test/economy_offers/pad_delivery
+	var/saved_tax_rate
+
+/datum/unit_test/economy_offers/pad_delivery/New()
+	. = ..()
+	saved_tax_rate = SSeconomy.tax_rate
+
+/datum/unit_test/economy_offers/pad_delivery/Destroy()
+	SSeconomy.tax_rate = saved_tax_rate
+	return ..()
+
+/datum/unit_test/economy_offers/pad_delivery/Run()
+	SSeconomy.tax_rate = 10
+	var/datum/economy_settings/settings = SSeconomy.settings
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/plasma, 10, 2, 100)
+	var/datum/trade_partner/free_traders = SSmarket.get_partner("free_traders")
+	free_traders.unlocked = TRUE
+	var/datum/market_offer/smuggled = add_offer("free_traders", /obj/item/stack/sheet/bone, 5, 2, 20)
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/mob/living/carbon/human/doctor = allocate(/mob/living/carbon/human, station_turf)
+	var/datum/bank_account/account = new("econ_test_pad_doctor")
+	account.department_id = ACCOUNT_MED
+	doctor.account_id = account.account_id
+	allocated += account
+	var/list/shown = econ_contracts_ui_data(doctor)["partner_offers"]
+	TEST_ASSERT_EQUAL(length(shown), 1, "На доске контрактов только не контрабандный спецзаказ")
+	TEST_ASSERT_EQUAL(shown[1]["uid"], offer.uid, "На доске нужный спецзаказ")
+
+	var/obj/item/stack/sheet/bone/bones = allocate(/obj/item/stack/sheet/bone, station_turf, 5)
+	TEST_ASSERT_EQUAL(econ_offers_ship(bones, doctor), 0, "Контрабандный спецзаказ принят с пада")
+	TEST_ASSERT(!smuggled.accepted, "Контрабандный спецзаказ взят с пада")
+	var/obj/item/stack/sheet/mineral/plasma/bought = allocate(/obj/item/stack/sheet/mineral/plasma, station_turf, 3)
+	bought.econ_imported = TRUE
+	TEST_ASSERT_EQUAL(econ_offers_ship(bought, doctor), 0, "Купленное через снабжение принято с пада")
+	qdel(bought)
+
+	var/medical_before = medical.account.account_balance
+	var/cargo_before = cargo.account_balance
+	var/obj/item/stack/sheet/mineral/plasma/first = allocate(/obj/item/stack/sheet/mineral/plasma, station_turf, 6)
+	TEST_ASSERT_EQUAL(econ_offers_ship(first, doctor), 6, "Первая сдача приняла 6 штук")
+	TEST_ASSERT(offer.accepted, "Первая сдача взяла спецзаказ")
+	TEST_ASSERT(QDELETED(first), "Принятая стопка ушла")
+	var/share = round(600 * settings.contract_team_share / 100)
+	var/fee = round((600 - share) * settings.cargo_handling_fee / 100)
+	TEST_ASSERT_EQUAL(account.account_balance, share - round(share * SSeconomy.tax_rate / 100), "Сдавшему доля участника за вычетом налога")
+	TEST_ASSERT_EQUAL(medical.account.account_balance - medical_before, 600 - share - fee, "Отделу сдавшего база за штуки без доли и сбора")
+	TEST_ASSERT_EQUAL(cargo.account_balance - cargo_before, fee, "Снабжению сбор")
+
+	medical_before = medical.account.account_balance
+	var/obj/item/stack/sheet/mineral/plasma/second = allocate(/obj/item/stack/sheet/mineral/plasma, station_turf, 6)
+	TEST_ASSERT_EQUAL(econ_offers_ship(second, doctor), 4, "Вторая сдача добрала 4 штуки")
+	TEST_ASSERT(!QDELETED(second) && second.amount == 2, "Лишнее осталось на паде")
+	TEST_ASSERT(QDELETED(offer), "Спецзаказ выполнен")
+	TEST_ASSERT(length(resolved) == 1 && resolved[1][2], "Нет сигнала выполнения")
+	share = round(400 * settings.contract_team_share / 100)
+	fee = round((400 - share) * settings.cargo_handling_fee / 100)
+	TEST_ASSERT_EQUAL(medical.account.account_balance - medical_before, 400 - share - fee + 1000, "Маржа выполнения - отделу сдавшего")
+
+/// Пульт пункта подработки отправляет с пада и спецзаказы партнёров.
+/datum/unit_test/economy_offers/pad_console/Run()
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/plasma, 10, 2, 100)
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/mob/living/carbon/human/doctor = allocate(/mob/living/carbon/human, station_turf)
+	var/datum/bank_account/account = new("econ_test_pad_console")
+	account.department_id = ACCOUNT_MED
+	doctor.account_id = account.account_id
+	allocated += account
+	var/obj/machinery/piratepad/civilian/pad = allocate(/obj/machinery/piratepad/civilian, station_turf)
+	pad.warmup_time = 0
+	var/obj/machinery/computer/piratepad_control/civilian/console = allocate(/obj/machinery/computer/piratepad_control/civilian, station_turf)
+	var/obj/item/multitool/tool = allocate(/obj/item/multitool)
+	pad.multitool_act(doctor, tool)
+	console.multitool_act(doctor, tool)
+	TEST_ASSERT(console.linked_pad() == pad, "Пульт связан с падом")
+	var/obj/item/stack/sheet/mineral/plasma/sheets = allocate(/obj/item/stack/sheet/mineral/plasma, station_turf, 3)
+	var/datum/tgui/window = allocate(/datum/tgui, doctor, console, "ContractBoard")
+	window.status = UI_INTERACTIVE
+	usr = doctor
+	console.ui_act("recalc", list(), window)
+	TEST_ASSERT(findtext(console.status_report, "Подходит под контракты и спецзаказы: 1 шт."), "Проверка пада видит спецзаказ: [console.status_report]")
+	console.ui_act("send", list(), window)
+	usr = null
+	TEST_ASSERT(QDELETED(sheets), "Плазма ушла с пада")
+	TEST_ASSERT_EQUAL(offer.delivered, 3, "Спецзаказ засчитал отправку с пада")
+	TEST_ASSERT(findtext(console.status_report, "по спецзаказам партнёров: 3 шт."), "Отчёт пульта: [console.status_report]")
+
+/// Сканер продажи Таркова сдаёт спецзаказ как пад подработки, но база и маржа идут бюджету Таркова, а не отделам станции; остаток стопки продаётся на рынке. Станционный счёт платит с доли налог в казну, внестанционный - нет.
+/datum/unit_test/economy_offers/outpost_scanner
+	var/datum/bank_account/tarkov
+	var/saved_tarkov
+	var/datum/bank_account/treasury
+	var/saved_treasury
+	var/saved_tax_rate
+
+/datum/unit_test/economy_offers/outpost_scanner/New()
+	. = ..()
+	tarkov = SSeconomy.get_dep_account(ACCOUNT_TAR)
+	saved_tarkov = tarkov.account_balance
+	treasury = SSeconomy.treasury()
+	saved_treasury = treasury.account_balance
+	saved_tax_rate = SSeconomy.tax_rate
+
+/datum/unit_test/economy_offers/outpost_scanner/Destroy()
+	econ_test_set_balance(tarkov, saved_tarkov)
+	econ_test_set_balance(treasury, saved_treasury)
+	tarkov = null
+	treasury = null
+	SSeconomy.tax_rate = saved_tax_rate
+	return ..()
+
+/datum/unit_test/economy_offers/outpost_scanner/Run()
+	SSeconomy.tax_rate = 10
+	var/datum/economy_settings/settings = SSeconomy.settings
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/plasma, 10, 2, 100)
+	var/datum/trade_partner/free_traders = SSmarket.get_partner("free_traders")
+	free_traders.unlocked = TRUE
+	var/datum/market_offer/smuggled = add_offer("free_traders", /obj/item/stack/sheet/bone, 5, 2, 20)
+	var/mob/living/carbon/human/scavenger = allocate(/mob/living/carbon/human)
+	var/datum/bank_account/account = new("econ_test_outpost_scavenger")
+	scavenger.account_id = account.account_id
+	allocated += account
+	var/obj/item/xenoarch/help/cargo/tarkoff/scanner = allocate(/obj/item/xenoarch/help/cargo/tarkoff)
+
+	var/examined = jointext(scanner.examine(scavenger), "\n")
+	TEST_ASSERT(findtext(examined, offer.partner_name()) && findtext(examined, "100 кр."), "Осмотр сканера показывает открытый спецзаказ: [examined]")
+	TEST_ASSERT(!findtext(examined, smuggled.partner_name()), "Осмотр сканера показывает контрабандный спецзаказ")
+
+	var/obj/item/stack/sheet/bone/bones = allocate(/obj/item/stack/sheet/bone, run_loc_floor_bottom_left, 5)
+	scanner.sell_offstation(bones, scavenger, ACCOUNT_TAR)
+	TEST_ASSERT(!smuggled.accepted && !smuggled.delivered, "Сканер сдал контрабандный спецзаказ")
+
+	var/tarkov_before = tarkov.account_balance
+	var/cargo_before = cargo.account_balance
+	var/medical_before = medical.account.account_balance
+	var/datum/economy_ledger/ledger = SSeconomy.ledger
+	var/station_minted_before = ledger.minted - ledger.outpost_minted
+	var/outpost_minted_before = ledger.outpost_minted
+	var/treasury_before = treasury.account_balance
+	var/list/income = SSeconomy.ledger.outpost_income[ACCOUNT_TAR]
+	var/offers_income_before = income ? income["offers"] : 0
+	var/market_income_before = income ? income["market"] : 0
+	var/obj/item/stack/sheet/mineral/plasma/first = allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 6)
+	TEST_ASSERT_EQUAL(scanner.sell_offstation(first, scavenger, ACCOUNT_TAR), 0, "Принятое спецзаказом продано ещё и на рынке")
+	TEST_ASSERT(offer.accepted && offer.delivered == 6, "Сканер не засчитал 6 штук в спецзаказ: [offer.delivered]")
+	TEST_ASSERT(QDELETED(first), "Принятая стопка осталась")
+	TEST_ASSERT_EQUAL(ledger.minted - ledger.outpost_minted - station_minted_before, 0, "Сдача сканером аванпоста попала в эмиссию станции")
+	TEST_ASSERT_EQUAL(ledger.outpost_minted - outpost_minted_before, 600, "Эмиссия аванпоста - вся оплата за штуки, доля сдавшего из неё")
+	var/share = round(600 * settings.contract_team_share / 100)
+	var/tax = round(share * SSeconomy.tax_rate / 100)
+	TEST_ASSERT_EQUAL(account.account_balance, share - tax, "Станционному счёту доля за вычетом налога")
+	TEST_ASSERT_EQUAL(treasury.account_balance - treasury_before, tax - round(tax * settings.tax_nt_share / 100), "Налог со станционного счёта ушёл в казну")
+	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 600 - share, "Бюджету Таркова база за штуки без доли")
+
+	account.offstation = TRUE
+	var/account_before = account.account_balance
+	treasury_before = treasury.account_balance
+	tarkov_before = tarkov.account_balance
+	var/obj/item/stack/sheet/mineral/plasma/second = allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 15)
+	var/market = scanner.sell_offstation(second, scavenger, ACCOUNT_TAR)
+	TEST_ASSERT(market > 0, "Остаток стопки сверх спецзаказа не продан на рынке")
+	TEST_ASSERT(QDELETED(second), "Остаток стопки не ушёл")
+	TEST_ASSERT(QDELETED(offer), "Спецзаказ не выполнен")
+	TEST_ASSERT(length(resolved) == 1 && resolved[1][2], "Нет сигнала выполнения")
+	share = round(400 * settings.contract_team_share / 100)
+	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 400 - share + 1000 + round(market), "Бюджету Таркова база, маржа выполнения и рынок")
+	TEST_ASSERT_EQUAL(account.account_balance - account_before, share, "Внестанционному счёту доля целиком")
+	income = SSeconomy.ledger.outpost_income[ACCOUNT_TAR]
+	TEST_ASSERT_EQUAL(income["offers"] - offers_income_before, 600 + 400 + 1000, "Заработок Таркова по спецзаказам для итогов раунда - база и маржа")
+	TEST_ASSERT_EQUAL(income["market"] - market_income_before, round(market), "Заработок Таркова на рынке для итогов раунда")
+	TEST_ASSERT_EQUAL(treasury.account_balance, treasury_before, "С внестанционного счёта налог ушёл в казну станции")
+	TEST_ASSERT_EQUAL(cargo.account_balance, cargo_before, "Снабжение станции получило деньги со сканера аванпоста")
+	TEST_ASSERT_EQUAL(medical.account.account_balance, medical_before, "Отдел станции получил деньги со сканера аванпоста")
+
+/datum/unit_test/economy_offers/outpost_scanner/proc/station_doctor()
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/mob/living/carbon/human/doctor = allocate(/mob/living/carbon/human, station_turf)
+	var/datum/bank_account/account = new("econ_test_offer_doctor")
+	account.department_id = ACCOUNT_MED
+	doctor.account_id = account.account_id
+	allocated += account
+	return doctor
+
+/datum/unit_test/economy_offers/outpost_scanner/proc/heard(mob/listener, marker)
+	for(var/list/entry as anything in GLOB.unit_test_chat_capture)
+		if(entry[1] == listener && findtext(entry[2], marker))
+			return TRUE
+	return FALSE
+
+/// Спецзаказ, который трогали только аванпосты: первая сдача сканером берёт его и называет срок, осмотр сканера объясняет срок; провал не штрафует станцию. Тронутый станцией - штрафует.
+/datum/unit_test/economy_offers/outpost_scanner/outpost_only_fail/Run()
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	var/datum/stock_company/company = SSmarket.companies[prospectors.company]
+	TEST_ASSERT_NOTNULL(company, "У партнёра есть компания на бирже")
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/plasma, 10, 2, 100)
+	offer.deadline = world.time + 30 SECONDS
+	var/mob/living/carbon/human/scavenger = allocate(/mob/living/carbon/human)
+	var/obj/item/xenoarch/help/cargo/tarkoff/scanner = allocate(/obj/item/xenoarch/help/cargo/tarkoff)
+	var/examined = jointext(scanner.examine(scavenger), "\n")
+	TEST_ASSERT(findtext(examined, "до снятия меньше минуты"), "Осмотр невзятого спецзаказа с остатком меньше минуты: [examined]")
+	TEST_ASSERT(findtext(examined, "срок станет [SSmarket.offer_deadline_minutes] мин."), "Осмотр не говорит, что первая сдача запускает срок: [examined]")
+
+	GLOB.unit_test_chat_capture = list()
+	var/obj/item/stack/sheet/mineral/plasma/first = allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 4)
+	scanner.sell_offstation(first, scavenger, ACCOUNT_TAR)
+	var/told_taken = heard(scavenger, "взят") && heard(scavenger, "осталось сдать 6 шт.")
+	GLOB.unit_test_chat_capture = null
+	TEST_ASSERT(offer.accepted && offer.delivered == 4, "Сканер не взял спецзаказ")
+	TEST_ASSERT(told_taken, "Сканер не сказал, что спецзаказ взят и сколько осталось")
+	examined = jointext(scanner.examine(scavenger), "\n")
+	TEST_ASSERT(findtext(examined, "взят, осталось") && !findtext(examined, "сейчас"), "Осмотр взятого спецзаказа: [examined]")
+
+	prospectors.reputation = 300
+	var/price_before = company.price
+	SSshuttle.centcom_message = "Прежнее сообщение."
+	offer.deadline = world.time - 1
+	SSmarket.expire_offers()
+	TEST_ASSERT(QDELETED(offer), "Просроченный спецзаказ не снят")
+	TEST_ASSERT(length(resolved) == 1 && !resolved[1][2], "Нет сигнала провала")
+	TEST_ASSERT(abs(prospectors.reputation - 300) < 0.01, "Провал заказа аванпоста снял репутацию станции: [prospectors.reputation]")
+	TEST_ASSERT_EQUAL(company.price, price_before, "Провал заказа аванпоста уронил акции")
+	TEST_ASSERT_EQUAL(SSshuttle.centcom_message, "Прежнее сообщение.", "Провал заказа аванпоста в сообщении ЦК")
+
+	var/datum/market_offer/shared = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 5, 2, 60)
+	scanner.sell_offstation(allocate(/obj/item/stack/sheet/mineral/gold, run_loc_floor_bottom_left, 1), scavenger, ACCOUNT_TAR)
+	var/mob/living/carbon/human/doctor = station_doctor()
+	TEST_ASSERT_EQUAL(econ_offers_ship(allocate(/obj/item/stack/sheet/mineral/gold, doctor.loc, 1), doctor), 1, "Пад станции принял золото")
+	prospectors.reputation = 300
+	price_before = company.price
+	shared.deadline = world.time - 1
+	SSmarket.expire_offers()
+	TEST_ASSERT(QDELETED(shared), "Просроченный общий спецзаказ не снят")
+	TEST_ASSERT(abs(prospectors.reputation - (300 - MARKET_OFFER_REPUTATION_FAIL)) < 0.01, "Провал заказа, который сдавала станция, без штрафа: [prospectors.reputation]")
+	TEST_ASSERT(company.price < price_before, "Провал заказа, который сдавала станция, не уронил акции")
+	TEST_ASSERT(findtext(SSshuttle.centcom_message, "провален"), "Провал заказа, который сдавала станция, не в сообщении ЦК: [SSshuttle.centcom_message]")
+
+/// Маржа делится по сданным штукам: за отгрузку шаттлом - снабжению, за пад - отделу сдавшего, за сканер - бюджету аванпоста, кто бы ни сдал последнюю штуку.
+/datum/unit_test/economy_offers/outpost_scanner/margin_split/Run()
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/plasma, 10, 2, 100)
+	offer.accept()
+	var/obj/structure/closet/crate/crate = shuttle_crate()
+	new /obj/item/stack/sheet/mineral/plasma(crate, 3)
+	print_offer_manifest(offer, crate)
+	SSshuttle.supply.sell()
+	TEST_ASSERT_EQUAL(offer.delivered, 3, "Шаттл сдал 3 штуки")
+	var/mob/living/carbon/human/doctor = station_doctor()
+	TEST_ASSERT_EQUAL(econ_offers_ship(allocate(/obj/item/stack/sheet/mineral/plasma, doctor.loc, 3), doctor), 3, "Пад сдал 3 штуки")
+	var/cargo_before = cargo.account_balance
+	var/medical_before = medical.account.account_balance
+	var/tarkov_before = tarkov.account_balance
+	var/mob/living/carbon/human/scavenger = allocate(/mob/living/carbon/human)
+	var/obj/item/xenoarch/help/cargo/tarkoff/scanner = allocate(/obj/item/xenoarch/help/cargo/tarkoff)
+	scanner.sell_offstation(allocate(/obj/item/stack/sheet/mineral/plasma, run_loc_floor_bottom_left, 4), scavenger, ACCOUNT_TAR)
+	TEST_ASSERT(QDELETED(offer), "Сканер не закрыл спецзаказ")
+	TEST_ASSERT_EQUAL(cargo.account_balance - cargo_before, 300, "Снабжению маржа за 3 штуки шаттла")
+	TEST_ASSERT_EQUAL(medical.account.account_balance - medical_before, 300, "Медицине маржа за 3 штуки пада")
+	TEST_ASSERT_EQUAL(tarkov.account_balance - tarkov_before, 400 + 400, "Таркову база и маржа за свои 4 штуки")
+
+/// Купленное в автомате спецзаказ не засчитывает, а NT выкупает не дороже доли уплаченного.
+/datum/unit_test/economy_offers/vended_goods/Run()
+	var/obj/machinery/vending/snack/machine = allocate(/obj/machinery/vending/snack)
+	var/datum/data/vending_product/record = machine.product_records[1]
+	var/price = record.custom_price || machine.default_price
+	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human)
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	var/datum/bank_account/account = new("econ_test_offer_buyer")
+	allocated += account
+	account.credit(1000, ECON_ADMIN)
+	card.registered_account = account
+	buyer.put_in_active_hand(card)
+	var/datum/tgui/window = allocate(/datum/tgui, buyer, machine, "Vending")
+	window.status = UI_INTERACTIVE
+	usr = buyer
+	machine.ui_act("vend", list("ref" = REF(record)), window)
+	usr = null
+	card.registered_account = null
+	var/obj/item/bought
+	for(var/obj/item/candidate in buyer.contents + machine.loc.contents)
+		if(candidate.type == record.product_path)
+			bought = candidate
+	TEST_ASSERT_NOTNULL(bought, "Автомат не выдал товар")
+	allocated += bought
+	TEST_ASSERT(bought.econ_vended && bought.econ_imported, "Товар автомата не помечен купленным")
+	TEST_ASSERT(sale_value(bought) <= round(price * econ_import_resale_factor()), "Товар автомата выкуплен за [sale_value(bought)] при цене [price]")
+	var/datum/market_offer/offer = add_offer("agrarian", record.product_path, 1, 2, 50)
+	TEST_ASSERT(!offer.matches(bought), "Спецзаказ засчитал товар автомата")
+	qdel(offer)
+	TEST_ASSERT(findtext(jointext(machine.examine(buyer), "\n"), "уплаченного"), "Осмотр автомата не объясняет выкуп")
+
+/// Тару из автомата спецзаказ на реагент принимает, если нужное в неё налили после покупки, как контракт поставки; купленное уже с реагентом, тару из снабжения и саму тару - нет.
+/datum/unit_test/economy_offers/vended_container/Run()
+	var/gintonic = /datum/reagent/consumable/ethanol/gintonic
+	var/glass_type = /obj/item/reagent_containers/food/drinks/drinkingglass
+	var/datum/market_offer/offer = add_offer("agrarian", glass_type, 2, 2, 50, gintonic, 10)
+	var/obj/item/reagent_containers/bottled = allocate(glass_type)
+	bottled.reagents.add_reagent(gintonic, 10)
+	econ_mark_vended(bottled, 30)
+	TEST_ASSERT(!offer.matches(bottled), "Спецзаказ засчитал напиток, купленный готовым")
+	var/obj/item/reagent_containers/glass = allocate(glass_type)
+	econ_mark_vended(glass, 5)
+	glass.reagents.add_reagent(gintonic, 10)
+	TEST_ASSERT(offer.matches(glass), "Спецзаказ не принял свой коктейль в стакане из автомата")
+	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate)
+	var/obj/item/reagent_containers/crated = allocate(glass_type, crate)
+	crated.reagents.add_reagent(gintonic, 10)
+	econ_mark_imported(crate)
+	TEST_ASSERT(crated.econ_imported, "Стакан из ящика снабжения не помечен купленным")
+	TEST_ASSERT(!offer.matches(crated), "Спецзаказ засчитал стакан из снабжения")
+	var/datum/market_offer/plain = add_offer("agrarian", glass_type, 1, 2, 50)
+	TEST_ASSERT(!plain.matches(glass), "Спецзаказ на саму тару засчитал тару из автомата")
+	qdel(offer)
+	qdel(plain)
+
+/// Отломленный кусок стопки из автомата уносит свою долю потолка выкупа, а слитая с ним своя стопка получает потолок.
+/datum/unit_test/economy_offers/vended_stack_split/Run()
+	var/obj/machinery/vending/medical/machine = allocate(/obj/machinery/vending/medical)
+	var/datum/data/vending_product/record
+	for(var/datum/data/vending_product/candidate as anything in machine.product_records)
+		if(candidate.product_path == /obj/item/stack/medical/gauze)
+			record = candidate
+	TEST_ASSERT_NOTNULL(record, "NanoMed продаёт бинты")
+	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human)
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	var/datum/bank_account/account = new("econ_test_offer_stack_buyer")
+	allocated += account
+	account.credit(1000, ECON_ADMIN)
+	card.registered_account = account
+	buyer.put_in_active_hand(card)
+	var/datum/tgui/window = allocate(/datum/tgui, buyer, machine, "Vending")
+	window.status = UI_INTERACTIVE
+	usr = buyer
+	machine.ui_act("vend", list("ref" = REF(record)), window)
+	usr = null
+	card.registered_account = null
+	var/obj/item/stack/medical/gauze/bought
+	for(var/obj/item/stack/medical/gauze/candidate in buyer.contents + machine.loc.contents)
+		bought = candidate
+	TEST_ASSERT(bought?.amount >= 2 && islist(bought.econ_print_cap), "Автомат не выдал помеченную стопку бинтов")
+	allocated += bought
+	var/total_cap = econ_cap_value(bought.econ_print_cap)
+	var/half = round(bought.amount / 2)
+	var/share = half / bought.amount
+	var/obj/item/stack/medical/gauze/piece = bought.split_stack(null, half)
+	allocated += piece
+	TEST_ASSERT(piece.econ_vended && piece.econ_imported && islist(piece.econ_print_cap), "Кусок стопки потерял метки автомата")
+	TEST_ASSERT(abs(econ_cap_value(piece.econ_print_cap) - total_cap * share) <= 1, "Потолок куска [econ_cap_value(piece.econ_print_cap)] вместо доли [total_cap * share]")
+	TEST_ASSERT(abs(econ_cap_value(bought.econ_print_cap) - total_cap * (1 - share)) <= 1, "Потолок остатка не уменьшился: [econ_cap_value(bought.econ_print_cap)]")
+	var/obj/item/stack/medical/gauze/own = allocate(/obj/item/stack/medical/gauze, run_loc_floor_top_right, 1)
+	var/own_value = econ_cap_value(econ_value_list(own))
+	piece.merge(own)
+	TEST_ASSERT(islist(own.econ_print_cap) && own.econ_vended, "Своя стопка после слияния без потолка автомата")
+	TEST_ASSERT(abs(econ_cap_value(own.econ_print_cap) - (own_value + total_cap * share)) <= 1, "Потолок слитой стопки [econ_cap_value(own.econ_print_cap)] вместо [own_value + total_cap * share]")
+	TEST_ASSERT(sale_value(own) <= econ_cap_value(own.econ_print_cap) + 1, "Слитая стопка продана выше потолка")
+
+/// Срок взятого спецзаказа выходит в fire(): провал без маржи, потеря репутации, строка дописана к сообщению ЦК; невзятый снимается без штрафа; груз после срока продаётся обычным порядком.
+/datum/unit_test/economy_offers/expired/Run()
+	var/datum/trade_partner/vey = SSmarket.get_partner("vey_med")
+	var/datum/market_offer/late = add_offer("vey_med", /obj/item/stack/sheet/bone, 5, 2, 20)
+	late.accept()
+	late.deadline = world.time - 1
+	var/obj/structure/closet/crate/crate = shuttle_crate()
+	new /obj/item/stack/sheet/bone(crate, 5)
+	print_offer_manifest(late, crate)
+	SSshuttle.supply.sell()
+	TEST_ASSERT_EQUAL(late.delivered, 0, "Просроченный спецзаказ принял груз")
+	TEST_ASSERT(findtext(SSshuttle.centcom_message, "уже не принимает груз"), "Сообщение ЦК о просрочке: [SSshuttle.centcom_message]")
+	var/datum/market_offer/untaken = add_offer("vey_med", /obj/item/stack/sheet/leather, 5, 2, 20)
+	untaken.deadline = world.time - 1
+	vey.reputation = 300
+	SSshuttle.centcom_message = "Прежнее сообщение."
+	var/cargo_before = cargo.account_balance
+	SSmarket.fire()
+	TEST_ASSERT(QDELETED(late) && QDELETED(untaken), "Просроченные не сняты")
+	TEST_ASSERT_EQUAL(cargo.account_balance, cargo_before, "Провал заплатил маржу")
+	TEST_ASSERT(abs(vey.reputation - (300 - MARKET_OFFER_REPUTATION_FAIL)) < 0.01, "Репутация за провал: [vey.reputation]")
+	TEST_ASSERT(length(resolved) == 1 && resolved[1][1] == late && !resolved[1][2], "Сигнал провала только для взятого")
+	TEST_ASSERT(findtext(SSshuttle.centcom_message, "Прежнее сообщение.") && findtext(SSshuttle.centcom_message, "провален"), "Строка о провале не дописана: [SSshuttle.centcom_message]")
+	var/datum/market_offer/fresh = add_offer("vey_med", /obj/item/stack/sheet/bone, 5, 2, 20)
+	fresh.deadline = world.time - 1
+	TEST_ASSERT(!fresh.accept(), "Снятый по сроку спецзаказ взят")
+	qdel(fresh)
+
+/// fire() раз в offer_minutes выставляет спецзаказы открытым партнёрам из их offer_items, не больше offers_max и без повторов товара.
+/datum/unit_test/economy_offers/generation/Run()
+	SSmarket.offer_chance = 100
+	SSmarket.offers_board_max = 100
+	for(var/fire_count in 1 to SSmarket.offers_max + 1)
+		SSmarket.next_offers = world.time
+		SSmarket.fire()
+		TEST_ASSERT(SSmarket.next_offers >= world.time + SSmarket.offer_minutes MINUTES - 1, "Следующая генерация не назначена")
+	for(var/id in SSmarket.partners)
+		var/datum/trade_partner/partner = SSmarket.partners[id]
+		if(!partner.unlocked)
+			TEST_ASSERT(!length(partner.offers), "Закрытый партнёр [id] выставил спецзаказ")
+			continue
+		TEST_ASSERT_EQUAL(length(partner.offers), min(SSmarket.offers_max, length(partner.offer_items)), "Спецзаказов у [id]")
+		var/list/seen = list()
+		for(var/datum/market_offer/offer as anything in partner.offers)
+			TEST_ASSERT(SSmarket.offer_by_uid(offer.uid) == offer, "Спецзаказ не находится по uid")
+			TEST_ASSERT(!seen["[offer.wanted_type][offer.wanted_reagent]"], "Повтор товара у [id]")
+			seen["[offer.wanted_type][offer.wanted_reagent]"] = TRUE
+			TEST_ASSERT(offer.multiplier >= MARKET_OFFER_MULT_MIN && offer.multiplier <= MARKET_OFFER_MULT_MAX, "Множитель [offer.multiplier]")
+			var/list/source
+			for(var/list/item_entry as anything in partner.offer_items)
+				if(item_entry["path"] == offer.wanted_type && item_entry["reagent"] == offer.wanted_reagent)
+					source = item_entry
+			TEST_ASSERT_NOTNULL(source, "Спецзаказ не из offer_items [id]")
+			TEST_ASSERT(offer.quantity >= source["min"] && offer.quantity <= source["max"] && offer.unit_price == source["unit_price"], "Количество или цена не из записи [id]")
+			TEST_ASSERT(abs(offer.deadline - (world.time + SSmarket.offer_minutes * MARKET_OFFER_UNTAKEN_LIFETIME MINUTES)) < 1, "Срок невзятого")
+	TEST_ASSERT(length(SSmarket.all_offers()), "Ни одного спецзаказа")
+
+/// Невзятых на доске не больше offers_board_max: взятые и контрабандные места не занимают, полная доска не мешает контрабандному партнёру.
+/datum/unit_test/economy_offers/board_cap/Run()
+	SSmarket.offer_chance = 100
+	SSmarket.offers_board_max = 2
+	econ_test_partner_extremes()
+	for(var/fire_count in 1 to 4)
+		SSmarket.generate_offers()
+	TEST_ASSERT_EQUAL(board_count(), 2, "Невзятых на доске")
+	var/datum/trade_partner/free_traders = SSmarket.get_partner("free_traders")
+	TEST_ASSERT_EQUAL(length(free_traders.offers), SSmarket.offers_max, "Контрабандный партнёр не выставил из-за полной доски")
+	var/list/board = list()
+	for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
+		if(!offer.contraband())
+			board += offer
+	var/datum/market_offer/taken = board[1]
+	TEST_ASSERT(taken.accept(), "Спецзаказ с доски взят")
+	SSmarket.generate_offers()
+	TEST_ASSERT_EQUAL(board_count(), 2, "Взятый освободил место на доске")
+	SSmarket.offers_board_max = 0
+	var/total = length(SSmarket.all_offers())
+	SSmarket.generate_offers()
+	TEST_ASSERT_EQUAL(length(SSmarket.all_offers()), total, "Доска с нулевым лимитом получила спецзаказ")
+
+/datum/unit_test/economy_offers/board_cap/proc/board_count()
+	. = 0
+	for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
+		if(!offer.accepted && !offer.contraband() && offer.open())
+			.++
+
+/// Партнёр, чьи спецзаказы снимаются невзятыми, выставляет реже, но не реже offer_ignored_chance_min; снятое под эмбарго не в счёт, взятый возвращает прежний шанс.
+/datum/unit_test/economy_offers/ignored_partner_slows/Run()
+	SSmarket.offer_chance = 60
+	SSmarket.offer_ignored_factor = 0.5
+	SSmarket.offer_ignored_chance_min = 10
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 60, "Шанс без невзятых")
+	expire_untaken("prospectors", /obj/item/stack/sheet/mineral/silver)
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 30, "Шанс после одного невзятого")
+	for(var/list/row as anything in econ_cargo_partners_data(FALSE))
+		TEST_ASSERT_EQUAL(!!row["offers_slowed"], row["id"] == "prospectors", "Метка редких спецзаказов у [row["id"]]")
+	prospectors.embargo_until = world.time + 1 HOURS
+	expire_untaken("prospectors", /obj/item/stack/sheet/mineral/silver)
+	prospectors.embargo_until = 0
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 30, "Снятое под эмбарго посчитано невзятым")
+	var/datum/market_offer/crossed = add_offer("prospectors", /obj/item/stack/sheet/mineral/silver, 5, 2, 20)
+	crossed.posted_at = world.time - 10
+	prospectors.embargo_until = world.time - 5
+	crossed.deadline = world.time - 1
+	SSmarket.expire_offers()
+	prospectors.embargo_until = 0
+	TEST_ASSERT(QDELETED(crossed), "Невзятый после эмбарго не снят")
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 30, "Снятое после эмбарго, который шёл за его срок, посчитано невзятым")
+	expire_untaken("prospectors", /obj/item/stack/sheet/mineral/silver)
+	expire_untaken("prospectors", /obj/item/stack/sheet/mineral/silver)
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 10, "Шанс опустился ниже минимума")
+	SSmarket.offer_chance = 5
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 5, "Минимум поднял шанс выше обычного")
+
+	SSmarket.offer_chance = 100
+	SSmarket.offer_ignored_factor = 0
+	SSmarket.offer_ignored_chance_min = 0
+	SSmarket.offers_board_max = 100
+	var/datum/trade_partner/vey = SSmarket.get_partner("vey_med")
+	SSmarket.generate_offers()
+	TEST_ASSERT(!length(prospectors.offers), "Партнёр с невзятыми выставил при нулевом шансе")
+	TEST_ASSERT(length(vey.offers), "Партнёр без невзятых не выставил")
+	var/datum/market_offer/taken = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 5, 2, 60)
+	TEST_ASSERT(taken.accept(), "Спецзаказ взят")
+	TEST_ASSERT_EQUAL(prospectors.offer_spawn_chance(), 100, "Взятый не вернул шанс")
+	SSmarket.generate_offers()
+	TEST_ASSERT_EQUAL(length(prospectors.offers), 2, "После взятого партнёр снова выставляет")
+
+/datum/unit_test/economy_offers/proc/expire_untaken(partner_id, wanted_type)
+	var/datum/market_offer/offer = add_offer(partner_id, wanted_type, 5, 2, 20)
+	offer.deadline = world.time - 1
+	SSmarket.expire_offers()
+	TEST_ASSERT(QDELETED(offer), "Невзятый не снят")
+	TEST_ASSERT(!length(resolved), "Невзятый дал сигнал провала")
+
+/// Товар, который станция сдала партнёру, выпадает в новых спецзаказах чаще, а снятый невзятым - реже; при нулевом весе остальных партнёр просит только сданное.
+/datum/unit_test/economy_offers/delivered_items_favoured/Run()
+	SSmarket.offer_ignored_factor = 0
+	SSmarket.offer_ignored_weight_min = 0
+	SSmarket.offer_delivered_weight = 3
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 2, 2, 60)
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/mob/living/carbon/human/technician = make_technician(station_turf)
+	var/obj/item/stack/sheet/mineral/gold/gold = allocate(/obj/item/stack/sheet/mineral/gold, station_turf, 1)
+	TEST_ASSERT_EQUAL(econ_offers_ship(gold, technician), 1, "Золото сдано с пада")
+	TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/gold), 3, "Вес сданного товара")
+	qdel(offer)
+	prospectors.offer_interest = list()
+	var/datum/market_offer/shuttle_offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 2, 2, 60)
+	shuttle_offer.accept()
+	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, station_turf)
+	new /obj/item/stack/sheet/mineral/gold(crate, 1)
+	shuttle_offer.deliver(crate)
+	TEST_ASSERT_EQUAL(shuttle_offer.delivered, 1, "Шаттл сдал золото")
+	TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/gold), 3, "Вес сданного шаттлом товара")
+	qdel(shuttle_offer)
+	for(var/list/item_entry as anything in prospectors.offer_items)
+		if(item_entry["path"] != /obj/item/stack/sheet/mineral/gold)
+			expire_untaken("prospectors", item_entry["path"])
+			TEST_ASSERT_EQUAL(prospectors.offer_item_weight(item_entry["path"]), 0, "Вес невзятого товара [item_entry["path"]]")
+	prospectors.offers_ignored = 0
+	for(var/attempt in 1 to 10)
+		var/datum/market_offer/fresh = prospectors.new_offer()
+		TEST_ASSERT_EQUAL(fresh.wanted_type, /obj/item/stack/sheet/mineral/gold, "Выпал товар с нулевым весом")
+		qdel(fresh)
+	var/datum/market_offer/gold_open = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 2, 2, 60)
+	var/datum/market_offer/fallback = prospectors.new_offer()
+	TEST_ASSERT_NOTNULL(fallback, "Когда у всех свободных товаров нулевой вес, спецзаказ всё равно выставляется")
+	qdel(fallback)
+	qdel(gold_open)
+
+/// Пачка скупки, снятая непроданной, снижает шанс следующей пачки её партнёра, если не была под эмбарго; продавца новой пачки выбирает этот шанс, и тот же шанс решает, выставит ли он её вообще.
+/datum/unit_test/economy_offers/ignored_bundles_slow/Run()
+	SSmarket.offer_ignored_factor = 0.5
+	SSmarket.offer_ignored_chance_min = 10
+	var/datum/trade_partner/vey = SSmarket.get_partner("vey_med")
+	TEST_ASSERT_EQUAL(vey.bundle_spawn_chance(), 100, "Шанс пачки без непроданных")
+	var/datum/supply_pack/bundle/stale = SSmarket.generate_bundle(vey)
+	TEST_ASSERT_NOTNULL(stale, "Пачка выставлена")
+	stale.expires_at = world.time - 1
+	SSmarket.tick_bundles()
+	TEST_ASSERT(!(stale in SSmarket.bundles), "Просроченная пачка не снята")
+	TEST_ASSERT_EQUAL(vey.bundle_spawn_chance(), 50, "Шанс пачки после непроданной")
+	var/datum/supply_pack/bundle/embargoed = SSmarket.generate_bundle(vey)
+	embargoed.expires_at = world.time - 1
+	vey.embargo_until = world.time - 2
+	SSmarket.tick_bundles()
+	vey.embargo_until = 0
+	TEST_ASSERT(!(embargoed in SSmarket.bundles), "Просроченная пачка после эмбарго не снята")
+	TEST_ASSERT_EQUAL(vey.bundle_spawn_chance(), 50, "Пачка, которую эмбарго не давал купить, посчитана непроданной")
+	SSmarket.offer_ignored_factor = 0
+	SSmarket.offer_ignored_chance_min = 0
+	for(var/id in SSmarket.partners)
+		var/datum/trade_partner/partner = SSmarket.partners[id]
+		partner.bundles_ignored = 1
+	SSmarket.next_bundle_at = world.time
+	SSmarket.tick_bundles()
+	TEST_ASSERT(!length(SSmarket.bundles), "Партнёр с непроданной пачкой выставил новую при нулевом шансе")
+	vey.bundles_ignored = 0
+	for(var/attempt in 1 to 8)
+		SSmarket.next_bundle_at = world.time
+		SSmarket.tick_bundles()
+		TEST_ASSERT_EQUAL(length(SSmarket.bundles), 1, "Срок новой пачки пропал впустую, хотя у одного партнёра шанс полный")
+		var/datum/supply_pack/bundle/fresh = SSmarket.bundles[1]
+		TEST_ASSERT_EQUAL(fresh.seller_id, "vey_med", "Пачку выставил партнёр с нулевым шансом")
+		SSmarket.bundles -= fresh
+		qdel(fresh)
+	SSmarket.offer_ignored_factor = 0.000001
+	vey.bundles_ignored = 1
+	var/spawned = 0
+	for(var/attempt in 1 to 20)
+		SSmarket.next_bundle_at = world.time
+		SSmarket.tick_bundles()
+		for(var/datum/supply_pack/bundle/fresh as anything in SSmarket.bundles.Copy())
+			spawned++
+			SSmarket.bundles -= fresh
+			qdel(fresh)
+	SSmarket.offer_ignored_factor = 0
+	vey.bundles_ignored = 0
+	TEST_ASSERT_EQUAL(spawned, 0, "Единственный продавец с почти нулевым шансом выставляет пачку каждый срок")
+	SSmarket.next_bundle_at = world.time + 1 HOURS
+
+/// Пачку партнёра под эмбарго не купить и не отгрузить; счётчик непроданных сбрасывает оплата пачки шаттлом, а не корзина.
+/datum/unit_test/economy_offers/bundle_embargo_and_purchase/Run()
+	SSmarket.offer_ignored_factor = 0.5
+	var/datum/trade_partner/vey = SSmarket.get_partner("vey_med")
+	var/datum/supply_pack/bundle/bundle = SSmarket.generate_bundle(vey)
+	TEST_ASSERT_NOTNULL(bundle, "Пачка выставлена")
+	var/turf/station_turf = find_walkable_station_turf()
+	var/mob/living/carbon/human/technician = make_technician(station_turf)
+	var/obj/machinery/computer/cargo/console = allocate(/obj/machinery/computer/cargo, station_turf)
+	vey.embargo_until = world.time + 1 HOURS
+	var/list/rows = econ_bundles_ui_data()
+	TEST_ASSERT(rows[1]["embargoed"], "Окно не помечает пачку партнёра под эмбарго")
+	var/orders_before = length(SSshuttle.shoppinglist)
+	TEST_ASSERT(!econ_cargo_buy_bundle(technician, list("uid" = bundle.uid), console, FALSE, TRUE), "Пачка партнёра под эмбарго куплена")
+	TEST_ASSERT(bundle in SSmarket.bundles, "Отказ убрал пачку из скупки")
+	TEST_ASSERT_EQUAL(length(SSshuttle.shoppinglist), orders_before, "Отказ положил пачку в корзину")
+	vey.embargo_until = 0
+	rows = econ_bundles_ui_data()
+	TEST_ASSERT(!rows[1]["embargoed"], "Пачка без эмбарго помечена эмбарго")
+	vey.bundles_ignored = 2
+	TEST_ASSERT(econ_cargo_buy_bundle(technician, list("uid" = bundle.uid), console, FALSE, TRUE), "Пачка куплена")
+	TEST_ASSERT_EQUAL(vey.bundles_ignored, 2, "Корзина сбросила счётчик непроданных до оплаты")
+	var/datum/supply_order/order = SSshuttle.shoppinglist[length(SSshuttle.shoppinglist)]
+	TEST_ASSERT_EQUAL(order.pack, bundle, "В корзине пачка")
+	var/list/other_orders = SSshuttle.shoppinglist - order
+	SSshuttle.shoppinglist = list(order)
+	econ_test_set_balance(cargo, bundle.price * 10)
+	var/list/crates_before = shuttle_crates()
+	vey.embargo_until = world.time + 1 HOURS
+	TEST_ASSERT(econ_pack_unavailable(order.pack), "Пачка партнёра под эмбарго в наличии")
+	TEST_ASSERT_NULL(econ_order_supplier(order), "Пачку везёт партнёр под эмбарго")
+	SSshuttle.supply.buy()
+	TEST_ASSERT(order in SSshuttle.shoppinglist, "Шаттл отгрузил пачку партнёра под эмбарго")
+	TEST_ASSERT_EQUAL(vey.bundles_ignored, 2, "Неотгруженная пачка сбросила счётчик")
+	vey.embargo_until = 0
+	SSshuttle.supply.buy()
+	SSshuttle.orderhistory -= order
+	SSshuttle.shoppinglist = other_orders + SSshuttle.shoppinglist
+	for(var/obj/structure/closet/crate/crate as anything in shuttle_crates() - crates_before)
+		allocated += crate.GetAllContents()
+	TEST_ASSERT(!(order in SSshuttle.shoppinglist), "Пачка без эмбарго не отгружена")
+	TEST_ASSERT_EQUAL(vey.bundles_ignored, 0, "Оплаченная пачка не сбросила счётчик непроданных")
+	qdel(order)
+
+/datum/unit_test/economy_offers/proc/shuttle_crates()
+	. = list()
+	for(var/area/shuttle/shuttle_area as anything in SSshuttle.supply.shuttle_areas)
+		for(var/obj/structure/closet/crate/crate in shuttle_area)
+			. += crate
+
+/// Вес невзятого товара падает до offer_ignored_weight_min и не ниже; проваленный станцией спецзаказ режет вес так же, проваленный только аванпостом - нет.
+/datum/unit_test/economy_offers/ignored_item_weight_floor/Run()
+	SSmarket.offer_ignored_factor = 0.5
+	SSmarket.offer_ignored_weight_min = 0.25
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	var/list/expected = list(0.5, 0.25, 0.25)
+	for(var/weight in expected)
+		expire_untaken("prospectors", /obj/item/stack/sheet/mineral/silver)
+		TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/silver), weight, "Вес невзятого товара")
+	var/datum/market_offer/failed = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 5, 2, 60)
+	TEST_ASSERT(failed.accept(), "Спецзаказ взят станцией")
+	failed.deadline = world.time - 1
+	SSmarket.expire_offers()
+	TEST_ASSERT(QDELETED(failed), "Просроченный взятый не провален")
+	TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/gold), 0.5, "Проваленный станцией не снизил вес товара")
+	var/datum/market_offer/outpost_only = add_offer("prospectors", /obj/item/stack/sheet/mineral/titanium, 5, 2, 60)
+	TEST_ASSERT(outpost_only.accept(null, TRUE), "Спецзаказ взят аванпостом")
+	outpost_only.deadline = world.time - 1
+	SSmarket.expire_offers()
+	TEST_ASSERT(QDELETED(outpost_only), "Просроченный взятый аванпостом не провален")
+	TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/titanium), 1, "Провал только аванпоста снизил вес товара")
+
+/// Партнёры без невзятых спецзаказов первыми получают место на доске; невзятые спецзаказы партнёра под эмбарго места не занимают.
+/datum/unit_test/economy_offers/board_prefers_fresh_partners/Run()
+	SSmarket.offer_chance = 100
+	SSmarket.offer_ignored_factor = 1
+	SSmarket.offers_board_max = 1
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	prospectors.offers_ignored = 1
+	for(var/attempt in 1 to 10)
+		SSmarket.generate_offers()
+		TEST_ASSERT(!length(prospectors.offers), "Место на доске досталось партнёру с невзятыми, хотя были без них")
+		for(var/datum/market_offer/offer as anything in SSmarket.all_offers())
+			qdel(offer)
+	var/datum/trade_partner/vey = SSmarket.get_partner("vey_med")
+	var/datum/market_offer/frozen = add_offer("vey_med", /obj/item/stack/sheet/bone, 5, 2, 20)
+	vey.embargo_until = world.time + 1 HOURS
+	SSmarket.generate_offers()
+	vey.embargo_until = 0
+	TEST_ASSERT_EQUAL(length(SSmarket.all_offers()), 2, "Невзятый спецзаказ партнёра под эмбарго занял место на доске")
+	qdel(frozen)
+
+/// Обычная продажа шаттлом предмета из offer_items партнёра-покупателя поднимает его вес до offer_delivered_weight; купленное через снабжение и контрабандный партнёр не в счёт.
+/datum/unit_test/economy_offers/export_raises_interest/Run()
+	SSmarket.offer_delivered_weight = 3
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, run_loc_floor_bottom_left)
+	new /obj/item/stack/sheet/mineral/gold(crate, 5)
+	var/obj/item/stack/sheet/mineral/silver/imported = new(crate, 5)
+	imported.econ_imported = TRUE
+	export_item_and_contents(crate, EXPORT_CARGO, delete_unsold = FALSE)
+	TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/gold), 3, "Проданное партнёру золото не подняло вес")
+	TEST_ASSERT_EQUAL(prospectors.offer_item_weight(/obj/item/stack/sheet/mineral/silver), 1, "Перепродажа купленного серебра подняла вес")
+	var/datum/trade_partner/free_traders = SSmarket.get_partner("free_traders")
+	var/list/crack_entry = free_traders.offer_items[1]
+	var/obj/item/crack = allocate(crack_entry["path"], run_loc_floor_bottom_left)
+	free_traders.note_export_interest(crack)
+	TEST_ASSERT_EQUAL(free_traders.offer_item_weight(crack_entry["path"], crack_entry["reagent"]), 1, "Продажа контрабандному партнёру подняла вес")
+
+/// Консоль запросов, экспресс-консоль Deep Space и консоль снабжения вне станции спецзаказы не берут и не печатают; справка снабжения называет правила числами из настроек.
+/datum/unit_test/economy_offers/consoles_and_help/Run()
+	var/datum/market_offer/offer = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 5, 2, 60)
+	var/turf/station_turf = find_walkable_station_turf()
+	TEST_ASSERT_NOTNULL(station_turf, "Есть станционный турф")
+	var/mob/living/carbon/human/user = make_technician(station_turf)
+	var/list/refusing = list(
+		allocate(/obj/machinery/computer/cargo/request, station_turf),
+		allocate(/obj/machinery/computer/cargo/express/ds, station_turf),
+		allocate(/obj/machinery/computer/cargo, run_loc_floor_bottom_left),
+	)
+	for(var/obj/machinery/computer/cargo/console as anything in refusing)
+		console_act(console, user, "accept_offer", offer.uid)
+		TEST_ASSERT(!offer.accepted, "[console.type] на [console.z] взяла спецзаказ")
+		TEST_ASSERT(!console.can_take_offers(), "[console.type] предлагает брать спецзаказы")
+	offer.accept()
+	for(var/obj/machinery/computer/cargo/console as anything in refusing)
+		console_act(console, user, "print_offer_manifest", offer.uid)
+		TEST_ASSERT(!(locate(/obj/item/export_manifest) in user.held_items), "[console.type] напечатала накладную спецзаказа")
+	var/obj/item/export_manifest/manifest = print_offer_manifest(offer, run_loc_floor_bottom_left)
+	allocated += manifest
+	qdel(offer)
+	TEST_ASSERT(findtext(jointext(manifest.examine(user), "\n"), "Спецзаказ по этой накладной закрыт"), "Осмотр накладной закрытого спецзаказа")
+	var/help = econ_cargo_market_help()
+	TEST_ASSERT(findtext(help, "до [SSmarket.offers_max], новые выходят раз в [SSmarket.offer_minutes] мин.") && findtext(help, "закрыть за [SSmarket.offer_deadline_minutes] мин.") && findtext(help, "+[MARKET_OFFER_REPUTATION_SUCCESS] репутации") && findtext(help, "маржа"), "Справка не описывает спецзаказы")
+	TEST_ASSERT(findtext(help, "сканером продажи в свой бюджет"), "Справка не говорит, что аванпосты сдают спецзаказы сканером")
+	TEST_ASSERT(findtext(help, "Невзятых на доске сразу не больше [SSmarket.offers_board_max], спецзаказы партнёра под эмбарго не в счёт.") && findtext(help, "но совсем не перестаёт") && findtext(help, "просит чаще"), "Справка не объясняет, как партнёр подстраивается под станцию")
+	TEST_ASSERT(!findtext(help, "в этот лимит не входят") && findtext(econ_cargo_market_help(TRUE), "Вольные торговцы в этот лимит не входят"), "Справка о лимите доски и Вольных торговцах не по допуску консоли")
+	TEST_ASSERT(findtext(help, "пачки партнёра уходят непроданными") && findtext(help, "У партнёра под эмбарго пачку не купить"), "Справка не объясняет скупку у партнёра под эмбарго и непроданную")
+
+/// Настройки спецзаказов и offer_items партнёров из economy.json совпадают со встроенными; любая битая запись оставляет список партнёра встроенным.
+/datum/unit_test/economy_offers/config/Run()
+	var/list/errors = SSmarket.load_settings(SSeconomy.settings.raw?["market"])
+	TEST_ASSERT(!length(errors), "economy.json market: [jointext(errors, "; ")]")
+	var/list/configured = snapshot()
+	SSmarket.load_settings(list())
+	var/list/builtin = snapshot()
+	TEST_ASSERT_EQUAL(length(builtin), length(configured), "Число параметров")
+	for(var/key in configured)
+		TEST_ASSERT_EQUAL(builtin[key], configured[key], "Встроенное [key] расходится с economy.json")
+	var/datum/market_offer/kept = add_offer("prospectors", /obj/item/stack/sheet/mineral/gold, 5, 2, 60)
+	var/list/bad = list(
+		"offer_minutes" = 0,
+		"offers_max" = 1.5,
+		"offer_chance" = 200,
+		"offer_deadline_minutes" = "долго",
+		"offers_board_max" = -1,
+		"offer_ignored_factor" = 2,
+		"offer_ignored_chance_min" = 0,
+		"offer_ignored_weight_min" = 0,
+		"offer_delivered_weight" = 0.5,
+		"commodities" = SSeconomy.settings.raw["market"]["commodities"],
+		"partners" = list(
+			"prospectors" = list("offer_items" = list(
+				list("path" = "/obj/item/nonexistent_offer_thing", "name" = "ничто", "min" = 1, "max" = 2, "unit_price" = 10),
+				list("path" = "/obj/item/stack/sheet/mineral/gold", "name" = "золото", "min" = 5, "max" = 2, "unit_price" = 10),
+				list("path" = "/obj/item/reagent_containers/pill", "name" = "таблетки", "min" = 1, "max" = 2, "unit_price" = 10, "reagent" = "/datum/reagent/medicine/bicaridine"),
+				list("path" = "/obj/item", "name" = "что угодно", "min" = 1, "max" = 2, "unit_price" = 10),
+				list("path" = "/obj/item/reagent_containers", "name" = "тара", "min" = 1, "max" = 2, "unit_price" = 10),
+				list("path" = "/obj/item/stack/sheet/mineral/gold", "name" = "золото", "min" = 1, "max" = 2, "unit_price" = 10, "reagent" = "/datum/reagent/water", "volume" = 5),
+				list("path" = "/obj/item/stack/sheet/mineral/gold", "name" = "золото", "min" = 1, "max" = 2, "unit_price" = 10),
+			)),
+			"vey_med" = list("offer_items" = "таблетки"),
+		),
+	)
+	errors = SSmarket.load_settings(bad)
+	TEST_ASSERT_EQUAL(length(errors), 16, "Ошибки: интервал, число, шанс, срок, доска, затухание, минимум шанса, минимум веса, вес сданного, тип, min/max, реагент без объёма, /obj/item, абстрактный тип, реагент у стопки, не список ([jointext(errors, "; ")])")
+	TEST_ASSERT_EQUAL(SSmarket.offer_minutes, initial(SSmarket.offer_minutes), "Нулевой интервал принят")
+	var/datum/trade_partner/prospectors = SSmarket.get_partner("prospectors")
+	var/list/default_items = GLOB.market_default_partners["prospectors"]["offer_items"]
+	TEST_ASSERT_EQUAL(length(prospectors.offer_items), length(default_items), "Битый список спецзаказов принят частично")
+	TEST_ASSERT(kept in prospectors.offers, "Перечитывание сняло спецзаказ")
+	SSmarket.load_settings(SSeconomy.settings.raw?["market"])
+
+/datum/unit_test/economy_offers/config/proc/snapshot()
+	. = list("settings" = "[SSmarket.offer_minutes]|[SSmarket.offers_max]|[SSmarket.offer_chance]|[SSmarket.offer_deadline_minutes]|[SSmarket.offers_board_max]|[SSmarket.offer_ignored_factor]|[SSmarket.offer_ignored_chance_min]|[SSmarket.offer_ignored_weight_min]|[SSmarket.offer_delivered_weight]")
+	for(var/id in SSmarket.partners)
+		var/datum/trade_partner/partner = SSmarket.partners[id]
+		var/list/texts = list()
+		for(var/list/item_entry as anything in partner.offer_items)
+			texts += "[item_entry["path"]],[item_entry["name"]],[item_entry["min"]],[item_entry["max"]],[item_entry["unit_price"]],[item_entry["reagent"]],[item_entry["volume"]],[item_entry["subtypes"]]"
+		.[id] = jointext(texts, ";")
+
+/// Сколько раз пересчитывать цены готовки: цепочки вроде мука - тесто - хлеб - ломтик
+#define COOK_PRICE_ROUNDS 6
+/// Сколько ещё раз генерировать пак со случайным содержимым
+#define RANDOM_PACK_SAMPLES 18
+
+/// Ни один спецзаказ не платит за штуку больше самой дешёвой закупки: готового предмета, его материалов, реагента или ингредиентов готовки - из паков на дне рынка со скидкой высшей ступени у всех партнёров и из автоматов станции по нижнему индексу со скидкой отдела; напечатанное - не дороже закупки его материалов. Запись без закупки должна быть объявлена производимой на станции.
+/datum/unit_test/economy_offers/no_offer_farm
+	/// Тип предмета (у стопок - merge_type) -> list(цена штуки, откуда)
+	var/list/item_prices = list()
+	/// Материал -> цена единицы материала
+	var/list/material_prices = list()
+	/// Реагент -> цена единицы объёма
+	var/list/reagent_prices = list()
+	/// Запись offer_items -> id партнёра
+	var/list/entries = list()
+	/// "путь|реагент" записи -> чем станция производит её без закупки
+	var/list/station_produced = list(
+		"/obj/item/stack/sheet/mineral/diamond|" = "шахта",
+		"/obj/item/stack/sheet/animalhide/goliath_hide|" = "охота на Лаваленде",
+		"/obj/item/stack/sheet/bone|" = "охота и разделка",
+		"/obj/item/slime_extract/gold|" = "ксенобиология",
+		"/obj/item/slime_extract/adamantine|" = "ксенобиология",
+		"/obj/item/stock_parts/cell/high/slime|" = "ксенобиология",
+		"/obj/item/tea_cup|" = "стеклодувство",
+		"/obj/item/glasswork/glass_base/lens|" = "стеклодувство",
+		"/obj/item/reagent_containers/glass/beaker/flask|" = "стеклодувство",
+		"/obj/item/reagent_containers/crack|" = "синтез в химии",
+		"/obj/item/reagent_containers/cocaine|" = "синтез в химии",
+		"/obj/item/reagent_containers/crackbrick|" = "синтез в химии",
+		"/obj/item/reagent_containers/food/snacks/grown/ambrosia/gaia|" = "мутация амброзии в ботанике",
+		"/obj/item/reagent_containers/food/snacks/grown/bluecherries|" = "мутация вишни в ботанике",
+		"/obj/item/slime_extract/rainbow|" = "ксенобиология",
+		"/obj/item/slime_extract/bluespace|" = "ксенобиология",
+		"/obj/item/organ/regenerative_core/legion|" = "охота на Лаваленде",
+		"/obj/item/stack/sheet/bluespace_crystal|" = "шахта",
+		"/obj/item/assembly/signaler/anomaly|" = "аномалии на станции",
+		"/obj/item/stack/sheet/animalhide/ashdrake|" = "охота на пепельного дракона",
+		"/obj/item/crusher_trophy|" = "охота с крашером",
+		"/obj/item/reagent_containers/food/snacks/grown/shell/gatfruit|" = "мутация в ботанике",
+	)
+
+/datum/unit_test/economy_offers/no_offer_farm/Run()
+	for(var/id in SSmarket.partners)
+		var/datum/trade_partner/partner = SSmarket.partners[id]
+		for(var/list/item_entry as anything in partner.offer_items)
+			entries[item_entry] = id
+	TEST_ASSERT(length(entries), "У партнёров нет offer_items")
+	econ_test_partner_extremes()
+	reagent_prices[/datum/reagent/water] = list(0, "кран")
+	var/datum/bank_account/buyer = new("Тест")
+	allocated += buyer
+	for(var/pack_id in SSshuttle.supply_packs)
+		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_id]
+		if(pack.admin_spawned || (pack.special && !pack.special_enabled) || econ_test_explodes_on_delete(pack))
+			continue
+		scan_pack(pack, buyer)
+	scan_vending()
+	cook_prices()
+	var/list/farms = list()
+	for(var/list/item_entry as anything in entries)
+		var/payout = round(item_entry["unit_price"] * MARKET_OFFER_MULT_MAX)
+		var/list/cost = entry_cost(item_entry)
+		if(!cost)
+			if(!station_produced["[item_entry["path"]]|[item_entry["reagent"]]"])
+				farms += "[entries[item_entry]] [item_entry["name"]]: нет ни закупки, ни объявленного производства на станции"
+		else if(payout > cost[1])
+			farms += "[entries[item_entry]] [item_entry["name"]]: [payout] кр. за штуку против закупки [round(cost[1], 0.1)] ([cost[2]])"
+		if(!item_entry["reagent"] && !ispath(item_entry["path"], /obj/item/stack))
+			farms += printed_farms(item_entry)
+	TEST_ASSERT(!length(farms), "Спецзаказ платит больше закупки: [jointext(farms, "; ")]")
+
+/datum/unit_test/economy_offers/no_offer_farm/proc/set_all_commodities(price_factor)
+	for(var/id in SSmarket.commodities)
+		var/datum/commodity/commodity = SSmarket.commodities[id]
+		commodity.price_factor = price_factor
+		commodity.hot_mult = 1
+		commodity.demand = 1
+
+/datum/unit_test/economy_offers/no_offer_farm/proc/price_key(atom/movable/thing)
+	var/obj/item/stack/stack = thing
+	return istype(stack) ? stack.merge_type : thing.type
+
+/datum/unit_test/economy_offers/no_offer_farm/proc/units_of(atom/movable/thing)
+	var/obj/item/stack/stack = thing
+	return istype(stack) ? stack.amount : 1
+
+/datum/unit_test/economy_offers/no_offer_farm/proc/note(list/prices, key, unit_cost, source)
+	var/list/known = prices[key]
+	if(!known || unit_cost < known[1])
+		prices[key] = list(unit_cost, source)
+
+/// Выкуп одного предмета без содержимого, как его продаст шаттл; купленное - по потолку выкупа.
+/datum/unit_test/economy_offers/no_offer_farm/proc/own_value(atom/movable/thing)
+	for(var/datum/export/export as anything in GLOB.exports_list)
+		if(export.applies_to(thing, EXPORT_CARGO | EXPORT_CONTRABAND | EXPORT_EMAG))
+			. = round(export.get_cost(thing) * econ_export_sale_factor(export, thing))
+			if(islist(thing.econ_print_cap))
+				. = min(., econ_cap_value(thing.econ_print_cap))
+			return
+	return 0
+
+/// Цена штуки каждого типа, единицы материала и реагента в закупке; выкуп остального вычитается из цены.
+/datum/unit_test/economy_offers/no_offer_farm/proc/note_purchase(list/things, price, source)
+	var/list/resale = list()
+	var/total_resale = 0
+	for(var/atom/movable/thing as anything in things)
+		resale[thing] = own_value(thing)
+		total_resale += resale[thing]
+	var/list/type_units = list()
+	var/list/type_resale = list()
+	var/list/material_units = list()
+	var/list/material_resale = list()
+	var/list/reagent_units = list()
+	var/list/reagent_resale = list()
+	for(var/atom/movable/thing as anything in things)
+		var/key = price_key(thing)
+		type_units[key] += units_of(thing)
+		type_resale[key] += resale[thing]
+		for(var/datum/material/material as anything in thing.custom_materials)
+			material_units[material] += thing.custom_materials[material]
+			material_resale[material] += resale[thing]
+		for(var/datum/reagent/reagent as anything in thing.reagents?.reagent_list)
+			reagent_units[reagent.type] += reagent.volume
+			reagent_resale[reagent.type] += resale[thing]
+	for(var/key in type_units)
+		if(type_units[key] > 0)
+			note(item_prices, key, (price - total_resale + type_resale[key]) / type_units[key], source)
+	for(var/material in material_units)
+		if(material_units[material] > 0)
+			note(material_prices, material, (price - total_resale + material_resale[material]) / material_units[material], source)
+	for(var/reagent_type in reagent_units)
+		if(reagent_units[reagent_type] > 0)
+			note(reagent_prices, reagent_type, (price - total_resale + reagent_resale[reagent_type]) / reagent_units[reagent_type], source)
+
+/// Пак на дне рынка, частный заказ, если дешевле; ящик-залог возвращается полностью. Пак со случайным содержимым оценивается по средней из выборок.
+/datum/unit_test/economy_offers/no_offer_farm/proc/scan_pack(datum/supply_pack/pack, datum/bank_account/buyer)
+	set_all_commodities(MARKET_PRICE_MIN)
+	var/price = pack.get_cost() - econ_packaging_value(pack.packaging_type())
+	if(pack.can_private_buy && pack.goody == PACK_GOODY_NONE)
+		price = min(price, pack.get_cost(buyer) - econ_packaging_value(pack.packaging_type(buyer)))
+	set_all_commodities(1)
+	var/list/generated = list()
+	var/list/containers = list(generate_pack(pack, generated), generate_pack(pack, generated))
+	var/atom/movable/first = containers[1]
+	var/atom/movable/second = containers[2]
+	var/list/first_types = list()
+	var/list/second_types = list()
+	for(var/atom/movable/thing as anything in first.GetAllContents())
+		first_types += thing.type
+	for(var/atom/movable/thing as anything in second.GetAllContents())
+		second_types += thing.type
+	if(length(first_types ^ second_types) || length(first_types) != length(second_types))
+		for(var/extra in 1 to RANDOM_PACK_SAMPLES)
+			containers += generate_pack(pack, generated)
+	note_purchase(generated, price * length(containers), pack.name)
+	for(var/atom/movable/thing as anything in generated + containers)
+		if(!QDELETED(thing))
+			qdel(thing)
+	econ_test_clear_turf(run_loc_floor_bottom_left)
+
+/// Пак в упаковке отгрузки; его содержимое добавляется в generated.
+/datum/unit_test/economy_offers/no_offer_farm/proc/generate_pack(datum/supply_pack/pack, list/generated)
+	var/atom/movable/container
+	if(pack.goody != PACK_GOODY_NONE)
+		container = new /obj/item/storage/lockbox/order(run_loc_floor_bottom_left)
+		for(var/item in pack.contains)
+			new item(container)
+	else
+		container = pack.generate(run_loc_floor_bottom_left)
+	econ_mark_imported(container)
+	generated += container.GetAllContents() - container
+	return container
+
+/// Автоматы, которые станция может собрать платой торгового автомата или пополнить картриджем из пака, и стоящие на станции.
+/datum/unit_test/economy_offers/no_offer_farm/proc/station_vendor_types()
+	. = list()
+	var/obj/item/circuitboard/machine/vendor/board = new
+	for(var/vendor_type in board.vending_names_paths)
+		. |= vendor_type
+	qdel(board)
+	var/list/refills = list()
+	for(var/pack_id in SSshuttle.supply_packs)
+		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_id]
+		if(pack.admin_spawned || (pack.special && !pack.special_enabled))
+			continue
+		for(var/item in pack.contains)
+			if(ispath(item, /obj/item/vending_refill))
+				refills |= item
+	for(var/obj/machinery/vending/vendor_type as anything in subtypesof(/obj/machinery/vending))
+		if(initial(vendor_type.refill_canister) in refills)
+			. |= vendor_type
+	for(var/obj/machinery/vending/mapped as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/vending))
+		if(is_station_level(mapped.z))
+			. |= mapped.type
+
+/// Живые автоматы станции по нижнему индексу цен: обычный товар со скидкой отдела, премиум и контрабанда - по своей цене без скидки, как в vend().
+/datum/unit_test/economy_offers/no_offer_farm/proc/scan_vending()
+	var/saved_index = SSmarket.price_index
+	SSmarket.price_index = MARKET_INDEX_MIN
+	var/list/cheapest = list()
+	var/scanned = 0
+	for(var/vendor_type in station_vendor_types())
+		var/obj/machinery/vending/vendor = new vendor_type(run_loc_floor_top_right)
+		if(QDELETED(vendor))
+			continue
+		scanned++
+		var/discount = vendor.payment_department != NO_FREEBIES
+		for(var/datum/data/vending_product/record as anything in vendor.product_records)
+			var/price = record.custom_price || vendor.default_price
+			if(discount)
+				price = max(round(price * DEPARTMENT_DISCOUNT), 1)
+			note(cheapest, record.product_path, price, vendor.name)
+		for(var/datum/data/vending_product/record as anything in vendor.hidden_records + vendor.coin_records)
+			note(cheapest, record.product_path, record.custom_premium_price || vendor.extra_price, vendor.name)
+		qdel(vendor)
+		econ_test_clear_turf(run_loc_floor_top_right)
+	SSmarket.price_index = saved_index
+	TEST_ASSERT(scanned && length(cheapest), "Автоматы не просканированы")
+	for(var/product_type in cheapest)
+		if(!ispath(product_type, /obj/item))
+			continue
+		var/atom/movable/sample = new product_type(run_loc_floor_bottom_left)
+		econ_mark_vended(sample, cheapest[product_type][1])
+		var/list/generated = sample.GetAllContents()
+		note_purchase(generated, cheapest[product_type][1], "автомат [cheapest[product_type][2]]")
+		for(var/atom/movable/thing as anything in generated)
+			if(!QDELETED(thing))
+				qdel(thing)
+		econ_test_clear_turf(run_loc_floor_bottom_left)
+
+/// Готовка из купленного: смеси реагентов, рецепты стола, запекание и нарезка, до установившихся цен.
+/datum/unit_test/economy_offers/no_offer_farm/proc/cook_prices()
+	var/list/mixtures = list()
+	for(var/mixture_type in subtypesof(/datum/chemical_reaction/food))
+		var/datum/chemical_reaction/food/mixture = new mixture_type
+		if(ispath(mixture.resulting_food_path, /obj/item))
+			mixtures += mixture
+	var/list/food_steps = list()
+	for(var/obj/item/reagent_containers/food/snacks/food_type as anything in typesof(/obj/item/reagent_containers/food/snacks))
+		if(initial(food_type.cooked_type) || initial(food_type.slice_path))
+			food_steps += food_type
+	for(var/round_index in 1 to COOK_PRICE_ROUNDS)
+		for(var/datum/chemical_reaction/food/mixture as anything in mixtures)
+			var/cost = ingredients_cost(mixture.required_reagents)
+			if(!isnull(cost))
+				note(item_prices, mixture.resulting_food_path, cost, "смесь [mixture.name]")
+		for(var/datum/crafting_recipe/recipe as anything in GLOB.crafting_recipes)
+			if(!ispath(recipe.result, /obj/item/reagent_containers/food))
+				continue
+			var/cost = ingredients_cost(recipe.reqs)
+			if(!isnull(cost))
+				note(item_prices, recipe.result, cost, "рецепт [recipe.name]")
+		for(var/obj/item/reagent_containers/food/snacks/food_type as anything in food_steps)
+			var/list/known = item_prices[food_type]
+			if(!known)
+				continue
+			var/cooked = initial(food_type.cooked_type)
+			if(cooked)
+				note(item_prices, cooked, known[1], "запекание: [known[2]]")
+			var/slice = initial(food_type.slice_path)
+			if(slice)
+				note(item_prices, slice, known[1] / max(initial(food_type.slices_num), 1), "нарезка: [known[2]]")
+	QDEL_LIST(mixtures)
+
+/// Цена ингредиентов: предметы и реагенты; null, если что-то не купить.
+/datum/unit_test/economy_offers/no_offer_farm/proc/ingredients_cost(list/ingredients)
+	. = 0
+	for(var/ingredient in ingredients)
+		var/list/known = ispath(ingredient, /datum/reagent) ? reagent_prices[ingredient] : item_prices[ingredient]
+		if(!known)
+			return null
+		. += known[1] * ingredients[ingredient]
+
+/// Самая дешёвая штука записи - list(цена, откуда) или null: готовый предмет, его материалы или нужный объём реагента.
+/datum/unit_test/economy_offers/no_offer_farm/proc/entry_cost(list/item_entry)
+	if(item_entry["reagent"])
+		var/list/reagent = reagent_prices[item_entry["reagent"]]
+		return reagent ? list(reagent[1] * item_entry["volume"], "реагент: [reagent[2]]") : null
+	. = item_prices[item_entry["path"]]
+	if(!ispath(item_entry["path"], /obj/item/stack))
+		return
+	var/stack_type = item_entry["path"]
+	var/obj/item/stack/sample = new stack_type(run_loc_floor_bottom_left, 1)
+	var/list/materials = materials_cost(sample.custom_materials)
+	qdel(sample)
+	if(materials && (!. || materials[1] < .[1]))
+		. = materials
+
+/// Цена материалов в закупке - list(цена, откуда) или null, если какой-то из них не купить.
+/datum/unit_test/economy_offers/no_offer_farm/proc/materials_cost(list/materials)
+	if(!length(materials))
+		return null
+	var/total = 0
+	var/list/sources = list()
+	for(var/key in materials)
+		var/list/known
+		if(istext(key))
+			for(var/datum/material/material as anything in material_prices)
+				var/list/candidate = material_prices[material]
+				if(material.categories[key] && (!known || candidate[1] < known[1]))
+					known = candidate
+		else
+			known = material_prices[key]
+		if(!known)
+			return null
+		total += known[1] * materials[key]
+		sources |= known[2]
+	return list(total, "материалы: [jointext(sources, ", ")]")
+
+/// Напечатанный на лейтах предмет записи: выплата спецзаказа при обычном рынке не выше закупки его материалов.
+/datum/unit_test/economy_offers/no_offer_farm/proc/printed_farms(list/item_entry)
+	. = list()
+	var/datum/market_offer/offer = new(null, item_entry["path"], item_entry["name"], 1, MARKET_OFFER_MULT_MAX, item_entry["unit_price"])
+	for(var/design_id in SSresearch.techweb_designs)
+		var/datum/design/design = SSresearch.techweb_designs[design_id]
+		if(!(design.build_type & (AUTOLATHE | PROTOLATHE | IMPRINTER | MECHFAB)) || !ispath(design.build_path, item_entry["path"]))
+			continue
+		var/obj/item/product = new design.build_path(run_loc_floor_bottom_left)
+		econ_mark_station_made(product, design.materials)
+		var/printed_payout = offer.unit_payout(product)
+		var/list/cost = materials_cost(design.materials)
+		if(cost && printed_payout > cost[1])
+			. += "[entries[item_entry]] [item_entry["name"]]: напечатанное [design.name] - [printed_payout] кр. против материалов [round(cost[1], 0.1)]"
+		for(var/atom/movable/thing as anything in product.GetAllContents())
+			if(!QDELETED(thing))
+				qdel(thing)
+		econ_test_clear_turf(run_loc_floor_bottom_left)
+	qdel(offer)
+
+#undef COOK_PRICE_ROUNDS
+#undef RANDOM_PACK_SAMPLES

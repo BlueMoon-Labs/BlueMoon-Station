@@ -2,7 +2,7 @@
 /datum/techweb_node/bluespace_power_reactor
 	id = "bluespace_power_reactor"
 	display_name = "Bluespace Power Reactor Technology"
-	description = "Even more powerful.. RADIOACTIVE POWA!!!"
+	description = "Ещё более мощная.. РАДИОАКТИВНАЯ ЭНЕРГИЯ!!!"
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("adv_power", "bluespace_power", "bluespace_holding")
 	design_ids = list("bluespace_cell_reactor")

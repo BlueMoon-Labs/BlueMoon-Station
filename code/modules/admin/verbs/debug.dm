@@ -730,11 +730,10 @@
 		for (var/i in head to length(refs))
 			if (scanned_slots >= GC_QUEUE_PREVIEW_SCAN_LIMIT)
 				break
-			var/refID = refs[i]
-			if (isnull(refID))
+			if (isnull(refs[i]))
 				continue // Tombstoned slot — skip without counting toward scan limit
 			scanned_slots++
-			var/datum/D = SSgarbage.GetQueuedDatum(level, i)
+			var/datum/D = SSgarbage.GetQueuedDatum(level, i, held_only = TRUE)
 			var/tpath
 			if (D)
 				live_sample++

@@ -2,6 +2,14 @@
 ///CARGO Boards////
 ///////////////////
 
+/datum/design/board/quantum_console
+	name = "Computer Design (Quantum Console)"
+	desc = "The circuit board for a quantum console."
+	id = "quantum_console"
+	build_path = /obj/item/circuitboard/computer/quantum_console
+	category = list("Computer Boards")
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO | DEPARTMENTAL_FLAG_ENGINEERING
+
 /datum/design/board/cargo
 	name = "Computer Design (Supply Console)"
 	desc = "Allows for the construction of circuit boards used to build a Supply Console."
@@ -19,8 +27,8 @@
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO
 
 /datum/design/board/bounty
-	name = "Computer Design (Bounty Console)"
-	desc = "Allows for the construction of circuit boards used to build a Bounty Console."
+	name = "Computer Design (Contract Console)"
+	desc = "Плата консоли контрактов NT всех отделов."
 	id = "bounty"
 	build_path = /obj/item/circuitboard/computer/bounty
 	category = list("Computer Boards")
@@ -43,8 +51,8 @@
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO
 
 /datum/design/board/bountypad_control
-	name = "Computer Design (Civilian Bounty Pad Control)"
-	desc = "Allows for the construction of circuit boards used to build a new civilian bounty pad console."
+	name = "Computer Design (Contract Terminal)"
+	desc = "Плата пульта пункта подработки: контракты NT и отправка с пада подработки."
 	id = "bounty_pad_control"
 	build_path = /obj/item/circuitboard/computer/bountypad
 	category = list("Cargo Machinery")

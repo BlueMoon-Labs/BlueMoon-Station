@@ -85,6 +85,21 @@
 	if(my_port == source)
 		my_port = null
 
+// У шаттла и станции две консоли с одним shuttlePortId. После защиты портов от
+// z-clear старый порт больше не исчезает вместе с руиной, поэтому перед стыковкой
+// убираем дубликаты: иначе getDock() возвращает самый старый порт на прошлой руине.
+/obj/machinery/computer/shuttle_flight/proc/clear_stale_custom_ports()
+	for(var/obj/docking_port/stationary/stale_port in SSshuttle.stationary.Copy())
+		if(stale_port == my_port || stale_port.shuttle_id != shuttlePortId)
+			continue
+		stale_port.delete_after = TRUE
+		stale_port.shuttle_id = null
+		stale_port.name = "Старый [stale_port.name]"
+		// Занятый порт удалится при отлёте пристыкованного шаттла. Свободный можно
+		// удалить сразу; его Destroy() сам очистит previous/destination у шаттлов.
+		if(!stale_port.get_docked())
+			qdel(stale_port, TRUE)
+
 /obj/machinery/computer/shuttle_flight/proc/CreateEye()
 	shuttle_port = SSshuttle.getShuttle(shuttleId)
 	if(QDELETED(shuttle_port))
@@ -237,10 +252,10 @@
 		my_port.dwidth = shuttle_port.dwidth
 		my_port.hidden = shuttle_port.hidden
 		my_port.register(TRUE)
-		// Точку на руине удаляет очистка z-уровня, консоль её не держит
 		RegisterSignal(my_port, COMSIG_PARENT_QDELETING, PROC_REF(forget_port))
 	my_port.setDir(the_eye.dir)
 	my_port.forceMove(locate(eyeobj.x, eyeobj.y, eyeobj.z))
+	clear_stale_custom_ports()
 
 	if(current_user.client)
 		current_user.client.images -= the_eye.placed_images

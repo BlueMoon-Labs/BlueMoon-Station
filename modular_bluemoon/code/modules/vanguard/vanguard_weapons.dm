@@ -61,7 +61,7 @@
 	mag_type = /obj/item/ammo_box/magazine/sig
 	can_suppress = FALSE
 	burst_size = 1
-	dual_wield_spread = 12
+	dual_wield_spread = 0
 	spread = 3
 	fire_delay = 0
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
@@ -70,7 +70,7 @@
 	can_flashlight = 0
 	can_suppress = FALSE
 	pin = /obj/item/firing_pin/explorer
-	projectile_simple_mob_damage_multiplier = 1.65
+	projectile_simple_mob_damage_multiplier = 1.8
 
 /obj/item/gun/ballistic/automatic/pistol/sigsauer/Initialize(mapload)
 	gun_light = new /obj/item/flashlight/seclite(src)
@@ -120,12 +120,10 @@
 	throwforce = 5
 	throw_speed = 1
 	throw_range = 1
-	block_chance = 30
 	w_class = WEIGHT_CLASS_BULKY
 	attack_verb_continuous = list("shoves", "bashes")
 	attack_verb_simple = list("shove", "bash")
 	repair_material = /obj/item/stack/sheet/plasteel
-	melee_block = 35
 
 /obj/item/shield/riot/pointman/shatter(mob/living/carbon/human/owner)
 	playsound(owner, 'sound/effects/glassbr3.ogg', 100)
@@ -381,6 +379,33 @@
 	throwforce = 35
 	embedding = list("pain_mult" = 4, "embed_chance" = 75, "fall_chance" = 10, "ignore_throwspeed_threshold" = TRUE)
 
+//вау так сильно нужная и красивая пушка
+/obj/item/gun/ballistic/automatic/wt550/vanguard
+	pin = /obj/item/firing_pin/explorer
+	projectile_simple_mob_damage_multiplier = 1.5
+
+/obj/item/ammo_casing/c46x30mm/hunting
+	name = "4.6x30mm hunting bullet casing"
+	desc = "A 4.6x30mm hunting bullet casing."
+	caliber = "4.6x30mm"
+	projectile_type = /obj/item/projectile/bullet/c46x30mm/hunt
+	can_be_printed = TRUE
+	custom_materials = list(/datum/material/iron = 600)
+
+
+/obj/item/projectile/bullet/c46x30mm/hunt
+	name = "4.6x30mm hunting bullet"
+	damage = 16.5
+	simple_mob_no_mind_damage_bonus = 10
+
+/obj/item/ammo_box/magazine/wt550m9/wthunt
+	name = "wt550 magazine (Hunting rounds 4.6x30mm)"
+	icon_state = "46x30mmt-20"
+	ammo_type = /obj/item/ammo_casing/c46x30mm/hunting
+
+/obj/item/gun/energy/e_gun/nuclear/vanguard
+	pin = /obj/item/firing_pin/explorer
+	projectile_simple_mob_damage_multiplier = 2
 
 #undef MAGNETIC_TOMAHAWK_CHARGE_LENIENCY
 #undef MAGNETIC_TOMAHAWK_DEPLETION_RATE

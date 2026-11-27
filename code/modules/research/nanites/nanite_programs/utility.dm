@@ -1,7 +1,7 @@
 //Programs that interact with other programs or nanites directly, or have other special purposes.
 /datum/nanite_program/viral
 	name = "Viral Replica"
-	desc = "The nanites constantly send encrypted signals attempting to forcefully copy their own programming into other nanite clusters, also overriding or disabling their cloud sync."
+	desc = "Наниты постоянно посылают зашифрованные сигналы, пытаясь насильственно скопировать собственную программу в другие скопления нанитов, а также перехватывая или отключая их синхронизацию с облаком."
 	use_rate = 0.5
 	rogue_types = list(/datum/nanite_program/toxic)
 	var/pulse_cooldown = 0
@@ -28,7 +28,7 @@
 
 /datum/nanite_program/monitoring
 	name = "Monitoring"
-	desc = "The nanites monitor the host's vitals and location, sending them to the suit sensor network."
+	desc = "Наниты следят за жизненными показателями и местоположением носителя, передавая их в сеть датчиков скафандра."
 	rogue_types = list(/datum/nanite_program/toxic)
 
 /datum/nanite_program/monitoring/enable_passive_effect()
@@ -73,7 +73,7 @@
 
 /datum/nanite_program/stealth
 	name = "Stealth"
-	desc = "The nanites mask their activity from superficial scans, becoming undetectable by HUDs and non-specialized scanners."
+	desc = "Наниты маскируют свою активность от поверхностных сканов, становясь необнаружимыми для HUD-интерфейсов и неспециализированных сканеров."
 	rogue_types = list(/datum/nanite_program/toxic)
 	use_rate = 0.2
 
@@ -87,8 +87,7 @@
 
 /datum/nanite_program/reduced_diagnostics
 	name = "Reduced Diagnostics"
-	desc = "Disables some high-cost diagnostics in the nanites, making them unable to communicate their program list to portable scanners. \
-	Doing so saves some power, slightly increasing their replication speed."
+	desc = "Отключает часть энергозатратных диагностик нанитов, из-за чего они не могут передать список своих программ портативным сканерам. Это экономит энергию и немного ускоряет размножение."
 	rogue_types = list(/datum/nanite_program/toxic)
 	use_rate = -0.1
 
@@ -102,7 +101,7 @@
 
 /datum/nanite_program/relay
 	name = "Relay"
-	desc = "The nanites receive and relay long-range nanite signals."
+	desc = "Наниты принимают и ретранслируют сигналы нанитов на большие расстояния."
 	rogue_types = list(/datum/nanite_program/toxic)
 
 /datum/nanite_program/relay/register_extra_settings()
@@ -138,7 +137,7 @@
 
 /datum/nanite_program/metabolic_synthesis
 	name = "Metabolic Synthesis"
-	desc = "The nanites use the metabolic cycle of the host to speed up their replication rate, using their extra nutrition as fuel."
+	desc = "Наниты используют метаболизм носителя для ускорения размножения, применяя избыточное питание как топливо."
 	rogue_types = list(/datum/nanite_program/toxic)
 
 /datum/nanite_program/metabolic_synthesis/check_conditions()
@@ -155,7 +154,7 @@
 
 /datum/nanite_program/research
 	name = "Distributed Computing"
-	desc = "The nanites aid the research servers by performing a portion of its calculations, increasing research point generation."
+	desc = "Наниты помогают серверам исследований, выполняя часть вычислений и увеличивая генерацию очков исследований."
 	use_rate = 0.2
 	rogue_types = list(/datum/nanite_program/toxic)
 
@@ -171,7 +170,7 @@
 
 /datum/nanite_program/researchplus
 	name = "Neural Network"
-	desc = "The nanites link the host's brains together forming a neural research network, that becomes more efficient with the amount of total hosts."
+	desc = "Наниты объединяют мозги носителей в нейронную исследовательскую сеть, которая становится эффективнее с увеличением общего числа носителей."
 	use_rate = 0.3
 	rogue_types = list(/datum/nanite_program/brain_decay)
 
@@ -206,7 +205,7 @@
 
 /datum/nanite_program/access
 	name = "Subdermal ID"
-	desc = "The nanites store the host's ID access rights in a subdermal magnetic strip. Updates when triggered, copying the host's current access."
+	desc = "Наниты хранят права доступа ID носителя в подкожной магнитной полосе. Обновляются при срабатывании, копируя текущие права носителя."
 	can_trigger = TRUE
 	trigger_cost = 3
 	trigger_cooldown = 30
@@ -237,8 +236,7 @@
 
 /datum/nanite_program/spreading
 	name = "Infective Exo-Locomotion"
-	desc = "The nanites gain the ability to survive for brief periods outside of the human body, as well as the ability to start new colonies without an integration process; \
-			resulting in an extremely infective strain of nanites."
+	desc = "Наниты приобретают способность короткое время выживать вне человеческого тела, а также образовывать новые колонии без процесса интеграции, что даёт крайне заразный штамм нанитов."
 	use_rate = 1.50
 	rogue_types = list(/datum/nanite_program/aggressive_replication, /datum/nanite_program/necrotic)
 	var/spread_cooldown = 0
@@ -266,7 +264,7 @@
 
 /datum/nanite_program/nanite_sting
 	name = "Nanite Sting"
-	desc = "When triggered, projects a nearly invisible spike of nanites that attempts to infect a nearby non-host with a copy of the host's nanites cluster."
+	desc = "При срабатывании выпускает почти невидимый шип из нанитов, который пытается заразить ближайшего не-носителя копией скопления нанитов носителя."
 	can_trigger = TRUE
 	trigger_cost = 5
 	trigger_cooldown = 100
@@ -292,9 +290,7 @@
 
 /datum/nanite_program/mitosis
 	name = "Mitosis"
-	desc = "The nanites gain the ability to self-replicate, using bluespace to power the process. Becomes more effective the more nanites are already in the host; \
-			For every 50 nanite volume in the host, the production rate is increased by 0.5. The replication has also a chance to corrupt the nanite programming \
-			due to copy faults - constant cloud sync is highly recommended."
+	desc = "Наниты получают способность к саморепликации, используя блюспейс как источник энергии. Чем больше нанитов уже у носителя, тем эффективнее процесс: каждые 50 единиц объёма нанитов увеличивают скорость производства на 0,5. Из-за ошибок копирования репликация также может повредить программу нанитов — настоятельно рекомендуется постоянная синхронизация с облаком."
 	use_rate = 0
 	rogue_types = list(/datum/nanite_program/toxic)
 
@@ -310,7 +306,7 @@
 
 /datum/nanite_program/dermal_button
 	name = "Dermal Button"
-	desc = "Displays a button on the host's skin, which can be used to send a signal to the nanites."
+	desc = "Отображает кнопку на коже носителя, с помощью которой можно отправить сигнал нанитам."
 	unique = FALSE
 	var/datum/action/innate/nanite_button/button
 
@@ -417,8 +413,7 @@
 
 /datum/nanite_program/lockout/antiviral
 	name = "Enhanced Error Correction"
-	desc = "Through expensive CRC checking and replication, prevents viral takeover of the nanite strain's control sectors. \
-	Temporarily disabled by EMPs and shocks."
+	desc = "За счёт дорогостоящей проверки CRC и дублирования предотвращает вирусный захват секторов управления штаммом нанитов. Временно отключается ЭМИ и ударами током."
 	use_rate = 0.5
 	emp_disable_time = 3 MINUTES
 	shock_disable_time = 45 SECONDS
@@ -427,8 +422,7 @@
 
 /datum/nanite_program/lockout/hostile_lockdown
 	name = "Hostile Lockdown"
-	desc = "Constantly encrypts and scrambles the nanites' control memory, preventing consoles from modifying them and also locking out conscious host control of the nanite strain, if the host happens to be capable of that. \
-	Temporarily disabled by EMPs and shocks."
+	desc = "Постоянно шифрует и перемешивает управляющую память нанитов, не позволяя консолям изменять её, а также блокируя сознательный контроль носителя над штаммом, если он на это способен. Временно отключается ЭМИ и ударами током."
 	use_rate = 0.5
 	emp_disable_time = 3 MINUTES
 	shock_disable_time = 1 MINUTES

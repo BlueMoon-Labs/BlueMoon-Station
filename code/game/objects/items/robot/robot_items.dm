@@ -601,6 +601,8 @@
 
 /obj/item/borg/projectile_dampen/Destroy()
 	STOP_PROCESSING(SSfastprocess, src)
+	if(active || dampening_field)
+		deactivate_field()
 	return ..()
 
 /obj/item/borg/projectile_dampen/attack_self(mob/user)
@@ -632,8 +634,12 @@
 
 /obj/item/borg/projectile_dampen/proc/deactivate_field()
 	QDEL_NULL(dampening_field)
-	visible_message("<span class='warning'>\The [src] shuts off!</span>")
-	for(var/P in tracked)
+	if(active)
+		visible_message("<span class='warning'>\The [src] shuts off!</span>")
+	for(var/obj/item/projectile/P in tracked.Copy())
+		if(QDELETED(P))
+			tracked -= P
+			continue
 		restore_projectile(P)
 	active = FALSE
 
@@ -644,7 +650,7 @@
 /obj/item/borg/projectile_dampen/proc/get_host()
 	if(istype(host))
 		return host
-	else
+	else if(host)
 		if(iscyborg(host.loc))
 			return host.loc
 	return null
@@ -816,11 +822,14 @@
 	return FALSE
 
 /obj/item/gripper/proc/takeitem(obj/item/item, silent = FALSE)
+	if(QDELETED(item))
+		return FALSE
 	if(!silent)
 		to_chat(usr, "<span class='notice'>You collect \the [item].</span>")
-	item.loc = src
+	item.forceMove(src)
 	wrapped = item
 	update_appearance()
+	return TRUE
 
 /obj/item/gripper/pre_attack(atom/target, mob/living/silicon/robot/user, params)
 	var/proximity = get_dist(user, target)
@@ -835,15 +844,17 @@
 	if(wrapped) //Already have an item.
 		var/obj/item/item = wrapped
 		drop_held(TRUE)
-		//Temporary put wrapped into user so target's attackby() checks pass.
-		item.loc = user
+		// Move through the normal movement API; target.attackby() expects a mob-held item.
+		if(QDELETED(item) || QDELETED(user))
+			return STOP_ATTACK_PROC_CHAIN
+		item.forceMove(user)
 
 		//Pass the attack on to the target. This might delete/relocate wrapped.
 		var/resolved = target.attackby(item, user, params)
-		if(!resolved && item && target)
+		if(!resolved && !QDELETED(item) && !QDELETED(target))
 			item.afterattack(target, user, proximity, params)
-		//If wrapped was neither deleted nor put into target, put it back into the gripper.
-		if(item && user && (item.loc == user))
+		// If the item was not consumed, restore it to the gripper.
+		if(!QDELETED(item) && !QDELETED(user) && item.loc == user)
 			takeitem(item, TRUE)
 			return
 		else

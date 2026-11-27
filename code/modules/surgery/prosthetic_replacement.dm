@@ -11,11 +11,31 @@
 /datum/surgery/prosthetic_replacement/can_start(mob/user, mob/living/carbon/target, obj/item/tool)
 	if(!iscarbon(target))
 		return FALSE
+	if(ishuman(target) && isrobotic(target))
+		return FALSE
 	var/mob/living/carbon/C = target
 	if(HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) && (user.zone_selected == BODY_ZONE_L_LEG || user.zone_selected == BODY_ZONE_R_LEG))
 		return FALSE
 	if(!C.get_bodypart(user.zone_selected)) //can only start if limb is missing
 		return TRUE
+
+/datum/surgery/prosthetic_replacement/robotic
+	name = "Prosthetic replacement"
+	steps = list(/datum/surgery_step/mechanic_open, /datum/surgery_step/add_prosthetic)
+	target_mobtypes = list(/mob/living/carbon/human)
+	possible_locs = list(BODY_ZONE_R_ARM, BODY_ZONE_L_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG, BODY_ZONE_HEAD)
+	requires_bodypart = FALSE
+	requires_bodypart_type = 0
+	icon_state = "surgery_any"
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_EMERGENCY
+
+/datum/surgery/prosthetic_replacement/robotic/can_start(mob/user, mob/living/carbon/target, obj/item/tool)
+	if(!iscarbon(target) || !ishuman(target) || !isrobotic(target))
+		return FALSE
+	var/mob/living/carbon/C = target
+	if(!C.get_bodypart(user.zone_selected)) //can only start if limb is missing
+		return TRUE
+	return FALSE
 /datum/surgery_step/add_prosthetic
 	name = "Добавить Конечность"
 	implements = list(/obj/item/bodypart = 100, /obj/item/organ_storage = 100, /obj/item/chainsaw = 100, /obj/item/melee/synthetic_arm_blade = 100)

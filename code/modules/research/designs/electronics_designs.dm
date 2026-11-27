@@ -28,7 +28,7 @@
 ///////////////////////////////////
 /datum/design/nanite_remote
 	name = "Nanite Remote"
-	desc = "Allows for the construction of a nanite remote."
+	desc = "Позволяет сконструировать пульт управления нанитами."
 	id = "nanite_remote"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/glass = 500, /datum/material/iron = 500)
@@ -38,7 +38,7 @@
 
 /datum/design/nanite_comm_remote
 	name = "Nanite Communication Remote"
-	desc = "Allows for the construction of a nanite communication remote."
+	desc = "Позволяет сконструировать пульт связи с нанитами."
 	id = "nanite_comm_remote"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/glass = 500, /datum/material/iron = 500)
@@ -48,7 +48,7 @@
 
 /datum/design/nanite_scanner
 	name = "Nanite Scanner"
-	desc = "Allows for the construction of a nanite scanner."
+	desc = "Позволяет сконструировать сканер нанитов."
 	id = "nanite_scanner"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/glass = 500, /datum/material/iron = 500)
@@ -91,7 +91,7 @@
 
 /datum/design/nanite_disk
 	name = "Nanite Program Disk"
-	desc = "Stores nanite programs."
+	desc = "Хранит программы нанитов."
 	id = "nanite_disk"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 300, /datum/material/glass = 100)

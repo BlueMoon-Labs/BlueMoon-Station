@@ -1,9 +1,9 @@
 /datum/brain_trauma/special/imaginary_friend
 	name = "Imaginary Friend"
-	desc = "Patient can see and hear an imaginary person."
-	scan_desc = "partial schizophrenia"
-	gain_text = "<span class='notice'>You feel in good company, for some reason.</span>"
-	lose_text = "<span class='warning'>You feel lonely again.</span>"
+	desc = "Пациент может видеть и слышать воображаемого человека."
+	scan_desc = "частичная шизофрения"
+	gain_text = "<span class='notice'>Почему-то вы чувствуете себя в хорошей компании.</span>"
+	lose_text = "<span class='warning'>Вы снова чувствуете одиночество.</span>"
 	var/mob/camera/imaginary_friend/friend
 	var/obj/effect/mob_spawn/imaginary_friend/friend_spawner	// спавнер для гостов, находится в друге
 	var/friend_initialized = FALSE
@@ -62,7 +62,7 @@
 	name = "imaginary friend"
 	real_name = "imaginary friend"
 	move_on_shuttle = TRUE
-	desc = "A wonderful yet fake friend."
+	desc = "Замечательный, но ненастоящий друг."
 	see_in_dark = 0
 	lighting_alpha = LIGHTING_PLANE_ALPHA_VISIBLE
 	sight = NONE
@@ -85,9 +85,9 @@
 	Show()
 
 /mob/camera/imaginary_friend/proc/greet()
-		to_chat(src, "<span class='notice'><b>You are the imaginary friend of [owner]!</b></span>")
-		to_chat(src, "<span class='notice'>You are absolutely loyal to your friend, no matter what.</span>")
-		to_chat(src, "<span class='notice'>You cannot directly influence the world around you, but you can see what [owner] cannot.</span>")
+		to_chat(src, "<span class='notice'><b>Вы — воображаемый друг [owner]!</b></span>")
+		to_chat(src, "<span class='notice'>Вы абсолютно преданы своему другу, что бы ни случилось.</span>")
+		to_chat(src, "<span class='notice'>Вы не можете напрямую влиять на мир вокруг, но можете видеть то, чего не видит [owner].</span>")
 
 /mob/camera/imaginary_friend/Initialize(mapload, _trauma)
 	if(!_trauma)
@@ -157,7 +157,7 @@
 
 	if (src.client)
 		if(client.prefs.muted & MUTE_IC)
-			to_chat(src, "You cannot send IC messages (muted).")
+			to_chat(src, "Вы не можете отправлять IC-сообщения (мут).")
 			return
 		if (!(ignore_spam || forced) && src.client.handle_spam_prevention(message,MUTE_IC))
 			return
@@ -185,7 +185,7 @@
 
 	//speech bubble
 	if(owner.client)
-		var/mutable_appearance/MA = mutable_appearance('icons/mob/talk.dmi', src, "default[say_test(message)]", FLY_LAYER)
+		var/mutable_appearance/MA = mutable_appearance(SPEECH_BUBBLE_ICON, src, "default[say_test(message)]", FLY_LAYER)
 		MA.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA
 		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(flick_overlay), MA, list(owner.client), 30)
 
@@ -224,7 +224,7 @@
 
 /datum/action/innate/imaginary_join
 	name = "Join"
-	desc = "Join your owner, following them from inside their mind."
+	desc = "Присоединиться к хозяину, следуя за ним из его разума."
 	icon_icon = 'icons/mob/actions/actions_minor_antag.dmi'
 	background_icon_state = "bg_revenant"
 	button_icon_state = "join"
@@ -235,7 +235,7 @@
 
 /datum/action/innate/imaginary_hide
 	name = "Hide"
-	desc = "Hide yourself from your owner's sight."
+	desc = "Скрыться от глаз хозяина."
 	icon_icon = 'icons/mob/actions/actions_minor_antag.dmi'
 	background_icon_state = "bg_revenant"
 	button_icon_state = "hide"
@@ -244,11 +244,11 @@
 	var/mob/camera/imaginary_friend/I = owner
 	if(I.hidden)
 		name = "Show"
-		desc = "Become visible to your owner."
+		desc = "Стать видимым для хозяина."
 		button_icon_state = "unhide"
 	else
 		name = "Hide"
-		desc = "Hide yourself from your owner's sight."
+		desc = "Скрыться от глаз хозяина."
 		button_icon_state = "hide"
 	UpdateButtons()
 
@@ -263,7 +263,7 @@
 
 /datum/brain_trauma/special/imaginary_friend/trapped_owner
 	name = "Trapped Victim"
-	desc = "Patient appears to be targeted by an invisible entity."
+	desc = "Пациент, по-видимому, является целью невидимой сущности."
 	gain_text = ""
 	lose_text = ""
 	random_gain = FALSE
@@ -282,12 +282,12 @@
 /mob/camera/imaginary_friend/trapped
 	name = "figment of imagination?"
 	real_name = "figment of imagination?"
-	desc = "The previous host of this body."
+	desc = "Прежний носитель этого тела."
 
 /mob/camera/imaginary_friend/trapped/greet()
-	to_chat(src, "<span class='notice'><b>You have managed to hold on as a figment of the new host's imagination!</b></span>")
-	to_chat(src, "<span class='notice'>All hope is lost for you, but at least you may interact with your host. You do not have to be loyal to them.</span>")
-	to_chat(src, "<span class='notice'>You cannot directly influence the world around you, but you can see what the host cannot.</span>")
+	to_chat(src, "<span class='notice'><b>Вам удалось удержаться как осколку воображения нового носителя!</b></span>")
+	to_chat(src, "<span class='notice'>Для вас всё потеряно, но вы хотя бы можете взаимодействовать со своим носителем. Вы не обязаны быть ему преданы.</span>")
+	to_chat(src, "<span class='notice'>Вы не можете напрямую влиять на мир вокруг, но можете видеть то, чего не видит носитель.</span>")
 
 /mob/camera/imaginary_friend/trapped/setup_friend()
 	real_name = "[owner.real_name]?"

@@ -529,7 +529,7 @@
 			var/centcom_authority = (ACCESS_CENT_CAPTAIN in login_state.access)
 			var/crime = GLOB.data_core.createCrimeEntry(cname, cdetails, login_state.name, STATION_TIME_TIMESTAMP("hh:mm:ss", world.time), centcom_authority)
 			GLOB.data_core.addMinorCrime(active1.fields["id"], crime)
-			GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% записал некрупное преступление: <b>[cname]</b>, [cdetails]", login_state.name, login_state.rank)
+			GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% записал малое преступление: <b>[cname]</b>, [cdetails]", login_state.name, login_state.rank)
 			investigate_log("New Minor Crime: <strong>[cname]</strong>: [cdetails] | Added to [active1.fields["name"]] by [key_name(usr)]", INVESTIGATE_RECORDS)
 		if("ma_crim_add")
 			if(!logged_in || !active1 || !active2)
@@ -553,7 +553,7 @@
 				return
 			var/centcom_authority = (ACCESS_CENT_CAPTAIN in login_state.access)
 			GLOB.data_core.removeMinorCrime(active1.fields["id"], cdataid, centcom_authority)
-			GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% удалил некрупное преступление №[cdataid]", login_state.name, login_state.rank)
+			GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% удалил малое преступление №[cdataid]", login_state.name, login_state.rank)
 		if("ma_crim_delete")
 			if(!logged_in || !active1 || !active2)
 				return

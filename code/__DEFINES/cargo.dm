@@ -13,6 +13,7 @@
 #define STYLE_INVISIBLE 13
 #define STYLE_GONDOLA 14
 #define STYLE_SEETHROUGH 15
+#define STYLE_SWARMER 16
 
 #define POD_SHAPE 1
 #define POD_BASE 2
@@ -58,7 +59,8 @@ GLOBAL_LIST_INIT(podstyles, list(\
 	list(POD_SHAPE_OTHER, "orange",      TRUE, FALSE,			FALSE,   RUBBLE_NONE,	    	"\improper Orange", 					"An angry orange."),\
 	list(POD_SHAPE_OTHER, FALSE,         FALSE,    FALSE,            FALSE,   RUBBLE_NONE,	    "\improper S.T.E.A.L.T.H. pod MKVII", 	"A supply pod that, under normal circumstances, is completely invisible to conventional methods of detection. How are you even seeing this?"),\
 	list(POD_SHAPE_OTHER, "gondola",     FALSE, FALSE,			FALSE,   RUBBLE_NONE,	    	"gondola", 							    "The silent walker. This one seems to be part of a delivery agency."),\
-	list(POD_SHAPE_OTHER, FALSE,         FALSE,    FALSE,            FALSE,   RUBBLE_NONE,	    FALSE,      FALSE,      "rl_click", "give_po")\
+	list(POD_SHAPE_OTHER, FALSE,         FALSE,    FALSE,            FALSE,   RUBBLE_NONE,	    FALSE,      FALSE,      "rl_click", "give_po"),\
+	list(POD_SHAPE_OTHER, "swarmer", FALSE, FALSE, "blue", RUBBLE_NONE, "Swarmer deploy pod", "Капсула высадки роя свармеров.")\
 ))
 
 //cit

@@ -79,3 +79,39 @@
 	name = "shattered energy cutlass"
 	desc = "Кто забрал моё золото?!"
 	icon_state = "cutlass0"
+
+/obj/item/broken/terror_spider_egg
+	name = "неоплодотворённое яйцо паука ужаса"
+	desc = "Мёртвое, но ещё тёплое яйцо паука ужаса. Для вывода выводка не годится, но на чёрном рынке такое ценят."
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "eggs"
+	w_class = WEIGHT_CLASS_TINY
+
+/obj/item/broken/terror_spider_egg/tier1
+	name = "unfertilized egg of a feeble terror spider"
+	desc = "Мёртвое, но ещё тёплое яйцо паука ужаса. Для вывода выводка не годится, но на чёрном рынке такое ценят. Яйцо низшего порядка пауков ужаса: рыцарей, наблюдателей, лекарей и дронов."
+
+/obj/item/broken/terror_spider_egg/tier2
+	name = "unfertilized egg of terror spider"
+	desc = "Мёртвое, но ещё тёплое яйцо паука ужаса. Для вывода выводка не годится, но на чёрном рынке такое ценят. Яйцо пауков ужаса второго порядка: вдов, защитников и разрушителей."
+
+/obj/item/broken/terror_spider_egg/tier3
+	name = "unfertilized egg of a powerful terror spider"
+	desc = "Мёртвое, но ещё тёплое яйцо паука ужаса. Для вывода выводка не годится, но на чёрном рынке такое ценят. Яйцо пауков ужаса третьего тира: принцев, матерей и осквернителей."
+
+/obj/item/broken/terror_spider_egg/tier4
+	name = "unfertilized egg of the queen of terror"
+	desc = "Мёртвое, но ещё тёплое яйцо паука ужаса. Для вывода выводка не годится, но на чёрном рынке такое ценят. Яйцо королевы пауков ужаса. Такое не часто достаётся живым."
+
+//WHITE-STEEL: обрывки биоматерии некроморфов для баунти-вендора.
+/obj/item/broken/necromorph_biomass
+	name = "a fragment of necromorph biomatter"
+	desc = "Кусок адаптивной ткани, вырезанный из некроморфа. Ещё шевелится."
+	icon = 'modular_bluemoon/icons/mob/necros.dmi'
+	icon_state = "BurstedStanding"
+	w_class = WEIGHT_CLASS_SMALL
+
+/obj/item/broken/necromorph_biomass/dense
+	name = "a dense knot of necromorph biomatter"
+	desc = "Плотный сгусток тканей с явными признаками перестройки. Такое не каждый день встретишь."
+	icon_state = "BurstingStanding"

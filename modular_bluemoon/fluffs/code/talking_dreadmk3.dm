@@ -40,16 +40,39 @@
 	var/health_warned_dying = FALSE
 	/// Last holder reference for crit-drop monitoring
 	var/mob/living/carbon/human/last_holder = null
+	/// Announce each holder death once, including when the gun stays in their inventory.
+	var/holder_death_reported = FALSE
 	/// Last scanned ID card to avoid repeat announcements
 	var/obj/item/card/id/last_scanned_id = null
 	/// Cooldown to avoid spamming health warnings
 	COOLDOWN_DECLARE(health_check_cooldown)
 	/// Cooldown between calls for help
 	COOLDOWN_DECLARE(call_for_help_cooldown)
+	/// Rate-limit dry-fire voice lines independently of urgent alerts.
+	COOLDOWN_DECLARE(empty_warning_cooldown)
 	/// Cooldown between idle comments
 	COOLDOWN_DECLARE(idle_comment_cooldown)
 	/// Cooldown between mode switch voice commands
 	COOLDOWN_DECLARE(mode_switch_cooldown)
+	// DREADMK3_AI_V31:VARS BEGIN
+	/// In-range wanted targets already announced during this encounter (REF strings only).
+	var/list/ai_wanted_seen = list()
+	COOLDOWN_DECLARE(ai_arrest_scan_cooldown)
+	COOLDOWN_DECLARE(ai_arrest_phrase_cooldown)
+	COOLDOWN_DECLARE(ai_radio_emergency_cooldown)
+	// DREADMK3_AI_V31:VARS END
+	// DREADMK3_AI_V32:VARS BEGIN
+	/// Per-weapon, in-round, bounded memory: no cross-round storage or mind references.
+	var/list/ai_v32_owners = list()
+	var/list/ai_v32_owner_order = list()
+	var/ai_v32_previous_owner_key
+	/// Deduplicating bounded event scheduler; key => priority.
+	var/list/ai_v32_voice_queue = list()
+	/// Additional pacing on top of DreadMK3's existing speech cooldown.
+	var/ai_v32_last_queued_spoken = 0
+	var/ai_v32_wounded_warned = FALSE
+	var/ai_v32_combat_ended_at = 0
+	// DREADMK3_AI_V32:VARS END
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/Initialize()
 	. = ..()
@@ -105,7 +128,11 @@
 	// Тихий режим — whisper (курсив над головой)
 	// Обычный режим — say (обычный текст над головой)
 	if(quiet_mode)
-		visible_message("<span class='notice'><i>[message]</i></span>", blind_message = message)
+		// A quiet private/local voice: avoid broadcasting across a full normal view range.
+		var/turf/voice_turf = get_turf(src)
+		if(voice_turf)
+			for(var/mob/listener in hearers(2, voice_turf))
+				to_chat(listener, span_notice("<i>[src]: [message]</i>"))
 	else
 		say(message)
 	last_speech = world.time
@@ -118,6 +145,10 @@
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/equipped(mob/user, slot)
 	. = ..()
+	// DREADMK3_AI_V32:PICKUP BEGIN
+	if(slot == ITEM_SLOT_HANDS)
+		ai_v32_remember_owner(user)
+	// DREADMK3_AI_V32:PICKUP END
 	if(interaction_locked)
 		return
 
@@ -145,7 +176,7 @@
 
 			if(phrase_to_say)
 				last_scanned_id = user.get_idcard(TRUE)
-				addtimer(CALLBACK(src, PROC_REF(speak_up), phrase_to_say, TRUE, FALSE), 15)
+				addtimer(CALLBACK(src, PROC_REF(announce_scanned_id), user, last_scanned_id, phrase_to_say), 15)
 
 			addtimer(CALLBACK(src, PROC_REF(unlock_interaction)), 10)
 
@@ -186,6 +217,14 @@
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/unlock_interaction()
 	interaction_locked = FALSE
 
+/// Delayed ID announcement may only play for the same human holding the same ID.
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/announce_scanned_id(mob/living/carbon/human/expected_user, obj/item/card/id/expected_id, phrase_key)
+	if(QDELETED(src) || !ishuman(expected_user) || QDELETED(expected_user) || !personality_mode)
+		return
+	if(get_current_carrier() != expected_user || expected_user.get_idcard(TRUE) != expected_id)
+		return
+	speak_up(phrase_key, TRUE)
+
 /// Called when gun is inserted into recharger
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/enter_recharger()
 	in_recharger = TRUE
@@ -200,6 +239,11 @@
 		speak_up("recharger_out")
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/process()
+	// DREADMK3_AI_V31:PROCESS BEGIN
+	if(personality_mode && COOLDOWN_FINISHED(src, ai_arrest_scan_cooldown))
+		COOLDOWN_START(src, ai_arrest_scan_cooldown, 15 SECONDS)
+		ai_scan_visible_arrests()
+	// DREADMK3_AI_V31:PROCESS END
 	if(cell && cell.maxcharge > 0)
 		var/cell_charge_warn = cell.maxcharge * 0.35
 
@@ -225,7 +269,14 @@
 			if(last_holder != carrier)
 				reset_health_warnings()
 				last_holder = carrier
-			target_holder = carrier
+				holder_death_reported = FALSE
+			if(carrier.stat == DEAD)
+				if(!holder_death_reported)
+					holder_death_reported = TRUE
+					speak_up("holder_dead", TRUE)
+			else
+				holder_death_reported = FALSE
+				target_holder = carrier
 
 		else if(last_holder && !QDELETED(last_holder))
 			// Оружие выронено — проверяем состояние последнего носителя
@@ -237,8 +288,10 @@
 					else
 						last_holder = null // Унесли далеко — теряем связь
 				if(DEAD)
-					// Носитель умер — прощаемся и сбрасываем
-					speak_up("holder_dead", TRUE)
+					// Носитель умер после потери оружия — ровно одно прощание.
+					if(!holder_death_reported)
+						holder_death_reported = TRUE
+						speak_up("holder_dead", TRUE)
 					last_holder = null
 				else
 					// Носитель пришёл в себя — мониторинг больше не нужен
@@ -252,9 +305,18 @@
 	// Пока оружие при носителе — в руках или в слоте
 	if(personality_mode && get_current_carrier())
 		if(COOLDOWN_FINISHED(src, idle_comment_cooldown))
+			// Один бросок шанса в две минуты, а не каждый тик до успеха.
+			COOLDOWN_START(src, idle_comment_cooldown, 2 MINUTES)
 			if(prob(15))
-				speak_up("idle")
-				COOLDOWN_START(src, idle_comment_cooldown, 2 MINUTES)
+				ai_v32_enqueue_event(ai_v32_idle_key(), 10)
+
+	// DREADMK3_AI_V32:PROCESS BEGIN
+	if(personality_mode)
+		ai_v32_observe_context()
+		ai_v32_flush_voice_queue()
+	else if(length(ai_v32_voice_queue))
+		ai_v32_voice_queue.Cut()
+	// DREADMK3_AI_V32:PROCESS END
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/attack_self(mob/living/user)
 	. = ..()
@@ -270,9 +332,25 @@
 		return
 
 	var/health_pct = (holder.health / holder.maxHealth) * 100
+	// DREADMK3_AI_V32:HEALTH BEGIN
+	// Do not let routine remarks interrupt an emergency; no extra medical scans.
+	if(personality_mode)
+		if(health_pct <= 25)
+			ai_v32_discard_routine_events()
+		if(health_pct <= 75 && health_pct > 50 && !ai_v32_wounded_warned)
+			ai_v32_wounded_warned = TRUE
+			ai_v32_enqueue_event("ai_health_wounded", 65)
+		else if(health_pct > 85)
+			ai_v32_wounded_warned = FALSE
+	// DREADMK3_AI_V32:HEALTH END
 
 	// Порог умирания — ниже 10%
 	if(health_pct <= 10 && !health_warned_dying)
+		// DREADMK3_AI_V32:EMERGENCY BEGIN
+		// Guaranteed single attempt on first dying-threshold crossing.
+		// Reuses v3.1's cooldown + real equipped security headset.
+		ai_send_emergency_on_owner_headset(holder)
+		// DREADMK3_AI_V32:EMERGENCY END
 		health_warned_dying = TRUE
 		health_warned_danger = TRUE
 		health_warned_critical = TRUE
@@ -311,6 +389,11 @@
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/call_for_help(mob/living/carbon/human/holder)
 	if(!holder || QDELETED(holder))
 		return
+
+	// DREADMK3_AI_V31:RADIO_HOOK BEGIN
+	// This is strictly the owner's actual worn headset, not a built-in gun radio.
+	ai_send_emergency_on_owner_headset(holder)
+	// DREADMK3_AI_V31:RADIO_HOOK END
 
 	// Статичные списки — не пересоздаются каждый вызов
 	var/static/list/medical_jobs = list(
@@ -373,7 +456,15 @@
 	// Оружие отвечает с небольшой задержкой
 	var/announce = get_current_mode_announce()
 	if(announce)
-		addtimer(CALLBACK(src, PROC_REF(speak_up), announce, TRUE, FALSE), 3)
+		addtimer(CALLBACK(src, PROC_REF(announce_firemode), user, current_firemode_index, announce), 3)
+
+/// Speak only if the same holder still wields the same selected mode.
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/announce_firemode(mob/living/expected_user, expected_mode_index, phrase_key)
+	if(QDELETED(src) || !expected_user || QDELETED(expected_user) || !personality_mode)
+		return
+	if(current_firemode_index != expected_mode_index || !expected_user.is_holding(src))
+		return
+	speak_up(phrase_key, TRUE)
 
 /// Returns Russian name of current fire mode for voice command
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/get_mode_russian_name()
@@ -403,7 +494,8 @@
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/afterattack(atom/target, mob/living/user, flag, params)
 	// Проверка на пустой выстрел — до ..() пока заряд ещё не потрачен
-	if(!can_shoot() && user && personality_mode)
+	if(!can_shoot() && user && personality_mode && COOLDOWN_FINISHED(src, empty_warning_cooldown))
+		COOLDOWN_START(src, empty_warning_cooldown, 8 SECONDS)
 		speak_up("empty", TRUE)
 
 	var/old_charge = cell ? cell.charge : 0
@@ -492,12 +584,190 @@
 		phrase_key = "pin_explorer"
 	else if(istype(pin, /obj/item/firing_pin/alert_level/blue))
 		phrase_key = "pin_alert"
-	else if(istype(pin, /obj/item/firing_pin))
+	else if(pin.type == /obj/item/firing_pin)
 		phrase_key = "pin_standard"
 	else
 		phrase_key = "pin_unauthorized"
 
 	addtimer(CALLBACK(src, PROC_REF(speak_up), phrase_key, TRUE, FALSE), 5)
+
+// DREADMK3_AI_V31:PROCS BEGIN
+/// Match the actual active advanced SecHUD, regardless of its source (glasses, implant, suit).
+/// This mirrors BlueMoon's observer HUD registry and does not grant a new HUD.
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/ai_owner_has_active_sechud(mob/living/carbon/human/holder)
+	if(!holder || QDELETED(holder) || HAS_TRAIT(holder, TRAIT_BLOCK_SECHUD))
+		return FALSE
+	var/datum/atom_hud/data/human/security/advanced/sec_hud = GLOB.huds[DATA_HUD_SECURITY_ADVANCED]
+	return !!sec_hud?.hudusers[holder]
+
+/// Lightweight, owner-visible wanted check. Follows the real SecHUD identity resolution.
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/ai_scan_visible_arrests()
+	var/mob/living/carbon/human/holder = get_current_carrier()
+	if(!holder || holder.stat != CONSCIOUS || !(src in holder.held_items) || !ai_owner_has_active_sechud(holder) || !GLOB.data_core)
+		ai_wanted_seen.Cut()
+		return
+
+	var/list/seen_now = list()
+	for(var/mob/living/carbon/human/person in view(3, holder))
+		if(person == holder || QDELETED(person))
+			continue
+		// Exactly the face/ID resolution used by SecHUD, not real_name through disguises.
+		var/visible_identity = person.get_face_name(person.get_id_name(""))
+		if(!visible_identity)
+			continue
+		var/datum/data/record/security_record = antag_training_station_record(GLOB.data_core.security_by_name, visible_identity, person)
+		if(security_record?.fields["criminal"] != SEC_RECORD_STATUS_ARREST)
+			continue
+		var/key = REF(person)
+		seen_now[key] = ai_wanted_seen[key] || FALSE
+		if(seen_now[key] || !COOLDOWN_FINISHED(src, ai_arrest_phrase_cooldown))
+			continue
+		ai_v32_enqueue_event("ai_arrest_detected", 45)
+		seen_now[key] = TRUE
+		COOLDOWN_START(src, ai_arrest_phrase_cooldown, 45 SECONDS)
+	// Leaving view or changing status forgets this encounter naturally.
+	ai_wanted_seen = seen_now
+
+/// The only radio path: piggyback on the current/last fallen owner's worn headset.
+/// Existing channel encryption, telecomms, transmit wires, radio blackouts and jammers apply.
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/ai_send_emergency_on_owner_headset(mob/living/carbon/human/holder)
+	if(!personality_mode || !holder || QDELETED(holder) || !COOLDOWN_FINISHED(src, ai_radio_emergency_cooldown))
+		return FALSE
+	var/mob/living/carbon/human/carrier = get_current_carrier()
+	if(carrier && carrier != holder)
+		return FALSE
+	if(!carrier && (last_holder != holder || !get_turf(src) || src.z != holder.z || get_dist(src, holder) > 3))
+		return FALSE
+	var/obj/item/radio/headset/headset
+	if(istype(holder.ears, /obj/item/radio/headset))
+		headset = holder.ears
+	else if(istype(holder.ears_extra, /obj/item/radio/headset))
+		headset = holder.ears_extra
+	if(!headset || QDELETED(headset) || !headset.on || !headset.listening)
+		return FALSE
+	if(!headset.channels || !headset.channels[RADIO_CHANNEL_SECURITY])
+		return FALSE
+	if(headset.speaker_jammed(holder))
+		return FALSE
+	var/message = "АВАРИЙНЫЙ СИГНАЛ: Законодатель MK3-AI. [holder.real_name] нуждается в медицинской помощи. Местоположение: [AREACOORD(holder)]."
+	// Use the established subspace pipeline with the weapon as the *speaker*.
+	// The actual transmitter remains the headset; no omnipotent direct frequency call.
+	INVOKE_ASYNC(headset, TYPE_PROC_REF(/obj/item/radio, talk_into_impl), src, message, RADIO_CHANNEL_SECURITY, list(), /datum/language/common)
+	COOLDOWN_START(src, ai_radio_emergency_cooldown, 2 MINUTES)
+	return TRUE
+
+// DREADMK3_AI_V32:PROCS BEGIN
+/// Store max 6 identities per gun in memory for this round only. No personal data in files.
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/ai_v32_remember_owner(mob/living/user)
+	if(!personality_mode || !ishuman(user) || QDELETED(user))
+		return
+	var/mob/living/carbon/human/holder = user
+	var/owner_key = holder.mind ? REF(holder.mind) : REF(holder)
+	if(!owner_key)
+		return
+	var/previous = ai_v32_previous_owner_key
+	var/was_known = ai_v32_owners[owner_key]
+	if(previous != owner_key)
+		// Do not replay another officer's old remarks on a handoff.
+		ai_v32_voice_queue.Cut()
+		ai_v32_wounded_warned = FALSE
+	var/had_previous = length(ai_v32_owner_order) > 0
+	if(!was_known)
+		ai_v32_owners[owner_key] = 1
+		ai_v32_owner_order += owner_key
+		if(length(ai_v32_owner_order) > 6)
+			var/expired_key = ai_v32_owner_order[1]
+			ai_v32_owner_order.Cut(1, 2)
+			ai_v32_owners -= expired_key
+		ai_v32_enqueue_event(had_previous ? "ai_owner_new" : "ai_owner_first", 30)
+	else
+		ai_v32_owners[owner_key] = min(was_known + 1, 1000)
+		if(previous != owner_key)
+			ai_v32_enqueue_event("ai_owner_return", 40)
+	ai_v32_previous_owner_key = owner_key
+
+/// Queue only new contextual voice lines, drop duplicates and low-priority overflow.
+/// Priority: context=10, owner=30-40, arrest=45, wounded=65; base dying alerts
+/// continue to speak immediately, while routine queue is suspended during danger.
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/ai_v32_enqueue_event(event_key, priority = 10)
+	if(!personality_mode || !event_key)
+		return FALSE
+	if(event_key in ai_v32_voice_queue)
+		return FALSE
+	if(length(ai_v32_voice_queue) >= 8)
+		var/worst_key
+		var/worst_priority = INFINITY
+		for(var/queued_key in ai_v32_voice_queue)
+			if(ai_v32_voice_queue[queued_key] < worst_priority)
+				worst_key = queued_key
+				worst_priority = ai_v32_voice_queue[queued_key]
+		if(priority <= worst_priority)
+			return FALSE
+		ai_v32_voice_queue -= worst_key
+	ai_v32_voice_queue[event_key] = priority
+	return TRUE
+
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/ai_v32_discard_routine_events()
+	if(!length(ai_v32_voice_queue))
+		return
+	for(var/queued_key in ai_v32_voice_queue.Copy())
+		if(ai_v32_voice_queue[queued_key] < 65)
+			ai_v32_voice_queue -= queued_key
+
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/ai_v32_flush_voice_queue()
+	if(!personality_mode || !length(ai_v32_voice_queue))
+		return
+	var/mob/living/carbon/human/holder = get_current_carrier()
+	if(!holder || QDELETED(holder))
+		ai_v32_voice_queue.Cut()
+		return
+	if(holder.stat != CONSCIOUS || world.time < last_speech + DREADMK3_SPEECH_COOLDOWN)
+		return
+	if(world.time < ai_v32_last_queued_spoken + 8 SECONDS)
+		return
+	var/health_pct = holder.maxHealth > 0 ? (holder.health / holder.maxHealth) * 100 : 0
+	if(health_pct <= 25)
+		ai_v32_discard_routine_events()
+		return
+	var/best_key
+	var/best_priority = -1
+	for(var/queued_key in ai_v32_voice_queue)
+		var/priority = ai_v32_voice_queue[queued_key]
+		if(priority > best_priority)
+			best_key = queued_key
+			best_priority = priority
+	if(!best_key)
+		return
+	ai_v32_voice_queue -= best_key
+	speak_up(best_key)
+	ai_v32_last_queued_spoken = world.time
+
+/// Choose one context-specific idle category; no nearby-mob search here.
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/ai_v32_idle_key()
+	var/mob/living/carbon/human/holder = get_current_carrier()
+	if(!holder)
+		return "idle"
+	if(!(src in holder.held_items))
+		return "ai_idle_holstered"
+	if(last_fire_time && world.time < last_fire_time + 90 SECONDS)
+		return "ai_idle_postcombat"
+	var/obj/item/card/id/card = holder.get_idcard(TRUE)
+	var/static/list/official_jobs = list("Captain", "Head of Security", "Bridge Officer", "Internal Affairs Agent", "Head of Personnel", "Research Director", "Chief Engineer", "Chief Medical Officer", "Quartermaster")
+	if(card && (card.assignment in official_jobs))
+		return "ai_idle_official"
+	return "idle"
+
+/// Called only from the gun's existing SSobj process; no additional processing subsystem.
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/ai_v32_observe_context()
+	var/mob/living/carbon/human/holder = get_current_carrier()
+	if(!holder || QDELETED(holder) || holder.stat != CONSCIOUS)
+		return
+	// One line after a finished firefight, never every process tick.
+	if(last_fire_time && last_fire_time != ai_v32_combat_ended_at && world.time >= last_fire_time + 12 SECONDS && world.time <= last_fire_time + 90 SECONDS)
+		ai_v32_combat_ended_at = last_fire_time
+		ai_v32_enqueue_event("ai_postcombat", 50)
+// DREADMK3_AI_V32:PROCS END
+
 
 #undef DREADMK3_SPEECH
 #undef DREADMK3_SPEECH_COOLDOWN

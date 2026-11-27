@@ -40,14 +40,14 @@
 	//Проверяем работы не в позициях и вынесенные в отдельный файл
 	switch(owner.assigned_role)
 		if(LAWYER)
-			return pick_list("ambitions/law.json", job)
+			return pick_ambition("ambitions/law.json", job)
 
 		if(BRDIGEOFF)
-			return pick_list("ambitions/representative.json", job)
+			return pick_ambition("ambitions/representative.json", job)
 
 	//Сначала выдаем амбиции силиконам, чтобы они не получили общих амбиций
 	if(owner.assigned_role in GLOB.nonhuman_positions)
-		return pick_list("ambitions/nonhuman.json", owner.assigned_role)
+		return pick_ambition("ambitions/nonhuman.json", owner.assigned_role)
 
 	//Проверяем работы вынесенные в позиции
 	if(owner.assigned_role in (GLOB.civilian_positions))
@@ -60,53 +60,61 @@
 				if(HOP)
 					if (prob(50))
 						job = pick(GLOB.civilian_positions)
-						result = pick_list("ambitions/support.json", job)
+						result = pick_ambition("ambitions/support.json", job)
 					else
 						job = pick(GLOB.supply_positions)
-						result = pick_list("ambitions/supply.json", job)
+						result = pick_ambition("ambitions/supply.json", job)
 				if(HOS)
 					job = pick(GLOB.security_positions)
-					result = pick_list("ambitions/security.json", job)
+					result = pick_ambition("ambitions/security.json", job)
 				if(CHIEF)
 					job = pick(GLOB.engineering_positions)
-					result = pick_list("ambitions/engineering.json", job)
+					result = pick_ambition("ambitions/engineering.json", job)
 				if(RD_JF)
 					job = pick(GLOB.science_positions)
-					result = pick_list("ambitions/science.json", job)
+					result = pick_ambition("ambitions/science.json", job)
 				if(CMO_JF)
 					job = pick(GLOB.medical_positions)
-					result = pick_list("ambitions/medical.json", job)
+					result = pick_ambition("ambitions/medical.json", job)
 		if (!result)
-			result = pick_list("ambitions/command.json", job)
+			result = pick_ambition("ambitions/command.json", job)
 		return result
 
 	if(owner.assigned_role in (GLOB.civilian_positions))
-		return pick_list("ambitions/support.json", job)
+		return pick_ambition("ambitions/support.json", job)
 
 	if(owner.assigned_role in GLOB.law_positions)
-		return pick_list("ambitions/security.json", job)
+		return pick_ambition("ambitions/security.json", job)
 
 	if(owner.assigned_role in GLOB.engineering_positions)
-		return pick_list("ambitions/engineering.json", job)
+		return pick_ambition("ambitions/engineering.json", job)
 
 	if(owner.assigned_role in GLOB.medical_positions)
-		return pick_list("ambitions/medical.json", job)
+		return pick_ambition("ambitions/medical.json", job)
 
 	if(owner.assigned_role in GLOB.science_positions)
-		return pick_list("ambitions/science.json", job)
+		return pick_ambition("ambitions/science.json", job)
 
 	if(owner.assigned_role in GLOB.supply_positions)
 		if(owner.assigned_role == MINER)
 			return pick_list("ambitions/supply.json", "Common")
-		return pick_list("ambitions/supply.json", job)
+		return pick_ambition("ambitions/supply.json", job)
 
 	if(owner.assigned_role in (GLOB.security_positions))
 		if(owner.assigned_role == BRIGDOC && (prob(chance_other_departament_ambition)))	//шанс что бригмедик возьмёт амбицию мед. отдела.
 			job = pick(GLOB.medical_positions)
-			return pick_list("ambitions/medical.json", job)
-		return pick_list("ambitions/security.json", job)
+			return pick_ambition("ambitions/medical.json", job)
+		return pick_ambition("ambitions/security.json", job)
 
 	return result
+
+/// Не у каждой должности есть свой ключ в файле амбиций - тогда берём общий список отдела
+/datum/ambition_objective/proc/pick_ambition(filename, job)
+	load_strings_file(filename)
+	var/list/file_strings = GLOB.string_cache?[filename]
+	if(!(job in file_strings))
+		job = "Common"
+	return pick_list(filename, job)
 
 /datum/ambition_objective/proc/ambition_code(text)
 	var/list/choose_list = list()		//список повторов рандома у амбиции !(Приготовлю сегодня ПИВО и ПИВО)

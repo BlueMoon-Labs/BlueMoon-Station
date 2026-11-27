@@ -11172,7 +11172,6 @@
 /turf/open/floor/plasteel/cult,
 /area/awaymission)
 "rDF" = (
-/mob/living/simple_animal/hostile/megafauna/swarmer_swarm_beacon,
 /turf/open/floor/mineral/plastitanium/red{
 	initial_gas_mix = "o2=14;n2=23;TEMP=300"
 	},

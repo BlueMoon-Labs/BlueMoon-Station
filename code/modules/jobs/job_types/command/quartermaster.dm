@@ -40,10 +40,10 @@
 
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_MAILSORTING, ACCESS_CARGO, ACCESS_CARGO_BOT, ACCESS_QM, ACCESS_MINING,
 					ACCESS_MINING_STATION, ACCESS_MINERAL_STOREROOM, ACCESS_KEYCARD_AUTH, ACCESS_RC_ANNOUNCE,
-					ACCESS_SEC_DOORS, ACCESS_HEADS, ACCESS_PRODUCTION_CARGO)
+					ACCESS_SEC_DOORS, ACCESS_HEADS, ACCESS_PRODUCTION_CARGO, ACCESS_BIT_DEN)
 	minimal_access = list(ACCESS_MAINT_TUNNELS, ACCESS_MAILSORTING, ACCESS_CARGO, ACCESS_CARGO_BOT, ACCESS_QM, ACCESS_MINING,
 					ACCESS_MINING_STATION, ACCESS_MINERAL_STOREROOM, ACCESS_KEYCARD_AUTH, ACCESS_RC_ANNOUNCE,
-					ACCESS_SEC_DOORS, ACCESS_HEADS, ACCESS_PRODUCTION_CARGO)
+					ACCESS_SEC_DOORS, ACCESS_HEADS, ACCESS_PRODUCTION_CARGO, ACCESS_BIT_DEN)
 	paycheck = PAYCHECK_HARD //They can already buy stuff using cargo budget, don't give em a command-level paycheck.	//alright i'll agree to that -qweq
 	paycheck_department = ACCOUNT_CAR
 	bounty_types = CIV_JOB_RANDOM
@@ -74,7 +74,7 @@
 	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 	l_hand = /obj/item/clipboard
 	id = /obj/item/card/id/silver
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command = 1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command = 1, /obj/item/paper/guides/economy = 1, /obj/item/paper/guides/economy/budget = 1)
 	box = /obj/item/storage/box/survival/command
 	chameleon_extras = /obj/item/stamp/qm
 	accessory = list(/obj/item/clothing/accessory/permit/special/quartermaster)

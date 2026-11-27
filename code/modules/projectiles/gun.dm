@@ -60,7 +60,7 @@
 	var/randomspread = 1				//Set to 0 for shotguns. This is used for weapons that don't fire all their bullets at once.
 	var/inaccuracy_modifier = 1
 	var/semicd = 0 //cooldown handler
-	var/dual_wield_spread = 24 //additional spread when dual wielding
+	var/dual_wield_spread = 110 //additional spread when dual wielding
 
 	lefthand_file = 'icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/guns_righthand.dmi'
@@ -90,8 +90,7 @@
 	//Zooming
 	var/zoomable = FALSE //whether the gun generates a Zoom action on creation
 	var/zoomed = FALSE //Zoom toggle
-	var/zoom_amt = 3 //Distance in TURFs to move the user's screen forward (the "zoom" effect)
-	var/zoom_out_amt = 0
+	var/scope_range = 2
 	var/datum/action/item_action/toggle_scope_zoom/azoom
 
 	//Firemodes
@@ -109,6 +108,7 @@
 	/// Just 'slightly' snowflakey way to modify projectile damage for projectiles fired from this gun.
 	var/projectile_damage_multiplier = 1
 
+	/// Множитель урона по симпл-мобам без разума (ИИ); не применяется к симпл-мобам, занятым игроками
 	var/projectile_simple_mob_damage_multiplier = 1
 
 	/// directional recoil multiplier
@@ -137,6 +137,7 @@
 
 	if(zoomable)
 		azoom = new (src)
+		AddComponent(/datum/component/scope, range_modifier = scope_range, category = "scope_gun", severity = 1)
 
 	if(burst_size > 1 && !(SELECT_BURST_SHOT in fire_select_modes))
 		fire_select_modes.Add(SELECT_BURST_SHOT)
@@ -334,6 +335,14 @@
 	. = ..()
 	if(!CheckAttackCooldown(user, target, TRUE))
 		return
+	if(zoomable && target)
+		var/datum/component/scope/scope = GetComponent(/datum/component/scope)
+		if(scope?.tracker)
+			var/turf/scope_turf = scope.get_target_turf()
+			if(scope_turf)
+				target = scope.get_target(scope_turf)
+				params = null
+				flag = FALSE
 	if (user.zone_selected == BODY_ZONE_PRECISE_GROIN && user.a_intent == INTENT_HELP)
 		do_eblya(target, user)
 	process_afterattack(target, user, flag, params)
@@ -451,12 +460,14 @@
 		for(var/obj/item/gun/G in H.held_items)
 			if(G == src || G.weapon_weight >= WEAPON_MEDIUM)
 				continue
-			else if(G.can_trigger_gun(user))
-				bonus_spread += G.dual_wield_spread * G.dualwield_spread_mult
+			else if(G.can_trigger_gun(user) && G.can_shoot())
+				if (HAS_TRAIT(H, TRAIT_AKIMBO))
+					bonus_spread = 20
+				else
+					bonus_spread += G.dual_wield_spread * G.dualwield_spread_mult
 				loop_counter++
 				var/stam_cost = G.getstamcost(user)
 				addtimer(CALLBACK(G, TYPE_PROC_REF(/obj/item/gun, process_fire), target, user, TRUE, params, null, bonus_spread, stam_cost), loop_counter)
-
 	var/stam_cost = getstamcost(user)
 	process_fire(target, user, TRUE, params, null, bonus_spread, stam_cost)
 
@@ -511,6 +522,13 @@
 /obj/item/gun/proc/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
 	if(user && !CHECK_MOBILITY(user, MOBILITY_USE))
 		return FALSE
+	if(zoomable)
+		var/datum/component/scope/scope = GetComponent(/datum/component/scope)
+		if(scope?.tracker)
+			var/turf/scope_turf = scope.get_target_turf()
+			if(scope_turf)
+				target = scope.get_target(scope_turf)
+				params = null
 	add_fingerprint(user)
 
 	if(on_cooldown())
@@ -1030,11 +1048,6 @@
 		gun.firemode_action = null
 	return ..()
 
-/obj/item/gun/proc/rotate(atom/thing, old_dir, new_dir)
-	if(ismob(thing))
-		var/mob/lad = thing
-		lad.client.view_size.zoomOut(zoom_out_amt, zoom_amt, new_dir)
-
 /obj/item/gun/proc/zoom(mob/living/user, direct, forced_zoom)
 	if(!(user?.client))
 		return
@@ -1052,12 +1065,15 @@
 	else
 		zoomed = !zoomed
 
+	var/datum/component/scope/scope = GetComponent(/datum/component/scope)
+	if(!scope)
+		return
+
 	if(zoomed)
-		RegisterSignal(user, COMSIG_ATOM_DIR_CHANGE, PROC_REF(rotate))
-		user.client.view_size.zoomOut(zoom_out_amt, zoom_amt, direct)
+		if(!scope.zoom(user))
+			zoomed = FALSE
 	else
-		UnregisterSignal(user, COMSIG_ATOM_DIR_CHANGE)
-		user.client.view_size.zoomIn()
+		scope.stop_zooming(user)
 
 /obj/item/gun/handle_atom_del(atom/A)
 	if(A == pin)

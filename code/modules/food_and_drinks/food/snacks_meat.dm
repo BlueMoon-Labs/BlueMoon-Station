@@ -242,6 +242,43 @@
 	tastes = list("meat" = 8, "metal" = 4, "scales" = 1)
 	foodtype = MEAT
 
+// Готовое мясо с вертела импланта шаурмы: базовый ингредиент всех рецептов шаурмы.
+/obj/item/reagent_containers/food/snacks/meat/ready_kebab
+	name = "ready kebab meat"
+	desc = "Perfectly roasted meat, ready to be wrapped into shawarma."
+	icon_state = "baconcookedb"
+	list_reagents = list(/datum/reagent/consumable/nutriment = 5)
+	bonus_reagents = list(/datum/reagent/consumable/nutriment = 2, /datum/reagent/consumable/nutriment/vitamin = 1)
+	trash = /obj/item/trash/plate
+	filling_color = "#B22222"
+	tastes = list("meat" = 1, "spices" = 1)
+	foodtype = MEAT
+
+/obj/item/reagent_containers/food/snacks/shawarma
+	name = "shawarma"
+	desc = "A hearty shawarma wrap with roasted meat, fresh vegetables and mayonnaise."
+	icon_state = "grilled_beef_gyro"
+	w_class = WEIGHT_CLASS_SMALL
+	bitesize = 8
+	list_reagents = list(/datum/reagent/consumable/nutriment = 10, /datum/reagent/consumable/mayonnaise = 5)
+	bonus_reagents = list(/datum/reagent/consumable/nutriment = 4, /datum/reagent/consumable/nutriment/vitamin = 4)
+	filling_color = "#D2B48C"
+	tastes = list("meat" = 2, "vegetables" = 1, "mayonnaise" = 1)
+	foodtype = MEAT | VEGETABLES
+
+/obj/item/reagent_containers/food/snacks/shawarma/cheese
+	name = "cheese shawarma"
+	desc = "A hearty shawarma wrap with roasted meat, fresh vegetables, mayonnaise and melted cheese."
+	icon_state = "vegetarian_gyro"
+	list_reagents = list(/datum/reagent/consumable/nutriment = 12, /datum/reagent/consumable/mayonnaise = 5)
+	tastes = list("meat" = 2, "cheese" = 2, "vegetables" = 1, "mayonnaise" = 1)
+
+/obj/item/reagent_containers/food/snacks/shawarma/spicy
+	name = "spicy shawarma"
+	desc = "A hearty shawarma wrap with roasted meat, fresh vegetables, mayonnaise and a chili kick."
+	list_reagents = list(/datum/reagent/consumable/nutriment = 10, /datum/reagent/consumable/mayonnaise = 5, /datum/reagent/consumable/capsaicin = 3)
+	tastes = list("meat" = 2, "hot peppers" = 2, "vegetables" = 1, "mayonnaise" = 1)
+
 /obj/item/reagent_containers/food/snacks/rawkhinkali
 	name = "raw khinkali"
 	desc = "One hundred khinkalis? Do I look like a pig?"
@@ -430,6 +467,7 @@
 	var/mob/spammer = get_mob_by_key(fingerprintslast)
 	var/mob/living/water = new dried_being(drop_location(), TRUE, spammer)
 	if (!QDELETED(water))
+		econ_mark_cube_grown(water)
 		visible_message("<span class='notice'>[src] expands!</span>")
 		water.log_message("Spawned via [src] at [AREACOORD(src)], Last attached mob: [key_name(spammer)].", LOG_ATTACK)
 	else if (!spammer) // Visible message in case there are no fingerprints

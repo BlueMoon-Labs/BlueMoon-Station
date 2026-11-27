@@ -24,9 +24,12 @@
 	var/list/data = list()
 	// BLUEMOON EDIT START
 	var/static/list/categorys = list("library", "library_secure", "library_private", "library_large", "library_large_private")
+	var/list/paintings_store = islist(SSpersistence.paintings) ? SSpersistence.paintings : null
 	for(var/category_name in categorys)
-		data[category_name] = SSpersistence.paintings[category_name]
-	data["favorite_paintings_md5"] = user?.client?.prefs?.favorite_paintings_md5
+		var/list/paintings = paintings_store?[category_name]
+		data[category_name] = islist(paintings) ? paintings : list()
+	var/list/favorites = user?.client?.prefs?.favorite_paintings_md5
+	data["favorite_paintings_md5"] = islist(favorites) ? favorites : list()
 	data["is_admin"] = check_rights_for(user?.client, R_DEBUG)
 	// BLUEMOON EDIT END
 	return data
@@ -54,6 +57,8 @@
 			if(!md5)
 				return
 
+			if(!islist(L.client.prefs.favorite_paintings_md5))
+				L.client.prefs.favorite_paintings_md5 = list()
 			var/list/favorite_paintings_md5 = L.client.prefs.favorite_paintings_md5
 			if(md5 in favorite_paintings_md5)
 				favorite_paintings_md5 -= md5
@@ -67,7 +72,7 @@
 			var/mob/user = usr
 			if(!check_rights_for(user?.client, R_DEBUG))
 				return
-			var/choice = tgui_alert(user, "Вы УВЕРЕНЫ, что хотите удалить картину? ДЕЙСТВИЕ НЕОБРАТИМО!", "Удаление картины из БД", list("Нет", "Да"))
+			var/choice = tgui_alert(user, "Вы уверены, что хотите удалить картину? Действие необратимо!", "Удаление картины из БД", list("Нет", "Да"))
 			if(choice != "Да")
 				return
 			var/asset_prefix = params["asset_prefix"]
@@ -82,7 +87,7 @@
 				var/list/entry = current_list[i]
 				if(entry["md5"] == md5)
 					chosen_portrait = entry
-					current_list.Cut(i, i+1)
+					current_list.Cut(i, i + 1)
 					break
 			if(!chosen_portrait)
 				return
@@ -94,7 +99,7 @@
 					QDEL_NULL(P.current_canvas)
 					P.update_icon()
 			log_admin("[key_name(user)] deleted a persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author].")
-			message_admins(span_notice("[key_name_admin(user)] deleted persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author]."))
+			message_admins(span_notice("[key_name_admin(user)] удалил сохранённую картину «[chosen_portrait["title"]]» автора [author] из категории [asset_prefix]."))
 			return TRUE
 		if("select")
 			//printer check!

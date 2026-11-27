@@ -22,6 +22,7 @@
 	dimension_x = 64
 	dimension_y = 32
 	center = TRUE
+	matrixed_sections = MATRIX_ALL
 
 /datum/sprite_accessory/tails/human/bm_tails/large
 	icon = 'modular_bluemoon/icons/mob/tails64x32.dmi'
@@ -464,4 +465,114 @@
 /datum/sprite_accessory/tails/mam_tails/bm_tails/lynx_tail
 	name = "Lynx"
 	icon_state = "lynx"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/*******************************************/
+
+/datum/sprite_accessory/tails/human/bm_tails/snakep
+	name = "Snake (P)"
+	icon_state = "snakep"
+	matrixed_sections = MATRIX_RED
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/snakep
+	name = "Snake (P)"
+	icon_state = "snakep"
+	matrixed_sections = MATRIX_RED
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/snakep
+	name = "Snake (P)"
+	icon_state = "snakep"
+	matrixed_sections = MATRIX_RED
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/snakep
+	name = "Snake (P)"
+	icon_state = "snakep"
+	matrixed_sections = MATRIX_RED
+
+/*******************************************/
+
+/datum/sprite_accessory/tails/human/bm_tails/snakepunder
+	name = "Snake under shields (P)"
+	icon_state = "snakepunder"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/snakepunder
+	name = "Snake under shields (P)"
+	icon_state = "snakepunder"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/snakepunder
+	name = "Snake under shields (P)"
+	icon_state = "snakepunder"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/snakepunder
+	name = "Snake under shields (P)"
+	icon_state = "snakepunder"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/*******************************************/
+
+/datum/sprite_accessory/tails/human/bm_tails/snakepct
+	name = "Snake colored tip (P)"
+	icon_state = "snakepct"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/snakepct
+	name = "Snake colored tip (P)"
+	icon_state = "snakepct"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/snakepct
+	name = "Snake colored tip (P)"
+	icon_state = "snakepct"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/snakepct
+	name = "Snake colored tip (P)"
+	icon_state = "snakepct"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/*******************************************/
+
+/datum/sprite_accessory/tails/human/bm_tails/snakeps
+	name = "Snake stripe (P)"
+	icon_state = "snakeps"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/snakeps
+	name = "Snake stripe (P)"
+	icon_state = "snakeps"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/snakeps
+	name = "Snake stripe (P)"
+	icon_state = "snakeps"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/snakeps
+	name = "Snake stripe (P)"
+	icon_state = "snakeps"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/*******************************************/
+
+/datum/sprite_accessory/tails/human/bm_tails/snakepsa
+	name = "Snake stripe ALT (P)"
+	icon_state = "snakepsa"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/snakepsa
+	name = "Snake stripe ALT (P)"
+	icon_state = "snakepsa"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/snakepsa
+	name = "Snake stripe ALT (P)"
+	icon_state = "snakepsa"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/snakepsa
+	name = "Snake stripe ALT (P)"
+	icon_state = "snakepsa"
 	matrixed_sections = MATRIX_RED_GREEN

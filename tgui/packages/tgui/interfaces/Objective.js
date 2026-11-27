@@ -7,6 +7,10 @@ export const Objective = (props) => {
   const {
     possible_objectives = [],
     selected_objective = null,
+    shift_cap = 0,
+    shift_left = null,
+    overcap_share = 0,
+    payable = {},
   } = data;
   return (
     <Window
@@ -23,15 +27,27 @@ export const Objective = (props) => {
             content="Отказаться"
             disabled={!selected_objective}
             onClick={() => act('remove')} />
+          {!!shift_cap && (
+            <Box mt={1} color={shift_left > 0 ? 'label' : 'average'}>
+              {shift_left > 0
+                ? `Полная награда, пока задания смены вместе с долей снабжения не выпустили ${shift_cap} кр.: осталось ${shift_left} кр., дальше - ${overcap_share}% награды.`
+                : overcap_share > 0
+                  ? `Задания смены выпустили больше ${shift_cap} кр.: теперь NT платит ${overcap_share}% награды, очки Авангарда - полностью.`
+                  : `Задания смены выпустили больше ${shift_cap} кр.: дальше только очки Авангарда участникам вылета.`}
+            </Box>
+          )}
         </Section>
         {!selected_objective || <SelectedObjective
-          objective={selected_objective} />}
+          objective={selected_objective}
+          paid={shift_cap ? payable[selected_objective.id] : undefined} />}
         {possible_objectives.map(objective => (
           <Section
             title={objective.name}
             key={objective.id}>
             <Box mb={1}>
-              Payout: {objective.payout}
+              <Payout
+                payout={objective.payout}
+                paid={shift_cap ? payable[objective.id] : undefined} />
             </Box>
             <Box mb={1}>
               {objective.description}
@@ -50,16 +66,25 @@ export const Objective = (props) => {
   );
 };
 
+const Payout = (props) => {
+  const { payout, paid } = props;
+  if (paid === undefined || paid === null) {
+    return `Награда: ${payout}`;
+  }
+  return `Награда: ${payout}, оплатится ${paid} из ${payout} кр.`;
+};
+
 export const SelectedObjective = (props) => {
   const {
     objective = [],
+    paid,
   } = props;
   return (
     <>
       <Section
         title={objective.name}>
         <Box>
-          Награда: {objective.payout}
+          <Payout payout={objective.payout} paid={paid} />
         </Box>
         <Box>
           {objective.description}

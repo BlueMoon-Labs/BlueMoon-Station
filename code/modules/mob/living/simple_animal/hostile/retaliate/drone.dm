@@ -44,6 +44,14 @@
 /mob/living/simple_animal/hostile/malf_drone/Process_Spacemove(movement_dir = 0)
 	return 1
 
+/mob/living/simple_animal/hostile/malf_drone/update_gravity(has_gravity, override = FALSE)
+	. = ..()
+	var/new_speed = has_gravity ? initial(speed) : initial(speed) / 1.5
+	if(speed == new_speed)
+		return
+	speed = new_speed
+	update_simplemob_varspeed()
+
 /mob/living/simple_animal/hostile/malf_drone/AttackingTarget()
 	OpenFire(target) // prevents it pointlessly nuzzling its target in melee if its cornered
 

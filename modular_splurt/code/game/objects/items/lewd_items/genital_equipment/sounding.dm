@@ -1,5 +1,12 @@
+/obj/item/organ/genital/proc/get_urethral_obstruction()
+	switch(slot)
+		if(ORGAN_SLOT_PENIS)
+			return locate(/obj/item/genital_equipment/sounding) in contents
+		if(ORGAN_SLOT_VAGINA)
+			return locate(/obj/item/genital_equipment/urethral_plug) in contents
+
 /obj/item/genital_equipment/sounding //TODO probably fix this shit as well
-	name 				= "уретральный стержень"
+	name 				= "sound rod"
 	desc 				= "Не глупи, засовывай в свой ствол!"
 	icon 				= 'modular_splurt/icons/obj/sounding.dmi'
 	throwforce			= 0
@@ -60,7 +67,7 @@
 
 // Just Ctrl+C -> Ctrl+V
 /obj/item/genital_equipment/urethral_plug
-	name 				= "уретральная пробка"
+	name 				= "urethral plug"
 	desc 				= "Заткни свой фонтанчик!"
 	icon 				= 'modular_splurt/icons/obj/sounding.dmi'
 	throwforce			= 0

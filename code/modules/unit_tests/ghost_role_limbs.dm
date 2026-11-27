@@ -150,9 +150,9 @@
 	for(var/zone in list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG))
 		limb_act(synth_setup, zone, LOADOUT_LIMB_PROSTHETIC)
 	TEST_ASSERT_EQUAL(length(synth_prefs.modified_limbs), 3, "Synthetic should still be able to pick cosmetic prosthetics")
-	TEST_ASSERT_EQUAL(synth_prefs.quirk_balance(), 0, "Prosthetics on a robotic-limbed species should give no quirk points")
+	TEST_ASSERT_EQUAL(synth_prefs.quirk_balance() - BASE_QUIRK_BALANCE, 0, "Prosthetics on a robotic-limbed species should give no quirk points")
 	limb_act(synth_setup, BODY_ZONE_R_LEG, LOADOUT_LIMB_AMPUTATED)
-	TEST_ASSERT_EQUAL(synth_prefs.quirk_balance(), 2, "Amputation should still give points to a synthetic")
+	TEST_ASSERT_EQUAL(synth_prefs.quirk_balance() - BASE_QUIRK_BALANCE, 2, "Amputation should still give points to a synthetic")
 	TEST_ASSERT_EQUAL(synth_setup.build_modifications_data()["limbBonus"], 2, "Modifications tab should show the same limb bonus as the balance")
 
 	// СЛАЙМОЛЮДЫ НЫЫЫА ЧЕРТИ ЕБАННЫЕ НЫЫЫААА
@@ -160,14 +160,14 @@
 	jelly_prefs.pref_species = new /datum/species/jelly
 	var/datum/character_setup/jelly_setup = new(jelly_prefs)
 	limb_act(jelly_setup, BODY_ZONE_R_ARM, LOADOUT_LIMB_AMPUTATED)
-	TEST_ASSERT_EQUAL(jelly_prefs.quirk_balance(), 0, "Amputation should give no points to a species that regrows limbs")
+	TEST_ASSERT_EQUAL(jelly_prefs.quirk_balance() - BASE_QUIRK_BALANCE, 0, "Amputation should give no points to a species that regrows limbs")
 	TEST_ASSERT_EQUAL(jelly_setup.build_modifications_data()["limbBonus"], 0, "Modifications tab should show no amputation bonus for a regrowing species")
 
 	var/datum/preferences/human_prefs = new
 	human_prefs.pref_species = new /datum/species/human
 	var/datum/character_setup/human_setup = new(human_prefs)
 	limb_act(human_setup, BODY_ZONE_L_ARM, LOADOUT_LIMB_PROSTHETIC)
-	TEST_ASSERT_EQUAL(human_prefs.quirk_balance(), 1, "Prosthetic on an organic species should give a quirk point")
+	TEST_ASSERT_EQUAL(human_prefs.quirk_balance() - BASE_QUIRK_BALANCE, 1, "Prosthetic on an organic species should give a quirk point")
 
 	qdel(jelly_setup)
 	qdel(jelly_prefs)
@@ -217,8 +217,9 @@
 	var/obj/item/organ/eyes/eyes = H.getorganslot(ORGAN_SLOT_EYES)
 	TEST_ASSERT(istype(eyes, /obj/item/organ/eyes/robotic/toggled/glow), "Synthetic should receive glow eyes from preferences")
 
+	// Свои глаза (ночное зрение) у пеплоходов, а не у обычных ящеров.
 	var/datum/preferences/lizard_prefs = new
-	lizard_prefs.pref_species = new /datum/species/lizard
+	lizard_prefs.pref_species = new /datum/species/lizard/ashwalker
 	TEST_ASSERT(lizard_prefs.body_mod_organ_locked(ORGAN_SLOT_EYES), "Mutant-eyed organics should keep the eye group locked")
 
 	qdel(S)
@@ -240,5 +241,227 @@
 	TEST_ASSERT(locate(/obj/item/implant/hide_backpack) in H.implants, "Implant from preferences should be applied")
 	TEST_ASSERT(istype(H.get_bodypart(BODY_ZONE_R_ARM), /obj/item/bodypart/r_arm/robot/surplus), "Prosthetic from preferences should be applied")
 	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_EYES), /obj/item/organ/eyes/robotic/toggled/glow), "Organ modification from preferences should be applied")
+
+	qdel(P)
+
+/// Когти из редактора персонажа: два одноруких импланта, по одному на каждую руку.
+/datum/unit_test/claws_pref_implants_both_arms
+
+/datum/unit_test/claws_pref_implants_both_arms/Run()
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/human
+	P.implant_mods = list("razor_claws" = TRUE)
+
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	P.apply_prefs_body_mods(H)
+
+	var/obj/item/organ/cyberimp/arm/razor_claws/right_implant = H.getorganslot(ORGAN_SLOT_RIGHT_ARM_AUG)
+	var/obj/item/organ/cyberimp/arm/razor_claws/left_implant = H.getorganslot(ORGAN_SLOT_LEFT_ARM_AUG)
+	TEST_ASSERT(istype(right_implant), "Right arm should receive the claws implant")
+	TEST_ASSERT(istype(left_implant, /obj/item/organ/cyberimp/arm/razor_claws/left), "Left arm should receive the matching claws implant")
+	TEST_ASSERT(!right_implant?.is_dual_arm_implant(), "Claws implant must not force both arm slots by itself")
+
+	qdel(P)
+
+/datum/unit_test/body_mod_implant_costs
+
+/datum/unit_test/body_mod_implant_costs/Run()
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/human
+	var/list/expected_costs = list(
+		"lynx_paws" = 1,
+		"reinforced_tendons" = 1,
+		"fortified_ankles" = 1,
+		"corp_blood_pump" = 4,
+		"razor_claws" = 3,
+		"subdermal_armor" = 6,
+		"reinforced_skeleton" = 6,
+		"nutriment_pump" = 1,
+	)
+	for(var/implant_id in expected_costs)
+		var/list/option = P.body_mod_implant_option(implant_id)
+		TEST_ASSERT_NOTNULL(option, "Implant [implant_id] should be listed in the modifications tab")
+		TEST_ASSERT_EQUAL(option["cost"], expected_costs[implant_id], "Implant [implant_id] should cost the configured amount")
+		TEST_ASSERT(option["organ"], "Implant [implant_id] should be applied as an organ implant")
+
+	P.implant_mods = list(
+		"lynx_paws" = TRUE,
+		"razor_claws" = TRUE,
+		"subdermal_armor" = TRUE,
+		"reinforced_skeleton" = TRUE,
+		"nutriment_pump" = TRUE,
+		"corp_blood_pump" = TRUE,
+	)
+	TEST_ASSERT_EQUAL(P.quirk_balance() - BASE_QUIRK_BALANCE, -21, "Selected implants should be paid for with quirk points")
+
+	// Импланты одной группы занимают одни и те же слоты: новый выбор снимает старый и возвращает очки.
+	var/datum/preferences/conflict_prefs = new
+	conflict_prefs.pref_species = new /datum/species/human
+	conflict_prefs.implant_mods = list("lynx_paws" = TRUE)
+	TEST_ASSERT("lynx_paws" in conflict_prefs.body_mod_implant_conflicts("reinforced_tendons"), "Leg implants should conflict with each other")
+	TEST_ASSERT("lynx_paws" in conflict_prefs.body_mod_implant_conflicts("fortified_ankles"), "Leg implants should conflict inside their group")
+	TEST_ASSERT_EQUAL(conflict_prefs.body_mod_implant_swap_refund("reinforced_tendons"), 1, "Replacing a leg implant should refund its cost")
+	TEST_ASSERT_EQUAL(conflict_prefs.quirk_balance() - BASE_QUIRK_BALANCE, -1, "A single selected implant should be charged once")
+
+	conflict_prefs.implant_mods = list("lynx_paws" = TRUE, "reinforced_tendons" = TRUE, "fortified_ankles" = TRUE)
+	conflict_prefs.sanitize_body_mods()
+	TEST_ASSERT_EQUAL(length(conflict_prefs.implant_mods), 1, "Only one leg implant should survive sanitizing")
+
+	// Оптика Кироши теперь выбор в группе глаз: она заменяет светящиеся глаза, а не сосуществует с ними.
+	var/datum/preferences/eye_prefs = new
+	eye_prefs.pref_species = new /datum/species/human
+	TEST_ASSERT_NOTNULL(eye_prefs.body_mod_organ_option(ORGAN_SLOT_EYES, "kiroshi"), "Kiroshi optics should be an eye option")
+	TEST_ASSERT_NULL(eye_prefs.body_mod_implant_option("kiroshi_optics"), "Kiroshi optics should no longer be a separate implant")
+	eye_prefs.organ_mods = list(ORGAN_SLOT_EYES = "kiroshi")
+	eye_prefs.sanitize_body_mods()
+	TEST_ASSERT_EQUAL(eye_prefs.organ_mods[ORGAN_SLOT_EYES], "kiroshi", "Kiroshi eye choice should survive sanitizing")
+	TEST_ASSERT_EQUAL(eye_prefs.body_mods_cost(), 1, "Kiroshi optics should cost one quirk point")
+
+	// Старые сохранения с имплантом kiroshi_optics переносятся в выбор глаз.
+	eye_prefs.organ_mods = list()
+	eye_prefs.implant_mods = list("kiroshi_optics" = TRUE)
+	eye_prefs.sanitize_body_mods()
+	TEST_ASSERT_NULL(eye_prefs.implant_mods["kiroshi_optics"], "Legacy Kiroshi implant should be migrated")
+	TEST_ASSERT_EQUAL(eye_prefs.organ_mods[ORGAN_SLOT_EYES], "kiroshi", "Legacy Kiroshi implant should become the eye choice")
+
+	// Видам с мутантными глазами оптика недоступна так же, как и прочая замена глаз.
+	var/datum/preferences/mutant_prefs = new
+	mutant_prefs.pref_species = new /datum/species/lizard/ashwalker
+	TEST_ASSERT(mutant_prefs.body_mod_organ_locked(ORGAN_SLOT_EYES), "Mutant-eyed species should keep the eye group locked")
+	mutant_prefs.organ_mods = list(ORGAN_SLOT_EYES = "kiroshi")
+	mutant_prefs.drop_locked_body_mods()
+	TEST_ASSERT_NULL(mutant_prefs.organ_mods[ORGAN_SLOT_EYES], "Kiroshi choice should be dropped for mutant-eyed species")
+
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	var/health_before = H.maxHealth
+	P.organ_mods = list(ORGAN_SLOT_EYES = "kiroshi")
+	P.apply_prefs_body_mods(H)
+
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_EYES), /obj/item/organ/cyberimp/eyes/optical/kiroshi), "Kiroshi optics should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_LEFT_LEG_AUG), /obj/item/organ/cyberimp/leg/lynx_paws), "Lynx paws should occupy the left leg")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_RIGHT_LEG_AUG), /obj/item/organ/cyberimp/leg/lynx_paws), "Lynx paws should occupy the right leg")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_RIGHT_ARM_AUG), /obj/item/organ/cyberimp/arm/razor_claws), "Razor claws should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_SUBDERMAL_ARMOR), /obj/item/organ/cyberimp/chest/subdermal_armor), "Subdermal armor should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_REINFORCED_SKELETON), /obj/item/organ/cyberimp/chest/reinforced_skeleton), "Reinforced skeleton should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(ORGAN_SLOT_STOMACH_AID), /obj/item/organ/cyberimp/chest/nutriment), "Nutriment pump should be implanted")
+	TEST_ASSERT(istype(H.getorganslot(INTERNAL_ORGAN_CHEM_IMPLANT), /obj/item/organ/cyberimp/chest/blood_pump/sec_level), "Corporate blood pump should be implanted")
+	TEST_ASSERT_EQUAL(H.maxHealth, health_before + 25, "Reinforced skeleton should raise max health")
+
+	qdel(conflict_prefs)
+	qdel(P)
+
+/// Удалённые боевые импланты больше не выдают пермит: старые сохранения не должны вешать разрешение на форму.
+/datum/unit_test/combat_implant_permit
+
+/datum/unit_test/combat_implant_permit/Run()
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	H.real_name = "Permit Test"
+	H.dna.update_dna_identity()
+	var/obj/item/clothing/under/color/grey/uniform = allocate(/obj/item/clothing/under/color/grey)
+	TEST_ASSERT(H.equip_to_slot_or_del(uniform, ITEM_SLOT_ICLOTHING), "Test human should wear a uniform")
+	var/obj/item/card/id/id_card = allocate(/obj/item/card/id)
+	id_card.registered_name = H.real_name
+	id_card.assignment = "Test Subject"
+	TEST_ASSERT(H.equip_to_slot_or_del(id_card, ITEM_SLOT_ID), "Test human should wear an ID")
+
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/human
+	P.implant_mods = list("corp_mantis_blades" = TRUE, "corp_gorilla_arms" = TRUE)
+	P.apply_prefs_body_mods(H)
+	P.apply_combat_implant_permits(H)
+
+	TEST_ASSERT(!(locate(/obj/item/clothing/accessory/permit/special/combat_implants) in uniform.accessories_attached), "Retired combat implants should not issue a permit")
+	TEST_ASSERT(!(locate(/obj/item/organ/cyberimp/arm) in H.internal_organs), "Retired combat implants should not be applied")
+
+	// Обычный имплант тоже пермита не требует.
+	var/datum/preferences/P2 = new
+	P2.pref_species = new /datum/species/human
+	P2.implant_mods = list("lynx_paws" = TRUE)
+	P2.apply_prefs_body_mods(H)
+	P2.apply_combat_implant_permits(H)
+	TEST_ASSERT(!(locate(/obj/item/clothing/accessory/permit/special/combat_implants) in uniform.accessories_attached), "Non-combat implants should not issue a permit")
+
+	qdel(P)
+	qdel(P2)
+
+/// Виды со встроенным киберимплантом руки (силовой кабель синтов) не могут выбрать имплант в руки.
+/datum/unit_test/synth_arm_implants_locked
+
+/datum/unit_test/synth_arm_implants_locked/Run()
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/ipc
+	TEST_ASSERT(P.body_mod_has_mutant_arm_augment(), "IPC should have a built-in arm implant")
+	TEST_ASSERT(P.body_mod_implant_locked(P.body_mod_implant_option("razor_claws")), "IPC should not be able to pick arm implants")
+	TEST_ASSERT(P.body_mod_implant_lock_reason(P.body_mod_implant_option("razor_claws")), "IPC arm implants should report a lock reason")
+	TEST_ASSERT(!P.body_mod_implant_locked(P.body_mod_implant_option("lynx_paws")), "IPC should still be able to pick leg implants")
+	TEST_ASSERT(!P.body_mod_implant_locked(P.body_mod_implant_option("corp_blood_pump")), "IPC should still be able to pick chest implants")
+
+	// Смена вида на синта снимает уже выбранные импланты рук.
+	P.implant_mods = list("razor_claws" = TRUE, "lynx_paws" = TRUE)
+	P.drop_locked_body_mods()
+	TEST_ASSERT_NULL(P.implant_mods["razor_claws"], "Arm implants should be dropped when the species cannot use them")
+	TEST_ASSERT(P.implant_mods["lynx_paws"], "Leg implants should survive the species lock")
+
+	// У людей встроенного импланта руки нет: обычные импланты рук по-прежнему доступны.
+	var/datum/preferences/human_prefs = new
+	human_prefs.pref_species = new /datum/species/human
+	TEST_ASSERT(!human_prefs.body_mod_has_mutant_arm_augment(), "Humans should not have a built-in arm implant")
+	TEST_ASSERT(!human_prefs.body_mod_implant_locked(human_prefs.body_mod_implant_option("razor_claws")), "Humans should be able to pick arm implants")
+	TEST_ASSERT_NULL(human_prefs.body_mod_implant_lock_reason(human_prefs.body_mod_implant_option("razor_claws")), "Humans should have no arm lock reason")
+
+	qdel(P)
+	qdel(human_prefs)
+
+/// Ампутация в редакторе даёт очки квирков, поэтому пришитая обратно конечность
+/// не должна снова заработать: паралич висит на мобе и переживает пересадку.
+/datum/unit_test/editor_amputated_limb_stays_disabled
+
+/datum/unit_test/editor_amputated_limb_stays_disabled/Run()
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	var/datum/preferences/P = new
+	P.pref_species = new /datum/species/human
+	P.modified_limbs = list(BODY_ZONE_R_ARM = list(LOADOUT_LIMB_AMPUTATED))
+
+	P.apply_prefs_modified_limbs(H)
+
+	TEST_ASSERT_NULL(H.get_bodypart(BODY_ZONE_R_ARM), "Правая рука должна быть ампутирована")
+	TEST_ASSERT(HAS_TRAIT(H, TRAIT_PARALYSIS_R_ARM), "Ампутация из редактора должна вешать паралич на руку")
+	TEST_ASSERT_EQUAL(P.quirk_balance() - BASE_QUIRK_BALANCE, 2, "Ампутация должна давать очки квирков")
+
+	// Симулируем пришивание конечности в раунде: паралич должен остаться.
+	var/obj/item/bodypart/r_arm/reattached = new(H)
+	reattached.replace_limb(H)
+	var/obj/item/bodypart/r_arm/current = H.get_bodypart(BODY_ZONE_R_ARM)
+	TEST_ASSERT_NOTNULL(current, "Пришитая рука должна быть на месте")
+	TEST_ASSERT_EQUAL(current.is_disabled(), BODYPART_DISABLED_PARALYSIS, "Пришитая рука должна остаться нерабочей")
+
+	// Замена на протез тоже не должна обходить штраф.
+	var/obj/item/bodypart/r_arm/robot/prosthetic = new(H)
+	prosthetic.replace_limb(H)
+	TEST_ASSERT_EQUAL(H.get_bodypart(BODY_ZONE_R_ARM).is_disabled(), BODYPART_DISABLED_PARALYSIS, "Протез не должен обходить паралич редакторской ампутации")
+
+	// Остальные конечности остаются рабочими.
+	TEST_ASSERT(H.get_bodypart(BODY_ZONE_L_ARM).is_disabled() != BODYPART_DISABLED_PARALYSIS, "Здоровая рука не должна быть парализована")
+
+	// Повторное применение префов не копит трейты и не снимает паралич.
+	P.apply_prefs_modified_limbs(H)
+	TEST_ASSERT(HAS_TRAIT(H, TRAIT_PARALYSIS_R_ARM), "Повторный спавн должен сохранять паралич ампутированной конечности")
+
+	qdel(P)
+
+/// Ампутация у желе не даёт очков, поэтому и паралича быть не должно.
+/datum/unit_test/editor_amputation_jelly_no_paralysis
+
+/datum/unit_test/editor_amputation_jelly_no_paralysis/Run()
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	H.set_species(/datum/species/jelly)
+	var/datum/preferences/P = new
+	P.pref_species = H.dna.species
+	P.modified_limbs = list(BODY_ZONE_R_ARM = list(LOADOUT_LIMB_AMPUTATED))
+
+	P.apply_prefs_modified_limbs(H)
+
+	TEST_ASSERT(!HAS_TRAIT(H, TRAIT_PARALYSIS_R_ARM), "Желе не должно получать паралич за ампутацию без очков")
+	TEST_ASSERT_EQUAL(P.quirk_balance() - BASE_QUIRK_BALANCE, 0, "Ампутация у желе не должна давать очков")
 
 	qdel(P)

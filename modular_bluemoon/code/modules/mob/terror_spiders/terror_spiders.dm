@@ -155,11 +155,13 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/update_sight(forced = TRUE)
 	. = ..()
-	if(!client)
+	if(!GET_CLIENT(src))
 		return
 	if(HAS_TRAIT(src, TRAIT_THERMAL_VISION))
 		sight |= SEE_MOBS
 		lighting_alpha = min(lighting_alpha, LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
+	// Тепловизор ложится после базы: поля поверх зрения (таймстоп) должны сработать последними
+	SEND_SIGNAL(src, COMSIG_MOB_UPDATE_SIGHT)
 	sync_lighting_plane_alpha()
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/get_status_tab_items()
@@ -383,6 +385,25 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 			msg_terrorspiders("[src] has died in [get_area(src)].")
 		handle_dying()
 	return ..()
+
+//WHITE-STEEL: неоплодотворённые яйца своего тира падают с любого паука ужаса.
+//T1 - 30%, T2 - 20%, T3 - 15%, T4+ - 10%.
+/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/drop_loot()
+	. = ..()
+	var/egg_chance = 10
+	var/egg_type = /obj/item/broken/terror_spider_egg/tier4
+	switch(spider_tier)
+		if(TS_TIER_1)
+			egg_chance = 30
+			egg_type = /obj/item/broken/terror_spider_egg/tier1
+		if(TS_TIER_2)
+			egg_chance = 20
+			egg_type = /obj/item/broken/terror_spider_egg/tier2
+		if(TS_TIER_3)
+			egg_chance = 15
+			egg_type = /obj/item/broken/terror_spider_egg/tier3
+	if(prob(egg_chance))
+		new egg_type(loc)
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/spider_special_action()
 	return

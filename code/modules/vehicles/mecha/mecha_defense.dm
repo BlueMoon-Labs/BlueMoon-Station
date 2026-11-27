@@ -66,9 +66,10 @@
 /obj/vehicle/sealed/mecha/attack_alien(mob/living/user)
 	if(!user.CheckActionCooldown(CLICK_CD_MELEE))
 		return
+	var/mob/living/carbon/alien/humanoid/X = user
 	log_message("Атака ксеноморфа. Нападавший: [user].", LOG_MECHA, color="red")
 	playsound(src.loc, 'sound/weapons/slash.ogg', 100, TRUE)
-	attack_generic(user, 15, BRUTE, MELEE, 0)
+	attack_generic(user, X.meleeSlashSAPower, BRUTE, MELEE, 10)
 
 /obj/vehicle/sealed/mecha/attack_animal(mob/living/simple_animal/user)
 	if(!user.can_damage_objects)

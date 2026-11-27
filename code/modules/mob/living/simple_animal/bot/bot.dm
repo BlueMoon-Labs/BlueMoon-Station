@@ -1,3 +1,5 @@
+#define BOT_SUMMON_PATH_SEARCH_TIMEOUT (30 SECONDS)
+
 // AI (i.e. game AI, not the AI player) controlled bots
 /mob/living/simple_animal/bot
 	icon = 'icons/mob/aibots.dmi'
@@ -71,6 +73,8 @@
 	var/auto_patrol = 0// set to make bot automatically patrol
 	var/turf/patrol_target	// this is turf to navigate to (location of beacon)
 	var/turf/summon_target	// The turf of a user summoning a bot.
+	/// Пока не наступило, поиск пути к призыву ещё идёт и второй не запускается.
+	var/summon_path_search_until = 0
 	var/new_destination		// pending new destination (waiting for beacon response)
 	var/destination			// destination description tag
 	var/next_destination	// the next destination in the patrol route
@@ -831,9 +835,18 @@ Pass a positive integer as an argument to override a bot's default speed.
 	INVOKE_ASYNC(src, PROC_REF(async_calc_summon_path), avoid)
 
 /mob/living/simple_animal/bot/proc/async_calc_summon_path(turf/avoid)
-	if(QDELETED(src))
+	if(QDELETED(src) || world.time < summon_path_search_until)
 		return
-	set_path(get_path_to(src, summon_target, 150, id=access_card, exclude=avoid))
+	var/deadline = world.time + BOT_SUMMON_PATH_SEARCH_TIMEOUT
+	summon_path_search_until = deadline
+	var/turf/searched_target = summon_target
+	var/list/new_path = get_path_to(src, searched_target, 150, id=access_card, exclude=avoid, cancel_source = src)
+	if(summon_path_search_until == deadline)
+		summon_path_search_until = 0
+	// Пока шёл поиск, бота могли сбросить или призвать в другое место.
+	if(QDELETED(src) || summon_target != searched_target)
+		return
+	set_path(new_path)
 	if(!path.len) //Cannot reach target. Give up and announce the issue.
 		speak("Summon command failed, destination unreachable.",radio_channel)
 		bot_reset()
@@ -1021,7 +1034,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 	. = ..()
 	bot_reset()
 
-/mob/living/simple_animal/bot/revive(full_heal = 0, admin_revive = 0, excess_healing = 0)
+/mob/living/simple_animal/bot/revive(full_heal = 0, admin_revive = 0, excess_healing = 0, post_revive_effects = FALSE, medical_revive = FALSE)
 	if(..())
 		update_icon()
 		. = 1
@@ -1116,3 +1129,5 @@ Pass a positive integer as an argument to override a bot's default speed.
 
 /mob/living/simple_animal/bot/rust_heretic_act()
 	adjustBruteLoss(500)
+
+#undef BOT_SUMMON_PATH_SEARCH_TIMEOUT

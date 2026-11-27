@@ -41,9 +41,9 @@
 		RestrainedClickOn(A)
 		return
 	*/
-	if(aicamera.in_camera_mode) //Cyborg picture taking
+	if(aicamera?.in_camera_mode) // Cyborg picture taking
 		aicamera.camera_mode_off()
-		INVOKE_ASYNC(aicamera, TYPE_PROC_REF(/obj/item/camera, captureimage), A, usr)
+		INVOKE_ASYNC(aicamera, TYPE_PROC_REF(/obj/item/camera, captureimage), A, src)
 		return
 
 	var/obj/item/W = get_active_held_item(TRUE)
@@ -95,6 +95,8 @@
 //Give cyborgs hotkey clicks without breaking existing uses of hotkey clicks
 // for non-doors/apcs
 /mob/living/silicon/robot/CtrlShiftClickOn(atom/A)
+	if(SEND_SIGNAL(src, COMSIG_MOB_CTRLSHIFTCLICKON, A) & COMSIG_MOB_CANCEL_CLICKON)
+		return
 	A.BorgCtrlShiftClick(src)
 /mob/living/silicon/robot/ShiftClickOn(atom/A)
 	A.BorgShiftClick(src)
@@ -144,7 +146,7 @@
 
 /obj/machinery/turretid/BorgCtrlClick(mob/living/silicon/robot/user) //turret control on/off. Forwards to AI code.
 	if(get_dist(src,user) <= user.interaction_range)
-		AICtrlClick()
+		AICtrlClick(user)
 	else
 		..()
 
@@ -158,7 +160,7 @@
 
 /obj/machinery/turretid/BorgAltClick(mob/living/silicon/robot/user) //turret lethal on/off. Forwards to AI code.
 	if(get_dist(src,user) <= user.interaction_range)
-		return AIAltClick()
+		return AIAltClick(user)
 	return ..()
 
 /*

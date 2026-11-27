@@ -3,7 +3,7 @@
 //Epilepsy gives a very small chance to have a seizure every life tick, knocking you unconscious.
 /datum/mutation/human/epilepsy
 	name = "Epilepsy"
-	desc = "A genetic defect that sporadically causes seizures."
+	desc = "Генетический дефект, время от времени вызывающий припадки."
 	quality = NEGATIVE
 	text_gain_indication = "<span class='danger'>You get a headache.</span>"
 	synchronizer_coeff = 1
@@ -25,7 +25,7 @@
 //Unstable DNA induces random mutations!
 /datum/mutation/human/bad_dna
 	name = "Unstable DNA"
-	desc = "Strange mutation that causes the holder to randomly mutate."
+	desc = "Странная мутация, заставляющая носителя случайно мутировать."
 	quality = NEGATIVE
 	text_gain_indication = "<span class='danger'>You feel strange.</span>"
 	locked = TRUE
@@ -51,7 +51,7 @@
 //Cough gives you a chronic cough that causes you to drop items.
 /datum/mutation/human/cough
 	name = "Cough"
-	desc = "A chronic cough."
+	desc = "Хронический кашель."
 	quality = MINOR_NEGATIVE
 	text_gain_indication = "<span class='danger'>You start coughing.</span>"
 	synchronizer_coeff = 1
@@ -71,7 +71,7 @@
 //Dwarfism shrinks your body and lets you pass tables.
 /datum/mutation/human/dwarfism
 	name = "Dwarfism"
-	desc = "A mutation believed to be the cause of dwarfism."
+	desc = "Мутация, которую считают причиной карликовости."
 	quality = POSITIVE
 	difficulty = 16
 	instability = 5
@@ -97,7 +97,7 @@
 //Clumsiness has a very large amount of small drawbacks depending on item.
 /datum/mutation/human/clumsy
 	name = "Clumsiness"
-	desc = "A genome that inhibits certain brain functions, causing the holder to appear clumsy. Honk"
+	desc = "Геном, подавляющий некоторые функции мозга, из-за чего носитель кажется неуклюжим. Хонк"
 	quality = MINOR_NEGATIVE
 	text_gain_indication = "<span class='danger'>You feel lightheaded.</span>"
 
@@ -115,7 +115,7 @@
 //Tourettes causes you to randomly stand in place and shout.
 /datum/mutation/human/tourettes
 	name = "Tourette's Syndrome"
-	desc = "A chronic twitch that forces the user to use colorful language."
+	desc = "Хронический тик, заставляющий носителя выражаться крепкими словечками."
 	quality = NEGATIVE
 	text_gain_indication = "<span class='danger'>You twitch.</span>"
 	synchronizer_coeff = 1
@@ -139,7 +139,7 @@
 //Deafness makes you deaf.
 /datum/mutation/human/deaf
 	name = "Deafness"
-	desc = "The holder of this genome is completely deaf."
+	desc = "Носитель этого генома полностью глух."
 	quality = NEGATIVE
 	text_gain_indication = "<span class='danger'>You can't seem to hear anything.</span>"
 
@@ -157,7 +157,7 @@
 //Monified turns you into a monkey.
 /datum/mutation/human/race
 	name = "Monkified"
-	desc = "A strange genome, believing to be what differentiates monkeys from humans."
+	desc = "Странный геном, который, как считается, отличает обезьян от людей."
 	quality = NEGATIVE
 	time_coeff = 2
 	locked = TRUE //Species specific, keep out of actual gene pool
@@ -174,7 +174,7 @@
 
 /datum/mutation/human/glow
 	name = "Glowy"
-	desc = "You permanently emit a light with a random color and intensity."
+	desc = "Вы постоянно излучаете свет случайного цвета и интенсивности."
 	quality = POSITIVE
 	text_gain_indication = "<span class='notice'>Your skin begins to glow softly.</span>"
 	instability = 5
@@ -200,14 +200,14 @@
 
 /datum/mutation/human/strong
 	name = "Strength"
-	desc = "The user's muscles slightly expand."
+	desc = "Мышцы носителя слегка увеличиваются."
 	quality = POSITIVE
 	text_gain_indication = "<span class='notice'>You feel strong.</span>"
 	difficulty = 16
 
 /datum/mutation/human/fire
 	name = "Fiery Sweat"
-	desc = "The user's skin will randomly combust, but is generally alot more resilient to burning."
+	desc = "Кожа носителя время от времени самовозгорается, но в целом гораздо более устойчива к ожогам."
 	quality = NEGATIVE
 	text_gain_indication = "<span class='warning'>You feel hot.</span>"
 	text_lose_indication = "<span class'notice'>You feel a lot cooler.</span>"
@@ -232,7 +232,7 @@
 
 /datum/mutation/human/insulated
 	name = "Insulated"
-	desc = "The affected person does not conduct electricity."
+	desc = "Носитель не проводит электричество."
 	quality = POSITIVE
 	mutator_security_level = INSULATED_PRINT_CODE
 	text_gain_indication = "<span class='notice'>Your fingertips go numb.</span>"
@@ -253,7 +253,7 @@
 
 /datum/mutation/human/glow/anti
 	name = "Anti-Glow"
-	desc = "Your skin seems to attract and absorb nearby light creating 'darkness' around you."
+	desc = "Ваша кожа словно притягивает и поглощает окружающий свет, создавая вокруг вас «тьму»."
 	text_gain_indication = "<span class='notice'>Your light around you seems to disappear.</span>"
 	glow_range = 1
 	glow_power = -2 //Slightly stronger, since negating light tends to be harder than making it.
@@ -272,14 +272,14 @@
 
 /datum/mutation/human/stimmed
 	name = "Stimmed"
-	desc = "The user's chemical balance is more robust."
+	desc = "Химический баланс носителя более устойчив."
 	quality = POSITIVE
 	text_gain_indication = "<span class='notice'>You feel stimmed.</span>"
 	difficulty = 18
 
 /datum/mutation/human/paranoia
 	name = "Paranoia"
-	desc = "Subject is easily terrified, and may suffer from hallucinations."
+	desc = "Носитель легко пугается и может страдать от галлюцинаций."
 	quality = NEGATIVE
 	text_gain_indication = "<span class='danger'>You feel screams echo through your mind...</span>"
 	text_lose_indication = "<span class'notice'>The screaming in your mind fades.</span>"
@@ -295,7 +295,7 @@
 
 /datum/mutation/human/badblink
 	name = "Spatial Instability"
-	desc = "The victim of the mutation has a very weak link to spatial reality, and may be displaced. Often causes extreme nausea."
+	desc = "Носитель мутации имеет очень слабую связь с пространственной реальностью и может быть перемещён. Часто вызывает сильную тошноту."
 	quality = NEGATIVE
 	text_gain_indication = "<span class='warning'>The space around you twists sickeningly.</span>"
 	text_lose_indication = "<span class'notice'>The space around you settles back to normal.</span>"
@@ -327,7 +327,7 @@
 
 /datum/mutation/human/acidflesh
 	name = "Acidic Flesh"
-	desc = "Subject has acidic chemicals building up underneath the skin. This is often lethal."
+	desc = "Под кожей носителя накапливаются кислотные вещества. Это часто смертельно."
 	quality = NEGATIVE
 	text_gain_indication = "<span class='userdanger'>A horrible burning sensation envelops you as your flesh turns to acid!</span>"
 	text_lose_indication = "<span class'notice'>A feeling of relief fills you as your flesh goes back to normal.</span>"
@@ -346,7 +346,7 @@
 
 /datum/mutation/human/gigantism
 	name = "Gigantism"//negative version of dwarfism
-	desc = "The cells within the subject spread out to cover more area, making the subject appear larger."
+	desc = "Клетки носителя растягиваются, занимая больше пространства, из-за чего он кажется крупнее."
 	quality = MINOR_NEGATIVE
 	difficulty = 12
 	conflicts = list(DWARFISM)
@@ -369,7 +369,7 @@
 
 /datum/mutation/human/spastic
 	name = "Spastic"
-	desc = "Subject suffers from muscle spasms."
+	desc = "Носитель страдает от мышечных спазмов."
 	quality = NEGATIVE
 	text_gain_indication = "<span class='warning'>You flinch.</span>"
 	text_lose_indication = "<span class'notice'>Your flinching subsides.</span>"

@@ -10,4 +10,6 @@
 	wave_name = "meaty"
 
 /datum/round_event/meteor_wave/meaty/announce(fake)
+	if(!fake)
+		notify_market()
 	priority_announce("\"Митиоры\" были обнаружены на пути столкновения со станцией.", "Тащи Швабру!", "meteors", has_important_message = TRUE)

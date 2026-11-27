@@ -656,7 +656,7 @@
 /datum/sprite_accessory/tails/mam_tails
 	color_src = MATRIXED
 	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
-	recommended_species = list("mammal", "slimeperson", "podweak", "felinid", "insect", "undead_mammal", "undead_insect", "shadekin")
+	recommended_species = list(SPECIES_MAMMAL, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_FELINID, SPECIES_INSECT, SPECIES_UMAMMAL, SPECIES_UINSECT, SPECIES_SHADEKIN, SPECIES_MAMMAL_SYNTHETIC)
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/tails/mam_tails/none

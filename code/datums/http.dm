@@ -61,12 +61,18 @@
 
 /datum/http_request/proc/into_response()
 	var/datum/http_response/R = new()
+	// Пишите сюда ошибки, что постоянно останавливают отладку
+	var/static/list/known_errors = list("unexpected end of file")
 
 	try
-		var/list/L = json_decode(_raw_response)
-		R.status_code = L["status_code"]
-		R.headers = L["headers"]
-		R.body = L["body"]
+		if(istext(_raw_response) && (_raw_response in known_errors))
+			R.errored = TRUE
+			R.error = _raw_response
+		else
+			var/list/L = json_decode(_raw_response)
+			R.status_code = L["status_code"]
+			R.headers = L["headers"]
+			R.body = L["body"]
 	catch
 		R.errored = TRUE
 		R.error = _raw_response

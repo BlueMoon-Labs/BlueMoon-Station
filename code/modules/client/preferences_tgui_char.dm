@@ -529,6 +529,7 @@
 
 	fields += list(ff("has_cock", "Иметь пенис", FEATURE_BOOL))
 	fields += list(color_ff("cock_color", "Цвет пениса", FEATURE_COLOR_LIMITED))
+	fields += list(ff("cock_dynamic_size", "Динамический размер", FEATURE_BOOL))
 	fields += list(num_ff("cock_length", "Длина пениса, см", CONFIG_GET(number/penis_min_inches_prefs), CONFIG_GET(number/penis_max_inches_prefs)))
 	var/list/cock_max_field = num_ff("cock_max_length", "Максимальная длина, см", 0, CONFIG_GET(number/penis_max_inches_prefs))
 	cock_max_field["deletable"] = TRUE
@@ -543,6 +544,14 @@
 	var/list/cock_ratio_field = num_ff("cock_diameter_ratio", "Коэффициент диаметра", CONFIG_GET(number/diameter_ratio_min_size_prefs), CONFIG_GET(number/diameter_ratio_max_size_prefs), FEATURE_SCOPE_FEATURE, FEATURE_SPRITE_SCALE_HINT)
 	cock_ratio_field["step"] = 0.01
 	fields += list(cock_ratio_field)
+	fields += list(num_ff("cock_flaccid_length", "Длина в спокойном состоянии, см", CONFIG_GET(number/penis_min_inches_prefs), CONFIG_GET(number/penis_max_inches_prefs)))
+	var/list/cock_flaccid_width_field = num_ff("cock_flaccid_width", "Ширина в спокойном состоянии, см", 0.1, CONFIG_GET(number/penis_max_inches_prefs))
+	cock_flaccid_width_field["step"] = 0.1
+	fields += list(cock_flaccid_width_field)
+	fields += list(num_ff("cock_erect_length", "Длина в возбуждённом состоянии, см", CONFIG_GET(number/penis_min_inches_prefs), CONFIG_GET(number/penis_max_inches_prefs)))
+	var/list/cock_erect_width_field = num_ff("cock_erect_width", "Ширина в возбуждённом состоянии, см", 0.1, CONFIG_GET(number/penis_max_inches_prefs))
+	cock_erect_width_field["step"] = 0.1
+	fields += list(cock_erect_width_field)
 	fields += list(list_ff("cock_visibility", "Видимость пениса", visibility_options))
 	fields += list(ff("cock_accessible", "Пенис всегда доступен", FEATURE_BOOL))
 	fields += list(ff("cock_stuffing", "Игрушки и пополнение", FEATURE_BOOL))
@@ -911,8 +920,9 @@
 
 	var/list/parts = list()
 	parts += list(genital_part_block("penis", "has_cock", "Пенис", list(
-		"cock_color", "cock_shape", "cock_length", "cock_max_length", "cock_min_length",
-		"cock_diameter_ratio", "cock_visibility", "cock_accessible", "cock_stuffing",
+		"cock_color", "cock_shape", "cock_dynamic_size", "cock_length", "cock_max_length", "cock_min_length",
+		"cock_diameter_ratio", "cock_flaccid_length", "cock_flaccid_width",
+		"cock_erect_length", "cock_erect_width", "cock_visibility", "cock_accessible", "cock_stuffing",
 	)))
 	parts += list(genital_part_block("testicles", "has_balls", "Яички", list(
 		"balls_color", "balls_shape", "balls_size", "balls_visibility",
@@ -979,6 +989,10 @@
 			return feats["breasts_sprite_variant"] != "Old"
 		if("breasts_fluid")
 			return !!feats["breasts_producing"]
+		if("cock_length", "cock_max_length", "cock_min_length", "cock_diameter_ratio")
+			return !feats["cock_dynamic_size"]
+		if("cock_flaccid_length", "cock_flaccid_width", "cock_erect_length", "cock_erect_width")
+			return !!feats["cock_dynamic_size"]
 	return TRUE
 
 /datum/character_setup/proc/markings_type()
@@ -2873,12 +2887,31 @@
 		old_cost = old_option["cost"]
 	if(isnull(option["path"]))
 		prefs.organ_mods -= slot
+		// Возврат к обычному органу снимает имплант, занимавший этот слот (например, оптику Кироши).
+		var/list/slot_implants = list()
+		for(var/implant_id in prefs.implant_mods)
+			var/list/implant_option = prefs.body_mod_implant_option(implant_id)
+			if(implant_option && implant_option["organ_slot"] == slot)
+				slot_implants += implant_id
+		for(var/implant_id in slot_implants)
+			prefs.implant_mods -= implant_id
 		preview_dirty = TRUE
 		return
+	// Импланты вроде оптики Кироши занимают тот же слот: выбор органа снимает их и возвращает очки.
+	var/implant_refund = 0
+	var/list/conflicting_implants = list()
+	for(var/implant_id in prefs.implant_mods)
+		var/list/implant_option = prefs.body_mod_implant_option(implant_id)
+		if(implant_option && implant_option["organ_slot"] == slot)
+			if(!prefs.body_mod_implant_locked(implant_option))
+				implant_refund += implant_option["cost"]
+			conflicting_implants += implant_id
 	var/balance = quirk_balance()
-	if(balance + old_cost - option["cost"] < min(0, balance))
-		to_chat(user, span_warning("Недостаточно баланса: нужно ещё [option["cost"] - quirk_balance() - old_cost] очков квирков."))
+	if(balance + old_cost + implant_refund - option["cost"] < min(0, balance))
+		to_chat(user, span_warning("Недостаточно баланса: нужно ещё [option["cost"] - quirk_balance() - old_cost - implant_refund] очков квирков."))
 		return
+	for(var/implant_id in conflicting_implants)
+		prefs.implant_mods -= implant_id
 	prefs.organ_mods[slot] = option["id"]
 	preview_dirty = TRUE
 
@@ -2898,9 +2931,23 @@
 		prefs.implant_mods -= implant_id
 		preview_dirty = TRUE
 		return
-	if(balance - option["cost"] < min(0, balance))
+	if(prefs.body_mod_implant_locked(option))
+		to_chat(user, span_warning(prefs.body_mod_implant_lock_reason(option) || "Вид этого персонажа не позволяет заменить этот орган."))
+		return
+	// Снятые конфликтующие импланты (другая рука/нога/глаза) возвращают свои очки.
+	var/refund = prefs.body_mod_implant_swap_refund(implant_id)
+	var/organ_slot = option["organ_slot"]
+	if(organ_slot)
+		var/list/organ_option = prefs.body_mod_organ_option(organ_slot, prefs.organ_mods[organ_slot])
+		if(organ_option)
+			refund += organ_option["cost"]
+	if(balance + refund - option["cost"] < min(0, balance))
 		to_chat(user, span_warning("Недостаточно баланса для этого импланта!"))
 		return
+	for(var/conflicting_id in prefs.body_mod_implant_conflicts(implant_id))
+		prefs.implant_mods -= conflicting_id
+	if(organ_slot)
+		prefs.organ_mods -= organ_slot
 	prefs.implant_mods[implant_id] = TRUE
 	preview_dirty = TRUE
 
@@ -2970,7 +3017,6 @@
 	data["saveNotice"] = save_notice
 	data["playingSoundPreview"] = world.time < sound_preview_until ? sound_preview_kind : null
 
-	data["localStorageName"] = prefs.get_local_storage_name(user.client)
 	data["offerActive"] = !!prefs.offer
 	if(prefs.offer)
 		data["redemptionCode"] = prefs.offer.redemption_code
@@ -3279,13 +3325,18 @@
 
 	var/list/implants = list()
 	for(var/list/option in GLOB.body_mod_implants)
-		implants += list(list(
+		var/locked = prefs.body_mod_implant_locked(option)
+		var/list/implant_row = list(
 			"id" = option["id"],
 			"label" = option["label"],
 			"desc" = option["desc"],
 			"cost" = option["cost"],
 			"selected" = !!prefs.implant_mods[option["id"]],
-		))
+			"locked" = locked,
+		)
+		if(locked)
+			implant_row["lockReason"] = prefs.body_mod_implant_lock_reason(option) || "Вид этого персонажа не позволяет установить этот имплант."
+		implants += list(implant_row)
 	data["implants"] = implants
 	return data
 
@@ -3371,29 +3422,31 @@
 	var/mob/user = prefs.parent?.mob
 	if(!user?.client)
 		return
-	var/savefile/S = prefs.save_character(export = TRUE)
-	if(!istype(S, /savefile))
-		to_chat(user, span_warning("Не удалось экспортировать персонажа."))
+	if(world.time < prefs.player_transfer_cooldown)
+		to_chat(user, span_warning("Подождите перед повторным экспортом персонажа."))
 		return
-	user.client.local_storage_name_read = FALSE
-	user.client.Export(S)
-	to_chat(user, span_notice("Персонаж экспортирован в локальную копию."))
+	prefs.player_transfer_cooldown = world.time + 10 SECONDS
+	prefs.download_character_json(user)
 
 /datum/character_setup/proc/slot_import()
 	var/mob/user = prefs.parent?.mob
 	if(!user?.client)
 		return
-	var/savefile/S = new(user.client.Import())
-	if(!istype(S, /savefile))
-		to_chat(user, span_warning("Не удалось импортировать персонажа из локальной копии."))
-		return
-	if(!prefs.load_character(provided = S))
-		to_chat(user, span_warning("Не удалось импортировать персонажа из локальной копии."))
+	if(!prefs.upload_character_json(user))
 		return
 	character_revision++
 	preview_dirty = TRUE
-	to_chat(user, span_notice("Персонаж импортирован из локальной копии."))
-	prefs.save_character(TRUE)
+	SStgui.update_uis(src)
+
+/datum/character_setup/proc/slot_import_legacy()
+	var/mob/user = prefs.parent?.mob
+	if(!user?.client)
+		return
+	if(!prefs.upload_legacy_character(user))
+		return
+	character_revision++
+	preview_dirty = TRUE
+	SStgui.update_uis(src)
 
 /datum/character_setup/proc/slot_give()
 	var/mob/user = prefs.parent?.mob
@@ -3402,68 +3455,71 @@
 	if(prefs.offer)
 		qdel(prefs.offer)
 		return
-	var/savefile/S = prefs.save_character(export = TRUE)
-	if(!istype(S, /savefile))
+	var/character_json = prefs.export_character_json()
+	if(!character_json)
 		tgui_alert_async(user, "Не удалось подготовить передачу, попробуйте позже.")
 		return
-	var/datum/character_offer_instance/offer_datum = new(user.ckey, S)
+	var/datum/character_offer_instance/offer_datum = new(user.ckey, character_json)
 	if(QDELETED(offer_datum))
 		tgui_alert_async(user, "Не удалось подготовить передачу, попробуйте позже.")
 		return
 	offer_datum.RegisterSignal(user, COMSIG_MOB_CLIENT_LOGOUT, TYPE_PROC_REF(/datum/character_offer_instance, on_quit))
 	prefs.offer = offer_datum
-	tgui_alert_async(user, "Код передачи: [offer_datum.redemption_code] - отправьте его получателю.")
+	tgui_alert_async(user, "Код передачи: [offer_datum.redemption_code]. Сообщите его игроку, которому хотите передать персонажа.")
 
 /datum/character_setup/proc/slot_retrieve()
 	var/mob/user = prefs.parent?.mob
 	if(!user)
 		return
 	if(!length(GLOB.character_offers))
-		tgui_alert_async(user, "Активных предложений нет.")
+		tgui_alert_async(user, "Сейчас нет персонажей, предложенных для передачи.")
 		return
-	var/retrieve_code = tgui_input_text(user, "Введите 5-значный код передачи.", "Получение персонажа", null, 5)
+	var/retrieve_code = tgui_input_text(user, "Введите код передачи из пяти цифр.", "Получение персонажа", null, 5)
 	if(!retrieve_code)
 		return
 	if(!text2num(retrieve_code))
-		tgui_alert_async(user, "Подходят только цифры.")
+		tgui_alert_async(user, "Код должен состоять только из цифр.")
 		return
 	if(length(retrieve_code) != 5)
-		tgui_alert_async(user, "Ровно 5 цифр, не больше и не меньше.")
+		tgui_alert_async(user, "В коде должно быть ровно пять цифр. Проверьте его и попробуйте снова.")
 		return
 	var/datum/character_offer_instance/offer_datum = LAZYACCESS(GLOB.character_offers, retrieve_code)
 	if(!offer_datum)
-		tgui_alert_async(user, "Такого кода нет.")
+		tgui_alert_async(user, "Предложение с таким кодом не найдено. Проверьте код: возможно, персонажа уже забрали.")
 		return
 	if(prefs.offer == offer_datum)
-		tgui_alert_async(user, "Нельзя принять собственное предложение.")
+		tgui_alert_async(user, "Нельзя получить собственное предложение.")
 		return
 
-	var/savefile/offered_file = offer_datum.character_savefile
 	var/mob/living/the_owner = get_mob_by_ckey(offer_datum.owner_ckey)
-	if(prefs.savefile_needs_update(offered_file) == -2)
-		tgui_alert_async(user, "Этот сейвфайл повреждён.")
-		to_chat(the_owner, span_boldwarning("Что-то пошло не так при передаче, она отменена."))
-		qdel(offer_datum)
+	var/receiving_slot = prefs.default_slot
+	var/list/slot_names = prefs.get_slot_names()
+	var/current_name = slot_names?[receiving_slot]
+	var/question = current_name \
+		? "Получить персонажа в слот [receiving_slot] вместо «[current_name]»? Чтобы ничего не заменять, сначала выберите пустой слот. Закрытые данные и коллекции останутся прежними." \
+		: "Импортировать переданного персонажа в слот [receiving_slot]? Закрытые данные и коллекции останутся прежними."
+	if(tgui_alert(user, question, "Получение персонажа", list("Импортировать", "Отмена")) != "Импортировать")
 		return
-
-	var/character_name
-	offered_file["real_name"] >> character_name
-	var/confirm = tgui_alert(user, "Вы перезапишете текущий слот персонажем [character_name]. Продолжить?", "Подтверждение", list("Да", "Нет"))
-	if(confirm != "Да")
+	if(QDELETED(offer_datum) || user.client?.prefs != prefs || prefs.default_slot != receiving_slot)
+		tgui_alert_async(user, "Предложение больше недоступно или выбранный слот изменился. Начните получение заново.")
 		return
-	if(QDELETED(offer_datum))
-		tgui_alert_async(user, "Этот персонаж уже недоступен.")
+	var/backup_path
+	if(current_name)
+		backup_path = prefs.backup_character_before_import(receiving_slot)
+		if(!backup_path)
+			tgui_alert_async(user, "Не удалось сохранить копию «[current_name]». Выберите пустой слот и попробуйте снова.")
+			return
+	if(!prefs.import_character_json(offer_datum.character_json))
+		tgui_alert_async(user, "Не удалось импортировать персонажа. Сообщите об ошибке разработчикам.")
+		to_chat(the_owner, span_boldwarning("Передача персонажа не завершилась из-за ошибки импорта. Сообщите об этом разработчикам."))
 		return
-	to_chat(the_owner, span_boldwarning("[user.key] забрал вашего персонажа, [character_name]!"))
-	if(!prefs.load_character(provided = offered_file))
-		tgui_alert_async(user, "Что-то пошло не так при загрузке сейвфайла, сообщите об этом администрации.")
-		to_chat(the_owner, span_boldwarning("Что-то пошло не так на последнем шаге передачи, сообщите об этом."))
-		qdel(offer_datum)
-		return
+	to_chat(the_owner, span_notice("[user.key] получил переданного персонажа."))
+	prefs.log_character_replacement("получение от [offer_datum.owner_ckey]", receiving_slot, prefs.real_name, current_name, backup_path)
 	character_revision++
 	preview_dirty = TRUE
-	tgui_alert_async(user, "Персонаж [character_name] получен!")
-	prefs.save_character(TRUE)
+	tgui_alert_async(user, "Персонаж получен и сохранён в слот [receiving_slot].")
+	if(length(prefs.player_transfer_notices))
+		to_chat(user, span_warning("При получении [html_encode(jointext(prefs.player_transfer_notices, "; "))]."))
 	qdel(offer_datum)
 
 /datum/character_setup/proc/format_help_text()
@@ -3735,13 +3791,14 @@
 			var/list/slot_names = prefs.get_slot_names()
 			if(slot_names?[new_slot])
 				var/old_slot = prefs.default_slot
+				// Номер слота load_character записал в файл сам, полная запись префов тут не нужна.
 				if(!prefs.load_character(new_slot, bypass_cooldown = TRUE))
 					prefs.default_slot = old_slot
 					return
 			else
 				if(!prefs.create_character(new_slot))
 					return
-			prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 			prefs.parent?.tgui_panel?.emotes_send_list()
 			stop_sound_preview()
 			save_notice = save_previous ? "[previous_name]: сохранён автоматически при переключении." : null
@@ -4295,6 +4352,10 @@
 			slot_import()
 			return TRUE
 
+		if("slot_import_legacy")
+			slot_import_legacy()
+			return TRUE
+
 		if("slot_give")
 			slot_give()
 			return TRUE
@@ -4452,7 +4513,10 @@
 			return TRUE
 
 		if("set_puddle_slime")
-			prefs.features["puddle_slime_fea"] = params["value"] ? TRUE : FALSE
+			if("value" in params)
+				prefs.features["puddle_slime_fea"] = params["value"] ? TRUE : FALSE
+			else
+				prefs.features["puddle_slime_fea"] = !prefs.features["puddle_slime_fea"]
 			preview_dirty = TRUE
 			return TRUE
 
@@ -4480,6 +4544,9 @@
 	var/max_index = is_naked_list ? MAX_HEADSHOTS_NAKED : MAX_HEADSHOTS
 	if(isnull(index) || index < 1 || index > max_index)
 		return
+	// Случайный персонаж приходит с пустыми списками без мест под картинки.
+	if(length(links) < max_index)
+		links.len = max_index
 
 	if(isnull(raw_link) || !length("[raw_link]"))
 		links[index] = null
@@ -4580,6 +4647,10 @@ GLOBAL_LIST_EMPTY(character_preview_backgrounds)
 /atom/movable/screen/map_view/character_setup_screen/display_to_client(client/show_to)
 	. = ..()
 	apply_native_camera()
+
+/atom/movable/screen/map_view/character_setup_screen/hide_from(mob/hide_from)
+	. = ..()
+	prepared_for_client = null
 
 /atom/movable/screen/map_view/character_setup_screen/proc/apply_native_camera()
 	if(registered_client)

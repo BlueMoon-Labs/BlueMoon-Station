@@ -70,11 +70,6 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 	// by default, vis_contents is inherited from the turf that was here before
 	vis_contents.Cut()
-	// Маплоадер (initTemplateBounds) инициализирует турфы ПОСЛЕ того, как ChangeTurf
-	// привязал lighting_object к vis_contents - возвращаем ссылку, чтобы vis-канал
-	// гибридного рендера (loc + vis_contents) оставался согласованным на шаблонных турфах
-	if(lighting_object)
-		vis_contents += lighting_object
 
 	if(color) // is this being used? This is here because parent isn't being called
 		add_atom_colour(color, FIXED_COLOUR_PRIORITY)
@@ -808,3 +803,92 @@ GLOBAL_LIST_EMPTY(station_turfs)
 /// Returns adjacent turfs in cardinal directions that are reachable via atmos
 /turf/proc/reachableAdjacentAtmosTurfs()
 	return atmos_adjacent_turfs
+
+/turf/closed/indestructible/fakedoor/engineering
+	icon = 'icons/obj/doors/airlocks/station/engineering.dmi'
+
+/turf/closed/indestructible/fakedoor/glass_airlock
+	icon = 'icons/obj/doors/airlocks/external/external.dmi'
+	opacity = FALSE
+
+/turf/closed/indestructible/fakedoor/maintenance
+	icon = 'icons/obj/doors/airlocks/hatch/maintenance.dmi'
+
+/turf/closed/indestructible/reinforced
+	parent_type = /turf/closed/indestructible/wall
+	name = "reinforced wall"
+	desc = "Огромный кусок усиленного металла, разделяющий помещения. Практически неуязвим для обычных методов разрушения."
+	icon = 'icons/turf/walls/reinforced_wall.dmi'
+	icon_state = "r_wall"
+	canSmoothWith = list(
+		/obj/structure/falsewall,
+		/turf/closed/wall,
+		/turf/closed/wall/r_wall,
+		/turf/closed/indestructible/wall,
+		/turf/closed/indestructible/reinforced,
+	)
+
+/turf/closed/wall/heretic_rust
+	icon = 'icons/turf/walls/rusty_wall.dmi'
+	icon_state = "wall"
+
+/turf/open/floor/holofloor/beach/coast
+
+/turf/open/floor/plating/heretic_rust
+	icon_state = "plating_rust"
+
+/turf/open/floor/wood/large
+
+/turf/open/indestructible/dark
+	icon_state = "darkfull"
+
+/turf/open/indestructible/honk
+	name = "bananium floor"
+	icon_state = "bananium"
+	footstep = null
+	barefootstep = null
+	clawfootstep = null
+	heavyfootstep = null
+	var/clown_step_sound = 'sound/effects/clownstep1.ogg'
+
+/turf/open/indestructible/honk/Initialize(mapload)
+	. = ..()
+
+/turf/open/indestructible/honk/Entered(atom/movable/arrived, atom/old_loc, list/atom/old_locs)
+	. = ..()
+	if(ismob(arrived))
+		playsound(src, clown_step_sound, 50, TRUE)
+
+/turf/open/indestructible/light
+	icon_state = "light_on-1"
+	light_range = 3
+	light_color = LIGHT_COLOR_CYAN
+	light_on = TRUE
+
+/turf/open/indestructible/meat
+	icon_state = "darkfull"
+	color = "#7a2f2f"
+	footstep = FOOTSTEP_MEAT
+	barefootstep = FOOTSTEP_MEAT
+	clawfootstep = FOOTSTEP_MEAT
+	heavyfootstep = FOOTSTEP_MEAT
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	baseturfs = /turf/open/indestructible/meat
+
+/turf/open/indestructible/permalube
+	parent_type = /turf/open/indestructible/honk
+
+/turf/open/indestructible/white
+	icon_state = "white"
+
+/turf/open/space/basic
+
+/turf/open/water/beach
+	name = "beach water"
+	desc = "Заходите, здесь здорово!"
+	icon = 'modular_bluemoon/icons/turf/floors/beach.dmi'
+	icon_state = "water"
+	base_icon_state = "water"
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = FALSE
+	baseturfs = /turf/open/water/beach

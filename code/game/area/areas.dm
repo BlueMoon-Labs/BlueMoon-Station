@@ -709,7 +709,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	if(!L.client)
 		return
 
-	if(L.client.prefs.toggles & SOUND_SHIP_AMBIENCE && shipambience != A.shipambience)
+	if(L.client.prefs.toggles & SOUND_SHIP_AMBIENCE && shipambience != A?.shipambience)
 		L.client.ambience_playing = 0
 		if(L.client && !L.client.ambience_playing)
 			L.client.ambience_playing = 1

@@ -366,6 +366,9 @@
 		return FALSE
 	return ..()
 
+/mob/living/simple_animal/hostile/regalrat/can_carry_rider(mob/living/rider)
+	return TRUE
+
 /mob/living/simple_animal/hostile/regalrat/examine(mob/user)
 	. = ..()
 	if(istype(user,/mob/living/simple_animal/hostile/rat))
@@ -451,10 +454,11 @@
 		if(length(horde.minions) >= horde.max_minions)
 			break
 		var/new_name = (M.name == "mouse") ? null : M.name
-		var/mob/living/simple_animal/hostile/rat/new_rat = M.change_mob_type(/mob/living/simple_animal/hostile/rat, get_turf(M), new_name, TRUE)
+		// Старую мышь удаляем сами и сразу: change_mob_type убирает её только через тик.
+		var/mob/living/simple_animal/hostile/rat/new_rat = M.change_mob_type(/mob/living/simple_animal/hostile/rat, get_turf(M), new_name, FALSE)
 		if(!new_rat)
 			new_rat = new /mob/living/simple_animal/hostile/rat(get_turf(M))
-			qdel(M)
+		qdel(M)
 		if(!new_rat)
 			continue
 		if(king.faction)
@@ -548,7 +552,7 @@
 			. += "<span class='notice'>Эта крыса служит вам.</span>"
 		else
 			. += "<span class='warning'>Этот крестьянин служит другому королю! Свергните его!</span>"
-	. += span_notice("Можно оседлать.")
+	. += span_notice("Оседлать её может только кто-то не крупнее крысы и не сверхтяжёлый.")
 
 /mob/living/simple_animal/hostile/rat/CanAttack(atom/the_target)
 	if(!the_target)
@@ -1157,7 +1161,7 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 // simple_animal/revive() сбрасывает icon в initial(icon), но оставляет icon_living
 // от выбранного облика. Из-за этого после лазера-оживителя король становился
 // прозрачным: спрайт искался в старом .dmi. Возвращаем облик после оживления.
-/mob/living/simple_animal/hostile/regalrat/revive(full_heal = 0, admin_revive = 0, excess_healing = 0)
+/mob/living/simple_animal/hostile/regalrat/revive(full_heal = 0, admin_revive = 0, excess_healing = 0, post_revive_effects = FALSE, medical_revive = FALSE)
 	. = ..()
 	if(.)
 		reapply_fashion()
@@ -1352,7 +1356,7 @@ GLOBAL_LIST_INIT(rat_king_fashions, list(
 
 /mob/living/simple_animal/hostile/regalrat/lust/examine(mob/user)
 	. = ..()
-	. += span_notice("Можно оседлать.")
+	. += span_notice("Кажется, у нее достаточно сильная спина.")
 
 /mob/living/simple_animal/hostile/regalrat/lust/CanAttack(atom/the_target)
 	return FALSE

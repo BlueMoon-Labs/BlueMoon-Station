@@ -25,10 +25,25 @@
 		fluid_id = initial(fluid_id)
 	original_fluid_id = fluid_id
 	. = ..()
-	fluid_max_volume += ((size - initial(size))*2.5)*(owner ? get_size(owner) : 1)
-	fluid_rate += ((size - initial(size))/10)*(owner ? get_size(owner) : 1)
+	// Do not stack the same size bonus every time get_features() is called.
+	if(stored_fluid >= 0)
+		update_fluid_reserve()
+	var/body_multiplier = owner ? get_size(owner) : 1
+	var/new_volume_bonus = ((size - initial(size)) * 2.5) * body_multiplier
+	var/new_rate_bonus = ((size - initial(size)) / 10) * body_multiplier
+	fluid_max_volume += new_volume_bonus - applied_volume_bonus
+	fluid_rate += new_rate_bonus - applied_rate_bonus
+	applied_volume_bonus = new_volume_bonus
+	applied_rate_bonus = new_rate_bonus
+	fluid_max_volume = max(0, fluid_max_volume)
+	fluid_rate = max(0, fluid_rate)
+	if(stored_fluid >= 0)
+		stored_fluid = min(stored_fluid, fluid_max_volume)
 
-/obj/item/organ/genital/breasts/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen)
+/obj/item/organ/genital/breasts/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen, cum_hole, from_belly = FALSE, is_hidden = FALSE)
+	if(source_gen?.get_urethral_obstruction())
+		return
+
 	if(!(owner.client?.prefs.cit_toggles & BREAST_ENLARGEMENT))
 		return
 
@@ -47,7 +62,7 @@
 		var/previous = size
 		modify_size(climax_fluids.total_volume / (fluid_max_volume * GENITAL_INFLATION_THRESHOLD))
 		if(size != previous)
-			owner.visible_message("<span class='lewd'>\The <b>[owner]</b>'s [pick(GLOB.breast_nouns)] разбухают от прилива [lowertext(source_gen.get_fluid_name())] из \the <b>[partner]</b>'s [source_gen.name]", ignored_mobs = owner.get_unconsenting())
+			owner.visible_message(span_lewd("[HIDDEN_INTERACTION_PREFIX(is_hidden)]У <b>[owner]</b> разбухают [pick(GLOB.breast_nouns)] от прилива [lowertext(source_gen.get_fluid_name())] из органа <b>[partner]</b>."), vision_distance = INTERACTION_MESSAGE_RANGE(is_hidden), ignored_mobs = owner.get_unconsenting(), visible_message_flags = INTERACTION_MESSAGE_FLAGS(is_hidden))
 			fluid_id = source_gen.get_fluid_id()
 		climax_fluids.clear_reagents()
 

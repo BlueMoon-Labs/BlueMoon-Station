@@ -2,9 +2,12 @@
 // Каждый тип здесь обязан быть AI_OFF и иметь актуальную причину в
 // MIGRATION_EXCEPTIONS.md. null запрещает наследовать профиль контроллера.
 
-///Игровой сварнер - гост-роль (шелл занимает призрак, AIStatus = AI_OFF).
-///AI-подтипы swarmer/ai используют специализированные профили.
+// Игровыми свармерами управляют участники роя.
 /mob/living/simple_animal/hostile/swarmer
+	ai_profile_type = null
+
+///Фабричными боевыми дронами управляют только игроки.
+/mob/living/simple_animal/hostile/malf_drone/factory
 	ai_profile_type = null
 
 ///Элдрич-демоны еретиков - гост-роли с AIStatus = AI_OFF; сегменты armsy

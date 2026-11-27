@@ -4,7 +4,7 @@
 #define POWER_MONITOR_SEARCH_INTERVAL (30 SECONDS)
 
 /obj/machinery/computer/monitor
-	name = "power monitoring console"
+	name = "консоль мониторинга энергоснабжения"
 	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "It monitors power levels across the station."
 	icon_screen = "power"
@@ -28,7 +28,7 @@
 	var/is_secret_monitor = FALSE
 
 /obj/machinery/computer/monitor/secret //Hides the power monitor (such as ones on ruins & CentCom) from PDA's to prevent metagaming.
-	name = "outdated power monitoring console"
+	name = "устаревшая консоль мониторинга энергоснабжения"
 	desc = "It monitors power levels across the local powernet."
 	circuit = /obj/item/circuitboard/computer/powermonitor/secret
 	is_secret_monitor = TRUE

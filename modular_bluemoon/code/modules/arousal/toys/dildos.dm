@@ -26,7 +26,7 @@
 
 // proc that ensures the target's reaction to the dildo according to the size
 // to_chat_mode: 0 - to_chat if dildo_size >= 4, 1 - all to_chat, else not use to_chat
-/obj/item/dildo/proc/target_reaction(mob/living/target, mob/living/user = null, to_chat_mode = 0, what_cum = null, where_cum = null, use_stun = TRUE, add_lust = TRUE, use_moan = FALSE, use_jitter = TRUE, ignore_delay = FALSE)
+/obj/item/dildo/proc/target_reaction(mob/living/target, mob/living/user = null, to_chat_mode = 0, what_cum = null, where_cum = null, use_stun = TRUE, add_lust = TRUE, use_moan = FALSE, use_jitter = TRUE, ignore_delay = FALSE, is_hidden = FALSE)
 	var/message = ""
 	var/moan = FALSE
 	var/stun = 0
@@ -134,7 +134,9 @@
 	if(use_jitter && jitter && (target.client?.prefs.cit_toggles & SEX_JITTER)) //By Gardelin0
 		target.Jitter(jitter)
 	if(use_moan && moan)
-		if(what_cum == CUM_TARGET_MOUTH || what_cum == CUM_TARGET_THROAT)
+		if(is_hidden)
+			target.moan(TRUE)
+		else if(what_cum == CUM_TARGET_MOUTH || what_cum == CUM_TARGET_THROAT)
 			target.emote("girlymoan") // realy small lust
 		else
 			target.emote("moan")
@@ -143,7 +145,7 @@
 	if(what_cum == CUM_TARGET_MOUTH || what_cum == CUM_TARGET_THROAT)
 		lust_to_target = min(LOW_LUST*dildo_size/3, LOW_LUST) // realy small lust
 	if(add_lust)
-		target.handle_post_sex(lust_to_target, where_cum, user, what_cum)
+		target.handle_post_sex(lust_to_target, where_cum, user, what_cum, is_hidden = is_hidden)
 
 	return lust_to_target // Unified lust value if you want to make your own handle_post_sex
 

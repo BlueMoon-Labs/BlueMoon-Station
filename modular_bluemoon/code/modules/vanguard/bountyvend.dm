@@ -81,6 +81,8 @@
 		new /datum/data/mining_equipment("Ammunitions datadisk",      	/obj/item/disk/ammo_workbench/advanced,                     		1000, 	"Ammo"),
 		new /datum/data/mining_equipment("Empty Vanguard belt",			/obj/item/storage/belt/avangard_belt/empty,							1500,	"Ammo"),
 		new /datum/data/mining_equipment("Military belt",				/obj/item/storage/belt/military/green,								2500,	"Ammo"),
+		new /datum/data/mining_equipment("9mm ammo box",				/obj/item/ammo_box/c9mm,											750,	"Ammo"),
+		new /datum/data/mining_equipment("Empty ammo pouch",			/obj/item/storage/bag/ammo,											1500,	"Ammo"),
 
 		// ============ ОРУЖИЕ БЛИЖНЕГО БОЯ ============
 		new /datum/data/mining_equipment("Combat knife",				/obj/item/kitchen/knife/combat,					        			100,	"Melee"),
@@ -96,10 +98,10 @@
 		new /datum/data/mining_equipment("Jump boots",						/obj/item/clothing/shoes/bhop,									1250,	"Armor"),
 		new /datum/data/mining_equipment("Vanguard armor voucher",			/obj/item/vanguard_voucher_suit,								1500,	"Armor"),
 		new /datum/data/mining_equipment("Jet harness",						/obj/item/tank/jetpack/oxygen/harness,							1500,	"Armor"),
-		new /datum/data/mining_equipment("Ranger hardsuit",					/obj/item/clothing/suit/space/hardsuit/exploration,				2500,	"Armor"),
+		new /datum/data/mining_equipment("Ranger hardsuit",					/obj/item/clothing/suit/space/hardsuit/exploration,				7500,	"Armor"),
 		new /datum/data/mining_equipment("Tactical Oxygen tank",			/obj/item/tank/internals/tactical,								2500,	"Armor"),
 		new /datum/data/mining_equipment("Guerrilla Gloves",				/obj/item/clothing/gloves/tackler/combat/insulated,				3000,	"Armor"),
-		new /datum/data/mining_equipment("Vanguard modsuit",				/obj/item/mod/control/pre_equipped/expeditor,					5000,	"Armor"),
+		new /datum/data/mining_equipment("Vanguard modsuit",				/obj/item/mod/control/pre_equipped/expeditor,					12000,	"Armor"),
 
 		// ============ МЕДИКАМЕНТЫ ============
 		new /datum/data/mining_equipment("First-Aid Kit",					/obj/item/storage/firstaid/regular,								100,	"Medical"),
@@ -143,15 +145,16 @@
 		new /datum/data/mining_equipment("Illegal technology disk",			/obj/item/disk/tech_disk/illegal,								100000,	"Misc"),
 
 		// ============ ЭЛИТНОЕ СНАРЯЖЕНИЕ =========
-		new /datum/data/mining_equipment("ACR-5m26 spare mag (empty)",		/obj/item/ammo_box/magazine/acr5m30/empty,						2500,		"Elite"),
+		new /datum/data/mining_equipment("WT-550 spare mag (hunting)",		/obj/item/ammo_box/magazine/wt550m9/wthunt,						1000,		"Elite"),
 		new /datum/data/mining_equipment("С-02 Permit",						/obj/item/clothing/accessory/permit/special/c_02,				5000,		"Elite"),
 		new /datum/data/mining_equipment("Budget tactical first aid",		/obj/item/storage/firstaid/tactical/vanguard,					10000,		"Elite"),
-		new /datum/data/mining_equipment("ACR-5m26",						/obj/item/gun/ballistic/automatic/acr5m30/pinvanguard,			20000,		"Elite"),
+		new /datum/data/mining_equipment("WT-550 PDW",						/obj/item/gun/ballistic/automatic/wt550/vanguard,				12000,		"Elite"),
 		new /datum/data/mining_equipment("Department Prototlathe beacon",	/obj/item/choice_beacon/departmental_protholate,				20000,		"Elite"),
-		new /datum/data/mining_equipment("Hoshi modular laser",				/obj/item/gun/energy/modular_laser_rifle/carbine/pinvanguard,	25000,		"Elite"),
+		new /datum/data/mining_equipment("Vanguard AEG",					/obj/item/gun/energy/e_gun/nuclear/vanguard,					25000,		"Elite"),
 		new /datum/data/mining_equipment("Civillian Syndicate ID card",		/obj/item/card/id/syndicate/one_access_copy,					25000,		"Elite"),
 //		new /datum/data/mining_equipment("ERT MOD Suit",					/obj/item/mod/control/pre_equipped/responsory,					50000,		"Elite"),
-		new /datum/data/mining_equipment("Medbeam Gun",						/obj/item/gun/medbeam,											60000,		"Elite"),
+//		new /datum/data/mining_equipment("Medbeam Gun",						/obj/item/gun/medbeam,											60000,		"Elite"),
+		new /datum/data/mining_equipment("Civilian Medbeam Gun",			/obj/item/gun/medbeam/weak,										30000,		"Elite"),
 		new /datum/data/mining_equipment("Syndicate Baloon",				/obj/item/toy/syndicateballoon,									1000000,	"Elite"),
 
 	)
@@ -200,7 +203,6 @@
 			new /obj/item/storage/firstaid/frontier(drop_location)
 			new /obj/item/storage/belt/avangard_belt(drop_location)
 			new /obj/item/storage/firstaid/vanguard(drop_location)
-			new /obj/item/shield/riot/pointman(drop_location)
 			new /obj/item/defibrillator/compact/loaded(drop_location)
 			new /obj/item/clothing/glasses/hud/health(drop_location)
 			new /obj/item/clothing/gloves/color/latex/nitrile(drop_location)

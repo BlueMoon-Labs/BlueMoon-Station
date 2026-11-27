@@ -154,14 +154,10 @@ PROCESSING_SUBSYSTEM_DEF(orbits)
 		/datum/orbital_objective/recover_blackbox = 3,
 		/datum/orbital_objective/nuclear_bomb = 1,
 		/datum/orbital_objective/artifact = 1,
-		/datum/orbital_objective/vip_recovery = 1
+		// Отключены из реестра миссий авангарда: больше не попадают в случайный выбор.
+		// /datum/orbital_objective/vip_recovery = 1,
+		// /datum/orbital_objective/headhunt = 1
 	)
-	var/observer_count = 0
-	for(var/mob/dead/observer/O in GLOB.player_list)
-		if(O.client)
-			observer_count++
-	if(observer_count > 2)
-		valid_objectives |= list(/datum/orbital_objective/headhunt = 1)
 
 	var/chosen = pickweight(valid_objectives)
 	if(!chosen)

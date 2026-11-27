@@ -1,5 +1,6 @@
 /datum/gear/underwear/garland_panties
 	name = "garland panties"
+	description = "Рождественские трусики-гирлянда."
 	path = /obj/item/clothing/underwear/briefs/garland_panties
 	subcategory = LOADOUT_SUBCATEGORY_UNDERWEAR
 
@@ -9,4 +10,5 @@
 
 /datum/gear/underwear/cheese
 	name = "Cheese-Kini Panties"
+	description = "Не ходить без трусов."
 	path = 	/obj/item/clothing/underwear/briefs/cheese

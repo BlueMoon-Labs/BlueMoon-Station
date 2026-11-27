@@ -511,7 +511,7 @@ GLOBAL_DATUM(dna_for_copying, /datum/dna)
 	set waitfor = FALSE
 	if(newreal_name)
 		real_name = newreal_name
-		dna.generate_unique_enzymes()
+		dna.unique_enzymes = dna.generate_unique_enzymes()
 
 	if(newblood_type)
 		dna.blood_type = newblood_type

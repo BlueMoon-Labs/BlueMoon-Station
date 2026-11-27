@@ -1,7 +1,7 @@
 //Hulk turns your skin green, and allows you to punch through walls.
 /datum/mutation/human/hulk
 	name = "Hulk"
-	desc = "A poorly understood genome that causes the holder's muscles to expand, inhibit speech and gives the person a bad skin condition."
+	desc = "Малоизученный геном, из-за которого мышцы носителя разрастаются, речь нарушается, а кожа приобретает болезненный вид."
 	quality = POSITIVE
 	mutator_security_level = HULK_PRINT_CODE
 	locked = TRUE
@@ -71,7 +71,7 @@
 /// Superhuman Hulk - усиленная версия Hulk для Medieval Warlords
 /datum/mutation/human/hulk/superhuman
 	name = "Hulk (Super)"
-	desc = "An extreme mutation that grants incredible strength and durability. The holder becomes nearly unstoppable."
+	desc = "Экстремальная мутация, дарующая невероятную силу и выносливость. Носитель становится почти неостановимым."
 	quality = POSITIVE
 	locked = TRUE
 	difficulty = 20
@@ -87,6 +87,8 @@
 	// Убираем TRAIT_CHUNKYFINGERS, унаследованный от базового hulk
 	// Это позволяет варлорду стрелять из пушек
 	REMOVE_TRAIT(owner, TRAIT_CHUNKYFINGERS, TRAIT_HULK)
+
+	ADD_TRAIT(owner, TRAIT_STAMINA_IMMUNE, TRAIT_HULK)
 
 	// Увеличиваем максимальное здоровье на 50%
 	owner.maxHealth *= 1.5

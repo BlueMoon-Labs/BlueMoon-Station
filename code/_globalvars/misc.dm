@@ -4,6 +4,8 @@ GLOBAL_VAR_INIT(timezoneOffset, 0) // The difference betwen midnight (of the hos
 
 GLOBAL_VAR_INIT(year, time2text(world.realtime,"YYYY"))
 GLOBAL_VAR_INIT(year_integer, text2num(year)) // = 2013???
+/// "ДД Месяц, ГГГГ" станции для бумаг и записей; выставляет SSmapping вместе со сдвигом года карты
+GLOBAL_VAR(current_date_string)
 
 
 	// For FTP requests. (i.e. downloading runtime logs.)

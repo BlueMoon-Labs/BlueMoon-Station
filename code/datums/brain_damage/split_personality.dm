@@ -3,10 +3,10 @@
 
 /datum/brain_trauma/severe/split_personality
 	name = "Split Personality"
-	desc = "Patient's brain is split into two personalities, which randomly switch control of the body."
-	scan_desc = "complete lobe separation"
-	gain_text = "<span class='warning'>You feel like your mind was split in two.</span>"
-	lose_text = "<span class='notice'>You feel alone again.</span>"
+	desc = "Мозг пациента разделён на две личности, которые случайным образом переключают контроль над телом."
+	scan_desc = "полное разделение долей мозга"
+	gain_text = "<span class='warning'>Вы чувствуете, будто ваш разум разделился надвое.</span>"
+	lose_text = "<span class='notice'>Вы снова чувствуете себя одиноко.</span>"
 	var/current_controller = OWNER
 	var/initialized = FALSE //to prevent personalities deleting themselves while we wait for ghosts
 	var/mob/living/split_personality/stranger_backseat //there's two so they can swap without overwriting
@@ -41,7 +41,7 @@
 /datum/brain_trauma/severe/split_personality/proc/get_ghost()
 	set waitfor = FALSE
 	last_attempt = world.time	//BLUEMOON ADD
-	var/list/mob/candidates = pollCandidatesForMob("Do you want to play as [owner]'s split personality?", ROLE_PAI, null, null, 100, stranger_backseat, POLL_IGNORE_SPLITPERSONALITY, priority_check = FALSE) //BLUEMOON CHANGE
+	var/list/mob/candidates = pollCandidatesForMob("Хотите сыграть за раздвоенную личность [owner]?", ROLE_PAI, null, null, 100, stranger_backseat, POLL_IGNORE_SPLITPERSONALITY, priority_check = FALSE) //BLUEMOON CHANGE
 	if(LAZYLEN(candidates))
 		var/mob/C = pick(candidates)
 		C.transfer_ckey(stranger_backseat, FALSE)
@@ -91,8 +91,8 @@
 		free_backseat = stranger_backseat
 
 	log_game("[key_name(current_backseat)] assumed control of [key_name(owner)] due to [src]. (Original owner: [current_controller == OWNER ? owner.key : current_backseat.key])")
-	to_chat(owner, "<span class='userdanger'>You feel your control being taken away... your other personality is in charge now!</span>")
-	to_chat(current_backseat, "<span class='userdanger'>You manage to take control of your body!</span>")
+	to_chat(owner, "<span class='userdanger'>Вы чувствуете, как контроль ускользает... теперь за рулём ваша другая личность!</span>")
+	to_chat(current_backseat, "<span class='userdanger'>Вам удаётся взять контроль над телом!</span>")
 
 	//Body to backseat
 
@@ -170,7 +170,7 @@
 /mob/living/split_personality/Login()
 	..()
 	to_chat(src, "<span class='notice'>Вы не можете ничего делать, кроме как наблюдать. Используйте кнопку <b>«Вторая личность»</b>, чтобы поговорить с другой личностью или забрать управление телом.</span>")
-	to_chat(src, "<span class='warning'><b>Do not commit suicide or put the body in a deadly position. Behave like you care about it as much as the owner.</b></span>")
+	to_chat(src, "<span class='warning'><b>Не совершайте самоубийство и не подвергайте тело смертельной опасности. Относитесь к нему так же бережно, как его владелец.</b></span>")
 
 /mob/living/split_personality/say(message, bubble_type, var/list/spans = list(), sanitize = TRUE, datum/language/language = null, ignore_spam = FALSE, forced = null)
 //BLUEMOON CHANGE
@@ -186,10 +186,10 @@
 
 /datum/brain_trauma/severe/split_personality/brainwashing
 	name = "Split Personality"
-	desc = "Patient's brain is split into two personalities, which randomly switch control of the body."
-	scan_desc = "complete lobe separation"
+	desc = "Мозг пациента разделён на две личности, которые случайным образом переключают контроль над телом."
+	scan_desc = "полное разделение долей мозга"
 	gain_text = ""
-	lose_text = "<span class='notice'>You are free of your brainwashing.</span>"
+	lose_text = "<span class='notice'>Вы освобождены от промывки мозгов.</span>"
 	can_gain = FALSE
 	var/codeword
 	var/objective
@@ -218,7 +218,7 @@
 
 /datum/brain_trauma/severe/split_personality/brainwashing/get_ghost()
 	set waitfor = FALSE
-	var/list/mob/dead/observer/candidates = pollCandidatesForMob("Do you want to play as [owner]'s brainwashed mind?", null, null, null, 75, stranger_backseat)
+	var/list/mob/dead/observer/candidates = pollCandidatesForMob("Хотите сыграть за промытую личность [owner]?", null, null, null, 75, stranger_backseat)
 	if(LAZYLEN(candidates))
 		var/mob/dead/observer/C = pick(candidates)
 		C.transfer_ckey(stranger_backseat, FALSE)
@@ -248,10 +248,10 @@
 
 /mob/living/split_personality/traitor/Login()
 	..()
-	to_chat(src, "<span class='notice'>As a brainwashed personality, you cannot do anything yet but observe. However, you may gain control of your body if you hear the special codeword, switching places with the current personality.</span>")
-	to_chat(src, "<span class='notice'>Your activation codeword is: <b>[codeword]</b></span>")
+	to_chat(src, "<span class='notice'>Как промытая личность, вы пока не можете ничего делать, кроме как наблюдать. Однако вы сможете взять контроль над телом, услышав особое кодовое слово, поменявшись местами с текущей личностью.</span>")
+	to_chat(src, "<span class='notice'>Ваше кодовое слово активации: <b>[codeword]</b></span>")
 	if(objective)
-		to_chat(src, "<span class='notice'>Your master left you an objective: <b>[objective]</b>. Follow it at all costs when in control.</span>")
+		to_chat(src, "<span class='notice'>Ваш хозяин оставил вам цель: <b>[objective]</b>. Следуйте ей любой ценой, когда окажетесь у руля.</span>")
 
 #undef OWNER
 #undef STRANGER
