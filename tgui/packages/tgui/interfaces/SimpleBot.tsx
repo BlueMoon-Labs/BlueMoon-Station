@@ -347,7 +347,7 @@ const MedbotThreshold = (props) => {
           bad: [55, Infinity],
         }}
         step={5}
-        unit="%"
+        unit="ед."
         value={control[1]}
         onChange={(_, value) => act(control[0], { threshold: value })}
       />

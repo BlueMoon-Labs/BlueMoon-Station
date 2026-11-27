@@ -117,8 +117,12 @@
 				max_sanity = SANITY_GREAT
 
 		if("op_mode")
-			var/static/operation_modes = list("Hug" = BODY_ZONE_CHEST,"Pat" = BODY_ZONE_HEAD,"Boop" = BODY_ZONE_PRECISE_MOUTH)
-			var/target = input("Select operating mode:") as null|anything in operation_modes
+			var/static/list/operation_modes = list(
+				"Обнять" = BODY_ZONE_CHEST,
+				"Погладить" = BODY_ZONE_HEAD,
+				"Ткнуть в нос" = BODY_ZONE_PRECISE_MOUTH,
+			)
+			var/target = input("Выберите режим взаимодействия:") as null|anything in operation_modes
 			if(target)
 				zone_selected = operation_modes[target]
 

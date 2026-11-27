@@ -341,30 +341,33 @@
 		ui.open()
 
 /mob/living/simple_animal/bot/proc/get_control_panel_title()
-	switch(format_text(name))
-		if("Cleanbot")
+	var/standard_name = lowertext(format_text(initial(name)))
+	if(lowertext(format_text(name)) != standard_name)
+		return name
+	switch(standard_name)
+		if("cleanbot")
 			return "Клинбот"
-		if("Medibot")
+		if("medibot")
 			return "Медбот"
-		if("Mysterious Medibot")
+		if("mysterious medibot")
 			return "Загадочный медбот"
-		if("Old Medibot")
+		if("old medibot")
 			return "Старый медбот"
-		if("Floorbot")
+		if("floorbot")
 			return "Флурбот"
-		if("Firebot")
+		if("firebot")
 			return "Пожарный бот"
-		if("Securitron")
+		if("securitron")
 			return "Секьюритрон"
-		if("ED-209 Security Robot")
+		if("ed-209 security robot")
 			return "Охранный робот ED-209"
-		if("ED-209 Enforcer")
+		if("ed-209 enforcer")
 			return "Штурмовой робот ED-209"
 		if("honkbot")
 			return "Хонкбот"
-		if("Hugbot")
+		if("hugbot")
 			return "Хагбот"
-		if("Servoskull")
+		if("servoskull")
 			return "Сервочереп"
 	return name
 
