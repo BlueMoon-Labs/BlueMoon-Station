@@ -259,18 +259,10 @@
 				empty_tiles()
 
 		if("line_mode")
-			var/setdir = input("Select construction direction:") as null|anything in list("north","east","south","west","disable")
-			switch(setdir)
-				if("north")
-					targetdirection = 1
-				if("south")
-					targetdirection = 2
-				if("east")
-					targetdirection = 4
-				if("west")
-					targetdirection = 8
-				if("disable")
-					targetdirection = null
+			var/static/list/directions = list("Север" = NORTH, "Восток" = EAST, "Юг" = SOUTH, "Запад" = WEST, "Отключить режим" = null)
+			var/selected_direction = input(usr, "Выберите направление укладки:") as null|anything in directions
+			if(selected_direction)
+				targetdirection = directions[selected_direction]
 	return
 
 /mob/living/simple_animal/bot/floorbot/proc/empty_tiles()

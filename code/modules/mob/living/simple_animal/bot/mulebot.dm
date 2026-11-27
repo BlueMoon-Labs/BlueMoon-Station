@@ -173,7 +173,8 @@
 /mob/living/simple_animal/bot/mulebot/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		ui = new(user, src, "Mule", name)
+		var/title = name == "[initial(name)] ([id])" ? "МУЛбот ([id])" : name
+		ui = new(user, src, "Mule", title)
 		ui.open()
 
 /mob/living/simple_animal/bot/mulebot/ui_data(mob/user)
@@ -181,7 +182,7 @@
 	data["on"] = on
 	data["locked"] = locked
 	data["siliconUser"] = hasSiliconAccessInArea(user)
-	data["mode"] = mode ? mode_name[mode] : "Ready"
+	data["mode"] = mode ? mode_name[mode] : "Готов к работе"
 	data["modeStatus"] = ""
 	switch(mode)
 		if(BOT_IDLE, BOT_DELIVER, BOT_GO_HOME)
@@ -215,11 +216,11 @@
 			if(on)
 				turn_off()
 			else if(open)
-				to_chat(usr, "<span class='warning'>[name]'s maintenance panel is open!</span>")
+				to_chat(usr, "<span class='warning'>Сервисный люк бота [name] открыт!</span>")
 				return
 			else if(cell)
 				if(!turn_on())
-					to_chat(usr, "<span class='warning'>You can't switch on [src]!</span>")
+					to_chat(usr, "<span class='warning'>Не удалось включить бота [src]!</span>")
 					return
 			. = TRUE
 		else
