@@ -666,6 +666,7 @@
 
 /// BLUEMOON TESTS
 #include "admin_log_viewer.dm"
+#include "paper_html_sanitization.dm"
 #include "atom_hud_membership.dm"
 #include "atom_hud_perf.dm"
 #include "atom_hud_z_groups.dm"
