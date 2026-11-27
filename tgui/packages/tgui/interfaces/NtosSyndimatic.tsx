@@ -38,8 +38,13 @@ type Profile = {
   avatar?: PhotoMedia | null;
 };
 
+type FollowProfile = Pick<Profile, 'name' | 'avatar'> & {
+  id: string;
+  available: ByondFlag;
+};
+
 type SyndimaticData = {
-  view: 'feed' | 'gallery' | 'profile' | 'post' | 'compose' | 'avatar' | 'blocks';
+  view: 'feed' | 'gallery' | 'subscriptions' | 'profile' | 'post' | 'compose' | 'avatar' | 'blocks';
   canWrite: ByondFlag;
   canSetNotifications: ByondFlag;
   notifications: ByondFlag;
@@ -49,6 +54,12 @@ type SyndimaticData = {
   commentBlocked: ByondFlag;
   commentsDisabled?: ByondFlag;
   profileId?: string;
+  viewerProfileId?: string | null;
+  followedProfiles?: Record<string, ByondFlag> | null;
+  followerCount?: number;
+  followStrip?: FollowProfile[];
+  followList?: FollowProfile[];
+  followListOpen?: ByondFlag;
   profilePublishBlocked?: ByondFlag;
   profileCommentBlocked?: ByondFlag;
   blocks?: { id: string; name: string }[];
@@ -109,11 +120,12 @@ const ProfileAvatar = ({ avatar, size }: { avatar?: PhotoMedia | null; size: num
   </Box>
 );
 
-const AuthorButton = ({ id, name, avatar, size = 4 }: {
+const AuthorButton = ({ id, name, avatar, size = 4, disabled }: {
   id: string;
   name: string;
   avatar?: PhotoMedia | null;
   size?: number;
+  disabled?: boolean;
 }) => {
   const { act } = useBackend<SyndimaticData>();
   return (
@@ -124,6 +136,8 @@ const AuthorButton = ({ id, name, avatar, size = 4 }: {
       maxWidth="100%"
       style={{ backgroundColor: 'transparent', color: 'inherit', whiteSpace: 'normal' }}
       role="button"
+      disabled={disabled}
+      aria-disabled={disabled}
       onClick={() => act('profile', { id })}
     >
       <Stack align="center">
@@ -135,6 +149,36 @@ const AuthorButton = ({ id, name, avatar, size = 4 }: {
     </Button>
   );
 };
+
+const FollowButton = ({ id, inFollowList = false }: { id: string; inFollowList?: boolean }) => {
+  const { act, data } = useBackend<SyndimaticData>();
+  const following = !!data.followedProfiles?.[id];
+  if (!data.viewerProfileId || (data.viewerProfileId === id && !inFollowList)) {
+    return null;
+  }
+  return (
+    <Stack.Item shrink={0}>
+      <Button
+        icon={following ? 'user-minus' : 'user-plus'}
+        disabled={!data.canWrite}
+        role="button"
+        aria-disabled={!data.canWrite}
+        onClick={() => act('set_follow', { id, following: following ? 0 : 1 })}
+      >
+        {following ? 'Отписаться' : 'Подписаться'}
+      </Button>
+    </Stack.Item>
+  );
+};
+
+const PostAuthor = ({ authorId, author, avatar }: Pick<Post, 'authorId' | 'author' | 'avatar'>) => (
+  <Stack align="center" wrap="wrap">
+    <Stack.Item minWidth={0}>
+      <AuthorButton id={authorId} name={author} avatar={avatar} />
+    </Stack.Item>
+    <FollowButton id={authorId} />
+  </Stack>
+);
 
 const PostLikeButton = ({ id, likes, liked }: { id: string; likes: number; liked?: ByondFlag }) => {
   const { act, data } = useBackend<SyndimaticData>();
@@ -216,7 +260,7 @@ const FeedPost = ({ post, scrollRef }: {
           <PhotoPreview {...media} />
         )}
       </div>
-      <AuthorButton id={authorId} name={author} avatar={avatar} />
+      <PostAuthor authorId={authorId} author={author} avatar={avatar} />
       {!!caption && <Box mt={0.5} style={multiline}>{caption}</Box>}
       <Stack align="center" wrap="wrap" mt={0.5}>
         <Stack.Item><PostLikeButton id={id} likes={likes} liked={liked} /></Stack.Item>
@@ -256,10 +300,13 @@ const PostFeed = ({ scrollRef }: { scrollRef: RefObject<HTMLDivElement | null> }
 const PostGallery = () => {
   const { act, data } = useBackend<SyndimaticData>();
   const { page, pages, posts, view } = data;
+  const showAuthor = view !== 'profile';
   if (!posts?.length) {
     return (
       <NoticeBox>
-        {view === 'profile' ? 'У персонажа пока нет публикаций.' : 'В ленте пока нет публикаций.'}
+        {view === 'profile' && 'У персонажа пока нет публикаций.'}
+        {view === 'gallery' && 'В ленте пока нет публикаций.'}
+        {view === 'subscriptions' && 'У авторов из ваших подписок пока нет публикаций.'}
       </NoticeBox>
     );
   }
@@ -275,11 +322,11 @@ const PostGallery = () => {
             onClick={() => act('open_post', { id })}
             footer={
               <Stack align="center">
-                {view === 'gallery' && (
+                {showAuthor && (
                   <Stack.Item shrink={0}><ProfileAvatar avatar={avatar} size={3} /></Stack.Item>
                 )}
                 <Stack.Item grow minWidth={0}>
-                  {view === 'gallery' && <Box bold style={ellipsis}>{author}</Box>}
+                  {showAuthor && <Box bold style={ellipsis}>{author}</Box>}
                   <Stack>
                     <Stack.Item><Icon name="heart" /> {likes}</Stack.Item>
                     <Stack.Item><Icon name="comment" /> {comments}</Stack.Item>
@@ -291,6 +338,71 @@ const PostGallery = () => {
         ))}
       </PhotoGallery>
       <PhotoGalleryPagination page={page} pages={pages} onPage={(page) => act('page', { page })} />
+    </>
+  );
+};
+
+const Subscriptions = () => {
+  const { act, data } = useBackend<SyndimaticData>();
+  const { followStrip, followList, followListOpen, page, pages } = data;
+  if (!followStrip?.length) {
+    return <NoticeBox>У вас пока нет подписок. Подписаться можно в чужом профиле или посте.</NoticeBox>;
+  }
+  const toggleLabel = followListOpen ? 'Скрыть список подписок' : 'Открыть все подписки';
+  return (
+    <>
+      <Stack align="center" mb={1}>
+        <Stack.Item grow minWidth={0}>
+          <Box style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto' }}>
+            {followStrip.map(({ id, name, avatar, available }) => (
+              <Button
+                key={id}
+                compact
+                circular
+                color="transparent"
+                p={0}
+                m={0}
+                style={{ flexShrink: 0, backgroundColor: 'transparent', color: 'inherit' }}
+                title={name}
+                aria-label={name}
+                aria-disabled={!available}
+                disabled={!available}
+                role="button"
+                onClick={() => act('profile', { id })}
+              >
+                <ProfileAvatar avatar={avatar} size={4} />
+              </Button>
+            ))}
+          </Box>
+        </Stack.Item>
+        <Stack.Item shrink={0}>
+          <Button
+            icon={followListOpen ? 'chevron-down' : 'chevron-right'}
+            title={toggleLabel}
+            aria-label={toggleLabel}
+            aria-expanded={!!followListOpen}
+            role="button"
+            onClick={() => act('toggle_follow_list')}
+          />
+        </Stack.Item>
+      </Stack>
+      {followListOpen ? (
+        <Section title="Все подписки">
+          <Stack vertical>
+            {followList?.map(({ id, name, avatar, available }) => (
+              <Stack.Item key={id}>
+                <Stack align="center">
+                  <Stack.Item grow minWidth={0}>
+                    <AuthorButton id={id} name={name} avatar={avatar} disabled={!available} />
+                  </Stack.Item>
+                  <FollowButton id={id} inFollowList />
+                </Stack>
+              </Stack.Item>
+            ))}
+          </Stack>
+          <PhotoGalleryPagination page={page} pages={pages} onPage={(page) => act('page', { page })} />
+        </Section>
+      ) : <PostGallery />}
     </>
   );
 };
@@ -421,7 +533,7 @@ const PostPage = ({ post }: { post: Post }) => {
           <PhotoPreview {...media} />
           <Stack align="center" mt={0.5}>
             <Stack.Item grow minWidth={0}>
-              <AuthorButton id={authorId} name={author} avatar={avatar} />
+              <PostAuthor authorId={authorId} author={author} avatar={avatar} />
             </Stack.Item>
             <Stack.Item shrink={0}>
               {(!!ownPost || !!isAdmin) && (
@@ -498,7 +610,7 @@ const EditProfile = ({ profile }: { profile: Profile }) => {
 
 const ProfilePage = ({ profile }: { profile: Profile }) => {
   const { act, data } = useBackend<SyndimaticData>();
-  const { ownProfile, canWrite, editingProfile, isAdmin, profileId,
+  const { ownProfile, canWrite, editingProfile, isAdmin, profileId, followerCount,
     profilePublishBlocked, profileCommentBlocked, photoLimit, photoLimitOptions, canSetPhotoLimit } = data;
   return (
     <>
@@ -514,7 +626,13 @@ const ProfilePage = ({ profile }: { profile: Profile }) => {
             )}
           </Stack.Item>
           <Stack.Item grow>
-            <Box bold fontSize={1.25} style={multiline}>{profile.name}</Box>
+            <Stack align="center" wrap="wrap">
+              <Stack.Item minWidth={0}>
+                <Box bold fontSize={1.25} style={multiline}>{profile.name}</Box>
+              </Stack.Item>
+              {profileId && <FollowButton id={profileId} />}
+            </Stack>
+            <Box mt={0.5} color="label">Подписчики: {followerCount ?? 0}</Box>
             {!!profile.description && <Box mt={0.5} style={multiline}>{profile.description}</Box>}
             {!!ownProfile && !!canWrite && !editingProfile && (
               <Box mt={1}>
@@ -776,6 +894,15 @@ export const NtosSyndimatic = () => {
                   Галерея
                 </Button>
                 <Button
+                  icon="user-friends"
+                  selected={view === 'subscriptions'}
+                  role="button"
+                  aria-pressed={view === 'subscriptions'}
+                  onClick={() => act('subscriptions')}
+                >
+                  Подписки
+                </Button>
+                <Button
                   icon="user"
                   selected={view === 'profile' && !!ownProfile}
                   role="button"
@@ -820,6 +947,7 @@ export const NtosSyndimatic = () => {
             >
               {view === 'feed' && <PostFeed scrollRef={scrollRef} />}
               {view === 'gallery' && <PostGallery />}
+              {view === 'subscriptions' && <Subscriptions />}
               {view === 'blocks' && !!isAdmin && (
                 <Section title="Заблокированные профили">
                   {blocks?.length ? blocks.map(({ id, name }) => (

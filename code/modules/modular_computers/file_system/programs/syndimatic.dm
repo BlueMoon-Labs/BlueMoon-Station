@@ -1,6 +1,7 @@
 #define SYNDIMATIC_PAGE_SIZE 12
 #define SYNDIMATIC_FEED_BATCH_SIZE 6
 #define SYNDIMATIC_COMMENT_PAGE_SIZE 20
+#define SYNDIMATIC_FOLLOW_STRIP_SIZE 8
 
 /datum/mind/proc/set_syndimatic_character(datum/preferences/prefs, account_key, mob/living/carbon/human/character)
 	if(!prefs.path || !account_key)
@@ -30,7 +31,7 @@
 	filedesc = "Syndimatic"
 	program_icon = "images"
 	category = PROGRAM_CATEGORY_CREW
-	extended_desc = "Общая лента фотографий с профилями, отметками «Нравится» и комментариями."
+	extended_desc = "Общая лента фотографий с профилями, подписками, отметками «Нравится» и комментариями."
 	usage_flags = PROGRAM_PDA
 	size = 2
 	tgui_id = "NtosSyndimatic"
@@ -49,10 +50,16 @@
 	var/datum/picture/draft_photo
 	var/editing_profile = FALSE
 	var/viewing_blocks = FALSE
-	var/viewing_gallery = FALSE
+	var/browse_view = "feed"
 	var/feed_limit = SYNDIMATIC_FEED_BATCH_SIZE
 	var/comment_sort = "oldest"
 	var/list/feed_sent_ids
+	var/viewer_account_id
+	var/showing_follow_list = FALSE
+	var/list/cached_follows
+	var/cached_follow_post_version = -1
+	var/list/follow_authors
+	var/list/follow_posts
 
 /datum/computer_file/program/syndimatic/Destroy()
 	close_syndimatic_window()
@@ -107,6 +114,7 @@
 	viewer_ref = WEAKREF(user)
 	var/datum/mind/actor = get_syndimatic_actor(user)
 	viewer_profile_id = actor?.syndimatic_profile_id
+	viewer_account_id = actor ? syndimatic_account_id(actor.syndimatic_owner_ckey) : null
 	var/list/profile = SSpersistence.get_syndimatic_profile(viewer_profile_id)
 	if(profile && profile["name"] != actor.syndimatic_character_name)
 		var/list/updated_profile = profile.Copy()
@@ -150,6 +158,7 @@
 	viewer_ref = null
 	viewer_ui_ref = null
 	viewer_profile_id = null
+	viewer_account_id = null
 	profile_id = null
 	post_id = null
 	post_media = null
@@ -159,9 +168,14 @@
 	comment_sort = "oldest"
 	editing_profile = FALSE
 	viewing_blocks = FALSE
-	viewing_gallery = FALSE
+	browse_view = "feed"
 	feed_limit = SYNDIMATIC_FEED_BATCH_SIZE
 	feed_sent_ids = null
+	showing_follow_list = FALSE
+	cached_follows = null
+	cached_follow_post_version = -1
+	follow_authors = null
+	follow_posts = null
 	clear_syndimatic_draft()
 
 /datum/computer_file/program/syndimatic/proc/clear_syndimatic_draft()
@@ -180,6 +194,10 @@
 	if(post_id)
 		return post_id == changed_post_id
 	var/list/post = SSpersistence.syndimatic_posts[changed_post_id]
+	if(browse_view == "subscriptions" && !profile_id && !viewing_blocks)
+		var/list/follows = viewer_account_id ? SSpersistence.syndimatic_follows[viewer_account_id] : null
+		var/author = post?["author"]
+		return author && !!follows?[author]
 	return !profile_id || profile_id == post?["author"]
 
 /datum/computer_file/program/syndimatic/ui_static_data(mob/user)
@@ -196,7 +214,7 @@
 	data["isAdmin"] = !!is_admin
 	data["canSetNotifications"] = !!actor
 	data["notifications"] = !!actor?.syndimatic_notifications
-	data["view"] = viewing_gallery ? "gallery" : "feed"
+	data["view"] = browse_view
 	if(viewing_blocks && is_admin)
 		var/list/rows = list()
 		for(var/id in SSpersistence.syndimatic_blocks)
@@ -262,6 +280,7 @@
 			data["view"] = "profile"
 			data["profile"] = profile
 			data["ownProfile"] = profile_id == viewer_profile_id
+			data["followerCount"] = SSpersistence.syndimatic_follower_counts[profile_id] || 0
 			if(actor && profile_id == viewer_profile_id)
 				var/datum/preferences/prefs = user.client?.prefs
 				var/maximum = syndimatic_post_limit(actor.syndimatic_owner_ckey)
@@ -278,11 +297,25 @@
 		else
 			profile_id = null
 
-	var/list/posts = SSpersistence.syndimatic_posts
-	var/list/ids = profile_id ? SSpersistence.syndimatic_posts_by_author[profile_id] : SSpersistence.syndimatic_feed
 	if(data["view"] == "feed")
 		data += syndimatic_feed_data(full = TRUE)
 		return data
+
+	var/list/posts = SSpersistence.syndimatic_posts
+	var/list/ids = profile_id ? SSpersistence.syndimatic_posts_by_author[profile_id] : SSpersistence.syndimatic_feed
+	if(data["view"] == "subscriptions")
+		refresh_syndimatic_follows(data["followedProfiles"])
+		data["followStrip"] = syndimatic_follow_rows(1, SYNDIMATIC_FOLLOW_STRIP_SIZE)
+		data["followListOpen"] = showing_follow_list
+		if(showing_follow_list)
+			var/pages = max(1, CEILING(length(follow_authors) / SYNDIMATIC_PAGE_SIZE, 1))
+			gallery_page = clamp(gallery_page, 1, pages)
+			var/start = (gallery_page - 1) * SYNDIMATIC_PAGE_SIZE + 1
+			data["followList"] = syndimatic_follow_rows(start, start + SYNDIMATIC_PAGE_SIZE - 1)
+			data["page"] = gallery_page
+			data["pages"] = pages
+			return data
+		ids = follow_posts
 
 	var/pages = max(1, CEILING(length(ids) / SYNDIMATIC_PAGE_SIZE, 1))
 	gallery_page = clamp(gallery_page, 1, pages)
@@ -304,6 +337,45 @@
 	data["publishBlocked"] = !!blocks?["publish"]
 	data["commentBlocked"] = !!blocks?["comment"]
 	data["myProfile"] = !!SSpersistence.get_syndimatic_profile(viewer_profile_id)
+	data["viewerProfileId"] = viewer_profile_id
+	data["followedProfiles"] = viewer_account_id ? SSpersistence.syndimatic_follows[viewer_account_id] : null
+
+/datum/computer_file/program/syndimatic/proc/refresh_syndimatic_follows(list/follows)
+	var/post_version = SSpersistence.syndimatic_post_index_version
+	if(cached_follows == follows && cached_follow_post_version == post_version)
+		return
+	cached_follows = follows
+	cached_follow_post_version = post_version
+	follow_posts = list()
+	follow_authors = list()
+	var/list/authors_by_latest = list()
+	var/list/authors_without_posts = list()
+	// Собираем только посты авторов из подписок, исключая скрытые модерацией публикации.
+	for(var/id in follows)
+		var/list/blocks = SSpersistence.syndimatic_blocks[id]
+		var/list/author_posts = SSpersistence.syndimatic_posts_by_author[id]
+		if(length(author_posts) && !blocks?["publish"])
+			authors_by_latest[author_posts[1]] = id
+			follow_posts += author_posts
+		else
+			authors_without_posts += id
+	sortTim(authors_by_latest, GLOBAL_PROC_REF(cmp_text_dsc))
+	for(var/latest in authors_by_latest)
+		follow_authors += authors_by_latest[latest]
+	follow_authors += authors_without_posts
+	sortTim(follow_posts, GLOBAL_PROC_REF(cmp_text_dsc))
+
+/datum/computer_file/program/syndimatic/proc/syndimatic_follow_rows(start, end)
+	. = list()
+	for(var/index = start to min(end, length(follow_authors)))
+		var/id = follow_authors[index]
+		var/list/profile = SSpersistence.get_syndimatic_profile(id)
+		. += list(list(
+			"id" = id,
+			"name" = profile?["name"] || "Профиль недоступен",
+			"avatar" = profile?["avatar"],
+			"available" = !!profile,
+		))
 
 /datum/computer_file/program/syndimatic/proc/syndimatic_feed_data(full = FALSE, changed_profile_id)
 	var/list/feed = SSpersistence.syndimatic_feed
@@ -369,7 +441,7 @@
 		.["avatar"] = profile?["avatar"]
 
 /datum/computer_file/program/syndimatic/proc/is_viewing_syndimatic_feed()
-	return !viewing_gallery && !viewing_blocks && !profile_id && !post_id && !draft_photo
+	return browse_view == "feed" && !viewing_blocks && !profile_id && !post_id && !draft_photo
 
 /datum/computer_file/program/syndimatic/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	var/mob/user = ui?.user
@@ -387,7 +459,7 @@
 		target_id = params["id"]
 	var/list/post = target_id ? SSpersistence.get_visible_syndimatic_post(target_id) : null
 	switch(action)
-		if("feed", "gallery", "profile", "blocks")
+		if("feed", "gallery", "subscriptions", "profile", "blocks")
 			if(action == "blocks" && !check_rights_for(user.client, R_ADMIN))
 				return FALSE
 			var/id
@@ -402,9 +474,27 @@
 			gallery_page = 1
 			editing_profile = FALSE
 			viewing_blocks = action == "blocks"
-			if(action == "feed" || action == "gallery")
-				viewing_gallery = action == "gallery"
+			if(action == "feed" || action == "gallery" || action == "subscriptions")
+				browse_view = action
+				showing_follow_list = FALSE
 			profile_id = id
+		if("toggle_follow_list")
+			if(browse_view != "subscriptions" || post_id || profile_id || draft_photo || viewing_blocks)
+				return FALSE
+			showing_follow_list = !showing_follow_list
+			gallery_page = 1
+		if("set_follow")
+			var/id = params["id"]
+			var/following = params["following"]
+			if(!actor || !viewer_account_id || !SSticker.HasRoundStarted() || !istext(id) || length(id) != 64 || !isnum(following) || (following != TRUE && following != FALSE))
+				return FALSE
+			var/list/follows = SSpersistence.syndimatic_follows[viewer_account_id]
+			if(!!follows?[id] == following || (following && (id == viewer_profile_id || !SSpersistence.get_syndimatic_profile(id))))
+				return FALSE
+			if(!SSpersistence.set_syndimatic_follow(viewer_account_id, id, following))
+				to_chat(user, span_warning("Не удалось сохранить подписку в Syndimatic."))
+				return FALSE
+			SSpersistence.notify_syndimatic_viewers(src, profile_id = id, follow_account_id = viewer_account_id)
 		if("feed_more")
 			var/feed_size = length(SSpersistence.syndimatic_feed)
 			var/known_limit = params["limit"]
@@ -765,3 +855,4 @@
 #undef SYNDIMATIC_PAGE_SIZE
 #undef SYNDIMATIC_FEED_BATCH_SIZE
 #undef SYNDIMATIC_COMMENT_PAGE_SIZE
+#undef SYNDIMATIC_FOLLOW_STRIP_SIZE
