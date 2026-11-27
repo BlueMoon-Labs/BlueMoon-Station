@@ -317,7 +317,7 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 		qdel(src)
 		return
 	LAZYADD(GLOB.sdql2_queries, src)
-	superuser = SU
+	superuser = FALSE
 	allow_admin_interact = admin_interact
 	query_tree = tree
 	options = _options
