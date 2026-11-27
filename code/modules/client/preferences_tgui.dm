@@ -125,6 +125,7 @@
 	.["autostand"] = autostand
 	.["long_strip_menu"] = long_strip_menu
 	.["amplify_department_radio"] = amplify_department_radio
+	.["alt_click_turf_mode"] = alt_click_turf_mode
 	.["right_click_mode"] = right_click_mode()
 	.["shift_right_click_mode"] = shift_right_click_mode()
 	var/list/menu_style = list()
@@ -542,6 +543,14 @@
 					if(isliving(user))
 						user.refresh_ammo_hud()
 			save_pref_var(dirty_var)
+			return TRUE
+
+		if("set_alt_click_turf_mode")
+			var/mode = params["value"]
+			if(!isnum(mode) || !(mode in list(ALT_CLICK_TURF_ALWAYS, ALT_CLICK_TURF_ONLY, ALT_CLICK_TURF_NEVER)) || mode == alt_click_turf_mode)
+				return
+			alt_click_turf_mode = mode
+			save_pref_var("alt_click_turf_mode")
 			return TRUE
 
 		// Antag role toggles

@@ -28,7 +28,7 @@ describe('emotesReducer', () => {
     const order = ['smile', 'wave'];
     const state = emotesReducer(
       { visible: false, list: {} },
-      { type: 'emotes/setList', payload: { enabled: true, list: emoteList, order, slot: 2, revision: 7 } },
+      { type: 'emotes/setList', payload: { list: emoteList, order, slot: 2, revision: 7 } },
     );
 
     expect(state.list).toEqual(emoteList);
@@ -37,10 +37,10 @@ describe('emotesReducer', () => {
     expect(state.revision).toBe(7);
   });
 
-  test('setList keeps an enabled panel open', () => {
+  test('setList keeps the panel open', () => {
     const state = emotesReducer(
       { visible: true, list: {} },
-      { type: 'emotes/setList', payload: { enabled: true, list: {}, order: [], slot: 1, revision: 1 } },
+      { type: 'emotes/setList', payload: { list: {}, order: [], slot: 1, revision: 1 } },
     );
     expect(state.visible).toBe(true);
   });

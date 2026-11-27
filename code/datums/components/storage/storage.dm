@@ -726,7 +726,7 @@
 		user_show_to_mob(user, trigger_on_found = TRUE)
 		if(rustle_sound)
 			playsound(A, "rustle", 50, 1, -5)
-		return TRUE
+		return user.active_storage == src ? (TRUE | COMPONENT_SKIP_LISTED_TURF) : TRUE
 
 	if(user.can_hold_items() && !user.incapacitated())
 		var/obj/item/I = locate() in real_location()

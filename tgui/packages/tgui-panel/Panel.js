@@ -5,7 +5,6 @@
  */
 
 import { useState } from 'react';
-import { sendMessage } from 'tgui/backend';
 import { Button, Section, Stack } from 'tgui/components';
 import { KitchenSink, useDebug } from 'tgui/debug';
 import { IS_DEVELOPMENT } from 'tgui/env';
@@ -61,13 +60,7 @@ export const Panel = (props) => {
                   icon="asterisk"
                   tooltip="Панель эмоций"
                   tooltipPosition="bottom-start"
-                  onClick={() => {
-                    if (emotes.enabled) {
-                      emotes.toggle();
-                    } else {
-                      sendMessage({ type: 'emotes/showHint' });
-                    }
-                  }} />
+                  onClick={() => emotes.toggle()} />
               </Stack.Item>
               <Stack.Item shrink={0}>
                 <Button
@@ -91,7 +84,7 @@ export const Panel = (props) => {
             </Stack>
           </Section>
         </Stack.Item>
-        {!!emotes.enabled && emotes.visible && (
+        {emotes.visible && (
           <Stack.Item>
             <Section>
               <EmotePanel />

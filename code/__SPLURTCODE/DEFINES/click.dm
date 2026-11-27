@@ -43,7 +43,6 @@
 				listed_turf = null
 		else if(TurfAdjacent(T))
 			if(client)
-				client.open_listed_turf(T)
-				client.statpanel = T.name
+				client.list_turf_from_alt_click(T, A)
 			else
 				listed_turf = T

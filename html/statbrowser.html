@@ -1541,7 +1541,7 @@ var MC_KEY_SUBSYSTEMS = ["Atmospherics", "Garbage", "Machines", "Lighting", "Cli
 var SEARCH_ICON_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6.5" cy="6.5" r="5"/><line x1="10" y1="10" x2="15" y2="15"/></svg>';
 // Bridge protocol: must match STATBROWSER_PROTOCOL_VERSION in code/controllers/subsystem/statpanel.dm.
 // Bumped when the DM->JS payload shape changes incompatibly. Mismatch logs a warning and asks DM to reload.
-var EXPECTED_PROTOCOL_VERSION = 8;
+var EXPECTED_PROTOCOL_VERSION = 9;
 var STATPANEL_EMOTES_TAB = "Emotes";
 
 ;
@@ -1610,6 +1610,7 @@ function connected_to_server() {
 // === src/state.js ===
 var State = {
 	currentTab: null,
+	lastNonTurfTab: "Status",
 	verbTabs: [],
 	verbs: [],
 	permanentTabs: [],
@@ -1654,6 +1655,7 @@ var State = {
 	// Favorites
 	favorites: {},
 	emotePanel: null,
+	emoteSync: null,
 	// Images
 	storedImages: {},
 	imageRetryDelay: 500,
@@ -1717,7 +1719,7 @@ function getTabOrder(name) {
 	if (name === "Status") return 1;
 	if (name === "MC") return 2;
 	if (name === "Избранное") return 3;
-	if (name === STATPANEL_EMOTES_TAB) return 4;
+	if (name === STATPANEL_EMOTES_TAB) name = "Say";
 	return 100 + name.charCodeAt(0);
 }
 
@@ -1751,6 +1753,11 @@ function createStatusTab(name) {
 		tabBar.insertBefore(btn, spacerEl);
 	} else {
 		tabBar.appendChild(btn);
+	}
+	if (display === "Say" || display === STATPANEL_EMOTES_TAB) {
+		var sayTab = document.getElementById("tab-Say");
+		var emotesTab = document.getElementById("tab-" + STATPANEL_EMOTES_TAB);
+		if (sayTab && emotesTab) sayTab.after(emotesTab);
 	}
 	SendTabToByond(display);
 	spacer.style.height = tabBar.offsetHeight + "px";
@@ -1797,8 +1804,14 @@ function checkStatusTab() {
 var _tabScrollPositions = {};
 
 function tab_change(tab) {
+	if (tab === State.currentTab) {
+		if (_settingsActive) {
+			_settingsActive = false;
+			renderCurrentTab();
+		}
+		return;
+	}
 	_settingsActive = false;
-	if (tab === State.currentTab) return;
 	if (State.currentTab === STATPANEL_EMOTES_TAB) {
 		finishEmoteDrag();
 		State.emotePanel = null;
@@ -1809,6 +1822,7 @@ function tab_change(tab) {
 	var oldBtn = document.getElementById("tab-" + State.currentTab);
 	if (oldBtn) oldBtn.classList.remove("active");
 	State.currentTab = tab;
+	if (tab !== State.turfName) State.lastNonTurfTab = tab;
 	set_byond_tab(tab);
 	var newBtn = document.getElementById("tab-" + tab);
 	if (newBtn) newBtn.classList.add("active");
@@ -1825,15 +1839,6 @@ function tab_change(tab) {
 
 function set_byond_tab(tab) {
 	send_byond_command("Set-Tab " + tab);
-}
-
-function open_emote_tab() {
-	if (State.currentTab === STATPANEL_EMOTES_TAB && _settingsActive) {
-		_settingsActive = false;
-		renderCurrentTab();
-		return;
-	}
-	tab_change(STATPANEL_EMOTES_TAB);
 }
 
 function SendTabsToByond() {
@@ -5172,12 +5177,16 @@ function add_admin_tabs(ht) {
 	if (!_settingsActive && State.currentTab === "Tickets") draw_tickets();
 }
 
-function create_listedturf(TN) {
-	remove_listedturf();
-	State.turfContents = [];
-	State.turfName = safeParse(TN, "");
-	addPermanentTab(State.turfName);
-	tab_change(State.turfName);
+function create_listedturf(TN, switchTab) {
+	var turfName = safeParse(TN, "");
+	if (!turfName) return;
+	var shouldSwitch = switchTab !== "0";
+	if (State.turfName !== turfName) {
+		remove_listedturf(shouldSwitch);
+		State.turfName = turfName;
+	}
+	addPermanentTab(turfName);
+	if (shouldSwitch) tab_change(turfName);
 }
 
 function update_listedturf(TC) {
@@ -5206,13 +5215,19 @@ function update_turf_icons(data) {
 	}
 }
 
-function remove_listedturf() {
-	removePermanentTab(State.turfName);
+function remove_listedturf(keepSelection) {
+	var turfName = State.turfName;
+	removePermanentTab(turfName);
+	State.turfName = "";
+	State.turfContents = [];
 	State.turfContentsRaw = "";
 	turfTable = null;
 	turfItemNodes = {};
 	checkStatusTab();
-	if (State.currentTab === State.turfName) tab_change("Status");
+	if (!keepSelection && State.currentTab === turfName) {
+		var previousTab = State.lastNonTurfTab;
+		tab_change(document.getElementById("tab-" + previousTab) ? previousTab : "Status");
+	}
 }
 
 function init_verbs(c, v) {
@@ -5575,6 +5590,17 @@ function addGridRow(parent, themeState, opts) {
 	};
 }
 
+function update_emote_sync(payload) {
+	var sync = safeParse(payload);
+	if (!sync) return;
+	State.emoteSync = sync;
+	var checkbox = document.getElementById("settings-emote-sync");
+	if (checkbox) {
+		checkbox.checked = !!sync.enabled;
+		checkbox.disabled = false;
+	}
+}
+
 function draw_settings() {
 	finishEmoteDrag();
 	_settingsActive = true;
@@ -5924,6 +5950,21 @@ function draw_settings() {
 
 	var emoteSection = el("div", "settings-section");
 	emoteSection.appendChild(el("div", "settings-section-title", "Эмоции"));
+	var emoteSyncRow = el("label", "settings-row");
+	var emoteSyncCheckbox = el("input", "settings-checkbox");
+	emoteSyncCheckbox.id = "settings-emote-sync";
+	emoteSyncCheckbox.type = "checkbox";
+	emoteSyncCheckbox.checked = !!(State.emoteSync && State.emoteSync.enabled);
+	emoteSyncCheckbox.disabled = !State.emoteSync;
+	emoteSyncCheckbox.onchange = function() {
+		var sync = State.emoteSync;
+		var enabled = emoteSyncCheckbox.checked;
+		emoteSyncCheckbox.checked = !!sync.enabled;
+		byond_bridge_call("", { statpanel_emotes: "emotes/setSync", slot: sync.slot, enabled: enabled ? "1" : "0" });
+	};
+	emoteSyncRow.appendChild(el("span", "settings-label", "Синхронизировать эмоции со звёздочкой"));
+	emoteSyncRow.appendChild(emoteSyncCheckbox);
+	emoteSection.appendChild(emoteSyncRow);
 	var emoteSortRow = el("label", "settings-row");
 	var emoteSortCheckbox = el("input", "settings-checkbox");
 	emoteSortCheckbox.type = "checkbox";
