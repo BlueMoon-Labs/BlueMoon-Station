@@ -84,21 +84,48 @@ GLOBAL_PROTECT(LastAdminCalledTarget)
 GLOBAL_VAR(LastAdminCalledProc)
 GLOBAL_PROTECT(LastAdminCalledProc)
 
-/// Wrapper for proccalls where the datum is flagged as vareditted
+// Проверяет аргументы, которые вызываемый прок может сохранить для отложенного запуска.
+/proc/admin_proc_arguments_have_callback(list/arguments)
+	if(!length(arguments))
+		return FALSE
+	var/list/pending = list(arguments)
+	var/list/seen = list()
+	seen[arguments] = TRUE
+	for(var/index = 1; index <= length(pending); index++)
+		var/list/current = pending[index]
+		for(var/key in current)
+			var/value = IS_VALID_ASSOC_KEY(key) ? current[key] : null
+			if(istype(key, /datum/callback) || istype(value, /datum/callback))
+				return TRUE
+			if(islist(key) && !seen[key])
+				seen[key] = TRUE
+				pending += list(key)
+			if(islist(value) && !seen[value])
+				seen[value] = TRUE
+				pending += list(value)
+	return FALSE
+
+// Проверяет права перед динамическим вызовом административной процедуры.
 /proc/WrapAdminProcCall(datum/target, procname, list/arguments)
 	var/static/list/restricted_global_procs = list(
 		"callasync", "___callbacknew", "___callbackvarset",
 		"gear_crypto", "gear_ckey_id", "gear_ckey_from_id", "initialize_global_whitelist_cache",
 	)
-	if(target == GLOBAL_PROC && (lowertext(procname) in restricted_global_procs))
-		to_chat(usr, span_warning("Прямой вызов [procname]() через административные инструменты запрещён."), confidential = TRUE)
+	var/proc_text = "[procname]"
+	var/proc_name = copytext(proc_text, findlasttext(proc_text, "/") + 1)
+	var/lower_proc_name = lowertext(proc_name)
+	if(target == GLOBAL_PROC && (lower_proc_name in restricted_global_procs))
+		to_chat(usr, span_warning("Прямой вызов [html_encode(proc_name)]() через административные инструменты запрещён."), confidential = TRUE)
 		return
-	if(target && procname == "Del")
-		to_chat(usr, "Calling Del() is not allowed", confidential = TRUE)
+	if(target && lower_proc_name == "del")
+		to_chat(usr, span_warning("Вызов Del() через административные инструменты запрещён."), confidential = TRUE)
 		return
 
-	if(target != GLOBAL_PROC && !target.CanProcCall(procname))
-		to_chat(usr, "Proccall on [target.type]/proc/[procname] is disallowed!", confidential = TRUE)
+	if(target != GLOBAL_PROC && !target.CanProcCall(proc_name))
+		to_chat(usr, span_warning("Вызов [target.type]/proc/[html_encode(proc_name)] запрещён."), confidential = TRUE)
+		return
+	if(admin_proc_arguments_have_callback(arguments))
+		to_chat(usr, span_warning("Нельзя передавать колбэки в аргументах административного вызова."), confidential = TRUE)
 		return
 	var/current_caller = GLOB.AdminProcCaller
 	var/ckey = usr ? usr.client.ckey : GLOB.AdminProcCaller
@@ -110,14 +137,15 @@ GLOBAL_PROTECT(LastAdminCalledProc)
 		to_chat(usr, "<span class='adminnotice'>Another set of admin called procs are still running. Try again later.</span>", confidential = TRUE)
 		return
 
-	GLOB.LastAdminCalledProc = procname
+	GLOB.LastAdminCalledProc = proc_name
 	if(target != GLOBAL_PROC)
 		GLOB.LastAdminCalledTargetRef = REF(target)
 	GLOB.AdminProcCaller = ckey
 	++GLOB.AdminProcCallCount
 	var/exception/call_error
 	try
-		. = world.WrapAdminProcCall(target, procname, arguments)
+		var/call_proc = target == GLOBAL_PROC ? proc_name : procname
+		. = world.WrapAdminProcCall(target, call_proc, arguments)
 	catch(var/exception/error)
 		call_error = error
 	if(--GLOB.AdminProcCallCount == 0)
