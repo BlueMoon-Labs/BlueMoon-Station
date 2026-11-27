@@ -1610,6 +1610,7 @@ function connected_to_server() {
 // === src/state.js ===
 var State = {
 	currentTab: null,
+	lastNonTurfTab: "Status",
 	verbTabs: [],
 	verbs: [],
 	permanentTabs: [],
@@ -1815,6 +1816,7 @@ function tab_change(tab) {
 	var oldBtn = document.getElementById("tab-" + State.currentTab);
 	if (oldBtn) oldBtn.classList.remove("active");
 	State.currentTab = tab;
+	if (tab !== State.turfName) State.lastNonTurfTab = tab;
 	set_byond_tab(tab);
 	var newBtn = document.getElementById("tab-" + tab);
 	if (newBtn) newBtn.classList.add("active");
@@ -5172,12 +5174,13 @@ function add_admin_tabs(ht) {
 function create_listedturf(TN, switchTab) {
 	var turfName = safeParse(TN, "");
 	if (!turfName) return;
+	var shouldSwitch = switchTab !== "0";
 	if (State.turfName !== turfName) {
-		remove_listedturf();
+		remove_listedturf(shouldSwitch);
 		State.turfName = turfName;
 	}
 	addPermanentTab(turfName);
-	if (switchTab !== "0") tab_change(turfName);
+	if (shouldSwitch) tab_change(turfName);
 }
 
 function update_listedturf(TC) {
@@ -5206,7 +5209,7 @@ function update_turf_icons(data) {
 	}
 }
 
-function remove_listedturf() {
+function remove_listedturf(keepSelection) {
 	var turfName = State.turfName;
 	removePermanentTab(turfName);
 	State.turfName = "";
@@ -5215,7 +5218,10 @@ function remove_listedturf() {
 	turfTable = null;
 	turfItemNodes = {};
 	checkStatusTab();
-	if (State.currentTab === turfName) tab_change("Status");
+	if (!keepSelection && State.currentTab === turfName) {
+		var previousTab = State.lastNonTurfTab;
+		tab_change(document.getElementById("tab-" + previousTab) ? previousTab : "Status");
+	}
 }
 
 function init_verbs(c, v) {

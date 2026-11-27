@@ -291,12 +291,13 @@ function add_admin_tabs(ht) {
 function create_listedturf(TN, switchTab) {
 	var turfName = safeParse(TN, "");
 	if (!turfName) return;
+	var shouldSwitch = switchTab !== "0";
 	if (State.turfName !== turfName) {
-		remove_listedturf();
+		remove_listedturf(shouldSwitch);
 		State.turfName = turfName;
 	}
 	addPermanentTab(turfName);
-	if (switchTab !== "0") tab_change(turfName);
+	if (shouldSwitch) tab_change(turfName);
 }
 
 function update_listedturf(TC) {
@@ -325,7 +326,7 @@ function update_turf_icons(data) {
 	}
 }
 
-function remove_listedturf() {
+function remove_listedturf(keepSelection) {
 	var turfName = State.turfName;
 	removePermanentTab(turfName);
 	State.turfName = "";
@@ -334,7 +335,10 @@ function remove_listedturf() {
 	turfTable = null;
 	turfItemNodes = {};
 	checkStatusTab();
-	if (State.currentTab === turfName) tab_change("Status");
+	if (!keepSelection && State.currentTab === turfName) {
+		var previousTab = State.lastNonTurfTab;
+		tab_change(document.getElementById("tab-" + previousTab) ? previousTab : "Status");
+	}
 }
 
 function init_verbs(c, v) {

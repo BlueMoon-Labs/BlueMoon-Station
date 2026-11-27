@@ -1,5 +1,6 @@
 var State = {
 	currentTab: null,
+	lastNonTurfTab: "Status",
 	verbTabs: [],
 	verbs: [],
 	permanentTabs: [],

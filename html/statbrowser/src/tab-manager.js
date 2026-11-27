@@ -99,6 +99,7 @@ function tab_change(tab) {
 	var oldBtn = document.getElementById("tab-" + State.currentTab);
 	if (oldBtn) oldBtn.classList.remove("active");
 	State.currentTab = tab;
+	if (tab !== State.turfName) State.lastNonTurfTab = tab;
 	set_byond_tab(tab);
 	var newBtn = document.getElementById("tab-" + tab);
 	if (newBtn) newBtn.classList.add("active");
