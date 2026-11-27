@@ -785,4 +785,18 @@ describe('chatMiddleware clear and limit', () => {
     store.dispatch(updateSettings({ visibleMessageLimit: 500 }));
     expect(mockChatRenderer.setVisibleLimit).toHaveBeenLastCalledWith(500);
   });
+
+  test('server rejecting the state warns in chat once', () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    const store = createTestStore();
+    const error = { type: 'panel/state_error',
+      payload: { reason: 'too_large', size: 20000 } };
+    store.dispatch(error);
+    store.dispatch(error);
+    expect(mockChatRenderer.processBatch).toHaveBeenCalledTimes(1);
+    const [message] = mockChatRenderer.processBatch.mock.calls[0][0];
+    expect(message.type).toBe('internal/state_error');
+    expect(message.avoidHighlighting).toBe(true);
+    expect(message.html).toContain('не сохранились на сервере');
+  });
 });

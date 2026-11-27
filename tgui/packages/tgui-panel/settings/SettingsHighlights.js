@@ -7,9 +7,9 @@ import { updateSettings } from './actions';
 import { ColorInput } from './ColorInput';
 import { selectSettings } from './selectors';
 
-// shortcut: сервер не хранит настройки длиннее 16384 байт (length() в
-// tgui_panel.dm, кириллица - 2 байта), 10 групп по 500 символов под него
-// влезают; если лимит всё же превышен, показывать ошибку в интерфейсе.
+// Сервер не хранит настройки длиннее 16384 байт (length() в tgui_panel.dm,
+// кириллица - 2 байта), 10 групп по 500 символов под него влезают. Если
+// лимит всё же превышен (много вкладок), чат предупреждает (panel/state_error).
 const MAX_HIGHLIGHT_TEXT_LENGTH = 500;
 
 const SPEECH_ONLY_TOOLTIP = 'Подсвечивать только то, что персонажи говорят'
