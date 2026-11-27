@@ -134,6 +134,11 @@
 		if(child && !QDELETED(child))
 			UnregisterSignal(child, list(COMSIG_PARENT_QDELETING, COMSIG_LIVING_DEATH))
 	children_list.Cut()
+	// Снимаем rage-подсветку: иначе поверх мёртвого спрайта остаётся
+	// живой "gonarch" из image(icon, icon_state="gonarch").
+	if(rage_tint)
+		overlays -= rage_tint
+		rage_tint = null
 
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/drop_loot()
 	. = ..()
@@ -142,10 +147,15 @@
 		return
 	var/obj/item/keycard/hevstorage/K = new /obj/item/keycard/hevstorage(drop_turf)
 	K.desc = "Кажется, кому-то очень неповезло быть сожранным этой тварью. Но ключ целый! Открывает проход дальше"
-	var/client/killer_client = GLOB.directory[lastattackerckey]
+	var/looter_name = lastattacker || "Кто-то"
+	var/client/killer_client = lastattackerckey ? GLOB.directory[lastattackerckey] : null
 	if(killer_client)
 		to_chat(killer_client, span_userdanger("Из гонарча вывалилась ключ карта!"))
-	visible_message(span_userdanger("[lastattacker || "Кто-то"] вырвал из туши гонарча ключ карту!"))
+	visible_message(span_userdanger("[looter_name] вырвал из туши гонарча ключ карту!"))
+	// Дублируем объявлением по всей миссии - локальное visible_message
+	// в замесе босса легко не заметить.
+	if(SSblackmesa_events)
+		SSblackmesa_events.mesa_announce("[looter_name] вырвал из туши гонарча ключ карту H.E.V.-хранилища!", "НАЙДЕН КЛЮЧ", 'sound/machines/terminal_success.ogg')
 
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/OpenFire(atom/fire_target)
 	if(client)
@@ -190,15 +200,36 @@
 	// спрайт gonarch_warning (64x64) из gonarch.dmi.
 	new /obj/effect/temp_visual/dragon_swoop/gonarch(T)
 	charging = TRUE
+	// Глушим ИИ на время замаха и полёта: can_use_ai_ability закрывает только
+	// атаки, а move-лупы/сайдстепы продолжали бы дёргать Move() - в полёте
+	// thrownthing открывает Move(), и ИИ уводил моба в сторону (кривой рывок,
+	// видимое "отступление").
+	SSmove_manager.stop_looping(src, SSmovement)
+	SSmove_manager.stop_looping(src, SSai_movement)
+	if(ai_controller)
+		ai_controller.CancelActions()
+		ai_controller.PauseAi(5 SECONDS)
 	DestroySurroundings()
 	setDir(get_dir(src, T))
 	var/obj/effect/temp_visual/decoy/D = new /obj/effect/temp_visual/decoy(loc, src)
 	animate(D, alpha = 0, color = "#FF0000", transform = matrix()*2, time = 5)
 	sleep(5)
-	if(QDELETED(src) || stat == DEAD)
+	if(QDELETED(src) || stat == DEAD || QDELETED(target))
 		charge_end()
 		return
-	if(!throw_at(T, get_dist(src, T), 1, src, 0, callback = CALLBACK(src, PROC_REF(charge_end))))
+	// За время замаха цель могла уйти: бросок строим по СВЕЖЕМУ турфу,
+	// иначе рывок летит в точку, где цель уже не стоит.
+	T = get_turf(target)
+	var/turf/T2 = get_turf(src)
+	if(!T || T.z != (T2 ? T2.z : -1))
+		charge_end()
+		return
+	var/charge_dist = get_dist(src, T)
+	if(charge_dist > charge_distance + 4)
+		charge_end()
+		return
+	setDir(get_dir(src, T))
+	if(!throw_at(T, charge_dist, 1, src, 0, callback = CALLBACK(src, PROC_REF(charge_end))))
 		charge_end()
 
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/charge_end()
@@ -266,6 +297,10 @@
 		return
 	playsound(startloc, 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchacidmortar.ogg', 20, FALSE)
 	icon_state = "gonarch_attack"
+	// Подсветка rage держит свой icon_state - синхронизируем, иначе поверх
+	// "gonarch_attack" рисуется второй спрайт "gonarch".
+	if(rage_tint)
+		rage_tint.icon_state = "gonarch_attack"
 	charging = TRUE
 	var/angle_to_target = get_projectile_angle(src, target_turf)
 	addtimer(CALLBACK(src, PROC_REF(herald_trishot_fire), target_turf, angle_to_target, low_hp ? 3 : 1), 5)
@@ -281,6 +316,8 @@
 	charging = FALSE
 	if(stat != DEAD)
 		icon_state = "gonarch"
+		if(rage_tint)
+			rage_tint.icon_state = "gonarch"
 
 /// Spawns up to six mesa headcrabs near the gonarch, capped at 8 children.
 /mob/living/simple_animal/hostile/asteroid/elite/gonarch/proc/spawn_children(atom/target = null)
@@ -338,7 +375,9 @@
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/gonarch/gonarchroar.ogg', 75, FALSE)
 	visible_message(span_warning("[src] starts picking up speed!"))
 	if(!rage_tint)
-		rage_tint = image(icon, icon_state = "gonarch")
+		// Берём ТЕКУЩИЙ icon_state: если rage случился во время attack-анимации,
+		// жёсткий "gonarch" рисовал бы живой спрайт поверх атакующего.
+		rage_tint = image(icon, icon_state = icon_state)
 		rage_tint.color = COLOR_RED_LIGHT
 		overlays += rage_tint
 	set_varspeed(0)
@@ -383,6 +422,12 @@
 	obj_damage = 75
 	melee_damage_lower = 25
 	melee_damage_upper = 35
+	// 3x3 hitbox перенесён с Apache (helicopter.dmi): тайл под мобом -
+	// нижний-средний тайл бокса (x-1..x+1, y-2..y относительно турфа).
+	bound_x = -32
+	bound_y = 0
+	bound_width = 96
+	bound_height = 96
 
 // Метка-предупреждение на пути рывка: тот же temp_visual, что у
 // bubblegum/legionnaire, но спрайт gonarch_warning (64x64) из gonarch.dmi.

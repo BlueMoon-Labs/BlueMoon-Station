@@ -253,28 +253,30 @@ GLOBAL_VAR_INIT(mesa_boss_zone_rewards, list(
 	var/zone_type = reward[1]
 	var/reward_amount = reward[2]
 	var/paid = 0
-	for(var/client/C in GLOB.joined_player_list)
-		var/mob/living/M = C?.mob
-		if(!isliving(M) || M.stat == DEAD)
+	// joined_player_list хранит ckey, а не client - итерируем живых игроков
+	// как в mesa_event_manager.dm и берём client из моба.
+	for(var/mob/living/M in GLOB.player_list)
+		if(!M || isnewplayer(M) || !isliving(M) || M.stat == DEAD || !M.client)
 			continue
 		var/turf/T = get_turf(M)
 		if(!T || !istype(get_area(T), zone_type))
 			continue
-		if(SSmetadollars)
-			SSmetadollars.add_amount(C, reward_amount, "mesa_boss")
+		if(!SSmetadollars)
+			continue
+		SSmetadollars.add_amount(M.client, reward_amount, "mesa_boss")
 		paid++
-	if(paid)
-		var/announce = "<h2><span class='greenannounce big'><b>[boss] повержен! Награда [reward_amount] М$ получена всеми бойцами в зоне.</b></span></h2>"
-		for(var/client/C in GLOB.joined_player_list)
-			var/mob/living/M = C?.mob
-			if(!isliving(M) || M.stat == DEAD)
-				continue
-			var/area/A = get_area(M)
-			var/turf/MT = get_turf(M)
-			if(!A || !MT)
-				continue
-			if(!istype(A, /area/awaymission/ihategordon)
-				&& !(SSblackmesa_events && SSblackmesa_events.mesa_turf_in_mission(MT)))
-				continue
-			to_chat(M, announce)
-		log_game("MESA BOSS: [boss] погиб, награду в зоне получили [paid] игрок(ов).")
+	if(!paid)
+		return
+	var/announce = "<h2><span class='greenannounce big'><b>[boss] повержен! Награда [reward_amount] М$ получена всеми бойцами в зоне.</b></span></h2>"
+	for(var/mob/living/M in GLOB.player_list)
+		if(!M || isnewplayer(M) || !isliving(M) || M.stat == DEAD)
+			continue
+		var/area/A = get_area(M)
+		var/turf/MT = get_turf(M)
+		if(!A || !MT)
+			continue
+		if(!istype(A, /area/awaymission/ihategordon) \
+			&& !(SSblackmesa_events && SSblackmesa_events.mesa_turf_in_mission(MT)))
+			continue
+		to_chat(M, announce)
+	log_game("MESA BOSS: [boss] погиб, награду в зоне получили [paid] игрок(ов).")

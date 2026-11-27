@@ -1,7 +1,11 @@
 // =============================================================================
 // NIHILANTH - финальный босс Black Mesa
-// Летающий ксено-босс: чередует залп метеоритов (benrey slug x3) и разряд
-// по линии (как shock plant), по HP-порогам 75/50/30% уходит в неуязвимое испытание -
+// Летающий ксено-босс-турель: циклом чередует атаки - залп метеоритов
+// (benrey slug x3), разряд по линии (как shock plant), спиральный ксеновый
+// шторм и веерные залпы (как spiral_shoot/blast колосса), кардинально-
+// диагональную канонаду и вращающийся ксеновый крест ~15 тайлов (по мотивам
+// zweispin гладиатора: бьёт только не-ксено мобов, щиты и кристаллы Mesa не
+// задевает). По HP-порогам 75/50/30% уходит в неуязвимое испытание -
 // портал на арене переносит игроков к особому aegis-пилону, после его
 // разрушения открывается обратный разлом. Периодически призывает фауну зена
 // и активирует ксено-пилон. Со смертью оставляет два односторонних разлома.
@@ -24,7 +28,10 @@
 	footstep_type = FOOTSTEP_MOB_HEAVY
 	speed = 3
 	turns_per_move = 1
-	vision_range = 12
+	// Агро-радиус ~20 тайлов: и холодное зрение, и боевой радиус поиска
+	// (get_aggro_range берёт min(профиля, vision/aggro_vision)).
+	vision_range = 20
+	aggro_vision_range = 20
 	maxHealth = 10000
 	health = 10000
 	obj_damage = 50
@@ -53,8 +60,17 @@
 	death_sound = 'modular_bluemoon/sound/creatures/mesa/nihilanth/nihilanth_death01.ogg'
 
 	// --- Бой ---
-	/// Чередование атак: "meteor" - залп метеоритов, "tesla" - разряд по ряду.
-	var/attack_style = "meteor"
+	/// Цикл атак: "meteor" - залп метеоритов, "tesla" - разряд по ряду,
+	/// "spiral" - спиральный ксеновый шторм, "dir" - канонада по 4 направлениям,
+	/// "fan" - дробовый веер в цель, "cross" - вращающийся ксеновый крест.
+	var/list/attack_cycle = list("meteor", "tesla", "spiral", "dir", "fan", "cross")
+	var/attack_cycle_pos = 0
+	/// Идёт ли сейчас атака-крест (длится ~10 секунд, OpenFire молчит).
+	var/cross_active = FALSE
+	/// Кулдаун креста: реже остальных атак, иначе он выпадал бы каждый цикл.
+	var/next_cross_time = 0
+	/// Активный эффект креста - снимается при старте испытания.
+	var/obj/effect/nihilanth_cross/cross_effect
 
 	// --- Фазовые испытания (пороги HP) ---
 	var/trial_active = FALSE
@@ -104,18 +120,202 @@
 // АТАКИ
 // =============================================================================
 
-// Две атаки по очереди: "meteor" - залп xen blast (копия benrey-метеорита),
-// "tesla" - разряд xen shock, который на попадании бьёт током несколько целей.
+// Шесть атак по кругу: "meteor" - залп xen blast (копия benrey-метеорита),
+// "tesla" - разряд xen shock, который на попадании бьёт током несколько целей,
+// "spiral"/"dir"/"fan" - ксеновые болты паттернами колосса, "cross" - вращающийся
+// ксеновый крест (длительная атака, OpenFire на её время замолкает).
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/OpenFire(atom/A)
-	if(trial_active || stat == DEAD || QDELETED(A))
+	if(trial_active || stat == DEAD || QDELETED(A) || cross_active)
 		return FALSE
-	var/is_tesla = (attack_style == "tesla")
-	projectiletype = is_tesla ? /obj/item/projectile/energy/tesla/xen_shock : /obj/item/projectile/bullet/shotgun_meteorslug/nihilanth_blast
-	projectilesound = is_tesla ? 'sound/magic/lightningbolt.ogg' : 'modular_bluemoon/sound/weapons/mesa/sweetvoice.ogg'
-	ranged_message = is_tesla ? "discharges a xen shock" : "hurls nihilanth blasts"
-	rapid = is_tesla ? 1 : 3
-	attack_style = is_tesla ? "meteor" : "tesla"
+	var/style = attack_cycle[attack_cycle_pos]
+	attack_cycle_pos = (attack_cycle_pos + 1) % attack_cycle.len
+	// Крест - редкая затяжная атака: на кулдауне цикл идёт обычным залпом,
+	// не срывая ритм боя и не пропуская ход.
+	if(style == "cross" && world.time < next_cross_time)
+		style = "meteor"
+	switch(style)
+		if("tesla")
+			projectiletype = /obj/item/projectile/energy/tesla/xen_shock
+			projectilesound = 'sound/magic/lightningbolt.ogg'
+			ranged_message = "discharges a xen shock"
+			rapid = 1
+			return ..()
+		if("spiral")
+			ranged_cooldown = world.time + 120
+			INVOKE_ASYNC(src, PROC_REF(spiral_volley))
+			return TRUE
+		if("dir")
+			ranged_cooldown = world.time + 90
+			INVOKE_ASYNC(src, PROC_REF(dir_barrage))
+			return TRUE
+		if("fan")
+			ranged_cooldown = world.time + 70
+			INVOKE_ASYNC(src, PROC_REF(fan_barrage), A)
+			return TRUE
+		if("cross")
+			if(start_cross())
+				return TRUE
+			style = "meteor" // крест не встал - обычный залп
+	// "meteor" (и fallback с "cross")
+	projectiletype = /obj/item/projectile/bullet/shotgun_meteorslug/nihilanth_blast
+	projectilesound = 'modular_bluemoon/sound/weapons/mesa/sweetvoice.ogg'
+	ranged_message = "hurls nihilanth blasts"
+	rapid = 3
 	return ..()
+
+// Босс может стрелять, только пока жив, не в испытании и не занят крестом.
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/can_attack_now()
+	return !QDELETED(src) && stat != DEAD && !trial_active && istype(get_turf(src), /turf)
+
+// Телеграф тяжёлой атаки: красная вспышка и тряска камеры игрокам рядом,
+// как telegraph() колосса перед спиралью.
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/telegraph()
+	for(var/mob/M in range(12, src))
+		if(M.client)
+			flash_color(M.client, "#C80000", 1)
+			shake_camera(M, 4, 3)
+	playsound(src, 'sound/magic/lightningbolt.ogg', 100, FALSE)
+
+// Один ксеновый болт nihilanth blast. mark - атом/турф, в который целится
+// preparePixelProjectile (original для логов); set_angle - явный угол
+// (спираль/веер), перебивает прицел.
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/shoot_bolt(atom/mark, set_angle)
+	if(!can_attack_now())
+		return FALSE
+	var/turf/startloc = get_turf(src)
+	if(!istype(startloc))
+		return FALSE
+	var/obj/item/projectile/P = new /obj/item/projectile/bullet/shotgun_meteorslug/nihilanth_blast(startloc)
+	if(QDELETED(P))
+		return FALSE
+	P.firer = src
+	P.fired_from = src
+	P.starting = startloc
+	// Спавним болт из центра тайла босса, а не из его угла.
+	P.pixel_x = world.icon_size >> 1
+	P.pixel_y = world.icon_size >> 1
+	if(istype(mark) && !QDELETED(mark))
+	{
+		P.original = mark
+		P.preparePixelProjectile(mark, src)
+	}
+	else if(istype(target) && !QDELETED(target))
+		P.original = target
+	if(isnum(set_angle))
+		P.fire(set_angle)
+	else
+		P.fire()
+	return TRUE
+
+// Спиральный шторм (spiral_shoot колосса): болты разлетаются по спирали
+// во все стороны - угрозой становится всё пространство вокруг босса.
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/spiral_volley(negative = FALSE)
+	var/turf/startloc = get_turf(src)
+	if(!istype(startloc) || !can_attack_now())
+		return
+	telegraph()
+	visible_message("<span class='boldwarning'>[src] начинает ксено-вихрь!</span>")
+	var/angle = rand(0, 359)
+	var/angle_step = negative ? -22.5 : 22.5
+	for(var/i in 1 to 56)
+	{
+		if(!can_attack_now())
+			return
+		shoot_bolt(null, angle)
+		angle += angle_step
+		playsound(startloc, 'sound/magic/lightningbolt.ogg', 25, 1)
+		sleep(2)
+	}
+
+// Канонада по четырём диагоналям, затем по кардиналам (alternating_dir_shots
+// колосса) - закрывает прямые лучи по линии арен.
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/dir_barrage()
+	var/turf/startloc = get_turf(src)
+	if(!istype(startloc) || !can_attack_now())
+		return
+	telegraph()
+	visible_message("<span class='boldwarning'>[src] наводит ксеновые лучи!</span>")
+	sleep(10)
+	if(!can_attack_now())
+		return
+	dir_barrage_pass(GLOB.diagonals)
+	sleep(10)
+	if(!can_attack_now())
+		return
+	dir_barrage_pass(GLOB.cardinals)
+
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/dir_barrage_pass(list/dirs)
+	var/turf/startloc = get_turf(src)
+	if(!istype(startloc))
+		return
+	for(var/d in dirs)
+	{
+		if(!can_attack_now())
+			return
+		var/turf/E = get_step(src, d)
+		if(istype(E))
+			shoot_bolt(E)
+		playsound(startloc, 'sound/magic/lightningbolt.ogg', 40, 1)
+		sleep(2)
+	}
+
+// Дробовый веер в цель (blast колосса): веер из 7 болтов с разбросом по
+// дуге вокруг линии на цель - наказывает стоящего на месте.
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/fan_barrage(atom/mark)
+	var/turf/startloc = get_turf(src)
+	var/turf/MT = get_turf(mark)
+	if(!istype(startloc) || !istype(MT) || MT.z != startloc.z || !can_attack_now())
+		return
+	telegraph()
+	visible_message("<span class='boldwarning'>[src] собирает ксеновый залп!</span>")
+	sleep(10)
+	if(!can_attack_now())
+		return
+	var/base_angle = get_projectile_angle(startloc, MT)
+	var/static/list/fan_offsets = list(-15, -10, -5, 0, 5, 10, 15)
+	for(var/off in fan_offsets)
+	{
+		if(!can_attack_now())
+			return
+		shoot_bolt(MT, base_angle + off)
+		playsound(startloc, 'sound/magic/lightningbolt.ogg', 40, 1)
+		sleep(1)
+	}
+
+// Вращающийся ксеновый крест - "раскрутка" гладиатора, но ксеновая и
+// дальнобойная: лучи не врут мобам Mesa и не задевают щиты/кристаллы -
+// это чисто анти-пехотная атака (см. /obj/effect/nihilanth_cross).
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/start_cross()
+	if(cross_active || world.time < next_cross_time)
+		return FALSE
+	var/turf/CT = get_turf(src)
+	if(!istype(CT))
+		return FALSE
+	cross_active = TRUE
+	next_cross_time = world.time + 150
+	// Кулдаун покрывает всю длительность креста - после него цикл продолжает
+	// обычные атаки без немедленного повтора креста.
+	ranged_cooldown = world.time + 100
+	var/obj/effect/nihilanth_cross/C = new /obj/effect/nihilanth_cross(CT)
+	if(QDELETED(C))
+	{
+		cross_active = FALSE
+		return FALSE
+	}
+	C.boss = src
+	C.faction = faction.Copy()
+	cross_effect = C
+	visible_message("<span class='boldwarning'>[src] разрывает реальность - ксено-крест начинает вращаться!</span>")
+	telegraph()
+	return TRUE
+
+// Снять активный крест (испытание/смерть босса): сам эффект тоже гаснет
+// сам по проверке boss в cross_tick, но здесь он уходит мгновенно.
+/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/proc/stop_cross()
+	if(istype(cross_effect) && !QDELETED(cross_effect))
+		qdel(cross_effect)
+	cross_effect = null
+	cross_active = FALSE
 
 // Во время испытания босс не атакует - ни в ближнем, ни в дальнем бою.
 /mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/AttackingTarget()
@@ -202,6 +402,8 @@
 	boss_home = home
 	cancel_rapid_fire_sequence()
 	cancel_rapid_melee_sequence()
+	// Крест - боевая атака: на время испытания босс не атакует, эффект гасим.
+	stop_cross()
 
 	playsound(home, 'sound/effects/space_wind.ogg', 90, FALSE, -4)
 	visible_message("<span class='boldannounce'>[src] вспыхивает невыносимым светом! Оно неуязвимо - разлом на арене ведёт к источнику его силы!</span>")
@@ -487,6 +689,9 @@
 	if(istype(trial_portal) && !QDELETED(trial_portal))
 		qdel(trial_portal)
 	trial_portal = null
+	// Активный крест не должен бить послемортально - эффект сам гаснет
+	// по проверке boss.stat == DEAD, но гасим его сразу.
+	stop_cross()
 	. = ..()
 	spawn_death_portals(death_turf)
 	// Босс не оставляет труп: добиваем гибом (gib() сам вызовет death(1)
@@ -617,3 +822,154 @@
 	pass_flags = PASSTABLE | PASSNIHILANTH
 	zap_range = 6
 	zap_flags = ZAP_MOB_DAMAGE | ZAP_OBJ_DAMAGE | ZAP_MOB_STUN
+
+// =============================================================================
+// КРЕСТ НИХИЛАНТА - "раскрутка" как у гладиатора, но ксеновая
+// =============================================================================
+
+// Гигантский ксеновый крест (~15 тайлов в размахе): два перпендикулярных
+// луча медленно вращаются вокруг босса. Урон получают ТОЛЬКО живые мобы вне
+// фракции Нихиланта: ксено-фауна Mesa (isxenmob) и союзники по фракции не
+// страдают, а объекты - щитовые/aegis-пилоны и ксено-кристаллы - не трогаются
+// вовсе, потому что apply_damage зовётся исключительно на /mob/living.
+// Сам объект невидим: каждый кадр на турфах лучей остаются ксеновые брызги,
+// поворачивающиеся вместе с крестом.
+/obj/effect/nihilanth_cross
+	name = "xen cross"
+	desc = "Сырой ксеновый крест, медленно вращающийся вокруг Нихиланта."
+	anchored = TRUE
+	density = FALSE
+	invisibility = INVISIBILITY_ABSTRACT
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	var/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/boss
+	var/list/faction = list()
+	/// Полуразмах луча в тайлах: концы в 7 клетках от центра, крест ~15 тайлов.
+	var/arm_reach = 7
+	/// Тиков между кадрами поворота: 8 направлений * 1.2с = оборот ~10 секунд.
+	var/frame_interval = 12
+	var/frame_timer
+	var/frames_done = 0
+	var/max_frames = 8
+	/// Каденс повторного урона по одному и тому же мобу (~2 секунды).
+	var/hit_cooldown = 20
+	var/alist/last_hits = alist()
+	var/damage = 35
+	/// Поворот по часовой: N -> NE -> E -> ... - гарантированный порядок,
+	/// не зависящий от раскладки GLOB.alldirs.
+	var/static/list/spin_dirs = list(NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST, NORTHWEST)
+	var/spin_index = 0
+	/// Текущие лучи креста: list(направление_луча, направление_перпендикуляра).
+	var/list/cross_dirs = list()
+	/// Турфы креста текущего кадра: list(list(турф, направление_луча)).
+	var/list/cross_tiles = list()
+
+/obj/effect/nihilanth_cross/Initialize(mapload)
+	. = ..()
+	spin_index = rand(0, spin_dirs.len - 1)
+	// Первый кадр - на ближайшем cross_tick: босс и фракция присваиваются
+	// сразу после new(), до срабатывания таймера.
+	schedule_frame(2)
+
+/obj/effect/nihilanth_cross/proc/schedule_frame(delay = frame_interval)
+	frame_timer = addtimer(CALLBACK(src, PROC_REF(cross_tick)), delay, TIMER_STOPPABLE)
+
+/obj/effect/nihilanth_cross/proc/cross_tick()
+	frame_timer = null
+	var/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/B = boss
+	if(!istype(B) || QDELETED(B) || B.stat == DEAD || B.trial_active)
+	{
+		qdel(src)
+		return
+	}
+	frames_done++
+	if(frames_done > max_frames)
+	{
+		qdel(src)
+		return
+	}
+	advance_frame()
+	schedule_frame()
+
+// Один кадр креста: следующий угол поворота, пересчёт турфов, визуал и удар.
+/obj/effect/nihilanth_cross/proc/advance_frame()
+	spin_index = (spin_index + 1) % spin_dirs.len
+	var/dir = spin_dirs[spin_index]
+	cross_dirs = list(dir, turn(dir, 90))
+	recompute_tiles()
+	spawn_arm_visuals()
+	strike()
+
+// Два перпендикулярных луча от центра до arm_reach тайлов в каждую сторону.
+/obj/effect/nihilanth_cross/proc/recompute_tiles()
+	cross_tiles.Cut()
+	var/turf/CT = loc
+	if(!istype(CT))
+		CT = get_turf(boss)
+	if(!istype(CT))
+		return
+	cross_tiles += list(CT, pick(cross_dirs))
+	for(var/d in cross_dirs)
+	{
+		var/turf/T = CT
+		for(var/i in 1 to arm_reach)
+		{
+			var/atom/step_result = get_step(T, d)
+			if(!istype(step_result, /turf))
+				break
+			T = step_result
+			cross_tiles += list(T, d)
+		}
+	}
+
+// Ксеновые брызги на каждом турфе луча: живут ~1.5с, кадры пересекаются -
+// крест выглядит сплошным вращающимся символом.
+/obj/effect/nihilanth_cross/proc/spawn_arm_visuals()
+	for(var/entry as anything in cross_tiles)
+	{
+		var/turf/T = entry[1]
+		var/dir = entry[2]
+		new /obj/effect/temp_visual/dir_setting/bloodsplatter/xenosplatter/nihilanth_arm(T, dir)
+	}
+
+// Урон по живым мобам в турфах креста. Союзники Нихиланта и вся ксено-фауна
+// Mesa пропускаются по фракции/рода; объекты не задеваются в принципе.
+/obj/effect/nihilanth_cross/proc/strike()
+	var/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/B = boss
+	if(!istype(B) || !length(faction))
+		return
+	for(var/entry as anything in cross_tiles)
+	{
+		var/turf/T = entry[1]
+		for(var/mob/living/M in T)
+		{
+			if(QDELETED(M) || M.stat == DEAD || M == B)
+				continue
+			if(isxenmob(M) || faction_check(faction, M.faction))
+				continue
+			if(world.time - (last_hits[M] || 0) < hit_cooldown)
+				continue
+			last_hits[M] = world.time
+			if(M.apply_damage(damage, BRUTE, BODY_ZONE_CHEST, M.run_armor_check(BODY_ZONE_CHEST)))
+				M.visible_message("<span class='danger'>Ксено-крест [B] прошивает [M]!</span>", "<span class='userdanger'>Ксено-крест [B] прошивает тебя!</span>")
+		}
+	}
+
+/obj/effect/nihilanth_cross/Destroy()
+	if(frame_timer)
+		deltimer(frame_timer)
+	var/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth/B = boss
+	if(istype(B) && !QDELETED(B) && B.cross_effect == src)
+	{
+		B.cross_effect = null
+		B.cross_active = FALSE
+	}
+	boss = null
+	faction = null
+	cross_tiles = null
+	last_hits = null
+	return ..()
+
+// След ксено-энергии на турфах луча: живёт ~1.5с, чтобы кадры креста
+// (раз в 1.2с) перекрывали друг друга и крест читался сплошным.
+/obj/effect/temp_visual/dir_setting/bloodsplatter/xenosplatter/nihilanth_arm
+	duration = 15
