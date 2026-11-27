@@ -1,7 +1,7 @@
 /datum/brain_trauma/hypnosis
 	name = "Hypnosis"
-	desc = "Patient's unconscious is completely enthralled by a word or sentence, focusing their thoughts and actions on it."
-	scan_desc = "looping thought pattern"
+	desc = "Подсознание пациента полностью зафиксировано на слове или фразе, направляя его мысли и действия."
+	scan_desc = "зацикленный мыслительный паттерн"
 	gain_text = ""
 	lose_text = ""
 	resilience = TRAUMA_RESILIENCE_SURGERY
@@ -17,7 +17,7 @@
 	else
 		friendliify(phrase)
 	if(IsAdminAdvancedProcCall())
-		to_chat(usr, "<span class='danger'>Hypnosis New() skipped due to try/catch incompatibility with admin proccalling.</span>")
+		to_chat(usr, "<span class='danger'>Hypnosis New() пропущен из-за несовместимости try/catch с вызовом через admin proc.</span>")
 		qdel(src)
 	try
 		target_phrase = whole_word_regex("([REGEX_QUOTE(hypnotic_phrase)])", "ig")
@@ -40,21 +40,21 @@
 	message_admins("[ADMIN_LOOKUPFLW(owner)] was hypnotized with the phrase '[hypnotic_phrase]'.")
 	log_game("[key_name(owner)] was hypnotized with the phrase '[hypnotic_phrase]'.")
 	to_chat(owner, "<span class='reallybig hypnophrase'>[hypnotic_phrase]</span>")
-	to_chat(owner, "<span class='notice'>[pick("You feel your thoughts focusing on this phrase... you can't seem to get it out of your head.",\
-												"Your head hurts, but this is all you can think of. It must be vitally important.",\
-												"You feel a part of your mind repeating this over and over. You need to follow these words.",\
-												"Something about this sounds... right, for some reason. You feel like you should follow these words.",\
-												"These words keep echoing in your mind. You find yourself completely fascinated by them.")]</span>")
-	to_chat(owner, "<span class='boldwarning'>You've been hypnotized by this sentence. You must follow these words. If it isn't a clear order, you can freely interpret how to do so,\
-										as long as you act like the words are your highest priority.</span>")
+	to_chat(owner, "<span class='notice'>[pick("Вы чувствуете, как мысли фокусируются на этой фразе... вы никак не можете выбросить её из головы.",\
+												"Голова болит, но вы можете думать только об этом. Это должно быть жизненно важно.",\
+												"Часть вашего разума повторяет это снова и снова. Вы должны следовать этим словам.",\
+												"Что-то в этом звучит... правильно, почему-то. Вы чувствуете, что должны следовать этим словам.",\
+												"Эти слова эхом отдаются в вашем сознании. Вы полностью ими заворожены.")]</span>")
+	to_chat(owner, "<span class='boldwarning'>Вы были загипнотизированы этой фразой. Вы должны следовать этим словам. Если это не прямой приказ, вы можете свободно интерпретировать, как его выполнить,\
+										пока действуете так, будто эти слова — ваш наивысший приоритет.</span>")
 	var/atom/movable/screen/alert/hypnosis/hypno_alert = owner.throw_alert("hypnosis", /atom/movable/screen/alert/hypnosis)
-	hypno_alert.desc = "\"[hypnotic_phrase]\"... your mind seems to be fixated on this concept."
+	hypno_alert.desc = "\"[hypnotic_phrase]\"... ваш разум, кажется, зациклен на этой мысли."
 	..()
 
 /datum/brain_trauma/hypnosis/on_lose()
 	message_admins("[ADMIN_LOOKUPFLW(owner)] is no longer hypnotized with the phrase '[hypnotic_phrase]'.")
 	log_game("[key_name(owner)] is no longer hypnotized with the phrase '[hypnotic_phrase]'.")
-	to_chat(owner, "<span class='userdanger'>You suddenly snap out of your hypnosis. The phrase '[hypnotic_phrase]' no longer feels important to you.</span>")
+	to_chat(owner, "<span class='userdanger'>Вы внезапно выходите из гипноза. Фраза '[hypnotic_phrase]' больше не кажется вам важной.</span>")
 	owner.clear_alert("hypnosis")
 	..()
 

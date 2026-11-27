@@ -1,9 +1,9 @@
 /datum/brain_trauma/mild/phobia
 	name = "Phobia"
-	desc = "Patient is unreasonably afraid of something."
-	scan_desc = "phobia"
-	gain_text = "<span class='warning'>You start finding default values very unnerving...</span>"
-	lose_text = "<span class='notice'>You no longer feel afraid of default values.</span>"
+	desc = "Пациент испытывает иррациональный страх перед чем-то."
+	scan_desc = "фобия"
+	gain_text = "<span class='warning'>Вас начинают необъяснимо тревожить значения по умолчанию...</span>"
+	lose_text = "<span class='notice'>Вы больше не боитесь значений по умолчанию.</span>"
 	var/phobia_type
 	var/next_check = 0
 	var/next_scare = 0
@@ -21,9 +21,9 @@
 	if(!phobia_type)
 		phobia_type = pick(SStraumas.phobia_types)
 
-	gain_text = "<span class='warning'>You start finding [phobia_type] very unnerving...</span>"
-	lose_text = "<span class='notice'>You no longer feel afraid of [phobia_type].</span>"
-	scan_desc += " of [phobia_type]"
+	gain_text = "<span class='warning'>Вы начинаете испытывать тревогу из-за [phobia_type]...</span>"
+	lose_text = "<span class='notice'>Вы больше не боитесь [phobia_type].</span>"
+	scan_desc += " ([phobia_type])"
 	trigger_words = SStraumas.phobia_words[phobia_type]
 	trigger_mobs = SStraumas.phobia_mobs[phobia_type]
 	trigger_objs = SStraumas.phobia_objs[phobia_type]
@@ -103,24 +103,24 @@
 		var/regex/reg = whole_word_regex("[REGEX_QUOTE(word)]'?s*", "i")
 
 		if(findtext(speech_args[SPEECH_MESSAGE], reg))
-			to_chat(owner, "<span class='warning'>You can't bring yourself to say the word \"<span class='phobia'>[word]</span>\"!</span>")
+			to_chat(owner, "<span class='warning'>Вы не можете заставить себя произнести слово \"<span class='phobia'>[word]</span>\"!</span>")
 			speech_args[SPEECH_MESSAGE] = ""
 
 /datum/brain_trauma/mild/phobia/proc/freak_out(atom/reason, trigger_word)
 	next_scare = world.time + 120
 	if(owner.stat == DEAD)
 		return
-	var/message = pick("spooks you to the bone", "shakes you up", "terrifies you", "sends you into a panic", "sends chills down your spine")
+	var/message = pick("пробирает до костей", "сильно вас трясёт", "ужасает вас", "ввергает вас в панику", "пускает мурашки по спине")
 	if(reason)
-		to_chat(owner, "<span class='userdanger'>Seeing [reason] [message]!</span>")
+		to_chat(owner, "<span class='userdanger'>Увидев [reason], вы чувствуете, как это [message]!</span>")
 	else if(trigger_word)
-		to_chat(owner, "<span class='userdanger'>Hearing \"[trigger_word]\" [message]!</span>")
+		to_chat(owner, "<span class='userdanger'>Услышав \"[trigger_word]\", вы чувствуете, как это [message]!</span>")
 	else
-		to_chat(owner, "<span class='userdanger'>Something [message]!</span>")
+		to_chat(owner, "<span class='userdanger'>Что-то [message]!</span>")
 	var/reaction = rand(1,5)
 	switch(reaction)
 		if(1)
-			to_chat(owner, "<span class='warning'>You are paralyzed with fear!</span>")
+			to_chat(owner, "<span class='warning'>Вы парализованы страхом!</span>")
 			owner.Stun(70)
 			owner.Jitter(8)
 		if(2)
@@ -136,7 +136,7 @@
 			if(reason)
 				owner.pointed(reason)
 		if(4)
-			to_chat(owner, "<span class='warning'>You shut your eyes in terror!</span>")
+			to_chat(owner, "<span class='warning'>Вы в ужасе зажмуриваете глаза!</span>")
 			owner.Jitter(5)
 			owner.blind_eyes(10)
 		if(5)
