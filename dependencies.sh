@@ -9,6 +9,8 @@ export BYOND_MINOR=1689
 
 #rust_g git tag
 export RUST_G_VERSION=6.2.0
+export RUST_G_URL="https://github.com/tgstation/rust-g/archive/refs/tags/${RUST_G_VERSION}.tar.gz"
+export RUST_G_TARBALL="rust-g-${RUST_G_VERSION}.tar.gz"
 
 #node version
 export NODE_VERSION_LTS=24.16.0
@@ -22,3 +24,4 @@ export PYTHON_VERSION=3.11.0
 
 # Extools git tag
 export EXTOOLS_VERSION=v0.0.7
+
