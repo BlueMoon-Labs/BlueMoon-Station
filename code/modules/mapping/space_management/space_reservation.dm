@@ -81,6 +81,54 @@
 	src.height = height
 	return TRUE
 
+/**
+ * Reserves an exact rectangle on one z-level.
+ *
+ * Reserve() picks the first free block it can find, which is fine for a single
+ * level but cannot line several levels of a multi-level map up over the same
+ * coordinates. Callers that already know where the block has to go use this
+ * instead; every turf is checked against the same unused pool Reserve() reads.
+ */
+/datum/turf_reservation/proc/ReserveArea(width, height, zlevel, x, y)
+	if(width > world.maxx || height > world.maxy || width < 1 || height < 1)
+		return FALSE
+	if(x < 1 || y < 1 || x + width - 1 > world.maxx || y + height - 1 > world.maxy)
+		return FALSE
+	var/list/avail = SSmapping.unused_turfs["[zlevel]"]
+	if(!length(avail))
+		return FALSE
+	var/turf/BL = locate(x, y, zlevel)
+	var/turf/TR = locate(x + width - 1, y + height - 1, zlevel)
+	if(!istype(BL) || !istype(TR))
+		return FALSE
+	var/list/final = block(BL, TR)
+	if(!final)
+		return FALSE
+	for(var/I in final)
+		var/turf/checking = I
+		if(!(checking.flags_1 & UNUSED_RESERVATION_TURF_1))
+			return FALSE
+	bottom_left_coords = list(BL.x, BL.y, BL.z)
+	top_right_coords = list(TR.x, TR.y, TR.z)
+	for(var/i in final)
+		var/turf/T = i
+		reserved_turfs += T
+		T.flags_1 &= ~UNUSED_RESERVATION_TURF_1
+		SSmapping.used_turfs[T] = src
+		if(borderturf && (T.x == BL.x || T.x == TR.x || T.y == BL.y || T.y == TR.y))
+			T.ChangeTurf(borderturf, borderturf, changeturf_flags)
+		else
+			T.ChangeTurf(turf_type, turf_type, changeturf_flags)
+	// Same linear rebuild Reserve() does, for the same reason.
+	var/list/still_unused = list()
+	for(var/turf/free as anything in avail)
+		if(free.flags_1 & UNUSED_RESERVATION_TURF_1)
+			still_unused += free
+	SSmapping.unused_turfs["[zlevel]"] = still_unused
+	src.width = width
+	src.height = height
+	return TRUE
+
 /datum/turf_reservation/New()
 	LAZYADD(SSmapping.turf_reservations, src)
 

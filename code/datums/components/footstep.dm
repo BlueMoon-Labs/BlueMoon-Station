@@ -60,6 +60,11 @@
 	if(HAS_TRAIT(LM, TRAIT_SILENT_STEP))
 		return
 
+	// Walking in VR is silent for every avatar, including heavy characters who
+	// are exempt from the regular carbon walking-sound suppression below.
+	if(iscarbon(LM) && LM.m_intent == MOVE_INTENT_WALK && LM.GetComponent(/datum/component/virtual_reality))
+		return
+
 	if(iscarbon(LM) && (LM.mob_weight < MOB_WEIGHT_HEAVY)) // BLUEMOON CHANGES - добавлена проверка для квирков сверхтяжёлого и тяжёлого
 		var/mob/living/carbon/C = LM
 		if(!C.get_bodypart(BODY_ZONE_L_LEG) && !C.get_bodypart(BODY_ZONE_R_LEG))

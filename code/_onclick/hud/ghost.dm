@@ -45,6 +45,31 @@
 	var/mob/dead/observer/G = usr
 	G.open_spawners_menu()
 
+/atom/movable/screen/ghost/dnr
+	name = "Do Not Resuscitate"
+	icon = 'icons/mob/screen_ghost_extra.dmi'
+	icon_state = "dnr"
+
+/atom/movable/screen/ghost/dnr/Click()
+	var/mob/dead/observer/G = usr
+	G.stay_dead()
+
+/atom/movable/screen/ghost/options
+	name = "Ghost Settings"
+	icon = 'icons/mob/screen_ghost_extra.dmi'
+	icon_state = "settings"
+
+/atom/movable/screen/ghost/options/Click()
+	GLOB.ghost_menu.ui_interact(usr)
+
+/atom/movable/screen/ghost/minigames
+	name = "Minigames"
+	icon = 'icons/mob/screen_ghost_extra.dmi'
+	icon_state = "minigames"
+
+/atom/movable/screen/ghost/minigames/Click()
+	GLOB.minigames_menu.ui_interact(usr)
+
 /datum/hud/ghost/New(mob/owner)
 	..()
 	var/atom/movable/screen/using
@@ -67,6 +92,18 @@
 
 	using = new /atom/movable/screen/ghost/spawners(null, src)
 	using.screen_loc = ui_ghost_spawners
+	static_inventory += using
+
+	using = new /atom/movable/screen/ghost/dnr(null, src)
+	using.screen_loc = ui_ghost_dnr
+	static_inventory += using
+
+	using = new /atom/movable/screen/ghost/options(null, src)
+	using.screen_loc = ui_ghost_options
+	static_inventory += using
+
+	using = new /atom/movable/screen/ghost/minigames(null, src)
+	using.screen_loc = ui_ghost_minigames
 	static_inventory += using
 
 	// Z
