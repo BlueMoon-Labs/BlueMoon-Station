@@ -80,6 +80,23 @@
 	if(tgui_alert(living_owner, "Безопасно отключиться?", "Сообщение сервера", list("Выйти", "Остаться"), 10 SECONDS) == "Выйти")
 		SEND_SIGNAL(living_owner, COMSIG_BITRUNNER_ALERT_SEVER)
 
+/atom/movable/screen/alert/bitrunning/hostile_spawn_cancel
+	name = "Отменить выбор места"
+	desc = "Вернуться в призраки."
+	icon_state = "template"
+	timeout = null
+	clickable_glow = TRUE
+	click_master = FALSE
+
+/atom/movable/screen/alert/bitrunning/hostile_spawn_cancel/Click()
+	. = ..()
+	if(!.)
+		return
+
+	var/mob/camera/hostile_domain_spawn/camera = owner
+	if(istype(camera))
+		camera.cancel_selection()
+
 /area/virtual_domain
 	name = "Virtual Domain Ruins"
 	area_flags = VIRTUAL_AREA | HIDDEN_AREA | RADIO_BLACKOUT | NO_ALERTS
@@ -487,6 +504,93 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 	uses = 1
 	can_load_appearance = FALSE
 	var/antag = TRUE
+	var/dynamic_domain_spawn = FALSE
+	var/obj/machinery/quantum_server/dynamic_server
+	var/datum/lazy_template/virtual_domain/dynamic_domain
+	var/turf/dynamic_spawn_turf
+
+/obj/effect/mob_spawn/human/virtual_domain/attack_ghost(mob/user, latejoinercalling)
+	if(dynamic_domain_spawn)
+		if(!dynamic_server || QDELETED(dynamic_server) || !dynamic_server.generated_domain)
+			return
+		if(dynamic_server.hostile_ghost_spawns_left <= 0)
+			return
+		if(istype(user, /mob/dead/observer))
+			return dynamic_server.begin_hostile_ghost_spawn_selection(user, src)
+	return ..()
+
+/obj/effect/mob_spawn/human/virtual_domain/create_body(mob_path)
+	if(dynamic_domain_spawn && dynamic_spawn_turf)
+		return new mob_path(dynamic_spawn_turf)
+	return ..()
+
+/obj/effect/mob_spawn/human/virtual_domain/create(ckey, name, load_character, spawn_type, reserved = FALSE)
+	if(dynamic_domain_spawn)
+		if(!dynamic_server || QDELETED(dynamic_server))
+			return
+		if(!reserved)
+			if(!dynamic_server.take_hostile_ghost_spawn_slot())
+				return
+			reserved = TRUE
+		if(!dynamic_spawn_turf || (!reserved && !dynamic_server.is_hostile_ghost_spawn_turf_valid(dynamic_spawn_turf)))
+			dynamic_spawn_turf = dynamic_server.get_hostile_ghost_spawn_turf()
+		if(!dynamic_spawn_turf)
+			if(reserved)
+				dynamic_server.release_hostile_ghost_spawn_slot()
+			return
+	var/turf/chosen_turf = dynamic_spawn_turf
+	var/mob/living/spawned = ..()
+	if(dynamic_domain_spawn)
+		if(!QDELETED(spawned))
+			if(chosen_turf && get_turf(spawned) != chosen_turf)
+				spawned.forceMove(chosen_turf)
+			dynamic_server?.hostile_ghost_spawns_exhausted()
+		else if(reserved)
+			dynamic_server?.release_hostile_ghost_spawn_slot()
+		dynamic_spawn_turf = null
+	return spawned
+
+/obj/effect/mob_spawn/human/virtual_domain/proc/spawn_ghost_at(mob/user, turf/T)
+	if(QDELETED(src) || QDELETED(user) || !T)
+		return FALSE
+	if(!dynamic_domain_spawn || !dynamic_server || QDELETED(dynamic_server))
+		to_chat(user, span_warning("Домен больше недоступен."))
+		return FALSE
+	if(dynamic_server.hostile_ghost_spawns_left <= 0)
+		to_chat(user, span_warning("Все доступные роли уже заняты."))
+		return FALSE
+	if(!dynamic_server.is_hostile_ghost_spawn_turf_valid(T))
+		to_chat(user, span_warning("Это место больше не подходит: [dynamic_server.get_hostile_ghost_spawn_error(T)]."))
+		return FALSE
+	if(jobban_isbanned(user, banType))
+		to_chat(user, span_warning("Вы забанены на эту роль."))
+		return FALSE
+	if(!allow_spawn(user, silent = FALSE))
+		return FALSE
+
+	var/mob/dead/observer/observer
+	if(istype(user, /mob/camera/hostile_domain_spawn))
+		var/mob/camera/hostile_domain_spawn/camera = user
+		observer = camera.original_ghost
+	else if(isobserver(user))
+		observer = user
+
+	if(observer && !skip_reentry_check && !observer.can_reenter_round(TRUE))
+		to_chat(user, span_warning("Вы не можете вернуться в раунд: действует чёрный список гост-ролей."))
+		return FALSE
+
+	if(!dynamic_server.take_hostile_ghost_spawn_slot())
+		to_chat(user, span_warning("Все доступные роли уже заняты."))
+		return FALSE
+
+	dynamic_spawn_turf = T
+	var/mob/living/spawned = create(ckey = user.ckey, load_character = can_load_appearance, reserved = TRUE)
+	if(QDELETED(spawned))
+		to_chat(user, span_warning("Не удалось создать роль. Попробуйте другое место или сообщите кодору."))
+		return FALSE
+	if(get_turf(spawned) != T)
+		spawned.forceMove(T)
+	return TRUE
 
 /obj/effect/mob_spawn/human/virtual_domain/special(mob/living/spawned_mob)
 	. = ..()
@@ -629,6 +733,108 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 
 /datum/outfit/virtual_syndicate/post_equip(mob/living/carbon/human/user, visuals_only)
 	user.add_faction(ROLE_SYNDICATE)
+
+/mob/camera/hostile_domain_spawn
+	name = "Virtual Domain Spawn Camera"
+	real_name = "Virtual Domain Spawn Camera"
+	icon = 'icons/mob/cameramob.dmi'
+	icon_state = "marker"
+	invisibility = INVISIBILITY_ABSTRACT
+	layer = FLY_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	sight = SEE_TURFS | SEE_MOBS | SEE_OBJS | SEE_SELF
+	see_in_dark = 100
+	see_invisible = SEE_INVISIBLE_OBSERVER
+	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+
+	var/mob/dead/observer/original_ghost
+	var/obj/machinery/quantum_server/server
+	var/obj/effect/mob_spawn/human/virtual_domain/spawner
+	var/domain_z
+	var/spawning = FALSE
+	var/selection_finished = FALSE
+
+/mob/camera/hostile_domain_spawn/Initialize(mapload, obj/machinery/quantum_server/server, obj/effect/mob_spawn/human/virtual_domain/spawner)
+	. = ..()
+	src.server = server
+	src.spawner = spawner
+	domain_z = z
+
+/mob/camera/hostile_domain_spawn/Move(atom/NewLoc, Dir = 0, glide_size_override = 0)
+	var/turf/T = get_turf(NewLoc)
+	if(!T || QDELETED(T) || T.z != domain_z)
+		return FALSE
+	if(!server || QDELETED(server) || !server.is_turf_in_domain(T))
+		return FALSE
+	forceMove(T)
+	return TRUE
+
+/mob/camera/hostile_domain_spawn/ClickOn(atom/A, params)
+	if(!server || QDELETED(server) || !spawner || QDELETED(spawner) || selection_finished)
+		return
+	var/turf/T = get_turf(A)
+	if(!T || T.z != domain_z)
+		return
+	var/spawn_error = server.get_hostile_ghost_spawn_error(T)
+	if(spawn_error)
+		to_chat(src, span_warning("Здесь нельзя появиться: [spawn_error]."))
+		return
+	spawning = TRUE
+	if(!spawner.spawn_ghost_at(src, T))
+		spawning = FALSE
+		if(!server || QDELETED(server) || !spawner || QDELETED(spawner) || server.hostile_ghost_spawns_left <= 0)
+			cancel_selection()
+			return
+		return
+	finish_selection()
+
+/mob/camera/hostile_domain_spawn/proc/cancel_selection()
+	if(selection_finished)
+		return
+	selection_finished = TRUE
+	if(server && !QDELETED(server))
+		server.hostile_spawn_cameras -= src
+	clear_alert("hostile_spawn_cancel")
+	var/mob/dead/observer/G = original_ghost
+	original_ghost = null
+	if(ckey)
+		if(!G || QDELETED(G))
+			var/turf/return_turf = server ? get_turf(server) : get_turf(src)
+			G = new /mob/dead/observer(return_turf)
+		transfer_ckey(G)
+		qdel(src)
+		return
+	if(G && !QDELETED(G))
+		qdel(G)
+	qdel(src)
+
+/mob/camera/hostile_domain_spawn/proc/finish_selection()
+	if(selection_finished)
+		return
+	selection_finished = TRUE
+	if(server && !QDELETED(server))
+		server.hostile_spawn_cameras -= src
+	clear_alert("hostile_spawn_cancel")
+	if(original_ghost && !QDELETED(original_ghost))
+		qdel(original_ghost)
+	original_ghost = null
+	qdel(src)
+
+/mob/camera/hostile_domain_spawn/Destroy()
+	if(server && !QDELETED(server))
+		server.hostile_spawn_cameras -= src
+	if(!selection_finished && original_ghost && !QDELETED(original_ghost))
+		qdel(original_ghost)
+	original_ghost = null
+	server = null
+	spawner = null
+	return ..()
+
+/mob/camera/hostile_domain_spawn/verb/cancel_hostile_spawn()
+	set name = "Cancel Spawn Selection"
+	set category = "Ghost"
+	set src = usr
+	cancel_selection()
 
 #define REDACTED "???"
 

@@ -147,7 +147,6 @@
 /area/virtual_domain)
 "et" = (
 /obj/structure/chair/stool/bar/directional/south,
-/obj/effect/mob_spawn/human/virtual_domain/ancient_milsim,
 /turf/open/floor/carpet/red,
 /area/virtual_domain/ancient_milsim/snpc_bar)
 "eC" = (
@@ -163,7 +162,6 @@
 /turf/closed/wall/r_wall,
 /area/virtual_domain/ancient_milsim/snpc_garage)
 "eJ" = (
-/obj/effect/mob_spawn/human/virtual_domain/ancient_milsim,
 /turf/open/floor/plating,
 /area/virtual_domain/ancient_milsim/snpc_garage)
 "eQ" = (
@@ -1297,7 +1295,6 @@
 /obj/structure/chair{
 	dir = 1
 	},
-/obj/effect/mob_spawn/human/virtual_domain/ancient_milsim,
 /turf/open/floor/plasteel,
 /area/virtual_domain/ancient_milsim/snpc_cafe)
 "Fr" = (
@@ -1408,7 +1405,6 @@
 "Ib" = (
 /obj/structure/toilet,
 /obj/machinery/light/small/dim/directional/north,
-/obj/effect/mob_spawn/human/virtual_domain/ancient_milsim,
 /turf/open/floor/plasteel,
 /area/virtual_domain/ancient_milsim/snpc_toilet)
 "Ir" = (

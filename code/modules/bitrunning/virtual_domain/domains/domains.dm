@@ -751,6 +751,9 @@
 /datum/lazy_template/virtual_domain/island_brawl
 	name = "Island Brawl"
 	announce_to_ghosts = TRUE
+	ghost_spawner_type = /obj/effect/mob_spawn/human/virtual_domain/islander
+	ghost_spawn_limit = 4
+	ghost_spawn_death_points = TRUE
 	cost = BITRUNNER_COST_HIGH
 	desc = "«Мирный» остров, затерянный посреди ниоткуда. Карта завершится автоматически после определённого числа смертей."
 	difficulty = BITRUNNER_DIFFICULTY_HIGH
@@ -801,6 +804,9 @@
 
 /datum/lazy_template/virtual_domain/meta_central
 	name = "Meta Central"
+	announce_to_ghosts = TRUE
+	ghost_spawner_type = /obj/effect/mob_spawn/human/virtual_domain/pirate
+	ghost_spawn_limit = 2
 	cost = BITRUNNER_COST_LOW
 	desc = "Время от времени рабочие требуют у Nanotrasen прав. Это невыгодно."
 	difficulty = BITRUNNER_DIFFICULTY_LOW
@@ -812,7 +818,6 @@
 	map_name = "meta_central"
 	mob_modules = list(/datum/modular_mob_segment/revolutionary)
 	reward_points = BITRUNNER_REWARD_LOW
-	announce_to_ghosts = TRUE
 
 /datum/lazy_template/virtual_domain/pipedream
 	name = "Disposal Pipe Factory"
@@ -917,6 +922,8 @@
 /datum/lazy_template/virtual_domain/pirates
 	name = "Corsair Cove"
 	announce_to_ghosts = TRUE
+	ghost_spawner_type = /obj/effect/mob_spawn/human/virtual_domain/pirate
+	ghost_spawn_limit = 2
 	cost = BITRUNNER_COST_MEDIUM
 	desc = "Пробивайтесь к спрятанному сокровищу, забирайте добычу и уходите, пока пираты не переломили ход боя."
 	difficulty = BITRUNNER_DIFFICULTY_MEDIUM
@@ -1005,6 +1012,8 @@
 /datum/lazy_template/virtual_domain/ancient_milsim
 	name = "Ancient Military Simulator"
 	announce_to_ghosts = TRUE
+	ghost_spawner_type = /obj/effect/mob_spawn/human/virtual_domain/ancient_milsim
+	ghost_spawn_limit = 4
 	cost = BITRUNNER_COST_HIGH
 	desc = "Воссоздайте события давно минувшей «горячей» части Пограничной войны в роли ударной группы Солариан, зачищающей базы CIN; при поддержке энтузиастов-реконструкторов SolFed. Многопользовательское прохождение и тщательная подготовка настоятельно рекомендуются."
 	completion_loot = list(
@@ -1158,6 +1167,8 @@
 /datum/lazy_template/virtual_domain/syndicate_assault
 	name = "Syndicate Assault"
 	announce_to_ghosts = TRUE
+	ghost_spawner_type = /obj/effect/mob_spawn/human/virtual_domain/syndie
+	ghost_spawn_limit = 4
 	cost = BITRUNNER_COST_MEDIUM
 	desc = "Проникните на вражеский корабль и верните украденный груз."
 	difficulty = BITRUNNER_DIFFICULTY_MEDIUM

@@ -240,7 +240,6 @@
 /obj/effect/turf_decal/weather/sand{
 	dir = 9
 	},
-/obj/effect/mob_spawn/human/virtual_domain/pirate,
 /turf/open/floor/wood{
 	icon_state = "wood_large"
 	},
