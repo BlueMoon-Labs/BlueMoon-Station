@@ -175,6 +175,10 @@ GLOBAL_LIST_INIT(blacklisted_borg_hats, typecacheof(list( //Hats that don't real
 	. = ..()
 	if(. & EMP_PROTECT_SELF)
 		return
+	// BLUEMOON CYBORG ION SHIELD v10.2: EMP burns out the physical shield.
+	// Keep the existing EMP paralysis and leave all other upgrades alone.
+	var/obj/item/borg/upgrade/ion_shield/ion_shield = get_ion_shield()
+	ion_shield?.burn_out_from_emp(src)
 	Paralyze(10 + severity/1.2)
 
 /mob/living/silicon/robot/emag_act(mob/user)

@@ -35,14 +35,33 @@
 	var/datum/ai_laws/master = connected_ai ? connected_ai.laws : null
 	if (!master)
 		return
+	var/obj/item/borg/upgrade/ion_shield/remote_guard = get_ion_shield()
+	if(remote_guard?.remote_storm_active && remote_guard.protected_ai == connected_ai)
+		// The AI is still mutating its laws in the same ion-storm event.
+		// Do not accept intermediate changes from remove_law/post_lawchange.
+		return
 
 	// Оптимизированное копирование законов
 	laws.devillaws = master.devillaws.Copy()
-	laws.ion = master.ion.Copy()
+	var/obj/item/borg/upgrade/ion_shield/ion_shield = remote_guard
+	if(ion_shield)
+		// Preserve local ion laws; do NOT import ion laws from the connected AI.
+		// This also applies to later explicit / implicit AI law synchronization.
+		ion_shield.reject_remote_ion_laws(src, connected_ai, master.ion)
+	else
+		laws.ion = master.ion.Copy()
 	laws.hacked = master.hacked.Copy()
 	laws.zeroth = master.zeroth_borg ? master.zeroth_borg : master.zeroth
 	laws.inherent = master.inherent.Copy()
 	laws.supplied = master.supplied.Copy()
+	if(ion_shield)
+		if(ion_shield.protected_ai && ion_shield.protected_ai != connected_ai)
+			ion_shield.reset_remote_storm_snapshot()
+		else if(ion_shield.protected_ai == connected_ai && islist(ion_shield.safe_inherent))
+			ion_shield.sync_protected_ai_laws(src, master)
+		// Never blindly delete by string: an identical law might have been
+		// legitimately present before the storm. The clean snapshot decides.
+
 
 	picturesync()
 

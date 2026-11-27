@@ -982,6 +982,15 @@
 	construction_time = 100
 	category = list("Cyborg Upgrade Modules")
 
+/datum/design/borg_upgrade_ion_shield
+	name = "Cyborg Upgrade (Ion Shielding Module)"
+	id = "borg_upgrade_ion_shield"
+	build_type = MECHFAB
+	build_path = /obj/item/borg/upgrade/ion_shield
+	materials = list(/datum/material/iron = 7500, /datum/material/glass = 3500, /datum/material/gold = 1500, /datum/material/silver = 800)
+	construction_time = 120
+	category = list("Cyborg Upgrade Modules")
+
 //Misc
 /datum/design/mecha_tracking
 	name = "Exosuit Tracking Beacon"
