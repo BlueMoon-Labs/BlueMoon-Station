@@ -64,7 +64,7 @@
 
 /datum/gear/donator/t2/chameleon_kit
 	name = "Chameleon Box"
-	path = /obj/item/storage/box/syndie_kit/chameleon
+	path = /obj/item/storage/box/syndie_kit/chameleon/donate
 	cost = 8
 	description = "Хамелеон-набор с именным разрешением на владение и использование."
 	handle_post_equip = TRUE
