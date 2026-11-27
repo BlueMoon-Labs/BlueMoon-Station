@@ -145,19 +145,6 @@
 
 // Мины
 
-/obj/item/minespawner
-	name = "deactivated landmine"
-	desc = "При активации развернёт взрывную мину."
-	icon = 'icons/obj/grenade.dmi'
-	icon_state = "grenade"
-	var/mine_type = /obj/effect/mine/explosive
-
-/obj/item/minespawner/attack_self(mob/user, modifiers)
-	. = ..()
-	new mine_type(get_turf(user))
-	user.visible_message(span_notice("[user] взводит [src]."), span_notice("Вы взводите [src]."))
-	qdel(src)
-
 /obj/effect/mine/explosive/light/ancient_milsim
 	name = "low-yield landmine"
 	range_devastation = 0
