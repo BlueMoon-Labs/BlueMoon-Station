@@ -200,7 +200,16 @@
 		message_admins("<span class='danger'>ERROR: Non-admin [key_name(usr)] attempted to execute a SDQL query!</span>")
 		log_admin("Non-admin [key_name(usr)] attempted to execute a SDQL query!")
 		return FALSE
-	var/prompt = tgui_alert(usr, "Run SDQL2 Query?", "SDQL2", list("Yes", "Cancel"))
+	// strict_byond = TRUE - подтверждение показывается НАТИВНЫМ alert(), а не TGUI.
+	//
+	// Почему это важно: tgui_alert по умолчанию рисуется в том же окне TGUI,
+	// где исполняется любой XSS (например, из paper_html в админском тикете).
+	// Атакующий мог отправить BYOND.topic({type:'act/choose', payload:{choice:'Yes'},
+	// tgui:1, window_id:'tgui-window-N'}) и автокликнуть "Yes", после чего
+	// BYOND.command('SDQL2-Query CALL gib() ...') выполнялся от лица админа.
+	// Нативный alert() недоступен из страничного JS - диалог реально требует
+	// человека.
+	var/prompt = tgui_alert(usr, "Run SDQL2 Query?", "SDQL2", list("Yes", "Cancel"), strict_byond = TRUE)
 	if (prompt != "Yes")
 		return
 	var/list/results = world.SDQL2_query(query_text, key_name_admin(usr), "[key_name(usr)]")

@@ -746,6 +746,31 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 		return FALSE
 	return TRUE
 
+/**
+ * БЕЗОПАСНОЕ ПРЕОБРАЗОВАНИЕ ТЕКСТА БУМАГИ В HTML.
+ *
+ * ЧТО БЫЛО: если input.advanced_html == TRUE (право R_FUN у автора), строка
+ * НЕ экранировалась и уходила в message_log["paper_html"] как сырой HTML.
+ * AdminTicketPanel.js вставлял её через dangerouslySetInnerHTML без DOMPurify,
+ * поэтому <svg onload="...">, выполненный в браузере админа, давал доступ
+ * к BYOND.command() и, как следствие, к verb SDQL2 Query от лица админа.
+ *
+ * ЧТО СТАЛО: всё без исключений проходит html_encode(), и только ПОСЛЕ этого
+ * разрешаются точные совпадения с белым списком безопасных тегов БЕЗ атрибутов.
+ * Атакующий не может пронести onload/onerror/src/javascript:, потому что его
+ * '<' и '>' уже заменены на &lt; и &gt;, а шаблон "&lt;b&gt;" требует обратного.
+ * img/video/audio/iframe/svg/math/script/class/style намеренно не разрешены:
+ * этот HTML идёт в админские тикеты, а не в редактор бумаг (там свой DOMPurify).
+ */
+/proc/sanitize_paper_html(text)
+	var/result = html_encode(text)
+	var/static/list/safe_tags = list("b", "i", "em", "strong", "u", "s", "br", "p", "div", "span", "blockquote", "code", "pre")
+	for(var/t in safe_tags)
+		result = replacetext(result, "&lt;[t]&gt;", "<[t]>")
+		if(t != "br")
+			result = replacetext(result, "&lt;/[t]&gt;", "</[t]>")
+	return result
+
 /proc/get_paper_html(obj/item/paper/paper)
 	if(!istype(paper))
 		return ""
@@ -774,15 +799,18 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 				text = copytext(text, 1, start) + replacement + copytext(text, end + 1)
 				search_pos = start + length(replacement)
 				field_data_pos++
-		if(!input.advanced_html)
-			text = html_encode(text)
-			text = replacetext(text, "\n", "<br>")
+		// ВСЕГДА санитизируем - в том числе для advanced_html. Это убирает
+		// исходную уязвимость: раньше здесь было "if(!input.advanced_html)".
+		// Заодно экранируется подстановка из полей формы (field_data_map).
+		text = sanitize_paper_html(text)
+		text = replacetext(text, "\n", "<br>")
 		if(input.bold)
 			text = "<b>[text]</b>"
 		if(input.font)
-			text = "<span style='font-family:[input.font];'>[text]</span>"
+			// Значения шрифта/цвета тоже уходят в HTML-атрибут style.
+			text = "<span style='font-family:[html_encode(input.font)];'>[text]</span>"
 		if(input.colour)
-			text = "<span style='color:[input.colour];'>[text]</span>"
+			text = "<span style='color:[html_encode(input.colour)];'>[text]</span>"
 		html += text
 	html += "</div>"
 	return html

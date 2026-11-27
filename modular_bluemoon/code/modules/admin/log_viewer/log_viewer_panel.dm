@@ -368,9 +368,45 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	log_admin("[key_name(owner)] downloaded log archive [rel]")
 	owner << ftp(file(out), "[flat].[ext]")
 
+/**
+ * Удаление архива логов по пути.
+ *
+ * Раньше здесь было просто if(fexists(path)) fdel(path), и SDQL-запрос
+ * CALL global.admin_log_delete_archive(global.admin_log) мог удалить не только
+ * лог, но и ЛЮБОЙ другой файл, если передать произвольный путь.
+ *
+ * Теперь путь обязан лежать внутри одного из двух известных корней
+ * (ADMIN_LOG_ROOT или ADMIN_LOG_ARCHIVE_DIR, где реально живут логи и архивы)
+ * и состоять только из валидных сегментов - это убирает обход "../" и
+ * произвольные файлы.
+ *
+ * ОГРАНИЧЕНИЕ: это НЕ запрещает удалить сам game.log/admin_log - это
+ * штатная операция. Полная защита логов от SDQL требует отдельного решения
+ * (белый список global.* для CALL, либо дублирование логов за пределами хоста).
+ */
 /proc/admin_log_delete_archive(path)
+	if(!istext(path) || !length(path))
+		return FALSE
+
+	var/root
+	for(var/candidate in list(ADMIN_LOG_ROOT, ADMIN_LOG_ARCHIVE_DIR))
+		if(copytext(path, 1, length(candidate) + 1) == candidate)
+			root = candidate
+			break
+	if(!root)
+		log_admin("admin_log_delete_archive: отказано, путь вне каталогов логов: [path]")
+		return FALSE
+
+	var/relative = copytext(path, length(root) + 1)
+	for(var/segment in splittext(relative, "/"))
+		if(!admin_log_valid_segment(segment))
+			log_admin("admin_log_delete_archive: отказано, невалидный сегмент в пути: [path]")
+			return FALSE
+
 	if(fexists(path))
 		fdel(path)
+		return TRUE
+	return FALSE
 
 /// GNU tar возвращает 1, если файл менялся во время чтения (живой лог текущего раунда) -
 /// архив при этом валиден и выбрасывать его нельзя. На Windows у bsdtar код 1 = настоящая ошибка.

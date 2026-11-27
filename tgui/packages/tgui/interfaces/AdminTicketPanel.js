@@ -14,6 +14,19 @@ import {
   Tabs,
 } from '../components';
 import { Window } from '../layouts';
+import { sanitizeText } from '../sanitize';
+
+/**
+ * ВСЕ строки, приходящие из DM и вставляемые через dangerouslySetInnerHTML,
+ * должны пройти DOMPurify. Раньше здесь были два «сырых» sink'а (строки ~731 и
+ * ~863): paper_html из fax.dm/get_paper_html() и сообщения тикета. Оттуда
+ * выполнялся <svg onload="..."> -> BYOND.command('SDQL2-Query ...') от лица админа.
+ *
+ * Второй аргумент намеренно FALSE даже для бумаг с advanced_html: этот HTML
+ * приходит из пользовательского ввода, а не из доверенного админского UI.
+ * paper_html формируется в code/modules/paperwork/fax.dm:get_paper_html().
+ */
+const safeTicketHtml = (html) => sanitizeText(html || '', false);
 
 const STATE_COLORS = {
   1: '#f87171',
@@ -716,6 +729,8 @@ const TicketDetailPanel = (props) => {
             <NoticeBox info>Нет сообщений.</NoticeBox>
           )}
           {(ticket.interactions || []).map((msg, idx) => (
+            // Исходный текст сообщения тикета - недоверенный ввод.
+            // Раньше: dangerouslySetInnerHTML={{ __html: msg }} -> XSS.
             <Box
               key={idx}
               py={0.5}
@@ -728,7 +743,7 @@ const TicketDetailPanel = (props) => {
                 borderRadius: '3px',
                 wordBreak: 'break-word',
               }}
-              dangerouslySetInnerHTML={{ __html: msg }}
+              dangerouslySetInnerHTML={{ __html: safeTicketHtml(msg) }}
             />
           ))}
           <AutoScrollToBottom triggerKey={(ticket.interactions || []).length} />
@@ -859,8 +874,13 @@ const CommDetailPanel = (props) => {
           >
             {hasPaper ? (
               msg.paper_html ? (
+                // ГЛАВНЫЙ SINK АТАКИ: paper_html приходил из fax.dm и мог
+                // содержать <svg onload>/<img onerror> от игрока.
+                // DOMPurify вырезает on* атрибуты, svg и javascript: URL.
                 <Box
-                  dangerouslySetInnerHTML={{ __html: msg.paper_html }}
+                  dangerouslySetInnerHTML={{
+                    __html: safeTicketHtml(msg.paper_html),
+                  }}
                   style={{ whiteSpace: 'normal' }}
                 />
               ) : (
