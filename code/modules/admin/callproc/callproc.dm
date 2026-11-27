@@ -86,6 +86,11 @@ GLOBAL_PROTECT(LastAdminCalledProc)
 
 /// Wrapper for proccalls where the datum is flagged as vareditted
 /proc/WrapAdminProcCall(datum/target, procname, list/arguments)
+	if(target == GLOBAL_PROC)
+		switch(lowertext(procname))
+			if("callasync", "___callbacknew", "___callbackvarset")
+				to_chat(usr, span_warning("Прямой вызов [procname]() через административные инструменты запрещён."), confidential = TRUE)
+				return
 	if(target && procname == "Del")
 		to_chat(usr, "Calling Del() is not allowed", confidential = TRUE)
 		return
@@ -106,11 +111,17 @@ GLOBAL_PROTECT(LastAdminCalledProc)
 	GLOB.LastAdminCalledProc = procname
 	if(target != GLOBAL_PROC)
 		GLOB.LastAdminCalledTargetRef = REF(target)
-	GLOB.AdminProcCaller = ckey //if this runtimes, too bad for you
+	GLOB.AdminProcCaller = ckey
 	++GLOB.AdminProcCallCount
-	. = world.WrapAdminProcCall(target, procname, arguments)
+	var/exception/call_error
+	try
+		. = world.WrapAdminProcCall(target, procname, arguments)
+	catch(var/exception/error)
+		call_error = error
 	if(--GLOB.AdminProcCallCount == 0)
 		GLOB.AdminProcCaller = null
+	if(call_error)
+		throw call_error
 
 //adv proc call this, ya nerds
 /world/proc/WrapAdminProcCall(datum/target, procname, list/arguments)
@@ -121,11 +132,13 @@ GLOBAL_PROTECT(LastAdminCalledProc)
 	else
 		log_admin("[key_name(usr)] attempted to call world/proc/[procname] with arguments: [english_list(arguments)]")
 
-/proc/IsAdminAdvancedProcCall()
+/proc/IsAdminAdvancedProcCall(include_unattributed = FALSE)
 #ifdef TESTING
 	return FALSE
 #else
-	return usr && usr.client && GLOB.AdminProcCaller == usr.client.ckey
+	if(usr?.client)
+		return GLOB.AdminProcCaller == usr.client.ckey
+	return include_unattributed && GLOB.AdminProcCallCount > 0
 #endif
 
 /client/proc/callproc_datum(datum/A as null|area|mob|obj|turf)

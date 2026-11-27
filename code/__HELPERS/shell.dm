@@ -4,10 +4,10 @@
 #define SHELLEO_ERR ".err"
 #define SHELLEO_OUT ".out"
 /world/proc/shelleo(command)
-	if(IsAdminAdvancedProcCall())
-		message_admins("[key_name_admin(usr)] tried to run a shell command through an admin proc call; blocked.")
-		log_admin("[key_name(usr)] blocked shelleo from admin proc call: [command]")
-		return list(1, "", "blocked")
+	if(IsAdminAdvancedProcCall(include_unattributed = TRUE))
+		message_admins("Заблокирован запуск команды оболочки через административный вызов ([key_name_admin(usr)]).")
+		log_admin("Заблокирован запуск команды оболочки через административный вызов ([GLOB.AdminProcCaller]).")
+		return list(1, "", "Запуск команды оболочки через административный вызов запрещён.")
 	var/static/list/shelleo_ids = list()
 	var/stdout = ""
 	var/stderr = ""
@@ -48,19 +48,3 @@
 #undef SHELLEO_NAME
 #undef SHELLEO_ERR
 #undef SHELLEO_OUT
-
-/proc/shell_url_scrub(url)
-	var/static/regex/bad_chars_regex = regex("\[^#%&./:=?\\w]*", "g")
-	var/scrubbed_url = ""
-	var/bad_match = ""
-	var/last_good = 1
-	var/bad_chars = 1
-	do
-		bad_chars = bad_chars_regex.Find(url)
-		scrubbed_url += copytext(url, last_good, bad_chars)
-		if(bad_chars)
-			bad_match = url_encode(bad_chars_regex.match)
-			scrubbed_url += bad_match
-			last_good = bad_chars + length(bad_chars_regex.match)
-	while(bad_chars)
-	. = scrubbed_url

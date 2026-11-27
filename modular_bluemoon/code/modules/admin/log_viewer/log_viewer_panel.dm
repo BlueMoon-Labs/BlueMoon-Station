@@ -369,6 +369,10 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	owner << ftp(file(out), "[flat].[ext]")
 
 /proc/admin_log_delete_archive(path)
+	if(!istext(path) || findtextEx(path, ADMIN_LOG_ARCHIVE_DIR, 1, length(ADMIN_LOG_ARCHIVE_DIR) + 1) != 1)
+		return
+	if(!admin_log_valid_segment(copytext(path, length(ADMIN_LOG_ARCHIVE_DIR) + 1)))
+		return
 	if(fexists(path))
 		fdel(path)
 

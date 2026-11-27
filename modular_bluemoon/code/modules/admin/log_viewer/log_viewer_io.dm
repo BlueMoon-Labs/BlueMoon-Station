@@ -76,6 +76,8 @@
 /// Размер файла в байтах, -1 при ошибке. Нативный length(file()) без чтения содержимого в DM;
 /// при нуле перепроверяем шеллом (нулевой размер неотличим от ошибки чтения).
 /proc/admin_log_file_size(path)
+	if(IsAdminAdvancedProcCall(include_unattributed = TRUE))
+		return -1
 	if(!fexists(path))
 		return -1
 	var/native = length(file(path))
@@ -86,6 +88,8 @@
 	return isnum(native) ? native : -1
 
 /proc/get_admin_log_file_size_bytes(path)
+	if(IsAdminAdvancedProcCall(include_unattributed = TRUE))
+		return -1
 	if(!fexists(path) || !is_safe_path_for_admin_shell(path))
 		return -1
 	if(world.system_type == UNIX)
@@ -138,6 +142,8 @@
 /// через временный файл (в командную строку пользовательский ввод не попадает).
 /// null - недоступно (Windows/небезопасный путь), иначе список как у admin_log_search_content.
 /proc/admin_log_search_shell(path, query)
+	if(IsAdminAdvancedProcCall(include_unattributed = TRUE))
+		return null
 	if(world.system_type != UNIX)
 		return null
 	if(!is_safe_path_for_admin_shell(path))
@@ -181,6 +187,8 @@
 /// (Unix: tail+head; Windows: PowerShell-скрипт с Seek). Имена временных файлов не пересекаются
 /// с остальными admin_log-хелперами.
 /proc/read_admin_log_chunk(path, offset_bytes, max_bytes)
+	if(IsAdminAdvancedProcCall(include_unattributed = TRUE))
+		return null
 	if(!fexists(path) || !is_safe_path_for_admin_shell(path))
 		return null
 	if(world.system_type == UNIX)

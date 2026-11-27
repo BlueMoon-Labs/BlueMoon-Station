@@ -74,8 +74,7 @@
 				to_chat(src, span_boldwarning("Non-http(s) URIs are not allowed."), confidential = TRUE)
 				to_chat(src, span_warning("For yt-dlp shortcuts like ytsearch: please use the appropriate full url from the website."), confidential = TRUE)
 				return
-			var/shell_scrubbed_input = shell_url_scrub(web_sound_input)
-			var/list/output = world.shelleo("[ytdl] --geo-bypass --format \"bestaudio\[ext=mp3]/best\[ext=mp4]\[height <= 360]/bestaudio\[ext=m4a]/bestaudio\[ext=aac]\" --dump-single-json --no-playlist -- \"[shell_scrubbed_input]\"")
+			var/list/output = get_web_sound_metadata(web_sound_input)
 			var/errorlevel = output[SHELLEO_ERRORLEVEL]
 			var/stdout = output[SHELLEO_STDOUT]
 			var/stderr = output[SHELLEO_STDERR]
@@ -155,7 +154,34 @@
 
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Play Internet Sound")
 
-///Takes an input from either proc/play_web_sound or the request manager and runs it through youtube-dl and prompts the user before playing it to the server.
+/proc/get_web_sound_metadata(url)
+	if(IsAdminAdvancedProcCall(include_unattributed = TRUE))
+		return list(1, "", "Запуск yt-dlp через административный вызов запрещён.")
+	if(!istext(url))
+		return list(1, "", "Укажите ссылку на аудио.")
+	url = trim(url)
+	if(!length(url) || findtext(url, "\n") || findtext(url, ascii2text(13)))
+		return list(1, "", "Укажите одну ссылку на аудио.")
+	if(findtext(url, ":") && !findtext(url, GLOB.is_http_protocol))
+		return list(1, "", "Поддерживаются ссылки HTTP и HTTPS.")
+	var/ytdl = CONFIG_GET(string/invoke_youtubedl)
+	if(!ytdl)
+		return list(1, "", "yt-dlp не настроен.")
+
+	// yt-dlp читает ссылку из файла, чтобы оболочка не обрабатывала её как часть команды.
+	var/static/request_number = 0
+	var/url_file = "data/web_sound_url_[num2text(world.realtime, 12)]_[num2text(++request_number, 12)].txt"
+	if(!text2file(url, url_file))
+		fdel(url_file)
+		return list(1, "", "Не удалось сохранить ссылку для yt-dlp.")
+	try
+		. = world.shelleo("[ytdl] --geo-bypass --format \"bestaudio\[ext=mp3]/best\[ext=mp4]\[height <= 360]/bestaudio\[ext=m4a]/bestaudio\[ext=aac]\" --dump-single-json --no-playlist --batch-file [url_file]")
+	catch(var/exception/error)
+		fdel(url_file)
+		throw error
+	fdel(url_file)
+
+// Получает данные об аудио через yt-dlp и запрашивает подтверждение перед воспроизведением.
 /proc/web_sound(mob/user, input, credit)
 	if(!check_rights(R_SOUNDS))
 		return
@@ -168,8 +194,7 @@
 	var/list/music_extra_data = list()
 	var/duration = 0
 	if(istext(input))
-		var/shell_scrubbed_input = shell_url_scrub(input)
-		var/list/output = world.shelleo("[ytdl] --geo-bypass --format \"bestaudio\[ext=mp3]/best\[ext=mp4]\[height <= 360]/bestaudio\[ext=m4a]/bestaudio\[ext=aac]\" --dump-single-json --no-playlist -- \"[shell_scrubbed_input]\"")
+		var/list/output = get_web_sound_metadata(input)
 		var/errorlevel = output[SHELLEO_ERRORLEVEL]
 		var/stdout = output[SHELLEO_STDOUT]
 		var/stderr = output[SHELLEO_STDERR]

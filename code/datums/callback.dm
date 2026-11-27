@@ -51,6 +51,8 @@
 	///A weak reference to the user who triggered this callback
 	var/datum/weakref/user
 
+GENERAL_PROTECT_DATUM(/datum/callback)
+
 /**
  * Create a new callback datum
  *
