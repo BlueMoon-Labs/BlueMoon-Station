@@ -275,9 +275,12 @@
 /obj/item/disk/bitrunning/ability/tier3
 	name = "bitrunning program: elite"
 	selectable_spells = list(
-		/obj/effect/proc_holder/spell/targeted/shapeshift/dragon,
+		/obj/effect/proc_holder/spell/targeted/shapeshift/dragon/bitrunning,
 		/obj/effect/proc_holder/spell/targeted/shapeshift/polar_bear,
 	)
+
+/obj/effect/proc_holder/spell/targeted/shapeshift/dragon/bitrunning
+	die_with_shapeshifted_form = FALSE
 
 /obj/effect/proc_holder/spell/targeted/conjure_item/cheese
 	name = "Summon Cheese"
@@ -359,7 +362,7 @@
 /obj/item/disk/bitrunning/item/tier3
 	name = "bitrunning gear: advanced"
 	selectable_items = list(
-		/obj/item/gun/energy/e_gun/nuclear,
+		/obj/item/gun/energy/e_gun/nuclear/pin,
 		/obj/item/dualsaber/green,
 		/obj/item/grenade/syndieminibomb,
 	)
@@ -1500,9 +1503,32 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	)
 
 	granted_spells = list(
-		/obj/effect/proc_holder/spell/aoe_turf/knock,
+		/obj/effect/proc_holder/spell/aoe_turf/untie_shoes,
 		/obj/effect/proc_holder/spell/targeted/smoke,
 	)
+
+/obj/effect/proc_holder/spell/aoe_turf/untie_shoes
+	name = "Untie Shoelaces"
+	desc = "Безобидное заклинание, развязывающее шнурки у всех рядом."
+	school = "transmutation"
+	charge_max = 100
+	clothes_req = NONE
+	invocation = "LIGARE NON POTEST"
+	invocation_type = "whisper"
+	range = 3
+	cooldown_min = 20
+	action_icon_state = "knock"
+
+/obj/effect/proc_holder/spell/aoe_turf/untie_shoes/cast(list/targets, mob/user = usr)
+	SEND_SOUND(user, sound('sound/magic/knock.ogg'))
+	for(var/turf/T in targets)
+		for(var/mob/living/carbon/victim in T.contents)
+			if(victim == user)
+				continue
+			var/obj/item/clothing/shoes/worn_shoes = victim.shoes
+			if(!istype(worn_shoes) || !worn_shoes.can_be_tied || worn_shoes.tied == SHOES_UNTIED)
+				continue
+			worn_shoes.adjust_laces(SHOES_UNTIED)
 
 /obj/item/disk/bitrunning/gimmick/sports
 	name = "bitrunning gimmick: sports"
@@ -1538,20 +1564,28 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 
 /datum/bitrunning_gimmick/archer
 	name = "Archer"
+	container_item_type = /obj/item/storage/backpack/duffelbag
 
 	granted_items = list(
 		/obj/item/clothing/under/costume/kimono,
 		/obj/item/clothing/shoes/sandal,
 		/obj/item/gun/ballistic/bow,
+		/obj/item/storage/belt/quiver/full,
 	)
+
+/obj/item/storage/belt/quiver/full/PopulateContents()
+	for(var/i in 1 to 15)
+		new /obj/item/ammo_casing/caseless/arrow(src)
 
 /datum/bitrunning_gimmick/fisher
 	name = "Fisher"
+	container_item_type = /obj/item/storage/backpack/duffelbag
 
 	granted_items = list(
 		/obj/item/clothing/under/misc/overalls,
-		/obj/item/clothing/suit/jacket/miljacket,
-		/obj/item/clothing/head/soft/black,
+		/obj/item/clothing/head/fishing_hat,
+		/obj/item/fishing_rod,
+		/obj/item/bait_can/worm,
 		/obj/item/clothing/shoes/jackboots,
 	)
 
@@ -1563,19 +1597,17 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 		/obj/item/clothing/shoes/laceup,
 		/obj/item/clothing/gloves/color/black,
 		/obj/item/clothing/glasses/sunglasses,
-		/obj/item/modular_computer/laptop/gamer,
+		/obj/item/modular_computer/laptop/preset/gamer,
 	)
 
-/obj/item/modular_computer/laptop/gamer
+/obj/item/modular_computer/laptop/preset/gamer
 	desc = "Дорогой ноутбук, который часто используют для метагейминга."
 	device_theme = PDA_THEME_TERMINAL
-	starting_programs = list(
-		/datum/computer_file/program/filemanager,
-		/datum/computer_file/program/notepad,
-	)
 	start_open = FALSE
 
-/obj/item/modular_computer/laptop/gamer/install_default_programs()
-	for(var/programs in starting_programs)
-		var/datum/computer_file/program/program_type = new programs
-		store_file(program_type)
+/obj/item/modular_computer/laptop/preset/gamer/install_programs()
+	var/obj/item/computer_hardware/hard_drive/hard_drive = all_components[MC_HDD]
+	if(!hard_drive)
+		return
+	hard_drive.store_file(new /datum/computer_file/program/filemanager)
+	hard_drive.store_file(new /datum/computer_file/program/notepad)

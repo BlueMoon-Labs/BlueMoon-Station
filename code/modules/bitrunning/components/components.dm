@@ -30,6 +30,20 @@
 	server_ref = WEAKREF(server)
 	server.avatar_connection_refs.Add(WEAKREF(src))
 
+	if(copy_body && ishuman(avatar) && ishuman(old_body))
+		var/mob/living/carbon/human/human_avatar = avatar
+		var/mob/living/carbon/human/human_old_body = old_body
+		if(!isnull(human_old_body.dna))
+			human_old_body.dna.transfer_identity(human_avatar, transfer_SE = TRUE, copy_clothing = TRUE)
+		human_avatar.real_name = human_old_body.real_name
+		human_avatar.name = human_old_body.real_name
+		human_avatar.updateappearance(mutcolor_update = TRUE)
+		human_avatar.update_body()
+		human_avatar.update_hair()
+		var/datum/component/simple_bodycam/bodycam = human_avatar.GetComponent(/datum/component/simple_bodycam)
+		if(bodycam?.bodycam)
+			bodycam.bodycam.c_tag = "Avatar [human_avatar.real_name]"
+
 	avatar.PossessByPlayer(old_body.key)
 	start_virtual_ambience(avatar)
 	ADD_TRAIT(avatar, TRAIT_NO_MINDSWAP, REF(src))
@@ -61,12 +75,6 @@
 	if(!locate(/datum/action/bitrunning_emergency_disconnect) in avatar.actions)
 		var/datum/action/bitrunning_emergency_disconnect/emergency_action = new()
 		emergency_action.Grant(avatar)
-
-	if(copy_body && ishuman(avatar) && ishuman(old_body))
-		var/mob/living/carbon/human/human_avatar = avatar
-		var/mob/living/carbon/human/human_old_body = old_body
-		human_avatar.real_name = human_old_body.real_name
-		human_avatar.updateappearance(mutcolor_update = TRUE)
 
 	update_avatar_id()
 	avatar.mind.assigned_role = "Bit Avatar"
@@ -214,18 +222,24 @@
 /datum/component/avatar_connection/proc/on_mind_transfer(datum/mind/source, mob/living/previous_body)
 	SIGNAL_HANDLER
 
-	var/datum/action/avatar_domain_info/action = locate() in previous_body.actions
-	if(action)
-		action.Grant(source.current)
+	if(disconnecting || QDELETED(src) || QDELETED(parent))
+		return
 
 	var/mob/living/new_body = source.current
-	var/area/new_area = isliving(new_body) ? get_area(new_body) : null
+	if(!isliving(new_body) || locate(/obj/shapeshift_holder) in new_body)
+		return
+
+	var/datum/action/avatar_domain_info/action = locate() in previous_body.actions
+	if(action)
+		action.Grant(new_body)
+
+	var/area/new_area = get_area(new_body)
 	if((new_area?.area_flags & VIRTUAL_AREA) && !HAS_TRAIT(new_body, TRAIT_MIND_TEMPORARILY_GONE))
 		var/datum/action/bitrunning_emergency_disconnect/emergency_action = locate() in previous_body.actions
 		if(emergency_action)
 			emergency_action.Grant(new_body)
 
-	source.current.TakeComponent(src)
+	new_body.TakeComponent(src)
 
 /datum/component/avatar_connection/proc/on_netpod_crowbar(datum/source, mob/living/intruder)
 	SIGNAL_HANDLER

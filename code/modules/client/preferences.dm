@@ -1521,7 +1521,7 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	var/list/appearance_features = features.Copy()
 	appearance_features["body_size"] = RESIZE_DEFAULT_SIZE
 	features = appearance_features
-	copy_to(character, icon_updates, roundstart_checks = FALSE)
+	copy_to(character, icon_updates, roundstart_checks = FALSE, initial_spawn = TRUE)
 	features = original_features
 
 	character.mob_weight = MOB_WEIGHT_NORMAL

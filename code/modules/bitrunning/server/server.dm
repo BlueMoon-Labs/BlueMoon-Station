@@ -748,7 +748,7 @@
 		if(appearance_only)
 			prefs.copy_appearance_to(avatar)
 		else
-			prefs.copy_to(avatar)
+			prefs.copy_to(avatar, initial_spawn = TRUE)
 	ADD_TRAIT(avatar, TRAIT_CANNOT_CRYSTALIZE, "Bitrunning")
 	avatar.make_virtual_mob()
 	var/outfit_path = generated_domain.forced_outfit || netsuit
@@ -764,6 +764,13 @@
 
 	avatar.equipOutfit(to_wear, visualsOnly = TRUE)
 
+	if(!generated_domain.forced_outfit)
+		for(var/obj/thing in avatar.held_items)
+			qdel(thing)
+
+	if(load_loadout && !isnull(prefs))
+		SSjob.equip_loadout(null, avatar, bypass_prereqs = TRUE, can_drop = TRUE, preferences_source = prefs)
+
 	if(isnull(avatar.wear_suit))
 		var/obj/item/clothing/suit/armor/vest/vest = new(get_turf(avatar))
 		if(!avatar.equip_to_slot_if_possible(vest, ITEM_SLOT_OCLOTHING))
@@ -776,10 +783,6 @@
 		avatar_uniform.sensor_mode = SENSOR_OFF
 		avatar_uniform.sensor_mode_intended = SENSOR_OFF
 
-	if(!generated_domain.forced_outfit)
-		for(var/obj/thing in avatar.held_items)
-			qdel(thing)
-
 	var/obj/item/storage/backpack/bag = avatar.back
 	if(istype(bag))
 		bag.contents += list(
@@ -787,6 +790,8 @@
 			new /obj/item/storage/firstaid/regular(bag),
 			new /obj/item/flashlight(bag),
 		)
+		if(!istype(avatar.belt, /obj/item/bitrunning_host_monitor))
+			bag.contents += new /obj/item/bitrunning_host_monitor(bag)
 
 	var/obj/item/card/id/outfit_id = avatar.wear_id
 	if(outfit_id)

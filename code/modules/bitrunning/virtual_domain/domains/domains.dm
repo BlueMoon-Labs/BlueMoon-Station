@@ -614,9 +614,9 @@
 	var/mob/living/carbon/human/body = new /mob/living/carbon/human(death_turf)
 	body.real_name = fake.body_name
 	body.name = body.real_name
-	body.death(FALSE)
 	if(fake.body_outfit)
 		body.equipOutfit(new fake.body_outfit())
+	body.death(FALSE)
 	body.AddComponent(/datum/component/heretic_sacrifice, src, fake.points_value)
 
 /datum/outfit/virtual_domain_heretic
