@@ -86,11 +86,13 @@ GLOBAL_PROTECT(LastAdminCalledProc)
 
 /// Wrapper for proccalls where the datum is flagged as vareditted
 /proc/WrapAdminProcCall(datum/target, procname, list/arguments)
-	if(target == GLOBAL_PROC)
-		switch(lowertext(procname))
-			if("callasync", "___callbacknew", "___callbackvarset")
-				to_chat(usr, span_warning("Прямой вызов [procname]() через административные инструменты запрещён."), confidential = TRUE)
-				return
+	var/static/list/restricted_global_procs = list(
+		"callasync", "___callbacknew", "___callbackvarset",
+		"gear_crypto", "gear_ckey_id", "gear_ckey_from_id", "initialize_global_whitelist_cache",
+	)
+	if(target == GLOBAL_PROC && (lowertext(procname) in restricted_global_procs))
+		to_chat(usr, span_warning("Прямой вызов [procname]() через административные инструменты запрещён."), confidential = TRUE)
+		return
 	if(target && procname == "Del")
 		to_chat(usr, "Calling Del() is not allowed", confidential = TRUE)
 		return

@@ -15,7 +15,7 @@
 
 /// Cached bridge to Node's authenticated encryption. Optional diagnostics are caller-owned.
 /proc/gear_crypto(operation, value, use_cache = TRUE, list/diagnostics)
-	if(IsAdminAdvancedProcCall(include_unattributed = TRUE))
+	if(IsAdminAdvancedProcCall())
 		return
 	if(islist(diagnostics))
 		diagnostics.Cut()
