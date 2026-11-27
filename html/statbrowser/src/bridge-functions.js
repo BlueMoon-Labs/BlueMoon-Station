@@ -288,12 +288,15 @@ function add_admin_tabs(ht) {
 	if (!_settingsActive && State.currentTab === "Tickets") draw_tickets();
 }
 
-function create_listedturf(TN) {
-	remove_listedturf();
-	State.turfContents = [];
-	State.turfName = safeParse(TN, "");
-	addPermanentTab(State.turfName);
-	tab_change(State.turfName);
+function create_listedturf(TN, switchTab) {
+	var turfName = safeParse(TN, "");
+	if (!turfName) return;
+	if (State.turfName !== turfName) {
+		remove_listedturf();
+		State.turfName = turfName;
+	}
+	addPermanentTab(turfName);
+	if (switchTab !== "0") tab_change(turfName);
 }
 
 function update_listedturf(TC) {
@@ -323,12 +326,15 @@ function update_turf_icons(data) {
 }
 
 function remove_listedturf() {
-	removePermanentTab(State.turfName);
+	var turfName = State.turfName;
+	removePermanentTab(turfName);
+	State.turfName = "";
+	State.turfContents = [];
 	State.turfContentsRaw = "";
 	turfTable = null;
 	turfItemNodes = {};
 	checkStatusTab();
-	if (State.currentTab === State.turfName) tab_change("Status");
+	if (State.currentTab === turfName) tab_change("Status");
 }
 
 function init_verbs(c, v) {

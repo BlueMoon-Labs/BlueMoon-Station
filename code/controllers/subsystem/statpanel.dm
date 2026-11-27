@@ -40,7 +40,7 @@
 /// Send tidi only every Nth ping fire — non-Status-tab clients still see fresh ping every fire.
 #define STATPANEL_TIDI_INTERVAL 10
 /// Bridge protocol version. Bump whenever the DM->JS payload shape changes incompatibly.
-#define STATBROWSER_PROTOCOL_VERSION 8
+#define STATBROWSER_PROTOCOL_VERSION 9
 /// Channel keys for client.statpanel_last_sent dirty cache. String constants kept in one place
 /// so DM-side dirty checks and any future invalidation paths can share them.
 #define STATPANEL_CHANNEL_STATUS "status"
@@ -1294,7 +1294,7 @@ SUBSYSTEM_DEF(statpanels)
 		round(SStime_track.time_dilation_avg_slow, 0.1))
 	src << output("[ping_str];[url_encode(json_encode(tidi))]", "statbrowser:update_ping")
 	if(mob?.listed_turf)
-		open_listed_turf(mob.listed_turf)
+		open_listed_turf(mob.listed_turf, switch_tab = listed_turf_switch_pending)
 
 #undef LISTED_TURF_LIST_REFRESH_INTERVAL
 #undef LISTED_TURF_ICON_REFRESH_INTERVAL

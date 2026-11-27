@@ -416,13 +416,24 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	listed_turf_dirty = !!T
 	listed_turf_icon_refresh_pending = FALSE
 
-/client/proc/open_listed_turf(turf/T)
+/client/proc/list_turf_from_alt_click(turf/target, atom/clicked)
+	var/mode = prefs ? prefs.alt_click_turf_mode : ALT_CLICK_TURF_ALWAYS
+	var/switch_tab = mode == ALT_CLICK_TURF_ALWAYS || (mode == ALT_CLICK_TURF_ONLY && clicked == target)
+	open_listed_turf(target, switch_tab)
+
+/client/proc/open_listed_turf(turf/T, switch_tab = TRUE)
 	if(!mob || !T)
+		return
+	var/turf/current_turf = mob.listed_turf
+	// Фоновый просмотр не заменяет тайл, вкладка которого открыта у игрока.
+	if(!switch_tab && current_turf && current_turf != T && stat_tab == current_turf.name)
 		return
 	set_listed_turf(T)
 	if(!statbrowser_ready)
+		listed_turf_switch_pending = switch_tab
 		return
-	src << output("[url_encode(json_encode(T.name))];", "statbrowser:create_listedturf")
+	listed_turf_switch_pending = FALSE
+	src << output("[url_encode(json_encode(T.name))];[switch_tab ? 1 : 0]", "statbrowser:create_listedturf")
 	SSstatpanels.refresh_listed_turf(src, force_send = TRUE)
 
 /client/proc/clear_listed_turf(send_output = TRUE)
@@ -440,6 +451,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	listed_turf_dirty = FALSE
 	listed_turf_dirty_at = 0
 	listed_turf_icon_refresh_pending = FALSE
+	listed_turf_switch_pending = FALSE
 	if(send_output && statbrowser_ready)
 		src << output("", "statbrowser:remove_listedturf")
 
@@ -2003,7 +2015,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	init_verbs()
 	tgui_panel?.emotes_send_sync_state()
 	if(mob?.listed_turf)
-		open_listed_turf(mob.listed_turf)
+		open_listed_turf(mob.listed_turf, switch_tab = listed_turf_switch_pending)
 
 //increment progress for an unlockable loadout item
 /client/proc/increment_progress(key, amount)

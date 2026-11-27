@@ -16,6 +16,8 @@
 #define COMSIG_CLICK_CTRL "ctrl_click"
 ///from base of atom/AltClick(): (/mob)
 #define COMSIG_CLICK_ALT "alt_click"
+	// Обработчик Alt-клика уже открыл свой интерфейс, содержимое тайла не нужно.
+	#define COMPONENT_SKIP_LISTED_TURF (1<<1)
 ///from base of atom/CtrlShiftClick(/mob)
 #define COMSIG_CLICK_CTRL_SHIFT "ctrl_shift_click"
 ///from base of atom/MouseDrop(): (/atom/over, /mob/user)

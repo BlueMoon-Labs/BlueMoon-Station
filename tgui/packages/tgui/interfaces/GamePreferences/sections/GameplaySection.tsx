@@ -16,6 +16,7 @@ type GameplayData = {
   recoil_push: number;
   action_buttons_hide: boolean;
   amplify_department_radio: boolean;
+  alt_click_turf_mode: number;
   autostand: boolean;
   long_strip_menu: boolean;
   shift_invites: boolean;
@@ -26,6 +27,12 @@ const DAMAGE_SHAKE_OPTIONS = [
   { value: 0, label: 'Отключено' },
   { value: 1, label: 'Всегда' },
   { value: 2, label: 'Только лёжа' },
+];
+
+const ALT_CLICK_TURF_OPTIONS = [
+  'Всегда',
+  'Только по самому тайлу',
+  'Никогда',
 ];
 
 const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boolean; tooltip?: string }[] = [
@@ -60,6 +67,21 @@ export const GameplaySection = (props) => {
           onClick={() => act('toggle_gameplay', { flag })}
         />
       ))}
+      <Stack.Item>
+        <Stack align="center" fill className="GamePreferences__row">
+          <Stack.Item grow basis={0}>
+            <div className="GamePreferences__label">Переход к содержимому тайла по Alt-клику</div>
+          </Stack.Item>
+          <Stack.Item>
+            <Dropdown
+              width="210px"
+              options={ALT_CLICK_TURF_OPTIONS}
+              selected={ALT_CLICK_TURF_OPTIONS[data.alt_click_turf_mode ?? 0]}
+              onSelected={label => act('set_alt_click_turf_mode', { value: ALT_CLICK_TURF_OPTIONS.indexOf(label) })}
+            />
+          </Stack.Item>
+        </Stack>
+      </Stack.Item>
       <Stack.Item>
         <Stack align="center" fill className="GamePreferences__row">
           <Stack.Item grow basis={0}>
