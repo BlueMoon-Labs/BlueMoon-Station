@@ -343,13 +343,13 @@ SUBSYSTEM_DEF(statpanels)
 										ivotedforthis = SSvote.voted[target.ckey] && (text2num(choice_id) in SSvote.voted[target.ckey])
 									else
 										ivotedforthis = (SSvote.voted[target.ckey] == text2num(choice_id))
-									vote_arry[++vote_arry.len] += list(ivotedforthis ? "\[X\]" : "\[ \]", display_choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
+									vote_arry[++vote_arry.len] += list(ivotedforthis ? "\[X\]" : "\[ \]", display_choice, "[REF(SSvote)];vote=[choice_id];ballot_id=[SSvote.ballot_id];statpannel=1")
 								if(SCHULZE_VOTING, INSTANT_RUNOFF_VOTING)
 									var/list/vote = SSvote.voted[target.ckey]
 									var/vote_position = " "
 									if(vote)
 										vote_position = vote.Find(text2num(choice_id))
-									vote_arry[++vote_arry.len] += list("\[[vote_position]\]", display_choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
+									vote_arry[++vote_arry.len] += list("\[[vote_position]\]", display_choice, "[REF(SSvote)];vote=[choice_id];ballot_id=[SSvote.ballot_id];statpannel=1")
 				var/raw_vote = json_encode(vote_arry)
 				if(target.statpanel_last_sent[STATPANEL_CHANNEL_VOTING] != raw_vote)
 					target << output("[url_encode(raw_vote)]", "statbrowser:update_voting")

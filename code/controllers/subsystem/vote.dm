@@ -67,6 +67,7 @@ SUBSYSTEM_DEF(vote)
 		list(232, 255, 95)
 	)
 	// BLUEMOON ADD END
+	var/ballot_id = 0
 
 /datum/controller/subsystem/vote/fire()	//called by master_controller
 	if(mode)
@@ -120,10 +121,6 @@ SUBSYSTEM_DEF(vote)
 	var/heavy_roundtype_votes = 0
 	var/group_roundtype_choices = should_group_roundtype_choices()
 //BLUEMOON ADD END
-	if((mode == "gamemode" || mode == "roundtype") && CONFIG_GET(flag/must_be_readied_to_vote_gamemode))
-		for(var/mob/dead/new_player/P in GLOB.player_list)
-			if(P.ready != PLAYER_READY_TO_PLAY && voted[P.ckey])
-				choices[choices[voted[P.ckey]]]--
 	for(var/option in choices)
 		var/votes = get_effective_votes(option)
 		total_votes += votes
@@ -159,9 +156,11 @@ SUBSYSTEM_DEF(vote)
 	if(!CONFIG_GET(flag/default_no_vote) && choices.len)
 		var/list/non_voters = GLOB.directory.Copy()
 		non_voters -= voted
+		var/require_ready = mode == "gamemode" && CONFIG_GET(flag/must_be_readied_to_vote_gamemode)
 		for (var/non_voter_ckey in non_voters)
 			var/client/C = non_voters[non_voter_ckey]
-			if (!C || C.is_afk())
+			var/mob/dead/new_player/lobby_player = C?.mob
+			if (!C || C.is_afk() || (require_ready && istype(lobby_player) && lobby_player.ready != PLAYER_READY_TO_PLAY))
 				non_voters -= non_voter_ckey
 		if(non_voters.len > 0)
 			if(mode == "restart")
@@ -201,10 +200,6 @@ SUBSYSTEM_DEF(vote)
 	return votes
 
 /datum/controller/subsystem/vote/proc/calculate_condorcet_votes(var/blackbox_text)
-	if((mode == "gamemode" || mode == "dynamic" || mode == "roundtype") && CONFIG_GET(flag/must_be_readied_to_vote_gamemode))
-		for(var/mob/dead/new_player/P in GLOB.player_list)
-			if(P.ready != PLAYER_READY_TO_PLAY && voted[P.ckey])
-				voted -= P.ckey
 	var/list/d[][] = new/list(choices.len,choices.len) // the basic vote matrix, how many times a beats b
 	for(var/ckey in voted)
 		var/list/this_vote = voted[ckey]
@@ -251,10 +246,6 @@ SUBSYSTEM_DEF(vote)
 	for(var/choice in choices)
 		scores_by_choice += "[choice]"
 		scores_by_choice["[choice]"] = list()
-	if((mode == "gamemode" || mode == "dynamic" || mode == "roundtype") && CONFIG_GET(flag/must_be_readied_to_vote_gamemode))
-		for(var/mob/dead/new_player/P in GLOB.player_list)
-			if(P.ready != PLAYER_READY_TO_PLAY && voted[P.ckey])
-				voted -= P.ckey
 	for(var/ckey in voted)
 		var/list/this_vote = voted[ckey]
 		var/list/pretty_vote = list()
@@ -308,30 +299,44 @@ SUBSYSTEM_DEF(vote)
 			scores[score_name] = (scores[score_name]-min_score)/(max_score-min_score)
 		SSblackbox.record_feedback("nested tally","voting",scores[score_name],list(blackbox_text,"Total scores",score_name))
 
-/datum/controller/subsystem/vote/proc/get_runoff_results(var/blackbox_text)
-	var/already_lost_runoff = list()
-	var/list/cur_choices = choices.Copy()
-	for(var/ckey in voted)
-		choices["[choices[voted[ckey][1]]]"]++ // jesus christ how horrifying
-	for(var/_this_var_unused_ignore_it in 1 to choices.len) // if it takes more than this something REALLY wrong happened
+/datum/controller/subsystem/vote/proc/get_runoff_results()
+	var/list/eliminated = list()
+	var/list/totals = choices.Copy()
+	for(var/runoff_round in 1 to choices.len)
+		for(var/option in totals)
+			totals[option] = 0
+		var/active_ballots = 0
 		for(var/ckey in voted)
-			cur_choices["[cur_choices[voted[ckey][1]]]]"]++ // jesus christ how horrifying
-		var/least_vote = 100000
-		var/least_voted = 1
-		for(var/i in 1 to cur_choices.len)
-			var/option = cur_choices[i]
-			if(cur_choices["[option]"] > voted.len/2)
-				return list("[option]")
-			else if(cur_choices["[option]"] < least_vote && !("[option]" in already_lost_runoff))
-				least_vote = cur_choices["[option]"]
-				least_voted = i
-		already_lost_runoff += cur_choices[least_voted]
-		for(var/ckey in voted)
-			voted[ckey] -= least_voted
-		for(var/i in 1 to cur_choices.len)
-			cur_choices["[cur_choices[i]]"] = 0
+			for(var/rank in voted[ckey])
+				if(rank in eliminated)
+					continue
+				totals[choices[rank]]++
+				active_ballots++
+				break
+		if(!active_ballots)
+			break
+		if(runoff_round == 1)
+			for(var/option in choices)
+				choices[option] = totals[option]
+		var/least_votes = INFINITY
+		var/least_rank
+		for(var/rank in 1 to choices.len)
+			if(rank in eliminated)
+				continue
+			var/option = choices[rank]
+			if(totals[option] > active_ballots / 2)
+				return list(option)
+			if(totals[option] < least_votes)
+				least_votes = totals[option]
+				least_rank = rank
+		eliminated += least_rank
+	return list()
 
 /datum/controller/subsystem/vote/proc/announce_result()
+	if((mode == "gamemode" || mode == "dynamic" || mode == "roundtype") && CONFIG_GET(flag/must_be_readied_to_vote_gamemode))
+		for(var/mob/dead/new_player/player in GLOB.player_list)
+			if(player.ckey && player.ready != PLAYER_READY_TO_PLAY)
+				remove_vote(player.ckey)
 	var/vote_title_text
 	var/text
 	if(question)
@@ -626,56 +631,87 @@ SUBSYSTEM_DEF(vote)
 
 	return .
 
-/datum/controller/subsystem/vote/proc/submit_vote(vote, score = 0)
-	if(mode)
-		if(CONFIG_GET(flag/no_dead_vote) && usr.stat == DEAD && !usr.client.holder)
+/datum/controller/subsystem/vote/proc/can_edit_ballot(client/voter, expected_ballot_id)
+	return voter?.ckey && voter.mob && ballot_id == expected_ballot_id && get_time_remaining() > 0
+
+/datum/controller/subsystem/vote/proc/submit_vote(client/voter, expected_ballot_id, vote, score)
+	if(!can_edit_ballot(voter, expected_ballot_id))
+		return FALSE
+	if(CONFIG_GET(flag/no_dead_vote) && voter.mob.stat == DEAD && !voter.holder)
+		return FALSE
+	if(!IS_FINITE(vote) || !ISINTEGER(vote) || !ISINRANGE(vote, 1, choices.len))
+		return FALSE
+
+	var/ckey = voter.ckey
+	var/option = choices[vote]
+	var/power = 1
+	if(use_vote_power && (vote_system == PLURALITY_VOTING || vote_system == APPROVAL_VOTING))
+		if(isnull(users_vote_power[ckey]))
+			users_vote_power[ckey] = get_vote_power_by_role(voter)
+		power = users_vote_power[ckey]
+
+	switch(vote_system)
+		if(PLURALITY_VOTING)
+			var/old_vote = voted[ckey]
+			if(old_vote == vote)
+				return FALSE
+			if(old_vote)
+				choices[choices[old_vote]] -= power
+			voted[ckey] = vote
+			choices[option] += power
+		if(APPROVAL_VOTING)
+			var/list/approved = voted[ckey]
+			if(!approved)
+				approved = list()
+				voted[ckey] = approved
+			if(vote in approved)
+				approved -= vote
+				choices[option] -= power
+				if(!length(approved))
+					voted -= ckey
+			else
+				approved += vote
+				choices[option] += power
+		if(SCHULZE_VOTING, INSTANT_RUNOFF_VOTING)
+			var/list/ranked = voted[ckey]
+			if(!ranked)
+				ranked = list()
+				voted[ckey] = ranked
+			if(vote in ranked)
+				ranked -= vote
+				if(!length(ranked))
+					voted -= ckey
+			else
+				ranked += vote
+			saved -= ckey
+		if(SCORE_VOTING, HIGHEST_MEDIAN_VOTING)
+			if(!IS_FINITE(score) || !ISINTEGER(score) || !ISINRANGE(score, 1, length(GLOB.vote_score_options)))
+				return FALSE
+			var/list/ratings = voted[ckey]
+			if(!ratings)
+				ratings = list()
+				voted[ckey] = ratings
+			ratings[option] = score
+			saved -= ckey
+		else
 			return FALSE
-		if(use_vote_power)
-			if(!users_vote_power[usr.ckey])
-				users_vote_power[usr.ckey] = get_vote_power_by_role(usr.client)
-			vote_power = users_vote_power[usr.ckey]
-		if(vote && ISINRANGE(vote, 1, choices.len))
-			switch(vote_system)
-				if(PLURALITY_VOTING)
-					if(usr.ckey in voted)
-						choices[choices[voted[usr.ckey]]] -= vote_power
-						voted[usr.ckey] = vote
-						choices[choices[vote]] += vote_power
-						return vote
-					else
-						voted += usr.ckey
-						voted[usr.ckey] = vote
-						choices[choices[vote]] += vote_power	//check this
-						return vote
-				if(APPROVAL_VOTING)
-					if(usr.ckey in voted)
-						if(vote in voted[usr.ckey])
-							voted[usr.ckey] -= vote
-							choices[choices[vote]] -= vote_power
-						else
-							voted[usr.ckey] += vote
-							choices[choices[vote]] += vote_power
-					else
-						voted += usr.ckey
-						voted[usr.ckey] = list(vote)
-						choices[choices[vote]] += vote_power
-						return vote
-				if(SCHULZE_VOTING,INSTANT_RUNOFF_VOTING)
-					if(usr.ckey in voted)
-						if(vote in voted[usr.ckey])
-							voted[usr.ckey] -= vote
-					else
-						voted += usr.ckey
-						voted[usr.ckey] = list()
-					voted[usr.ckey] += vote
-					saved -= usr.ckey
-				if(SCORE_VOTING,HIGHEST_MEDIAN_VOTING)
-					if(!(usr.ckey in voted))
-						voted += usr.ckey
-						voted[usr.ckey] = list()
-					voted[usr.ckey][choices[vote]] = score
-					saved -= usr.ckey
-	return FALSE
+	return TRUE
+
+/datum/controller/subsystem/vote/proc/remove_vote(ckey)
+	if(!(ckey in voted))
+		return FALSE
+	var/power = use_vote_power ? users_vote_power[ckey] : 1
+	if(isnull(power))
+		power = 1
+	switch(vote_system)
+		if(PLURALITY_VOTING)
+			choices[choices[voted[ckey]]] -= power
+		if(APPROVAL_VOTING)
+			for(var/choice in voted[ckey])
+				choices[choices[choice]] -= power
+	voted -= ckey
+	saved -= ckey
+	return TRUE
 
 /datum/controller/subsystem/vote/proc/initiate_vote(vote_type, initiator_key, display = display_votes, votesystem = PLURALITY_VOTING, forced = FALSE,vote_time = -1, roundtype_runoff_second_ballot = FALSE, replacing_active_vote = FALSE)//CIT CHANGE - adds display argument to votes to allow for obfuscated votes
 	if(mode && !replacing_active_vote)
@@ -775,6 +811,7 @@ SUBSYSTEM_DEF(vote)
 			else  // switch default: неизвестный тип голосования
 				return FALSE
 		mode = vote_type
+		ballot_id++
 		initiator = initiator_key ? initiator_key : "the Server" // austation -- Crew autotransfer vote
 		started_time = world.time
 		// BLUEMOON EDIT START - реструктурирование
@@ -987,10 +1024,7 @@ SUBSYSTEM_DEF(vote)
 		return
 	// Голосование через statpanel
 	if(href_list["statpannel"])
-		if(vote_system == SCORE_VOTING || vote_system == HIGHEST_MEDIAN_VOTING)
-			submit_vote(round(text2num(href_list["vote"])), round(text2num(href_list["score"])))
-		else
-			submit_vote(round(text2num(href_list["vote"])))
+		submit_vote(usr.client, text2num(href_list["ballot_id"]), text2num(href_list["vote"]), text2num(href_list["score"]))
 
 /datum/controller/subsystem/vote/proc/remove_action_buttons()
 	for(var/v in generated_actions)
@@ -1046,6 +1080,7 @@ SUBSYSTEM_DEF(vote)
 /datum/controller/subsystem/vote/ui_data(mob/user)
 	var/list/data = list()
 	data["mode"] = mode
+	data["ballot_id"] = ballot_id
 	data["question"] = question
 	// Оставшееся время в секундах
 	data["time_remaining"] = round(get_time_remaining() / 10)
@@ -1140,27 +1175,10 @@ SUBSYSTEM_DEF(vote)
 	if(!C)
 		return
 	switch(action)
-		// === Кандидаты пи ===
 		if("vote")
-			if(vote_system == SCORE_VOTING || vote_system == HIGHEST_MEDIAN_VOTING)
-				submit_vote(text2num(params["index"]), text2num(params["score"] || 0))
-			else
-				submit_vote(text2num(params["index"]))
-			return TRUE
+			return submit_vote(C, params["ballot_id"], params["index"], params["score"])
 		if("vote_reset")
-			var/ckey = user.ckey
-			if(ckey in voted)
-				switch(vote_system)
-					if(PLURALITY_VOTING)
-						var/old_vote = voted[ckey]
-						var/power = use_vote_power ? (users_vote_power[ckey] || 1) : 1
-						choices[choices[old_vote]] -= power
-					if(APPROVAL_VOTING)
-						var/power = use_vote_power ? (users_vote_power[ckey] || 1) : 1
-						for(var/old_vote in voted[ckey])
-							choices[choices[old_vote]] -= power
-				voted -= ckey
-			return TRUE
+			return can_edit_ballot(C, params["ballot_id"]) && remove_vote(C.ckey)
 		// === УПРАВЛЕНИЕ ===
 		if("cancel")
 			if(!C.holder || !mode)

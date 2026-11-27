@@ -861,7 +861,7 @@ GLOBAL_LIST_EMPTY(manifest_head_cache)
 		M.fields["alg_d"]		= "Аллергии не были обнаружены на момент записи."
 		M.fields["cdi"]			= "Отсутствуют"
 		M.fields["cdi_d"]		= "Болезни не диагностировались на момент записи."
-		M.fields["notes"]		= "[prefs.medical_records]"
+		M.fields["notes"]		= normalize_character_record(prefs.medical_records)
 		medical += M
 		medical_by_name[H.real_name] = M
 		medical_by_id[id] = M
@@ -881,7 +881,7 @@ GLOBAL_LIST_EMPTY(manifest_head_cache)
 		S.fields["ma_crim"]		= list()
 		S.fields["ma_crim_d"]	= "No major crime convictions."
 		S.fields["fines"] = list() // CATCRINGE ADD - штрафы
-		S.fields["notes"]		= prefs.security_records || "No notes."
+		S.fields["notes"]		= normalize_character_record(prefs.security_records) || "No notes."
 		// BLUEMOON ADD START - логи
 		S.fields["actions_logs"] = list(
 			"<u>[GLOB.current_date_string] | [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] ЗАПИСЬ НАЧАТА. СУБЪЕКТ - [H.real_name] | [assignment] | [id];</u><br>"

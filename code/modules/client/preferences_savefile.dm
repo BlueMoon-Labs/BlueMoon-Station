@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	90
+#define SAVEFILE_VERSION_MAX	91
 
 /datum/preferences
 	var/tmp/pending_savefile_version
@@ -549,6 +549,10 @@
 	if(current_version < 90 && !syndimatic_character_id && path)
 		// Повторное чтение старого слота до пересохранения даёт тот же идентификатор.
 		syndimatic_character_id = rustg_hash_string(RUSTG_HASH_SHA256, "syndimatic/[path]/[default_slot]")
+
+	if(current_version < 91)
+		security_records = normalize_character_record(security_records)
+		medical_records = normalize_character_record(medical_records)
 
 /datum/preferences/proc/load_path(ckey,filename="preferences.sav")
 	if(!ckey)
@@ -2335,8 +2339,8 @@ GLOBAL_VAR(player_save_migration_timer)
 		custom_speech_verb = GLOB.speech_verbs[1]
 	custom_tongue = sanitize_inlist(custom_tongue, GLOB.roundstart_tongues, "default")
 
-	security_records = copytext_char(security_records, 1, MAX_FLAVOR_LEN)
-	medical_records = copytext_char(medical_records, 1, MAX_FLAVOR_LEN)
+	security_records = istext(security_records) ? security_records : ""
+	medical_records = istext(medical_records) ? medical_records : ""
 
 	features["flavor_text"]	= copytext_char(features["flavor_text"], 1, MAX_FLAVOR_LEN)
 	features["naked_flavor_text"] = copytext_char(features["naked_flavor_text"], 1, MAX_FLAVOR_LEN) //SPLURT edit

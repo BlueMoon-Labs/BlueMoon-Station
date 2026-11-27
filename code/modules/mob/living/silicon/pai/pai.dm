@@ -877,7 +877,7 @@
 			"alg_d" = medicalActive2.fields["alg_d"],
 			"cdi" = medicalActive2.fields["cdi"],
 			"cdi_d" = medicalActive2.fields["cdi_d"],
-			"notes" = medicalActive2.fields["notes"],
+			"notes" = html_decode(medicalActive2.fields["notes"]),
 		)
 
 	// Active security record
@@ -901,7 +901,7 @@
 			"mi_crim_d" = securityActive2.fields["mi_crim_d"],
 			"ma_crim" = securityActive2.fields["ma_crim"],
 			"ma_crim_d" = securityActive2.fields["ma_crim_d"],
-			"notes" = securityActive2.fields["notes"],
+			"notes" = html_decode(securityActive2.fields["notes"]),
 		)
 
 	// Atmosphere

@@ -243,8 +243,8 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		else
 			data["erp_verbs"] = "Text Only"
 	if (isobserver(user))
-		data["security_records"] = format_text("security_records", M?.client?.prefs.security_records) //BLUEMOON ADD - призраки видят базы данных в описании персонажей
-		data["medical_records"] = format_text("medical_records", M?.client?.prefs.medical_records) //BLUEMOON ADD - призраки видят базы данных в описании персонажей
+		data["security_records"] = format_text("security_records", html_decode(M?.client?.prefs.security_records)) // Призраки видят записи в профиле персонажа.
+		data["medical_records"] = format_text("medical_records", html_decode(M?.client?.prefs.medical_records))
 	// BLUEMOON EDIT END
 	data["vore_tag"] = M?.client?.prefs?.vorepref || "No"
 	data["erp_tag"] = M?.client?.prefs?.erppref || "No"

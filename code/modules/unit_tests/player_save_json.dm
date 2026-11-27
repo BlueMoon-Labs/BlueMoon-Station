@@ -805,6 +805,19 @@
 	TEST_ASSERT_EQUAL(prefs.medical_records, html_encode_readable("<i>x</i>"), "разметка в медзаписи не закодирована")
 	TEST_ASSERT(!findtext(prefs.summon_nickname, "<"), "прозвище обошло фильтр имён")
 
+	var/datum/character_setup/editor = allocate(/datum/character_setup, prefs)
+	var/record_text = "Тест & Проверка\n<важно>"
+	TEST_ASSERT(editor.apply_text_edit("security_records", record_text), "редактор отклонил записи СБ")
+	TEST_ASSERT_EQUAL(prefs.security_records, html_encode_readable(record_text), "редактор сохранил запись без экранирования")
+	var/list/background = editor.build_background_data()
+	TEST_ASSERT_EQUAL(background["securityRecords"], record_text, "редактор показал экранированный текст")
+
+	// В одном старом слоте могут быть записи, созданные разными редакторами.
+	prefs.medical_records = record_text
+	prefs.update_character(90, null)
+	TEST_ASSERT_EQUAL(prefs.medical_records, prefs.security_records, "миграция изменила текст или закодировала запись дважды")
+	TEST_ASSERT_EQUAL(examine_record_text(record_text), prefs.medical_records, "HUD вставляет сохранённую запись как разметку")
+
 /// Редактор хранит набор пресета SAVE_0 рядом с общими слотами, экспорт с ним импортируется обратно.
 /datum/unit_test/player_save_json/public_transfer_preset_loadout/Run()
 	prepare()

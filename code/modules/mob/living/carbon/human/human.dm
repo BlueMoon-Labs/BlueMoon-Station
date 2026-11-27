@@ -255,7 +255,7 @@
 										var/list/major_entries = list()
 										for(var/datum/data/crime/c in R.fields["ma_crim"])
 											major_entries += "<b>[c.crimeName]</b><br>[c.crimeDetails]<br><span class='examine_meta'>Добавившее лицо: [c.author]. Время: [c.time]</span>"
-										var/list/sec_rows = list("Статус" = R.fields["criminal"], "Заметки" = examine_spoiler("Показать", R.fields["notes"], 100))
+										var/list/sec_rows = list("Статус" = examine_record_text(R.fields["criminal"]), "Заметки" = examine_spoiler("Показать", examine_record_text(R.fields["notes"]), 100))
 										to_chat(usr, examine_box("Записи СБ: [R.fields["name"]]", examine_table(sec_rows) + examine_box("Малые правонарушения", examine_entries(minor_entries, "Нет записей."), FALSE) + examine_box("Крупные правонарушения", examine_entries(major_entries, "Нет записей."), FALSE)))
 									return
 								if(href_list["add_crime"])
@@ -366,12 +366,12 @@
 				to_chat(usr, span_warning("Невозможно установить профиль данных данной личности."))
 				return
 			var/list/record_rows = list(
-				"Имя" = R.fields["name"],
-				"Группа крови" = R.fields["blood_type"],
-				"ДНК" = R.fields["b_dna"],
-				"Незнач. ограничения" = "[R.fields["mi_dis"]]<br><span class='examine_meta'>[R.fields["mi_dis_d"]]</span>",
-				"Серьёзные ограничения" = "[R.fields["ma_dis"]]<br><span class='examine_meta'>[R.fields["ma_dis_d"]]</span>",
-				"Заметки" = examine_spoiler("Показать", R.fields["notes"], 100))
+				"Имя" = examine_record_text(R.fields["name"]),
+				"Группа крови" = examine_record_text(R.fields["blood_type"]),
+				"ДНК" = examine_record_text(R.fields["b_dna"]),
+				"Незнач. ограничения" = "[examine_record_text(R.fields["mi_dis"])]<br>[span_examine_meta(examine_record_text(R.fields["mi_dis_d"]))]",
+				"Серьёзные ограничения" = "[examine_record_text(R.fields["ma_dis"])]<br>[span_examine_meta(examine_record_text(R.fields["ma_dis_d"]))]",
+				"Заметки" = examine_spoiler("Показать", examine_record_text(R.fields["notes"]), 100))
 			to_chat(usr, examine_box("Медицинская запись", "<div class='examine_medical_record'>[examine_table(record_rows)]</div><div class='examine_record_actions'><a href='?src=[UID()];medrecordComment=`'>\[Просмотреть комментарии\]</a></div>"))
 
 	if(href_list["medrecordComment"])

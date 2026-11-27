@@ -328,6 +328,7 @@ const ChoicesPanel = (props) => {
   const { act, data } = useBackend();
   const {
     choices = [],
+    ballot_id,
     vote_system,
     score_options = [],
     last_modes,
@@ -368,17 +369,18 @@ const ChoicesPanel = (props) => {
   const voted = choices.some((c) => c.user_selected || c.user_approved || c.user_rank > 0);
   const totalVotes = choices.reduce((sum, c) => (c.votes > 0 ? sum + c.votes : sum), 0);
   const leaderVotes = Math.max(0, ...choices.map((c) => c.votes));
+  const onVote = (index, score) => act('vote', { ballot_id, index, score });
 
   let headerButton = null;
   if (voted && (vote_system === 'PLURALITY' || vote_system === 'APPROVAL')) {
     headerButton = (
-      <Button compact icon="undo" color="transparent" onClick={() => act('vote_reset')}>
+      <Button compact icon="undo" color="transparent" onClick={() => act('vote_reset', { ballot_id })}>
         Отозвать голос
       </Button>
     );
   } else if (voted && isRanked) {
     headerButton = (
-      <Button compact icon="undo" color="transparent" onClick={() => act('vote_reset')}>
+      <Button compact icon="undo" color="transparent" onClick={() => act('vote_reset', { ballot_id })}>
         Сбросить рейтинг
       </Button>
     );
@@ -423,12 +425,13 @@ const ChoicesPanel = (props) => {
       )}
       <Box mt={1}>
         {choices.length === 0 && <NoticeBox info>Нет вариантов.</NoticeBox>}
-        {isRanked && <RankedChoices choices={choices} />}
-        {isScore && <ScoreChoices choices={choices} score_options={score_options} />}
+        {isRanked && <RankedChoices choices={choices} onVote={onVote} />}
+        {isScore && <ScoreChoices choices={choices} score_options={score_options} onVote={onVote} />}
         {!isRanked && !isScore && choices.map((choice) => (
           <ChoiceRow
             key={choice.id}
             choice={choice}
+            onVote={onVote}
             multi={vote_system === 'APPROVAL'}
             totalVotes={totalVotes}
             leaderVotes={leaderVotes}
@@ -483,8 +486,7 @@ const ChoiceButton = (props) => {
 };
 
 const ChoiceRow = (props) => {
-  const { choice, multi, totalVotes, leaderVotes } = props;
-  const { act } = useBackend();
+  const { choice, multi, totalVotes, leaderVotes, onVote } = props;
   const mine = multi ? !!choice.user_approved : !!choice.user_selected;
   const hidden = choice.votes === -1;
   const percent = !hidden && totalVotes ? Math.round((choice.votes / totalVotes) * 100) : 0;
@@ -516,7 +518,7 @@ const ChoiceRow = (props) => {
         fill={percent}
         fillColor={mine ? '#b6f08c' : isLeader ? '#7fc4ff' : 'rgba(255, 255, 255, 0.45)'}
         tooltip={mine && !multi ? 'Ваш голос' : null}
-        onClick={() => act('vote', { index: choice.id })}>
+        onClick={() => onVote(choice.id)}>
         <Box bold={mine}>{choiceLabel(choice.name)}</Box>
       </ChoiceButton>
     </Box>
@@ -524,8 +526,7 @@ const ChoiceRow = (props) => {
 };
 
 const RankedChoices = (props) => {
-  const { choices } = props;
-  const { act } = useBackend();
+  const { choices, onVote } = props;
   const ranked = choices.filter((c) => c.user_rank > 0).sort((a, b) => a.user_rank - b.user_rank);
   const unranked = choices.filter((c) => !c.user_rank);
 
@@ -540,7 +541,7 @@ const RankedChoices = (props) => {
               ? <Box bold>№{choice.user_rank}</Box>
               : <Icon name="plus" opacity={0.5} />}
             tooltip={choice.user_rank > 0 ? 'Убрать из рейтинга' : 'Добавить в рейтинг'}
-            onClick={() => act('vote', { index: choice.id })}>
+            onClick={() => onVote(choice.id)}>
             {choiceLabel(choice.name)}
           </ChoiceButton>
         </Box>
@@ -550,8 +551,7 @@ const RankedChoices = (props) => {
 };
 
 const ScoreChoices = (props) => {
-  const { choices, score_options } = props;
-  const { act } = useBackend();
+  const { choices, score_options, onVote } = props;
 
   return (
     <>
@@ -588,7 +588,7 @@ const ScoreChoices = (props) => {
                     lineHeight={1.8}
                     textAlign="center"
                     selected={choice.user_score === opt.value}
-                    onClick={() => act('vote', { index: choice.id, score: opt.value })}>
+                    onClick={() => onVote(choice.id, opt.value)}>
                     {opt.label}
                   </Button>
                 </Stack.Item>

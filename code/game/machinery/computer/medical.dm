@@ -149,7 +149,7 @@
 					fields[++fields.len] = MED_FIELD("Подробности", active2.fields["alg_d"], "alg_d", TRUE)
 					fields[++fields.len] = MED_FIELD("Текущие заболевания", active2.fields["cdi"], "cdi", FALSE)
 					fields[++fields.len] = MED_FIELD("Подробности", active2.fields["cdi_d"], "cdi_d", TRUE)
-					fields[++fields.len] = MED_FIELD("Важные заметки", active2.fields["notes"], "notes", TRUE)
+					fields[++fields.len] = MED_FIELD("Важные заметки", html_decode(active2.fields["notes"]), "notes", TRUE)
 					if(!active2.fields["comments"] || !islist(active2.fields["comments"]))
 						active2.fields["comments"] = list()
 					medical["comments"] = active2.fields["comments"]
@@ -399,7 +399,7 @@
 						answer = new_age
 
 					if(istype(active2) && (field in active2.fields))
-						active2.fields[field] = answer
+						active2.fields[field] = (field == "notes") ? html_encode_readable(answer) : answer
 					else if(istype(active1) && (field in active1.fields))
 						active1.fields[field] = answer
 				if("add_c")
