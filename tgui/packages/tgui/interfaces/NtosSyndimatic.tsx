@@ -3,7 +3,7 @@ import { type RefObject, useEffect, useLayoutEffect, useRef, useState } from 're
 import { useBackend } from '../backend';
 import { Box, Button, Icon, NoticeBox, Section, Stack, TextArea, Tooltip } from '../components';
 import { NtosWindow } from '../layouts';
-import { PhotoGallery, PhotoGalleryPagination, PhotoTile } from './common/PhotoGallery';
+import { PhotoActionMenu, PhotoGallery, PhotoGalleryPagination, PhotoTile } from './common/PhotoGallery';
 import { type PhotoMedia, PhotoPreview } from './PhotoViewer';
 
 type ByondFlag = boolean | 0 | 1;
@@ -197,7 +197,7 @@ const FollowNotificationButton = ({ id, name }: { id: string; name: string }) =>
       <Button
         icon={icon}
         color={color}
-        title={description}
+        tooltip={description}
         aria-label={description}
         role="button"
         onClick={() => act('cycle_follow_notification', { id })}
@@ -384,7 +384,7 @@ const Subscriptions = () => {
   const notificationButton = !!data.canSetNotifications && (
     <Button
       {...notificationStyle(followNotifications)}
-      title={followNotifications ? 'Уведомления о подписках включены' : 'Уведомления о подписках выключены'}
+      tooltip={followNotifications ? 'Уведомления о подписках включены' : 'Уведомления о подписках выключены'}
       aria-label="Уведомления о подписках"
       aria-pressed={followNotifications}
       role="button"
@@ -413,7 +413,7 @@ const Subscriptions = () => {
                 p={0}
                 m={0}
                 style={{ flexShrink: 0, backgroundColor: 'transparent', color: 'inherit' }}
-                title={name}
+                tooltip={name}
                 aria-label={name}
                 aria-disabled={!available}
                 disabled={!available}
@@ -428,7 +428,7 @@ const Subscriptions = () => {
         <Stack.Item shrink={0}>
           <Button
             icon={followListOpen ? 'chevron-down' : 'chevron-right'}
-            title={toggleLabel}
+            tooltip={toggleLabel}
             aria-label={toggleLabel}
             aria-expanded={!!followListOpen}
             role="button"
@@ -538,29 +538,35 @@ const Comments = ({ id }: { id: string }) => {
                 {[
                   { value: 1, count: likes, icon: 'thumbs-up', color: 'good', label: 'Лайк комментарию' },
                   { value: -1, count: dislikes, icon: 'thumbs-down', color: 'bad', label: 'Дизлайк комментарию' },
-                ].map(({ value, count, icon, color, label }) => (
-                  <button
-                    key={value}
-                    type="button"
-                    aria-label={label}
-                    aria-pressed={vote === value}
-                    disabled={!canWrite || !!ownComment}
-                    title={ownComment ? 'Это ваш комментарий' : label}
-                    onClick={() => act('vote_comment', { id, comment: commentId, vote: vote === value ? 0 : value })}
-                    style={{
-                      color: 'inherit',
-                      font: 'inherit',
-                      border: 0,
-                      background: 'transparent',
-                      opacity: !canWrite || ownComment ? 0.6 : 1,
-                      cursor: !canWrite || ownComment ? 'default' : 'pointer',
-                      padding: '0.15rem 0.5rem',
-                    }}
-                  >
-                    <Icon name={icon} color={vote === value ? color : undefined} mr={0.4} />
-                    {count}
-                  </button>
-                ))}
+                ].map(({ value, count, icon, color, label }) => {
+                  const disabled = !canWrite || !!ownComment;
+                  return (
+                    <Tooltip key={value} content={ownComment ? 'Это ваш комментарий' : label}>
+                      <span style={{ display: 'inline-block' }}>
+                        <button
+                          type="button"
+                          aria-label={label}
+                          aria-pressed={vote === value}
+                          disabled={disabled}
+                          onClick={() => act('vote_comment', { id, comment: commentId, vote: vote === value ? 0 : value })}
+                          style={{
+                            color: 'inherit',
+                            font: 'inherit',
+                            border: 0,
+                            background: 'transparent',
+                            opacity: disabled ? 0.6 : 1,
+                            cursor: disabled ? 'default' : 'pointer',
+                            pointerEvents: disabled ? 'none' : undefined,
+                            padding: '0.15rem 0.5rem',
+                          }}
+                        >
+                          <Icon name={icon} color={vote === value ? color : undefined} mr={0.4} />
+                          {count}
+                        </button>
+                      </span>
+                    </Tooltip>
+                  );
+                })}
               </Box>
             </Stack.Item>
           ))}
@@ -687,7 +693,14 @@ const ProfilePage = ({ profile }: { profile: Profile }) => {
             {!!profile.description && <Box mt={0.5} style={multiline}>{profile.description}</Box>}
             {!!ownProfile && !!canWrite && !editingProfile && (
               <Box mt={1}>
-                <Button icon="image" onClick={() => act('pick_avatar')}>Сменить фото</Button>
+                <PhotoActionMenu
+                  icon="image"
+                  label="Сменить фото"
+                  options={[
+                    { label: 'Из ПДА', icon: 'images', onSelect: () => act('pick_avatar') },
+                    { label: 'По URL', icon: 'link', onSelect: () => act('pick_avatar_url') },
+                  ]}
+                />
                 <Button icon="pen" onClick={() => act('edit_profile')}>Изменить описание</Button>
               </Box>
             )}

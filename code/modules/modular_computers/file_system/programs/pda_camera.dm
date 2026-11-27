@@ -358,6 +358,17 @@
 			if(!share_contacts || !istext(contact_ref) || params["id"] != selected_id || params["tab"] != tab)
 				return FALSE
 			return share_photo(user, contact_ref)
+		if("share_syndimatic")
+			if(viewer_ui_ref?.resolve() != ui || computer?.active_program != src || edit_mode || print_open || share_contacts || params["id"] != selected_id || params["tab"] != tab)
+				return FALSE
+			var/datum/picture/photo = get_selection()
+			if(!photo)
+				return FALSE
+			var/datum/computer_file/program/syndimatic/syndimatic = locate() in computer.get_all_files()
+			if(!syndimatic || syndimatic.computer != computer)
+				to_chat(user, span_warning("На ПДА нет приложения Syndimatic."))
+				return FALSE
+			return syndimatic.open_syndimatic_photo(user, "compose", photo)
 		if("attach_photo", "cancel_attachment")
 			var/datum/pda_chat/chat = attachment_chat_ref?.resolve()
 			if(!attachment_chat_ref)
@@ -383,7 +394,7 @@
 				photo = get_selection()
 				if(!photo || params["id"] != selected_id || params["tab"] != tab)
 					return FALSE
-			return syndimatic.return_from_syndimatic_picker(user, syndimatic_kind, photo)
+			return syndimatic.open_syndimatic_photo(user, syndimatic_kind, photo)
 		if("request_print")
 			if(!get_selection() || edit_mode || share_contacts)
 				return FALSE

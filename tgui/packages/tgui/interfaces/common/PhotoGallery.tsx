@@ -1,6 +1,92 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
-import { Box, Button, Icon, Stack } from '../../components';
+import { Box, Button, Icon, Stack, Tooltip } from '../../components';
+
+export const PhotoActionMenu = ({
+  label,
+  icon,
+  iconOnly,
+  alignEnd,
+  options,
+}: {
+  label: string;
+  icon: string;
+  iconOnly?: boolean;
+  alignEnd?: boolean;
+  options: { label: string; icon: string; onSelect: () => void }[];
+}) => {
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const dismissOutside = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', dismissOutside);
+    return () => document.removeEventListener('pointerdown', dismissOutside);
+  }, [open]);
+
+  const close = () => {
+    setOpen(false);
+    root.current?.querySelector<HTMLElement>('[aria-expanded]')?.focus();
+  };
+  return (
+    <div
+      ref={root}
+      style={{ display: 'inline-block', position: 'relative' }}
+      onKeyDown={(event) => {
+        if (open && event.key === 'Escape') {
+          event.stopPropagation();
+          close();
+        }
+      }}
+    >
+      <Button
+        icon={icon}
+        tooltip={iconOnly ? label : undefined}
+        role="button"
+        aria-label={label}
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
+        {!iconOnly && label}
+      </Button>
+      {open && (
+        <Box
+          role="group"
+          aria-label={label}
+          position="absolute"
+          top="100%"
+          left={alignEnd ? undefined : 0}
+          right={alignEnd ? 0 : undefined}
+          p={0.5}
+          backgroundColor="#1c2531"
+          style={{ width: 'max-content', zIndex: 5, borderRadius: '0.35rem', boxShadow: '0 0.25rem 0.75rem #0008' }}
+        >
+          {options.map(({ label, icon, onSelect }) => (
+            <Button
+              key={label}
+              icon={icon}
+              fluid
+              role="button"
+              onClick={() => {
+                close();
+                onSelect();
+              }}
+            >
+              {label}
+            </Button>
+          ))}
+        </Box>
+      )}
+    </div>
+  );
+};
 
 export const PhotoGallery = ({
   children,
@@ -35,68 +121,69 @@ export const PhotoTile = ({
   footer?: ReactNode;
   onClick: () => void;
 }) => (
-  <button
-    type="button"
-    title={label}
-    aria-label={label}
-    onClick={onClick}
-    style={{
-      position: 'relative',
-      display: 'grid',
-      placeItems: 'center',
-      aspectRatio: '1 / 1',
-      minWidth: 0,
-      overflow: 'hidden',
-      padding: 0,
-      border: '1px solid #ffffff40',
-      background: '#181c23',
-      color: '#aeb8c2',
-      cursor: 'pointer',
-    }}
-  >
-    {thumbnail || (thumbnailUrl && !/\.(webm|mp4)([?#]|$)/i.test(thumbnailUrl)) ? (
-      <img
-        src={thumbnail ? `data:image/png;base64,${thumbnail}` : thumbnailUrl ?? undefined}
-        alt=""
-        referrerPolicy="no-referrer"
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          imageRendering: thumbnail ? 'pixelated' : 'auto',
-        }}
-      />
-    ) : (
-      <Icon name="image" size={1.75} />
-    )}
-    {badge && (
-      <Box
-        position="absolute"
-        top={0.25}
-        right={0.25}
-        px={0.25}
-        backgroundColor="#000b"
-        style={{ borderRadius: '0.2rem' }}
-      >
-        {badge}
-      </Box>
-    )}
-    {footer && (
-      <Box
-        position="absolute"
-        bottom={0}
-        left={0}
-        width="100%"
-        px={0.5}
-        py={0.35}
-        backgroundColor="#000c"
-        textColor="#fff"
-        textAlign="left"
-      >
-        {footer}
-      </Box>
-    )}
-  </button>
+  <Tooltip content={label}>
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      style={{
+        position: 'relative',
+        display: 'grid',
+        placeItems: 'center',
+        aspectRatio: '1 / 1',
+        minWidth: 0,
+        overflow: 'hidden',
+        padding: 0,
+        border: '1px solid #ffffff40',
+        background: '#181c23',
+        color: '#aeb8c2',
+        cursor: 'pointer',
+      }}
+    >
+      {thumbnail || (thumbnailUrl && !/\.(webm|mp4)([?#]|$)/i.test(thumbnailUrl)) ? (
+        <img
+          src={thumbnail ? `data:image/png;base64,${thumbnail}` : thumbnailUrl ?? undefined}
+          alt=""
+          referrerPolicy="no-referrer"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            imageRendering: thumbnail ? 'pixelated' : 'auto',
+          }}
+        />
+      ) : (
+        <Icon name="image" size={1.75} />
+      )}
+      {badge && (
+        <Box
+          position="absolute"
+          top={0.25}
+          right={0.25}
+          px={0.25}
+          backgroundColor="#000b"
+          style={{ borderRadius: '0.2rem' }}
+        >
+          {badge}
+        </Box>
+      )}
+      {footer && (
+        <Box
+          position="absolute"
+          bottom={0}
+          left={0}
+          width="100%"
+          px={0.5}
+          py={0.35}
+          backgroundColor="#000c"
+          textColor="#fff"
+          textAlign="left"
+        >
+          {footer}
+        </Box>
+      )}
+    </button>
+  </Tooltip>
 );
 
 export const PhotoGalleryPagination = ({

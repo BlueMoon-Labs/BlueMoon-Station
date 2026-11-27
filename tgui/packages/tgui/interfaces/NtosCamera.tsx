@@ -16,7 +16,7 @@ import {
   TextArea,
 } from '../components';
 import { NtosWindow } from '../layouts';
-import { PhotoGallery, PhotoGalleryPagination, PhotoTile } from './common/PhotoGallery';
+import { PhotoActionMenu, PhotoGallery, PhotoGalleryPagination, PhotoTile } from './common/PhotoGallery';
 import { type PhotoMedia, PhotoPreview } from './PhotoViewer';
 
 type CameraTab = 'camera' | 'local' | 'cloud';
@@ -556,7 +556,20 @@ const PhotoDetails = ({ photo }: { photo: SelectedPhoto }) => {
               confirmContent="Удалить?"
               onClick={() => act('delete', { id: photo.id, tab: data.tab })}
             />
-            <Button icon="share" tooltip="Поделиться" aria-label="Поделиться" onClick={() => act('request_share')} />
+            <PhotoActionMenu
+              icon="share"
+              iconOnly
+              alignEnd
+              label="Поделиться"
+              options={[
+                { label: 'Отправить сообщением', icon: 'comment', onSelect: () => act('request_share') },
+                {
+                  label: 'Syndimatic',
+                  icon: 'images',
+                  onSelect: () => act('share_syndimatic', { id: photo.id, tab: data.tab }),
+                },
+              ]}
+            />
             <Button icon="print" tooltip="Печать" onClick={() => act('request_print')} />
           </>
         )}>

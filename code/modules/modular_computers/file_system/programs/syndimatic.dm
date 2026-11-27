@@ -633,8 +633,21 @@
 			if(blocks?["publish"])
 				return FALSE
 			return actor && SSticker.HasRoundStarted() && open_syndimatic_picker(user, "compose")
-		if("pick_avatar")
-			return actor && SSticker.HasRoundStarted() && profile_id == viewer_profile_id && SSpersistence.get_syndimatic_profile(profile_id) && open_syndimatic_picker(user, "avatar")
+		if("pick_avatar", "pick_avatar_url")
+			if(!actor || !SSticker.HasRoundStarted() || profile_id != viewer_profile_id || post_id || draft_photo || editing_profile || !SSpersistence.get_syndimatic_profile(profile_id))
+				return FALSE
+			if(action == "pick_avatar")
+				return open_syndimatic_picker(user, "avatar")
+			var/url = tgui_input_text(user, "Введите прямую ссылку HTTP или HTTPS на фото профиля.", "Фото по URL")
+			if(!url || QDELETED(src) || viewer_ui_ref?.resolve() != ui || !can_view_syndimatic(user) || get_syndimatic_actor(user) != actor || profile_id != actor.syndimatic_profile_id || post_id || draft_photo || editing_profile)
+				return FALSE
+			url = sanitize_headshot_link(trim(url))
+			if(!url)
+				to_chat(user, span_warning("Нужна прямая ссылка на файл JPG, PNG, GIF, WEBM или MP4."))
+				return FALSE
+			var/datum/picture/photo = new
+			photo.picture_url = url
+			set_syndimatic_draft("avatar", photo)
 		if("edit_profile")
 			if(!actor || profile_id != viewer_profile_id || post_id || !SSpersistence.get_syndimatic_profile(profile_id))
 				return FALSE
@@ -685,13 +698,20 @@
 	camera.open_camera_ui(user, syndimatic = src, syndimatic_kind = kind)
 	return TRUE
 
-/datum/computer_file/program/syndimatic/proc/return_from_syndimatic_picker(mob/user, kind, datum/picture/photo)
+/datum/computer_file/program/syndimatic/proc/open_syndimatic_photo(mob/user, kind, datum/picture/photo)
 	var/datum/mind/actor = get_syndimatic_actor(user)
 	if(!actor || !computer?.enabled)
 		return FALSE
 	var/datum/ui_state/state = ui_state(user)
 	if(state.can_use_topic(computer, user) != UI_INTERACTIVE)
 		return FALSE
+	if(photo && !SSticker.HasRoundStarted())
+		return FALSE
+	if(photo && kind == "compose")
+		var/list/blocks = SSpersistence.syndimatic_blocks[actor.syndimatic_profile_id]
+		if(blocks?["publish"])
+			to_chat(user, span_warning("Публикация в Syndimatic заблокирована."))
+			return FALSE
 	var/photo_url = photo?.picture_url ? sanitize_headshot_link(html_decode(photo.picture_url)) : null
 	if(photo && !photo.picture_image && !photo_url)
 		to_chat(user, span_warning("Не удалось открыть снимок для Syndimatic."))
@@ -706,11 +726,15 @@
 		return FALSE
 	profile_id = kind == "avatar" ? actor.syndimatic_profile_id : null
 	if(selected)
-		draft_photo = selected
-		draft_id = rustg_generate_uuid_v4()
-		draft_kind = kind
+		set_syndimatic_draft(kind, selected)
 	open_syndimatic_ui(user)
 	return TRUE
+
+/datum/computer_file/program/syndimatic/proc/set_syndimatic_draft(kind, datum/picture/photo)
+	clear_syndimatic_draft()
+	draft_photo = photo
+	draft_id = rustg_generate_uuid_v4()
+	draft_kind = kind
 
 /datum/computer_file/program/syndimatic/proc/change_syndimatic_data(action, list/params, mob/user, datum/mind/actor, list/post, target_id)
 	var/actor_id = actor.syndimatic_profile_id
