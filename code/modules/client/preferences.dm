@@ -607,6 +607,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/amplify_department_radio = FALSE
 	// Ноль означает максимальный лимит фотографий для текущего уровня подписки.
 	var/syndimatic_photo_limit = 0
+	var/syndimatic_follow_notifications = TRUE
 
 /datum/preferences/proc/get_vending_layout(machine_type)
 	return vending_layouts["[machine_type]"] || "grid"

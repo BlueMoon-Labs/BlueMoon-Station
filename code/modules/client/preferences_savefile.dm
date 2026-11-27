@@ -643,6 +643,7 @@
 	READ_PLAYER_SAVE(S, document, "windownoise", windownoise)
 	READ_PLAYER_SAVE(S, document, "examine_headshots", examine_headshots)
 	READ_PLAYER_SAVE(S, document, "syndimatic_notifications", syndimatic_notifications)
+	READ_PLAYER_SAVE(S, document, "syndimatic_follow_notifications", syndimatic_follow_notifications)
 	READ_PLAYER_SAVE(S, document, "syndimatic_photo_limit", syndimatic_photo_limit)
 	READ_PLAYER_SAVE(S, document, "mood_vignette", mood_vignette)
 	READ_PLAYER_SAVE(S, document, "action_buttons_hide_on_spawn", action_buttons_hide_on_spawn)
@@ -856,6 +857,7 @@
 	windownoise = sanitize_integer(windownoise, 0, 1, initial(windownoise))
 	examine_headshots = sanitize_integer(examine_headshots, 0, 1, initial(examine_headshots))
 	syndimatic_notifications = sanitize_integer(syndimatic_notifications, FALSE, TRUE, initial(syndimatic_notifications))
+	syndimatic_follow_notifications = sanitize_integer(syndimatic_follow_notifications, FALSE, TRUE, initial(syndimatic_follow_notifications))
 	syndimatic_photo_limit = sanitize_integer(syndimatic_photo_limit, 0, SYNDIMATIC_TIER_2_LIMIT, initial(syndimatic_photo_limit))
 	mood_vignette = sanitize_integer(mood_vignette, 0, 1, initial(mood_vignette))
 	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
@@ -1475,6 +1477,7 @@ GLOBAL_VAR(player_save_migration_timer)
 	WRITE_PLAYER_SAVE(S, document, "view_pixelshift", view_pixelshift)
 	WRITE_PLAYER_SAVE(S, document, "examine_headshots", examine_headshots)
 	WRITE_PLAYER_SAVE(S, document, "syndimatic_notifications", syndimatic_notifications)
+	WRITE_PLAYER_SAVE(S, document, "syndimatic_follow_notifications", syndimatic_follow_notifications)
 	WRITE_PLAYER_SAVE(S, document, "syndimatic_photo_limit", syndimatic_photo_limit)
 
 	//SKYRAT CHANGES BEGIN

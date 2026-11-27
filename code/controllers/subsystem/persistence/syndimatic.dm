@@ -91,9 +91,12 @@
 			continue
 		var/list/follows = list()
 		for(var/id in saved)
-			if(istext(id) && length(id) == 64 && saved[id] == TRUE)
-				follows[id] = TRUE
-				syndimatic_follower_counts[id] = (syndimatic_follower_counts[id] || 0) + 1
+			if(!istext(id) || length(id) != 64)
+				continue
+			switch(saved[id])
+				if(SYNDIMATIC_FOLLOW_NOTIFY_DEFAULT, SYNDIMATIC_FOLLOW_NOTIFY_ON, SYNDIMATIC_FOLLOW_NOTIFY_OFF)
+					follows[id] = saved[id]
+					syndimatic_follower_counts[id] = (syndimatic_follower_counts[id] || 0) + 1
 		if(length(follows))
 			syndimatic_follows[account] = follows
 
@@ -240,7 +243,7 @@
 	var/list/follows = syndimatic_follows[account]
 	var/list/updated = follows?.Copy() || list()
 	if(following)
-		updated[target_id] = TRUE
+		updated[target_id] = SYNDIMATIC_FOLLOW_NOTIFY_DEFAULT
 	else
 		updated -= target_id
 	if(!write_syndimatic_record("[SYNDIMATIC_FOLLOWS][account].json", updated))
@@ -254,6 +257,26 @@
 		syndimatic_follower_counts[target_id] = count
 	else
 		syndimatic_follower_counts -= target_id
+	return TRUE
+
+/datum/controller/subsystem/persistence/proc/cycle_syndimatic_follow_notification(account, target_id)
+	var/list/follows = syndimatic_follows[account]
+	var/mode = follows?[target_id]
+	switch(mode)
+		if(SYNDIMATIC_FOLLOW_NOTIFY_DEFAULT)
+			mode = SYNDIMATIC_FOLLOW_NOTIFY_ON
+		if(SYNDIMATIC_FOLLOW_NOTIFY_ON)
+			mode = SYNDIMATIC_FOLLOW_NOTIFY_OFF
+		if(SYNDIMATIC_FOLLOW_NOTIFY_OFF)
+			mode = SYNDIMATIC_FOLLOW_NOTIFY_DEFAULT
+		else
+			return FALSE
+	var/list/updated = follows.Copy()
+	updated[target_id] = mode
+	if(!write_syndimatic_record("[SYNDIMATIC_FOLLOWS][account].json", updated))
+		return FALSE
+	// Состав подписок прежний, поэтому кэш публикаций можно сохранить.
+	follows[target_id] = mode
 	return TRUE
 
 /datum/controller/subsystem/persistence/proc/ensure_syndimatic_profile(datum/mind/actor)
@@ -334,8 +357,9 @@
 		log_game("Syndimatic: не удалось освободить место и отменить публикацию [id].")
 	if(!syndimatic_posts[id])
 		return null
-	if(!QDELETED(actor))
-		notify_syndimatic_subscribers(actor)
+	var/list/published_post = get_visible_syndimatic_post(id)
+	if(published_post)
+		notify_syndimatic_subscribers(id, published_post)
 	return id
 
 /datum/controller/subsystem/persistence/proc/prune_syndimatic_account_posts(account, limit)
@@ -356,13 +380,21 @@
 		. = FALSE
 	syndimatic_accounts_pruning -= account
 
-/datum/controller/subsystem/persistence/proc/notify_syndimatic_subscribers(datum/mind/author)
+/datum/controller/subsystem/persistence/proc/notify_syndimatic_subscribers(id, list/post)
+	var/author_id = post["author"]
+	var/author_account = post["account"]
+	var/author_name = html_encode(post["name"])
 	for(var/datum/weakref/subscriber as anything in syndimatic_subscribers)
 		var/datum/mind/recipient = subscriber.resolve()
-		if(!recipient || recipient == author)
+		if(!recipient || recipient.syndimatic_owner_account == author_account)
 			continue
 		var/mob/living/holder = recipient.current
 		if(!isliving(holder) || holder.client?.ckey != recipient.syndimatic_owner_ckey)
+			continue
+		var/list/follows = syndimatic_follows[recipient.syndimatic_owner_account]
+		var/mode = follows?[author_id]
+		var/follow_notification = mode == SYNDIMATIC_FOLLOW_NOTIFY_ON || (mode == SYNDIMATIC_FOLLOW_NOTIFY_DEFAULT && holder.client.prefs?.syndimatic_follow_notifications)
+		if(!follow_notification && !recipient.syndimatic_notifications)
 			continue
 		for(var/obj/item/modular_computer/pda/device as anything in holder.GetAllContents(/obj/item/modular_computer/pda))
 			if(device.toff)
@@ -373,7 +405,13 @@
 				continue
 			program.alert_pending = device.active_program != program
 			if(holder.stat < UNCONSCIOUS && holder.is_literate())
-				to_chat(holder, span_info("[icon2html(device, holder)] Syndimatic: новая публикация от [html_encode(author.syndimatic_character_name)]."))
+				var/link = "byond://?src=[REF(program)];syndimatic_open="
+				var/message
+				if(follow_notification)
+					message = "Новая публикация по подписке от [author_name]. <a href='[link]post;post=[id]'>Открыть публикацию</a>"
+				else
+					message = "Новая публикация от [author_name]. <a href='[link]feed'>Открыть ленту</a>"
+				to_chat(holder, span_info("[icon2html(device, holder)] Syndimatic: [message]"))
 			if(!device.silent)
 				var/datum/computer_file/program/messenger/messenger = locate() in programs
 				device.ring(messenger ? messenger.ringtone : MESSENGER_RINGTONE_DEFAULT, list(holder))
@@ -426,7 +464,7 @@
 		else if(viewer == source)
 			continue
 		else if(follow_account_id)
-			if(viewer.viewer_account_id == follow_account_id || viewer.profile_id == profile_id)
+			if(viewer.viewer_account_id == follow_account_id || (profile_id && viewer.profile_id == profile_id))
 				viewer.update_syndimatic_view()
 		else if(viewer.shows_syndimatic_change(post_id, profile_id))
 			viewer.update_syndimatic_view(post_id, profile_id)

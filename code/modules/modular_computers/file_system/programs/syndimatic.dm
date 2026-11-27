@@ -12,6 +12,7 @@
 		character_id = rustg_hash_string(RUSTG_HASH_SHA256, "syndimatic/[prefs.path]/[prefs.default_slot]")
 	syndimatic_profile_id = rustg_hash_string(RUSTG_HASH_SHA256, "[account_key]/[character_id]")
 	syndimatic_owner_ckey = account_key
+	syndimatic_owner_account = syndimatic_account_id(account_key)
 	syndimatic_character_name = character.real_name
 	set_syndimatic_notifications(prefs.syndimatic_notifications)
 	for(var/portrait in character.dna.headshot_links)
@@ -21,10 +22,13 @@
 
 /datum/mind/proc/set_syndimatic_notifications(enabled)
 	syndimatic_notifications = enabled
-	if(enabled)
+	refresh_syndimatic_subscriber()
+
+/datum/mind/proc/refresh_syndimatic_subscriber()
+	if(syndimatic_notifications || SSpersistence.syndimatic_follows[syndimatic_owner_account])
 		SSpersistence.syndimatic_subscribers |= WEAKREF(src)
 	else
-		SSpersistence?.syndimatic_subscribers?.Remove(weak_reference)
+		SSpersistence.syndimatic_subscribers.Remove(weak_reference)
 
 /datum/computer_file/program/syndimatic
 	filename = "Syndimatic"
@@ -94,6 +98,50 @@
 		clear_syndimatic_session()
 	return ..()
 
+/datum/computer_file/program/syndimatic/Topic(href, href_list)
+	. = ..()
+	if(. || QDELETED(src))
+		return
+	var/destination = href_list["syndimatic_open"]
+	if(destination != "feed" && destination != "post")
+		return
+	var/mob/user = usr
+	var/datum/mind/actor = get_syndimatic_actor(user)
+	var/obj/item/modular_computer/pda/device = computer
+	if(!actor || !istype(device) || QDELETED(device) || device.toff || !user.contains_atom(device))
+		return
+	var/datum/ui_state/state = ui_state(user)
+	if(state.can_use_topic(device, user) != UI_INTERACTIVE || !(src in device.get_all_files()))
+		return
+	var/id = href_list["post"]
+	if(destination == "post" && (!id || !SSpersistence.get_visible_syndimatic_post(id)))
+		to_chat(user, span_warning("Публикация Syndimatic больше недоступна."))
+		return
+	if(!device.enabled && !device.turn_on(user, FALSE))
+		return
+	if(!device.use_power() || (!device.screen_on && !issilicon(user)))
+		return
+	if(device.active_program != src && !device.switch_program(src, user))
+		return
+	var/datum/tgui/main_ui = SStgui.get_open_ui(user, device)
+	main_ui?.close()
+
+	var/datum/tgui/current_ui = viewer_ui_ref?.resolve()
+	if(viewer_ui_ref && (!current_ui || current_ui.user != user || viewer_profile_id != actor.syndimatic_profile_id))
+		close_syndimatic_window()
+		current_ui = null
+	reset_syndimatic_navigation()
+	browse_view = "feed"
+	showing_follow_list = FALSE
+	if(destination == "post")
+		set_syndimatic_post(id)
+	if(!current_ui)
+		open_syndimatic_ui(user)
+	else if(current_ui.initialized)
+		current_ui.send_update()
+	else
+		current_ui.update_on_ready = TRUE
+
 /datum/computer_file/program/syndimatic/proc/can_view_syndimatic(mob/user)
 	if(!user?.client || !istype(computer, /obj/item/modular_computer/pda) || !computer.enabled || computer.active_program != src)
 		return FALSE
@@ -114,7 +162,7 @@
 	viewer_ref = WEAKREF(user)
 	var/datum/mind/actor = get_syndimatic_actor(user)
 	viewer_profile_id = actor?.syndimatic_profile_id
-	viewer_account_id = actor ? syndimatic_account_id(actor.syndimatic_owner_ckey) : null
+	viewer_account_id = actor?.syndimatic_owner_account
 	var/list/profile = SSpersistence.get_syndimatic_profile(viewer_profile_id)
 	if(profile && profile["name"] != actor.syndimatic_character_name)
 		var/list/updated_profile = profile.Copy()
@@ -182,6 +230,21 @@
 	draft_kind = null
 	draft_id = null
 	QDEL_NULL(draft_photo)
+
+/datum/computer_file/program/syndimatic/proc/reset_syndimatic_navigation()
+	clear_syndimatic_draft()
+	profile_id = null
+	post_id = null
+	post_media = null
+	comment_page = 0
+	gallery_page = 1
+	editing_profile = FALSE
+	viewing_blocks = FALSE
+
+/datum/computer_file/program/syndimatic/proc/set_syndimatic_post(id)
+	post_id = id
+	post_media = SSpersistence.get_syndimatic_media(id)
+	comment_page = 1
 
 /datum/computer_file/program/syndimatic/proc/shows_syndimatic_change(changed_post_id, changed_profile_id)
 	if(changed_profile_id)
@@ -304,6 +367,7 @@
 	var/list/posts = SSpersistence.syndimatic_posts
 	var/list/ids = profile_id ? SSpersistence.syndimatic_posts_by_author[profile_id] : SSpersistence.syndimatic_feed
 	if(data["view"] == "subscriptions")
+		data["followNotifications"] = !!user.client?.prefs?.syndimatic_follow_notifications
 		refresh_syndimatic_follows(data["followedProfiles"])
 		data["followStrip"] = syndimatic_follow_rows(1, SYNDIMATIC_FOLLOW_STRIP_SIZE)
 		data["followListOpen"] = showing_follow_list
@@ -467,12 +531,7 @@
 				id = params["id"] || viewer_profile_id
 				if(!istext(id) || !SSpersistence.get_syndimatic_profile(id))
 					return FALSE
-			clear_syndimatic_draft()
-			post_id = null
-			post_media = null
-			comment_page = 0
-			gallery_page = 1
-			editing_profile = FALSE
+			reset_syndimatic_navigation()
 			viewing_blocks = action == "blocks"
 			if(action == "feed" || action == "gallery" || action == "subscriptions")
 				browse_view = action
@@ -494,7 +553,29 @@
 			if(!SSpersistence.set_syndimatic_follow(viewer_account_id, id, following))
 				to_chat(user, span_warning("Не удалось сохранить подписку в Syndimatic."))
 				return FALSE
+			actor.refresh_syndimatic_subscriber()
 			SSpersistence.notify_syndimatic_viewers(src, profile_id = id, follow_account_id = viewer_account_id)
+		if("toggle_follow_notifications")
+			if(!actor || !viewer_account_id)
+				return FALSE
+			var/datum/preferences/prefs = user.client.prefs
+			if(!prefs?.path || prefs.player_save_blocked)
+				to_chat(user, span_warning("Не удалось сохранить настройку уведомлений о подписках."))
+				return FALSE
+			prefs.syndimatic_follow_notifications = !prefs.syndimatic_follow_notifications
+			prefs.save_pref_var("syndimatic_follow_notifications")
+			SSpersistence.notify_syndimatic_viewers(src, follow_account_id = viewer_account_id)
+		if("cycle_follow_notification")
+			var/id = params["id"]
+			if(!actor || !viewer_account_id || !istext(id) || length(id) != 64)
+				return FALSE
+			var/list/follows = SSpersistence.syndimatic_follows[viewer_account_id]
+			if(!follows?[id])
+				return FALSE
+			if(!SSpersistence.cycle_syndimatic_follow_notification(viewer_account_id, id))
+				to_chat(user, span_warning("Не удалось сохранить настройку уведомлений для подписки."))
+				return FALSE
+			SSpersistence.notify_syndimatic_viewers(src, follow_account_id = viewer_account_id)
 		if("feed_more")
 			var/feed_size = length(SSpersistence.syndimatic_feed)
 			var/known_limit = params["limit"]
@@ -520,9 +601,7 @@
 			var/id = params["id"]
 			if(draft_photo || editing_profile || !istext(id) || !SSpersistence.get_visible_syndimatic_post(id))
 				return FALSE
-			post_id = id
-			post_media = SSpersistence.get_syndimatic_media(id)
-			comment_page = 1
+			set_syndimatic_post(id)
 		if("back")
 			clear_syndimatic_draft()
 			editing_profile = FALSE

@@ -7,6 +7,7 @@ import { PhotoGallery, PhotoGalleryPagination, PhotoTile } from './common/PhotoG
 import { type PhotoMedia, PhotoPreview } from './PhotoViewer';
 
 type ByondFlag = boolean | 0 | 1;
+type FollowNotification = 1 | 2 | 3;
 
 type Post = {
   id: string;
@@ -48,6 +49,7 @@ type SyndimaticData = {
   canWrite: ByondFlag;
   canSetNotifications: ByondFlag;
   notifications: ByondFlag;
+  followNotifications?: ByondFlag;
   isAdmin: ByondFlag;
   ownPost?: ByondFlag;
   publishBlocked: ByondFlag;
@@ -55,7 +57,7 @@ type SyndimaticData = {
   commentsDisabled?: ByondFlag;
   profileId?: string;
   viewerProfileId?: string | null;
-  followedProfiles?: Record<string, ByondFlag> | null;
+  followedProfiles?: Record<string, FollowNotification> | null;
   followerCount?: number;
   followStrip?: FollowProfile[];
   followList?: FollowProfile[];
@@ -167,6 +169,39 @@ const FollowButton = ({ id, inFollowList = false }: { id: string; inFollowList?:
       >
         {following ? 'Отписаться' : 'Подписаться'}
       </Button>
+    </Stack.Item>
+  );
+};
+
+const notificationStyle = (enabled: boolean) => ({
+  icon: enabled ? 'bell' : 'bell-slash',
+  color: enabled ? 'good' : 'bad',
+});
+
+const followNotificationStates = {
+  1: { icon: 'bell-o', color: undefined, label: 'по общей настройке' },
+  2: { ...notificationStyle(true), label: 'включены' },
+  3: { ...notificationStyle(false), label: 'выключены' },
+};
+
+const FollowNotificationButton = ({ id, name }: { id: string; name: string }) => {
+  const { act, data } = useBackend<SyndimaticData>();
+  const mode = data.followedProfiles?.[id];
+  if (!data.canSetNotifications || !mode) {
+    return null;
+  }
+  const { icon, color, label } = followNotificationStates[mode];
+  const description = `Уведомления от ${name} — ${label}`;
+  return (
+    <Stack.Item shrink={0} mr={0.5}>
+      <Button
+        icon={icon}
+        color={color}
+        title={description}
+        aria-label={description}
+        role="button"
+        onClick={() => act('cycle_follow_notification', { id })}
+      />
     </Stack.Item>
   );
 };
@@ -345,8 +380,23 @@ const PostGallery = () => {
 const Subscriptions = () => {
   const { act, data } = useBackend<SyndimaticData>();
   const { followStrip, followList, followListOpen, page, pages } = data;
+  const followNotifications = !!data.followNotifications;
+  const notificationButton = !!data.canSetNotifications && (
+    <Button
+      {...notificationStyle(followNotifications)}
+      title={followNotifications ? 'Уведомления о подписках включены' : 'Уведомления о подписках выключены'}
+      aria-label="Уведомления о подписках"
+      aria-pressed={followNotifications}
+      role="button"
+      onClick={() => act('toggle_follow_notifications')}
+    />
+  );
   if (!followStrip?.length) {
-    return <NoticeBox>У вас пока нет подписок. Подписаться можно в чужом профиле или посте.</NoticeBox>;
+    return (
+      <Section title="Все подписки" buttons={notificationButton}>
+        <NoticeBox>У вас пока нет подписок. Подписаться можно в чужом профиле или посте.</NoticeBox>
+      </Section>
+    );
   }
   const toggleLabel = followListOpen ? 'Скрыть список подписок' : 'Открыть все подписки';
   return (
@@ -387,7 +437,7 @@ const Subscriptions = () => {
         </Stack.Item>
       </Stack>
       {followListOpen ? (
-        <Section title="Все подписки">
+        <Section title="Все подписки" buttons={notificationButton}>
           <Stack vertical>
             {followList?.map(({ id, name, avatar, available }) => (
               <Stack.Item key={id}>
@@ -395,6 +445,7 @@ const Subscriptions = () => {
                   <Stack.Item grow minWidth={0}>
                     <AuthorButton id={id} name={name} avatar={avatar} disabled={!available} />
                   </Stack.Item>
+                  <FollowNotificationButton id={id} name={name} />
                   <FollowButton id={id} inFollowList />
                 </Stack>
               </Stack.Item>
@@ -766,7 +817,7 @@ const NotificationOptions = () => {
   return (
     <div ref={optionsRef} style={{ display: 'inline-block', marginRight: '0.2rem' }}>
       <Button
-        icon={data.notifications ? 'bell' : 'bell-slash'}
+        {...notificationStyle(!!data.notifications)}
         tooltip={data.notifications ? 'Уведомления включены' : 'Уведомления выключены'}
         role="button"
         aria-label="Настроить уведомления о новых публикациях"

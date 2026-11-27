@@ -138,6 +138,7 @@
 	var/silicon_flavor_text
 	var/list/headshot_links = list()
 	var/list/headshot_naked_links = list()
+	var/syndimatic_owner_account
 
 /datum/mind/New(key)
 	skill_holder = new(src)
@@ -147,8 +148,7 @@
 
 /datum/mind/Destroy()
 	SSticker.minds -= src
-	if(syndimatic_notifications)
-		set_syndimatic_notifications(FALSE)
+	SSpersistence?.syndimatic_subscribers?.Remove(weak_reference)
 	QDEL_NULL(tgui_panel)
 	// Снятие последней роли обнуляет antag_datums внутри Destroy антагониста.
 	for(var/datum/antagonist/antagonist as anything in antag_datums?.Copy())
