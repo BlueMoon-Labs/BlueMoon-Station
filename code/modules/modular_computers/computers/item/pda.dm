@@ -289,7 +289,12 @@
 
 /obj/item/modular_computer/pda/use_power(amount = 0)
 	if(synth_owner && !QDELETED(synth_owner))
-		return synth_owner.nutrition > 0
+		var/cost = amount * GLOB.CELLRATE
+		if(synth_owner.nutrition >= cost)
+			synth_owner.adjust_nutrition(-cost)
+			return TRUE
+		synth_owner.adjust_nutrition(-synth_owner.nutrition)
+		return FALSE
 	if(cell)
 		if(cell.use(amount * GLOB.CELLRATE))
 			return TRUE
@@ -362,6 +367,7 @@
 		QDEL_NULL(inserted_disk)
 	if(istype(cell))
 		QDEL_NULL(cell)
+	synth_owner = null
 	return ..()
 
 /// Legacy compat: update_label syncs owner/ownjob and updates device name.

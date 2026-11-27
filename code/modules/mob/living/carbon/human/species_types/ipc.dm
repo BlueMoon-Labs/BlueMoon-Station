@@ -98,7 +98,7 @@
 			if(istype(I, /obj/item/modular_computer/pda))
 				P = I
 				break
-	if(!P)
+	if(!istype(P, /obj/item/modular_computer/pda))
 		return
 	H.transferItemToLoc(P, H)
 	H.synth_pda = P
@@ -124,7 +124,9 @@
 		P.has_light = initial(P.has_light)
 		P.update_appearance()
 		new /datum/action/item_action/toggle_light/pda(P)
-		H.equip_to_slot_if_possible(P, ITEM_SLOT_ID, disable_warning = TRUE, bypass_equip_delay_self = TRUE)
+		if(!H.equip_to_slot_if_possible(P, ITEM_SLOT_ID, disable_warning = TRUE, bypass_equip_delay_self = TRUE))
+			if(!H.put_in_active_hand(P))
+				P.forceMove(get_turf(H))
 
 /datum/species/ipc
 	name = "I.P.C."

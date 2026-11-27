@@ -70,6 +70,8 @@
 		var/obj/item/radio/headset/dongle = ears
 		if(istype(dongle) && dongle.translate_binary)
 			return TRUE
+	if(synth_radio?.translate_binary)
+		return TRUE
 	return ..()
 // (ADD) Pe4henika Bluemoon -- end
 /mob/living/carbon/human/radio(message, message_mode, list/spans, language)
@@ -77,9 +79,9 @@
 	if(.)
 		return
 
-	var/obj/item/radio/used_radio = ears
-	if(!used_radio && ears_extra)
-		used_radio = ears_extra
+	var/obj/item/radio/used_radio = astype(ears, /obj/item/radio)
+	if(!used_radio)
+		used_radio = astype(ears_extra, /obj/item/radio)
 	if(!used_radio && isrobotic(src))
 		used_radio = synth_radio
 

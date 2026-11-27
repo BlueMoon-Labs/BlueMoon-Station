@@ -91,6 +91,8 @@
 		return
 	//Check inventory slots
 	var/obj/item/card/id/id_card = wear_id?.GetID()
+	if(!id_card && synth_pda)
+		id_card = synth_pda.GetID()
 	if(!id_card)
 		id_card = belt?.GetID()
 	if(!id_card)

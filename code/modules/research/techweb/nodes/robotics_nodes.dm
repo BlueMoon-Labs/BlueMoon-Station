@@ -24,7 +24,7 @@
 	description = "Разумные роботы с предустановленными модулями инструментов и программируемыми законами."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	design_ids = list(/*"robocontrol", */"sflash", "borg_suit", "borg_head", "borg_chest", "borg_r_arm", "borg_l_arm", "borg_r_leg", "borg_l_leg", /*"borgupload",*/ /*BlueMoon edit*/
-	"cyborgrecharger", "borg_upgrade_restart", "borg_upgrade_rename")
+	"cyborgrecharger", "borg_upgrade_restart", "borg_upgrade_rename", "ipc_radio")
 
 /datum/techweb_node/adv_robotics
 	id = "adv_robotics"

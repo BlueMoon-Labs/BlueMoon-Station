@@ -10,9 +10,14 @@
 	decay_factor = 0.02
 
 	var/obj/item/radio/internal/synthetic/radio
+	var/emp_damage = 0
 
 /obj/item/organ/synthetic_radio/on_life(seconds, times_fired)
-	return ..()
+	var/was_emped = !!(organ_flags & ORGAN_SYNTHETIC_EMP)
+	var/before = damage
+	. = ..()
+	if(was_emped)
+		emp_damage += damage - before
 
 /obj/item/organ/synthetic_radio/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
 	. = ..()
@@ -42,10 +47,22 @@
 	. = ..()
 	if(. & EMP_PROTECT_SELF || !owner)
 		return
+	var/before = damage
 	applyOrganDamage(0.25 * severity)
+	emp_damage += damage - before
 	if(prob(30))
 		organ_flags |= ORGAN_SYNTHETIC_EMP
 	if(radio)
 		radio.start_jamming()
 		radio.recalculateChannels()
 	to_chat(owner, span_warning("Встроенная радиосистема повреждена ЭМИ!"))
+
+/obj/item/organ/synthetic_radio/clear_emp_damage()
+	if(QDELETED(src))
+		return
+	if(emp_damage)
+		applyOrganDamage(-emp_damage)
+		emp_damage = 0
+	if(damage < maxHealth)
+		organ_flags &= ~ORGAN_FAILING
+	..()

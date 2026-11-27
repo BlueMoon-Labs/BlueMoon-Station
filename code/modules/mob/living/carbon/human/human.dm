@@ -84,6 +84,8 @@
 	r_store = null
 	l_store = null
 	s_store = null
+	synth_pda = null
+	synth_pda_action = null
 
 /mob/living/carbon/human/prepare_data_huds()
 	//Update med hud images...
@@ -1466,6 +1468,8 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 /mob/living/carbon/human/get_access_locations()
 	. = ..()
 	. |= list(wear_id, w_uniform)
+	if(synth_pda)
+		. |= list(synth_pda)
 
 /mob/living/carbon/human/chestonly
 	bodyparts = list(/obj/item/bodypart/chest)
@@ -1730,6 +1734,8 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 	return TRUE
 
 /mob/living/carbon/human/AltClick(mob/user)
+	if(!user.canUseTopic(src, BE_CLOSE))
+		return ..()
 	if(handle_synth_alt_extraction(user))
 		return
 	return ..()

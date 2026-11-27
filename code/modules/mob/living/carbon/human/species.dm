@@ -1320,7 +1320,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 	return
 
 /datum/species/proc/can_equip(obj/item/I, slot, disable_warning, mob/living/carbon/human/H, bypass_equip_delay_self = FALSE, clothing_check = FALSE, list/return_warning)
-	if(istype(I, /obj/item/radio/headset) && isrobotic(H) && !H.synth_outfit_equipping)
+	if(istype(I, /obj/item/radio/headset) && (slot in list(ITEM_SLOT_EARS_LEFT, ITEM_SLOT_EARS_RIGHT)) && isrobotic(H) && !H.synth_outfit_equipping)
 		if(return_warning)
 			return_warning[1] = span_warning("Синтетики используют встроенную радиосистему, гарнитура им не нужна.")
 		return FALSE
