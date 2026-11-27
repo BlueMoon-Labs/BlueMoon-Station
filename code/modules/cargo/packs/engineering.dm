@@ -29,7 +29,7 @@
 /datum/supply_pack/engineering/modsuit
 	name = "Инженерный MOD"
 	desc = "Один инженерный MOD с батареей и установленными штатными модулями."
-	cost = 2500
+	cost = 1000
 	access = ACCESS_ENGINE_EQUIP
 	contains = list(/obj/item/mod/control/pre_equipped/engineering)
 	crate_name = "инженерный MOD"
@@ -38,7 +38,7 @@
 /datum/supply_pack/engineering/modsuit_atmos
 	name = "Атмосферный MOD"
 	desc = "Один атмосферный MOD с батареей и установленными штатными модулями."
-	cost = 2500
+	cost = 3000
 	access = ACCESS_ATMOSPHERICS
 	contains = list(/obj/item/mod/control/pre_equipped/atmospheric)
 	crate_name = "атмосферный MOD"
@@ -47,7 +47,7 @@
 /datum/supply_pack/engineering/engiequipment
 	name = "Engineering Gear Crate"
 	desc = "Вооружитесь тремя поясами для инструментов, жилетами повышенной видимости, сварочными шлемами, касками и двумя парами мезонных очков!"
-	cost = 1500
+	cost = 3000
 	contains = list(/obj/item/storage/belt/utility,
 					/obj/item/storage/belt/utility,
 					/obj/item/storage/belt/utility,
@@ -68,7 +68,7 @@
 /datum/supply_pack/engineering/engihardsuit
 	name = "Engineering Hardsuit"
 	desc = "Вы можете получить больше скафандров, если понадобится! ОБРАТИТЕ ВНИМАНИЕ, ЧТО В ЭТОМ ЯЩИКЕ НАХОДИТСЯ ОДИН ЗАЩИТНЫЙ КОСТЮМ, а также один баллон с воздухом и маска!"
-	cost = 1500
+	cost = 1000
 	access = ACCESS_ENGINE
 	contains = list(/obj/item/tank/internals/air,
 					/obj/item/clothing/mask/gas,
@@ -79,7 +79,7 @@
 /datum/supply_pack/engineering/atmoshardsuit
 	name = "Atmospherics Hardsuit"
 	desc = "Слишком много техников и недостаточно скафандров? Время купить еще немного! Поставляется с противогазом и воздушным баллоном."
-	cost = 1750
+	cost = 3000
 	access = ACCESS_ATMOSPHERICS //100% Fire and Bio resistance
 	contains = list(/obj/item/tank/internals/air,
 					/obj/item/clothing/mask/gas,

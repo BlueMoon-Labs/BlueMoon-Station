@@ -78,7 +78,7 @@
 	actions_types = list()
 
 /obj/item/clothing/suit/space/hardsuit/rd/hev/cosmetic
-	slowdown = 0.25
+	slowdown = 0
 	resistance_flags = null
 	max_heat_protection_temperature = null
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/gun/energy/wormhole_projector, /obj/item/hand_tele, /obj/item/aicard)

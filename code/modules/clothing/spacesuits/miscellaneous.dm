@@ -329,7 +329,6 @@ Contains:
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT // BLUEMOON CHANGE rig rebalance
 
 /obj/item/clothing/suit/space/hardsuit/ert/engi
-	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/t_scanner, /obj/item/flashlight, /obj/item/wrench, /obj/item/crowbar, /obj/item/wirecutters, /obj/item/screwdriver, /obj/item/weldingtool, /obj/item/multitool)
 	rig_water_grip = TRUE
 	rig_superheavy_pull_slowdown = 0.75
 	desc = "Standard issue engineer suit for the ERT. Reinforced joints, gripping soles and tool mounts assist with emergency repairs."
@@ -339,6 +338,7 @@ Contains:
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/engi
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT // BLUEMOON CHANGE rig rebalance
+	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/t_scanner, /obj/item/flashlight, /obj/item/wrench, /obj/item/crowbar, /obj/item/wirecutters, /obj/item/screwdriver, /obj/item/weldingtool, /obj/item/multitool)
 
 	//ERT Medical
 /obj/item/clothing/head/helmet/space/hardsuit/ert/med
@@ -428,7 +428,6 @@ Contains:
 	hardsuit_type = "ert_engineer-alert"
 
 /obj/item/clothing/suit/space/hardsuit/ert/alert/engi
-	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/t_scanner, /obj/item/flashlight, /obj/item/wrench, /obj/item/crowbar, /obj/item/wirecutters, /obj/item/screwdriver, /obj/item/weldingtool, /obj/item/multitool)
 	rig_water_grip = TRUE
 	rig_superheavy_pull_slowdown = 0.75
 	desc = "Red alert engineer suit for the ERT. This one is more armored than its standard version. Reinforced joints, gripping soles and tool mounts assist with emergency repairs."
@@ -436,6 +435,7 @@ Contains:
 	item_state = "ert_engineer-alert"
 	tail_state = "ert-alert"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/engi
+	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/t_scanner, /obj/item/flashlight, /obj/item/wrench, /obj/item/crowbar, /obj/item/wirecutters, /obj/item/screwdriver, /obj/item/weldingtool, /obj/item/multitool)
 
 	//ERT Medical
 /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/med
@@ -446,7 +446,6 @@ Contains:
 	hardsuit_type = "ert_medical-alert"
 
 /obj/item/clothing/suit/space/hardsuit/ert/alert/med
-	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid)
 	equip_delay_other = 30
 	rig_patient_transport = TRUE
 	rig_superheavy_pull_slowdown = 0
@@ -455,6 +454,7 @@ Contains:
 	item_state = "ert_medical-alert"
 	tail_state = "ert-alert"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/med
+	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid)
 
 /obj/item/clothing/suit/space/eva
 	name = "EVA suit"

@@ -250,32 +250,31 @@
 	resistance_flags = FIRE_PROOF
 
 /obj/item/clothing/suit/space/hardsuit/engine
-	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/t_scanner, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/multitool, /obj/item/weldingtool, /obj/item/analyzer)
 	name = "engineering hardsuit"
 	desc = "A lightweight suit that protects against hazardous, low pressure environments. Has radiation shielding and tool mounts."
 	icon_state = "hardsuit-engineering"
 	item_state = "eng_hardsuit"
 	tail_state = "engineer"
-	slowdown = 0
+	slowdown = 0.25
 	armor_type = /datum/armor/engine
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/engine
+	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/t_scanner, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/multitool, /obj/item/weldingtool, /obj/item/analyzer)
 	resistance_flags = FIRE_PROOF
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 
 	//Atmospherics
 /obj/item/clothing/head/helmet/space/hardsuit/engine/atmos
-	resistance_flags = FIRE_PROOF | ACID_PROOF
 	name = "atmospherics hardsuit helmet"
 	desc = "A special helmet designed for work in a hazardous, low-pressure environment. Has thermal shielding."
 	icon_state = "hardsuit0-atmospherics"
 	item_state = "atmo_helm"
 	hardsuit_type = "atmospherics"
 	armor_type = /datum/armor/hardsuit_atmos
-	heat_protection = HEAD												//Uncomment to enable firesuit protection
+	heat_protection = HEAD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
+	resistance_flags = FIRE_PROOF | ACID_PROOF
 
 /obj/item/clothing/suit/space/hardsuit/engine/atmos
-	slowdown = 0.15
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	rig_water_grip = TRUE
 	name = "atmospherics hardsuit"
@@ -284,7 +283,7 @@
 	item_state = "atmo_hardsuit"
 	tail_state = "atmos"
 	armor_type = /datum/armor/hardsuit_atmos
-	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS					//Uncomment to enable firesuit protection
+	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/engine/atmos
 
@@ -356,7 +355,6 @@
 	icon_state = "hardsuit0-mining"
 	item_state = "mining_helm"
 	hardsuit_type = "mining"
-	slowdown = 0.25
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF
 	heat_protection = HEAD
@@ -384,13 +382,13 @@
 			wearer.update_inv_head()
 
 /obj/item/clothing/suit/space/hardsuit/mining
-	slowdown = 0.25
 	icon_state = "hardsuit-mining"
 	name = "mining hardsuit"
 	desc = "A lightweight suit that protects against hazardous, low pressure environments. Has reinforced plating for wildlife encounters, further reinforced with goliath hides if needed."
 	item_state = "mining_hardsuit"
 	hardsuit_type = "mining"
 	tail_state = "engineer"
+	slowdown = 0.25
 	flags_inv = HIDEGLOVES | HIDEJUMPSUIT | HIDESHOES | HIDETAUR | HIDETAIL
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF
@@ -512,6 +510,7 @@
 	item_state = "syndie_hardsuit"
 	tail_state = "syndicate-blood"
 	hardsuit_type = "syndi"
+	slowdown = 0.5
 	w_class = WEIGHT_CLASS_NORMAL
 	armor_type = /datum/armor/hardsuit_syndi
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
@@ -691,7 +690,7 @@
 	desc = "A special suit that protects against hazardous, low pressure environments. Built with lightweight materials, quick-fit fastenings and servos to move even the heaviest patients with ease."
 	item_state = "medical_hardsuit"
 	tail_state = "syndicate-winter"
-	slowdown = 0
+	slowdown = 0.25
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/storage/firstaid, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/gun/medbeam)
 	armor_type = /datum/armor/hardsuit_medical
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/medical
@@ -736,7 +735,7 @@
 	desc = "A lightweight prototype suit that protects against hazardous, low pressure environments. Fitted with extensive plating for handling explosives and dangerous research materials."
 	item_state = "hardsuit-rd"
 	tail_state = "rd"
-	slowdown = 0
+	slowdown = 0.25
 	resistance_flags = ACID_PROOF | FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT //Same as an emergency firesuit. Not ideal for extended exposure.
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/gun/energy/wormhole_projector,
@@ -801,9 +800,6 @@
 	//BLUEMOON ADD END
 
 /obj/item/clothing/suit/space/hardsuit/security
-	slowdown = 0.25
-	rig_bulwark = TRUE
-	rig_superheavy_pull_slowdown = 1.5
 	icon_state = "hardsuit-sec"
 	name = "security hardsuit"
 	desc = "A special suit that protects against hazardous, low pressure environments. Has an additional layer of armor and a stabilizing frame for handling heavy detainees."
@@ -818,6 +814,8 @@
 		"Alt" = list(RESKIN_ICON_STATE = "hardsuit-sec2"),
 		"Blue Variation" = list(RESKIN_ICON_STATE = "hardsuit-sec3")
 	)
+	rig_bulwark = TRUE
+	rig_superheavy_pull_slowdown = 1.5
 
 /obj/item/clothing/suit/space/hardsuit/security/reskin_obj(mob/user)
 	if(current_skin == "Alt")
@@ -850,7 +848,6 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/space/hardsuit/security/hos
-	rig_superheavy_pull_slowdown = 0.75
 	name = "Head of Security's Hardsuit"
 	desc = "A special bulky suit that protects against hazardous, low pressure environments. Has an additional layer of armor and a reinforced stabilizing frame for handling heavy detainees."
 	icon_state = "hardsuit-hos"
@@ -863,6 +860,7 @@
 		"Standart Variation" = list(RESKIN_ICON_STATE = "hardsuit-hos"),
 		"OTA Variation" = list(RESKIN_ICON_STATE = "hardsuit-alliance")
 	)
+	rig_superheavy_pull_slowdown = 0.75
 
 /obj/item/clothing/suit/space/hardsuit/security/hos/reskin_obj(mob/user)
 	if(current_skin == "OTA Variation")
@@ -897,7 +895,6 @@
 	return //Sprites required for flashlight
 
 /obj/item/clothing/suit/space/hardsuit/captain
-	slowdown = 0.25
 	name = "captain's SWAT suit"
 	desc = "A MK.II SWAT suit with streamlined joints and armor made out of superior materials, insulated against intense heat. The most advanced tactical armor available Usually reserved for heavy hitter corporate security, this one has a regal finish in Nanotrasen company colors. Better not let the assistants get a hold of it. Its articulated joints allow greater freedom of movement."
 	icon_state = "caparmor"

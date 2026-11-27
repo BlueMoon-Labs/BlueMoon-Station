@@ -49,7 +49,7 @@
 	id = "hardsuitjpack"
 	build_type = PROTOLATHE
 	build_path = /obj/item/tank/jetpack/suit
-	materials = list(/datum/material/iron = 4000, /datum/material/glass = 1000, /datum/material/plasma = 1500, /datum/material/titanium = 2000)
+	materials = list(/datum/material/iron=16000, /datum/material/glass = 8000, /datum/material/diamond = 2000, /datum/material/gold = 4000, /datum/material/silver = 4000, /datum/material/uranium = 4000, /datum/material/plasma = 4000, /datum/material/titanium = 4000)
 	construction_time = 100
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING

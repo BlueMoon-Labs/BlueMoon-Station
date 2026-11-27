@@ -117,7 +117,7 @@
 /datum/supply_pack/medical/medicalhardsuit
 	name = "Medical Hardsuits crate"
 	desc = "Есть люди, которых вынесло в космос? Пробоина в той комнате, где труп вашего товарища? Не бойтесь, теперь вы можете купить три медицинских скафандра с масками и баллонами для воздуха, чтобы спасти своих товарищей по экипажу. Требуется медицинский доступ для открытия."
-	cost = 4500
+	cost = 3000
 	access = ACCESS_MEDICAL
 	contains = list(/obj/item/tank/internals/air,
 					/obj/item/clothing/mask/gas,
