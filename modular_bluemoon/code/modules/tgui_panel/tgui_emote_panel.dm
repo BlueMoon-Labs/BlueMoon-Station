@@ -439,6 +439,9 @@
 		return
 
 	if(enabled)
+		if(length(chat_panel | stat_panel) > TGUI_PANEL_MAX_EMOTES)
+			to_chat(user, span_warning("Чтобы включить синхронизацию, сократите общее число разных эмоций в двух панелях до [TGUI_PANEL_MAX_EMOTES]."))
+			return
 		copy_missing_custom_emotes(chat_panel, stat_panel, prefs.custom_emote_chat_order)
 		copy_missing_custom_emotes(stat_panel, chat_panel)
 	prefs.custom_emote_sync = enabled

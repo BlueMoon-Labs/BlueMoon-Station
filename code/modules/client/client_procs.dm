@@ -404,7 +404,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		update_listed_turf_watch(T)
 		mark_listed_turf_dirty()
 		return
-	if(old_listed)
+	if(old_listed && old_listed.name != T?.name)
 		panel_tabs -= old_listed.name
 	mob.listed_turf = T
 	update_listed_turf_watch(T)

@@ -1804,8 +1804,14 @@ function checkStatusTab() {
 var _tabScrollPositions = {};
 
 function tab_change(tab) {
+	if (tab === State.currentTab) {
+		if (_settingsActive) {
+			_settingsActive = false;
+			renderCurrentTab();
+		}
+		return;
+	}
 	_settingsActive = false;
-	if (tab === State.currentTab) return;
 	if (State.currentTab === STATPANEL_EMOTES_TAB) {
 		finishEmoteDrag();
 		State.emotePanel = null;
