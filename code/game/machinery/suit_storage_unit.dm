@@ -293,8 +293,16 @@
 		dump_contents()
 	update_icon()
 
+// SSU FIX v2: randomize the unclaimed suit before content ejection.
+// open_machine(drop = TRUE) calls dropContents() before dump_contents(), so the
+// initial suit choice must be resolved here while both objects are still inside.
+// Normal player selections have already cleared pending_suit_choice.
+/obj/machinery/suit_storage_unit/dropContents(list/subset = null)
+	resolve_suit_choice_for_release()
+	return ..(subset)
+
 /obj/machinery/suit_storage_unit/proc/dump_contents()
-	resolve_suit_choice()
+	resolve_suit_choice_for_release()
 	dropContents()
 	helmet = null
 	suit = null
@@ -352,6 +360,16 @@
 		dump_contents()
 		new /obj/item/stack/sheet/metal(loc, 2)
 	qdel(src)
+
+// For a forced release without an earlier choice, leave exactly ONE suit.
+// When both are available MOD and hardsuit each have a 50% chance.
+// If another code path already removed one option, preserve the remaining one.
+/obj/machinery/suit_storage_unit/proc/resolve_suit_choice_for_release()
+	if(!pending_suit_choice)
+		return FALSE
+	if(suit && mod)
+		return resolve_suit_choice(prob(50))
+	return resolve_suit_choice(!suit)
 
 /obj/machinery/suit_storage_unit/proc/resolve_suit_choice(use_mod = TRUE)
 	if(!pending_suit_choice)
