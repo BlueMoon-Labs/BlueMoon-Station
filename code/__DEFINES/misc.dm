@@ -619,6 +619,10 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define PHOTO_DESCRIPTION_LIMIT 128
 #define PHOTO_CAPTION_LIMIT 256
 
+#define SYNDIMATIC_ACCOUNT_LIMIT 30
+#define SYNDIMATIC_TIER_1_LIMIT 60
+#define SYNDIMATIC_TIER_2_LIMIT 120
+
 #define CLIENT_FROM_VAR(I) (ismob(I) ? I:client : (istype(I, /client) ? I : (istype(I, /datum/mind) ? I:current?:client : null)))
 
 #define AREASELECT_CORNERA "corner A"

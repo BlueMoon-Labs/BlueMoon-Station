@@ -262,6 +262,12 @@
 			data["view"] = "profile"
 			data["profile"] = profile
 			data["ownProfile"] = profile_id == viewer_profile_id
+			if(actor && profile_id == viewer_profile_id)
+				var/datum/preferences/prefs = user.client?.prefs
+				var/maximum = syndimatic_post_limit(actor.syndimatic_owner_ckey)
+				data["photoLimit"] = syndimatic_effective_post_limit(maximum, prefs?.syndimatic_photo_limit)
+				data["photoLimitOptions"] = syndimatic_post_limit_options(maximum)
+				data["canSetPhotoLimit"] = maximum > SYNDIMATIC_ACCOUNT_LIMIT && !!prefs?.path && !prefs.player_save_blocked
 			data["editingProfile"] = editing_profile
 			var/list/profile_blocks = SSpersistence.syndimatic_blocks[profile_id]
 			data["profileId"] = profile_id
@@ -470,6 +476,18 @@
 			return actor && SSticker.HasRoundStarted() && vote_on_syndimatic_comment(params, user, post, actor)
 		if("delete_post", "delete_comment", "set_comments", "set_block")
 			return moderate_syndimatic(action, params, user, post)
+		if("set_photo_limit")
+			if(!actor || profile_id != viewer_profile_id || post_id || draft_photo || editing_profile)
+				return FALSE
+			var/maximum = syndimatic_post_limit(actor.syndimatic_owner_ckey)
+			var/limit = params["limit"]
+			if(maximum == SYNDIMATIC_ACCOUNT_LIMIT || !isnum(limit) || !(limit in syndimatic_post_limit_options(maximum)))
+				return FALSE
+			var/datum/preferences/prefs = user.client?.prefs
+			if(!prefs?.path || prefs.player_save_blocked || prefs.syndimatic_photo_limit == limit)
+				return FALSE
+			prefs.syndimatic_photo_limit = limit
+			prefs.save_pref_var("syndimatic_photo_limit")
 		if("notifications")
 			var/enabled = params["enabled"]
 			var/permanent = params["permanent"]
@@ -526,9 +544,6 @@
 	return TRUE
 
 /datum/computer_file/program/syndimatic/proc/change_syndimatic_data(action, list/params, mob/user, datum/mind/actor, list/post, target_id)
-	if(!SSpersistence.start_syndimatic_round())
-		to_chat(user, span_warning("Syndimatic пока недоступен."))
-		return FALSE
 	var/actor_id = actor.syndimatic_profile_id
 	var/list/blocks = SSpersistence.syndimatic_blocks[actor_id]
 	var/changed_post
@@ -548,7 +563,7 @@
 			if(SSpersistence.syndimatic_feed_photos[photo_hash])
 				to_chat(user, span_warning("Этот снимок уже опубликован в ленте Syndimatic."))
 				return FALSE
-			var/id = SSpersistence.publish_syndimatic_post(actor, draft_photo, trim(params["caption"], PHOTO_CAPTION_LIMIT + 1), photo_hash)
+			var/id = SSpersistence.publish_syndimatic_post(actor, draft_photo, trim(params["caption"], PHOTO_CAPTION_LIMIT + 1), photo_hash, user.client?.prefs?.syndimatic_photo_limit)
 			if(id)
 				post_id = id
 				post_media = draft_photo.photo_ui_media()

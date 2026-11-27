@@ -605,6 +605,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/custom_emote_groups = list()
 	var/list/custom_emote_chat_order = list()
 	var/amplify_department_radio = FALSE
+	// Ноль означает максимальный лимит фотографий для текущего уровня подписки.
+	var/syndimatic_photo_limit = 0
 
 /datum/preferences/proc/get_vending_layout(machine_type)
 	return vending_layouts["[machine_type]"] || "grid"

@@ -1,7 +1,7 @@
 import { type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, Icon, NoticeBox, Section, Stack, TextArea } from '../components';
+import { Box, Button, Icon, NoticeBox, Section, Stack, TextArea, Tooltip } from '../components';
 import { NtosWindow } from '../layouts';
 import { PhotoGallery, PhotoGalleryPagination, PhotoTile } from './common/PhotoGallery';
 import { type PhotoMedia, PhotoPreview } from './PhotoViewer';
@@ -70,6 +70,9 @@ type SyndimaticData = {
   profile?: Profile;
   ownProfile?: ByondFlag;
   editingProfile?: ByondFlag;
+  photoLimit?: number;
+  photoLimitOptions?: number[];
+  canSetPhotoLimit?: ByondFlag;
   media?: PhotoMedia;
   draftId?: string;
   page: number;
@@ -496,7 +499,7 @@ const EditProfile = ({ profile }: { profile: Profile }) => {
 const ProfilePage = ({ profile }: { profile: Profile }) => {
   const { act, data } = useBackend<SyndimaticData>();
   const { ownProfile, canWrite, editingProfile, isAdmin, profileId,
-    profilePublishBlocked, profileCommentBlocked } = data;
+    profilePublishBlocked, profileCommentBlocked, photoLimit, photoLimitOptions, canSetPhotoLimit } = data;
   return (
     <>
       <Section>
@@ -517,6 +520,23 @@ const ProfilePage = ({ profile }: { profile: Profile }) => {
               <Box mt={1}>
                 <Button icon="image" onClick={() => act('pick_avatar')}>Сменить фото</Button>
                 <Button icon="pen" onClick={() => act('edit_profile')}>Изменить описание</Button>
+              </Box>
+            )}
+            {!!ownProfile && !editingProfile && photoLimitOptions && (
+              <Box mt={1}>
+                <Tooltip content="Общий для всех персонажей. При следующей публикации самые старые фото сверх лимита удалятся.">
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                    Лимит фотографий
+                    <select
+                      value={photoLimit}
+                      disabled={!canSetPhotoLimit}
+                      onChange={(event) => act('set_photo_limit', { limit: Number(event.target.value) })}
+                      style={{ font: 'inherit', colorScheme: 'dark' }}
+                    >
+                      {photoLimitOptions.map((limit) => <option key={limit} value={limit}>{limit}</option>)}
+                    </select>
+                  </label>
+                </Tooltip>
               </Box>
             )}
           </Stack.Item>

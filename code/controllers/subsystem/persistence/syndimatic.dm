@@ -1,15 +1,13 @@
 #define SYNDIMATIC_DIRECTORY "data/persistence/syndimatic/"
 #define SYNDIMATIC_POSTS "[SYNDIMATIC_DIRECTORY]posts/"
 #define SYNDIMATIC_PROFILES "[SYNDIMATIC_DIRECTORY]profiles/"
-#define SYNDIMATIC_ROUND_FILE "[SYNDIMATIC_DIRECTORY]round.json"
 #define SYNDIMATIC_BLOCKS_FILE "[SYNDIMATIC_DIRECTORY]blocks.json"
-#define SYNDIMATIC_POST_LIFETIME 5
-#define SYNDIMATIC_MIN_POSTS 10
+// Временные параметры для публикаций без ключа аккаунта. Удалить после истечения их срока.
+#define SYNDIMATIC_LEGACY_ROUND_FILE "[SYNDIMATIC_DIRECTORY]round.json"
+#define SYNDIMATIC_LEGACY_POST_LIFETIME 5
 #define SYNDIMATIC_MEDIA_CACHE_SIZE 12
 
 /datum/controller/subsystem/persistence
-	var/syndimatic_round = 0
-	var/syndimatic_round_started = FALSE
 	// Ключи публикаций упорядочены от новых к старым.
 	var/list/syndimatic_posts = list()
 	var/list/syndimatic_posts_by_author = list()
@@ -22,6 +20,10 @@
 	var/list/syndimatic_feed_photos = list()
 	var/list/syndimatic_media = list()
 	var/list/syndimatic_ranked_comments = list()
+	var/list/syndimatic_posts_by_account = list()
+	// Временный индекс публикаций без ключа аккаунта и их счётчик смен.
+	var/list/syndimatic_legacy_posts = list()
+	var/syndimatic_legacy_round = 0
 
 /datum/controller/subsystem/persistence/proc/get_syndimatic_ranked_comments(id, list/comments)
 	if(!syndimatic_ranked_comments[id])
@@ -33,8 +35,6 @@
 
 /datum/controller/subsystem/persistence/proc/load_syndimatic()
 	syndimatic_blocks = read_syndimatic_record(SYNDIMATIC_BLOCKS_FILE) || list()
-	var/list/round_record = read_syndimatic_record(SYNDIMATIC_ROUND_FILE)
-	syndimatic_round = round_record?["round"] || 0
 	var/static/regex/post_file = regex("^(\[0-9a-f-\]{36})\\.json(\\.bak)?$")
 	var/list/ids = list()
 	for(var/filename in flist(SYNDIMATIC_POSTS))
@@ -45,7 +45,11 @@
 	for(var/id in ids)
 		CHECK_TICK
 		var/list/post = read_syndimatic_record("[SYNDIMATIC_POSTS][id].json")
-		if(!isnum(post?["round"]) || !istext(post["author"]) || !islist(post["likes"]) || !islist(post["comments"]))
+		if(!istext(post?["author"]) || !islist(post["likes"]) || !islist(post["comments"]))
+			continue
+		var/account = post["account"]
+		// После перехода на квоты при загрузке можно требовать ключ аккаунта у каждого поста.
+		if(account ? !istext(account) : !isnum(post["round"]))
 			continue
 		if(!post["photo_hash"])
 			var/datum/picture/photo = read_pda_cloud_photo("[SYNDIMATIC_POSTS][id].sav", TRUE)
@@ -55,7 +59,16 @@
 		syndimatic_posts[id] = post
 		var/author = post["author"]
 		LAZYADD(syndimatic_posts_by_author[author], id)
-		syndimatic_round = max(syndimatic_round, post["round"])
+		if(account)
+			LAZYADD(syndimatic_posts_by_account[account], id)
+		else
+			// Временная ветка загрузки постов, сохранённых до перехода на квоты.
+			syndimatic_legacy_posts += id
+			syndimatic_legacy_round = max(syndimatic_legacy_round, post["round"])
+	if(length(syndimatic_legacy_posts))
+		var/list/legacy_round = read_syndimatic_record(SYNDIMATIC_LEGACY_ROUND_FILE)
+		if(isnum(legacy_round?["round"]))
+			syndimatic_legacy_round = max(syndimatic_legacy_round, legacy_round["round"])
 	rebuild_syndimatic_feed()
 
 /datum/controller/subsystem/persistence/proc/rebuild_syndimatic_feed()
@@ -86,32 +99,51 @@
 
 /datum/controller/subsystem/persistence/proc/on_syndimatic_round_start()
 	SIGNAL_HANDLER
-	start_syndimatic_round(update_after_prune = FALSE)
+	prune_legacy_syndimatic_posts()
 	INVOKE_ASYNC(src, PROC_REF(notify_syndimatic_viewers))
 
-/datum/controller/subsystem/persistence/proc/start_syndimatic_round(update_after_prune = TRUE)
-	if(syndimatic_round_started)
-		return TRUE
-	var/next_round = syndimatic_round + 1
-	if(!write_syndimatic_record(SYNDIMATIC_ROUND_FILE, list("round" = next_round)))
-		log_game("Syndimatic: не удалось сохранить номер смены.")
-		return FALSE
-	syndimatic_round = next_round
-	syndimatic_round_started = TRUE
-	if(prune_syndimatic_posts() && update_after_prune)
-		INVOKE_ASYNC(src, PROC_REF(notify_syndimatic_viewers))
-	return TRUE
-
-/datum/controller/subsystem/persistence/proc/prune_syndimatic_posts()
-	. = FALSE
-	while(length(syndimatic_posts) > SYNDIMATIC_MIN_POSTS)
-		var/id = syndimatic_posts[length(syndimatic_posts)]
+// Временная очистка по возрасту только для постов старого формата. Удалить прок и его вызов после перехода.
+/datum/controller/subsystem/persistence/proc/prune_legacy_syndimatic_posts()
+	if(!length(syndimatic_legacy_posts))
+		return
+	var/next_round = syndimatic_legacy_round + 1
+	if(!write_syndimatic_record(SYNDIMATIC_LEGACY_ROUND_FILE, list("round" = next_round)))
+		log_game("Syndimatic: не удалось обновить номер смены для очистки старых публикаций.")
+		return
+	syndimatic_legacy_round = next_round
+	while(length(syndimatic_legacy_posts))
+		var/id = syndimatic_legacy_posts[length(syndimatic_legacy_posts)]
 		var/list/post = syndimatic_posts[id]
-		if(syndimatic_round - post["round"] < SYNDIMATIC_POST_LIFETIME)
+		if(syndimatic_legacy_round - post["round"] < SYNDIMATIC_LEGACY_POST_LIFETIME || !delete_syndimatic_post(id))
 			break
-		if(!delete_syndimatic_post(id))
-			break
-		. = TRUE
+
+/proc/syndimatic_post_limit(account_ckey)
+	if(IS_CKEY_DONATOR_GROUP(account_ckey, DONATOR_GROUP_TIER_2))
+		return SYNDIMATIC_TIER_2_LIMIT
+	if(IS_CKEY_DONATOR_GROUP(account_ckey, DONATOR_GROUP_TIER_1))
+		return SYNDIMATIC_TIER_1_LIMIT
+	return SYNDIMATIC_ACCOUNT_LIMIT
+
+/proc/syndimatic_post_limit_options(maximum)
+	var/static/list/regular_options = list(SYNDIMATIC_ACCOUNT_LIMIT)
+	var/static/list/tier_1_options = list(SYNDIMATIC_ACCOUNT_LIMIT, SYNDIMATIC_TIER_1_LIMIT)
+	var/static/list/tier_2_options = list(SYNDIMATIC_ACCOUNT_LIMIT, SYNDIMATIC_TIER_1_LIMIT, SYNDIMATIC_TIER_2_LIMIT)
+	switch(maximum)
+		if(SYNDIMATIC_TIER_2_LIMIT)
+			return tier_2_options
+		if(SYNDIMATIC_TIER_1_LIMIT)
+			return tier_1_options
+	return regular_options
+
+/proc/syndimatic_effective_post_limit(maximum, preferred_limit)
+	if(maximum == SYNDIMATIC_ACCOUNT_LIMIT || !preferred_limit)
+		return maximum
+	// Старые числовые настройки округляем вниз до доступного варианта, минимум до 20.
+	var/list/options = syndimatic_post_limit_options(maximum)
+	for(var/index = length(options), index > 1, index--)
+		if(preferred_limit >= options[index])
+			return options[index]
+	return SYNDIMATIC_ACCOUNT_LIMIT
 
 /datum/controller/subsystem/persistence/proc/get_syndimatic_thumbnail(id)
 	if(!(id in syndimatic_thumbnails))
@@ -190,7 +222,8 @@
 		if(created_profile && delete_pda_cloud_photo("[SYNDIMATIC_PROFILES][profile_id].json"))
 			syndimatic_profiles -= profile_id
 		return FALSE
-	if(!syndimatic_posts[id])
+	var/list/previous_post = syndimatic_posts[id]
+	if(!previous_post)
 		syndimatic_posts.Insert(1, id)
 		var/author = post["author"]
 		var/list/blocks = syndimatic_blocks[author]
@@ -203,20 +236,25 @@
 		LAZYINITLIST(syndimatic_posts_by_author[author])
 		var/list/author_posts = syndimatic_posts_by_author[author]
 		author_posts.Insert(1, id)
-	var/list/previous_post = syndimatic_posts[id]
+		var/account = post["account"]
+		LAZYINITLIST(syndimatic_posts_by_account[account])
+		var/list/account_posts = syndimatic_posts_by_account[account]
+		account_posts.Insert(1, id)
 	if(previous_post?["comments"] != post["comments"])
 		syndimatic_ranked_comments -= id
 	syndimatic_posts[id] = post
 	return TRUE
 
-/datum/controller/subsystem/persistence/proc/publish_syndimatic_post(datum/mind/actor, datum/picture/photo, caption, photo_hash)
+/datum/controller/subsystem/persistence/proc/publish_syndimatic_post(datum/mind/actor, datum/picture/photo, caption, photo_hash, preferred_limit)
+	var/account_ckey = actor.syndimatic_owner_ckey
+	var/account = rustg_hash_string(RUSTG_HASH_SHA256, "syndimatic/account/[account_ckey]")
 	var/id = rustg_generate_uuid_v7()
 	var/path = "[SYNDIMATIC_POSTS][id].sav"
 	var/thumbnail = pda_photo_thumbnail(photo.picture_image)
 	if(!save_pda_cloud_photo(path, photo, thumbnail))
 		return null
 	if(!save_syndimatic_post(id, list(
-		"round" = syndimatic_round,
+		"account" = account,
 		"author" = actor.syndimatic_profile_id,
 		"name" = actor.syndimatic_character_name,
 		"caption" = caption,
@@ -230,7 +268,17 @@
 		"thumbnail" = thumbnail,
 		"thumbnailUrl" = photo.picture_url ? html_decode(photo.picture_url) : null,
 	)
-	prune_syndimatic_posts()
+	var/list/account_posts = syndimatic_posts_by_account[account]
+	var/limit = syndimatic_effective_post_limit(syndimatic_post_limit(account_ckey), preferred_limit)
+	while(length(account_posts) > limit)
+		if(delete_syndimatic_post(account_posts[length(account_posts)]))
+			continue
+		// Если старый пост не удалился, откатываем новый, чтобы не превысить квоту.
+		if(delete_syndimatic_post(id))
+			INVOKE_ASYNC(src, PROC_REF(notify_syndimatic_viewers))
+			return null
+		log_game("Syndimatic: не удалось освободить место и отменить публикацию [id].")
+		break
 	notify_syndimatic_subscribers(actor)
 	return id
 
@@ -282,6 +330,15 @@
 	author_posts -= id
 	if(!length(author_posts))
 		syndimatic_posts_by_author -= author
+	var/account = post["account"]
+	if(account)
+		var/list/account_posts = syndimatic_posts_by_account[account]
+		account_posts -= id
+		if(!length(account_posts))
+			syndimatic_posts_by_account -= account
+	else
+		// Временная ветка удаления публикаций старого формата.
+		syndimatic_legacy_posts -= id
 	if(!delete_pda_cloud_photo("[SYNDIMATIC_POSTS][id].sav"))
 		log_game("Syndimatic: не удалось удалить архив публикации [id].")
 	return TRUE
@@ -321,8 +378,7 @@
 #undef SYNDIMATIC_DIRECTORY
 #undef SYNDIMATIC_POSTS
 #undef SYNDIMATIC_PROFILES
-#undef SYNDIMATIC_ROUND_FILE
 #undef SYNDIMATIC_BLOCKS_FILE
-#undef SYNDIMATIC_POST_LIFETIME
-#undef SYNDIMATIC_MIN_POSTS
+#undef SYNDIMATIC_LEGACY_ROUND_FILE
+#undef SYNDIMATIC_LEGACY_POST_LIFETIME
 #undef SYNDIMATIC_MEDIA_CACHE_SIZE
