@@ -84,6 +84,8 @@
 	r_store = null
 	l_store = null
 	s_store = null
+	synth_pda = null
+	synth_pda_action = null
 
 /mob/living/carbon/human/prepare_data_huds()
 	//Update med hud images...
@@ -1466,6 +1468,8 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 /mob/living/carbon/human/get_access_locations()
 	. = ..()
 	. |= list(wear_id, w_uniform)
+	if(synth_pda)
+		. |= list(synth_pda)
 
 /mob/living/carbon/human/chestonly
 	bodyparts = list(/obj/item/bodypart/chest)
@@ -1658,3 +1662,164 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		AddComponent(/datum/component/jump, _jump_duration = duration, _jump_cooldown = cooldown, _stamina_cost = 32, _jump_height = height, _jump_sound = sound, _jump_flags = flags, _jumper_allow_pass_flags = flags_pass)
 	else
 		AddComponent(/datum/component/jump, _jump_duration = duration, _jump_cooldown = cooldown, _stamina_cost = cost, _jump_height = height, _jump_sound = sound, _jump_flags = flags, _jumper_allow_pass_flags = flags_pass)
+
+
+/mob/living/carbon/human/proc/handle_synth_battery_interaction(obj/item/I, mob/user)
+	if(!isrobotic(src) || !I)
+		return FALSE
+	if(lying && surgeries.len)
+		return FALSE
+
+	if(I.tool_behaviour == TOOL_SCREWDRIVER)
+		var/open_head
+		if(synth_head_panel_open)
+			open_head = TRUE
+		else if(battery_panel_open)
+			open_head = FALSE
+		else
+			open_head = user.zone_selected == BODY_ZONE_HEAD
+		if(open_head && !synth_radio)
+			to_chat(user, span_warning("Встроенное радио не установлено - панели ключей нет."))
+			return TRUE
+		if(!I.use_tool(src, user, 2 SECONDS, volume = 50))
+			return TRUE
+		if(open_head)
+			synth_head_panel_open = !synth_head_panel_open
+			visible_message(
+				span_notice("[user] [synth_head_panel_open ? "открывает" : "закрывает"] панель ключей на голове [src]."),
+				span_notice("Вы [synth_head_panel_open ? "открываете" : "закрываете"] панель ключей в голове."),
+			)
+		else
+			battery_panel_open = !battery_panel_open
+			visible_message(
+				span_notice("[user] [battery_panel_open ? "открывает" : "закрывает"] панель батареи на [src]."),
+				span_notice("Вы [battery_panel_open ? "открываете" : "закрываете"] панель батареи."),
+			)
+		return TRUE
+
+	if(istype(I, /obj/item/encryptionkey))
+		if(!synth_radio)
+			to_chat(user, span_warning("Встроенное радио не установлено."))
+			return TRUE
+		if(!synth_head_panel_open && !battery_panel_open)
+			to_chat(user, span_warning("Сначала откройте панель синтетика отвёрткой."))
+			return TRUE
+		install_synth_head_key(I, user)
+		return TRUE
+
+	if(istype(I, /obj/item/stock_parts/cell) && battery_panel_open)
+		if(user == src)
+			to_chat(user, span_warning("Вы не можете заменить батарею в себе - нужна помощь другого персонажа."))
+			return TRUE
+		install_synth_battery(I, user)
+		return TRUE
+	return FALSE
+
+/mob/living/carbon/human/proc/install_synth_head_key(obj/item/encryptionkey/new_key, mob/user)
+	if(!synth_radio || !new_key || QDELETED(new_key))
+		return FALSE
+	for(var/obj/item/encryptionkey/existing in synth_radio.keyslots)
+		if(existing.type == new_key.type)
+			to_chat(user, span_warning("Ключ [new_key.name] уже установлен в голове [src]."))
+			return FALSE
+	if(user && !user.transferItemToLoc(new_key, src))
+		return FALSE
+	synth_radio.keyslots += new_key
+	synth_radio.recalculateChannels()
+	if(user)
+		visible_message(
+			span_notice("[user] вставляет [new_key] в панель на голове [src]."),
+			span_notice("Вы вставляете [new_key] в панель на голове [src]."),
+		)
+	return TRUE
+
+/mob/living/carbon/human/AltClick(mob/user)
+	if(!user.canUseTopic(src, BE_CLOSE))
+		return ..()
+	if(handle_synth_alt_extraction(user))
+		return
+	return ..()
+
+/mob/living/carbon/human/proc/handle_synth_alt_extraction(mob/user)
+	if(!isrobotic(src) || !user)
+		return FALSE
+	if(battery_panel_open && synth_battery)
+		if(user == src)
+			to_chat(user, span_warning("Вы не можете вытащить батарею из себя - нужна помощь другого персонажа."))
+			return TRUE
+		remove_synth_battery(user)
+		return TRUE
+	if(synth_head_panel_open && synth_radio && length(synth_radio.keyslots))
+		remove_synth_head_keys(user)
+		return TRUE
+	return FALSE
+
+/mob/living/carbon/human/proc/remove_synth_head_keys(mob/user)
+	if(!synth_radio)
+		return
+	while(length(synth_radio.keyslots))
+		var/obj/item/encryptionkey/key = synth_radio.keyslots[length(synth_radio.keyslots)]
+		synth_radio.keyslots -= key
+		if(user && !user.put_in_active_hand(key))
+			key.forceMove(get_turf(src))
+	synth_radio.recalculateChannels()
+	visible_message(
+		span_notice("[user] извлекает ключи шифрования из панели на голове [src]."),
+		span_notice("Вы извлекаете ключи шифрования из панели на голове [src]."),
+	)
+
+/mob/living/carbon/human/proc/install_synth_battery(obj/item/stock_parts/cell/new_cell, mob/user, silent = FALSE)
+	if(!new_cell || QDELETED(new_cell))
+		return FALSE
+	if(synth_battery)
+		if(!silent)
+			to_chat(user, span_warning("В [src] уже установлена батарея. Сначала извлеките её Альт+ПКМ."))
+		return FALSE
+	if(user)
+		if(!user.transferItemToLoc(new_cell, src))
+			return FALSE
+	else
+		new_cell.forceMove(src)
+	synth_battery = new_cell
+
+	var/transfer = min(new_cell.charge, max(0, NUTRITION_LEVEL_FULL - nutrition))
+	if(transfer > 0)
+		new_cell.use(transfer)
+		adjust_nutrition(transfer)
+	new_cell.update_icon()
+	refresh_synth_battery_state()
+	if(!silent)
+		visible_message(
+			span_notice("[user] вставляет [new_cell] в панель [src]."),
+			span_notice("Вы вставляете [new_cell] в панель [src]."),
+		)
+	return TRUE
+
+/mob/living/carbon/human/proc/remove_synth_battery(mob/user, silent = FALSE)
+	if(user == src)
+		if(!silent)
+			to_chat(user, span_warning("Вы не можете вытащить батарею из себя - нужна помощь другого персонажа."))
+		return FALSE
+	var/obj/item/stock_parts/cell/cell = synth_battery
+	if(!cell)
+		if(!silent)
+			to_chat(user, span_warning("В панели [src] нет батареи."))
+		return FALSE
+
+	cell.give(nutrition)
+	set_nutrition(0)
+	synth_battery = null
+	cell.update_icon()
+	refresh_synth_battery_state()
+	if(user && !user.put_in_active_hand(cell))
+		cell.forceMove(drop_location())
+	if(!silent)
+		visible_message(
+			span_notice("[user] извлекает [cell] из панели [src]."),
+			span_notice("Вы извлекаете [cell] из панели [src]."),
+		)
+	return TRUE
+
+/mob/living/carbon/human/proc/refresh_synth_battery_state()
+	for(var/obj/item/organ/stomach/ipc/cell_organ in internal_organs)
+		cell_organ.update_battery_state()

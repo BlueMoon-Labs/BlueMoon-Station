@@ -243,6 +243,8 @@
 	var/datum/species/protean/species = dna?.species
 	if(istype(species) && species.handle_item(src, I, user))
 		return TRUE
+	if(handle_synth_battery_interaction(I, user))
+		return STOP_ATTACK_PROC_CHAIN
 	. = ..()
 	var/obj/item/mod/control/target_mod = is_wearing_mod()
 	if(istype(I, /obj/item/inducer) && target_mod)

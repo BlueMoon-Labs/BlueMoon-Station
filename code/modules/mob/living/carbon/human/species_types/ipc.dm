@@ -1,3 +1,133 @@
+/datum/species/proc/give_synth_battery(mob/living/carbon/C)
+	if(!ishuman(C))
+		return
+	var/mob/living/carbon/human/H = C
+	if(!isrobotic(H) || H.synth_battery)
+		return
+	H.install_synth_battery(new /obj/item/stock_parts/cell/hyper(H), null, TRUE)
+
+/datum/species/proc/clear_synth_battery(mob/living/carbon/C)
+	if(!ishuman(C))
+		return
+	var/mob/living/carbon/human/H = C
+	QDEL_NULL(H.synth_battery)
+	H.battery_panel_open = FALSE
+
+/datum/species/proc/give_synth_radio(mob/living/carbon/C)
+	if(!ishuman(C))
+		return
+	var/mob/living/carbon/human/H = C
+	if(!isrobotic(H))
+		return
+	var/obj/item/organ/synthetic_radio/R = H.getorganslot(ORGAN_SLOT_SYNTH_RADIO)
+	if(R)
+		H.synth_radio = R.radio
+		return
+	R = new /obj/item/organ/synthetic_radio()
+	R.Insert(H)
+
+/datum/species/proc/clear_synth_radio(mob/living/carbon/C)
+	if(!ishuman(C))
+		return
+	var/mob/living/carbon/human/H = C
+	var/obj/item/organ/synthetic_radio/R = H.getorganslot(ORGAN_SLOT_SYNTH_RADIO)
+	QDEL_NULL(R)
+	if(H.synth_radio)
+		for(var/obj/item/encryptionkey/K in H.synth_radio.keyslots)
+			K.forceMove(get_turf(H))
+		QDEL_NULL(H.synth_radio)
+	H.synth_head_panel_open = FALSE
+
+/datum/species/proc/migrate_synth_headset_keys(mob/living/carbon/C)
+	if(!ishuman(C))
+		return
+	var/mob/living/carbon/human/H = C
+	if(!H.synth_radio)
+		return
+	for(var/slot in list(H.ears, H.ears_extra))
+		var/obj/item/radio/headset/HS = slot
+		if(!istype(HS))
+			continue
+		for(var/obj/item/encryptionkey/K in list(HS.keyslot, HS.keyslot2))
+			if(!K)
+				continue
+			var/duplicate = FALSE
+			for(var/obj/item/encryptionkey/existing in H.synth_radio.keyslots)
+				if(existing.type == K.type)
+					duplicate = TRUE
+					break
+			if(duplicate)
+				continue
+			K.forceMove(H)
+			H.synth_radio.keyslots += K
+		HS.keyslot = null
+		HS.keyslot2 = null
+		if(H.ears == HS)
+			H.ears = null
+		if(H.ears_extra == HS)
+			H.ears_extra = null
+		qdel(HS)
+		H.update_inv_ears()
+		H.update_inv_ears_extra()
+	H.synth_radio.recalculateChannels()
+
+/datum/action/item_action/synth_pda
+	name = "Встроенный ПДА"
+	desc = "Открыть ПДА, встроенный в голову."
+	check_flags = AB_CHECK_CONSCIOUS
+	required_mobility_flags = NONE
+
+/datum/action/item_action/synth_pda/Trigger(trigger_flags)
+	if(!IsAvailable() || (SEND_SIGNAL(src, COMSIG_ACTION_TRIGGER, target, owner) & COMPONENT_ACTION_BLOCK_TRIGGER))
+		return FALSE
+	var/obj/item/modular_computer/pda/P = target
+	if(!P || QDELETED(P))
+		return FALSE
+	P.interact(owner)
+	return TRUE
+
+/datum/species/proc/take_synth_pda(mob/living/carbon/C)
+	if(!ishuman(C))
+		return
+	var/mob/living/carbon/human/H = C
+	if(!isrobotic(H) || H.synth_pda)
+		return
+	var/obj/item/modular_computer/pda/P = H.wear_id
+	if(!istype(P))
+		for(var/obj/item/I in list(H.l_store, H.r_store, H.belt) + H.held_items)
+			if(istype(I, /obj/item/modular_computer/pda))
+				P = I
+				break
+	if(!istype(P, /obj/item/modular_computer/pda))
+		return
+	H.transferItemToLoc(P, H)
+	H.synth_pda = P
+	P.synth_owner = H
+	P.has_light = FALSE
+	P.set_light_on(FALSE)
+	P.update_appearance()
+	for(var/datum/action/item_action/toggle_light/pda/light_action in P.actions)
+		qdel(light_action)
+	var/datum/action/item_action/synth_pda/action = new(P)
+	action.Grant(H)
+	H.synth_pda_action = action
+
+/datum/species/proc/clear_synth_pda(mob/living/carbon/C)
+	if(!ishuman(C))
+		return
+	var/mob/living/carbon/human/H = C
+	QDEL_NULL(H.synth_pda_action)
+	var/obj/item/modular_computer/pda/P = H.synth_pda
+	H.synth_pda = null
+	if(P && !QDELETED(P))
+		P.synth_owner = null
+		P.has_light = initial(P.has_light)
+		P.update_appearance()
+		new /datum/action/item_action/toggle_light/pda(P)
+		if(!H.equip_to_slot_if_possible(P, ITEM_SLOT_ID, disable_warning = TRUE, bypass_equip_delay_self = TRUE))
+			if(!H.put_in_active_hand(P))
+				P.forceMove(get_turf(H))
+
 /datum/species/ipc
 	name = "I.P.C."
 	id = SPECIES_IPC
@@ -36,7 +166,7 @@
 	mutantappendix = null // BLUEMOON REMOVAL - у синтетиков нет аппендикса
 
 	//special cybernetic organ for getting power from apcs
-	mutant_organs = list(/obj/item/organ/cyberimp/arm/power_cord)
+	mutant_organs = list(/obj/item/organ/cyberimp/arm/power_cord, /obj/item/organ/synthetic_radio)
 
 	exotic_bloodtype = "HF" // BLUEMOON EDIT - было "S"
 	exotic_blood_color = BLOOD_COLOR_OIL
@@ -63,8 +193,14 @@
 		var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
 		interface.AddSource("SPECIES")
 	..()
+	give_synth_battery(C)
+	give_synth_radio(C)
+	take_synth_pda(C)
 
 /datum/species/ipc/on_species_loss(mob/living/carbon/human/C)
+	clear_synth_battery(C)
+	clear_synth_radio(C)
+	clear_synth_pda(C)
 	if(screen)
 		screen.Remove(C)
 	if(designation)

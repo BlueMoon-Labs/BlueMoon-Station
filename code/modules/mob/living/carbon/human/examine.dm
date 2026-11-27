@@ -402,6 +402,25 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 				msg += "[t_on] выглядит довольно толстенько, словно какой-то поросёнок. Очень вкусный поросёнок.\n"
 			else
 				msg += "[t_on] выглядит довольно плотно.\n"
+
+	if(isrobotic(src))
+		msg += "Техническая панель батареи [battery_panel_open ? span_warning("открыта") : "закрыта"].\n"
+		if(synth_radio)
+			msg += "Техническая панель связи на голове [synth_head_panel_open ? span_warning("открыта") : "закрыта"].\n"
+		if(battery_panel_open)
+			if(synth_battery)
+				msg += span_info("Батарея: [synth_battery.name], [round(synth_battery.percent())]% заряда.\n")
+			else
+				msg += span_danger("Батарея не установлена!\n")
+		if(synth_head_panel_open && synth_radio)
+			if(length(synth_radio.keyslots))
+				var/list/key_names = list()
+				for(var/obj/item/encryptionkey/K in synth_radio.keyslots)
+					key_names += K.name
+				msg += span_info("Ключи шифрования ([length(synth_radio.keyslots)]): [key_names.Join(", ")].\n")
+			else
+				msg += span_info("Ключи шифрования не установлены.\n")
+
 	switch(disgust)
 		if(DISGUST_LEVEL_GROSS to DISGUST_LEVEL_VERYGROSS)	//Не он отвратительный, а ему отвратительно.
 			msg += "[t_emu] слегка неприятно.\n"	//a bit grossed out

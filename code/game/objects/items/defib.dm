@@ -594,6 +594,45 @@
 	busy = FALSE
 	update_icon()
 
+/obj/item/shockpaddles/proc/detonate_dead_synth_battery(mob/living/carbon/human/H, mob/living/user)
+	busy = TRUE
+	update_icon()
+
+	user.visible_message(
+		span_danger("[user] прикладывает [src] к груди [H] - разряд проходит через его батарею!"),
+		span_danger("Вы разряжаете [src] через [H]. Батарея даёт разряд по стороне!"),
+	)
+	playsound(src, 'sound/machines/defib_zap.ogg', 100, 1, -1)
+	playsound(src, 'sound/weapons/egloves.ogg', 100, 1, -1)
+
+	var/obj/item/stock_parts/cell/cell = H.synth_battery
+	H.synth_battery = null
+	qdel(cell)
+	H.Jitter(200)
+	H.do_jitter_animation(H.jitteriness)
+	addtimer(VARSET_CALLBACK(H, jitteriness, 0), 4 SECONDS)
+
+	for(var/mob/living/L in orange(3, H))
+		if(L == H || L.stat == DEAD)
+			continue
+		H.Beam(L, icon_state = "lightning[rand(1,12)]", time = 5, maxdistance = INFINITY)
+		L.electrocute_act(rand(20, 35), H, 1, SHOCK_TESLA)
+		if(!HAS_TRAIT(L, TRAIT_ROBOTIC_ORGANISM))
+			L.emote("scream")
+
+	log_combat(user, H, "electrocuted everyone around the battery of", src)
+	if(req_defib)
+		defib.deductcharge(revivecost)
+		cooldown = TRUE
+	else
+		recharge(60)
+	busy = FALSE
+	update_icon()
+	if(SEND_SIGNAL(src, COMSIG_DEFIBRILLATOR_SUCCESS) & COMPONENT_DEFIB_STOP)
+		return
+	if(req_defib)
+		defib.cooldowncheck(user)
+
 /obj/item/shockpaddles/proc/do_help(mob/living/carbon/H, mob/living/user)
 	user.visible_message("<span class='warning'>[user] begins to place [src] on [H]'s chest.</span>", "<span class='warning'>You begin to place [src] on [H]'s chest...</span>")
 	busy = TRUE
@@ -629,6 +668,12 @@
 						busy = FALSE
 						update_icon()
 						return
+			if(H.stat == DEAD && isrobotic(H))
+				var/mob/living/carbon/human/SH = H
+				if(SH.synth_battery)
+					detonate_dead_synth_battery(SH, user)
+					return
+
 			if(H.stat == DEAD)
 				H.visible_message("<span class='warning'>[H]'s body convulses a bit.</span>")
 				playsound(src, "bodyfall", 50, 1)

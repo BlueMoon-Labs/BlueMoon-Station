@@ -125,6 +125,7 @@
 	var/list/blocked_pdas
 	/// First-pickup guard for update_style
 	var/equipped = FALSE
+	var/mob/living/carbon/human/synth_owner
 
 // Override to sync legacy owner/ownjob aliases with saved_identification/saved_job.
 /obj/item/modular_computer/pda/update_id_imprint(new_name, new_job)
@@ -289,6 +290,13 @@
 	remove_pen()
 
 /obj/item/modular_computer/pda/use_power(amount = 0)
+	if(synth_owner && !QDELETED(synth_owner))
+		var/cost = amount * GLOB.CELLRATE
+		if(synth_owner.nutrition >= cost)
+			synth_owner.adjust_nutrition(-cost)
+			return TRUE
+		synth_owner.adjust_nutrition(-synth_owner.nutrition)
+		return FALSE
 	if(cell)
 		if(cell.use(amount * GLOB.CELLRATE))
 			return TRUE
@@ -296,6 +304,8 @@
 	return FALSE
 
 /obj/item/modular_computer/pda/get_battery_percent()
+	if(synth_owner && !QDELETED(synth_owner))
+		return clamp(round(synth_owner.nutrition / NUTRITION_LEVEL_FULL * 100, 1), 0, 100)
 	if(cell)
 		return cell.percent()
 	return null
@@ -359,6 +369,7 @@
 		QDEL_NULL(inserted_disk)
 	if(istype(cell))
 		QDEL_NULL(cell)
+	synth_owner = null
 	return ..()
 
 /// Legacy compat: update_label syncs owner/ownjob and updates device name.

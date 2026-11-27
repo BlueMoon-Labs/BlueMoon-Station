@@ -527,3 +527,75 @@
 		qdel(implant)
 	else
 		return ..()
+
+/obj/item/radio/internal/synthetic
+	name = "встроенная радиосистема"
+	desc = "Радио, смонтированное прямо в корпусе синтетика."
+	icon_state = "walkietalkie"
+	canhear_range = 0
+	subspace_transmission = TRUE
+	var/list/obj/item/encryptionkey/keyslots = list()
+	var/jammed_until = 0
+	var/obj/item/organ/synthetic_radio/organ
+
+/obj/item/radio/internal/synthetic/recalculateChannels()
+	channels = list()
+	translate_binary = FALSE
+	syndie = FALSE
+	syndie_freq = 0
+	independent = FALSE
+	clearChannelConnections()
+
+	for(var/obj/item/encryptionkey/K in keyslots)
+		if(!K)
+			continue
+		for(var/ch_name in K.channels)
+			if(!(ch_name in channels))
+				channels[ch_name] = K.channels[ch_name]
+		if(K.translate_binary)
+			translate_binary = TRUE
+		if(K.syndie && !syndie)
+			syndie = TRUE
+			syndie_freq = K.syndie_freq
+		if(K.independent)
+			independent = TRUE
+
+	for(var/ch_name in channels)
+		secure_radio_connections[ch_name] = add_radio(src, GLOB.radiochannels[ch_name])
+
+/obj/item/radio/internal/synthetic/emp_act(severity)
+	start_jamming()
+	return EMP_PROTECT_SELF
+
+/obj/item/radio/internal/synthetic/proc/get_damage_ratio()
+	if(!organ || QDELETED(organ) || !organ.maxHealth)
+		return 0
+	return clamp(organ.damage / organ.maxHealth, 0, 1)
+
+/obj/item/radio/internal/synthetic/proc/corrupt_message(message)
+	var/damage = get_damage_ratio()
+	if(damage > 0)
+		message = Gibberish(message, FALSE, damage * 100)
+	if(is_jammed())
+		message = Gibberish(message, 100, 100)
+	return message
+
+/obj/item/radio/internal/synthetic/proc/has_interference()
+	return is_jammed() || get_damage_ratio() > 0
+
+/obj/item/radio/internal/synthetic/proc/start_jamming()
+	jammed_until = world.time + 1 MINUTES + get_damage_ratio() * 3 MINUTES
+
+/obj/item/radio/internal/synthetic/proc/is_jammed()
+	return world.time < jammed_until
+
+/obj/item/radio/internal/synthetic/talk_into(atom/movable/M, message, channel, list/spans, datum/language/language)
+	if(has_interference())
+		message = corrupt_message(message)
+		spans = spans ? spans.Copy() : list()
+		spans |= SPAN_RADIO_STATIC
+	return ..(M, message, channel, spans, language)
+
+/obj/item/radio/internal/synthetic/Destroy()
+	keyslots = null
+	return ..()

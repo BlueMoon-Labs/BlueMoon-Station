@@ -629,6 +629,17 @@ GENETICS SCANNER
 				else if(L.damage && advanced)
 					damage_message += " " + span_info("Метаболизм препаратов сохранён.")
 
+			else if(istype(O, /obj/item/organ/synthetic_radio))
+				var/obj/item/organ/synthetic_radio/R = O
+				if(R.organ_flags & ORGAN_FAILING)
+					damage_message += " " + span_alert("Отказ встроенной радиосистемы; связь недоступна. Требуется ремонт в голове.")
+				else if(R.damage > R.high_threshold)
+					damage_message += " " + span_alert("Радиомодуль сильно повреждён; связь искажается. Требуется ремонт.")
+				else if(R.damage && advanced)
+					damage_message += " " + span_info("Радиомодуль повреждён; возможны помехи.")
+				else if(advanced)
+					temp_message += " " + span_info("Встроенная радиосистема исправна.")
+
 			else if(istype(O, /obj/item/organ/heart))
 				var/obj/item/organ/heart/He = O
 				if(He.organ_flags & ORGAN_FAILING)
@@ -735,6 +746,21 @@ GENETICS SCANNER
 			var/organ_icon = icon2base64html(organ_type, sourceonly = TRUE)
 			missing_organs += list(list("name" = organ_name, "icon" = organ_icon))
 			missing_organ_report += "<b style='white-space:nowrap'><img src='data:image/png;base64,[organ_icon]' width='24' height='24' style='vertical-align:middle'> [html_encode(organ_name)]</b>"
+		if(ishuman(M) && isrobotic(M))
+			var/charge_percent = clamp(round(H.nutrition / NUTRITION_LEVEL_FULL * 100, 1), 0, 100)
+			var/battery_present = !!H.synth_battery
+			var/battery_icon = icon2base64html(battery_present ? H.synth_battery : /obj/item/stock_parts/cell, sourceonly = TRUE)
+			var/battery_name = battery_present ? capitalize(H.synth_battery.name) : "Батарея"
+			var/battery_status = battery_present ? "Заряд: [charge_percent]%." : "Батарея не установлена."
+			organ_data += list(list(
+				"name" = battery_name,
+				"icon" = battery_icon,
+				"damage" = null,
+				"status" = battery_status,
+				"warning" = !battery_present || charge_percent <= 20,
+				"critical" = FALSE,
+			))
+			organ_report += "<tr><td style='white-space:nowrap'><img src='data:image/png;base64,[battery_icon]' width='24' height='24' style='vertical-align:middle'> [html_encode(battery_name)]</td>[advanced ? "<td></td>" : ""]<td>[battery_present ? span_info(battery_status) : span_bolddanger(battery_status)]</td></tr>"
 		if(length(organ_data) || length(missing_organs))
 			data["report"] += "<hr><b>Состояние органов</b>"
 			if(length(organ_data))
