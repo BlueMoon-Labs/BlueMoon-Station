@@ -78,6 +78,7 @@ type SyndimaticData = {
 
 const multiline = { overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' } as const;
 const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const;
+const postPhotoWidth = 'min(100%, 82cqh)';
 const adminAction = 'Административное действие';
 const commentSortOptions = [
   { value: 'oldest', displayText: 'Сначала старые' },
@@ -91,9 +92,17 @@ const ProfileAvatar = ({ avatar, size }: { avatar?: PhotoMedia | null; size: num
     width={size}
     height={size}
     textAlign="center"
-    style={{ borderRadius: '50%', overflow: 'hidden', display: 'grid', placeItems: 'center' }}
+    style={{
+      borderRadius: '50%',
+      overflow: 'hidden',
+      display: 'grid',
+      gridTemplate: 'minmax(0, 1fr) / minmax(0, 1fr)',
+      placeItems: 'center',
+    }}
   >
-    {avatar ? <PhotoPreview {...avatar} /> : <Icon name="user-circle" size={size - 0.25} />}
+    {avatar ? <PhotoPreview {...avatar} /> : (
+      <Icon name="user-circle" style={{ fontSize: `${size - 0.25}rem`, margin: 0, minWidth: 0 }} />
+    )}
   </Box>
 );
 
@@ -108,12 +117,14 @@ const AuthorButton = ({ id, name, avatar, size = 4 }: {
     <Button
       compact
       color="transparent"
-      style={{ backgroundColor: 'transparent', color: 'inherit' }}
+      px={0}
+      maxWidth="100%"
+      style={{ backgroundColor: 'transparent', color: 'inherit', whiteSpace: 'normal' }}
       role="button"
       onClick={() => act('profile', { id })}
     >
       <Stack align="center">
-        <Stack.Item>
+        <Stack.Item shrink={0}>
           <ProfileAvatar avatar={avatar} size={size} />
         </Stack.Item>
         <Stack.Item bold style={{ overflowWrap: 'anywhere' }}>{name}</Stack.Item>
@@ -190,7 +201,7 @@ const FeedPost = ({ post, scrollRef }: {
   return (
     <Box as="article" data-feed-post={id} mb={1} p={0.75} backgroundColor="rgba(0, 0, 0, 0.22)"
       style={{ border: '1px solid #ffffff24', borderRadius: '0.35rem' }}>
-      <div ref={photoRef} style={{ margin: '0.5rem 0' }}>
+      <div ref={photoRef} style={{ width: postPhotoWidth, margin: '0.5rem auto' }}>
         {media === undefined ? (
           <Box
             backgroundColor="#111"
@@ -207,7 +218,7 @@ const FeedPost = ({ post, scrollRef }: {
       <Stack align="center" wrap="wrap" mt={0.5}>
         <Stack.Item><PostLikeButton id={id} likes={likes} liked={liked} /></Stack.Item>
         <Stack.Item>
-          <Button icon="comment" role="button" onClick={() => act('open_post', { id, comments: 1 })}>
+          <Button icon="comment" role="button" onClick={() => act('open_post', { id })}>
             Комментарии · {comments}
           </Button>
         </Stack.Item>
@@ -314,8 +325,9 @@ const Comments = ({ id }: { id: string }) => {
   const { act, data } = useBackend<SyndimaticData>();
   const { canWrite, comments, commentSerial, commentSort, commentBlocked, commentsDisabled, isAdmin, page, pages } = data;
   return (
-    <Section title="Комментарии" data-syndimatic-comments>
-      <Box mb={1}>
+    <Section
+      title="Комментарии"
+      buttons={(
         <select
           aria-label="Порядок комментариев"
           value={commentSort}
@@ -326,7 +338,8 @@ const Comments = ({ id }: { id: string }) => {
             <option key={value} value={value}>{displayText}</option>
           ))}
         </select>
-      </Box>
+      )}
+    >
       {commentsDisabled ? (
         <NoticeBox>Автор закрыл комментарии к публикации.</NoticeBox>
       ) : commentBlocked ? (
@@ -354,7 +367,7 @@ const Comments = ({ id }: { id: string }) => {
                   </Stack.Item>
                 )}
               </Stack>
-              <Box ml={0.5} style={multiline}>{text}</Box>
+              <Box style={multiline}>{text}</Box>
               <Box mt={0.25}>
                 {[
                   { value: 1, count: likes, icon: 'thumbs-up', color: 'good', label: 'Лайк комментарию' },
@@ -401,26 +414,30 @@ const PostPage = ({ post }: { post: Post }) => {
   return (
     <>
       <Section>
-        <Box mb={0.5} textAlign="right">
-          {(!!ownPost || !!isAdmin) && (
-            <Button.Confirm
-              icon="trash"
-              color={isAdmin ? 'bad' : undefined}
-              tooltip={isAdmin ? `${adminAction} — удалить публикацию` : 'Удалить публикацию'}
-              role="button"
-              aria-label="Удалить публикацию"
-              confirmContent="Удалить?"
-              onClick={() => act('delete_post', { id })}
-            />
-          )}
-          <Button icon="arrow-left" onClick={() => act('back')}>Назад</Button>
-        </Box>
-        <Box mx="auto" style={{ maxWidth: '22rem' }}>
+        <Box mx="auto" width={postPhotoWidth}>
           <PhotoPreview {...media} />
+          <Stack align="center" mt={0.5}>
+            <Stack.Item grow minWidth={0}>
+              <AuthorButton id={authorId} name={author} avatar={avatar} />
+            </Stack.Item>
+            <Stack.Item shrink={0}>
+              {(!!ownPost || !!isAdmin) && (
+                <Button.Confirm
+                  icon="trash"
+                  color={isAdmin ? 'bad' : undefined}
+                  tooltip={isAdmin ? `${adminAction} — удалить публикацию` : 'Удалить публикацию'}
+                  role="button"
+                  aria-label="Удалить публикацию"
+                  confirmContent="Удалить?"
+                  onClick={() => act('delete_post', { id })}
+                />
+              )}
+              <Button icon="arrow-left" onClick={() => act('back')}>Назад</Button>
+            </Stack.Item>
+          </Stack>
         </Box>
-        <AuthorButton id={authorId} name={author} avatar={avatar} />
         {!!caption && <Box my={1} style={multiline}>{caption}</Box>}
-        <Stack mt={1}>
+        <Stack mt={1} wrap="wrap">
           <Stack.Item>
             <PostLikeButton id={id} likes={likes} liked={liked} />
           </Stack.Item>
@@ -701,14 +718,11 @@ export const NtosSyndimatic = () => {
       } else {
         content.scrollTop = 0;
       }
-      if (view === 'post') {
-        content.querySelector('[data-syndimatic-comments]')?.scrollIntoView({ block: 'start' });
-      }
     }
   }, [view, viewedPostId]);
 
   return (
-    <NtosWindow title="Syndimatic" width={550} height={620}>
+    <NtosWindow title="Syndimatic" width={630} height={800}>
       <NtosWindow.Content fitted>
         <Stack
           vertical
@@ -748,7 +762,7 @@ export const NtosSyndimatic = () => {
                   aria-pressed={view === 'profile' && !!ownProfile}
                   aria-disabled={!myProfile}
                   disabled={!myProfile}
-                  tooltip={!myProfile ? 'Профиль появится после первой публикации или комментария.' : undefined}
+                  tooltip={!myProfile ? 'Профиль появится после первой публикации, комментария или отметки «Нравится».' : undefined}
                   onClick={() => act('profile')}
                 >
                   Мой профиль
@@ -778,7 +792,7 @@ export const NtosSyndimatic = () => {
               </Stack.Item>
             </Stack>
           </Stack.Item>
-          <Stack.Item grow minHeight={0}>
+          <Stack.Item grow minHeight={0} style={{ containerType: 'size' }}>
             <Section
               fill
               scrollable

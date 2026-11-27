@@ -342,6 +342,10 @@
 				ui.send_update(list("feedPost:[changed_post_id]" = syndimatic_feed_post(changed_post_id, post)))
 		return
 	var/list/data = syndimatic_feed_data(changed_profile_id = changed_profile_id)
+	if(changed_post_id && feed_sent_ids[changed_post_id])
+		var/list/post = SSpersistence.get_visible_syndimatic_post(changed_post_id)
+		if(post)
+			data["feedPost:[changed_post_id]"] = syndimatic_feed_post(changed_post_id, post)
 	add_syndimatic_profile_status(data)
 	ui.send_update(data)
 
@@ -422,7 +426,7 @@
 				return FALSE
 			post_id = id
 			post_media = SSpersistence.get_syndimatic_media(id)
-			comment_page = params["comments"] == TRUE ? 1 : 0
+			comment_page = 1
 		if("back")
 			clear_syndimatic_draft()
 			editing_profile = FALSE
@@ -463,7 +467,7 @@
 		if("publish", "save_avatar", "save_profile", "like", "comment")
 			return actor && SSticker.HasRoundStarted() && change_syndimatic_data(action, params, user, actor, post, target_id)
 		if("vote_comment")
-			return actor && SSticker.HasRoundStarted() && vote_on_syndimatic_comment(params, user, post)
+			return actor && SSticker.HasRoundStarted() && vote_on_syndimatic_comment(params, user, post, actor)
 		if("delete_post", "delete_comment", "set_comments", "set_block")
 			return moderate_syndimatic(action, params, user, post)
 		if("notifications")
@@ -548,6 +552,7 @@
 			if(id)
 				post_id = id
 				post_media = draft_photo.photo_ui_media()
+				comment_page = 1
 				clear_syndimatic_draft()
 				saved = TRUE
 		if("save_avatar", "save_profile")
@@ -573,6 +578,7 @@
 			if(!post || params["id"] != target_id || SSpersistence.get_visible_syndimatic_post(target_id) != post)
 				return FALSE
 			var/list/updated_post = post.Copy()
+			var/datum/mind/new_activity = actor
 			if(action == "like")
 				var/liked = params["liked"]
 				if(!isnum(liked) || (liked != TRUE && liked != FALSE))
@@ -585,6 +591,7 @@
 					likes[actor_id] = TRUE
 				else
 					likes -= actor_id
+					new_activity = null
 				updated_post["likes"] = likes
 			else
 				if(blocks?["comment"] || post["comments_disabled"])
@@ -605,7 +612,10 @@
 					"text" = message,
 				)))
 				updated_post["comments"] = comments
-			saved = SSpersistence.save_syndimatic_post(target_id, updated_post, action == "comment" ? actor : null)
+			var/creates_profile = new_activity && !SSpersistence.get_syndimatic_profile(actor_id)
+			saved = SSpersistence.save_syndimatic_post(target_id, updated_post, new_activity)
+			if(saved && creates_profile)
+				changed_profile = actor_id
 			if(saved && action == "comment")
 				if(comment_sort == "oldest")
 					comment_page = CEILING(length(updated_post["comments"]) / SYNDIMATIC_COMMENT_PAGE_SIZE, 1)
@@ -618,7 +628,7 @@
 		return FALSE
 	SSpersistence.notify_syndimatic_viewers(src, changed_post, changed_profile)
 	if(changed_post && is_viewing_syndimatic_feed())
-		update_syndimatic_view(changed_post)
+		update_syndimatic_view(changed_post, changed_profile)
 		return FALSE
 	return TRUE
 
@@ -630,7 +640,7 @@
 				return index
 	return 0
 
-/datum/computer_file/program/syndimatic/proc/vote_on_syndimatic_comment(list/params, mob/user, list/post)
+/datum/computer_file/program/syndimatic/proc/vote_on_syndimatic_comment(list/params, mob/user, list/post, datum/mind/actor)
 	var/vote = params["vote"]
 	if(!post || post_id != params["id"] || !comment_page || !isnum(vote) || (vote != -1 && vote != 0 && vote != 1))
 		return FALSE
@@ -668,10 +678,12 @@
 	var/list/updated_comments = comments.Copy()
 	updated_comments[index] = updated_comment
 	updated["comments"] = updated_comments
-	if(!SSpersistence.save_syndimatic_post(post_id, updated))
+	var/datum/mind/new_activity = vote == 1 ? actor : null
+	var/creates_profile = new_activity && !SSpersistence.get_syndimatic_profile(viewer_profile_id)
+	if(!SSpersistence.save_syndimatic_post(post_id, updated, new_activity))
 		to_chat(user, span_warning("Не удалось сохранить оценку комментария."))
 		return FALSE
-	SSpersistence.notify_syndimatic_viewers(src, post_id)
+	SSpersistence.notify_syndimatic_viewers(src, post_id, creates_profile ? viewer_profile_id : null)
 	return TRUE
 
 /datum/computer_file/program/syndimatic/proc/moderate_syndimatic(action, list/params, mob/user, list/post)
