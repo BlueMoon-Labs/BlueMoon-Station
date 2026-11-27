@@ -14,12 +14,21 @@
 	var/shock_range = 6
 	var/shock_cooldown = 3 SECONDS
 	var/shock_power = 10000
+	var/list/registered_turfs = list()
 	COOLDOWN_DECLARE(shock_cooldown_timer)
 
 /obj/structure/shockplant/Initialize(mapload)
 	. = ..()
 	for(var/turf/open/iterating_turf as anything in circle_view_turfs(src, shock_range))
 		RegisterSignal(iterating_turf, COMSIG_ATOM_ENTERED, PROC_REF(trigger))
+		registered_turfs += iterating_turf
+
+/obj/structure/shockplant/Destroy()
+	for(var/turf/T as anything in registered_turfs)
+		if(!QDELETED(T))
+			UnregisterSignal(T, COMSIG_ATOM_ENTERED, PROC_REF(trigger))
+	registered_turfs.Cut()
+	. = ..()
 
 /obj/structure/shockplant/proc/trigger(datum/source, atom/movable/entered_atom)
 	SIGNAL_HANDLER

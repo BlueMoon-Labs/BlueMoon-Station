@@ -63,7 +63,8 @@ SUBSYSTEM_DEF(blackmesa_events)
 		recent_player_deaths -= dead_ckey
 
 	// Mission load check - areas are static per round, cache the scan.
-	if(isnull(cached_mission_areas))
+	// Z-level пересоздаётся при рестарте раунда - мёртвые area выкидываем из кэша.
+	if(isnull(cached_mission_areas) || (cached_mission_areas.len && QDELETED(cached_mission_areas[1])))
 		cached_mission_areas = get_areas(/area/awaymission/ihategordon, TRUE)
 	var/list/mission_areas = cached_mission_areas
 	if(!mission_areas || !mission_areas.len)

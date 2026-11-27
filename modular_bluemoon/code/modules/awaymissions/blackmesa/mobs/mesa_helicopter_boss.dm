@@ -232,6 +232,8 @@
 
 /mob/living/simple_animal/hostile/megafauna/helicopter/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	if(heli_cutscene && !forced)
+		if(amount > 0)
+			balloon_alert_to_viewers("ineffective!")
 		return FALSE
 	if(amount > 0 && world.time < overheated_until)
 		amount *= HELI_OVERHEAT_DAMAGE_MULT

@@ -28,6 +28,7 @@
 	var/damage_per_tick = 5
 	var/duration = 100
 	var/processing = FALSE
+	var/alist/warn_times = alist()
 
 /obj/effect/decal/cleanable/acid_ooze/Initialize(mapload)
 	. = ..()
@@ -84,7 +85,10 @@
 
 		L.adjustFireLoss(damage_per_tick)
 		if(L.client)
-			to_chat(L, span_warning("The acid ooze burns you!"))
+			var/last_warn = warn_times[L] || 0
+			if(world.time - last_warn > 30)
+				warn_times[L] = world.time
+				to_chat(L, span_warning("The acid ooze burns you!"))
 
 /obj/item/projectile/neurotox/acid_spit
 	name = "acid spit"

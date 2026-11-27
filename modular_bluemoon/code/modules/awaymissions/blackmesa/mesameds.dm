@@ -479,12 +479,13 @@
 	return istype(get_area(A), /area/awaymission/ihategordon)
 
 // Медицинские запреты Mesa-дефиба: те же, что у can_be_medically_revived(),
-// но без требования живого клиента/души - пустые спящие куклы Сектора H тоже
-// должны реанимироваться. DNR (can_reenter_corpse = FALSE) по-прежнему блокирует.
+// но без требования живого клиента - реанимируются только тела с mind
+// (игроки, ставшие призраками). Полностью пустые тела без mind - нет.
+// DNR (can_reenter_corpse = FALSE) по-прежнему блокирует.
 /obj/item/defibrillator/proc/mesa_can_revive(mob/living/carbon/H)
 	if(!H || QDELETED(H))
 		return FALSE
-	if(H.suiciding || H.hellbound || !H.owns_soul())
+	if(!H.mind || H.suiciding || H.hellbound || !H.owns_soul())
 		return FALSE
 	if(HAS_TRAIT_NOT_FROM(H, TRAIT_NOCLONE, CHANGELING_DRAIN))
 		return FALSE

@@ -144,11 +144,15 @@
 	var/static/list/cached_valid_areas = null
 
 /datum/round_event/blackmesa/proc/get_source_areas() as /list
-	if(isnull(cached_source_areas) || !cached_source_areas.len) {
+	// Z-level миссии пересоздаётся при рестарте раунда, а static-кэш переживает
+	// world.Reboot() - старые area-объекты остаются QDELETED. Проверяем первый
+	// элемент как канарейку: все области миссии умирают вместе.
+	if(isnull(cached_source_areas) || !cached_source_areas.len || QDELETED(cached_source_areas[1])) {
 		var/list/fresh = get_areas(/area/awaymission/ihategordon, TRUE)
-		if(fresh.len)
+		if(fresh.len) {
 			cached_source_areas = fresh
-		else
+			cached_valid_areas = null
+		} else
 			return list()
 	}
 	return cached_source_areas
@@ -160,11 +164,13 @@
 		return EVENT_CANCELLED
 
 /datum/round_event/blackmesa/proc/get_mesa_areas()
-	if(cached_valid_areas)
+	var/list/sources = get_source_areas()
+	if(cached_valid_areas && !QDELETED(cached_valid_areas[1]))
 		return cached_valid_areas.Copy()
+	cached_valid_areas = null
 	var/list/areas = list()
 
-	for(var/area/A in get_source_areas())
+	for(var/area/A in sources)
 		if(!A || QDELETED(A) || !A.contents.len)
 			continue
 		var/valid = TRUE

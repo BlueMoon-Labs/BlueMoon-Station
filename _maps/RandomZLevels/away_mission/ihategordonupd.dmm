@@ -430,6 +430,13 @@
 	},
 /turf/open/floor/plating/smooth/dirt,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"agx" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/rocks)
 "agG" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "boxalt6";
@@ -512,6 +519,13 @@
 	},
 /turf/open/indestructible,
 /area/awaymission/ihategordon/secret_rooms)
+"aiC" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stone2"
+	},
+/obj/structure/disposalpipe/segment,
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/dorm_rooms)
 "aiD" = (
 /turf/open/floor/plating/ironsand{
 	pixel_x = 0;
@@ -932,6 +946,13 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"aob" = (
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/mob/living/simple_animal/hostile/infected/modular,
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/dorm_rooms)
 "aog" = (
 /obj/effect/turf_decal/siding/wideplating{
 	dir = 1
@@ -958,6 +979,10 @@
 	name = "concrete"
 	},
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"aoy" = (
+/obj/machinery/power/floodlight/lamppost/one,
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_rooms)
 "aoH" = (
 /obj/structure/lattice,
 /turf/open/floor/plasteel/dark,
@@ -1030,13 +1055,6 @@
 /obj/structure/barricade/wooden/crude,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"aqj" = (
-/obj/effect/baseturf_helper/black_mesa,
-/turf/closed/mineral/mesarock{
-	icon_state = "rock2";
-	color = "#f79668"
-	},
-/area/awaymission/ihategordon/outsideofmesa/restricted_zone/benrey)
 "aql" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone_ore"
@@ -1372,15 +1390,18 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/rocks)
-"aun" = (
-/obj/item/ammo_box/magazine/m12g/aa12{
-	pixel_x = 0;
-	pixel_y = -14
+"atT" = (
+/obj/structure/urbanismmachines{
+	pixel_x = -12;
+	pixel_y = -3
 	},
-/turf/open/floor/grass/fakebasalt{
-	color = "#FFBF00"
+/obj/structure/urbanismmachines{
+	pixel_x = 5;
+	pixel_y = 1
 	},
-/area/awaymission/ihategordon/custom_walking/nihilanth)
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "aup" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone2";
@@ -1432,15 +1453,6 @@
 /obj/machinery/power/floodlight/urbanismlight/mesaspec,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
-"ave" = (
-/obj/item/ammo_box/magazine/m16/mesa{
-	pixel_x = 0;
-	pixel_y = 6
-	},
-/turf/open/floor/grass/fakebasalt{
-	color = "#FFBF00"
-	},
-/area/awaymission/ihategordon/custom_walking/nihilanth)
 "avw" = (
 /obj/effect/festive/street/streetlineeast,
 /obj/effect/turf_decal/trimline/dark_red/filled/warning{
@@ -1513,16 +1525,10 @@
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
 "avP" = (
-/obj/structure/urbanismmachines{
-	pixel_x = -12;
-	pixel_y = -3
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt7"
 	},
-/obj/structure/urbanismmachines{
-	pixel_x = 5;
-	pixel_y = 1
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark,
-/turf/open/floor/plasteel/rivets,
+/turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/dorm_rooms)
 "avX" = (
 /obj/structure/rack/shelf,
@@ -1637,6 +1643,13 @@
 	icon_state = "platingdmg2"
 	},
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"axD" = (
+/obj/machinery/power/floodlight/urbanismlight/mesaspec,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "axE" = (
 /obj/structure/rack/shelf,
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -2089,6 +2102,15 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"aDV" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stone2";
+	pixel_x = -2;
+	pixel_y = 0
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/rocks)
 "aEj" = (
 /obj/effect/festive/street/streetlinenw,
 /turf/open/floor/plating/cobblestone,
@@ -2443,6 +2465,12 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/big_offices)
+"aJR" = (
+/obj/structure/urbanismcars{
+	icon_state = "van"
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/rocks)
 "aKk" = (
 /obj/structure/rack/shelf{
 	color = "#556B2F"
@@ -3119,6 +3147,13 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/dorm_rooms)
+"aSC" = (
+/obj/machinery/door/airlock/science,
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/rocks)
 "aSH" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
@@ -3317,12 +3352,6 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
-"aUH" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 8
-	},
-/turf/open/floor/plasteel/sepia,
-/area/awaymission/ihategordon/rocks)
 "aUV" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	color = "#454545";
@@ -3500,6 +3529,10 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"aXf" = (
+/obj/machinery/door/airlock/science,
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/rocks)
 "aXh" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "boxalt6";
@@ -3590,6 +3623,15 @@
 /obj/structure/barricade/wooden,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/rocks)
+"aYx" = (
+/obj/item/ammo_box/magazine/m12g/aa12{
+	pixel_x = 0;
+	pixel_y = -14
+	},
+/turf/open/floor/grass/fakebasalt{
+	color = "#FFBF00"
+	},
+/area/awaymission/ihategordon/custom_walking/nihilanth)
 "aYz" = (
 /obj/structure/urbanismmounted{
 	icon_state = "wallmount";
@@ -3636,12 +3678,6 @@
 	dir = 10
 	},
 /turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
-"aZD" = (
-/mob/living/simple_animal/hostile/infected/modular,
-/turf/open/floor/plating{
-	icon_state = "platingdmg2"
-	},
 /area/awaymission/ihategordon/dorm_rooms)
 "aZF" = (
 /turf/closed/mineral/mesarock{
@@ -3730,15 +3766,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
-"bbY" = (
-/obj/structure/urbanismeffect{
-	icon = 'modular_bluemoon/icons/obj/urbanism/deadhuman.dmi';
-	icon_state = "deadsci6";
-	pixel_x = -8;
-	pixel_y = 9
-	},
-/turf/open/floor/plating,
-/area/awaymission/ihategordon/dorm_rooms)
 "bcM" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/end{
 	dir = 4
@@ -3776,18 +3803,6 @@
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
-"bdi" = (
-/obj/structure/barricade/urbanism/roadblock{
-	resistance_flags = 115;
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
-	icon_state = "sand";
-	layer = 5.1
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 1
-	},
-/turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "bdm" = (
 /obj/machinery/power/floodlight/lamppost/one{
@@ -3906,17 +3921,14 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"bfd" = (
-/obj/structure/fence/nocut{
-	resistance_flags = 115;
-	dir = 8;
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
-	icon_state = "hugefence";
-	layer = 4.8;
-	pixel_x = 0;
-	pixel_y = -3
+"bfj" = (
+/obj/structure/urbanismmachines{
+	icon_state = "boxcart";
+	name = "Boxes";
+	pixel_x = 11;
+	pixel_y = 2
 	},
-/turf/open/floor/plating/cobblestone,
+/turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/dorm_rooms)
 "bfu" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
@@ -4258,6 +4270,15 @@
 	icon_state = "platingdmg1"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"bkz" = (
+/obj/effect/festive/street/streetlinenorth,
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt9";
+	pixel_x = 0;
+	pixel_y = 16
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "bkJ" = (
 /obj/structure/decorative{
 	icon = 'icons/obj/power_cond/cables.dmi';
@@ -4365,6 +4386,15 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"bmi" = (
+/obj/effect/turf_decal/stripes,
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 2
+	},
+/area/awaymission/ihategordon/dorm_rooms)
 "bmu" = (
 /obj/effect/turf_decal/weather/dirt,
 /obj/structure/rockpilemesa{
@@ -5370,12 +5400,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
-"bAs" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/dorm_rooms)
 "bAv" = (
 /obj/effect/turf_decal/tile/green/anticorner/contrasted{
 	dir = 1
@@ -5425,6 +5449,14 @@
 /obj/structure/window/reinforced/spawner/north,
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/dorm_rooms)
+"bAP" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt9";
+	pixel_x = 0;
+	pixel_y = 2
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/rocks)
 "bAY" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /turf/open/floor/plasteel/rivets,
@@ -6048,18 +6080,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"bKP" = (
-/obj/effect/turf_decal/stripes{
-	dir = 1
-	},
-/obj/machinery/light/urbanism_tube{
-	dir = 8
-	},
-/obj/machinery/door/poddoor/shutters/window{
-	resistance_flags = 115
-	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/rocks)
 "bKW" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/structure/lattice,
@@ -6379,6 +6399,15 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/big_offices)
+"bPl" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stone3";
+	pixel_x = -12;
+	pixel_y = -3
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "bPv" = (
 /obj/effect/festive/street/streetlinesouth,
 /turf/open/floor/plating/cobblestone,
@@ -6438,19 +6467,6 @@
 	color = "#FFBF00"
 	},
 /area/awaymission/ihategordon/custom_walking)
-"bQx" = (
-/obj/item/ammo_box/magazine/m16/mesa{
-	pixel_x = 0;
-	pixel_y = 6
-	},
-/obj/item/ammo_box/magazine/m16/mesa{
-	pixel_x = 0;
-	pixel_y = 6
-	},
-/turf/open/floor/grass/fakebasalt{
-	color = "#FFBF00"
-	},
-/area/awaymission/ihategordon/custom_walking/nihilanth)
 "bQJ" = (
 /obj/structure/flora/ausbushes/sparsegrass,
 /turf/open/floor/plating/smooth/grass/urbanism,
@@ -6841,13 +6857,6 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"bVU" = (
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/machinery/light/urbanism_tube,
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/rocks)
 "bWe" = (
 /obj/structure/table/reinforced/plastitaniumglass,
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner{
@@ -7024,14 +7033,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa)
-"bYd" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stone3";
-	pixel_x = -4;
-	pixel_y = 4
-	},
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/dorm_rooms)
 "bYn" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 6
@@ -7426,6 +7427,10 @@
 /obj/structure/flora/ausbushes/fullgrass,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"ceG" = (
+/obj/machinery/door/airlock/grunge,
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/rocks)
 "ceN" = (
 /obj/structure/door_assembly/door_assembly_extmai,
 /turf/open/floor/plating,
@@ -7506,6 +7511,13 @@
 	name = "concrete"
 	},
 /area/awaymission/ihategordon/rocks)
+"cgt" = (
+/obj/structure/urbanismmachines{
+	pixel_x = 5;
+	pixel_y = 1
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "cgF" = (
 /obj/structure/urbanismbigcrate{
 	pixel_x = 1;
@@ -7719,6 +7731,14 @@
 /obj/structure/barricade/wooden/crude,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"cjo" = (
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 2
+	},
+/area/awaymission/ihategordon/rocks)
 "cjr" = (
 /obj/structure/rack/shelf,
 /obj/effect/turf_decal/siding/wideplating_new/dark/end,
@@ -7738,6 +7758,15 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/rocks)
+"cju" = (
+/obj/structure/barricade/urbanism/roadblock{
+	resistance_flags = 115;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "sand";
+	layer = 5.1
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_rooms)
 "cjB" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "bubblegumfoot"
@@ -7781,6 +7810,15 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"ckt" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt8";
+	pixel_x = 13;
+	pixel_y = -3;
+	density = 1
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/rocks)
 "ckH" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -7986,14 +8024,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/rocks)
-"cnc" = (
-/obj/structure/urbanismmounted{
-	icon_state = "wallmount";
-	pixel_x = -1;
-	pixel_y = 27
-	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
 "cnd" = (
 /obj/structure/decorative{
 	icon = 'icons/obj/power_cond/cables.dmi';
@@ -8394,6 +8424,15 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/awaymission/ihategordon/big_offices)
+"ctJ" = (
+/obj/structure/barricade/urbanism/roadblock{
+	resistance_flags = 115;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "sand";
+	layer = 5.1
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "ctT" = (
 /obj/structure/table/reinforced,
 /obj/structure/railing/unbreakable{
@@ -8454,6 +8493,12 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"cuI" = (
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 8
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/rocks)
 "cuX" = (
 /obj/structure/urbanismbigcrate{
 	pixel_x = -3;
@@ -8476,13 +8521,6 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"cvE" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stone2"
-	},
-/obj/structure/disposalpipe/segment,
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/dorm_rooms)
 "cvF" = (
 /obj/structure/urbanismpile,
 /turf/open/floor/plating/ironsand,
@@ -9364,6 +9402,17 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/big_offices)
+"cGZ" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 1
+	},
+/area/awaymission/ihategordon/rocks)
 "cHe" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 8
@@ -10067,6 +10116,12 @@
 	color = "#ad91b5"
 	},
 /area/awaymission/ihategordon/custom_walking)
+"cSd" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/rocks)
 "cSi" = (
 /obj/structure/urbanismeffect{
 	icon_state = "red_small";
@@ -10279,6 +10334,17 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/rocks)
+"cVC" = (
+/obj/structure/urbanismeffect{
+	density = 1;
+	resistance_flags = 115;
+	pixel_x = -7;
+	pixel_y = 11
+	},
+/turf/open/floor/plating{
+	icon_state = "platingdmg3"
+	},
+/area/awaymission/ihategordon/dorm_rooms)
 "cVE" = (
 /obj/machinery/portable_atmospherics/canister/stimulum,
 /obj/structure/window/reinforced/spawner/north,
@@ -10307,6 +10373,15 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"cVM" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt2";
+	dir = 8;
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "cVQ" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon = 'icons/obj/supermatter.dmi';
@@ -10567,6 +10642,14 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/dorm_rooms)
+"dao" = (
+/obj/structure/railing{
+	dir = 5
+	},
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 2
+	},
+/area/awaymission/ihategordon/rocks)
 "daD" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 4
@@ -11186,16 +11269,6 @@
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/awaymission/ihategordon/big_offices)
-"diw" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stone2"
-	},
-/obj/structure/disposalpipe/segment,
-/obj/structure/urbanismbigcrate/alt{
-	icon_state = "boxalt7"
-	},
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/dorm_rooms)
 "diy" = (
 /obj/machinery/light/urbanism_tube,
 /turf/open/floor/plasteel/dark,
@@ -11364,6 +11437,16 @@
 /obj/structure/table/reinforced,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/outsideofmesa)
+"dkJ" = (
+/obj/structure/disposalpipe/segment,
+/obj/structure/urbanismeffect{
+	density = 1;
+	resistance_flags = 115;
+	pixel_x = -7;
+	pixel_y = 11
+	},
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/dorm_rooms)
 "dkO" = (
 /obj/structure/urbanismeffect{
 	icon = 'modular_bluemoon/icons/obj/urbanism/deadhuman.dmi';
@@ -11721,16 +11804,17 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"doP" = (
+/obj/structure/urbanismcars{
+	icon_state = "van_wreck"
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_rooms)
 "dpa" = (
 /obj/structure/table/reinforced,
 /obj/item/trash/intecookies,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms/stillalive)
-"dpe" = (
-/obj/structure/disposalpipe/segment,
-/mob/living/simple_animal/hostile/infected/modular,
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/dorm_rooms)
 "dpp" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /turf/open/floor/plasteel/white,
@@ -12380,12 +12464,8 @@
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
 "dyR" = (
-/turf/closed/indestructible{
-	icon = 'icons/turf/floors.dmi';
-	icon_state = "reebegame";
-	name = "void"
-	},
-/area/awaymission/ihategordon/dorm_rooms)
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/rocks)
 "dzd" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "boxalt3";
@@ -12618,10 +12698,6 @@
 	pixel_y = 27
 	},
 /turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
-"dBO" = (
-/obj/effect/festive/street/streetlinesouth,
-/turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/dorm_rooms)
 "dBP" = (
 /obj/structure/barricade/sandbags,
@@ -12933,15 +13009,6 @@
 /obj/machinery/gateway/away,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/outsideofmesa)
-"dEG" = (
-/obj/effect/festive/street/streetlinenorth,
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt9";
-	pixel_x = 0;
-	pixel_y = 16
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "dET" = (
 /turf/open/water/jungle/default_atmos{
 	density = 1;
@@ -13193,17 +13260,6 @@
 /obj/structure/closet/crate/large/urbanismcratelarge/mil,
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/dorm_rooms)
-"dJR" = (
-/obj/structure/lattice,
-/obj/structure/fence/nocut{
-	resistance_flags = 115;
-	dir = 1;
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
-	icon_state = "hugefence";
-	layer = 4.8
-	},
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/dorm_rooms)
 "dJU" = (
 /obj/structure/mesaflora{
 	icon_state = "flora6"
@@ -13365,12 +13421,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
-"dMp" = (
-/obj/effect/turf_decal/stripes/white{
-	dir = 1
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/rocks)
 "dMx" = (
 /obj/structure/mesaflora{
 	icon_state = "flora18";
@@ -13617,6 +13667,10 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"dPU" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/rocks)
 "dQi" = (
 /obj/effect/turf_decal/siding/wideplating{
 	dir = 1
@@ -13636,17 +13690,6 @@
 	icon_state = "gib1s_guts"
 	},
 /turf/open/floor/plating,
-/area/awaymission/ihategordon/rocks)
-"dQD" = (
-/obj/effect/turf_decal/stripes{
-	dir = 1
-	},
-/obj/structure/railing{
-	dir = 4
-	},
-/turf/open/floor/plasteel/stairs/medium{
-	dir = 1
-	},
 /area/awaymission/ihategordon/rocks)
 "dQK" = (
 /obj/structure/flora/junglebush{
@@ -14176,6 +14219,18 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
+"dWo" = (
+/obj/structure/fence/nocut{
+	resistance_flags = 115;
+	dir = 8;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "hugefence";
+	layer = 4.8;
+	pixel_x = 0;
+	pixel_y = -3
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "dWx" = (
 /obj/machinery/light/urbanism_tube,
 /turf/open/floor/plasteel/rivets,
@@ -14541,12 +14596,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"ebs" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 6
-	},
-/turf/open/floor/plasteel/sepia,
-/area/awaymission/ihategordon/rocks)
 "ebt" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -14898,15 +14947,6 @@
 	dir = 9
 	},
 /turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
-"egk" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/machinery/light/urbanism_tube{
-	dir = 8
-	},
-/turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
 "ego" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -15527,6 +15567,15 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"epJ" = (
+/obj/item/ammo_box/magazine/m12g/aa12{
+	pixel_x = 0;
+	pixel_y = -14
+	},
+/turf/open/floor/grass/fakebasalt{
+	color = "#ad91b5"
+	},
+/area/awaymission/ihategordon/custom_walking/nihilanth)
 "epL" = (
 /obj/machinery/door/poddoor,
 /obj/effect/festive/street/streetlinewest,
@@ -15739,13 +15788,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
-"esV" = (
-/obj/effect/baseturf_helper/black_mesa,
-/turf/closed/mineral/mesarock{
-	icon_state = "rock2";
-	color = "#f79668"
-	},
-/area/awaymission/ihategordon/outsideofmesa/restricted_zone/apache)
 "etp" = (
 /obj/structure/urbanismeffect{
 	density = 1;
@@ -16383,6 +16425,11 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"eET" = (
+/obj/effect/festive/street/streetlinenorth,
+/mob/living/simple_animal/hostile/infected/modular,
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "eEY" = (
 /obj/effect/festive/street/streetlinenorth,
 /obj/structure/urbanismbigcrate/alt{
@@ -16442,13 +16489,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/big_offices)
-"eFF" = (
-/obj/structure/closet/crate/bin{
-	pixel_x = -2;
-	pixel_y = 17
-	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/rocks)
 "eFQ" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stonealt7"
@@ -16465,26 +16505,11 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
-"eFX" = (
-/obj/structure/barricade/urbanism/roadblock{
-	resistance_flags = 115;
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
-	icon_state = "sand";
-	layer = 5.1
-	},
-/turf/open/space/basic,
-/area/awaymission/ihategordon/dorm_rooms)
 "eGd" = (
 /obj/effect/turf_decal/weather/sand/plating,
 /obj/structure/table/reinforced,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
-"eGq" = (
-/obj/structure/urbanismcars{
-	icon_state = "van"
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/rocks)
 "eGy" = (
 /obj/effect/turf_decal/trimline/green/filled/line{
 	dir = 5
@@ -16587,6 +16612,11 @@
 /obj/effect/turf_decal/trimline/dark/filled/line,
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
+"eHD" = (
+/obj/structure/disposalpipe/segment,
+/mob/living/simple_animal/hostile/infected/modular,
+/turf/open/floor/catwalk_floor,
 /area/awaymission/ihategordon/dorm_rooms)
 "eIa" = (
 /mob/living/simple_animal/hostile/headcrab/mesa,
@@ -16705,6 +16735,17 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"eKc" = (
+/obj/structure/fence/nocut{
+	resistance_flags = 115;
+	dir = 1;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "hugefence";
+	layer = 4.8
+	},
+/obj/structure/lattice,
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_rooms)
 "eKf" = (
 /obj/structure/chair{
 	dir = 4
@@ -17035,11 +17076,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/rocks)
-"eNd" = (
-/obj/structure/table/reinforced,
-/obj/effect/turf_decal/siding/wideplating_new/dark,
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
 "eNf" = (
 /obj/structure/urbanismeffect{
 	icon_state = "red_small";
@@ -17897,13 +17933,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"eZs" = (
-/obj/machinery/power/floodlight/urbanismlight/mesaspec,
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 1
-	},
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
 "eZy" = (
 /obj/structure/urbanismmounted{
 	icon_state = "wallmount";
@@ -18748,15 +18777,6 @@
 	},
 /turf/open/water/safe/electric,
 /area/awaymission/ihategordon/dorm_rooms)
-"fkh" = (
-/obj/effect/turf_decal/stripes{
-	dir = 4
-	},
-/obj/machinery/light/urbanism_tube{
-	dir = 4
-	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
 "fkk" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "xgibbl4";
@@ -19322,15 +19342,6 @@
 /obj/structure/lattice,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"fsl" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt9";
-	pixel_x = 0;
-	pixel_y = 2
-	},
-/obj/structure/lattice,
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/rocks)
 "fsn" = (
 /obj/item/trash/tray,
 /turf/open/floor/plating/smooth/grass/urbanism,
@@ -19885,12 +19896,6 @@
 /obj/effect/festive/street/streetlinesw,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
-"fzT" = (
-/obj/structure/urbanismbigcrate/alt{
-	icon_state = "boxalt7"
-	},
-/turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/dorm_rooms)
 "fAh" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 1
@@ -20307,9 +20312,9 @@
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "fGC" = (
-/obj/effect/festive/street/streetlinenorth,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
+/mob/living/simple_animal/hostile/infected/modular,
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/rocks)
 "fGK" = (
 /obj/structure/urbanismeffect{
 	icon_state = "water_vapor";
@@ -20598,14 +20603,6 @@
 	pixel_y = 1
 	},
 /turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
-"fKl" = (
-/obj/structure/urbanismbigcrate{
-	pixel_x = 0;
-	pixel_y = 2
-	},
-/obj/structure/disposalpipe/segment,
-/turf/open/floor/catwalk_floor,
 /area/awaymission/ihategordon/dorm_rooms)
 "fKm" = (
 /obj/effect/decal/cleanable/blood{
@@ -22102,6 +22099,16 @@
 	icon_state = "platingdmg3"
 	},
 /area/awaymission/ihategordon/rocks)
+"ghC" = (
+/obj/structure/fence/nocut{
+	resistance_flags = 115;
+	dir = 1;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "hugefence";
+	layer = 4.8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "ghL" = (
 /obj/structure/railing{
 	dir = 1;
@@ -22287,6 +22294,12 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"gkX" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/rocks)
 "glq" = (
 /obj/structure/flora/rock/pile{
 	color = "#f79668"
@@ -22334,6 +22347,15 @@
 	pixel_y = -9
 	},
 /turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
+"gmc" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt8";
+	pixel_x = 13;
+	pixel_y = -3;
+	density = 1
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/dorm_rooms)
 "gmi" = (
 /obj/structure/fence{
@@ -22679,6 +22701,18 @@
 /obj/structure/fence/end,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"grS" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt8";
+	pixel_x = -8;
+	pixel_y = 3;
+	density = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "grU" = (
 /obj/effect/turf_decal/stripes/asteroid{
 	dir = 8
@@ -23796,6 +23830,12 @@
 "gHT" = (
 /turf/open/floor/plating/smooth/grass/urbanism,
 /area/awaymission/ihategordon/rocks)
+"gIb" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/awaymission/ihategordon/dorm_rooms)
 "gId" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/effect/turf_decal/trimline/purple/line,
@@ -23972,19 +24012,6 @@
 /obj/structure/table/reinforced,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
-"gKk" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt9";
-	pixel_x = 0;
-	pixel_y = 2
-	},
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt9";
-	pixel_x = 0;
-	pixel_y = 2
-	},
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/rocks)
 "gKv" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "xgiblarvatorso"
@@ -24020,6 +24047,17 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/dorm_rooms)
+"gKO" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 1
+	},
+/area/awaymission/ihategordon/rocks)
 "gLx" = (
 /obj/structure/table/reinforced,
 /obj/item/reagent_containers/food/drinks/coffee{
@@ -24028,6 +24066,10 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms/stillalive)
+"gLy" = (
+/obj/machinery/door/airlock/grunge,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "gLL" = (
 /obj/structure/table/reinforced,
 /turf/open/floor/plating/cobblestone,
@@ -24301,6 +24343,14 @@
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/dorm_rooms)
+"gPF" = (
+/obj/effect/festive/street/streetlinesouth,
+/obj/structure/urbanismbigcrate{
+	pixel_x = 0;
+	pixel_y = 2
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "gPG" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon = 'icons/obj/supermatter.dmi';
@@ -24571,13 +24621,6 @@
 	pixel_y = 0
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/rocks)
-"gSK" = (
-/obj/structure/table/reinforced,
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 4
-	},
-/turf/open/floor/plasteel/sepia,
 /area/awaymission/ihategordon/rocks)
 "gSY" = (
 /obj/structure/flora/rock/pile{
@@ -25334,19 +25377,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/outsideofmesa)
-"hcF" = (
-/obj/effect/festive/street/streetlinenorth,
-/obj/structure/fence/nocut{
-	resistance_flags = 115;
-	dir = 8;
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
-	icon_state = "hugefence";
-	layer = 4.8;
-	pixel_x = 0;
-	pixel_y = -3
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "hcL" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 1
@@ -25505,6 +25535,13 @@
 	icon_state = "platingdmg3"
 	},
 /area/awaymission/ihategordon/rocks)
+"hfi" = (
+/turf/closed/indestructible{
+	icon = 'icons/turf/floors.dmi';
+	icon_state = "reebegame";
+	name = "void"
+	},
+/area/awaymission/ihategordon/dorm_rooms)
 "hfz" = (
 /obj/effect/turf_decal/stripes{
 	dir = 1
@@ -25547,6 +25584,10 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
+"hgl" = (
+/obj/effect/turf_decal/stripes/white,
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/rocks)
 "hgF" = (
 /obj/structure/rack/shelf,
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -25578,6 +25619,17 @@
 /obj/effect/turf_decal/trimline/dark/filled/corner,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/rocks)
+"hhp" = (
+/obj/structure/lattice,
+/obj/structure/urbanismeffect{
+	icon_state = "fire";
+	pixel_x = 1;
+	pixel_y = 14
+	},
+/turf/open/floor/plating{
+	icon_state = "platingdmg2"
+	},
+/area/awaymission/ihategordon/dorm_rooms)
 "hhq" = (
 /obj/structure/urbanismeffect{
 	icon_state = "fire";
@@ -25661,14 +25713,6 @@
 "hiu" = (
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone/apache)
-"hiF" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt9";
-	pixel_x = 0;
-	pixel_y = 2
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/rocks)
 "hiJ" = (
 /obj/structure/urbanismeffect{
 	icon_state = "red_small";
@@ -25694,6 +25738,11 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"hiT" = (
+/obj/structure/lattice,
+/mob/living/simple_animal/hostile/infected/modular,
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/rocks)
 "hiU" = (
 /obj/structure/urbanismmachines/xenplant{
 	name = "tree";
@@ -25950,6 +25999,10 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"hml" = (
+/obj/machinery/light/floor,
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_rooms)
 "hmt" = (
 /obj/structure/lattice,
 /turf/open/floor/plating/ironsand{
@@ -26160,13 +26213,6 @@
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"hpi" = (
-/obj/effect/baseturf_helper/black_mesa,
-/turf/closed/mineral/mesarock{
-	icon_state = "rock2";
-	color = "#f79668"
-	},
-/area/awaymission/ihategordon/custom_walking/gonarch)
 "hpq" = (
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/plating{
@@ -26387,14 +26433,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"htE" = (
-/obj/structure/chair/office/dark{
-	dir = 8;
-	pixel_x = -1;
-	pixel_y = -3
-	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/rocks)
 "htI" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone3";
@@ -26778,12 +26816,6 @@
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa)
-"hyW" = (
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 8
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/rocks)
 "hzF" = (
 /obj/effect/turf_decal/siding/wideplating_new/corner{
 	dir = 1
@@ -27308,6 +27340,14 @@
 /obj/structure/frame/machine,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
+"hEK" = (
+/obj/structure/urbanismmounted{
+	icon_state = "wallmount";
+	pixel_x = -1;
+	pixel_y = 27
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "hES" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 6
@@ -27380,10 +27420,6 @@
 	dir = 8
 	},
 /turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
-"hFW" = (
-/obj/machinery/power/floodlight/lamppost/one,
-/turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/dorm_rooms)
 "hGe" = (
 /obj/effect/turf_decal/weather/dirt{
@@ -27586,15 +27622,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
-"hJf" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt9";
-	pixel_x = 0;
-	pixel_y = 2
-	},
-/obj/structure/lattice,
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/rocks)
 "hJu" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 8
@@ -27795,15 +27822,6 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"hMB" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt8";
-	pixel_x = 13;
-	pixel_y = -3;
-	density = 1
-	},
-/turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/dorm_rooms)
 "hMT" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -28079,6 +28097,14 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/big_offices)
+"hRt" = (
+/obj/effect/festive/street/streetlinesouth,
+/obj/structure/closet/wardrobe/grey{
+	pixel_x = 6;
+	pixel_y = -6
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "hRu" = (
 /obj/effect/festive/street/streetlinene,
 /turf/open/floor/plating/cobblestone,
@@ -28106,6 +28132,14 @@
 /obj/effect/turf_decal/trimline/dark/filled/line,
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/big_offices)
+"hRF" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt9";
+	pixel_x = 0;
+	pixel_y = 16
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "hRH" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 4
@@ -28444,14 +28478,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa)
-"hWS" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt9";
-	pixel_x = 0;
-	pixel_y = 2
-	},
-/turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/rocks)
 "hWZ" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone_ore"
@@ -28597,14 +28623,6 @@
 /obj/structure/urbanismbigcrate/alt,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
-"iay" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stone2";
-	pixel_x = -2;
-	pixel_y = 0
-	},
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/dorm_rooms)
 "iaB" = (
 /obj/effect/festive/street/streetlinewest{
 	pixel_x = -1;
@@ -29125,6 +29143,19 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"ihU" = (
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = 0;
+	pixel_y = 6
+	},
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = 0;
+	pixel_y = 6
+	},
+/turf/open/floor/grass/fakebasalt{
+	color = "#FFBF00"
+	},
+/area/awaymission/ihategordon/custom_walking/nihilanth)
 "ihW" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "boxcart";
@@ -29197,13 +29228,6 @@
 /obj/machinery/door/airlock/security/glass,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/science_tunnel)
-"iiE" = (
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/mob/living/simple_animal/hostile/infected/modular,
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/dorm_rooms)
 "iiL" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/effect/turf_decal/trimline/dark/filled/line,
@@ -29333,12 +29357,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/big_offices)
-"ikZ" = (
-/obj/structure/sink/puddle/healing,
-/turf/open/floor/grass/fakebasalt{
-	color = "#FFBF00"
-	},
-/area/awaymission/ihategordon/custom_walking/nihilanth)
 "ilc" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 10
@@ -29380,6 +29398,15 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/big_offices)
+"ily" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/machinery/light/urbanism_tube{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "ilK" = (
 /obj/structure/mesaflora{
 	icon_state = "flora10"
@@ -29447,6 +29474,11 @@
 	dir = 1
 	},
 /turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
+"inh" = (
+/obj/effect/festive/street/streetlinenorth,
+/obj/structure/lattice,
+/turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/dorm_rooms)
 "inj" = (
 /obj/structure/rack/shelf{
@@ -29676,6 +29708,15 @@
 /obj/structure/barricade/sandbags,
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"iqX" = (
+/obj/effect/turf_decal/stripes,
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 2
+	},
+/area/awaymission/ihategordon/dorm_rooms)
 "iqY" = (
 /obj/machinery/light/urbanism_tube{
 	dir = 8
@@ -29685,12 +29726,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"irj" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 4
-	},
-/turf/open/floor/plasteel/sepia,
-/area/awaymission/ihategordon/rocks)
 "irx" = (
 /obj/structure/urbanismeffect{
 	icon = 'modular_bluemoon/icons/obj/urbanism/deadhuman.dmi';
@@ -30449,6 +30484,14 @@
 /obj/structure/frame/computer,
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/big_offices)
+"iBl" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 2
+	},
+/area/awaymission/ihategordon/rocks)
 "iBB" = (
 /obj/structure/urbanismeffect{
 	icon_state = "fire";
@@ -30560,6 +30603,16 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
+"iDA" = (
+/obj/structure/barricade/urbanism/roadblock{
+	resistance_flags = 115;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "sand";
+	layer = 5.1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "iDM" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "gib2"
@@ -30972,6 +31025,13 @@
 /obj/structure/barricade/wooden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa)
+"iKb" = (
+/obj/effect/baseturf_helper/black_mesa,
+/turf/closed/mineral/mesarock{
+	icon_state = "rock2";
+	color = "#f79668"
+	},
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone/apache)
 "iKh" = (
 /obj/structure/mesaflora{
 	icon_state = "flora5"
@@ -31570,19 +31630,6 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
-"iTU" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stone3";
-	pixel_x = -4;
-	pixel_y = 4
-	},
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt9";
-	pixel_x = 19;
-	pixel_y = 1
-	},
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/dorm_rooms)
 "iTW" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
@@ -31913,6 +31960,10 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/big_offices)
+"iZX" = (
+/obj/structure/disposalpipe/segment,
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/rocks)
 "jae" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/urbanismbigcrate/alt{
@@ -32220,23 +32271,6 @@
 /obj/effect/festive/street/streetlineeast,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
-"jfR" = (
-/obj/structure/table/reinforced/plastitaniumglass,
-/obj/effect/turf_decal/siding/wideplating_new/dark,
-/obj/item/ammo_box/magazine/pistolm9mm{
-	pixel_x = -7;
-	pixel_y = 5
-	},
-/obj/item/ammo_box/magazine/pistolm9mm{
-	pixel_x = 9;
-	pixel_y = 0
-	},
-/obj/item/gun/ballistic/automatic/pistol/hl9mm{
-	pixel_x = 5;
-	pixel_y = 8
-	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
 "jfU" = (
 /obj/structure/rack/shelf,
 /turf/open/floor/plating/cobblestone/sidewalk,
@@ -33271,6 +33305,15 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/big_offices)
+"jso" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/light/urbanism_tube{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "jsy" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone_ore";
@@ -33946,6 +33989,10 @@
 "jAe" = (
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/rocks)
+"jAi" = (
+/obj/effect/turf_decal/stripes,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "jAl" = (
 /obj/effect/turf_decal/siding/wideplating_new,
 /obj/effect/festive/street/streetlinesouth,
@@ -33980,6 +34027,21 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
+"jAw" = (
+/obj/structure/fence/nocut{
+	resistance_flags = 115;
+	dir = 8;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "hugefence";
+	layer = 4.8;
+	pixel_x = 0;
+	pixel_y = -3
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "jAz" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone_ore"
@@ -34045,11 +34107,6 @@
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
-"jBX" = (
-/obj/effect/festive/street/streetlinenorth,
-/obj/structure/lattice,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "jCb" = (
 /obj/structure/railing{
 	dir = 8
@@ -34179,11 +34236,6 @@
 /obj/structure/marker_beacon/burgundy,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/rocks)
-"jDU" = (
-/obj/structure/lattice,
-/mob/living/simple_animal/hostile/infected/modular,
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/rocks)
 "jEd" = (
 /obj/structure/urbanismeffect{
 	density = 1;
@@ -34274,12 +34326,6 @@
 	},
 /obj/structure/lattice,
 /turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
-"jFx" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/dorm_rooms)
 "jFK" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -34382,27 +34428,6 @@
 /obj/structure/frame/machine,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
-"jHr" = (
-/obj/item/ammo_box/magazine/m16/mesa{
-	pixel_x = 0;
-	pixel_y = 6
-	},
-/obj/item/ammo_box/magazine/m16/mesa{
-	pixel_x = 0;
-	pixel_y = 6
-	},
-/obj/item/ammo_box/magazine/m16/mesa{
-	pixel_x = 0;
-	pixel_y = 6
-	},
-/obj/item/ammo_box/magazine/mp5/mp10_drum{
-	pixel_x = 5;
-	pixel_y = 7
-	},
-/turf/open/floor/grass/fakebasalt{
-	color = "#FFBF00"
-	},
-/area/awaymission/ihategordon/custom_walking/nihilanth)
 "jHz" = (
 /obj/structure/railing{
 	dir = 1
@@ -34424,6 +34449,12 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"jHD" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/rocks)
 "jHG" = (
 /obj/structure/urbanismeffect,
 /turf/open/floor/plating/ironsand{
@@ -34583,15 +34614,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
-"jKh" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt8";
-	pixel_x = 13;
-	pixel_y = -3;
-	density = 1
-	},
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/rocks)
 "jKk" = (
 /obj/structure/urbanismeffect{
 	icon_state = "red_medium";
@@ -34816,13 +34838,6 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/big_offices)
-"jMR" = (
-/obj/structure/urbanismbigcrate{
-	pixel_x = 0;
-	pixel_y = 2
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "jNa" = (
 /obj/structure/table/reinforced,
 /obj/machinery/door/poddoor/shutters/window,
@@ -35386,11 +35401,6 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/bombardment)
-"jUS" = (
-/obj/effect/festive/street/streetlinenorth,
-/mob/living/simple_animal/hostile/infected/modular,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "jUV" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 1
@@ -35573,6 +35583,12 @@
 /obj/effect/turf_decal/stripes,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/rocks)
+"jYq" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "jYr" = (
 /obj/structure/urbanismeffect{
 	density = 1;
@@ -36015,6 +36031,14 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/dorm_offices)
+"kcO" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt9";
+	pixel_x = 0;
+	pixel_y = 2
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/rocks)
 "kcP" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 8
@@ -36140,17 +36164,6 @@
 /obj/machinery/door/poddoor/shutters,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa)
-"kfb" = (
-/obj/structure/filingcabinet/chestdrawer{
-	pixel_x = -9;
-	pixel_y = 4
-	},
-/obj/structure/filingcabinet/chestdrawer{
-	pixel_x = 8;
-	pixel_y = 4
-	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/rocks)
 "kfi" = (
 /obj/effect/turf_decal/siding/wideplating_new,
 /obj/structure/rockpilemesa{
@@ -36365,6 +36378,16 @@
 /obj/machinery/door/poddoor,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"kiL" = (
+/obj/effect/festive/street/streetlinesouth,
+/obj/structure/urbanismmachines{
+	icon_state = "boxcart";
+	name = "Boxes";
+	pixel_x = 11;
+	pixel_y = 2
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "kiT" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -36408,13 +36431,6 @@
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
-"kjE" = (
-/obj/structure/urbanismbigcrate{
-	pixel_x = 13;
-	pixel_y = 3
-	},
-/turf/open/floor/plating,
 /area/awaymission/ihategordon/dorm_rooms)
 "kjM" = (
 /obj/structure/fluff/paper/stack{
@@ -36491,16 +36507,6 @@
 /obj/effect/festive/street/streetlinenorth,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"kld" = (
-/obj/machinery/light/urbanism_tube{
-	dir = 8
-	},
-/turf/open/floor/plasteel{
-	icon = 'modular_splurt/icons/turf/layenia.dmi';
-	icon_state = "concrete2";
-	color = "#8f8f8f"
-	},
-/area/awaymission/ihategordon/rocks)
 "klk" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 10
@@ -36595,6 +36601,12 @@
 /obj/effect/turf_decal/siding/wideplating_new,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"klH" = (
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "klU" = (
 /obj/effect/awaymission/blackmesa/difficulty_trigger/trigger6,
 /obj/machinery/door/poddoor/preopen,
@@ -37310,7 +37322,11 @@
 	},
 /area/awaymission/ihategordon/outsideofmesa)
 "kwY" = (
-/turf/open/floor/plasteel/sepia,
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/machinery/light/urbanism_tube,
+/turf/open/floor/catwalk_floor,
 /area/awaymission/ihategordon/rocks)
 "kxd" = (
 /obj/structure/fence/nocut{
@@ -37527,14 +37543,6 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
-"kAt" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stone3";
-	pixel_x = -12;
-	pixel_y = -3
-	},
-/turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/dorm_rooms)
 "kAv" = (
 /obj/structure/urbanismeffect{
 	icon = 'modular_bluemoon/icons/mob/gonome.dmi';
@@ -38114,15 +38122,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"kKA" = (
-/obj/structure/barricade/urbanism/roadblock{
-	resistance_flags = 115;
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
-	icon_state = "sand";
-	layer = 5.1
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "kKI" = (
 /obj/effect/turf_decal/siding/wideplating{
 	dir = 9
@@ -38164,12 +38163,6 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/emitter_chambers)
-"kLa" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
 "kLe" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 10
@@ -38481,13 +38474,6 @@
 /obj/structure/barricade/sandbags,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"kPh" = (
-/obj/effect/turf_decal/stripes{
-	dir = 1
-	},
-/mob/living/simple_animal/hostile/infected/modular,
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
 "kPn" = (
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/big_offices)
@@ -38936,14 +38922,6 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/rocks)
-"kWj" = (
-/obj/structure/railing{
-	dir = 4
-	},
-/turf/open/floor/plasteel/stairs/medium{
-	dir = 2
-	},
-/area/awaymission/ihategordon/rocks)
 "kWn" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "boxalt2";
@@ -39080,6 +39058,12 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"kXI" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "kXP" = (
 /obj/effect/turf_decal/weather/sand/floor,
 /turf/closed/wall/r_wall/blackmesa,
@@ -39124,10 +39108,6 @@
 /turf/open/floor/plating{
 	icon_state = "platingdmg2"
 	},
-/area/awaymission/ihategordon/rocks)
-"kYS" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark,
-/turf/open/floor/plasteel/sepia,
 /area/awaymission/ihategordon/rocks)
 "kZc" = (
 /obj/structure/barricade/urbanism/roadblock{
@@ -39493,17 +39473,6 @@
 /obj/effect/turf_decal/weather/dirt,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/rocks)
-"ldy" = (
-/obj/structure/lattice,
-/obj/structure/urbanismeffect{
-	icon_state = "fire";
-	pixel_x = 1;
-	pixel_y = 14
-	},
-/turf/open/floor/plating{
-	icon_state = "platingdmg2"
-	},
-/area/awaymission/ihategordon/dorm_rooms)
 "ldE" = (
 /obj/structure/fence/nocut,
 /turf/open/floor/plating/ironsand,
@@ -39676,6 +39645,14 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/science_tunnel)
+"lgJ" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stone3";
+	pixel_x = -12;
+	pixel_y = -3
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_rooms)
 "lgR" = (
 /obj/structure/urbanismeffect{
 	icon_state = "fire";
@@ -39691,13 +39668,6 @@
 /obj/structure/lattice,
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/outsideofmesa)
-"lhd" = (
-/obj/structure/urbanismbigcrate/alt{
-	icon_state = "pipes"
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark,
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
 "lht" = (
 /turf/open/indestructible/cobble,
 /area/awaymission/ihategordon/rocks)
@@ -40188,6 +40158,18 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"lnT" = (
+/obj/structure/urbanismeffect{
+	density = 1;
+	resistance_flags = 115;
+	pixel_x = -7;
+	pixel_y = 11
+	},
+/obj/machinery/power/floodlight/urbanismlight/mesamisc{
+	light_color = "#d4654e"
+	},
+/turf/open/floor/plating,
+/area/awaymission/ihategordon/dorm_rooms)
 "loi" = (
 /obj/item/ammo_casing,
 /turf/open/floor/plating{
@@ -40239,17 +40221,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/rocks)
-"lpn" = (
-/obj/structure/fence/nocut{
-	resistance_flags = 115;
-	dir = 1;
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
-	icon_state = "hugefence";
-	layer = 4.8
-	},
-/obj/structure/lattice,
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/dorm_rooms)
 "lpq" = (
 /obj/machinery/door/poddoor/shutters/preopen,
 /obj/effect/turf_decal/stripes{
@@ -40393,10 +40364,6 @@
 /obj/structure/marker_beacon/bronze,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
-"lro" = (
-/mob/living/simple_animal/hostile/infected/modular,
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/rocks)
 "lrp" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner,
 /turf/open/floor/plating/ironsand,
@@ -40493,15 +40460,6 @@
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/big_offices)
-"ltE" = (
-/obj/structure/chair/office/light{
-	dir = 1;
-	pixel_x = -11;
-	pixel_y = -3
-	},
-/mob/living/simple_animal/hostile/infected/modular,
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
 "ltX" = (
 /obj/structure/barricade/wooden,
 /turf/open/floor/plating/cobblestone,
@@ -40634,15 +40592,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
-"lwj" = (
-/obj/item/ammo_box/magazine/mp5/mp10_drum{
-	pixel_x = 5;
-	pixel_y = 7
-	},
-/turf/open/floor/grass/fakebasalt{
-	color = "#FFBF00"
-	},
-/area/awaymission/ihategordon/custom_walking/nihilanth)
 "lwk" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 5
@@ -40687,6 +40636,16 @@
 /obj/item/pen,
 /turf/open/indestructible,
 /area/awaymission/ihategordon/secret_rooms)
+"lxb" = (
+/obj/structure/table/reinforced,
+/obj/structure/urbanismmachines{
+	icon_state = "boxdoc";
+	pixel_x = 0;
+	pixel_y = 7;
+	name = "box"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/rocks)
 "lxc" = (
 /obj/structure/lattice,
 /obj/structure/flora/rock/pile{
@@ -40694,6 +40653,15 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
+"lxp" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stone2";
+	pixel_x = -9;
+	pixel_y = 0
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "lxz" = (
 /obj/effect/turf_decal/siding/wideplating{
 	dir = 8
@@ -41070,19 +41038,6 @@
 /obj/effect/landmark/awaystart,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"lCL" = (
-/obj/machinery/computer{
-	desc = "A computer long since rendered non-functional due to lack of maintenance. Spitting out error messages.";
-	dir = 8;
-	name = "Broken Computer";
-	pixel_x = 1;
-	pixel_y = 2
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 4
-	},
-/turf/open/floor/plasteel/sepia,
-/area/awaymission/ihategordon/rocks)
 "lDj" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone3";
@@ -41664,6 +41619,16 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/rocks)
+"lLx" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stone2"
+	},
+/obj/structure/disposalpipe/segment,
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt7"
+	},
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/dorm_rooms)
 "lLz" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	color = "#454545";
@@ -42304,14 +42269,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"lWU" = (
-/obj/structure/railing{
-	dir = 1
-	},
-/turf/open/floor/plasteel/stairs/medium{
-	dir = 2
-	},
-/area/awaymission/ihategordon/rocks)
 "lXa" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "gib2_guts"
@@ -42609,18 +42566,6 @@
 /obj/structure/urbanismbigcrate,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"maL" = (
-/obj/effect/turf_decal/stripes{
-	dir = 1
-	},
-/obj/machinery/light/urbanism_tube{
-	dir = 4
-	},
-/obj/machinery/door/poddoor/shutters/window{
-	resistance_flags = 115
-	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/rocks)
 "maM" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone3_depleted"
@@ -42885,6 +42830,13 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
+"mdT" = (
+/obj/effect/baseturf_helper/black_mesa,
+/turf/closed/mineral/mesarock{
+	icon_state = "rock2";
+	color = "#f79668"
+	},
+/area/awaymission/ihategordon/custom_walking/nihilanth)
 "mee" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "boxalt6";
@@ -42924,6 +42876,14 @@
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
+"mfe" = (
+/obj/structure/urbanismmachines{
+	pixel_x = 5;
+	pixel_y = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "mfm" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner,
 /obj/effect/turf_decal/trimline/dark/filled/corner,
@@ -43003,13 +42963,6 @@
 	},
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/outsideofmesa)
-"mgl" = (
-/obj/machinery/door/airlock/science,
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/rocks)
 "mgw" = (
 /turf/closed/mineral/mesarock{
 	icon_state = "rock2";
@@ -43615,12 +43568,6 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/rocks)
-"mpy" = (
-/obj/structure/disposalpipe/segment{
-	dir = 10
-	},
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/rocks)
 "mpF" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -43803,6 +43750,12 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"mse" = (
+/obj/structure/disposalpipe/segment{
+	dir = 10
+	},
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/rocks)
 "msr" = (
 /obj/structure/filingcabinet,
 /obj/structure/filingcabinet{
@@ -43913,14 +43866,6 @@
 	color = "#4cfbfb"
 	},
 /area/awaymission/ihategordon/custom_event)
-"mtL" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt9";
-	pixel_x = 0;
-	pixel_y = 2
-	},
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/rocks)
 "mtS" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "boxalt3"
@@ -44257,6 +44202,15 @@
 /obj/structure/lattice,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"mxd" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt9";
+	pixel_x = 0;
+	pixel_y = 2
+	},
+/obj/structure/lattice,
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/rocks)
 "mxh" = (
 /obj/effect/landmark/awaymission/blackmesa/nihilanth_pylon_site,
 /turf/open/floor/grass/fakebasalt,
@@ -44285,13 +44239,6 @@
 	dir = 1
 	},
 /area/awaymission/ihategordon/outsideofmesa)
-"mxy" = (
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/effect/turf_decal/stripes,
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/rocks)
 "mxC" = (
 /obj/structure/urbanismeffect{
 	density = 1;
@@ -44392,9 +44339,19 @@
 /obj/structure/marker_beacon/burgundy,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/big_offices)
+"myH" = (
+/obj/structure/urbanismbigcrate{
+	pixel_x = 13;
+	pixel_y = 3
+	},
+/turf/open/floor/plating,
+/area/awaymission/ihategordon/dorm_rooms)
 "myN" = (
 /obj/effect/turf_decal/stripes{
 	dir = 1
+	},
+/obj/machinery/light/urbanism_tube{
+	dir = 4
 	},
 /obj/machinery/door/poddoor/shutters/window{
 	resistance_flags = 115
@@ -44480,20 +44437,6 @@
 	dir = 1
 	},
 /turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
-"mAe" = (
-/obj/structure/urbanismeffect{
-	density = 1;
-	resistance_flags = 115;
-	pixel_x = -7;
-	pixel_y = 11
-	},
-/obj/structure/urbanismeffect{
-	icon_state = "fire";
-	pixel_x = 27;
-	pixel_y = -8
-	},
-/turf/open/floor/plating,
 /area/awaymission/ihategordon/dorm_rooms)
 "mAg" = (
 /obj/effect/turf_decal/siding/wideplating/dark,
@@ -44753,21 +44696,6 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
-"mDy" = (
-/obj/structure/fence/nocut{
-	resistance_flags = 115;
-	dir = 8;
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
-	icon_state = "hugefence";
-	layer = 4.8;
-	pixel_x = 0;
-	pixel_y = -3
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 1
-	},
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
 "mDG" = (
 /obj/structure/table,
 /obj/item/gun/ballistic/shotgun/m870{
@@ -45077,6 +45005,10 @@
 /obj/structure/urbanismbigcrate/alt,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/awaymission/ihategordon/rocks)
+"mIx" = (
+/obj/machinery/door/airlock/science,
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/rocks)
 "mII" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -45135,15 +45067,6 @@
 	pixel_y = -8
 	},
 /turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
-"mJw" = (
-/obj/effect/turf_decal/stripes,
-/obj/structure/railing{
-	dir = 4
-	},
-/turf/open/floor/plasteel/stairs/medium{
-	dir = 2
-	},
 /area/awaymission/ihategordon/dorm_rooms)
 "mJD" = (
 /obj/structure/urbanismbigcrate/alt{
@@ -45348,6 +45271,18 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/science_tunnel)
+"mMC" = (
+/obj/structure/barricade/urbanism/roadblock{
+	resistance_flags = 115;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "sand";
+	layer = 5.1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "mMG" = (
 /obj/structure/chair/office/light{
 	pixel_x = 0;
@@ -45384,15 +45319,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/rocks)
-"mNh" = (
-/obj/effect/festive/street/streetlinenorth,
-/obj/structure/rockpilemesa{
-	icon_state = "stone3";
-	pixel_x = -4;
-	pixel_y = 4
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "mNp" = (
 /obj/structure/urbanismbigcrate{
 	icon_state = "cratealt";
@@ -45408,6 +45334,16 @@
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"mNG" = (
+/obj/machinery/light/urbanism_tube{
+	dir = 8
+	},
+/turf/open/floor/plasteel{
+	icon = 'modular_splurt/icons/turf/layenia.dmi';
+	icon_state = "concrete2";
+	opacity = 1
+	},
+/area/awaymission/ihategordon/rocks)
 "mNH" = (
 /obj/machinery/photocopier,
 /obj/effect/turf_decal/siding/wideplating_new/terracotta,
@@ -45537,16 +45473,6 @@
 /obj/effect/turf_decal/trimline/dark/filled/line,
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/dorm_rooms/stillalive)
-"mPJ" = (
-/obj/structure/flora/biolumi/lamp,
-/obj/item/ammo_box/magazine/m12g/aa12{
-	pixel_x = 0;
-	pixel_y = -14
-	},
-/turf/open/floor/grass/fakebasalt{
-	color = "#ad91b5"
-	},
-/area/awaymission/ihategordon/custom_walking/nihilanth)
 "mPL" = (
 /obj/effect/turf_decal/siding/wideplating/light{
 	dir = 10
@@ -45725,13 +45651,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/sepia,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
-"mSr" = (
-/obj/effect/baseturf_helper/black_mesa,
-/turf/closed/mineral/mesarock{
-	icon_state = "rock2";
-	color = "#f79668"
-	},
-/area/awaymission/ihategordon/custom_walking/nihilanth)
 "mSw" = (
 /obj/structure/urbanismeffect{
 	icon = 'modular_bluemoon/icons/obj/urbanism/deadhuman.dmi';
@@ -46233,6 +46152,10 @@
 /obj/machinery/door/poddoor,
 /turf/closed/wall/r_wall/blackmesa,
 /area/awaymission/ihategordon/big_offices)
+"naA" = (
+/obj/machinery/photocopier,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/rocks)
 "naG" = (
 /obj/structure/urbanismbigcrate,
 /turf/open/floor/plating/ironsand{
@@ -46253,12 +46176,6 @@
 	color = "#f79668"
 	},
 /turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/rocks)
-"nbq" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 1
-	},
-/turf/open/floor/plasteel/sepia,
 /area/awaymission/ihategordon/rocks)
 "nbu" = (
 /obj/structure/urbanismbigcrate/alt{
@@ -46414,18 +46331,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
-"ndF" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt8";
-	pixel_x = -8;
-	pixel_y = 3;
-	density = 1
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 1
-	},
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
 "ndG" = (
 /obj/effect/festive/street/streetlinenorth,
 /obj/structure/urbanismeffect{
@@ -46451,10 +46356,6 @@
 	pixel_y = 15
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/rocks)
-"ned" = (
-/obj/machinery/door/airlock/science,
-/turf/open/floor/plasteel/sepia,
 /area/awaymission/ihategordon/rocks)
 "neh" = (
 /obj/structure/lattice/catwalk,
@@ -46810,6 +46711,12 @@
 /obj/effect/festive/street/streetlineeast,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/dorm_rooms)
+"nis" = (
+/obj/structure/disposalpipe/segment{
+	icon_state = "conpipe-j2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/rocks)
 "nit" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 1
@@ -47080,6 +46987,12 @@
 /obj/effect/turf_decal/trimline/dark/filled/line,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
+"nlT" = (
+/obj/structure/disposalpipe/segment{
+	dir = 9
+	},
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/rocks)
 "nlX" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	color = "#454545";
@@ -47506,6 +47419,15 @@
 /obj/effect/turf_decal/trimline/dark/filled/line,
 /turf/open/floor/plasteel/rivets/large,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"nsm" = (
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/structure/railing,
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 4
+	},
+/area/awaymission/ihategordon/rocks)
 "nsw" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "floor7"
@@ -48172,6 +48094,23 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"nBH" = (
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/item/ammo_box/magazine/pistolm9mm{
+	pixel_x = -7;
+	pixel_y = 5
+	},
+/obj/item/ammo_box/magazine/pistolm9mm{
+	pixel_x = 9;
+	pixel_y = 0
+	},
+/obj/item/gun/ballistic/automatic/pistol/hl9mm{
+	pixel_x = 5;
+	pixel_y = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "nCb" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "floor7"
@@ -48488,10 +48427,6 @@
 /obj/structure/window/reinforced/spawner/north,
 /obj/structure/filingcabinet/chestdrawer,
 /turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
-"nFs" = (
-/mob/living/simple_animal/hostile/infected/modular,
-/turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/dorm_rooms)
 "nFw" = (
 /obj/machinery/power/floodlight/urbanismlight/mesamisc{
@@ -49091,13 +49026,6 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"nMh" = (
-/obj/structure/urbanismmachines{
-	pixel_x = 5;
-	pixel_y = 1
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "nMA" = (
 /obj/structure/mesaflora{
 	icon_state = "flora4"
@@ -49152,6 +49080,12 @@
 "nNc" = (
 /turf/open/openspace,
 /area/awaymission/ihategordon/dorm_rooms)
+"nNj" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 1
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/rocks)
 "nNp" = (
 /obj/structure/railing{
 	dir = 4
@@ -49161,12 +49095,6 @@
 	},
 /turf/open/floor/wood,
 /area/awaymission/ihategordon/outsideofmesa)
-"nNy" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 5
-	},
-/turf/open/floor/plasteel/sepia,
-/area/awaymission/ihategordon/rocks)
 "nNK" = (
 /obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 4
@@ -49804,12 +49732,6 @@
 "nYi" = (
 /turf/open/floor/plating/beach/sand,
 /area/awaymission/ihategordon/outsideofmesa)
-"nYq" = (
-/obj/structure/urbanismcars{
-	icon_state = "van_wreck"
-	},
-/turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/dorm_rooms)
 "nYt" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 1
@@ -49998,15 +49920,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/big_offices)
-"obl" = (
-/obj/structure/urbanismmachines{
-	icon = 'icons/obj/stationobjs.dmi';
-	icon_state = "blackbox";
-	pixel_x = -1;
-	pixel_y = -1
-	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
 "obo" = (
 /obj/structure/window/reinforced/spawner/north,
 /turf/open/floor/plasteel/rivets,
@@ -50151,15 +50064,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
-"oda" = (
-/obj/structure/urbanismmachines{
-	icon_state = "boxcart";
-	name = "Boxes";
-	pixel_x = 11;
-	pixel_y = 2
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "odi" = (
 /obj/structure/urbanismbigcrate,
 /turf/open/floor/plating/cobblestone/sidewalk,
@@ -50337,12 +50241,6 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
-"ofp" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 10
-	},
-/turf/open/floor/plasteel/sepia,
-/area/awaymission/ihategordon/rocks)
 "ofq" = (
 /obj/structure/fence{
 	dir = 2;
@@ -50408,6 +50306,16 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"ogc" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt8";
+	pixel_x = 13;
+	pixel_y = -3;
+	density = 1
+	},
+/obj/structure/lattice,
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/rocks)
 "ogd" = (
 /obj/structure/chair/office/light{
 	dir = 1;
@@ -50593,12 +50501,6 @@
 	icon_state = "platingdmg3"
 	},
 /area/awaymission/ihategordon/rocks)
-"oiL" = (
-/obj/structure/sink/puddle/healing,
-/turf/open/floor/grass/fakebasalt{
-	color = "#ad91b5"
-	},
-/area/awaymission/ihategordon/custom_walking/nihilanth)
 "oiP" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
@@ -50608,6 +50510,12 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa)
+"oiQ" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt7"
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_rooms)
 "oiW" = (
 /obj/structure/urbanismmounted{
 	icon_state = "wallmount";
@@ -50699,6 +50607,15 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"oln" = (
+/obj/effect/festive/street/streetlinesouth,
+/obj/structure/rockpilemesa{
+	icon_state = "stone3";
+	pixel_x = -12;
+	pixel_y = -3
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "olT" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 1
@@ -50743,15 +50660,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/big_offices)
-"omC" = (
-/obj/effect/turf_decal/stripes,
-/obj/structure/railing{
-	dir = 8
-	},
-/turf/open/floor/plasteel/stairs/medium{
-	dir = 2
-	},
-/area/awaymission/ihategordon/dorm_rooms)
 "omI" = (
 /obj/effect/decal/cleanable/ash/large,
 /turf/open/floor/plating/cobblestone,
@@ -51291,6 +51199,11 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"otw" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "otA" = (
 /obj/effect/turf_decal/stripes{
 	dir = 1
@@ -51601,15 +51514,6 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
-"oxN" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stone3";
-	pixel_x = -12;
-	pixel_y = -3
-	},
-/obj/structure/lattice,
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/dorm_rooms)
 "oyf" = (
 /obj/structure/chair/sofa/corp/left{
 	dir = 8
@@ -51874,13 +51778,6 @@
 	},
 /turf/open/indestructible,
 /area/awaymission/ihategordon/custom_walking)
-"oAw" = (
-/obj/structure/urbanismbigcrate{
-	pixel_x = 0;
-	pixel_y = 2
-	},
-/turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/dorm_rooms)
 "oAS" = (
 /obj/effect/turf_decal/stripes{
 	dir = 1
@@ -51909,6 +51806,12 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa)
+"oBm" = (
+/obj/structure/rockpilemesa{
+	icon_state = "silver3"
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "oBR" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/structure/urbanismbigcrate/alt{
@@ -51988,6 +51891,13 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/big_offices)
+"oDr" = (
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes,
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/rocks)
 "oDC" = (
 /obj/effect/turf_decal/stripes/white{
 	dir = 8
@@ -52286,6 +52196,12 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"oGE" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "pipes"
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_rooms)
 "oGN" = (
 /obj/structure/mesaflora{
 	icon_state = "flora3";
@@ -52332,14 +52248,6 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
-"oGZ" = (
-/obj/structure/railing{
-	dir = 5
-	},
-/turf/open/floor/plasteel/stairs/medium{
-	dir = 2
-	},
-/area/awaymission/ihategordon/rocks)
 "oHc" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone_ore"
@@ -52464,6 +52372,17 @@
 /obj/machinery/light/floor,
 /turf/open/floor/plasteel/rivets/large,
 /area/awaymission/ihategordon/big_offices)
+"oJz" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 2
+	},
+/area/awaymission/ihategordon/rocks)
 "oJG" = (
 /obj/machinery/door/window/brigdoor{
 	dir = 8
@@ -52914,6 +52833,13 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"oRs" = (
+/obj/structure/urbanismbigcrate{
+	pixel_x = 0;
+	pixel_y = 2
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "oRw" = (
 /obj/structure/fence/end,
 /obj/effect/turf_decal/siding/wideplating_new{
@@ -53105,6 +53031,19 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/rocks)
+"oUR" = (
+/obj/effect/festive/street/streetlinenorth,
+/obj/structure/fence/nocut{
+	resistance_flags = 115;
+	dir = 8;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "hugefence";
+	layer = 4.8;
+	pixel_x = 0;
+	pixel_y = -3
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "oUX" = (
 /obj/effect/turf_decal/siding/wideplating/light,
 /turf/open/floor/plasteel/showroomfloor,
@@ -53267,9 +53206,13 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
-"oXm" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark,
-/turf/open/floor/plasteel/rivets,
+"oXo" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt9";
+	pixel_x = 0;
+	pixel_y = 2
+	},
+/turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/rocks)
 "oXw" = (
 /obj/structure/mesaflora{
@@ -54295,6 +54238,13 @@
 /obj/structure/barricade/wooden/crude,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"pnu" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/mob/living/simple_animal/hostile/infected/modular,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "pnE" = (
 /obj/effect/turf_decal/weather/dirt,
 /obj/structure/rockpilemesa{
@@ -54552,6 +54502,12 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/dorm_rooms)
+"pqW" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/rocks)
 "prd" = (
 /obj/structure/railing{
 	pixel_x = -2;
@@ -54628,16 +54584,6 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
-"prZ" = (
-/obj/structure/disposalpipe/segment,
-/obj/structure/urbanismeffect{
-	density = 1;
-	resistance_flags = 115;
-	pixel_x = -7;
-	pixel_y = 11
-	},
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/dorm_rooms)
 "psi" = (
 /obj/item/kirbyplants{
 	icon_state = "plant-21"
@@ -54786,6 +54732,12 @@
 /obj/effect/turf_decal/siding/wideplating_new,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"puf" = (
+/obj/structure/sink/puddle/healing,
+/turf/open/floor/grass/fakebasalt{
+	color = "#FFBF00"
+	},
+/area/awaymission/ihategordon/custom_walking/nihilanth)
 "puh" = (
 /obj/structure/flora/rock/pile{
 	color = "#f79668"
@@ -54855,12 +54807,6 @@
 	},
 /turf/open/floor/grass,
 /area/awaymission/ihategordon/big_offices)
-"puI" = (
-/obj/structure/rockpilemesa{
-	icon_state = "silver3"
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "puM" = (
 /obj/machinery/light/urbanism_tube{
 	dir = 8;
@@ -54888,12 +54834,6 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
-"pvl" = (
-/obj/effect/turf_decal/stripes{
-	dir = 5
-	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
 "pvn" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/effect/decal/cleanable/blood{
@@ -56332,16 +56272,6 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"pRy" = (
-/obj/effect/festive/street/streetlinesouth,
-/obj/structure/urbanismmachines{
-	icon_state = "boxcart";
-	name = "Boxes";
-	pixel_x = 11;
-	pixel_y = 2
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "pRD" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "boxalt6";
@@ -56570,12 +56500,14 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"pVb" = (
-/obj/machinery/light/urbanism_tube{
-	dir = 1
+"pVh" = (
+/obj/structure/urbanismmachines{
+	icon_state = "boxcart";
+	name = "Boxes";
+	pixel_x = 11;
+	pixel_y = 2
 	},
-/obj/machinery/computer,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/plating,
 /area/awaymission/ihategordon/dorm_rooms)
 "pVk" = (
 /obj/structure/table/reinforced/plastitaniumglass,
@@ -56715,6 +56647,13 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"pXP" = (
+/obj/structure/closet/crate/bin{
+	pixel_x = -2;
+	pixel_y = 17
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/rocks)
 "pXR" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -56760,10 +56699,6 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
-"pYj" = (
-/obj/machinery/door/airlock/grunge,
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/rocks)
 "pYr" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "boxalt4"
@@ -56794,6 +56729,10 @@
 	icon_state = "platingdmg3"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"pYN" = (
+/obj/effect/festive/street/streetlinenorth,
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "pYV" = (
 /obj/effect/turf_decal/siding/wideplating/dark,
 /obj/effect/turf_decal/trimline/dark/filled/line,
@@ -56903,15 +56842,6 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
-"qbg" = (
-/obj/item/ammo_box/magazine/m12g/aa12{
-	pixel_x = 0;
-	pixel_y = -14
-	},
-/turf/open/floor/grass/fakebasalt{
-	color = "#ad91b5"
-	},
-/area/awaymission/ihategordon/custom_walking/nihilanth)
 "qbj" = (
 /obj/structure/flora/biolumi/flower{
 	color = "#4cfbfb"
@@ -56964,6 +56894,15 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"qbO" = (
+/obj/structure/table/reinforced,
+/obj/item/paper_bin{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/obj/item/pen,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/rocks)
 "qcn" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "pipes2"
@@ -57607,6 +57546,15 @@
 /obj/structure/table/reinforced,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"qmM" = (
+/obj/structure/barricade/urbanism/roadblock{
+	resistance_flags = 115;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "sand";
+	layer = 5.1
+	},
+/turf/open/space/basic,
+/area/awaymission/ihategordon/dorm_rooms)
 "qmR" = (
 /obj/effect/decal/cleanable/blood,
 /obj/structure/urbanismeffect{
@@ -57690,6 +57638,20 @@
 /obj/machinery/door/poddoor,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"qoz" = (
+/obj/structure/urbanismeffect{
+	density = 1;
+	resistance_flags = 115;
+	pixel_x = -7;
+	pixel_y = 11
+	},
+/obj/structure/urbanismeffect{
+	icon_state = "fire";
+	pixel_x = 27;
+	pixel_y = -8
+	},
+/turf/open/floor/plating,
+/area/awaymission/ihategordon/dorm_rooms)
 "qoF" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 1
@@ -57796,15 +57758,6 @@
 	},
 /turf/open/water/safe/electric,
 /area/awaymission/ihategordon/custom_walking)
-"qqD" = (
-/obj/structure/urbanismmachines{
-	icon_state = "boxcart";
-	name = "Boxes";
-	pixel_x = 11;
-	pixel_y = 2
-	},
-/turf/open/floor/plating,
-/area/awaymission/ihategordon/dorm_rooms)
 "qqF" = (
 /obj/structure/closet/crate/bin,
 /obj/effect/turf_decal/trimline/dark/filled/line{
@@ -57823,12 +57776,6 @@
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
-"qrb" = (
-/obj/structure/urbanismbigcrate/alt{
-	icon_state = "boxalt7"
-	},
-/turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/dorm_rooms)
 "qrc" = (
 /obj/structure/urbanismbigcrate{
@@ -58025,6 +57972,15 @@
 /obj/structure/lattice,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/rocks)
+"qtj" = (
+/obj/structure/urbanismmachines{
+	icon = 'icons/obj/stationobjs.dmi';
+	icon_state = "blackbox";
+	pixel_x = -1;
+	pixel_y = -1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "qtk" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
@@ -58646,6 +58602,19 @@
 /obj/effect/festive/street/streetlinesouth,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"qBq" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stone3";
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt9";
+	pixel_x = 19;
+	pixel_y = 1
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_rooms)
 "qBu" = (
 /obj/effect/decal/cleanable/blood/gibs,
 /obj/effect/turf_decal/siding/wideplating_new/dark,
@@ -58787,6 +58756,10 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"qEg" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/rocks)
 "qEn" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 8
@@ -59220,11 +59193,6 @@
 	color = "#4cfbfb"
 	},
 /area/awaymission/ihategordon/rocks)
-"qMK" = (
-/obj/effect/festive/street/streetlinesouth,
-/mob/living/simple_animal/hostile/infected/modular,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "qMS" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner,
 /turf/open/floor/plasteel/rivets,
@@ -59623,10 +59591,7 @@
 /area/awaymission/ihategordon/outsideofmesa)
 "qSS" = (
 /obj/structure/railing{
-	dir = 8
-	},
-/obj/structure/railing{
-	dir = 4
+	dir = 1
 	},
 /turf/open/floor/plasteel/stairs/medium{
 	dir = 2
@@ -59638,6 +59603,15 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms/stillalive)
+"qTe" = (
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = 0;
+	pixel_y = 6
+	},
+/turf/open/floor/grass/fakebasalt{
+	color = "#ad91b5"
+	},
+/area/awaymission/ihategordon/custom_walking/nihilanth)
 "qTi" = (
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/plasteel/stairs/old{
@@ -60345,6 +60319,13 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa)
+"reY" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt7"
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "rfa" = (
 /obj/structure/railing{
 	dir = 10
@@ -60462,6 +60443,12 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"rgo" = (
+/mob/living/simple_animal/hostile/infected/modular,
+/turf/open/floor/plating{
+	icon_state = "platingdmg2"
+	},
+/area/awaymission/ihategordon/dorm_rooms)
 "rgs" = (
 /obj/item/folder/blue,
 /obj/structure/table/reinforced/plastitaniumglass,
@@ -60684,16 +60671,6 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"rjD" = (
-/obj/structure/table/reinforced,
-/obj/structure/urbanismmachines{
-	icon_state = "boxdoc";
-	pixel_x = 0;
-	pixel_y = 7;
-	name = "box"
-	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/rocks)
 "rjN" = (
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/awaymission/ihategordon/rocks)
@@ -60830,6 +60807,12 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"rlS" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/rocks)
 "rlU" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/urbanismbigcrate/alt{
@@ -60893,18 +60876,14 @@
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "rmm" = (
-/obj/machinery/door/airlock/grunge,
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
-"rmB" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt8";
-	pixel_x = 13;
-	pixel_y = -3;
-	density = 1
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = 0;
+	pixel_y = 6
 	},
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/dorm_rooms)
+/turf/open/floor/grass/fakebasalt{
+	color = "#FFBF00"
+	},
+/area/awaymission/ihategordon/custom_walking/nihilanth)
 "rmI" = (
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/plasteel/rivets,
@@ -60972,15 +60951,6 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
-"rnt" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stone3";
-	pixel_x = -12;
-	pixel_y = -3
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark,
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
 "rny" = (
 /obj/structure/urbanismeffect{
 	icon_state = "fire";
@@ -61194,14 +61164,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/big_offices)
-"rpD" = (
-/obj/structure/railing{
-	dir = 8
-	},
-/turf/open/floor/plasteel/stairs/medium{
-	dir = 2
-	},
-/area/awaymission/ihategordon/rocks)
 "rpG" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 5
@@ -61306,10 +61268,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
-"rse" = (
-/obj/machinery/photocopier,
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/rocks)
 "rsl" = (
 /obj/structure/urbanismmachines{
 	icon = 'icons/obj/stationobjs.dmi';
@@ -61361,15 +61319,6 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
-"rtd" = (
-/obj/structure/urbanismmachines{
-	icon_state = "boxcart";
-	name = "Boxes";
-	pixel_x = 7;
-	pixel_y = -1
-	},
-/turf/open/floor/plating,
-/area/awaymission/ihategordon/dorm_rooms)
 "rtp" = (
 /obj/effect/festive/street/streetlineinnerse,
 /turf/open/floor/plating/cobblestone,
@@ -61689,6 +61638,27 @@
 	},
 /turf/open/indestructible,
 /area/awaymission/ihategordon/custom_walking)
+"ryh" = (
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = 0;
+	pixel_y = 6
+	},
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = 0;
+	pixel_y = 6
+	},
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = 0;
+	pixel_y = 6
+	},
+/obj/item/ammo_box/magazine/mp5/mp10_drum{
+	pixel_x = 5;
+	pixel_y = 7
+	},
+/turf/open/floor/grass/fakebasalt{
+	color = "#FFBF00"
+	},
+/area/awaymission/ihategordon/custom_walking/nihilanth)
 "ryx" = (
 /obj/effect/festive/street/streetlinenorth,
 /obj/structure/urbanismmachines/sign{
@@ -62024,6 +61994,13 @@
 /obj/structure/table/reinforced,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"rDb" = (
+/obj/structure/rockpilemesa{
+	icon_state = "silver3"
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "rDq" = (
 /obj/structure/railing{
 	dir = 1;
@@ -62032,6 +62009,14 @@
 	},
 /turf/open/indestructible/cobble,
 /area/awaymission/ihategordon/outsideofmesa)
+"rDu" = (
+/obj/structure/chair/office/dark{
+	dir = 8;
+	pixel_x = -1;
+	pixel_y = -3
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/rocks)
 "rDE" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/siding/wideplating/dark{
@@ -62865,10 +62850,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
-"rQA" = (
-/obj/machinery/light/floor,
-/turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/dorm_rooms)
 "rQN" = (
 /obj/machinery/modular_computer/console/preset{
 	dir = 1
@@ -63094,12 +63075,6 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"rUr" = (
-/obj/structure/urbanismbigcrate/alt{
-	icon_state = "pipes"
-	},
-/turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/dorm_rooms)
 "rUt" = (
 /obj/structure/closet/crate/bin,
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -63213,17 +63188,6 @@
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
-"rVA" = (
-/obj/structure/urbanismeffect{
-	density = 1;
-	resistance_flags = 115;
-	pixel_x = -7;
-	pixel_y = 11
-	},
-/turf/open/floor/plating{
-	icon_state = "platingdmg3"
-	},
-/area/awaymission/ihategordon/dorm_rooms)
 "rVB" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/gateway/away,
@@ -63281,12 +63245,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"rWS" = (
-/obj/structure/disposalpipe/segment{
-	dir = 9
-	},
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/rocks)
 "rWV" = (
 /turf/open/floor/plating/ashplanet/wateryrock{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
@@ -63498,6 +63456,11 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"rZp" = (
+/obj/effect/festive/street/streetlinesouth,
+/mob/living/simple_animal/hostile/infected/modular,
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "rZD" = (
 /obj/structure/urbanismcars{
 	icon_state = "car_wreck2"
@@ -63569,6 +63532,19 @@
 /obj/effect/turf_decal/weather/sand/floor,
 /turf/closed/wall/r_wall/blackmesa,
 /area/awaymission/ihategordon/dorm_rooms)
+"saz" = (
+/obj/effect/festive/street/streetlinesouth,
+/obj/structure/fence/nocut{
+	resistance_flags = 115;
+	dir = 8;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "hugefence";
+	layer = 4.8;
+	pixel_x = 0;
+	pixel_y = -3
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "saD" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner{
 	dir = 4
@@ -63578,6 +63554,13 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
+"saE" = (
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/white,
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/rocks)
 "saF" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 5
@@ -64048,6 +64031,28 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/dorm_rooms/stillalive)
+"sjk" = (
+/obj/structure/disposalpipe/segment,
+/obj/structure/urbanismmachines{
+	icon_state = "packedmachine";
+	pixel_x = 0;
+	pixel_y = 10;
+	anchored = 0
+	},
+/obj/structure/urbanismmachines{
+	icon_state = "packedmachine";
+	pixel_x = -5;
+	pixel_y = -6;
+	anchored = 0
+	},
+/obj/structure/urbanismmachines{
+	icon_state = "packedmachine";
+	pixel_x = 6;
+	pixel_y = -8;
+	anchored = 0
+	},
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/dorm_rooms)
 "sjp" = (
 /obj/machinery/autolathe/hacked,
 /turf/open/indestructible,
@@ -64190,6 +64195,13 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"slj" = (
+/obj/effect/baseturf_helper/black_mesa,
+/turf/closed/mineral/mesarock{
+	icon_state = "rock2";
+	color = "#f79668"
+	},
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone/benrey)
 "sln" = (
 /obj/structure/urbanismmachines/xenplant{
 	name = "tree";
@@ -64199,14 +64211,6 @@
 	},
 /turf/open/floor/plating/smooth/grass/urbanism,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
-"slq" = (
-/obj/structure/urbanismeffect{
-	icon_state = "fire";
-	pixel_x = 10;
-	pixel_y = -5
-	},
-/turf/open/floor/plating,
-/area/awaymission/ihategordon/dorm_rooms)
 "slr" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	color = "#454545";
@@ -64366,6 +64370,15 @@
 	},
 /turf/open/floor/grass/fairy/blue,
 /area/awaymission/ihategordon/rocks)
+"soy" = (
+/obj/item/ammo_box/magazine/mp5/mp10_drum{
+	pixel_x = 5;
+	pixel_y = 7
+	},
+/turf/open/floor/grass/fakebasalt{
+	color = "#FFBF00"
+	},
+/area/awaymission/ihategordon/custom_walking/nihilanth)
 "soI" = (
 /obj/structure/disposalpipe/segment,
 /obj/machinery/light/floor,
@@ -64460,10 +64473,9 @@
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "sqh" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stone3";
-	pixel_x = -8;
-	pixel_y = 4
+/obj/structure/urbanismbigcrate{
+	pixel_x = 0;
+	pixel_y = 2
 	},
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/catwalk_floor,
@@ -64950,15 +64962,6 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/rocks)
-"svc" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stone2";
-	pixel_x = -2;
-	pixel_y = 0
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark,
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/rocks)
 "svk" = (
 /obj/structure/reagent_dispensers/urbanismbarrel,
 /obj/effect/turf_decal/siding/wideplating_new/dark,
@@ -65241,15 +65244,6 @@
 	color = "#4cfbfb"
 	},
 /area/awaymission/ihategordon/custom_walking)
-"sAj" = (
-/obj/item/ammo_box/magazine/m16/mesa{
-	pixel_x = 0;
-	pixel_y = 6
-	},
-/turf/open/floor/grass/fakebasalt{
-	color = "#ad91b5"
-	},
-/area/awaymission/ihategordon/custom_walking/nihilanth)
 "sAw" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 1
@@ -65504,15 +65498,13 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
 "sEL" = (
-/obj/structure/fence/nocut{
-	resistance_flags = 115;
-	dir = 1;
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
-	icon_state = "hugefence";
-	layer = 4.8
+/obj/structure/chair/office/dark{
+	dir = 8;
+	pixel_x = -1;
+	pixel_y = -3
 	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/rocks)
 "sEP" = (
 /obj/structure/lattice,
 /obj/structure/rockpilemesa{
@@ -65575,6 +65567,15 @@
 /area/awaymission/ihategordon/outsideofmesa)
 "sFP" = (
 /turf/closed/wall/r_wall/blackmesa,
+/area/awaymission/ihategordon/rocks)
+"sFQ" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	resistance_flags = 115
+	},
+/turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/rocks)
 "sFX" = (
 /obj/structure/fence/nocut{
@@ -66169,14 +66170,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa)
-"sOd" = (
-/obj/effect/festive/street/streetlinesouth,
-/obj/structure/closet/wardrobe/grey{
-	pixel_x = 6;
-	pixel_y = -6
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "sOf" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stonealt5"
@@ -67097,13 +67090,6 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"tbA" = (
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/white,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/rocks)
 "tbI" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -67667,28 +67653,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"tlx" = (
-/obj/structure/disposalpipe/segment,
-/obj/structure/urbanismmachines{
-	icon_state = "packedmachine";
-	pixel_x = 0;
-	pixel_y = 10;
-	anchored = 0
-	},
-/obj/structure/urbanismmachines{
-	icon_state = "packedmachine";
-	pixel_x = -5;
-	pixel_y = -6;
-	anchored = 0
-	},
-/obj/structure/urbanismmachines{
-	icon_state = "packedmachine";
-	pixel_x = 6;
-	pixel_y = -8;
-	anchored = 0
-	},
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/dorm_rooms)
 "tly" = (
 /obj/structure/flora/rock/pile{
 	color = "#f79668"
@@ -67761,16 +67725,6 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/rocks)
-"tmo" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt8";
-	pixel_x = 13;
-	pixel_y = -3;
-	density = 1
-	},
-/obj/structure/lattice,
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/rocks)
 "tmt" = (
 /obj/structure/urbanismbigcrate/alt,
 /obj/structure/lattice/catwalk,
@@ -67823,10 +67777,6 @@
 /obj/item/ammo_casing,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/big_offices)
-"tnm" = (
-/obj/structure/disposalpipe/segment,
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/rocks)
 "tnn" = (
 /obj/machinery/door/poddoor/shutters/preopen,
 /obj/effect/turf_decal/stripes{
@@ -67925,6 +67875,16 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/rocks)
+"tnX" = (
+/obj/structure/flora/biolumi/lamp,
+/obj/item/ammo_box/magazine/m12g/aa12{
+	pixel_x = 0;
+	pixel_y = -14
+	},
+/turf/open/floor/grass/fakebasalt{
+	color = "#ad91b5"
+	},
+/area/awaymission/ihategordon/custom_walking/nihilanth)
 "tod" = (
 /obj/effect/turf_decal/siding/wideplating/light,
 /obj/effect/decal/cleanable/blood{
@@ -68544,6 +68504,12 @@
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/awaymission/ihategordon/dorm_rooms)
+"twG" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/rocks)
 "twH" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 1
@@ -68836,12 +68802,6 @@
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"tzN" = (
-/obj/structure/disposalpipe/segment{
-	icon_state = "conpipe-j2"
-	},
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/rocks)
 "tzT" = (
 /obj/structure/guncase{
 	anchored = 1
@@ -68869,6 +68829,13 @@
 	color = "#FFBF00"
 	},
 /area/awaymission/ihategordon/custom_walking/nihilanth)
+"tAp" = (
+/obj/structure/urbanismbigcrate{
+	pixel_x = 0;
+	pixel_y = 2
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_rooms)
 "tAu" = (
 /obj/effect/festive/street/streetlinewest{
 	pixel_x = -1;
@@ -69725,14 +69692,6 @@
 /obj/structure/lattice,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/big_offices)
-"tOF" = (
-/obj/effect/festive/street/streetlinesouth,
-/obj/structure/urbanismbigcrate{
-	pixel_x = 0;
-	pixel_y = 2
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "tOW" = (
 /obj/structure/barricade/sandbags{
 	pixel_x = 0;
@@ -70234,6 +70193,15 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"tYt" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt8";
+	pixel_x = 13;
+	pixel_y = -3;
+	density = 1
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "tYw" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 1
@@ -70344,6 +70312,15 @@
 /obj/structure/flora/junglebush,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"tZt" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt8";
+	pixel_x = 13;
+	pixel_y = -3;
+	density = 1
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_rooms)
 "tZw" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon = 'modular_bluemoon/icons/obj/structures/mesa_plants.dmi';
@@ -70924,6 +70901,19 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"uhU" = (
+/obj/machinery/computer{
+	desc = "A computer long since rendered non-functional due to lack of maintenance. Spitting out error messages.";
+	dir = 8;
+	name = "Broken Computer";
+	pixel_x = 1;
+	pixel_y = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/rocks)
 "uhV" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
@@ -71170,13 +71160,6 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/bombardment)
-"ulr" = (
-/obj/structure/rockpilemesa{
-	icon_state = "silver3"
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark,
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
 "ulK" = (
 /obj/effect/turf_decal/stripes/asteroid{
 	dir = 1
@@ -71291,15 +71274,6 @@
 /obj/effect/turf_decal/trimline/dark/filled/line{
 	dir = 4
 	},
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
-"unZ" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stone2";
-	pixel_x = -9;
-	pixel_y = 0
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "uoq" = (
@@ -71852,14 +71826,6 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/dorm_rooms)
-"uxl" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt9";
-	pixel_x = 0;
-	pixel_y = 16
-	},
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/dorm_rooms)
 "uxn" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 8
@@ -71946,12 +71912,6 @@
 /obj/effect/festive/street/streetlinenorth,
 /obj/machinery/door/poddoor/preopen,
 /turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
-"uzj" = (
-/obj/effect/turf_decal/stripes{
-	dir = 4
-	},
-/turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
 "uzm" = (
 /obj/structure/table/reinforced/plastitaniumglass,
@@ -72392,15 +72352,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"uGW" = (
-/obj/effect/festive/street/streetlinesouth,
-/obj/structure/rockpilemesa{
-	icon_state = "stone3";
-	pixel_x = -12;
-	pixel_y = -3
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "uGX" = (
 /obj/effect/turf_decal/siding/wideplating_new/terracotta,
 /obj/structure/fluff/paper/stack{
@@ -72742,6 +72693,23 @@
 /obj/structure/chair/sofa/middle,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms/stillalive)
+"uMU" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stone3";
+	pixel_x = -12;
+	pixel_y = -3
+	},
+/obj/structure/lattice,
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_rooms)
+"uMW" = (
+/obj/structure/urbanismeffect{
+	icon_state = "fire";
+	pixel_x = 10;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/awaymission/ihategordon/dorm_rooms)
 "uNh" = (
 /obj/structure/mesaflora{
 	icon_state = "flora8"
@@ -72764,6 +72732,14 @@
 /obj/structure/table/reinforced,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms/stillalive)
+"uNC" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt9";
+	pixel_x = 0;
+	pixel_y = 16
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_rooms)
 "uNF" = (
 /obj/structure/mesaflora{
 	icon_state = "flora20"
@@ -72907,6 +72883,13 @@
 	color = "#FFBF00"
 	},
 /area/awaymission/ihategordon/custom_walking/gonarch)
+"uPm" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/mob/living/simple_animal/hostile/infected/modular,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "uPr" = (
 /obj/item/ammo_casing,
 /turf/open/floor/plasteel/rivets/large,
@@ -72946,6 +72929,19 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"uPT" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt9";
+	pixel_x = 0;
+	pixel_y = 2
+	},
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt9";
+	pixel_x = 0;
+	pixel_y = 2
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/rocks)
 "uQa" = (
 /obj/structure/urbanismtire{
 	icon_state = "shina3";
@@ -73087,6 +73083,16 @@
 	pixel_y = 7
 	},
 /turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/rocks)
+"uRW" = (
+/obj/machinery/light/urbanism_tube{
+	dir = 8
+	},
+/turf/open/floor/plasteel{
+	icon = 'modular_splurt/icons/turf/layenia.dmi';
+	icon_state = "concrete2";
+	color = "#8f8f8f"
+	},
 /area/awaymission/ihategordon/rocks)
 "uSa" = (
 /obj/structure/deadmesa{
@@ -75598,15 +75604,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
-"vGU" = (
-/obj/structure/table/reinforced,
-/obj/item/paper_bin{
-	pixel_x = 3;
-	pixel_y = 2
-	},
-/obj/item/pen,
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/rocks)
 "vHp" = (
 /obj/structure/urbanismeffect{
 	icon = 'modular_bluemoon/icons/obj/urbanism/deadhuman.dmi';
@@ -75655,6 +75652,10 @@
 	},
 /mob/living/simple_animal/hostile/infected/modular,
 /turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
+"vIF" = (
+/mob/living/simple_animal/hostile/infected/modular,
+/turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/dorm_rooms)
 "vIL" = (
 /obj/structure/urbanismbigcrate{
@@ -76016,6 +76017,17 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"vNU" = (
+/obj/structure/filingcabinet/chestdrawer{
+	pixel_x = -9;
+	pixel_y = 4
+	},
+/obj/structure/filingcabinet/chestdrawer{
+	pixel_x = 8;
+	pixel_y = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/rocks)
 "vOi" = (
 /obj/structure/fence/corner,
 /turf/open/floor/plating/ironsand,
@@ -76026,13 +76038,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
-"vOq" = (
-/obj/structure/urbanismdisplay{
-	pixel_x = 1;
-	pixel_y = 32
-	},
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
 "vOy" = (
 /obj/structure/urbanismeffect{
 	icon_state = "Hvy1";
@@ -76260,6 +76265,15 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"vRD" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stone3";
+	pixel_x = -8;
+	pixel_y = 4
+	},
+/obj/structure/disposalpipe/segment,
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/dorm_rooms)
 "vRH" = (
 /obj/machinery/door/airlock/science,
 /turf/open/floor/catwalk_floor,
@@ -76383,18 +76397,6 @@
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/awaymission/ihategordon/dorm_rooms)
-"vTJ" = (
-/obj/structure/urbanismmachines{
-	icon_state = "boxcart";
-	name = "Boxes";
-	pixel_x = 11;
-	pixel_y = 2
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 1
-	},
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
 "vTQ" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone_ore";
@@ -76467,16 +76469,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"vUt" = (
-/obj/machinery/light/urbanism_tube{
-	dir = 8
-	},
-/turf/open/floor/plasteel{
-	icon = 'modular_splurt/icons/turf/layenia.dmi';
-	icon_state = "concrete2";
-	opacity = 1
-	},
-/area/awaymission/ihategordon/rocks)
 "vUy" = (
 /obj/structure/urbanismmachines{
 	icon = 'icons/obj/machines/shuttle_manipulator.dmi';
@@ -76679,6 +76671,13 @@
 /obj/structure/barricade/wooden/crude,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/outsideofmesa)
+"vYW" = (
+/obj/structure/urbanismdisplay{
+	pixel_x = 1;
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "vZi" = (
 /obj/structure/table/reinforced/plastitaniumglass,
 /obj/effect/turf_decal/siding/wideplating_new/dark,
@@ -77077,6 +77076,12 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/rocks)
+"wea" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/sepia,
+/area/awaymission/ihategordon/rocks)
 "wee" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 4
@@ -77111,6 +77116,15 @@
 /obj/structure/lattice,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/rocks)
+"weF" = (
+/obj/structure/chair/office/light{
+	dir = 1;
+	pixel_x = -11;
+	pixel_y = -3
+	},
+/mob/living/simple_animal/hostile/infected/modular,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "weH" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "pipes"
@@ -77333,17 +77347,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"wif" = (
-/obj/effect/turf_decal/stripes{
-	dir = 1
-	},
-/obj/structure/railing{
-	dir = 8
-	},
-/turf/open/floor/plasteel/stairs/medium{
-	dir = 1
-	},
-/area/awaymission/ihategordon/rocks)
 "wij" = (
 /obj/effect/festive/street/streetlinewest{
 	pixel_x = -1;
@@ -77531,6 +77534,12 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"wlU" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/awaymission/ihategordon/dorm_rooms)
 "wlW" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 8
@@ -77674,14 +77683,6 @@
 /obj/machinery/light/floor,
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/big_offices)
-"wnI" = (
-/obj/structure/chair/office/dark{
-	dir = 8;
-	pixel_x = -1;
-	pixel_y = -3
-	},
-/turf/open/floor/plasteel/sepia,
-/area/awaymission/ihategordon/rocks)
 "wnN" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "boxalt2"
@@ -77974,6 +77975,15 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/rocks)
+"wrx" = (
+/obj/structure/urbanismmachines{
+	icon_state = "boxcart";
+	name = "Boxes";
+	pixel_x = 7;
+	pixel_y = -1
+	},
+/turf/open/floor/plating,
+/area/awaymission/ihategordon/dorm_rooms)
 "wrz" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/siding/wideplating/light{
@@ -78538,14 +78548,6 @@
 /obj/item/storage/toolbox/mechanical/old,
 /turf/open/floor/catwalk_floor,
 /area/awaymission/ihategordon/dorm_rooms)
-"wzO" = (
-/obj/structure/urbanismmachines{
-	pixel_x = 5;
-	pixel_y = 1
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark,
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
 "wzU" = (
 /obj/structure/urbanismeffect{
 	icon_state = "water_vapor";
@@ -78715,6 +78717,15 @@
 	dir = 2
 	},
 /area/awaymission/ihategordon/rocks)
+"wCZ" = (
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/white{
+	dir = 1
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/rocks)
 "wDc" = (
 /obj/structure/flora/biolumi/mine,
 /turf/open/floor/grass/fairy/blue,
@@ -78736,6 +78747,18 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"wEd" = (
+/obj/structure/urbanismmachines{
+	icon_state = "boxcart";
+	name = "Boxes";
+	pixel_x = 11;
+	pixel_y = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "wEg" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 1
@@ -78862,19 +78885,6 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/rocks)
-"wFx" = (
-/obj/effect/festive/street/streetlinesouth,
-/obj/structure/fence/nocut{
-	resistance_flags = 115;
-	dir = 8;
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
-	icon_state = "hugefence";
-	layer = 4.8;
-	pixel_x = 0;
-	pixel_y = -3
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "wFy" = (
 /obj/structure/urbanismeffect{
 	icon_state = "water_vapor";
@@ -78966,6 +78976,15 @@
 	icon_state = "platingdmg2"
 	},
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"wGh" = (
+/obj/structure/urbanismmachines{
+	icon_state = "boxcart";
+	name = "Boxes";
+	pixel_x = 11;
+	pixel_y = 2
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "wGp" = (
 /obj/structure/urbanismmachines{
 	icon_state = "packedmachine";
@@ -79161,15 +79180,6 @@
 	icon_state = "sleeper_s-o"
 	},
 /turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
-"wIX" = (
-/obj/structure/barricade/urbanism/roadblock{
-	resistance_flags = 115;
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
-	icon_state = "sand";
-	layer = 5.1
-	},
-/turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/dorm_rooms)
 "wJf" = (
 /obj/structure/rockpilemesa{
@@ -79610,6 +79620,13 @@
 	},
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/dorm_rooms)
+"wOT" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "pipes"
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "wOX" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone3";
@@ -79655,6 +79672,13 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"wPA" = (
+/obj/effect/baseturf_helper/black_mesa,
+/turf/closed/mineral/mesarock{
+	icon_state = "rock2";
+	color = "#f79668"
+	},
+/area/awaymission/ihategordon/custom_walking/gonarch)
 "wPF" = (
 /obj/structure/cable/orange{
 	icon_state = "4-5"
@@ -80032,15 +80056,6 @@
 	},
 /turf/open/floor/plasteel/kitchen,
 /area/awaymission/ihategordon/rocks)
-"wWG" = (
-/obj/structure/urbanismmachines{
-	icon_state = "boxcart";
-	name = "Boxes";
-	pixel_x = 11;
-	pixel_y = 2
-	},
-/turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/dorm_rooms)
 "wWH" = (
 /obj/structure/flora/rock/pile,
 /turf/open/floor/plating/smooth/grass/urbanism,
@@ -80453,15 +80468,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/big_offices)
-"xbN" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt8";
-	pixel_x = 13;
-	pixel_y = -3;
-	density = 1
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "xce" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 8
@@ -80480,10 +80486,6 @@
 	color = "#4cfbfb"
 	},
 /area/awaymission/ihategordon/custom_walking)
-"xck" = (
-/obj/effect/turf_decal/stripes/white,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/rocks)
 "xcl" = (
 /obj/structure/urbanismeffect{
 	icon_state = "water_vapor";
@@ -80603,10 +80605,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"xdT" = (
-/obj/effect/turf_decal/stripes,
-/turf/open/floor/plasteel/dark,
-/area/awaymission/ihategordon/dorm_rooms)
 "xeB" = (
 /obj/structure/urbanismeffect{
 	density = 1;
@@ -80660,6 +80658,15 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"xfG" = (
+/obj/effect/festive/street/streetlinenorth,
+/obj/structure/rockpilemesa{
+	icon_state = "stone3";
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/dorm_rooms)
 "xfQ" = (
 /obj/structure/mesaflora{
 	icon_state = "flora19"
@@ -81053,6 +81060,15 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/rocks)
+"xmN" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stonealt9";
+	pixel_x = 0;
+	pixel_y = 2
+	},
+/obj/structure/lattice,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/rocks)
 "xmU" = (
 /obj/structure/urbanismmachines{
 	pixel_x = -5;
@@ -81152,12 +81168,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"xoz" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 9
-	},
-/turf/open/floor/plasteel/sepia,
-/area/awaymission/ihategordon/rocks)
 "xoX" = (
 /obj/structure/lattice,
 /turf/open/floor/plating{
@@ -81229,10 +81239,6 @@
 /mob/living/simple_animal/hostile/infected/modular,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
-"xqR" = (
-/obj/machinery/door/airlock/science,
-/turf/open/floor/catwalk_floor,
-/area/awaymission/ihategordon/rocks)
 "xqU" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone2";
@@ -81454,6 +81460,15 @@
 /obj/structure/rack/shelf,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"xuY" = (
+/obj/structure/urbanismeffect{
+	icon = 'modular_bluemoon/icons/obj/urbanism/deadhuman.dmi';
+	icon_state = "deadsci6";
+	pixel_x = -8;
+	pixel_y = 9
+	},
+/turf/open/floor/plating,
+/area/awaymission/ihategordon/dorm_rooms)
 "xvk" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -81653,6 +81668,17 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"xxb" = (
+/obj/structure/lattice,
+/obj/structure/fence/nocut{
+	resistance_flags = 115;
+	dir = 1;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "hugefence";
+	layer = 4.8
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_rooms)
 "xxd" = (
 /obj/structure/railing/unbreakable{
 	dir = 4
@@ -81991,11 +82017,16 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
 "xCm" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 1
+/obj/structure/fence/nocut{
+	resistance_flags = 115;
+	dir = 8;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "hugefence";
+	layer = 4.8;
+	pixel_x = 0;
+	pixel_y = -3
 	},
-/mob/living/simple_animal/hostile/infected/modular,
-/turf/open/floor/plasteel/rivets,
+/turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/dorm_rooms)
 "xCp" = (
 /turf/open/floor/plating{
@@ -82011,6 +82042,14 @@
 /obj/machinery/atmospherics/pipe/simple/yellow,
 /turf/open/floor/catwalk_floor,
 /area/awaymission/ihategordon/big_offices)
+"xCt" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stone3";
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_rooms)
 "xCw" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
@@ -82155,6 +82194,25 @@
 /obj/machinery/atmospherics/pipe/simple/yellow,
 /turf/open/floor/catwalk_floor,
 /area/awaymission/ihategordon/big_offices)
+"xDY" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/light/urbanism_tube{
+	dir = 8
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	resistance_flags = 115
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/rocks)
+"xEb" = (
+/obj/machinery/light/urbanism_tube{
+	dir = 1
+	},
+/obj/machinery/computer,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "xEj" = (
 /obj/structure/barricade/sandbags,
 /obj/effect/festive/street/streetlinesouth,
@@ -82167,18 +82225,6 @@
 /obj/effect/turf_decal/stripes/asteroid,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
-"xEy" = (
-/obj/structure/urbanismeffect{
-	density = 1;
-	resistance_flags = 115;
-	pixel_x = -7;
-	pixel_y = 11
-	},
-/obj/machinery/power/floodlight/urbanismlight/mesamisc{
-	light_color = "#d4654e"
-	},
-/turf/open/floor/plating,
-/area/awaymission/ihategordon/dorm_rooms)
 "xEB" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 1
@@ -82269,14 +82315,6 @@
 	color = "#4cfbfb"
 	},
 /area/awaymission/ihategordon/custom_walking)
-"xFZ" = (
-/obj/structure/rockpilemesa{
-	icon_state = "stonealt9";
-	pixel_x = 0;
-	pixel_y = 16
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "xGc" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/end,
 /turf/open/floor/plasteel/rivets,
@@ -82302,16 +82340,8 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
 "xGM" = (
-/obj/structure/fence/nocut{
-	resistance_flags = 115;
-	dir = 8;
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
-	icon_state = "hugefence";
-	layer = 4.8;
-	pixel_x = 0;
-	pixel_y = -3
-	},
-/turf/open/floor/plating/cobblestone/sidewalk,
+/obj/effect/festive/street/streetlinesouth,
+/turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/dorm_rooms)
 "xGT" = (
 /obj/structure/urbanismbigcrate/alt{
@@ -82914,15 +82944,6 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
-"xSk" = (
-/obj/structure/railing{
-	dir = 1
-	},
-/obj/structure/railing,
-/turf/open/floor/plasteel/stairs/medium{
-	dir = 4
-	},
-/area/awaymission/ihategordon/rocks)
 "xSo" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 9
@@ -82937,13 +82958,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
-"xSp" = (
-/obj/structure/urbanismbigcrate/alt{
-	icon_state = "boxalt7"
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark,
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
 "xSH" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 8
@@ -83146,15 +83160,6 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/science_tunnel)
-"xVE" = (
-/obj/structure/urbanismbigcrate/alt{
-	icon_state = "boxalt2";
-	dir = 8;
-	pixel_x = -3;
-	pixel_y = 2
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/dorm_rooms)
 "xVU" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
@@ -83642,16 +83647,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"ydh" = (
-/obj/structure/barricade/urbanism/roadblock{
-	resistance_flags = 115;
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
-	icon_state = "sand";
-	layer = 5.1
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark,
-/turf/open/floor/plasteel/rivets,
-/area/awaymission/ihategordon/dorm_rooms)
 "ydk" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone2"
@@ -83899,15 +83894,6 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
-"yfE" = (
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/white{
-	dir = 1
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/rocks)
 "yfQ" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	color = "#454545";
@@ -83917,6 +83903,14 @@
 /obj/effect/turf_decal/siding/wideplating/dark,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/rocks)
+"yfT" = (
+/obj/structure/rockpilemesa{
+	icon_state = "stone2";
+	pixel_x = -2;
+	pixel_y = 0
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_rooms)
 "yfU" = (
 /obj/structure/rack/shelf,
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -84060,6 +84054,12 @@
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/awaymission/ihategordon/big_offices)
+"yiu" = (
+/obj/structure/sink/puddle/healing,
+/turf/open/floor/grass/fakebasalt{
+	color = "#ad91b5"
+	},
+/area/awaymission/ihategordon/custom_walking/nihilanth)
 "yiD" = (
 /obj/effect/turf_decal/siding/wideplating/dark/corner,
 /obj/effect/turf_decal/siding/wideplating/dark{
@@ -96093,7 +96093,7 @@ jqP
 jqP
 fgC
 jAe
-oXm
+dPU
 sFP
 nUr
 nUr
@@ -96350,7 +96350,7 @@ jqP
 jqP
 fgC
 jAe
-oXm
+dPU
 sFP
 nUr
 nUr
@@ -96572,7 +96572,7 @@ iRL
 xeT
 lFv
 cfe
-jfR
+nBH
 iWS
 iyH
 qSe
@@ -96607,7 +96607,7 @@ jqP
 jqP
 fgC
 ndS
-oXm
+dPU
 sFP
 nUr
 nUr
@@ -96864,7 +96864,7 @@ jqP
 jqP
 fgC
 jAe
-oXm
+dPU
 sFP
 nUr
 nUr
@@ -97121,7 +97121,7 @@ jqP
 jqP
 fgC
 jAe
-oXm
+dPU
 sFP
 sFP
 sFP
@@ -97378,7 +97378,7 @@ jqP
 jqP
 fgC
 jAe
-oXm
+dPU
 lqk
 hNE
 hNE
@@ -97635,7 +97635,7 @@ jqP
 jqP
 fgC
 jAe
-oXm
+dPU
 lqk
 hNE
 hNE
@@ -97892,7 +97892,7 @@ jqP
 jqP
 fgC
 jAe
-oXm
+dPU
 lqk
 hNE
 hNE
@@ -98149,7 +98149,7 @@ jqP
 jqP
 fgC
 jAe
-oXm
+dPU
 sFP
 sFP
 sFP
@@ -98406,7 +98406,7 @@ jqP
 jqP
 fgC
 jAe
-oXm
+dPU
 sFP
 nUr
 nUr
@@ -98663,7 +98663,7 @@ drY
 jqP
 fgC
 jAe
-svc
+aDV
 sFP
 nUr
 nUr
@@ -99174,9 +99174,9 @@ nUr
 qjb
 qjb
 qjb
-iay
+yfT
 lTC
-kAt
+lgJ
 jil
 sFP
 nUr
@@ -99427,14 +99427,14 @@ nUr
 sFP
 nUr
 nUr
-fGC
+pYN
 qjb
 lrl
 lrl
 nUr
 lrl
 lTC
-unZ
+lxp
 sFP
 nUr
 nUr
@@ -99684,8 +99684,8 @@ nUr
 sFP
 jFK
 fZF
-fGC
-rmB
+pYN
+tZt
 lTC
 lTC
 nUr
@@ -99940,10 +99940,10 @@ iRL
 nUr
 sFP
 jFK
-hMB
-jBX
+gmc
+inh
 qjb
-iTU
+qBq
 nUr
 nUr
 nUr
@@ -100198,9 +100198,9 @@ nUr
 sFP
 jFK
 fZF
-dEG
-xbN
-rmB
+bkz
+tYt
+tZt
 nUr
 nUr
 nUr
@@ -100453,9 +100453,9 @@ iRL
 iRL
 nUr
 sFP
-ndF
+grS
 fZF
-mNh
+xfG
 qjb
 lrl
 lrl
@@ -100698,25 +100698,25 @@ sFP
 tBd
 meh
 exK
-prZ
+dkJ
 exK
 meh
 exK
-fKl
-tBd
-fKl
 sqh
+tBd
+sqh
+vRD
 exK
 exK
 exK
 iRL
 iRL
 clW
-fGC
-xFZ
-oxN
+pYN
+hRF
+uMU
 lrl
-iay
+yfT
 lrl
 nUr
 nUr
@@ -100950,28 +100950,28 @@ drY
 wtm
 drY
 sim
-wif
+cGZ
 spA
-mAe
+qoz
 cBz
-slq
+uMW
 lFW
-bbY
-rVA
-slq
-qqD
+xuY
+cVC
+uMW
+pVh
 xqU
-rtd
+wrx
 cBz
-aZD
+rgo
 cBz
 bZp
-rmm
-omC
+gLy
+bmi
 fZF
-fGC
+pYN
 qjb
-uxl
+uNC
 nUr
 lrl
 nUr
@@ -101207,28 +101207,28 @@ drY
 wtm
 drY
 sim
-dQD
+gKO
 spA
 cBz
-ldy
+hhp
 iTi
 aXY
-xEy
+lnT
 iTi
 pAY
-kjE
+myH
 kps
 cBz
 iTi
 cBz
 vzI
 iTi
-rmm
-mJw
+gLy
+iqX
 fZF
-jUS
+eET
 qjb
-bYd
+xCt
 nUr
 nUr
 nUr
@@ -101468,22 +101468,22 @@ sFP
 sFP
 exK
 exK
-prZ
+dkJ
 kOv
-sqh
-tlx
+vRD
+sjk
 exK
 ugi
 exK
-diw
+lLx
 exK
-cvE
+aiC
 exK
 exK
 iRL
 iRL
 clW
-fGC
+pYN
 qjb
 qjb
 lrl
@@ -101734,16 +101734,16 @@ iRL
 iRL
 iRL
 iRL
-rmm
+gLy
 iWS
-rmm
+gLy
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 ruo
-iay
+yfT
 lrl
 nUr
 nUr
@@ -101997,8 +101997,8 @@ lFv
 iRL
 jFK
 fZF
-fGC
-nFs
+pYN
+vIF
 qjb
 lrl
 nUr
@@ -102234,8 +102234,8 @@ wtm
 drY
 wtm
 drY
-mxy
-bKP
+oDr
+xDY
 jCt
 lFv
 lFv
@@ -102243,18 +102243,18 @@ lFv
 lFv
 lFv
 lFv
-sEL
+ghC
 jCt
 lFv
 lFv
-sEL
+ghC
 rYB
 lFv
 lFv
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 qjb
 lTC
@@ -102491,8 +102491,8 @@ wtm
 drY
 wtm
 drY
-mxy
-myN
+oDr
+sFQ
 jCt
 lFv
 lFv
@@ -102500,18 +102500,18 @@ lFv
 lFv
 lFv
 lFv
-sEL
+ghC
 jCt
 rYB
 lFv
-sEL
+ghC
 lFv
 lFv
 lFv
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 lrl
 lrl
@@ -102748,8 +102748,8 @@ wtm
 drY
 wtm
 drY
-mxy
-myN
+oDr
+sFQ
 jCt
 lFv
 lFv
@@ -102768,14 +102768,14 @@ lFv
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 lrl
 qjb
-iay
-uGW
+yfT
+oln
 fZF
-rnt
+bPl
 feO
 ngL
 dYn
@@ -103005,34 +103005,34 @@ wtm
 drY
 wtm
 drY
-mxy
-myN
+oDr
+sFQ
 jCt
 lFv
 lFv
 lFv
 lFv
 lFv
-xdT
+jAi
 lFv
 jCt
 lFv
-xdT
-sEL
+jAi
+ghC
 jCt
 lFv
 lFv
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 ruo
 qjb
 qjb
-dBO
-oAw
-wzO
+xGM
+tAp
+mfe
 feO
 dQi
 dYn
@@ -103262,8 +103262,8 @@ wtm
 drY
 wtm
 drY
-mxy
-myN
+oDr
+sFQ
 jCt
 lFv
 lFv
@@ -103280,16 +103280,16 @@ lFv
 lFv
 lFv
 iRL
-mDy
-xGM
-hcF
-bfd
-kKA
-qrb
+jAw
+xCm
+oUR
+dWo
+ctJ
+avP
 qjb
-dBO
-wWG
-lhd
+xGM
+bfj
+wOT
 feO
 xqg
 iSI
@@ -103519,8 +103519,8 @@ wtm
 drY
 wtm
 drY
-mxy
-myN
+oDr
+sFQ
 jCt
 lFv
 lFv
@@ -103528,25 +103528,25 @@ lFv
 lFv
 lFv
 lFv
-sEL
+ghC
 jCt
 lFv
 lFv
-sEL
+ghC
 lFv
 lFv
 lFv
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
-nMh
-oda
-dBO
+cgt
+wGh
+xGM
 fZF
-xSp
+reY
 ykN
 xbG
 cBt
@@ -103776,8 +103776,8 @@ wtm
 drY
 wtm
 drY
-mxy
-maL
+oDr
+myN
 jCt
 lFv
 lFv
@@ -103785,23 +103785,23 @@ lFv
 lFv
 lFv
 lFv
-sEL
-kPh
+ghC
+pnu
 lFv
 lFv
-sEL
+ghC
 lFv
 lFv
 lFv
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
 qjb
-qMK
+rZp
 fZF
 jil
 feO
@@ -104043,9 +104043,9 @@ lFv
 lFv
 lFv
 rbp
-pvl
-fkh
-uzj
+klH
+jso
+kXI
 rbp
 lFv
 lFv
@@ -104053,12 +104053,12 @@ lFv
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 ykN
@@ -104304,18 +104304,18 @@ aBT
 iRL
 aBT
 iRL
-rmm
+gLy
 iRL
-rmm
+gLy
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 feO
@@ -104554,12 +104554,12 @@ lFv
 dAF
 lFv
 iRL
-dyR
-dyR
+hfi
+hfi
 iRL
-kLa
-egk
-kLa
+jYq
+ily
+jYq
 iRL
 iyH
 cBz
@@ -104567,12 +104567,12 @@ iyH
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
-kKA
+ctJ
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 eix
@@ -104811,8 +104811,8 @@ lFv
 lFv
 lFv
 iRL
-dyR
-dyR
+hfi
+hfi
 iRL
 lFv
 lFv
@@ -104823,13 +104823,13 @@ cBz
 iyH
 iRL
 jFK
-hFW
-fGC
+aoy
+pYN
 qjb
 qjb
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 eix
@@ -105068,10 +105068,10 @@ lFv
 lFv
 lFv
 pUs
-dyR
-dyR
+hfi
+hfi
 iRL
-vOq
+vYW
 gdP
 xDn
 iRL
@@ -105081,12 +105081,12 @@ iyH
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
-kKA
+ctJ
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 eix
@@ -105325,8 +105325,8 @@ lFv
 lFv
 lFv
 iRL
-dyR
-dyR
+hfi
+hfi
 iRL
 lFv
 ttD
@@ -105338,13 +105338,13 @@ iyH
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
 qjb
-tOF
-rUr
+gPF
+oGE
 jil
 feO
 tZe
@@ -105582,8 +105582,8 @@ lFv
 lFv
 lFv
 pUs
-dyR
-dyR
+hfi
+hfi
 iRL
 lFv
 ttD
@@ -105595,14 +105595,14 @@ iyH
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
-jMR
-pRy
-fzT
-avP
+oRs
+kiL
+oiQ
+atT
 feO
 fAr
 dYn
@@ -105839,10 +105839,10 @@ lFv
 lFv
 lFv
 iRL
-dyR
-dyR
+hfi
+hfi
 iRL
-cnc
+hEK
 ttD
 kCu
 iRL
@@ -105852,12 +105852,12 @@ iyH
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
-eFX
-xVE
-qrb
-sOd
+qmM
+cVM
+avP
+hRt
 fZF
 qux
 feO
@@ -106096,8 +106096,8 @@ lFv
 lFv
 lFv
 iRL
-dyR
-dyR
+hfi
+hfi
 pUs
 lFv
 ttD
@@ -106109,12 +106109,12 @@ iyH
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
 rYH
-dBO
+xGM
 fZF
 tFs
 feO
@@ -106353,8 +106353,8 @@ lFv
 lFv
 lFv
 iRL
-dyR
-dyR
+hfi
+hfi
 iRL
 lFv
 qqW
@@ -106366,12 +106366,12 @@ iyH
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
 qjb
-dBO
+xGM
 fZF
 iGo
 feO
@@ -106619,18 +106619,18 @@ qqW
 iRL
 iyH
 cBz
-iiE
+aob
 iRL
 hmh
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
 qjb
-dBO
+xGM
 fZF
-eNd
+otw
 eix
 xCr
 dHZ
@@ -106868,8 +106868,8 @@ lFv
 lFv
 iRL
 cfe
-obl
-obl
+qtj
+qtj
 lFv
 lFv
 lFv
@@ -106880,12 +106880,12 @@ iyH
 iRL
 jFK
 fZF
-jUS
+eET
 qjb
 eUf
 qjb
 qjb
-dBO
+xGM
 fZF
 rsl
 eix
@@ -107124,8 +107124,8 @@ jRe
 jRe
 jRe
 iRL
-pVb
-ltE
+xEb
+weF
 lFv
 lFv
 lFv
@@ -107137,12 +107137,12 @@ iyH
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
 qjb
-dBO
+xGM
 fZF
 rsl
 eix
@@ -107384,9 +107384,9 @@ iRL
 cfe
 lFv
 lFv
-uzj
-uzj
-uzj
+kXI
+kXI
+kXI
 iRL
 iyH
 cBz
@@ -107394,12 +107394,12 @@ iyH
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
 tLB
-dBO
+xGM
 fZF
 tzD
 feO
@@ -107645,13 +107645,13 @@ aBT
 iRL
 aBT
 iRL
-rmm
+gLy
 iRL
-rmm
+gLy
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
@@ -107898,9 +107898,9 @@ szA
 lJz
 eyS
 eyS
-jFx
+gIb
 qPu
-jFx
+gIb
 eyS
 eyS
 eyS
@@ -107908,12 +107908,12 @@ eyS
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
 fPt
-dBO
+xGM
 fZF
 jil
 feO
@@ -108165,12 +108165,12 @@ epN
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 feO
@@ -108422,14 +108422,14 @@ lFv
 iRL
 jFK
 fZF
-fGC
+pYN
 qjb
-kKA
-bfd
-bfd
-wFx
-xGM
-ydh
+ctJ
+dWo
+dWo
+saz
+xCm
+iDA
 feO
 bTi
 dYn
@@ -108676,15 +108676,15 @@ lFv
 lFv
 lFv
 lFv
-wIX
-vTJ
+cju
+wEd
 fZF
-jUS
+eET
 qjb
 eUf
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 eix
@@ -108933,15 +108933,15 @@ rYB
 lFv
 lFv
 lFv
-dJR
+xxb
 jFK
-hFW
-fGC
+aoy
+pYN
 qjb
 eUf
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 eix
@@ -109186,19 +109186,19 @@ exK
 exK
 iaP
 exK
-dpe
+eHD
 vFK
 mZT
 mZT
 pvJ
-bAs
-nYq
-fGC
+wlU
+doP
+pYN
 qjb
-kKA
+ctJ
 qjb
 qjb
-qMK
+rZp
 fZF
 jil
 eix
@@ -109447,15 +109447,15 @@ cBz
 ttD
 bZp
 lFv
-lpn
+eKc
 jFK
-rQA
-fGC
+hml
+pYN
 qjb
 qjb
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 feO
@@ -109707,12 +109707,12 @@ lFv
 dcd
 jFK
 fZF
-fGC
+pYN
 qjb
-kKA
+ctJ
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 ykN
@@ -109963,13 +109963,13 @@ iTi
 lFv
 dcd
 jFK
-wWG
-fGC
+bfj
+pYN
 qjb
 eUf
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 feO
@@ -110221,12 +110221,12 @@ nUr
 oHK
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 ykN
@@ -110476,14 +110476,14 @@ xou
 iRL
 nUr
 sFP
-bdi
+mMC
+xCm
+oUR
+dWo
+ctJ
+qjb
+qjb
 xGM
-hcF
-bfd
-kKA
-qjb
-qjb
-dBO
 fZF
 jil
 feO
@@ -110735,12 +110735,12 @@ nUr
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 qjb
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 feO
@@ -110992,12 +110992,12 @@ nUr
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 qjb
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 feO
@@ -111249,12 +111249,12 @@ nUr
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 qjb
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 feO
@@ -111506,12 +111506,12 @@ nUr
 sFP
 lFW
 fZF
-fGC
+pYN
 qjb
 qjb
 qjb
-nFs
-dBO
+vIF
+xGM
 fZF
 jil
 feO
@@ -111763,12 +111763,12 @@ lmN
 pJI
 jFK
 lFW
-fGC
+pYN
 qjb
 qjb
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 feO
@@ -112020,12 +112020,12 @@ drY
 pJI
 jFK
 fZF
-fGC
+pYN
 qjb
 qjb
 qjb
 qjb
-dBO
+xGM
 fZF
 jil
 feO
@@ -112282,9 +112282,9 @@ qjb
 qjb
 ruo
 lrl
-dBO
+xGM
 osM
-ulr
+rDb
 sFP
 sFP
 sFP
@@ -112534,13 +112534,13 @@ drY
 aIw
 jFK
 fZF
-fGC
+pYN
 qjb
 qjb
-puI
-mtL
+oBm
+oXo
 bKk
-jKh
+ckt
 drY
 sFP
 nUr
@@ -112794,11 +112794,11 @@ jyu
 uzh
 hso
 iRL
-tmo
+ogc
 wtm
-jKh
+ckt
 drY
-hJf
+xmN
 sFP
 nUr
 nUr
@@ -113047,12 +113047,12 @@ nUr
 nUr
 sFP
 jFK
-hFW
-fGC
+aoy
+pYN
 qjb
 eUf
 drY
-gKk
+uPT
 drY
 jAe
 nUr
@@ -113305,13 +113305,13 @@ nUr
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
-gKk
-jKh
-fsl
-hWS
+uPT
+ckt
+mxd
+bAP
 nUr
 nUr
 nUr
@@ -113562,10 +113562,10 @@ nUr
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
-hiF
+kcO
 nUr
 bKk
 nUr
@@ -113819,7 +113819,7 @@ nUr
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 nUr
@@ -114076,7 +114076,7 @@ nUr
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 jqP
@@ -114084,7 +114084,7 @@ drY
 drY
 jAe
 qFD
-oXm
+dPU
 feO
 guH
 sdz
@@ -114333,7 +114333,7 @@ sFP
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 jqP
@@ -114341,7 +114341,7 @@ jqP
 fgC
 jAe
 qFD
-oXm
+dPU
 feO
 ngL
 dYn
@@ -114590,7 +114590,7 @@ hNE
 pyy
 jFK
 fZF
-jUS
+eET
 qjb
 eUf
 jqP
@@ -114598,7 +114598,7 @@ rMq
 fgC
 jAe
 qFD
-oXm
+dPU
 feO
 jph
 dYn
@@ -114847,7 +114847,7 @@ hNE
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 jqP
@@ -114855,7 +114855,7 @@ jqP
 fgC
 jAe
 pyW
-oXm
+dPU
 feO
 ngL
 dYn
@@ -115102,9 +115102,9 @@ hNE
 hNE
 hNE
 pyy
-xCm
+uPm
 fZF
-fGC
+pYN
 qjb
 eUf
 jqP
@@ -115112,7 +115112,7 @@ jqP
 fgC
 jAe
 qFD
-oXm
+dPU
 feO
 ngL
 dYn
@@ -115361,7 +115361,7 @@ sFP
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 jqP
@@ -115369,7 +115369,7 @@ jqP
 fgC
 jAe
 qFD
-oXm
+dPU
 sFP
 sFP
 fra
@@ -115618,7 +115618,7 @@ nUr
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 jqP
@@ -115626,7 +115626,7 @@ jqP
 fgC
 jAe
 qFD
-oXm
+dPU
 sFP
 aqW
 prG
@@ -115873,9 +115873,9 @@ nUr
 nUr
 nUr
 sFP
-eZs
+axD
 fZF
-fGC
+pYN
 qjb
 eUf
 jqP
@@ -115883,7 +115883,7 @@ jqP
 fgC
 jAe
 qFD
-oXm
+dPU
 sFP
 aqW
 prG
@@ -116132,7 +116132,7 @@ nUr
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 jqP
@@ -116140,7 +116140,7 @@ jqP
 hSx
 jAe
 qFD
-oXm
+dPU
 spA
 ykE
 ykE
@@ -116389,7 +116389,7 @@ nUr
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 jqP
@@ -116397,7 +116397,7 @@ jqP
 fgC
 jAe
 qFD
-oXm
+dPU
 sFP
 pJI
 pJI
@@ -116646,7 +116646,7 @@ sFP
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 jqP
@@ -116654,7 +116654,7 @@ jqP
 fgC
 jAe
 qFD
-oXm
+dPU
 spA
 ykE
 ykE
@@ -116883,7 +116883,7 @@ wtm
 drY
 wtm
 drY
-bVU
+kwY
 sFP
 hNE
 hNE
@@ -116903,7 +116903,7 @@ hNE
 pyy
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 jqP
@@ -116911,7 +116911,7 @@ jqP
 fgC
 jAe
 qFD
-oXm
+dPU
 sFP
 aqW
 prG
@@ -117138,7 +117138,7 @@ sim
 drY
 wtm
 drY
-jDU
+hiT
 drY
 sim
 sFP
@@ -117159,8 +117159,8 @@ hNE
 hNE
 sFP
 jFK
-hFW
-fGC
+aoy
+pYN
 qjb
 eUf
 jqP
@@ -117168,7 +117168,7 @@ jqP
 fgC
 jAe
 qFD
-oXm
+dPU
 sFP
 aqW
 prG
@@ -117417,7 +117417,7 @@ hNE
 pyy
 jFK
 fZF
-fGC
+pYN
 qjb
 eUf
 jqP
@@ -117425,7 +117425,7 @@ jqP
 fgC
 jAe
 qFD
-oXm
+dPU
 sFP
 sFP
 fra
@@ -117634,7 +117634,7 @@ lFv
 pUs
 nUr
 sFP
-eFF
+pXP
 hNE
 hNE
 hNE
@@ -117674,7 +117674,7 @@ sFP
 sFP
 jFK
 fZF
-fGC
+pYN
 qjb
 iRL
 jqP
@@ -117682,7 +117682,7 @@ jqP
 fgC
 jAe
 qFD
-oXm
+dPU
 feO
 ngL
 dYn
@@ -117891,7 +117891,7 @@ lFv
 iRL
 nUr
 sFP
-vGU
+qbO
 hNE
 hNE
 hNE
@@ -117908,9 +117908,9 @@ sFP
 sim
 drY
 wtm
-lro
+fGC
 wtm
-lro
+fGC
 sim
 sFP
 hNE
@@ -118406,7 +118406,7 @@ iRL
 nUr
 sFP
 uts
-htE
+rDu
 hNE
 sFP
 spA
@@ -118439,8 +118439,8 @@ hNE
 sFP
 sFP
 sFP
-kwY
-kwY
+dyR
+dyR
 sFP
 sFP
 sFP
@@ -118662,7 +118662,7 @@ lFv
 pUs
 nUr
 sFP
-rjD
+lxb
 hNE
 hNE
 sFP
@@ -118684,32 +118684,32 @@ wtm
 drY
 sim
 sFP
+hNE
+hNE
+hNE
+hNE
+hNE
+hNE
+hNE
+hNE
+hNE
 sFP
-hNE
-hNE
-hNE
-hNE
-hNE
-hNE
-hNE
-hNE
-sFP
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
 sFP
 feO
 pCO
@@ -118919,9 +118919,9 @@ lFv
 iRL
 nUr
 sFP
-rse
+naA
 mzg
-kfb
+vNU
 sFP
 nUr
 nUr
@@ -118935,10 +118935,10 @@ nUr
 sFP
 sim
 drY
-jDU
+hiT
 drY
 wtm
-lro
+fGC
 sim
 sFP
 sFP
@@ -118950,7 +118950,7 @@ hNE
 hNE
 hNE
 hNE
-pYj
+ceG
 qGB
 qGB
 qGB
@@ -119221,9 +119221,9 @@ sFP
 sFP
 sFP
 sFP
-ned
+mIx
 sFP
-ned
+mIx
 sFP
 sFP
 sFP
@@ -119455,7 +119455,7 @@ wtm
 drY
 sim
 sFP
-kwY
+dyR
 sim
 sFP
 hNE
@@ -119466,24 +119466,24 @@ hNE
 hNE
 sFP
 sFP
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
 sFP
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
 feO
 feO
 ykN
@@ -119712,7 +119712,7 @@ wtm
 drY
 sim
 sFP
-kwY
+dyR
 sim
 sFP
 hNE
@@ -119722,25 +119722,25 @@ hNE
 hNE
 hNE
 sFP
-kwY
-tzN
-tnm
-tnm
-tnm
-tnm
-tnm
-tnm
-tnm
+dyR
+nis
+iZX
+iZX
+iZX
+iZX
+iZX
+iZX
+iZX
 sFP
-tnm
-tnm
-tnm
-tnm
-tnm
-tnm
-tnm
-tnm
-tnm
+iZX
+iZX
+iZX
+iZX
+iZX
+iZX
+iZX
+iZX
+iZX
 nau
 jxB
 jxB
@@ -119967,9 +119967,9 @@ wtm
 drY
 wtm
 drY
-bVU
-sFP
 kwY
+sFP
+dyR
 sim
 sFP
 hNE
@@ -119980,14 +119980,14 @@ hNE
 hNE
 sFP
 sFP
-mgl
+aSC
 sFP
 sFP
 sFP
 sFP
 sFP
 sFP
-xSk
+nsm
 sFP
 pJI
 pJI
@@ -120226,7 +120226,7 @@ wtm
 drY
 sim
 pyy
-kwY
+dyR
 sim
 sFP
 hNE
@@ -120236,25 +120236,25 @@ hNE
 hNE
 hNE
 sFP
-kwY
+dyR
 sim
 sFP
 nUr
 nUr
 sFP
-kwY
-kwY
-kwY
+dyR
+dyR
+dyR
 sFP
-tnm
-tnm
-tnm
-tnm
-tnm
-tnm
-tnm
-tnm
-tnm
+iZX
+iZX
+iZX
+iZX
+iZX
+iZX
+iZX
+iZX
+iZX
 nau
 jxB
 jxB
@@ -120483,7 +120483,7 @@ wtm
 drY
 sim
 sFP
-kwY
+dyR
 sim
 sFP
 hNE
@@ -120493,25 +120493,25 @@ hNE
 hNE
 hNE
 sFP
-kwY
+dyR
 sim
 sFP
 nUr
 nUr
 spA
-kwY
-kwY
-kwY
-qSS
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
+dyR
+dyR
+dyR
+oJz
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
 feO
 feO
 feO
@@ -120740,7 +120740,7 @@ wtm
 drY
 sim
 pyy
-kwY
+dyR
 sim
 sFP
 hNE
@@ -120750,18 +120750,18 @@ hNE
 hNE
 hNE
 sFP
-kwY
+dyR
 sim
 sFP
 nUr
 nUr
 sFP
-kwY
-kwY
-kwY
+dyR
+dyR
+dyR
 sFP
-kwY
-kwY
+dyR
+dyR
 sFP
 sFP
 sFP
@@ -120995,9 +120995,9 @@ wtm
 drY
 wtm
 drY
-bVU
-sFP
 kwY
+sFP
+dyR
 sim
 sFP
 hNE
@@ -121007,7 +121007,7 @@ hNE
 hNE
 hNE
 sFP
-kwY
+dyR
 sim
 sFP
 nUr
@@ -121250,11 +121250,11 @@ sim
 drY
 wtm
 drY
-jDU
+hiT
 drY
 sim
 sFP
-kwY
+dyR
 sim
 sFP
 sFP
@@ -121264,7 +121264,7 @@ sFP
 sFP
 sFP
 sFP
-kwY
+dyR
 sim
 sFP
 nUr
@@ -121511,8 +121511,8 @@ wtm
 drY
 sim
 sFP
-kwY
-mpy
+dyR
+mse
 ykE
 ykE
 ykE
@@ -121522,7 +121522,7 @@ ykE
 ykE
 ykE
 ykE
-rWS
+nlT
 sFP
 nUr
 nUr
@@ -121762,23 +121762,23 @@ nUr
 sFP
 sim
 drY
-jDU
+hiT
 drY
 wtm
 drY
 sim
 sFP
 sFP
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
-kwY
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
+dyR
 sFP
 sFP
-kwY
+dyR
 qGB
 sFP
 nUr
@@ -121964,7 +121964,7 @@ bkL
 weN
 cTf
 weN
-oiL
+yiu
 qXn
 bkL
 bkL
@@ -122035,7 +122035,7 @@ sFP
 sFP
 sFP
 sFP
-kwY
+dyR
 qGB
 sFP
 nUr
@@ -122217,7 +122217,7 @@ bkL
 bkL
 bkL
 qXn
-qbg
+epJ
 qXn
 bkL
 bkL
@@ -122292,7 +122292,7 @@ nUr
 nUr
 nUr
 sFP
-kwY
+dyR
 qGB
 sFP
 nUr
@@ -122458,7 +122458,7 @@ mgw
 bkL
 bkL
 qXn
-ikZ
+puf
 weN
 weN
 oOc
@@ -122475,7 +122475,7 @@ qXn
 qXn
 ijp
 bkL
-ave
+rmm
 biL
 qXn
 weN
@@ -122549,7 +122549,7 @@ nUr
 nUr
 nUr
 sFP
-kwY
+dyR
 qGB
 sFP
 nUr
@@ -122732,8 +122732,8 @@ bkL
 bkL
 ijp
 ijp
-ave
-ave
+rmm
+rmm
 lkW
 bkL
 weN
@@ -122793,7 +122793,7 @@ drY
 wtm
 drY
 wtm
-lro
+fGC
 sim
 sFP
 nUr
@@ -122806,7 +122806,7 @@ nUr
 nUr
 nUr
 sFP
-kwY
+dyR
 qGB
 sFP
 nUr
@@ -122974,7 +122974,7 @@ qXn
 bkL
 weN
 mKk
-ave
+rmm
 bkL
 qXn
 qXn
@@ -122990,7 +122990,7 @@ bkL
 bkL
 ijp
 ijp
-ave
+rmm
 bkL
 qXn
 weN
@@ -123064,7 +123064,7 @@ nUr
 sFP
 sFP
 sFP
-xqR
+aXf
 sFP
 sFP
 sFP
@@ -123231,7 +123231,7 @@ jnQ
 weN
 qXn
 jhh
-sAj
+qTe
 ijp
 ijp
 aPd
@@ -123319,13 +123319,13 @@ nUr
 nUr
 nUr
 sFP
-xoz
-aUH
-aUH
-aUH
-aUH
-aUH
-ofp
+gkX
+rlS
+rlS
+rlS
+rlS
+rlS
+jHD
 sFP
 nUr
 nUr
@@ -123486,7 +123486,7 @@ vjm
 qXn
 bkL
 weN
-mPJ
+tnX
 qXn
 ijp
 ijp
@@ -123576,13 +123576,13 @@ nUr
 nUr
 nUr
 sFP
-nbq
-kwY
-kwY
-kwY
-kwY
-kwY
-kYS
+wea
+dyR
+dyR
+dyR
+dyR
+dyR
+qEg
 sFP
 nUr
 nUr
@@ -123833,13 +123833,13 @@ nUr
 nUr
 nUr
 sFP
-nbq
-kwY
-wnI
-kwY
-kwY
-kwY
-kYS
+wea
+dyR
+sEL
+dyR
+dyR
+dyR
+qEg
 sFP
 nUr
 nUr
@@ -124090,13 +124090,13 @@ nUr
 nUr
 nUr
 sFP
-nNy
-gSK
-lCL
-lCL
-gSK
-irj
-ebs
+cSd
+agx
+uhU
+uhU
+agx
+pqW
+twG
 sFP
 nUr
 nUr
@@ -124604,15 +124604,15 @@ eNx
 eNx
 eNx
 eNx
-vUt
+mNG
 eNx
 eNx
 eNx
 eNx
-kld
-lWU
-rpD
-rpD
+uRW
+qSS
+iBl
+iBl
 jqP
 sFP
 sFP
@@ -124867,9 +124867,9 @@ eNx
 eNx
 eNx
 eel
-oGZ
-kWj
-kWj
+dao
+cjo
+cjo
 jqP
 jqP
 sFP
@@ -125113,20 +125113,20 @@ nUr
 nUr
 nUr
 sFP
-yfE
-hyW
-hyW
-tbA
-yfE
-hyW
-tbA
-yfE
-hyW
-hyW
-tbA
-yfE
-hyW
-hyW
+wCZ
+cuI
+cuI
+saE
+wCZ
+cuI
+saE
+wCZ
+cuI
+cuI
+saE
+wCZ
+cuI
+cuI
 jqP
 jqP
 sFP
@@ -125370,18 +125370,18 @@ nUr
 nUr
 nUr
 sFP
-dMp
+nNj
 jqP
-eGq
-xck
-dMp
+aJR
+hgl
+nNj
 jqP
-xck
-dMp
+hgl
+nNj
 jqP
-eGq
-xck
-dMp
+aJR
+hgl
+nNj
 jqP
 jqP
 jqP
@@ -125627,18 +125627,18 @@ nUr
 nUr
 nUr
 sFP
-dMp
+nNj
 jqP
 jqP
-xck
-dMp
+hgl
+nNj
 jqP
-xck
-dMp
+hgl
+nNj
 jqP
 jqP
-xck
-dMp
+hgl
+nNj
 jqP
 jqP
 jqP
@@ -125884,18 +125884,18 @@ nUr
 nUr
 nUr
 sFP
-dMp
+nNj
 jqP
 jqP
-xck
-dMp
+hgl
+nNj
 jqP
-xck
-dMp
+hgl
+nNj
 jqP
 jqP
-xck
-dMp
+hgl
+nNj
 jqP
 jqP
 jqP
@@ -126058,7 +126058,7 @@ qXn
 weN
 weN
 qXn
-aun
+aYx
 ijp
 ijp
 bkL
@@ -126316,7 +126316,7 @@ bkL
 weN
 qXn
 sSY
-bQx
+ihU
 ijp
 ijp
 bkL
@@ -126572,8 +126572,8 @@ bkL
 qXn
 weN
 weN
-lwj
-jHr
+soy
+ryh
 ijp
 ijp
 ijp
@@ -127085,7 +127085,7 @@ mgw
 vjm
 qXn
 bkL
-ikZ
+puf
 lNB
 sgZ
 bkL
@@ -127618,7 +127618,7 @@ bkL
 weN
 weN
 qXn
-ikZ
+puf
 bkL
 bkL
 bkL
@@ -205366,7 +205366,7 @@ ubb
 bpc
 bpc
 nUr
-mSr
+mdT
 "}
 (217,1,2) = {"
 nUr
@@ -205623,7 +205623,7 @@ ubb
 bpc
 eTT
 nUr
-hpi
+wPA
 "}
 (218,1,2) = {"
 nUr
@@ -205880,7 +205880,7 @@ ubb
 roO
 nDb
 nUr
-aqj
+slj
 "}
 (219,1,2) = {"
 nUr
@@ -206137,7 +206137,7 @@ ubb
 ylz
 bpc
 nUr
-esV
+iKb
 "}
 (220,1,2) = {"
 nUr
