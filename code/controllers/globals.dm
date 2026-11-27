@@ -35,6 +35,16 @@ GLOBAL_REAL(GLOB, /datum/controller/global_vars)
 	msg = "Edit"
 	return msg
 
+/datum/controller/global_vars/can_vv_get(var_name)
+	if(var_name == NAMEOF(src, gvars_datum_protected_varlist))
+		return FALSE
+	return ..()
+
+/datum/controller/global_vars/vv_get_var(var_name)
+	if(!can_vv_get(var_name))
+		return
+	return ..()
+
 /datum/controller/global_vars/vv_edit_var(var_name, var_value)
 	if(gvars_datum_protected_varlist[var_name])
 		return FALSE

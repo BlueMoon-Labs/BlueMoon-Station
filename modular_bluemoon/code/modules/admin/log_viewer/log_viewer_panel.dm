@@ -388,6 +388,9 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	if(!istext(path) || !length(path))
 		return FALSE
 
+	// Объединяем обе проверки: PR #4477 разрешал только ARCHIVE_DIR и один
+	// сегмент, мы дополнительно разрешаем ADMIN_LOG_ROOT с вложенными
+	// каталогами (там лежат логи текущего раунда) и проверяем КАЖДЫЙ сегмент.
 	var/root
 	for(var/candidate in list(ADMIN_LOG_ROOT, ADMIN_LOG_ARCHIVE_DIR))
 		if(copytext(path, 1, length(candidate) + 1) == candidate)

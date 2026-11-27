@@ -4,13 +4,14 @@
 
 import { clamp } from 'common/math';
 import { classes } from 'common/react';
-import { marked } from 'marked';
+import { Marked } from 'marked';
 import { Component, createRef, RefObject } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Flex, Section, TextArea } from '../components';
 import { Window } from '../layouts';
-import { sanitizeText } from '../sanitize';
+import { sanitizePaperMarkup } from '../sanitize';
+import { PaperMarkup } from './common/PaperMarkup';
 
 const Z_INDEX_STAMP = 1;
 const Z_INDEX_STAMP_PREVIEW = 2;
@@ -79,7 +80,7 @@ type PaperSheetStamperProps = {
 
 type FieldCreationReturn = {
   nextCounter: number;
-  text: string;
+  fragment: DocumentFragment;
 };
 
 type StampPosition = {
@@ -111,6 +112,34 @@ const canEdit = (heldItemDetails?: WritingImplement): boolean => {
 
 // Regex that finds [____] fields.
 const fieldRegex: RegExp = /\[((?:_+))\]/gi;
+
+const paperMarkdown = new Marked({
+  extensions: [{
+    name: 'inputField',
+    level: 'inline',
+    start: (text) => text.indexOf('['),
+    tokenizer(text) {
+      const match = /^\[_+\]/.exec(text);
+      if (match) {
+        return { type: 'inputField', raw: match[0] };
+      }
+    },
+    renderer: (token) => token.raw,
+  }],
+  breaks: true,
+  gfm: true,
+  walkTokens(token) {
+    switch (token.type) {
+      case 'url':
+      case 'autolink':
+      case 'reflink':
+      case 'link':
+      case 'image':
+        token.type = 'text';
+        break;
+    }
+  },
+});
 
 // Handles the ghost stamp when attempting to stamp paper sheets.
 class PaperSheetStamper extends Component<PaperSheetStamperProps> {
@@ -453,146 +482,31 @@ export class PrimaryView extends Component {
   }
 }
 
-/**
- * Real-time text preview section. When not editing, this is simply
- * the component that builds and renders the final HTML output.
- * It parses and sanitises the DM-side raw input and field input data once on
- * creation.
- * It caches writable input fields as a form of state management.
- * This component should be used with a `key` prop that changes
- * when DM-side raw input or field input data have changed.
- * We currently do this by keying the component based on the lengths of the
- * raw and field input arrays.
- */
+// Собирает содержимое бумаги и предпросмотр из проверенных узлов.
 export class PreviewView extends Component<PreviewViewProps> {
-  // Array containing cache of HTMLInputElements that are enabled.
-  enabledInputFieldCache: { [key: string]: HTMLInputElement } = {};
-
   // State checking variables. Used to determine whether or not to use cache.
   lastReadOnly: boolean = true;
-  lastDMInputCount: number = 0;
+  lastDMInput?: PaperInput[];
   lastFieldCount: number = 0;
-  lastFieldInputCount: number = 0;
+  lastFieldInput?: FieldInput[];
+  lastTextArea?: string;
+  lastPreviewFieldCount?: number;
+  lastAdvancedHtml?: boolean;
 
   // Cache variables for fully parsed text. Workaround for marked.js not being
   // super fast on the BYOND/IE js engine.
-  parsedDMCache: string = '';
-  parsedTextBoxCache: string = '';
-
-  // Stable dangerouslySetInnerHTML wrappers. React 19 re-applies innerHTML
-  // whenever the wrapper OBJECT identity changes (unlike React 18/Inferno,
-  // it no longer compares the __html strings), and the server pushes an
-  // update every second - an inline `{ __html }` literal would recreate the
-  // whole page DOM each tick, kicking the caret out of input fields and
-  // wiping unsaved text.
-  dmHtmlWrapper: { __html: string } = { __html: '' };
-  textAreaHtmlWrapper: { __html: string } = { __html: '' };
-
-  getDmHtmlWrapper = (text: string): { __html: string } => {
-    if (this.dmHtmlWrapper.__html !== text) {
-      this.dmHtmlWrapper = { __html: text };
-    }
-    return this.dmHtmlWrapper;
-  };
-
-  getTextAreaHtmlWrapper = (text: string): { __html: string } => {
-    if (this.textAreaHtmlWrapper.__html !== text) {
-      this.textAreaHtmlWrapper = { __html: text };
-    }
-    return this.textAreaHtmlWrapper;
-  };
-
-  constructor(props, context) {
-    super(props, context);
-    this.configureMarked();
-  }
-
-  configureMarked = (): void => {
-    // This is an extension for marked defining a complete custom tokenizer.
-    // This tokenizer should run before the the non-custom ones, and gives us
-    // the ability to handle [_____] fields before the em/strong tokenizers
-    // mangle them, since underscores are used for italic/bold.
-    // This massively improves the order of operations, allowing us to run
-    // marked, THEN sanitise the output (much safer) and finally insert fields
-    // manually afterwards.
-    const inputField = {
-      name: 'inputField',
-      level: 'inline',
-
-      start(src) {
-        return src.match(/\[/)?.index;
-      },
-
-      tokenizer(src: string) {
-        const rule = /^\[_+\]/;
-        const match = src.match(rule);
-        if (match) {
-          const token = {
-            type: 'inputField',
-            raw: match[0],
-          };
-          return token;
-        }
-      },
-
-      renderer(token) {
-        return `${token.raw}`;
-      },
-    };
-
-    // Override function, any links and images should
-    // kill any other marked tokens we don't want here
-    const walkTokens = (token) => {
-      switch (token.type) {
-        case 'url':
-        case 'autolink':
-        case 'reflink':
-        case 'link':
-        case 'image':
-          token.type = 'text';
-          // Once asset system is up change to some default image
-          // or rewrite for icon images
-          token.href = '';
-          break;
-      }
-    };
-
-    marked.use({
-      extensions: [inputField],
-      breaks: true,
-      gfm: true,
-      smartypants: true,
-      walkTokens: walkTokens,
-      // Once assets are fixed might need to change this for them
-      baseUrl: 'thisshouldbreakhttp',
-    } as any);
-  };
+  parsedDMCache = document.createDocumentFragment();
+  parsedTextBoxCache?: DocumentFragment;
 
   // Extracts the paper field "counter" from a full ID.
   getHeaderID = (header: string): string => {
     return header.replace('paperfield_', '');
   };
 
-  // Since we're not using Components and are instead dangerously setting
-  // the inner HTML, none of the input fields persist on the document past
-  // their own render. This causes a few side effects, the main one being
-  // that our event handlers get lost every update. Another one being that
-  // the input boxes lose their state as well.
-  // We can use event bubbling to listen for events from input boxes and
-  // handle them from the document level, solving problem one.
-  // We can do a little state management thanks to that, allowing us to track
-  // what input fields have been changed allowing other parts to run their own
-  // logic.
-  // Finally, we can just keep a cache of input fields as they're modified,
-  // allowing us to re-use them in the input field creation process to persist
-  // their state across updates.
+  // Сохраняет введённый текст полей при смене режима чтения и записи.
   onInputHandler = (ev: Event): void => {
-    const input = ev.target as HTMLInputElement;
-
-    // We don't care about text area input, but this is a good place to
-    // clear the text box cache if we've had new input.
-    if (input.nodeName !== 'INPUT') {
-      this.parsedTextBoxCache = '';
+    const input = ev.target;
+    if (!(input instanceof HTMLInputElement) || !input.closest('.paper-text')) {
       return;
     }
 
@@ -612,8 +526,6 @@ export class PreviewView extends Component<PreviewViewProps> {
     setInputFieldData(newFieldData);
     input.style.fontFamily = held_item_details?.font || default_pen_font;
     input.style.color = held_item_details?.color || default_pen_color;
-    input.defaultValue = input.value;
-    this.enabledInputFieldCache[input.id] = input;
   };
 
   componentDidMount() {
@@ -626,7 +538,7 @@ export class PreviewView extends Component<PreviewViewProps> {
 
   // Creates the partial inline HTML for previewing or reading the paper from
   // only static_ui_data from DM.
-  createPreviewFromDM = (): { text: string; newFieldCount: number } => {
+  createPreviewFromDM = (): FieldCreationReturn => {
     const { data } = useBackend<PaperContext>();
     const {
       raw_field_input,
@@ -637,23 +549,20 @@ export class PreviewView extends Component<PreviewViewProps> {
       held_item_details,
     } = data;
 
-    let output = '';
-    let fieldCount = 0;
-
     const readOnly = !canEdit(held_item_details);
 
-    // If readonly is the same (input field writiability state hasn't changed)
-    // And the input stats are the same (no new text inputs since last time)
-    // Then use any cached values.
+    // Сохраняем поля в DOM между обновлениями, пока содержимое бумаги не изменилось.
     if (
       this.lastReadOnly === readOnly
-      && this.lastDMInputCount === (raw_text_input?.length || 0)
-      && this.lastFieldInputCount === (raw_field_input?.length || 0)
+      && this.lastDMInput === raw_text_input
+      && this.lastFieldInput === raw_field_input
     ) {
-      return { text: this.parsedDMCache, newFieldCount: this.lastFieldCount };
+      return { fragment: this.parsedDMCache, nextCounter: this.lastFieldCount };
     }
 
     this.lastReadOnly = readOnly;
+    const output = document.createDocumentFragment();
+    let fieldCount = 0;
 
     raw_text_input?.forEach((value) => {
       let rawText = value.raw_text.trim();
@@ -677,22 +586,22 @@ export class PreviewView extends Component<PreviewViewProps> {
         advancedHtml
       );
 
-      output += processingOutput.text;
+      output.appendChild(processingOutput.fragment);
 
       fieldCount = processingOutput.nextCounter;
     });
 
-    this.lastDMInputCount = raw_text_input?.length || 0;
-    this.lastFieldInputCount = raw_field_input?.length || 0;
+    this.lastDMInput = raw_text_input;
+    this.lastFieldInput = raw_field_input;
     this.lastFieldCount = fieldCount;
     this.parsedDMCache = output;
 
-    return { text: output, newFieldCount: fieldCount };
+    return { fragment: output, nextCounter: fieldCount };
   };
 
   // Creates the partial inline HTML for previewing or reading the paper from
   // the text input area.
-  createPreviewFromTextArea = (fieldCount: number = 0): string => {
+  createPreviewFromTextArea = (fieldCount: number): DocumentFragment => {
     const { data } = useBackend<PaperContext>();
     const {
       default_pen_font,
@@ -703,8 +612,12 @@ export class PreviewView extends Component<PreviewViewProps> {
     } = data;
     const { textArea } = this.props;
 
-    // Use the cache if one exists.
-    if (this.parsedTextBoxCache) {
+    if (
+      this.parsedTextBoxCache
+      && this.lastTextArea === textArea
+      && this.lastPreviewFieldCount === fieldCount
+      && this.lastAdvancedHtml === can_use_advanced_html
+    ) {
       return this.parsedTextBoxCache;
     }
 
@@ -725,74 +638,11 @@ export class PreviewView extends Component<PreviewViewProps> {
       can_use_advanced_html
     );
 
-    this.parsedTextBoxCache = processingOutput.text;
-
-    return processingOutput.text;
-  };
-
-  // Wraps the given raw text in a font span based on the supplied props.
-  setFontInText = (
-    text: string,
-    font: string,
-    color: string,
-    bold: boolean = false
-  ): string => {
-    return `<span style="color:${color};font-family:${font};${bold
-      ? 'font-weight: bold;' : ''}">${text}</span>`;
-  };
-
-  // Parses the given raw text through marked for applying markdown.
-  runMarkedDefault = (rawText: string): string => {
-    // Override function, any links and images should
-    // kill any other marked tokens we don't want here
-    const walkTokens = (token) => {
-      switch (token.type) {
-        case 'url':
-        case 'autolink':
-        case 'reflink':
-        case 'link':
-        case 'image':
-          token.type = 'text';
-          // Once asset system is up change to some default image
-          // or rewrite for icon images
-          token.href = '';
-          break;
-      }
-    };
-
-    // This is an extension for marked defining a complete custom tokenizer.
-    // This tokenizer should run before the the non-custom ones, and gives us
-    // the ability to handle [_____] fields before the em/strong tokenizers
-    // mangle them, since underscores are used for italic/bold.
-    // This massively improves the order of operations, allowing us to run
-    // marked, THEN sanitise the output (much safer) and finally insert fields
-    // manually afterwards.
-    const inputField = {
-      name: 'inputField',
-      level: 'inline',
-
-      start(src) {
-        return src.match(/\[/)?.index;
-      },
-
-      tokenizer(src: string) {
-        const rule = /^\[_+\]/;
-        const match = src.match(rule);
-        if (match) {
-          const token = {
-            type: 'inputField',
-            raw: match[0],
-          };
-          return token;
-        }
-      },
-
-      renderer(token) {
-        return `${token.raw}`;
-      },
-    };
-
-    return marked.parse(rawText) as string;
+    this.lastTextArea = textArea;
+    this.lastPreviewFieldCount = fieldCount;
+    this.lastAdvancedHtml = can_use_advanced_html;
+    this.parsedTextBoxCache = processingOutput.fragment;
+    return processingOutput.fragment;
   };
 
   // Fully formats, sanitises and parses the provided raw text and wraps it
@@ -807,19 +657,12 @@ export class PreviewView extends Component<PreviewViewProps> {
     forceReadonlyFields: boolean = false,
     advanced_html: boolean = false
   ): FieldCreationReturn => {
-    // First lets make sure it ends in a new line
-    const { data } = useBackend<PaperContext>();
-    rawText += rawText[rawText.length] === '\n' ? '\n' : '\n\n';
-
-    // Second, parse the text using markup
-    const parsedText = this.runMarkedDefault(rawText);
-
-    // Third, we sanitize the text of html
-    const sanitizedText = sanitizeText(parsedText, advanced_html);
-
-    // Fourth we replace the [__] with fields
-    const fieldedText = this.createFields(
-      sanitizedText,
+    const fragment = sanitizePaperMarkup(
+      paperMarkdown.parse(rawText + '\n\n', { async: false }),
+      advanced_html
+    );
+    const nextCounter = this.createFields(
+      fragment,
       font,
       12,
       color,
@@ -828,10 +671,15 @@ export class PreviewView extends Component<PreviewViewProps> {
       fieldCounter
     );
 
-    // Fifth, we wrap the created text in the writing implement properties.
-    const fontedText = this.setFontInText(fieldedText.text, font, color, bold);
-
-    return { text: fontedText, nextCounter: fieldedText.nextCounter };
+    const writing = document.createElement('span');
+    writing.style.fontFamily = font;
+    writing.style.color = color;
+    if (bold) {
+      writing.style.fontWeight = 'bold';
+    }
+    writing.appendChild(fragment);
+    fragment.appendChild(writing);
+    return { fragment, nextCounter };
   };
 
   // Builds a paper field ID from a number or string.
@@ -853,55 +701,66 @@ export class PreviewView extends Component<PreviewViewProps> {
     return ctx.measureText(text).width;
   };
 
-  // Replaces all [______] fields in raw text with fully formed <input ...>
-  // field replacements.
+  // Заменяем метки полей только в текстовых узлах, сохраняя атрибуты разметки.
   createFields = (
-    rawText: string,
+    fragment: DocumentFragment,
     font: string,
     fontSize: number,
     color: string,
     paperColor: string,
     forceReadonlyFields: boolean,
     counter: number = 0
-  ): FieldCreationReturn => {
+  ): number => {
     const { data } = useBackend<PaperContext>();
     const { raw_field_input } = data;
 
-    const ret_text = rawText.replace(
-      fieldRegex,
-      (match, p1, offset, string) => {
+    const walker = document.createTreeWalker(fragment, NodeFilter.SHOW_TEXT);
+    const textNodes: Text[] = [];
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      textNodes.push(node as Text);
+    }
+    for (const node of textNodes) {
+      const text = node.data;
+      if (!text.includes('[_')) {
+        continue;
+      }
+      const fields = document.createDocumentFragment();
+      let end = 0;
+      for (const { 0: match, 1: blank, index } of text.matchAll(fieldRegex)) {
         const width = this.textWidth(match, font, fontSize);
         const matchingData = raw_field_input?.find(
           (e) => e.field_index === `${counter}`
         );
-        if (matchingData) {
-          return this.createFilledInputField(
+        const id = this.createIDHeader(counter++);
+        const input = matchingData
+          ? this.createFilledInputField(
             matchingData,
-            p1.length,
+            blank.length,
             width,
             font,
             fontSize,
             color,
             paperColor,
-            this.createIDHeader(counter++)
+            id
+          )
+          : this.createInputField(
+            blank.length,
+            width,
+            font,
+            fontSize,
+            color,
+            id,
+            forceReadonlyFields
           );
-        }
-        return this.createInputField(
-          p1.length,
-          width,
-          font,
-          fontSize,
-          color,
-          this.createIDHeader(counter++),
-          forceReadonlyFields
-        );
+        fields.append(text.slice(end, index) + '[', input, ']');
+        end = index! + match.length;
       }
-    );
-
-    return {
-      nextCounter: counter,
-      text: ret_text,
-    };
+      if (end) {
+        fields.append(text.slice(end));
+        node.replaceWith(fields);
+      }
+    }
+    return counter;
   };
 
   // Builds an <input> field from the supplied props.
@@ -913,7 +772,7 @@ export class PreviewView extends Component<PreviewViewProps> {
     color: string,
     id: string,
     readOnly: boolean
-  ): string => {
+  ): HTMLInputElement => {
     // This are fields that may potentially be fillable, so we'll use the
     // currently held item's stats for them if possible.
     const { data } = useBackend<PaperContext>();
@@ -922,27 +781,7 @@ export class PreviewView extends Component<PreviewViewProps> {
     const fontColor = held_item_details?.color || color;
     const fontFace = held_item_details?.font || font;
 
-    // Do we have this ID in our cache?
-    let input = this.enabledInputFieldCache[id];
-
-    if (input) {
-      // If we've gone to readOnly now, drop the cache because we're no longer
-      // in write mode, and serialize the field as actually disabled - the
-      // cached node was created enabled and would otherwise leak a writable
-      // field into the read-only view.
-      if (readOnly) {
-        delete this.enabledInputFieldCache[id];
-        input.disabled = true;
-      }
-      // If we do, recycle it, updating font and color incase we've changed
-      // writing implements.
-      input.style.fontFamily = fontFace;
-      input.style.color = fontColor;
-      return `[${input.outerHTML}]`;
-    }
-
-    // If we don't, make a new one.
-    input = document.createElement('input');
+    const input = document.createElement('input');
     input.id = id;
     input.setAttribute('type', 'text');
     input.style.fontSize = `${fontSize}px`;
@@ -964,11 +803,7 @@ export class PreviewView extends Component<PreviewViewProps> {
       input.defaultValue = storedValue;
     }
 
-    if (!readOnly) {
-      this.enabledInputFieldCache[id] = input;
-    }
-
-    return `[${input.outerHTML}]`;
+    return input;
   };
 
   // Builds an <input> field from the supplied props, pre-filled with a value
@@ -984,7 +819,7 @@ export class PreviewView extends Component<PreviewViewProps> {
     color: string,
     paperColor: string,
     id: string
-  ): string => {
+  ): HTMLInputElement => {
     const { data } = useBackend<PaperContext>();
     const { max_input_field_length } = data;
 
@@ -1007,7 +842,7 @@ export class PreviewView extends Component<PreviewViewProps> {
     input.defaultValue = fieldData.raw_text;
     input.disabled = true;
 
-    return `[${input.outerHTML}]`;
+    return input;
   };
 
   render() {
@@ -1019,15 +854,12 @@ export class PreviewView extends Component<PreviewViewProps> {
     const dmTextPreviewData = this.createPreviewFromDM();
 
     const textAreaPreview = interactMode === InteractionType.writing
-      ? this.createPreviewFromTextArea(dmTextPreviewData.newFieldCount)
+      ? this.createPreviewFromTextArea(dmTextPreviewData.nextCounter)
       : null;
 
     const { scrollableRef, handleOnScroll } = this.props;
 
-    // The DM text (with live input fields) and the textarea preview are
-    // rendered as two independent innerHTML blocks. With a single blob,
-    // every textarea keystroke would rewrite the whole page and recreate
-    // the input fields, wiping whatever the user had typed into them.
+    // Предпросмотр не пересоздаёт редактируемые поля основного текста.
     return (
       <Section
         fill
@@ -1043,21 +875,9 @@ export class PreviewView extends Component<PreviewViewProps> {
           backgroundColor={paper_color}
           className="Paper__Page"
           p="10px">
-          <Box
-            as="span"
-            className="paper-text"
-            dangerouslySetInnerHTML={this.getDmHtmlWrapper(
-              dmTextPreviewData.text
-            )}
-          />
+          <PaperMarkup className="paper-text" fragment={dmTextPreviewData.fragment} />
           {textAreaPreview !== null && (
-            <Box
-              as="span"
-              className="paper-text"
-              dangerouslySetInnerHTML={this.getTextAreaHtmlWrapper(
-                textAreaPreview
-              )}
-            />
+            <PaperMarkup className="paper-text" fragment={textAreaPreview} />
           )}
         </Box>
         <StampView />

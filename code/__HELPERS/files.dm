@@ -63,12 +63,12 @@
 	. = md5filepath(filename)
 	fdel(filename)
 
-/// Basic checks so shelleo / shell snippets are not abused via crafted paths (admin-only endpoints, still).
+// Проверяет путь перед передачей в команды оболочки просмотрщика логов.
 /proc/is_safe_path_for_admin_shell(path)
-	if(!path || length(path) > 1024 || findtext(path, ".."))
+	if(!istext(path) || !length(path) || length(path) > 1024 || findtext(path, ".."))
 		return FALSE
 	// "%" - от разворачивания %VAR% в cmd.exe: на Windows оно работает даже внутри кавычек.
-	var/static/list/bad_substrings = list(";", "&", "|", "`", "\n", "<", ">", "\"", "*", "%")
+	var/static/list/bad_substrings = list(";", "&", "|", "`", "\n", "<", ">", "\"", "*", "%", "$", "\\")
 	for(var/bad in bad_substrings)
 		if(findtext(path, bad))
 			return FALSE

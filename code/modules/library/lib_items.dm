@@ -257,6 +257,10 @@
 /obj/item/book/attack_self(mob/user)
 	if(!user.can_read(src))
 		return
+	if(dat && (!istype(src, /obj/item/book/manual) || !unique))
+		ui_interact(user)
+		user.visible_message(span_notice("[user] открывает книгу «[html_encode(html_decode(title || name))]» и начинает читать."))
+		return
 	if(dat)
 		var/book_w = 0
 		var/book_h = 0
@@ -275,6 +279,19 @@
 		// SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "book_nerd", /datum/mood_event/book_nerd)
 	else
 		to_chat(user, "<span class='notice'>This book is completely blank!</span>")
+
+/obj/item/book/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "LibraryBook", html_decode(title || name))
+		ui.open()
+
+/obj/item/book/ui_static_data(mob/user)
+	return list(
+		"title" = html_decode(title || name),
+		"author" = author ? html_decode(author) : null,
+		"content" = dat,
+	)
 
 
 /obj/item/book/attackby(obj/item/I, mob/user, params)

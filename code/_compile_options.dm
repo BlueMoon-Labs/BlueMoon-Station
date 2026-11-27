@@ -1,6 +1,9 @@
 //#define TESTING //By using the testing("message") proc you can create debug-feedback for people with this
 								//uncommented, but not visible in the release version)
 
+// Включает административные запросы SDQL2 к игровому миру.
+//#define ENABLE_SDQL2
+
 //#define DATUMVAR_DEBUGGING_MODE //Enables the ability to cache datum vars and retrieve later for debugging which vars changed.
 
 //#define ATOM_STATISTICS_LOGGING //Collect atoms load time statisctics from Atoms Subsystem to "atom_loading_stats.log"

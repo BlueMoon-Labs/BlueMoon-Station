@@ -1058,7 +1058,8 @@
     show_message(rendered, MSG_VISUAL)
 // --
 /mob/living/silicon/ai/fully_replace_character_name(oldname,newname)
-	..()
+	if(!..())
+		return
 	if(oldname != real_name)
 		if(eyeobj)
 			eyeobj.name = "[newname] (AI Eye)"

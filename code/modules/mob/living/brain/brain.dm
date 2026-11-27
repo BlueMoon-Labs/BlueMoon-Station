@@ -72,7 +72,8 @@
 		return FALSE
 
 /mob/living/brain/fully_replace_character_name(oldname,newname)
-	..()
+	if(!..())
+		return
 	if(stored_dna)
 		stored_dna.real_name = real_name
 

@@ -11,6 +11,7 @@ import {
 } from 'common/redux';
 
 import { backendReducer, backendUpdate } from '../backend';
+import { PaperHtml } from './common/PaperMarkup';
 import { PrimaryView } from './PaperSheet';
 
 const MODE_READING = 0;
@@ -123,6 +124,31 @@ describe('PaperSheet PrimaryView', () => {
     expect(styledText?.style.width).toBe('100px');
   });
 
+  test('only creates fields from text nodes in saved papers', () => {
+    setupStore({
+      raw_text_input: [{
+        raw_text: '<div title="[______]">Подпись: [______]</div>',
+        advanced_html: true,
+      }],
+      held_item_details: heldPen,
+    });
+    const { container } = render(<PrimaryView />);
+    expect(container.querySelector('.paper-text div')?.getAttribute('title'))
+      .toBe('[______]');
+    expect(container.querySelectorAll('.paper-text input')).toHaveLength(1);
+    expect(container.querySelector('input#paperfield_0')).toBeTruthy();
+  });
+
+  test('removes interactive markup from saved spectator content', () => {
+    const { container } = render(<PaperHtml text={
+      '<strong id="test" onclick="">Сохранённый текст</strong><svg></svg>'
+    } />);
+    const text = container.querySelector('strong');
+    expect(text?.textContent).toBe('Сохранённый текст');
+    expect(text?.getAttributeNames()).toEqual([]);
+    expect(container.querySelector('svg')).toBeNull();
+  });
+
   test('renders [____] as a disabled input field when reading', () => {
     setupStore({
       raw_text_input: [
@@ -228,13 +254,7 @@ describe('PaperSheet PrimaryView', () => {
     expect(JSON.parse(saveCall[0].payload).text).toBe('saved text');
   });
 
-  // Regression: with a single innerHTML blob for the whole page, every
-  // textarea keystroke rewrote the DM text block and recreated its input
-  // fields, wiping whatever the user had typed into them. The DM block's
-  // HTML must stay byte-identical while the textarea preview updates, so
-  // React never touches the fields' DOM.
-  // (jsdom re-applies innerHTML on every rerender, so DOM node identity
-  // can't be asserted here - string identity is the contract that matters.)
+  // Набор текста в редакторе сохраняет узлы полей и уже введённый текст.
   test('typing in the textarea does not alter the DM text block', () => {
     setupStore({
       raw_text_input: [
@@ -260,6 +280,8 @@ describe('PaperSheet PrimaryView', () => {
     const blocks = container.querySelectorAll('.paper-text');
     expect(blocks.length).toBe(2);
     expect(blocks[0].innerHTML).toBe(dmBlockBefore);
+    expect(blocks[0].querySelector('input')).toBe(field);
+    expect(field.value).toBe('Иванов');
     expect(blocks[1].innerHTML).toContain('текст отчёта');
   });
 
