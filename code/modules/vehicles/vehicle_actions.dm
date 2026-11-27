@@ -235,3 +235,32 @@
 			V.icon_state = "[V.board_icon]-grind"
 			addtimer(CALLBACK(V, TYPE_PROC_REF(/obj/vehicle/ridden/scooter/skateboard, grind)), 2)
 		next_ollie = world.time + 5
+
+/datum/action/vehicle/ridden/scooter/skateboard/toggle_carpet_music
+	name = "Toggle Carpet Music"
+	desc = "Включить или выключить музыку ковра-самолёта для этой и следующих поездок."
+	icon_icon = 'icons/obj/items_and_weapons.dmi'
+	button_icon_state = "flying_carpet-item"
+
+/datum/action/vehicle/ridden/scooter/skateboard/toggle_carpet_music/Destroy()
+	vehicle_target = null
+	vehicle_ridden_target = null
+	return ..()
+
+/datum/action/vehicle/ridden/scooter/skateboard/toggle_carpet_music/Trigger(trigger_flags)
+	if(!..())
+		return FALSE
+	var/obj/vehicle/ridden/scooter/skateboard/hoverboard/flying_carpet/carpet = vehicle_ridden_target
+	if(!istype(carpet) || QDELETED(carpet) || !owner?.client || owner.buckled != carpet || !carpet.is_driver(owner))
+		return FALSE
+	carpet.music_enabled = !carpet.music_enabled
+	if(!carpet.music_enabled)
+		carpet.stop_carpet_music()
+		to_chat(owner, span_notice("Музыка ковра выключена."))
+		return TRUE
+	carpet.start_carpet_music()
+	if(carpet.music_channel)
+		to_chat(owner, span_notice("Музыка ковра включена."))
+	else
+		to_chat(owner, span_warning("Музыка ковра включена, но сейчас её не удалось запустить."))
+	return TRUE
