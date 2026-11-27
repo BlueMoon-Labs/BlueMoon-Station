@@ -294,7 +294,7 @@ Burning extracts:
 //Rewind camera - I'm already Burning Sepia
 /obj/item/camera/rewind
 	name = "sepia-tinted camera"
-	desc = "They say a picture is like a moment stopped in time."
+	desc = "Говорят, фотография останавливает мгновение."
 	pictures_left = 1
 	pictures_max = 1
 	can_customise = FALSE
@@ -347,11 +347,11 @@ Burning extracts:
 		return
 	if(!used)//selfie time
 		if(user == target)
-			to_chat(user, "<span class=notice>You take a selfie!</span>")
+			to_chat(user, span_notice("Вы делаете селфи!"))
 		else
-			to_chat(user, "<span class=notice>You take a photo with [target]!</span>")
-			to_chat(target, "<span class=notice>[user] takes a photo with you!</span>")
-		to_chat(target, "<span class=notice>You'll remember this moment forever!</span>")
+			to_chat(user, span_notice("Вы делаете совместный снимок с [target]!"))
+			to_chat(target, span_notice("[user] делает совместный снимок с вами!"))
+		to_chat(target, span_notice("Вы запомните этот момент навсегда!"))
 
 		used = TRUE
 		target.AddComponent(/datum/component/dejavu, 2)
@@ -360,7 +360,7 @@ Burning extracts:
 //Timefreeze camera - Old Burning Sepia result. Kept in case admins want to spawn it
 /obj/item/camera/timefreeze
 	name = "sepia-tinted camera"
-	desc = "They say a picture is like a moment stopped in time."
+	desc = "Говорят, фотография останавливает мгновение."
 	pictures_left = 1
 	pictures_max = 1
 	var/used = FALSE
@@ -371,7 +371,7 @@ Burning extracts:
 	if(!used) //refilling the film does not refill the timestop
 		new /obj/effect/timestop(get_turf(target), 2, 50, list(user))
 		used = TRUE
-		desc = "This camera has seen better days."
+		desc = "Этот фотоаппарат знавал лучшие времена."
 	return ..()
 
 /obj/item/slimepotion/extract_cloner

@@ -1,8 +1,25 @@
-// Regression test for the camera "no background" bug: a photo taken in a shaded
-// (dynamic-lit, non-fully-bright) area must still render the floor/scene, not a
-// solid black tile. Root cause was camera_get_icon cloning the turf's
-// lighting_object (which lives in turf.contents) — its dark color matrix painted
-// every floor tile black. See camera_image_capturing.dm.
+// Камера должна рисовать пол и в затенённом помещении. Служебная маска освещения
+// из turf.contents прежде перекрывала фон чёрным цветом.
+
+/datum/unit_test/camera_photo_reset_transform/Run()
+	var/icon/base = icon('icons/effects/camera_image_base.dmi', "")
+	base.DrawBox("#ff0000", 3, 4, 3, 4)
+	var/icon/detail = icon('icons/effects/camera_image_base.dmi', "")
+	detail.DrawBox("#00ff00", 5, 6, 5, 6)
+	var/image/subject = image(icon = base)
+	var/matrix/pose = matrix()
+	pose.Translate(8, 0)
+	subject.transform = pose
+	var/image/overlay = image(icon = detail)
+	for(var/grouping in list(0, KEEP_TOGETHER, KEEP_TOGETHER | KEEP_APART))
+		subject.appearance_flags = grouping & KEEP_TOGETHER
+		overlay.appearance_flags = RESET_TRANSFORM | (grouping & KEEP_APART)
+		subject.overlays = list(overlay)
+		var/list/offsets = list()
+		var/icon/result = getFlatIcon(subject, no_anim = TRUE, icon_offsets = offsets, photo_transform = GLOBAL_PROC_REF(transform_camera_icon))
+		var/detail_x = grouping == KEEP_TOGETHER ? 13 : 5
+		TEST_ASSERT_EQUAL(result.GetPixel(11 + offsets["x"], 4 + offsets["y"]), "#ff0000", "Основа не получила матрицу объекта")
+		TEST_ASSERT_EQUAL(result.GetPixel(detail_x + offsets["x"], 6 + offsets["y"]), "#00ff00", "Оверлей получил неверную матрицу при флагах [grouping]")
 
 /// Returns TRUE if the pixel at (px,py) is present and not pure/near-black.
 /datum/unit_test/proc/camera_pixel_is_lit(icon/ico, px, py)
@@ -40,9 +57,8 @@
 			turfs += T
 
 	var/obj/item/camera/cam = allocate(/obj/item/camera, center)
-	var/datum/turf_reservation/clone_area = SSmapping.RequestBlockReservation(3, 3)
 	var/psize = 3 * world.icon_size
-	var/icon/result = cam.camera_get_icon(turfs, center, psize, psize, clone_area, 1, 1, 3, 3)
+	var/icon/result = cam.camera_get_icon(turfs, center, psize, psize)
 
 	TEST_ASSERT_NOTNULL(result, "camera_get_icon returned null")
 
@@ -60,9 +76,25 @@
 
 	log_test("camera_photo_shaded_background: tiles=[report.Join(" | ")]")
 
-	qdel(clone_area)
+	// В одном кадре без вспышки освещённый пол должен сохраниться, а соседний остаться тёмным.
+	var/list/previous_light = list()
+	for(var/turf/tile as anything in turfs)
+		var/atom/movable/lighting_object/light = tile.lighting_object
+		previous_light[light] = light.color
+		light.color = tile == center ? LIGHTING_BASE_MATRIX : LIGHTING_DARK_MATRIX
+	cam.flash_enabled = FALSE
+	var/icon/unflashed = cam.camera_get_icon(turfs, center, psize, psize)
+	for(var/atom/movable/lighting_object/light as anything in previous_light)
+		if(!QDELETED(light))
+			light.color = previous_light[light]
+
 	for(var/atom/movable/lighting_object/lo as anything in created_los)
 		if(!QDELETED(lo))
 			qdel(lo, force = TRUE)
 
 	TEST_ASSERT_EQUAL(black_tiles, 0, "Shaded camera photo lost [black_tiles]/9 background floor tiles to black (lighting_object cloned into the photo)")
+	var/sample_offset = round(world.icon_size / 2)
+	var/center_pixel = world.icon_size + sample_offset
+	TEST_ASSERT_NOTNULL(unflashed, "No-flash camera render returned null")
+	TEST_ASSERT(camera_pixel_is_lit(unflashed, center_pixel, center_pixel), "No-flash photo lost the lit center tile")
+	TEST_ASSERT(!camera_pixel_is_lit(unflashed, sample_offset, sample_offset), "No-flash photo ignored the dark neighbor")

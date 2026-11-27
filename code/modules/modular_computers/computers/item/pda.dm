@@ -49,6 +49,8 @@
 	///Static list of default PDA apps to install on Initialize.
 	var/static/list/datum/computer_file/pda_programs = list(
 		/datum/computer_file/program/messenger,
+		/datum/computer_file/program/pda_camera,
+		/datum/computer_file/program/syndimatic,
 		/datum/computer_file/program/notepad,
 		/datum/computer_file/program/crew_manifest,
 		/datum/computer_file/program/department_budget,
