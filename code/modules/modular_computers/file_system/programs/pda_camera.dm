@@ -13,7 +13,7 @@
 	category = PROGRAM_CATEGORY_CREW
 	extended_desc = "Снимает фотографии, хранит их на ПДА и сохраняет в личное облако."
 	usage_flags = PROGRAM_PDA
-	size = 2
+	size = 0
 	tgui_id = "NtosCamera"
 	program_icon = "camera"
 	undeletable = TRUE
