@@ -128,9 +128,9 @@ GLOBAL_PROTECT(LastAdminCalledProc)
 		to_chat(usr, span_warning("Нельзя передавать колбэки в аргументах административного вызова."), confidential = TRUE)
 		return
 	var/current_caller = GLOB.AdminProcCaller
-	var/ckey = usr ? usr.client.ckey : GLOB.AdminProcCaller
+	var/ckey = usr?.client?.ckey || current_caller
 	if(!ckey)
-		CRASH("WrapAdminProcCall with no ckey: [target] [procname] [english_list(arguments)]")
+		return
 
 	if(current_caller && current_caller != ckey)
 		// hey kev i removed the sleep here because it blocks this proc

@@ -3,7 +3,7 @@
  * Renders PrimaryView against a real redux store (the same way the live UI
  * reads it through useBackend/useLocalState).
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import {
   combineReducers,
   createStore,
@@ -12,7 +12,7 @@ import {
 
 import { backendReducer, backendUpdate } from '../backend';
 import { PaperHtml } from './common/PaperMarkup';
-import { PrimaryView } from './PaperSheet';
+import { PreviewView, PrimaryView } from './PaperSheet';
 
 const MODE_READING = 0;
 const MODE_WRITING = 1;
@@ -92,6 +92,29 @@ describe('PaperSheet PrimaryView', () => {
     expect(container.innerHTML).toContain('<strong>bold</strong>');
   });
 
+  test('keeps the starting number of an ordered list', () => {
+    setupStore({ raw_text_input: [{ raw_text: '3. Третий пункт' }] });
+    const { container } = render(<PrimaryView />);
+    expect(container.querySelector('ol')?.start).toBe(3);
+  });
+
+  test('retains focus when the server resends the same paper data', () => {
+    const makeData = () => ({
+      raw_text_input: [{ raw_text: 'Подпись: [______]' }],
+      raw_field_input: [],
+      held_item_details: heldPen,
+    });
+    const store = setupStore(makeData());
+    const { container } = render(<PrimaryView />);
+    const field = container.querySelector<HTMLInputElement>('#paperfield_0')!;
+    field.focus();
+
+    act(() => store.dispatch(backendUpdate({ data: makeData() })));
+
+    expect(container.querySelector('#paperfield_0')).toBe(field);
+    expect(document.activeElement).toBe(field);
+  });
+
   test('strips inline styles from regular paper input', () => {
     setupStore({
       raw_text_input: [
@@ -147,6 +170,27 @@ describe('PaperSheet PrimaryView', () => {
     expect(text?.textContent).toBe('Сохранённый текст');
     expect(text?.getAttributeNames()).toEqual([]);
     expect(container.querySelector('svg')).toBeNull();
+  });
+
+  test('renders saved fax fields by visible position and keeps their values as text', () => {
+    const { container } = render(<PreviewView snapshot={{
+      ...baseStaticData,
+      raw_text_input: [{
+        raw_text: '<div title="[______]">Подпись: [______]</div>\n\n<img alt="Приложение" src="https://example.test/fax.png">',
+        advanced_html: true,
+      }],
+      raw_field_input: [{
+        field_index: '0',
+        field_data: { raw_text: '<b>Иван</b>' },
+        is_signature: true,
+      }],
+    }} />);
+    const [field] = container.querySelectorAll('input');
+    expect(container.querySelector('[title]')?.getAttribute('title')).toBe('[______]');
+    expect(container.querySelectorAll('input')).toHaveLength(1);
+    expect(field?.value).toBe('<b>Иван</b>');
+    expect(field?.disabled).toBe(true);
+    expect(container.querySelector('img')).toBeNull();
   });
 
   test('renders [____] as a disabled input field when reading', () => {

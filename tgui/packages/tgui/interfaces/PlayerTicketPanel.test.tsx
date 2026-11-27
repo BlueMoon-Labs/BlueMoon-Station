@@ -7,6 +7,7 @@ import { combineReducers, createStore, setGlobalStore } from 'common/redux';
 
 import { backendReducer, backendUpdate } from '../backend';
 import { debugReducer } from '../debug';
+import { sanitizeTicketHtml } from '../sanitize';
 import { PlayerTicketPanel } from './PlayerTicketPanel';
 
 const setupStore = (data = {}) => {
@@ -23,6 +24,27 @@ const setupStore = (data = {}) => {
   );
   return store;
 };
+
+test('сохраняет штатные ссылки в истории тикета для нужной роли', () => {
+  const admin = '?_src_=holder;admin_token=123;ahelp=[0x123];ahelp_action=reply';
+  const reply = '?_src_=mentor;mentor_msg=player;mentor_token=123';
+  const taggedReply = '?_src_=mentor;mentor_msg=[mob_17]';
+  const follow = '?_src_=mentor;mentor_follow=[mob_17];mentor_token=123';
+  const html = [admin, reply, taggedReply, follow, '?other=1']
+    .map((href) => `<a href="${href}">Действие</a>`)
+    .join(' ');
+
+  const linksFor = (role?: string) => {
+    const fragment = document.createElement('template');
+    fragment.innerHTML = sanitizeTicketHtml(html, role);
+    return Array.from(fragment.content.querySelectorAll('a[href]'),
+      (link) => link.getAttribute('href'));
+  };
+
+  expect(linksFor('admin')).toEqual([admin]);
+  expect(linksFor('mentor')).toEqual([reply, taggedReply, follow]);
+  expect(linksFor()).toEqual([]);
+});
 
 describe('PlayerTicketPanel', () => {
   test('из менторхелпа открывается вкладка менторов', () => {

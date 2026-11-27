@@ -321,7 +321,7 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 			message_log["handled"] = !!auto_note
 			message_log["paper_name"] = fax_paper.name
 			message_log["paper_text"] = fax_paper.get_raw_text()
-			message_log["paper_html"] = get_paper_html(fax_paper)
+			message_log["paper_document"] = fax_paper.get_paper_text_data()
 			LAZYADD(GLOB.centcom_communications_messages, list(message_log))
 			to_chat(GLOB.admins, span_adminnotice("[icon2html(src.icon, GLOB.admins)]<b><font color=green>FAX REQUEST: </font>[ADMIN_FULLMONTY(usr)]:</b> [span_linkify("sent a fax message from [fax_name]/[fax_id][ADMIN_FLW(src)] to [html_encode(params["name"])][note_suffix]")] [ADMIN_SHOW_PAPER(fax_paper)]"), confidential = TRUE)
 			if(!auto_note)
@@ -430,7 +430,8 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 	message_log["handled"] = automated
 	message_log["paper_name"] = paper_name
 	message_log["paper_text"] = paper_text
-	message_log["paper_html"] = istype(paper) ? get_paper_html(paper) : null
+	if(istype(paper))
+		message_log["paper_document"] = paper.get_paper_text_data()
 	LAZYADD(GLOB.centcom_communications_messages, list(message_log))
 
 	// Уведомление администрации
@@ -745,71 +746,3 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 	else
 		return FALSE
 	return TRUE
-
-/**
- * БЕЗОПАСНОЕ ПРЕОБРАЗОВАНИЕ ТЕКСТА БУМАГИ В HTML.
- *
- * ЧТО БЫЛО: если input.advanced_html == TRUE (право R_FUN у автора), строка
- * НЕ экранировалась и уходила в message_log["paper_html"] как сырой HTML.
- * AdminTicketPanel.js вставлял её через dangerouslySetInnerHTML без DOMPurify,
- * поэтому <svg onload="...">, выполненный в браузере админа, давал доступ
- * к BYOND.command() и, как следствие, к verb SDQL2 Query от лица админа.
- *
- * ЧТО СТАЛО: всё без исключений проходит html_encode(), и только ПОСЛЕ этого
- * разрешаются точные совпадения с белым списком безопасных тегов БЕЗ атрибутов.
- * Атакующий не может пронести onload/onerror/src/javascript:, потому что его
- * '<' и '>' уже заменены на &lt; и &gt;, а шаблон "&lt;b&gt;" требует обратного.
- * img/video/audio/iframe/svg/math/script/class/style намеренно не разрешены:
- * этот HTML идёт в админские тикеты, а не в редактор бумаг (там свой DOMPurify).
- */
-/proc/sanitize_paper_html(text)
-	var/result = html_encode(text)
-	var/static/list/safe_tags = list("b", "i", "em", "strong", "u", "s", "br", "p", "div", "span", "blockquote", "code", "pre")
-	for(var/t in safe_tags)
-		result = replacetext(result, "&lt;[t]&gt;", "<[t]>")
-		if(t != "br")
-			result = replacetext(result, "&lt;/[t]&gt;", "</[t]>")
-	return result
-
-/proc/get_paper_html(obj/item/paper/paper)
-	if(!istype(paper))
-		return ""
-	var/html = "<div style='padding:8px; font-family:\"Times New Roman\",serif; font-size:14px; line-height:1.5; color:#000; background:#fff;'>"
-	var/list/field_data_map = list()
-	if(LAZYLEN(paper.raw_field_input_data))
-		for(var/datum/paper_field/field in paper.raw_field_input_data)
-			field_data_map["[field.field_index]"] = field.field_data?.raw_text || ""
-	var/static/regex/field_marker = regex(@"\[_+\]")
-	var/field_index = 0
-	for(var/datum/paper_input/input as anything in paper.raw_text_inputs)
-		var/text = input.raw_text
-		if(LAZYLEN(field_data_map))
-			var/search_pos = 1
-			var/start
-			while((start = field_marker.Find(text, search_pos)))
-				var/end = start + length(field_marker.match)
-				var/field_key = "[field_index++]"
-				if(!(field_key in field_data_map))
-					search_pos = end
-					continue
-				var/replacement = field_data_map[field_key]
-				// Экранирование подстановки делает sanitize_paper_html() ниже.
-				// Дополнительный html_encode здесь дал бы двойное кодирование.
-				text = copytext(text, 1, start) + replacement + copytext(text, end)
-				search_pos = start + length(replacement)
-		// ВСЕГДА санитизируем - в том числе для advanced_html. Это убирает
-		// исходную уязвимость: раньше здесь было "if(!input.advanced_html)".
-		// Заодно экранируется подстановка из полей формы (field_data_map).
-		text = sanitize_paper_html(text)
-		text = replacetext(text, "\n", "<br>")
-		if(input.bold)
-			text = "<b>[text]</b>"
-		if(input.font)
-			// Значения шрифта/цвета тоже уходят в HTML-атрибут style.
-			text = "<span style='font-family:[html_encode(input.font)];'>[text]</span>"
-		if(input.colour)
-			text = "<span style='color:[html_encode(input.colour)];'>[text]</span>"
-		html += text
-	html += "</div>"
-	return html
-

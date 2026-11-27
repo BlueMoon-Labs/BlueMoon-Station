@@ -54,7 +54,7 @@ const defAttr = ['class', 'style'];
 
 const paperAttrs = [
   'align', 'bgcolor', 'border', 'cellpadding', 'cellspacing', 'color',
-  'colspan', 'face', 'height', 'rowspan', 'size', 'valign', 'width',
+  'colspan', 'face', 'height', 'rowspan', 'size', 'start', 'valign', 'width',
 ];
 const paperMediaAttrs = [
   'alt', 'controls', 'kind', 'label', 'loop', 'muted', 'poster',
@@ -68,14 +68,14 @@ const paperStyles = [
 ];
 
 // Возвращает проверенные узлы для бумаги, факсов и книг.
-export const sanitizePaperMarkup = (input, advanced = false) => {
+export const sanitizePaperMarkup = (input, advanced = false, allowMedia = advanced) => {
   if (!DOMPurify.isSupported) {
     const text = document.createDocumentFragment();
     text.append(input);
     return text;
   }
   const fragment = DOMPurify.sanitize(input, {
-    ALLOWED_TAGS: advanced ? defTag.concat(advTag) : defTag,
+    ALLOWED_TAGS: allowMedia ? defTag.concat(advTag) : defTag,
     ALLOWED_ATTR: advanced ? paperAttrs.concat(paperMediaAttrs) : paperAttrs,
     ALLOW_ARIA_ATTR: false,
     ALLOW_DATA_ATTR: false,
@@ -104,6 +104,28 @@ export const sanitizePaperMarkup = (input, advanced = false) => {
     }
   }
   return fragment;
+};
+
+// Сохраняет только ссылки на штатный ответ или переход к игроку в тикете.
+const ticketLinks = {
+  admin: /^\?_src_=holder;admin_token=[0-9]+;ahelp=\[0x[0-9a-f]+\];ahelp_action=reply$/i,
+  mentor: /^\?_src_=mentor;(?:mentor_msg=(?:[a-z0-9]+|\[(?:0x[0-9a-f]+|mob_[0-9]+)\])(?:;mentor_token=[0-9]+)?|mentor_follow=\[(?:0x[0-9a-f]+|mob_[0-9]+)\];mentor_token=[0-9]+)$/i,
+};
+
+export const sanitizeTicketHtml = (html, role = '') => {
+  if (!DOMPurify.isSupported) {
+    const text = document.createElement('span');
+    text.textContent = html || '';
+    return text.innerHTML;
+  }
+  const links = ticketLinks[role];
+  return DOMPurify.sanitize(html || '', {
+    ALLOWED_TAGS: links ? defTag.concat('a') : defTag,
+    ALLOWED_ATTR: links ? paperAttrs.concat('href') : paperAttrs,
+    ALLOWED_URI_REGEXP: links,
+    ALLOW_ARIA_ATTR: false,
+    ALLOW_DATA_ATTR: false,
+  });
 };
 
 /**

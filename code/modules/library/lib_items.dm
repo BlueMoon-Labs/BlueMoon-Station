@@ -282,9 +282,11 @@
 
 /obj/item/book/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
-	if(!ui)
-		ui = new(user, src, "LibraryBook", html_decode(title || name))
-		ui.open()
+	if(ui)
+		ui.send_full_update()
+		return
+	ui = new(user, src, "LibraryBook", html_decode(title || name))
+	ui.open()
 
 /obj/item/book/ui_static_data(mob/user)
 	return list(

@@ -18,18 +18,21 @@ const Z_INDEX_STAMP_PREVIEW = 2;
 
 const TEXTAREA_INPUT_HEIGHT = 200;
 
-type PaperContext = {
-  // ui_static_data
-  user_name: string;
+type PaperTextData = {
   raw_text_input?: PaperInput[];
   raw_field_input?: FieldInput[];
-  raw_stamp_input?: StampInput[];
-  max_length: number;
   max_input_field_length: number;
   paper_color: string;
-  paper_name: string;
   default_pen_font: string;
   default_pen_color: string;
+};
+
+type PaperContext = PaperTextData & {
+  // ui_static_data
+  user_name: string;
+  raw_stamp_input?: StampInput[];
+  max_length: number;
+  paper_name: string;
   signature_font: string;
 
   // ui_data
@@ -97,9 +100,10 @@ enum InteractionType {
 }
 
 type PreviewViewProps = {
-  scrollableRef: RefObject<HTMLDivElement>;
-  handleOnScroll: (this: GlobalEventHandlers, ev: Event) => any;
-  textArea: string;
+  scrollableRef?: RefObject<HTMLDivElement>;
+  handleOnScroll?: (this: GlobalEventHandlers, ev: Event) => any;
+  textArea?: string;
+  snapshot?: PaperTextData;
 };
 
 const canEdit = (heldItemDetails?: WritingImplement): boolean => {
@@ -489,6 +493,7 @@ export class PreviewView extends Component<PreviewViewProps> {
   lastDMInput?: PaperInput[];
   lastFieldCount: number = 0;
   lastFieldInput?: FieldInput[];
+  lastContentKey?: string;
   lastTextArea?: string;
   lastPreviewFieldCount?: number;
   lastAdvancedHtml?: boolean;
@@ -529,17 +534,22 @@ export class PreviewView extends Component<PreviewViewProps> {
   };
 
   componentDidMount() {
-    document.addEventListener('input', this.onInputHandler);
+    if (!this.props.snapshot) {
+      document.addEventListener('input', this.onInputHandler);
+    }
   }
 
   componentWillUnmount() {
     document.removeEventListener('input', this.onInputHandler);
   }
 
+  getPaperData = (): PaperTextData & { held_item_details?: WritingImplement } => this.props.snapshot
+    || useBackend<PaperContext>().data;
+
   // Creates the partial inline HTML for previewing or reading the paper from
   // only static_ui_data from DM.
   createPreviewFromDM = (): FieldCreationReturn => {
-    const { data } = useBackend<PaperContext>();
+    const data = this.getPaperData();
     const {
       raw_field_input,
       raw_text_input,
@@ -549,14 +559,17 @@ export class PreviewView extends Component<PreviewViewProps> {
       held_item_details,
     } = data;
 
-    const readOnly = !canEdit(held_item_details);
+    const readOnly = !!this.props.snapshot || !canEdit(held_item_details);
 
     // Сохраняем поля в DOM между обновлениями, пока содержимое бумаги не изменилось.
-    if (
-      this.lastReadOnly === readOnly
-      && this.lastDMInput === raw_text_input
-      && this.lastFieldInput === raw_field_input
-    ) {
+    const sameArrays = this.lastDMInput === raw_text_input
+      && this.lastFieldInput === raw_field_input;
+    const contentKey = sameArrays
+      ? this.lastContentKey
+      : JSON.stringify([raw_text_input, raw_field_input]);
+    this.lastDMInput = raw_text_input;
+    this.lastFieldInput = raw_field_input;
+    if (this.lastReadOnly === readOnly && this.lastContentKey === contentKey) {
       return { fragment: this.parsedDMCache, nextCounter: this.lastFieldCount };
     }
 
@@ -591,8 +604,7 @@ export class PreviewView extends Component<PreviewViewProps> {
       fieldCount = processingOutput.nextCounter;
     });
 
-    this.lastDMInput = raw_text_input;
-    this.lastFieldInput = raw_field_input;
+    this.lastContentKey = contentKey;
     this.lastFieldCount = fieldCount;
     this.parsedDMCache = output;
 
@@ -610,7 +622,7 @@ export class PreviewView extends Component<PreviewViewProps> {
       held_item_details,
       can_use_advanced_html,
     } = data;
-    const { textArea } = this.props;
+    const { textArea = '' } = this.props;
 
     if (
       this.parsedTextBoxCache
@@ -659,7 +671,8 @@ export class PreviewView extends Component<PreviewViewProps> {
   ): FieldCreationReturn => {
     const fragment = sanitizePaperMarkup(
       paperMarkdown.parse(rawText + '\n\n', { async: false }),
-      advanced_html
+      advanced_html,
+      advanced_html && !this.props.snapshot
     );
     const nextCounter = this.createFields(
       fragment,
@@ -711,7 +724,7 @@ export class PreviewView extends Component<PreviewViewProps> {
     forceReadonlyFields: boolean,
     counter: number = 0
   ): number => {
-    const { data } = useBackend<PaperContext>();
+    const data = this.getPaperData();
     const { raw_field_input } = data;
 
     const walker = document.createTreeWalker(fragment, NodeFilter.SHOW_TEXT);
@@ -775,7 +788,7 @@ export class PreviewView extends Component<PreviewViewProps> {
   ): HTMLInputElement => {
     // This are fields that may potentially be fillable, so we'll use the
     // currently held item's stats for them if possible.
-    const { data } = useBackend<PaperContext>();
+    const data = this.getPaperData();
     const { held_item_details, max_input_field_length } = data;
 
     const fontColor = held_item_details?.color || color;
@@ -797,10 +810,12 @@ export class PreviewView extends Component<PreviewViewProps> {
     // Restore unsaved text typed into this field earlier: rebuilds of the
     // preview HTML (mode flips, new DM data) recreate the DOM from scratch,
     // but the typed values live on in the store until saved.
-    const [inputFieldData] = useLocalState('inputFieldData', {});
-    const storedValue = inputFieldData[this.getHeaderID(id)];
-    if (storedValue) {
-      input.defaultValue = storedValue;
+    if (!this.props.snapshot) {
+      const [inputFieldData] = useLocalState('inputFieldData', {});
+      const storedValue = inputFieldData[this.getHeaderID(id)];
+      if (storedValue) {
+        input.defaultValue = storedValue;
+      }
     }
 
     return input;
@@ -820,7 +835,7 @@ export class PreviewView extends Component<PreviewViewProps> {
     paperColor: string,
     id: string
   ): HTMLInputElement => {
-    const { data } = useBackend<PaperContext>();
+    const data = this.getPaperData();
     const { max_input_field_length } = data;
 
     const fieldData = field.field_data;
@@ -846,12 +861,20 @@ export class PreviewView extends Component<PreviewViewProps> {
   };
 
   render() {
-    const { data } = useBackend<PaperContext>();
+    const data = this.getPaperData();
     const { paper_color, held_item_details } = data;
     const interactMode
       = held_item_details?.interaction_mode || InteractionType.reading;
 
     const dmTextPreviewData = this.createPreviewFromDM();
+
+    if (this.props.snapshot) {
+      return (
+        <Box p={1} backgroundColor={paper_color} color="#161616">
+          <PaperMarkup fragment={dmTextPreviewData.fragment} />
+        </Box>
+      );
+    }
 
     const textAreaPreview = interactMode === InteractionType.writing
       ? this.createPreviewFromTextArea(dmTextPreviewData.nextCounter)

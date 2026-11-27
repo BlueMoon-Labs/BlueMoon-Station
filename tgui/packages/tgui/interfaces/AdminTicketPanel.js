@@ -14,17 +14,9 @@ import {
   Tabs,
 } from '../components';
 import { Window } from '../layouts';
-import { sanitizeText } from '../sanitize';
+import { sanitizeTicketHtml } from '../sanitize';
 import { PaperHtml } from './common/PaperMarkup';
-
-/**
- * Сообщения тикета из DM тоже вставлялись «как есть» через
- * dangerouslySetInnerHTML и давали тот же XSS, что и paper_html.
- * Оставляем DOMPurify для них; paper_html теперь идёт через общий компонент
- * PaperHtml из PR #4477 (sanitizePaperMarkup), плюс DM-сторона санитизирует
- * его в fax.dm:get_paper_html() - два независимых слоя защиты.
- */
-const safeTicketHtml = (html) => sanitizeText(html || '', false);
+import { PreviewView } from './PaperSheet';
 
 const STATE_COLORS = {
   1: '#f87171',
@@ -741,7 +733,7 @@ const TicketDetailPanel = (props) => {
                 borderRadius: '3px',
                 wordBreak: 'break-word',
               }}
-              dangerouslySetInnerHTML={{ __html: safeTicketHtml(msg) }}
+              dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(msg, 'admin') }}
             />
           ))}
           <AutoScrollToBottom triggerKey={(ticket.interactions || []).length} />
@@ -870,13 +862,11 @@ const CommDetailPanel = (props) => {
               overflowY: 'auto',
             }}
           >
-            {hasPaper ? (
+            {msg.paper_document ? (
+              <PreviewView snapshot={msg.paper_document} />
+            ) : hasPaper ? (
               msg.paper_html ? (
-                // ГЛАВНЫЙ SINK АТАКИ: paper_html приходил из fax.dm и мог
-                // содержать <svg onload>/<img onerror> от игрока.
-                // Общий PaperHtml (#4477) санитизирует через sanitizePaperMarkup,
-                // нативный alert в SDQL и DM-санитизация — дополнительные слои.
-                <PaperHtml text={msg.paper_html} />
+                <PaperHtml text={msg.paper_html} allowMedia={false} />
               ) : (
                 <Box
                   style={{

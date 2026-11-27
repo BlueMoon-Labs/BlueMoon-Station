@@ -13,7 +13,13 @@ export const PaperMarkup = ({ fragment, className }: {
   return <span className={className} ref={content} />;
 };
 
-export const PaperHtml = ({ text }: { text: string }) => {
-  const fragment = useMemo(() => sanitizePaperMarkup(text, true), [text]);
+export const PaperHtml = ({ text, allowMedia = true }: {
+  text: string;
+  allowMedia?: boolean;
+}) => {
+  const fragment = useMemo(
+    () => sanitizePaperMarkup(text, true, allowMedia),
+    [text, allowMedia]
+  );
   return <PaperMarkup fragment={fragment} />;
 };
