@@ -154,7 +154,7 @@
 /datum/supply_pack/security/sechardsuit
 	name = "Sec Hardsuits crate"
 	desc = "Три защитных костюма для ловли негодяев в открытом космосе! В комплекте поставляется балон и маска."
-	cost = 9000 // half of SWAT gear for have the armor and half the gear
+	cost = 6000
 	contains = list(/obj/item/clothing/suit/space/hardsuit/security,
 					/obj/item/tank/internals/air,
 					/obj/item/clothing/mask/gas,

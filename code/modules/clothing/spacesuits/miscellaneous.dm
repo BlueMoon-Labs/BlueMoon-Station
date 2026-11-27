@@ -22,7 +22,7 @@ Contains:
 	desc = "An advanced tactical space helmet."
 	icon_state = "deathsquad"
 	item_state = "deathsquad"
-	armor_type = /datum/armor/deathsquad_and_shielded
+	armor_type = /datum/armor/deathsquad_and_officer
 	strip_delay = 130
 	actions_types = list()
 
@@ -286,8 +286,9 @@ Contains:
 	ADD_TRAIT(src, TRAIT_NODROP, LOCKED_HELMET_TRAIT)
 
 /obj/item/clothing/suit/space/hardsuit/ert
+	rig_superheavy_pull_slowdown = 0.75
 	name = "Emergency Response Team suit"
-	desc = "Standard issue command suit for the ERT."
+	desc = "Standard issue command suit for the ERT. A reinforced frame assists with moving heavy casualties and equipment."
 	icon_state = "ert_command"
 	item_state = "ert_command"
 	tail_state = "ert-commander"
@@ -311,7 +312,9 @@ Contains:
 	hardsuit_type = "ert_security"
 
 /obj/item/clothing/suit/space/hardsuit/ert/sec
-	desc = "Standard issue security suit for the ERT."
+	rig_superheavy_pull_slowdown = 1.5
+	rig_bulwark = TRUE
+	desc = "Standard issue security suit for the ERT. A stabilizing frame keeps its wearer steady during physical confrontations and helps move heavy detainees."
 	icon_state = "ert_security"
 	item_state = "ert_security"
 	tail_state = "ert-security"
@@ -326,23 +329,30 @@ Contains:
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT // BLUEMOON CHANGE rig rebalance
 
 /obj/item/clothing/suit/space/hardsuit/ert/engi
-	desc = "Standard issue engineer suit for the ERT."
+	rig_water_grip = TRUE
+	rig_superheavy_pull_slowdown = 0.75
+	desc = "Standard issue engineer suit for the ERT. Reinforced joints, gripping soles and tool mounts assist with emergency repairs."
 	icon_state = "ert_engineer"
 	item_state = "ert_engineer"
 	tail_state = "ert-engineer"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/engi
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT // BLUEMOON CHANGE rig rebalance
+	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/t_scanner, /obj/item/flashlight, /obj/item/wrench, /obj/item/crowbar, /obj/item/wirecutters, /obj/item/screwdriver, /obj/item/weldingtool, /obj/item/multitool)
 
 	//ERT Medical
 /obj/item/clothing/head/helmet/space/hardsuit/ert/med
+	equip_delay_other = 30
 	desc = "Standard issue medical helmet for the ERT."
 	icon_state = "hardsuit0-ert_medical"
 	item_state = "hardsuit0-ert_medical"
 	hardsuit_type = "ert_medical"
 
 /obj/item/clothing/suit/space/hardsuit/ert/med
-	desc = "Standard issue medical suit for the ERT."
+	equip_delay_other = 30
+	rig_patient_transport = TRUE
+	rig_superheavy_pull_slowdown = 0
+	desc = "Standard issue medical suit for the ERT. Load-bearing servos and quick-release fittings ease casualty evacuation."
 	icon_state = "ert_medical"
 	item_state = "ert_medical"
 	tail_state = "ert-medical"
@@ -379,8 +389,9 @@ Contains:
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 
 /obj/item/clothing/suit/space/hardsuit/ert/alert
+	rig_superheavy_pull_slowdown = 0.75
 	name = "Emergency Response Team suit"
-	desc = "Red alert command suit for the ERT. This one is more armored than its standard version."
+	desc = "Red alert command suit for the ERT. This one is more armored than its standard version. A reinforced frame assists with moving heavy casualties and equipment."
 	icon_state = "ert_command-alert"
 	item_state = "ert_command-alert"
 	tail_state = "ert-alert"
@@ -401,7 +412,9 @@ Contains:
 	hardsuit_type = "ert_security-alert"
 
 /obj/item/clothing/suit/space/hardsuit/ert/alert/sec
-	desc = "Red alert security suit for the ERT. This one is more armored than its standard version."
+	rig_superheavy_pull_slowdown = 0.75
+	rig_bulwark = TRUE
+	desc = "Red alert security suit for the ERT. This one is more armored than its standard version. A stabilizing frame keeps its wearer steady during physical confrontations and helps move heavy detainees."
 	icon_state = "ert_security-alert"
 	item_state = "ert_security-alert"
 	tail_state = "ert-alert"
@@ -415,25 +428,33 @@ Contains:
 	hardsuit_type = "ert_engineer-alert"
 
 /obj/item/clothing/suit/space/hardsuit/ert/alert/engi
-	desc = "Red alert engineer suit for the ERT. This one is more armored than its standard version."
+	rig_water_grip = TRUE
+	rig_superheavy_pull_slowdown = 0.75
+	desc = "Red alert engineer suit for the ERT. This one is more armored than its standard version. Reinforced joints, gripping soles and tool mounts assist with emergency repairs."
 	icon_state = "ert_engineer-alert"
 	item_state = "ert_engineer-alert"
 	tail_state = "ert-alert"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/engi
+	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/t_scanner, /obj/item/flashlight, /obj/item/wrench, /obj/item/crowbar, /obj/item/wirecutters, /obj/item/screwdriver, /obj/item/weldingtool, /obj/item/multitool)
 
 	//ERT Medical
 /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/med
+	equip_delay_other = 30
 	desc = "Red alert medical helmet for the ERT. This one is more armored than its standard version."
 	icon_state = "hardsuit0-ert_medical-alert"
 	item_state = "hardsuit0-ert_medical-alert"
 	hardsuit_type = "ert_medical-alert"
 
 /obj/item/clothing/suit/space/hardsuit/ert/alert/med
-	desc = "Red alert medical suit for the ERT. This one is more armored than its standard version."
+	equip_delay_other = 30
+	rig_patient_transport = TRUE
+	rig_superheavy_pull_slowdown = 0
+	desc = "Red alert medical suit for the ERT. This one is more armored than its standard version. Load-bearing servos and quick-release fittings ease casualty evacuation."
 	icon_state = "ert_medical-alert"
 	item_state = "ert_medical-alert"
 	tail_state = "ert-alert"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/med
+	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid)
 
 /obj/item/clothing/suit/space/eva
 	name = "EVA suit"
@@ -598,6 +619,7 @@ Contains:
 	M.show_message("<span class='warning'>\The [src] sparks and fizzles as its psychic wards wane away at last...</span>", MSG_VISUAL)
 
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal
+	rig_superheavy_pull_slowdown = -1
 	name = "paranormal response team suit"
 	desc = "Powerful wards are built into this hardsuit, protecting the user from all manner of paranormal threats."
 	icon_state = "knight_grey"
@@ -625,6 +647,8 @@ Contains:
 	M.show_message("<span class='warning'>\The [src] sparks and fizzles as its anti magic wards wane away at last...</span>", MSG_VISUAL)
 
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal/inquisitor
+	desc = "Powerful wards are built into this hardsuit, protecting the user from all manner of paranormal threats. Its deeply grooved soles offer a firm footing on wet floors."
+	rig_water_grip = TRUE
 	name = "inquisitor's hardsuit"
 	icon_state = "hardsuit-inq"
 	item_state = "hardsuit-inq"
@@ -637,21 +661,23 @@ Contains:
 	item_state = "hardsuit0-inq"
 
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal/inquisitor/old
-	desc = "Powerful wards are built into this hardsuit, protecting the user from all manner of paranormal threats. Alas, this one looks pretty worn out and rusted."
-	armor_type = /datum/armor/paranormal_old
+	desc = "Powerful wards are built into this hardsuit, protecting the user from all manner of paranormal threats. Alas, this one looks pretty worn out and rusted. Its soles still grip wet surfaces."
+	armor_type = /datum/armor/paranormal_damaged
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
-	slowdown = 0.8
+	slowdown = 0.5
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/inquisitor/old
 	charges = 12
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/inquisitor/old
 	desc = "A helmet worn by those who deal with paranormal threats for a living. Alas, this one looks pretty worn out and rusted."
-	armor_type = /datum/armor/paranormal_old
+	armor_type = /datum/armor/paranormal_damaged
 	charges = 12
 
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal/beserker
+	rig_bulwark = TRUE
+	rig_superheavy_pull_slowdown = 1.5
 	name = "champion's hardsuit"
-	desc = "Voices echo from the hardsuit, driving the user insane."
+	desc = "Voices echo from the hardsuit, driving the user insane. A rigid enchanted frame steadies its wearer and lends strength when hauling heavy burdens."
 	icon_state = "hardsuit-beserker"
 	item_state = "hardsuit-beserker"
 	tail_state = "syndicate-blood"
@@ -665,16 +691,17 @@ Contains:
 	item_state = "hardsuit0-beserker"
 
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal/beserker/old
-	desc = "Voices echo from the hardsuit, driving the user insane. This one is pretty battle-worn, but still fearsome."
-	armor_type = /datum/armor/paranormal_old
+	rig_bulwark = FALSE
+	desc = "Voices echo from the hardsuit, driving the user insane. This one is pretty battle-worn, but still fearsome. Its battered frame still helps haul heavy burdens."
+	armor_type = /datum/armor/paranormal_damaged
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
-	slowdown = 0.8
+	slowdown = 0.5
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/beserker/old
 	charges = 6
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/beserker/old
 	desc = "Peering into the eyes of the helmet is enough to seal damnation. This one is pretty battle-worn, but still fearsome."
-	armor_type = /datum/armor/paranormal_old
+	armor_type = /datum/armor/paranormal_damaged
 	charges = 6
 
 /obj/item/clothing/head/helmet/space/fragile

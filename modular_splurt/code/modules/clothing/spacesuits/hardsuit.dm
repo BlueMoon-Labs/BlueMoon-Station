@@ -78,6 +78,7 @@
 	actions_types = list()
 
 /obj/item/clothing/suit/space/hardsuit/rd/hev/cosmetic
+	slowdown = 0
 	resistance_flags = null
 	max_heat_protection_temperature = null
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/gun/energy/wormhole_projector, /obj/item/hand_tele, /obj/item/aicard)
@@ -104,7 +105,7 @@
 	max_charges = 4
 	current_charges = 4
 	recharge_delay = 15
-	armor_type = /datum/armor/deathsquad_and_shielded
+	armor_type = /datum/armor/deathsquad_and_officer
 	brc_mitigation_bonus = 25  // BLUEMOON ADD
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -126,7 +127,7 @@
 	icon_state = "hardsuit0-goldenpa"
 	item_state = "hardsuit0-goldenpa"
 	hardsuit_type = "goldenpa"
-	armor_type = /datum/armor/deathsquad_and_shielded
+	armor_type = /datum/armor/deathsquad_and_officer
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 

@@ -9,6 +9,7 @@
 	actions_types = null
 
 /obj/item/clothing/suit/space/hardsuit/ert/alert/hsc
+	rig_superheavy_pull_slowdown = -1
 	name = "HSC security suit"
 	desc = "Cool designed suit for the HSC team."
 	mob_overlay_icon = 'modular_bluemoon/phenyamomota/icon/mob/clothing/suits.dmi'

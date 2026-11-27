@@ -137,6 +137,7 @@
 	helmet = MakeHelmet()
 
 /obj/item/clothing/suit/space/hardsuit/Destroy()
+	clear_rig_support()
 	if(helmet)
 		helmet.suit = null
 		QDEL_NULL(helmet)

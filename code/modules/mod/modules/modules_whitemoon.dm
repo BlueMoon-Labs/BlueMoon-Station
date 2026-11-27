@@ -1731,9 +1731,7 @@
 	if(!check_required_modpart())
 		return
 	protected_user = mod.wearer
-	ADD_TRAIT(protected_user, TRAIT_BRAWLING_KNOCKDOWN_BLOCKED, REF(src))
-	ADD_TRAIT(protected_user, TRAIT_NO_THROW_HITPUSH, REF(src))
-	RegisterSignal(protected_user, COMSIG_LIVING_STATUS_STAGGER, PROC_REF(block_stagger))
+	apply_bulwark_protection(protected_user)
 
 /obj/item/mod/module/shove_blocker/on_suit_deactivation()
 	clear_protection()
@@ -1752,12 +1750,25 @@
 /obj/item/mod/module/shove_blocker/proc/clear_protection()
 	if(!protected_user)
 		return
-	REMOVE_TRAIT(protected_user, TRAIT_BRAWLING_KNOCKDOWN_BLOCKED, REF(src))
-	REMOVE_TRAIT(protected_user, TRAIT_NO_THROW_HITPUSH, REF(src))
-	UnregisterSignal(protected_user, COMSIG_LIVING_STATUS_STAGGER)
+	remove_bulwark_protection(protected_user)
 	protected_user = null
 
-/obj/item/mod/module/shove_blocker/proc/block_stagger(mob/source, amount, updating, ignore_canstun)
+/// Shared by the MOD Bulwark module and rigid suit frames. Each item owns its trait source.
+/obj/item/proc/apply_bulwark_protection(mob/living/user)
+	if(QDELETED(user))
+		return
+	ADD_TRAIT(user, TRAIT_BRAWLING_KNOCKDOWN_BLOCKED, REF(src))
+	ADD_TRAIT(user, TRAIT_NO_THROW_HITPUSH, REF(src))
+	RegisterSignal(user, COMSIG_LIVING_STATUS_STAGGER, PROC_REF(bulwark_block_stagger), override = TRUE)
+
+/obj/item/proc/remove_bulwark_protection(mob/living/user)
+	if(QDELETED(user))
+		return
+	REMOVE_TRAIT(user, TRAIT_BRAWLING_KNOCKDOWN_BLOCKED, REF(src))
+	REMOVE_TRAIT(user, TRAIT_NO_THROW_HITPUSH, REF(src))
+	UnregisterSignal(user, COMSIG_LIVING_STATUS_STAGGER)
+
+/obj/item/proc/bulwark_block_stagger(mob/source, amount, updating, ignore_canstun)
 	SIGNAL_HANDLER
 	if(amount > 0 && !ignore_canstun)
 		return COMPONENT_NO_STUN

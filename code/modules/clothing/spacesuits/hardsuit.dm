@@ -123,6 +123,13 @@
 	var/helmettype = /obj/item/clothing/head/helmet/space/hardsuit
 	var/obj/item/tank/jetpack/suit/jetpack = null
 	var/hardsuit_type
+	/// Negative means no assisted pull. Nonnegative is the weight slowdown for a superheavy target.
+	var/rig_superheavy_pull_slowdown = -1
+	/// No pull modifiers for one passively grabbed living patient, never for a chain or aggressive grab.
+	var/rig_patient_transport = FALSE
+	var/rig_bulwark = FALSE
+	var/rig_water_grip = FALSE
+	var/mob/living/carbon/human/rig_support_wearer
 	brc_mitigation_bonus = 0  // BLUEMOON ADD - BRC бонус брони хардсьюта
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC //bluemood add
 
@@ -163,6 +170,10 @@
 
 /obj/item/clothing/suit/space/hardsuit/equipped(mob/user, slot)
 	..()
+	if(slot == ITEM_SLOT_OCLOTHING && ishuman(user))
+		apply_rig_support(user)
+	else if(rig_support_wearer)
+		clear_rig_support()
 	// BLUEMOON ADD START
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
@@ -175,6 +186,7 @@
 				A.Grant(user)
 
 /obj/item/clothing/suit/space/hardsuit/dropped(mob/user)
+	clear_rig_support()
 	..()
 	// BLUEMOON ADD START
 	if(brc_worn && isliving(user))
@@ -185,6 +197,43 @@
 		for(var/X in jetpack.actions)
 			var/datum/action/A = X
 			A.Remove(user)
+
+/obj/item/clothing/suit/space/hardsuit/proc/apply_rig_support(mob/living/carbon/human/user)
+	if(QDELETED(user) || user.wear_suit != src || loc != user || rig_support_wearer == user)
+		return
+	clear_rig_support()
+	if(!rig_bulwark && !rig_water_grip && rig_superheavy_pull_slowdown < 0 && !rig_patient_transport)
+		return
+	rig_support_wearer = user
+	if(rig_bulwark)
+		apply_bulwark_protection(user)
+	if(rig_water_grip)
+		ADD_TRAIT(user, TRAIT_NOSLIPWATER, REF(src))
+	RegisterSignal(src, COMSIG_MOVABLE_MOVED, PROC_REF(on_rig_support_moved), override = TRUE)
+	user.update_pull_movespeed()
+
+/obj/item/clothing/suit/space/hardsuit/proc/on_rig_support_moved(datum/source)
+	SIGNAL_HANDLER
+	if(rig_support_wearer && loc != rig_support_wearer)
+		clear_rig_support()
+
+/obj/item/clothing/suit/space/hardsuit/proc/clear_rig_support()
+	var/mob/living/carbon/human/user = rig_support_wearer
+	if(!user)
+		return
+	rig_support_wearer = null
+	UnregisterSignal(src, COMSIG_MOVABLE_MOVED)
+	if(QDELETED(user))
+		return
+	if(rig_bulwark)
+		remove_bulwark_protection(user)
+	if(rig_water_grip)
+		REMOVE_TRAIT(user, TRAIT_NOSLIPWATER, REF(src))
+	var/mob/target = user.pulling
+	if(rig_superheavy_pull_slowdown >= 0 && ismob(target) && target.mob_weight > MOB_WEIGHT_HEAVY && !user.can_pull_superheavy_mob())
+		user.stop_pulling()
+	else
+		user.update_pull_movespeed()
 
 /obj/item/clothing/suit/space/hardsuit/item_action_slot_check(slot, mob/user, datum/action/A)
 	if(slot == ITEM_SLOT_OCLOTHING) //we only give the mob the ability to toggle the helmet if he's wearing the hardsuit.
@@ -202,13 +251,14 @@
 
 /obj/item/clothing/suit/space/hardsuit/engine
 	name = "engineering hardsuit"
-	desc = "A special suit that protects against hazardous, low pressure environments. Has radiation shielding."
+	desc = "A lightweight suit that protects against hazardous, low pressure environments. Has radiation shielding and tool mounts."
 	icon_state = "hardsuit-engineering"
 	item_state = "eng_hardsuit"
 	tail_state = "engineer"
 	slowdown = 0.25
 	armor_type = /datum/armor/engine
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/engine
+	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/t_scanner, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/multitool, /obj/item/weldingtool, /obj/item/analyzer)
 	resistance_flags = FIRE_PROOF
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 
@@ -220,24 +270,30 @@
 	item_state = "atmo_helm"
 	hardsuit_type = "atmospherics"
 	armor_type = /datum/armor/hardsuit_atmos
-	heat_protection = HEAD												//Uncomment to enable firesuit protection
+	heat_protection = HEAD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
+	resistance_flags = FIRE_PROOF | ACID_PROOF
 
 /obj/item/clothing/suit/space/hardsuit/engine/atmos
+	resistance_flags = FIRE_PROOF | ACID_PROOF
+	rig_water_grip = TRUE
 	name = "atmospherics hardsuit"
-	desc = "A special suit that protects against hazardous, low pressure environments. Has thermal shielding."
+	desc = "A special suit that protects against hazardous, low pressure environments. Has thermal shielding, an acid-resistant shell and non-slip soles."
 	icon_state = "hardsuit-atmospherics"
 	item_state = "atmo_hardsuit"
 	tail_state = "atmos"
 	armor_type = /datum/armor/hardsuit_atmos
-	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS					//Uncomment to enable firesuit protection
+	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/engine/atmos
 
 	//Chief Engineer's hardsuit
 /obj/item/clothing/head/helmet/space/hardsuit/engine/elite
+	brightness_on = 7
+	resistance_flags = FIRE_PROOF | ACID_PROOF
+	var/mob/living/carbon/human/meson_wearer
 	name = "advanced hardsuit helmet"
-	desc = "An advanced helmet designed for work in a hazardous, low pressure environment. Shines with a high polish."
+	desc = "An advanced helmet designed for work in a hazardous, low pressure environment. Shines with a high polish. Features meson optics and a powerful lamp."
 	icon_state = "hardsuit0-white"
 	item_state = "ce_helm"
 	hardsuit_type = "white"
@@ -245,10 +301,44 @@
 	heat_protection = HEAD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 
+/obj/item/clothing/head/helmet/space/hardsuit/engine/elite/equipped(mob/user, slot)
+	clear_rig_mesons()
+	. = ..()
+	if(slot == ITEM_SLOT_HEAD && ishuman(user))
+		meson_wearer = user
+		ADD_TRAIT(user, TRAIT_MESON_VISION, REF(src))
+		RegisterSignal(src, COMSIG_MOVABLE_MOVED, PROC_REF(on_meson_helmet_moved), override = TRUE)
+		user.update_sight()
+
+/obj/item/clothing/head/helmet/space/hardsuit/engine/elite/dropped(mob/user)
+	clear_rig_mesons()
+	return ..()
+
+/obj/item/clothing/head/helmet/space/hardsuit/engine/elite/Destroy()
+	clear_rig_mesons()
+	return ..()
+
+/obj/item/clothing/head/helmet/space/hardsuit/engine/elite/proc/on_meson_helmet_moved(datum/source)
+	SIGNAL_HANDLER
+	if(meson_wearer && loc != meson_wearer)
+		clear_rig_mesons()
+
+/obj/item/clothing/head/helmet/space/hardsuit/engine/elite/proc/clear_rig_mesons()
+	var/mob/living/carbon/human/user = meson_wearer
+	if(!user)
+		return
+	meson_wearer = null
+	UnregisterSignal(src, COMSIG_MOVABLE_MOVED)
+	if(!QDELETED(user))
+		REMOVE_TRAIT(user, TRAIT_MESON_VISION, REF(src))
+		user.update_sight()
+
 /obj/item/clothing/suit/space/hardsuit/engine/elite
+	resistance_flags = FIRE_PROOF | ACID_PROOF
+	rig_superheavy_pull_slowdown = 1.5
 	icon_state = "hardsuit-white"
 	name = "advanced hardsuit"
-	desc = "An advanced suit that protects against hazardous, low pressure environments. Shines with a high polish."
+	desc = "An advanced suit that protects against hazardous, low pressure environments. Shines with a high polish. Its reinforced frame assists with heavy rescues."
 	item_state = "ce_hardsuit"
 	tail_state = "ce"
 	slowdown = 0
@@ -265,7 +355,6 @@
 	icon_state = "hardsuit0-mining"
 	item_state = "mining_helm"
 	hardsuit_type = "mining"
-	slowdown = 0.25
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF
 	heat_protection = HEAD
@@ -295,10 +384,11 @@
 /obj/item/clothing/suit/space/hardsuit/mining
 	icon_state = "hardsuit-mining"
 	name = "mining hardsuit"
-	desc = "A special suit that protects against hazardous, low pressure environments. Has reinforced plating for wildlife encounters."
+	desc = "A lightweight suit that protects against hazardous, low pressure environments. Has reinforced plating for wildlife encounters, further reinforced with goliath hides if needed."
 	item_state = "mining_hardsuit"
 	hardsuit_type = "mining"
 	tail_state = "engineer"
+	slowdown = 0.25
 	flags_inv = HIDEGLOVES | HIDEJUMPSUIT | HIDESHOES | HIDETAUR | HIDETAIL
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF
@@ -420,6 +510,7 @@
 	item_state = "syndie_hardsuit"
 	tail_state = "syndicate-blood"
 	hardsuit_type = "syndi"
+	slowdown = 0.5
 	w_class = WEIGHT_CLASS_NORMAL
 	armor_type = /datum/armor/hardsuit_syndi
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
@@ -544,14 +635,14 @@
 /obj/item/clothing/suit/space/hardsuit/wizard
 	icon_state = "hardsuit-wiz"
 	name = "gem-encrusted hardsuit"
-	desc = "A bizarre gem-encrusted suit that radiates magical energies."
+	desc = "A bizarre gem-encrusted suit that radiates magical energies. Enchanted fastenings hold a spellbook or wand close at hand."
 	item_state = "wiz_hardsuit"
 	tail_state = "wizard"
 	slowdown = -0.5
 	w_class = WEIGHT_CLASS_NORMAL
 	armor_type = /datum/armor/wizard
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
-	allowed = list(/obj/item/teleportation_scroll, /obj/item/tank/internals)
+	allowed = list(/obj/item/teleportation_scroll, /obj/item/tank/internals, /obj/item/spellbook, /obj/item/gun/magic/wand)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/wizard
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 	var/magic_flags = SPELL_WIZARD_ROBE|SPELL_CULT_ARMOR
@@ -567,6 +658,7 @@
 
 	//Medical hardsuit
 /obj/item/clothing/head/helmet/space/hardsuit/medical
+	equip_delay_other = 3 SECONDS
 	name = "medical hardsuit helmet"
 	desc = "A special helmet designed for work in a hazardous, low pressure environment. Built with lightweight materials for extra comfort, but does not protect the eyes from intense light."
 	icon_state = "hardsuit0-medical"
@@ -590,9 +682,12 @@
 		DHUD.remove_hud_from(user)
 
 /obj/item/clothing/suit/space/hardsuit/medical
+	rig_superheavy_pull_slowdown = 5
+	rig_patient_transport = TRUE
+	equip_delay_other = 3 SECONDS
 	icon_state = "hardsuit-medical"
 	name = "medical hardsuit"
-	desc = "A special suit that protects against hazardous, low pressure environments. Built with lightweight materials for easier movement."
+	desc = "A special suit that protects against hazardous, low pressure environments. Built with lightweight materials, quick-fit fastenings and servos to move even the heaviest patients with ease."
 	item_state = "medical_hardsuit"
 	tail_state = "syndicate-winter"
 	slowdown = 0.25
@@ -637,7 +732,7 @@
 /obj/item/clothing/suit/space/hardsuit/rd
 	icon_state = "hardsuit-rd"
 	name = "prototype hardsuit"
-	desc = "A prototype suit that protects against hazardous, low pressure environments. Fitted with extensive plating for handling explosives and dangerous research materials."
+	desc = "A lightweight prototype suit that protects against hazardous, low pressure environments. Fitted with extensive plating for handling explosives and dangerous research materials."
 	item_state = "hardsuit-rd"
 	tail_state = "rd"
 	slowdown = 0.25
@@ -659,8 +754,10 @@
 	unique_reskin = null
 
 /obj/item/clothing/suit/space/hardsuit/blue_shield
+	rig_bulwark = TRUE
+	rig_superheavy_pull_slowdown = 0.75
 	name = "Blue Shield hardsuit"
-	desc = "A special suit that protects against hazardous, low pressure environments. Made from light matrials with layer of armor"
+	desc = "A special suit that protects against hazardous, low pressure environments. Made from light materials with a layer of armor and a stabilizing frame for evacuations."
 	icon_state = "hardsuit-blueshield"
 	item_state = "hardsuit-blueshield"
 	hardsuit_type = "blueshield"
@@ -705,7 +802,7 @@
 /obj/item/clothing/suit/space/hardsuit/security
 	icon_state = "hardsuit-sec"
 	name = "security hardsuit"
-	desc = "A special suit that protects against hazardous, low pressure environments. Has an additional layer of armor."
+	desc = "A special suit that protects against hazardous, low pressure environments. Has an additional layer of armor and a stabilizing frame for handling heavy detainees."
 	item_state = "sec_hardsuit"
 	tail_state = "sec"
 	armor_type = /datum/armor/hardsuit_security
@@ -717,6 +814,8 @@
 		"Alt" = list(RESKIN_ICON_STATE = "hardsuit-sec2"),
 		"Blue Variation" = list(RESKIN_ICON_STATE = "hardsuit-sec3")
 	)
+	rig_bulwark = TRUE
+	rig_superheavy_pull_slowdown = 1.5
 
 /obj/item/clothing/suit/space/hardsuit/security/reskin_obj(mob/user)
 	if(current_skin == "Alt")
@@ -750,7 +849,7 @@
 
 /obj/item/clothing/suit/space/hardsuit/security/hos
 	name = "Head of Security's Hardsuit"
-	desc = "A special bulky suit that protects against hazardous, low pressure environments. Has an additional layer of armor."
+	desc = "A special bulky suit that protects against hazardous, low pressure environments. Has an additional layer of armor and a reinforced stabilizing frame for handling heavy detainees."
 	icon_state = "hardsuit-hos"
 	tail_state = "hos"
 	armor_type = /datum/armor/hardsuit_ert_and_hos
@@ -761,6 +860,7 @@
 		"Standart Variation" = list(RESKIN_ICON_STATE = "hardsuit-hos"),
 		"OTA Variation" = list(RESKIN_ICON_STATE = "hardsuit-alliance")
 	)
+	rig_superheavy_pull_slowdown = 0.75
 
 /obj/item/clothing/suit/space/hardsuit/security/hos/reskin_obj(mob/user)
 	if(current_skin == "OTA Variation")
@@ -796,7 +896,7 @@
 
 /obj/item/clothing/suit/space/hardsuit/captain
 	name = "captain's SWAT suit"
-	desc = "A MK.II SWAT suit with streamlined joints and armor made out of superior materials, insulated against intense heat. The most advanced tactical armor available Usually reserved for heavy hitter corporate security, this one has a regal finish in Nanotrasen company colors. Better not let the assistants get a hold of it."
+	desc = "A MK.II SWAT suit with streamlined joints and armor made out of superior materials, insulated against intense heat. The most advanced tactical armor available Usually reserved for heavy hitter corporate security, this one has a regal finish in Nanotrasen company colors. Better not let the assistants get a hold of it. Its articulated joints allow greater freedom of movement."
 	icon_state = "caparmor"
 	item_state = "capspacesuit"
 	tail_state = "captain"
@@ -850,8 +950,9 @@
 	resistance_flags = FIRE_PROOF
 
 /obj/item/clothing/suit/space/hardsuit/ancient
+	rig_superheavy_pull_slowdown = 1.5
 	name = "prototype RIG hardsuit"
-	desc = "Prototype powered RIG hardsuit. Provides excellent protection from the elements of space while being comfortable to move around in, thanks to the powered locomotives. Remains very bulky however."
+	desc = "Prototype powered RIG hardsuit. Provides excellent protection from the elements of space while being comfortable to move around in, thanks to the powered locomotives, which also assist in moving heavy casualties. Remains very bulky however."
 	icon_state = "hardsuit-ancient"
 	item_state = "anc_hardsuit"
 	tail_state = "atmos"
@@ -864,8 +965,10 @@
 	var/mob/listeningTo
 
 /obj/item/clothing/suit/space/hardsuit/ancient/mason
+	rig_superheavy_pull_slowdown = 0.75
+	rig_bulwark = TRUE
 	name = "M.A.S.O.N RIG"
-	desc = "The Multi-Augmented Severe Operations Networked Resource Integration Gear is an man-portable tank designed for extreme environmental situations. It is excessively bulky, but rated for all but the most atomic of hazards. The specialized armor is surprisingly weak to conventional weaponry. The exo slot can attach most storage bags on to the suit."
+	desc = "The Multi-Augmented Severe Operations Networked Resource Integration Gear is an man-portable tank designed for extreme environmental situations. Its reinforced frame steadies the wearer and assists with heavy rescues. It is excessively bulky, but rated for all but the most atomic of hazards. The specialized armor is surprisingly weak to conventional weaponry. The exo slot can attach most storage bags on to the suit."
 	icon_state = "hardsuit-ancient"
 	item_state = "anc_hardsuit"
 	tail_state = "atmos"
@@ -1094,7 +1197,7 @@
 	hardsuit_type = "syndi"
 	max_charges = 4
 	recharge_delay = 15
-	armor_type = /datum/armor/deathsquad_and_shielded
+	armor_type = /datum/armor/deathsquad_and_officer
 	brc_mitigation_bonus = 25  // BLUEMOON ADD
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -1107,7 +1210,7 @@
 	icon_state = "deathsquad"
 	item_state = "deathsquad"
 	hardsuit_type = "syndi"
-	armor_type = /datum/armor/deathsquad_and_shielded
+	armor_type = /datum/armor/deathsquad_and_officer
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	actions_types = list()

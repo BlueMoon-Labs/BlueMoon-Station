@@ -78,46 +78,42 @@
 		remove_movespeed_modifier(/datum/movespeed_modifier/lattice_footing)
 
 /mob/living/proc/update_pull_movespeed()
-	// BLUEMOON ADD START
-	if(pulling && isliving(pulling))
-		var/mob/living/L = pulling
+	var/pull_penalty = 0
+	var/prone_penalty = 0
+	var/weight_penalty = 0
+	if(isliving(pulling))
+		var/mob/living/target = pulling
+		var/is_chain = isliving(target.pulling)
+		var/obj/item/clothing/suit/space/hardsuit/rig = get_rig_pull_support()
+		var/evacuating = rig?.rig_patient_transport && !is_chain && grab_state < GRAB_AGGRESSIVE && !target.buckled
+		if(!evacuating)
+			if(is_chain)
+				pull_penalty = PULL_SLOWDOWN
+			if(drag_slowdown && target.lying && !target.buckled && grab_state < GRAB_AGGRESSIVE)
+				prone_penalty = PULL_PRONE_SLOWDOWN
+			else if(target.stat == DEAD)
+				pull_penalty = PULL_SLOWDOWN
+			// Preserve ordinary weight rules in chains. Assisted RIGs also pay a weight penalty for a single superheavy.
+			if(target.mob_weight > MOB_WEIGHT_HEAVY && mob_weight < MOB_WEIGHT_HEAVY_SUPER)
+				if(rig && !rig.rig_patient_transport)
+					weight_penalty = rig.rig_superheavy_pull_slowdown
+				else if(is_chain || rig)
+					weight_penalty = mob_weight < MOB_WEIGHT_HEAVY ? PULL_HEAVY_SUPER_SLOWDOWN : PULL_HEAVY_SLOWDOWN
+			else if(is_chain && target.mob_weight > MOB_WEIGHT_NORMAL && mob_weight < MOB_WEIGHT_HEAVY)
+				weight_penalty = PULL_HEAVY_SLOWDOWN
 
-		// Замедление работает только если в цепи 3+ игроков (тянем того, кто сам кого-то тащит)
-		if(L.pulling && isliving(L.pulling))
-			add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/pull_slowdown, multiplicative_slowdown = PULL_SLOWDOWN)
-
-			if(drag_slowdown && L.lying && !L.buckled && grab_state < GRAB_AGGRESSIVE)
-				add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/bulky_drag, multiplicative_slowdown = PULL_PRONE_SLOWDOWN)
-			else
-				remove_movespeed_modifier(/datum/movespeed_modifier/bulky_drag)
-
-			if(L.mob_weight > MOB_WEIGHT_HEAVY && src.mob_weight < MOB_WEIGHT_HEAVY_SUPER)
-				if(src.mob_weight < MOB_WEIGHT_HEAVY)
-					add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SUPER_SLOWDOWN)
-				else
-					add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SLOWDOWN)
-			else if(L.mob_weight > MOB_WEIGHT_NORMAL && src.mob_weight < MOB_WEIGHT_HEAVY)
-				add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SLOWDOWN)
-			else
-				remove_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag)
-
-			return
-
-	// Таскание лежачего или мёртвого — замедление есть, даже без цепи
-	if(pulling && isliving(pulling))
-		var/mob/living/L = pulling
-		if(L.stat == DEAD || L.lying)
-			if(drag_slowdown && L.lying && !L.buckled && grab_state < GRAB_AGGRESSIVE)
-				add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/bulky_drag, multiplicative_slowdown = PULL_PRONE_SLOWDOWN)
-			else if(L.stat == DEAD)
-				add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/pull_slowdown, multiplicative_slowdown = PULL_SLOWDOWN)
-			return
-
-	// Вне цепи 3+ и не лежачий/мёртвый — убираем все замедления от пета
-	remove_movespeed_modifier(/datum/movespeed_modifier/pull_slowdown)
-	remove_movespeed_modifier(/datum/movespeed_modifier/bulky_drag)
-	remove_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag)
-	// BLUEMOON ADD END
+	if(pull_penalty)
+		add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/pull_slowdown, multiplicative_slowdown = pull_penalty)
+	else
+		remove_movespeed_modifier(/datum/movespeed_modifier/pull_slowdown)
+	if(prone_penalty)
+		add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/bulky_drag, multiplicative_slowdown = prone_penalty)
+	else
+		remove_movespeed_modifier(/datum/movespeed_modifier/bulky_drag)
+	if(weight_penalty)
+		add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = weight_penalty)
+	else
+		remove_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag)
 
 /// Пристёгнутый едет вместе с тем, к чему пристёгнут: решение отдаётся buckled.zMove() и не дублируется здесь.
 /mob/living/zMove(dir, turf/target, z_move_flags = ZMOVE_FLIGHT_FLAGS)
