@@ -112,9 +112,8 @@ GENETICS SCANNER
 // BLUEMOON ADD START - изменение сканеров здоровья
 /obj/item/healthanalyzer/examine(mob/user)
 	. = ..()
-	. += span_notice("Результаты обследования [GLOB.health_analyzer_allow_chat_mode && user.client?.prefs?.health_analyzer_chat ? "выдаются текстовым отчётом" : "отображаются на медицинском дисплее"].")
-	if(GLOB.health_analyzer_allow_chat_mode)
-		. += span_notice("<b>Alt-Click</b> меняет способ отображения на всех ваших анализаторах.")
+	. += span_notice("Результаты обследования [user.client?.prefs?.health_analyzer_chat ? "выдаются текстовым отчётом" : "отображаются на медицинском дисплее"].")
+	. += span_notice("<b>Alt-клик</b> меняет способ отображения на всех ваших анализаторах.")
 	if(last_msg)
 		. += span_notice("Сохранён отчёт от [last_scan_time]. Используйте анализатор в руке, чтобы открыть его.")
 	if(advanced)
@@ -124,8 +123,6 @@ GENETICS SCANNER
 
 
 /obj/item/healthanalyzer/AltClick(mob/user)
-	if(!GLOB.health_analyzer_allow_chat_mode)
-		return
 	. = ..()
 	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE) || !user.client?.prefs)
 		return
@@ -138,7 +135,7 @@ GENETICS SCANNER
 	if(!user.can_read_medical_display())
 		to_chat(user, span_warning("Вы не можете прочитать результаты анализатора, пока ничего не видите."))
 		return
-	if(GLOB.health_analyzer_allow_chat_mode && user.client?.prefs?.health_analyzer_chat)
+	if(user.client?.prefs?.health_analyzer_chat)
 		var/report = get_report(user)
 		if(advanced)
 			report += "<hr><a href='?src=[REF(src)];print_scan=1;scan=[scan_number]'>Распечатать</a>"
@@ -257,8 +254,7 @@ GENETICS SCANNER
 	. = ..()
 	if(!isliving(user))
 		return
-	if(GLOB.health_analyzer_allow_chat_mode)
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Сменить формат отчёта")
+	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Сменить формат отчёта")
 	if(user.is_holding(src))
 		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Открыть последний отчёт")
 	return CONTEXTUAL_SCREENTIP_SET
@@ -284,7 +280,7 @@ GENETICS SCANNER
 	if(!user.can_read_medical_display() && (QDELETED(live_source) || !live_source.can_monitor_medical_scan(user, patient, scan_kind)))
 		to_chat(user, span_warning("Вы не можете прочитать показания внешнего сканера, пока ничего не видите."))
 		return
-	if(!user.client || (GLOB.health_analyzer_allow_chat_mode && user.client.prefs.health_analyzer_chat))
+	if(!user.client || user.client.prefs?.health_analyzer_chat)
 		var/report = data["report"]
 		if(live_source)
 			report = replacetext(report, "Снимок от", "Показатели на")

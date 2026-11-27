@@ -446,11 +446,12 @@
 	..()
 
 /atom/proc/AltClick(mob/user)
-	SEND_SIGNAL(src, COMSIG_CLICK_ALT, user)
+	if(SEND_SIGNAL(src, COMSIG_CLICK_ALT, user) & COMPONENT_SKIP_LISTED_TURF)
+		return
 	var/turf/T = get_turf(src)
 	if(T && (isturf(loc) || isturf(src)) && user.TurfAdjacent(T))
 		if(user.client)
-			user.client.open_listed_turf(T)
+			user.client.list_turf_from_alt_click(T, src)
 		else
 			user.listed_turf = T
 
@@ -459,7 +460,7 @@
 	var/turf/T = get_turf(A)
 	if(T && user.TurfAdjacent(T))
 		if(user.client)
-			user.client.open_listed_turf(T)
+			user.client.list_turf_from_alt_click(T, A)
 		else
 			user.listed_turf = T
 

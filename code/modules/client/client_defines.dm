@@ -285,3 +285,4 @@
 
 	/// Cooldown for IC chat messages while SSlag_switch SLOWMODE_SAY is active
 	COOLDOWN_DECLARE(say_slowmode)
+	var/listed_turf_switch_pending = FALSE
