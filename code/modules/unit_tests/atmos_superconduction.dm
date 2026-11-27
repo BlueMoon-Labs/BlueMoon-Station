@@ -186,11 +186,11 @@
 	unit_test_normalize_exposure_window(subject)
 	SSair.remove_from_active(subject)
 
-/// Теплоизоляция остекления. Обычное и армированное стекло тепло пропускает
-/// (коэффициент окна) - это механика, а не баг; плазменный сплав и корпусное
-/// остекление держат. Печать обязана сниматься вместе с панелью: пока
-/// BlockThermalConductivity() отдавал безусловный TRUE, разбитое окно оставляло
-/// направление закрытым до следующего постороннего пересчёта соседства.
+/// Теплоизоляция остекления. Обычное стекло тепло пропускает (коэффициент окна),
+/// армированное цельное, плазменный сплав и корпусное остекление держат. Печать
+/// обязана сниматься вместе с панелью: пока BlockThermalConductivity() отдавал
+/// безусловный TRUE, разбитое окно оставляло направление закрытым до следующего
+/// постороннего пересчёта соседства.
 /datum/unit_test/atmos_window_heat_seal/Run()
 	var/turf/open/origin = run_loc_floor_bottom_left
 	var/turf/open/subject = locate(origin.x + 1, origin.y + 1, origin.z)
@@ -203,6 +203,14 @@
 	TEST_ASSERT(!plain.BlockThermalConductivity(), "обычное стекло объявило себя теплоизолятором")
 	TEST_ASSERT(subject.conductivity_directions() & NORTH, "через обычное стекло перестало ходить тепло")
 	qdel(plain)
+
+	// Армированная цельная панель - то, что стоит между жилыми отсеками и
+	// планетарной атмосферой IceMoon: газ держит и тепло держит тоже.
+	var/obj/structure/window/reinforced/fulltile/rwindow = allocate(/obj/structure/window/reinforced/fulltile, subject)
+	TEST_ASSERT(rwindow.BlockThermalConductivity(), "армированное цельное окно объявило себя проводником тепла")
+	TEST_ASSERT(subject.conductivity_blocked_directions & NORTH, "армированное окно не перекрыло теплопроводность")
+	qdel(rwindow)
+	TEST_ASSERT(!(subject.conductivity_blocked_directions & NORTH), "тепловая печать пережила разбитое армированное окно")
 
 	var/obj/structure/window/plasma/fulltile/pane = allocate(/obj/structure/window/plasma/fulltile, subject)
 	TEST_ASSERT(pane.BlockThermalConductivity(), "плазменное стекло не объявило себя теплоизолятором")

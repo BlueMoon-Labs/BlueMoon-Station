@@ -238,12 +238,12 @@
 	TEST_ASSERT(!(net in SSair.networks), "Destroy() left the pipenet in the network registry")
 	TEST_ASSERT_EQUAL(SSair.count_orphan_dirty_pipenets(), orphans_baseline, "a deleted pipenet was still counted as an orphan")
 
-/// Струйка ниже порога пробуждения доходит до спящего члена группы, но не будит его; поток выше порога будит.
-///
-/// Прод 1-4.11.2026: из 1000-3000 активных турфов газ за проход двигали 10-30%, остальных держали бодрыми струйки в десятую моля.
+/// Любой значимый шер будит спящего члена группы: скорость газа не падает
+/// только потому, что поток маленький. Порог пробуждения снова равен порогу
+/// движения, как до оптимизации холостой активации турфов.
 /datum/unit_test/atmos_trickle_keeps_member_resting/Run()
 	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
-	TEST_ASSERT(SSair.wake_threshold_scale > 1, "wake_threshold_scale [SSair.wake_threshold_scale] does not separate a trickle from a flow")
+	TEST_ASSERT_EQUAL(SSair.wake_threshold_scale, 1, "wake_threshold_scale [SSair.wake_threshold_scale] slowed gas down again")
 	var/turf/open/origin = run_loc_floor_bottom_left
 	var/turf/open/source = locate(origin.x + 1, origin.y + 1, origin.z)
 	var/turf/open/member = locate(origin.x + 2, origin.y + 1, origin.z)
@@ -251,9 +251,9 @@
 	TEST_ASSERT(member in source.atmos_adjacent_turfs, "test turfs do not share air")
 
 	var/share_coeff = 1 / (length(source.atmos_adjacent_turfs) + 1)
-	// Между порогом движения и порогом пробуждения, затем вдвое выше порога пробуждения.
-	var/list/shares = list(MINIMUM_MOLES_DELTA_TO_MOVE * (1 + SSair.wake_threshold_scale) / 2, MINIMUM_MOLES_DELTA_TO_MOVE * SSair.wake_threshold_scale * 2)
-	var/list/expect_wake = list(FALSE, TRUE)
+	// Два и четыре порога движения: оба обязаны будить спящего соседа.
+	var/list/shares = list(MINIMUM_MOLES_DELTA_TO_MOVE * 2, MINIMUM_MOLES_DELTA_TO_MOVE * 4)
+	var/list/expect_wake = list(TRUE, TRUE)
 	for(var/index in 1 to length(shares))
 		var/list/area_turfs = list(source, member) | source.atmos_adjacent_turfs | member.atmos_adjacent_turfs
 		for(var/turf/open/T as anything in area_turfs)

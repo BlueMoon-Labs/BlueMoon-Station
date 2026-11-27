@@ -43,8 +43,8 @@
 /// Кристалл, снятый с обработки SSair (тест сам решает, когда крутить фаер) и с
 /// выключенным уроном: ни один из этих тестов о делам-цикле не говорит, а
 /// горячий газ иначе копил бы damage между проверками.
-/datum/unit_test/proc/allocate_test_supermatter()
-	var/obj/machinery/power/supermatter_crystal/shard/crystal = allocate(/obj/machinery/power/supermatter_crystal/shard)
+/datum/unit_test/proc/allocate_test_supermatter(crystal_type = /obj/machinery/power/supermatter_crystal/shard)
+	var/obj/machinery/power/supermatter_crystal/crystal = allocate(crystal_type)
 	SSair.stop_processing_machine(crystal)
 	crystal.takes_damage = FALSE
 	return crystal
@@ -147,3 +147,21 @@
 	restore_test_chamber(snapshot)
 	TEST_ASSERT(hot_after >= hot_before - 1, "кристалл охладил камеру с [round(hot_before)] K до [round(hot_after)] K")
 	TEST_ASSERT(cold_after > cold_before, "кристалл перестал греть холодную камеру")
+
+/// Основной движок, в отличие от осколка, обязан продолжать охлаждать свою
+/// камеру: именно на нём держался старый режим SM с азотом в контайнменте.
+/datum/unit_test/supermatter_engine_caps_chamber/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	var/datum/gas_mixture/snapshot = new
+	snapshot.copy_from(room.return_air())
+	var/obj/machinery/power/supermatter_crystal/engine/crystal = allocate_test_supermatter(/obj/machinery/power/supermatter_crystal/engine)
+
+	pin_supermatter_chamber(crystal, list(GAS_N2 = 1), 5000)
+	var/hot_before = room.air.return_temperature()
+	crystal.process_atmos()
+	var/hot_after = room.air.return_temperature()
+
+	restore_test_chamber(snapshot)
+	qdel(crystal)
+	TEST_ASSERT(hot_after < hot_before - 1, "движок перестал охлаждать камеру: [round(hot_before)] K -> [round(hot_after)] K")

@@ -29,10 +29,12 @@
 #define EXCITED_GROUP_BREAKDOWN_CYCLES				4		//number of FULL air controller ticks before an excited group breaks down (averages gas contents across turfs)
 #define EXCITED_GROUP_DISMANTLE_CYCLES				16		//number of FULL air controller ticks before an excited group dismantles and removes its turfs from active
 ///Stalled cycles before a grouped turf rests individually (leaves the active list but stays in
-///its group, see sleep_active_turf). Не ниже EXCITED_GROUP_BREAKDOWN_CYCLES: иначе тихая группа засыпает целиком в том же проходе, где ей положен брейкдаун, и tick_lifecycle() расформировывает её без усреднения.
-#define EXCITED_GROUP_INDIVIDUAL_REST_CYCLES		4
-///Во сколько раз парный шер должен превысить порог движения газа, чтобы сбросить тишину турфа и разбудить соседа. Ветер считается от исходного порога. Держать ниже 10 (SIGNIFICANT_SHARE_CONTENT_RATIO / MINIMUM_AIR_RATIO_TO_MOVE).
-#define ATMOS_WAKE_THRESHOLD_SCALE					5
+///its group, see sleep_active_turf). Держим выше EXCITED_GROUP_BREAKDOWN_CYCLES: тихая группа
+///должна усредниться до того, как её члены уйдут на одиночный отдых, иначе tick_lifecycle()
+///расформировывает её без усреднения.
+#define EXCITED_GROUP_INDIVIDUAL_REST_CYCLES		6
+///Во сколько раз парный шер должен превысить порог движения газа, чтобы сбросить тишину турфа и разбудить соседа. Ветер считается от исходного порога. Единица возвращает прежнюю скорость газа: любой значимый шер держит пару бодрой.
+#define ATMOS_WAKE_THRESHOLD_SCALE					1
 /// Maximum excited-group members processed between master-controller budget checks.
 /// Breakdown keeps its accumulator and write-back state across SSair resumes.
 #define EXCITED_GROUP_BREAKDOWN_SLICE				192
