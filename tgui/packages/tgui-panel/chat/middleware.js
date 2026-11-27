@@ -21,12 +21,20 @@ import { chatRenderer } from './renderer';
 import { getChatCustomProps } from './rootAppearance';
 import { selectChat, selectCurrentChatPage } from './selectors';
 
-// List of blacklisted tags
-const FORBID_TAGS = [
-  'iframe',
-  'link',
-  'video',
-];
+const CHAT_HTML_OPTIONS = {
+  USE_PROFILES: { html: true },
+  FORBID_TAGS: ['iframe', 'link', 'style', 'video'],
+};
+const chatSanitizer = DOMPurify(window);
+if (chatSanitizer.isSupported) {
+  chatSanitizer.addHook('uponSanitizeAttribute', (node, data) => {
+    // Сохраняем протокол BYOND только у ссылок, по которым кликает игрок.
+    if (node.localName === 'a' && data.attrName === 'href'
+      && /^byond:\/\/\S+$/i.test(data.attrValue)) {
+      data.forceKeepAttr = true;
+    }
+  });
+}
 
 export const chatHistory = new ChatHistory(storage, {
   segmentSize: HISTORY_SEGMENT_SIZE,
@@ -49,13 +57,19 @@ const saveChatToStorage = async (state, savedAt) => {
   }
 };
 
-const sanitizeStoredMessages = messages => {
+// Фильтруем разметку до передачи сообщений рендереру и записи в историю.
+const sanitizeChatMessages = messages => {
   for (const message of messages) {
-    if (message.html) {
-      message.html = DOMPurify.sanitize(message.html, {
-        FORBID_TAGS,
-      });
+    const html = message?.html;
+    if (typeof html !== 'string' || !html.includes('<')) {
+      continue;
     }
+    if (!chatSanitizer.isSupported) {
+      message.text ||= html;
+      delete message.html;
+      continue;
+    }
+    message.html = chatSanitizer.sanitize(html, CHAT_HTML_OPTIONS);
   }
   return messages;
 };
@@ -88,7 +102,7 @@ export const loadOlderChatHistory = () => {
         const messages = await chatHistory.load(HISTORY_LOAD_STEP,
           getOldestLogId());
         if (messages.length) {
-          chatRenderer.prependHistory(sanitizeStoredMessages(messages));
+          chatRenderer.prependHistory(sanitizeChatMessages(messages));
         }
         return messages.length;
       }
@@ -171,7 +185,7 @@ const loadChatFromStorage = async store => {
   }
   // Always try to restore messages from browser storage (not server-persisted)
   if (messages.length) {
-    sanitizeStoredMessages(messages);
+    sanitizeChatMessages(messages);
     const batch = [
       ...messages,
       createMessage({
@@ -412,7 +426,7 @@ export const chatMiddleware = store => {
     if (type === 'chat/message') {
       // Normalize the payload
       const batch = Array.isArray(payload) ? payload : [payload];
-      chatRenderer.processBatch(batch);
+      chatRenderer.processBatch(sanitizeChatMessages(batch));
       return;
     }
     if (type === loadChat.type) {

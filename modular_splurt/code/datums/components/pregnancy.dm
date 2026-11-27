@@ -348,24 +348,22 @@
 	var/name
 	if(egg_name)
 		name = egg_name
-	else if(user && !QDELETED(user))
-		name = input(user, "What will be your baby's name?", "Name the baby") as null|text
-	else if(babby.client)
-		name = input(babby, "What will be your name?", "Name yourself") as null|text
-
-	if(!name)
-		babby.real_name = random_unique_name(babby.gender)
-		babby.update_name()
 	else
-		babby.real_name = name
-		babby.update_name()
+		var/mob/naming_user = user?.client && !QDELETED(user) ? user : babby
+		if(naming_user.client)
+			var/choice = tgui_input_text(naming_user, "Какое имя дать ребёнку?", "Имя ребёнка", max_length = MAX_NAME_LEN)
+			name = reject_bad_text(trim(choice), MAX_NAME_LEN, ascii_only = FALSE)
 
-	if(mother_name)
-		babby?.mind?.store_memory("[mother_name] is your mother!")
+	if(!QDELETED(babby))
+		babby.real_name = name || random_unique_name(babby.gender)
+		babby.update_name()
+		if(mother_name)
+			babby.mind?.store_memory("[mother_name] is your mother!")
 
 	var/obj/item = parent
-	item.forceMove(birth_turf)
-	item.obj_break(MELEE)
+	if(!QDELETED(item))
+		item.forceMove(birth_turf)
+		item.obj_break(MELEE)
 	qdel(src)
 
 /datum/component/pregnancy/proc/eg_status(datum/source, mob/user, list/examine_list)

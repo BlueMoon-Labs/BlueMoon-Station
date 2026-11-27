@@ -58,11 +58,6 @@ jest.mock('../serverState', () => ({
   getLastSavedAt: jest.fn(() => 0),
 }));
 
-jest.mock('dompurify', () => ({
-  __esModule: true,
-  default: { sanitize: (html) => html },
-}));
-
 const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0));
 
 // Только микрозадачи: запись при уходе со страницы не может ждать таймер.
@@ -87,8 +82,6 @@ const clearRendererSpies = () => {
 // applySettings now lives in a closure created per-store, so each fresh
 // store gets clean diff state without needing module isolation.
 const createTestStore = () => {
-  // Use require() so the chat reducer (which imports DOMPurify) is loaded
-  // *after* the dompurify mock has been registered above.
   // eslint-disable-next-line global-require
   const { chatMiddleware } = require('./middleware');
   // eslint-disable-next-line global-require
@@ -114,6 +107,36 @@ describe('chatMiddleware applySettings diffing', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+  });
+
+  test('фильтрует входящий HTML перед отрисовкой, сохраняя оформление и ссылку', async () => {
+    const store = createTestStore();
+    const plain = { text: 'Имя <как текст>' };
+    const href = '?src=target;observe=1';
+    const byondHref = `byond://${href}`;
+    store.dispatch({
+      type: 'chat/message',
+      payload: [{
+        html: '<style>.notice { color: red; }</style><svg></svg>'
+          + '<span class="notice" style="color: green">'
+          + `<a href="${href}">Наблюдать</a>`
+          + `<a href="${byondHref}">Следовать</a>`
+          + '<img src="./icon.png" onerror="">'
+          + `<img src="${byondHref}"></span>`,
+      }, plain],
+    });
+
+    const [batch] = mockChatRenderer.processBatch.mock.calls[0];
+    const fragment = document.createElement('template');
+    fragment.innerHTML = batch[0].html;
+    expect(fragment.content.querySelector('style, svg, [onerror]')).toBeNull();
+    expect(fragment.content.querySelector('.notice').style.color).toBe('green');
+    expect(Array.from(fragment.content.querySelectorAll('a'),
+      (link) => link.getAttribute('href'))).toEqual([href, byondHref]);
+    expect(fragment.content.querySelector('img').getAttribute('src')).toBe('./icon.png');
+    expect(fragment.content.querySelectorAll('img[src]')).toHaveLength(1);
+    expect(batch[1]).toEqual(plain);
+    await flushPromises();
   });
 
   test('first dispatch applies all renderer methods', async () => {
