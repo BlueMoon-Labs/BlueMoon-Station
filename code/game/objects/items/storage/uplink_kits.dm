@@ -341,22 +341,25 @@
 	new /obj/item/reagent_containers/syringe(src)
 	new /obj/item/reagent_containers/glass/bottle/tuberculosiscure(src)
 
+#define CHAMELEON_KIT_ITEMS /obj/item/clothing/under/chameleon, /obj/item/clothing/suit/chameleon, /obj/item/clothing/gloves/chameleon/insulated,\
+	/obj/item/clothing/shoes/chameleon, /obj/item/clothing/glasses/chameleon, /obj/item/clothing/head/chameleon, /obj/item/clothing/mask/chameleon,\
+	/obj/item/storage/backpack/chameleon, /obj/item/radio/headset/chameleon, /obj/item/stamp/chameleon, /obj/item/clothing/neck/cloak/chameleon
+
 /obj/item/storage/box/syndie_kit/chameleon
 	name = "chameleon kit"
 
 /obj/item/storage/box/syndie_kit/chameleon/PopulateContents()
-	new /obj/item/clothing/under/chameleon(src)
-	new /obj/item/clothing/suit/chameleon(src)
-	new /obj/item/clothing/gloves/chameleon/insulated(src)
-	new /obj/item/clothing/shoes/chameleon(src)
-	new /obj/item/clothing/glasses/chameleon(src)
-	new /obj/item/clothing/head/chameleon(src)
-	new /obj/item/clothing/mask/chameleon(src)
-	new /obj/item/storage/backpack/chameleon(src)
-	new /obj/item/radio/headset/chameleon(src)
-	new /obj/item/stamp/chameleon(src)
-	new /obj/item/modular_computer/pda/chameleon(src)
-	new /obj/item/clothing/neck/cloak/chameleon(src) //ЭТО ПИЗДЕЦ ОНИ ЗАЧЕМ-ТО СЛОМАЛИ ХАМЕЛЕОНКУ И ОТКАЗЫВАЮТСЯ ЕЁ ЧИНИТЬ
+	var/static/list/items_inside = list(
+		CHAMELEON_KIT_ITEMS,
+		/obj/item/modular_computer/pda/chameleon,
+	)
+	generate_items_inside(items_inside, src)
+
+/obj/item/storage/box/syndie_kit/chameleon/donate/PopulateContents()
+	var/static/list/items_inside = list(CHAMELEON_KIT_ITEMS)
+	generate_items_inside(items_inside, src)
+
+#undef CHAMELEON_KIT_ITEMS
 
 //5*(2*4) = 5*8 = 45, 45 damage if you hit one person with all 5 stars.
 //Not counting the damage it will do while embedded (2*4 = 8, at 15% chance)
