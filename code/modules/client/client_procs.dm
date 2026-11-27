@@ -240,15 +240,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 	last_activity = world.time
 
-	if(href_list["open_statpanel_emotes"])
-		if(statbrowser_ready)
-			src << output("", "statbrowser:open_emote_tab")
-		return
-
 	var/emote_action = href_list["statpanel_emotes"]
 	if(emote_action)
-		if(statbrowser_ready && prefs && (emote_action == "emotes/resetOrder" || (stat_tab == STATPANEL_EMOTES_TAB && text2num(href_list["slot"]) == prefs.default_slot)))
-			tgui_panel?.emotes_handle_stat_action(href_list)
+		if(statbrowser_ready && prefs)
+			if(emote_action == "emotes/resetOrder" || (text2num(href_list["slot"]) == prefs.default_slot && (stat_tab == STATPANEL_EMOTES_TAB || emote_action == "emotes/setSync")))
+				tgui_panel?.emotes_handle_stat_action(href_list)
 		return
 
 	//byond bug ID:2256651
@@ -408,7 +404,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		update_listed_turf_watch(T)
 		mark_listed_turf_dirty()
 		return
-	if(old_listed)
+	if(old_listed && old_listed.name != T?.name)
 		panel_tabs -= old_listed.name
 	mob.listed_turf = T
 	update_listed_turf_watch(T)
@@ -420,13 +416,24 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	listed_turf_dirty = !!T
 	listed_turf_icon_refresh_pending = FALSE
 
-/client/proc/open_listed_turf(turf/T)
+/client/proc/list_turf_from_alt_click(turf/target, atom/clicked)
+	var/mode = prefs ? prefs.alt_click_turf_mode : ALT_CLICK_TURF_ALWAYS
+	var/switch_tab = mode == ALT_CLICK_TURF_ALWAYS || (mode == ALT_CLICK_TURF_ONLY && clicked == target)
+	open_listed_turf(target, switch_tab)
+
+/client/proc/open_listed_turf(turf/T, switch_tab = TRUE)
 	if(!mob || !T)
+		return
+	var/turf/current_turf = mob.listed_turf
+	// Фоновый просмотр не заменяет тайл, вкладка которого открыта у игрока.
+	if(!switch_tab && current_turf && current_turf != T && stat_tab == current_turf.name)
 		return
 	set_listed_turf(T)
 	if(!statbrowser_ready)
+		listed_turf_switch_pending = switch_tab
 		return
-	src << output("[url_encode(json_encode(T.name))];", "statbrowser:create_listedturf")
+	listed_turf_switch_pending = FALSE
+	src << output("[url_encode(json_encode(T.name))];[switch_tab ? 1 : 0]", "statbrowser:create_listedturf")
 	SSstatpanels.refresh_listed_turf(src, force_send = TRUE)
 
 /client/proc/clear_listed_turf(send_output = TRUE)
@@ -444,6 +451,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	listed_turf_dirty = FALSE
 	listed_turf_dirty_at = 0
 	listed_turf_icon_refresh_pending = FALSE
+	listed_turf_switch_pending = FALSE
 	if(send_output && statbrowser_ready)
 		src << output("", "statbrowser:remove_listedturf")
 
@@ -2005,8 +2013,9 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	// Fallback for clients where Panel-Ready bridge callback is delayed/missing.
 	statbrowser_ready = TRUE
 	init_verbs()
+	tgui_panel?.emotes_send_sync_state()
 	if(mob?.listed_turf)
-		open_listed_turf(mob.listed_turf)
+		open_listed_turf(mob.listed_turf, switch_tab = listed_turf_switch_pending)
 
 //increment progress for an unlockable loadout item
 /client/proc/increment_progress(key, amount)

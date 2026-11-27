@@ -1,5 +1,6 @@
 var State = {
 	currentTab: null,
+	lastNonTurfTab: "Status",
 	verbTabs: [],
 	verbs: [],
 	permanentTabs: [],
@@ -44,6 +45,7 @@ var State = {
 	// Favorites
 	favorites: {},
 	emotePanel: null,
+	emoteSync: null,
 	// Images
 	storedImages: {},
 	imageRetryDelay: 500,

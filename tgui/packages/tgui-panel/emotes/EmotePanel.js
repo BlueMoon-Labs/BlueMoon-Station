@@ -8,7 +8,7 @@ import { useEmotes } from './hooks';
 const emoteColors = { 1: 'blue', 2: 'purple', 3: 'orange' };
 
 export const EmotePanel = () => {
-  const { list, order, revision, slot } = useEmotes();
+  const { list, order, revision, slot, syncEnabled } = useEmotes();
   const { emoteSortAlphabetical, update } = useSettings();
   const activeDrag = useRef(null);
   const skipClick = useRef(null);
@@ -175,6 +175,16 @@ export const EmotePanel = () => {
               event.preventDefault();
               sendAct('emotes/resetOrder', { slot, revision });
             }}
+          />
+          <Button
+            icon="arrows-rotate"
+            role="button"
+            aria-label="Синхронизация эмоций со статпанелью"
+            aria-pressed={syncEnabled}
+            tooltip={syncEnabled ? 'Отключить синхронизацию эмоций' : 'Включить синхронизацию эмоций'}
+            selected={syncEnabled}
+            disabled={slot == null}
+            onClick={() => sendAct('emotes/setSync', { slot, enabled: !syncEnabled })}
           />
         </Flex.Item>
       </Flex>

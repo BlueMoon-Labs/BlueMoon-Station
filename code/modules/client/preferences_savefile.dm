@@ -722,6 +722,7 @@
 	READ_PLAYER_SAVE(S, document, "fullscreen", fullscreen)
 	READ_PLAYER_SAVE(S, document, "long_strip_menu", long_strip_menu)
 	READ_PLAYER_SAVE(S, document, "amplify_department_radio", amplify_department_radio)
+	READ_PLAYER_SAVE(S, document, "alt_click_turf_mode", alt_click_turf_mode)
 	// не right_click_menu: под ним тест-мерж записал «сразу действие» всем, кто не выбирал
 	READ_PLAYER_SAVE(S, document, "right_click_mode", right_click_choice)
 	READ_PLAYER_SAVE(S, document, "right_click_notice_seen", right_click_notice_seen)
@@ -902,6 +903,7 @@
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
 	long_strip_menu = sanitize_integer(long_strip_menu, 0, 1, initial(long_strip_menu))
 	amplify_department_radio = sanitize_integer(amplify_department_radio, FALSE, TRUE, initial(amplify_department_radio))
+	alt_click_turf_mode = sanitize_integer(alt_click_turf_mode, ALT_CLICK_TURF_ALWAYS, ALT_CLICK_TURF_NEVER, initial(alt_click_turf_mode))
 	// не sanitize_integer: переданный null включает его дефолт 0, и невыбравший получает «сразу действие»
 	if(!(right_click_choice in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
 		right_click_choice = null
@@ -1442,6 +1444,7 @@ GLOBAL_VAR(player_save_migration_timer)
 	WRITE_PLAYER_SAVE(S, document, "fullscreen", fullscreen)
 	WRITE_PLAYER_SAVE(S, document, "long_strip_menu", long_strip_menu)
 	WRITE_PLAYER_SAVE(S, document, "amplify_department_radio", amplify_department_radio)
+	WRITE_PLAYER_SAVE(S, document, "alt_click_turf_mode", alt_click_turf_mode)
 	WRITE_PLAYER_SAVE(S, document, "right_click_mode", right_click_choice)
 	WRITE_PLAYER_SAVE(S, document, "right_click_notice_seen", right_click_notice_seen)
 	WRITE_PLAYER_SAVE(S, document, "shift_right_click_mode", shift_right_click_choice)
@@ -1886,10 +1889,14 @@ GLOBAL_VAR(player_save_migration_timer)
 	job_preferences = SANITIZE_LIST(job_preferences)
 	READ_PLAYER_SAVE(S, document, "pda_theme", pda_theme)
 
-	// Панель эмоций
+	// Избранные эмоции
 	READ_PLAYER_SAVE(S, document, "custom_emote_panel", custom_emote_panel)
 	READ_PLAYER_SAVE(S, document, "custom_emote_groups", custom_emote_groups)
 	READ_PLAYER_SAVE(S, document, "custom_emote_chat_order", custom_emote_chat_order)
+	custom_emote_chat_panel = null
+	custom_emote_sync = FALSE
+	READ_PLAYER_SAVE(S, document, "custom_emote_chat_panel", custom_emote_chat_panel)
+	READ_PLAYER_SAVE(S, document, "custom_emote_sync", custom_emote_sync)
 
 	//Quirks
 	READ_PLAYER_SAVE(S, document, "all_quirks", all_quirks)
@@ -2422,7 +2429,14 @@ GLOBAL_VAR(player_save_migration_timer)
 	// Очищаем старые названия эмоций, чтобы их снова можно было переименовать и удалить.
 	custom_emote_panel = sanitize_custom_emote_panel(custom_emote_panel)
 	custom_emote_groups = sanitize_custom_emote_groups(custom_emote_groups)
-	custom_emote_chat_order = sanitize_custom_emote_chat_order(custom_emote_chat_order, custom_emote_panel)
+	if(isnull(custom_emote_chat_panel))
+		// В старых сохранениях обе панели использовали один список.
+		custom_emote_chat_panel = list()
+		copy_missing_custom_emotes(custom_emote_chat_panel, custom_emote_panel)
+	else
+		custom_emote_chat_panel = sanitize_custom_emote_panel(custom_emote_chat_panel)
+	custom_emote_chat_order = sanitize_custom_emote_chat_order(custom_emote_chat_order, custom_emote_chat_panel)
+	custom_emote_sync = sanitize_integer(custom_emote_sync, FALSE, TRUE, FALSE)
 	for(var/emote_name in custom_emote_panel)
 		var/list/entry = custom_emote_panel[emote_name]
 		if(islist(entry) && (entry["group"] == EMOTE_PANEL_UNGROUPED_COLOR_KEY || !(entry["group"] in custom_emote_groups)))
@@ -2917,10 +2931,12 @@ GLOBAL_VAR(player_save_migration_timer)
 	WRITE_PLAYER_SAVE(S, document, "job_preferences" , job_preferences)
 	WRITE_PLAYER_SAVE(S, document, "hide_ckey"		, hide_ckey)
 
-	// Панель эмоций
+	// Избранные эмоции
 	WRITE_PLAYER_SAVE(S, document, "custom_emote_panel"	, custom_emote_panel)
 	WRITE_PLAYER_SAVE(S, document, "custom_emote_groups"	, custom_emote_groups)
 	WRITE_PLAYER_SAVE(S, document, "custom_emote_chat_order"	, custom_emote_chat_order)
+	WRITE_PLAYER_SAVE(S, document, "custom_emote_chat_panel", custom_emote_chat_panel)
+	WRITE_PLAYER_SAVE(S, document, "custom_emote_sync", custom_emote_sync)
 
 	//Quirks
 	WRITE_PLAYER_SAVE(S, document, "all_quirks"			, all_quirks)
