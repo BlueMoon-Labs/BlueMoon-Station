@@ -13,6 +13,30 @@
 	var/list/trigger_objs //also checked in mob equipment
 	var/list/trigger_turfs
 	var/list/trigger_species
+	var/static/list/phobia_display_names = list(
+		"spiders" = "пауков",
+		"space" = "космоса",
+		"security" = "службы безопасности",
+		"clowns" = "клоунов",
+		"greytide" = "грейтайда",
+		"lizards" = "ящеров",
+		"skeletons" = "скелетов",
+		"snakes" = "змей",
+		"robots" = "роботов",
+		"doctors" = "врачей",
+		"authority" = "властей",
+		"the supernatural" = "сверхъестественного",
+		"aliens" = "инопланетян",
+		"strangers" = "незнакомцев",
+		"birds" = "птиц",
+		"falling" = "падения",
+		"anime" = "аниме",
+		"mimes" = "мимов",
+		"cats" = "котов",
+		"syndicate" = "Синдиката",
+		"eye" = "глаз",
+		"conspiracies" = "заговоров",
+	)
 
 /datum/brain_trauma/mild/phobia/New(new_phobia_type)
 	if(new_phobia_type)
@@ -21,9 +45,10 @@
 	if(!phobia_type)
 		phobia_type = pick(SStraumas.phobia_types)
 
-	gain_text = "<span class='warning'>Вы начинаете испытывать тревогу из-за [phobia_type]...</span>"
-	lose_text = "<span class='notice'>Вы больше не боитесь [phobia_type].</span>"
-	scan_desc += " ([phobia_type])"
+	var/phobia_display = phobia_display_names[phobia_type] || phobia_type
+	gain_text = "<span class='warning'>Вы начинаете испытывать тревогу из-за [phobia_display]...</span>"
+	lose_text = "<span class='notice'>Вы больше не боитесь [phobia_display].</span>"
+	scan_desc += " ([phobia_display])"
 	trigger_words = SStraumas.phobia_words[phobia_type]
 	trigger_mobs = SStraumas.phobia_mobs[phobia_type]
 	trigger_objs = SStraumas.phobia_objs[phobia_type]
