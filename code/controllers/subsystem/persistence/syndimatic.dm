@@ -21,6 +21,7 @@
 	var/list/syndimatic_media = list()
 	var/list/syndimatic_ranked_comments = list()
 	var/list/syndimatic_posts_by_account = list()
+	var/list/syndimatic_accounts_pruning = list()
 	// Временный индекс публикаций без ключа аккаунта и их счётчик смен.
 	var/list/syndimatic_legacy_posts = list()
 	var/syndimatic_legacy_round = 0
@@ -99,8 +100,11 @@
 
 /datum/controller/subsystem/persistence/proc/on_syndimatic_round_start()
 	SIGNAL_HANDLER
+	INVOKE_ASYNC(src, PROC_REF(refresh_syndimatic_on_round_start))
+
+/datum/controller/subsystem/persistence/proc/refresh_syndimatic_on_round_start()
 	prune_legacy_syndimatic_posts()
-	INVOKE_ASYNC(src, PROC_REF(notify_syndimatic_viewers))
+	notify_syndimatic_viewers()
 
 // Временная очистка по возрасту только для постов старого формата. Удалить прок и его вызов после перехода.
 /datum/controller/subsystem/persistence/proc/prune_legacy_syndimatic_posts()
@@ -116,6 +120,7 @@
 		var/list/post = syndimatic_posts[id]
 		if(syndimatic_legacy_round - post["round"] < SYNDIMATIC_LEGACY_POST_LIFETIME || !delete_syndimatic_post(id))
 			break
+		CHECK_TICK
 
 /proc/syndimatic_post_limit(account_ckey)
 	if(IS_CKEY_DONATOR_GROUP(account_ckey, DONATOR_GROUP_TIER_2))
@@ -248,6 +253,8 @@
 /datum/controller/subsystem/persistence/proc/publish_syndimatic_post(datum/mind/actor, datum/picture/photo, caption, photo_hash, preferred_limit)
 	var/account_ckey = actor.syndimatic_owner_ckey
 	var/account = rustg_hash_string(RUSTG_HASH_SHA256, "syndimatic/account/[account_ckey]")
+	if(syndimatic_accounts_pruning[account])
+		return null
 	var/id = rustg_generate_uuid_v7()
 	var/path = "[SYNDIMATIC_POSTS][id].sav"
 	var/thumbnail = pda_photo_thumbnail(photo.picture_image)
@@ -268,19 +275,36 @@
 		"thumbnail" = thumbnail,
 		"thumbnailUrl" = photo.picture_url ? html_decode(photo.picture_url) : null,
 	)
-	var/list/account_posts = syndimatic_posts_by_account[account]
 	var/limit = syndimatic_effective_post_limit(syndimatic_post_limit(account_ckey), preferred_limit)
-	while(length(account_posts) > limit)
-		if(delete_syndimatic_post(account_posts[length(account_posts)]))
-			continue
+	if(!prune_syndimatic_account_posts(account, limit))
 		// Если старый пост не удалился, откатываем новый, чтобы не превысить квоту.
-		if(delete_syndimatic_post(id))
+		if(!syndimatic_posts[id] || delete_syndimatic_post(id))
 			INVOKE_ASYNC(src, PROC_REF(notify_syndimatic_viewers))
 			return null
 		log_game("Syndimatic: не удалось освободить место и отменить публикацию [id].")
-		break
-	notify_syndimatic_subscribers(actor)
+	if(!syndimatic_posts[id])
+		return null
+	if(!QDELETED(actor))
+		notify_syndimatic_subscribers(actor)
 	return id
+
+/datum/controller/subsystem/persistence/proc/prune_syndimatic_account_posts(account, limit)
+	var/list/account_posts = syndimatic_posts_by_account[account]
+	if(length(account_posts) <= limit)
+		return TRUE
+	// Пока очистка уступает тик, другая публикация этого аккаунта не меняет его индекс.
+	syndimatic_accounts_pruning[account] = TRUE
+	. = TRUE
+	try
+		while(length(account_posts) > limit)
+			if(!delete_syndimatic_post(account_posts[length(account_posts)]))
+				. = FALSE
+				break
+			CHECK_TICK
+	catch(var/exception/error)
+		log_game("Syndimatic: ошибка очистки публикаций по квоте: [error.name]")
+		. = FALSE
+	syndimatic_accounts_pruning -= account
 
 /datum/controller/subsystem/persistence/proc/notify_syndimatic_subscribers(datum/mind/author)
 	for(var/datum/weakref/subscriber as anything in syndimatic_subscribers)

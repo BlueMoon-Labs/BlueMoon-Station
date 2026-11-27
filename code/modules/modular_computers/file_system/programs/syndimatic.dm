@@ -564,6 +564,11 @@
 				to_chat(user, span_warning("Этот снимок уже опубликован в ленте Syndimatic."))
 				return FALSE
 			var/id = SSpersistence.publish_syndimatic_post(actor, draft_photo, trim(params["caption"], PHOTO_CAPTION_LIMIT + 1), photo_hash, user.client?.prefs?.syndimatic_photo_limit)
+			// Пока очищалась квота, игрок мог закрыть окно или открыть другой черновик.
+			if(QDELETED(src) || draft_id != params["id"])
+				if(id)
+					SSpersistence.notify_syndimatic_viewers()
+				return FALSE
 			if(id)
 				post_id = id
 				post_media = draft_photo.photo_ui_media()

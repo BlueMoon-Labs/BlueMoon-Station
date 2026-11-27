@@ -869,8 +869,11 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 		icon_offsets["y"] = 0
 	if(!A || A.alpha <= 0)
 		return BLANK
-	if(photo_transform && is_camera_chat_appearance(A))
-		return null
+	if(photo_transform)
+		if(is_camera_chat_appearance(A))
+			return null
+		if(isnull(icon_offsets))
+			icon_offsets = list("x" = 0, "y" = 0)
 
 	var/noIcon = FALSE
 	if(start)
