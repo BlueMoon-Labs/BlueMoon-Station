@@ -2,6 +2,10 @@ import { useBackend } from '../../backend';
 import { Box, Button, Flex } from '../../components';
 
 type InputButtonsData = {
+  button_labels?: {
+    submit?: string;
+    cancel?: string;
+  };
   large_buttons: boolean;
   swapped_buttons: boolean;
 };
@@ -13,7 +17,7 @@ type InputButtonsProps = {
 
 export const InputButtons = (props: InputButtonsProps) => {
   const { act, data } = useBackend<InputButtonsData>();
-  const { large_buttons, swapped_buttons } = data;
+  const { button_labels, large_buttons, swapped_buttons } = data;
   const { input, message } = props;
   const submitButton = (
     <Button
@@ -28,7 +32,7 @@ export const InputButtons = (props: InputButtonsProps) => {
       textAlign="center"
       tooltip={large_buttons && message}
       width={!large_buttons && 6}>
-      {large_buttons ? 'SUBMIT' : 'Submit'}
+      {button_labels?.submit ?? (large_buttons ? 'SUBMIT' : 'Submit')}
     </Button>
   );
   const cancelButton = (
@@ -43,7 +47,7 @@ export const InputButtons = (props: InputButtonsProps) => {
       pt={large_buttons ? 0.33 : 0}
       textAlign="center"
       width={!large_buttons && 6}>
-      {large_buttons ? 'CANCEL' : 'Cancel'}
+      {button_labels?.cancel ?? (large_buttons ? 'CANCEL' : 'Cancel')}
     </Button>
   );
 

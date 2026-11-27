@@ -187,7 +187,10 @@
 	AddElement(/datum/element/polychromic, poly_colors, poly_states)
 
 /obj/item/clothing/neck/petcollar/attack_self(mob/user)
-	tagname = stripped_input(user, "Would you like to change the name on the tag?", "Name your new pet", tagname, MAX_NAME_LEN)
+	var/new_tagname = tgui_input_text(user, "Хотите изменить имя на бирке?", "Имя питомца", html_decode(tagname || ""), MAX_NAME_LEN, encode = TRUE, button_labels = list("submit" = "ОК", "cancel" = "Отмена"))
+	if(isnull(new_tagname) || QDELETED(src))
+		return
+	tagname = new_tagname
 	name = tagname ? "[initial(name)] - [tagname]" : initial(name)
 
 /obj/item/clothing/neck/petcollar/ribbon

@@ -14,8 +14,9 @@
  * * multiline -  Bool that determines if the input box is much larger. Good for large messages, laws, etc.
  * * encode - Toggling this determines if input is filtered via html_encode. Setting this to FALSE gives raw input.
  * * timeout - The timeout of the textbox, after which the modal will close and qdel itself. Set to zero for no timeout.
+ * * button_labels - Optional TGUI labels keyed by "submit" and "cancel".
  */
-/proc/tgui_input_text(mob/user, message = "", title = "Text Input", default, max_length = INFINITY, multiline = FALSE, encode = FALSE, timeout = 0, prevent_enter = FALSE, hint = null)
+/proc/tgui_input_text(mob/user, message = "", title = "Text Input", default, max_length = INFINITY, multiline = FALSE, encode = FALSE, timeout = 0, prevent_enter = FALSE, hint = null, list/button_labels = null)
 	if (istext(user))
 		stack_trace("tgui_input_text() received text for user instead of mob")
 		return
@@ -46,6 +47,7 @@
 			end_native_prompt(prompt_mob)
 			return strip_control_chars(native_answer)
 	var/datum/tgui_input_text/text_input = new(user, message, title, default, max_length, multiline, encode, timeout, prevent_enter, hint)
+	text_input.button_labels = button_labels
 	text_input.ui_interact(user)
 	text_input.wait()
 	if (text_input)
@@ -59,6 +61,8 @@
  * a message and has an input for text entry.
  */
 /datum/tgui_input_text
+	/// Optional labels for the submit and cancel buttons.
+	var/list/button_labels
 	/// Boolean field describing if the tgui_input_text was closed by the user.
 	var/closed
 	/// The default (or current) value, shown as a default.
@@ -128,6 +132,8 @@
 
 /datum/tgui_input_text/ui_static_data(mob/user)
 	var/list/data = list()
+	if(button_labels)
+		data["button_labels"] = button_labels
 	data["large_buttons"] = user.client.prefs.tgui_large_buttons
 	data["max_length"] = max_length
 	data["message"] = message

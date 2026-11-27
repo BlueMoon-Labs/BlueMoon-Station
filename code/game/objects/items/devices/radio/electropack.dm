@@ -203,10 +203,10 @@
 
 /obj/item/electropack/shockcollar/attackby(obj/item/W, mob/user, params) //moves it here because on_click is being bad
 	if(istype(W, /obj/item/pen))
-		var/t = stripped_input(user, "Would you like to change the name on the tag?", "Name your new pet", tagname ? tagname : "Spot", MAX_NAME_LEN)
-		if(t)
-			tagname = t
-			name = "[initial(name)] - [t]"
+		var/new_tagname = tgui_input_text(user, "Хотите изменить имя на бирке?", "Имя питомца", html_decode(tagname || "Пятнышко"), MAX_NAME_LEN, encode = TRUE, button_labels = list("submit" = "ОК", "cancel" = "Отмена"))
+		if(new_tagname && !QDELETED(src))
+			tagname = new_tagname
+			name = "[initial(name)] - [tagname]"
 		return
 	if(istype(W, /obj/item/clothing/head/helmet)) //lazy method of denying this
 		return
