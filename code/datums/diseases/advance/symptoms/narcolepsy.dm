@@ -14,7 +14,7 @@ Bonus
 */
 /datum/symptom/narcolepsy
 	name = "Narcolepsy"
-	desc = "The virus causes a hormone imbalance, making the host sleepy and narcoleptic."
+	desc = "Вирус вызывает гормональный дисбаланс, делая хозяина сонливым и нарколептиком."
 	stealth = -1
 	resistance = -2
 	stage_speed = -3
@@ -27,8 +27,8 @@ Bonus
 	var/sleepy_ticks = 0
 	var/stamina = FALSE
 	threshold_desc = list(
-		"Transmission 4" = "Causes the host to periodically emit a yawn that spreads the virus in a manner similar to that of a sneeze.",
-		"Stage Speed 10" = "Causes narcolepsy more often, increasing the chance of the host falling asleep.",
+		"Передача 4" = "Заставляет хозяина периодически зевать, распространяя вирус подобно чиханию.",
+		"Скорость стадии 10" = "Нарколепсия возникает чаще, увеличивая шанс заснуть.",
 	)
 
 /datum/symptom/narcolepsy/Start(datum/disease/advance/A)
@@ -63,28 +63,28 @@ Bonus
 	switch(A.stage)
 		if(1)
 			if(prob(10))
-				to_chat(M, "<span class='warning'>You feel tired.</span>")
+				to_chat(M, "<span class='warning'>Вы чувствуете усталость.</span>")
 		if(2)
 			if(prob(10))
-				to_chat(M, "<span class='warning'>You feel very tired.</span>")
+				to_chat(M, "<span class='warning'>Вы чувствуете сильную усталость.</span>")
 				sleepy_ticks += rand(10,14)
 				if(stamina)
 					M.adjustStaminaLoss(10)
 		if(3)
 			if(prob(15))
-				to_chat(M, "<span class='warning'>You try to focus on staying awake.</span>")
+				to_chat(M, "<span class='warning'>Вы пытаетесь сосредоточиться, чтобы не заснуть.</span>")
 				sleepy_ticks += rand(10,14)
 				if(stamina)
 					M.adjustStaminaLoss(15)
 		if(4)
 			if(prob(20))
-				to_chat(M, "<span class='warning'>You nod off for a moment.</span>")
+				to_chat(M, "<span class='warning'>Вы на мгновение отключаетесь.</span>")
 				sleepy_ticks += rand(10,14)
 				if(stamina)
 					M.adjustStaminaLoss(20)
 		if(5)
 			if(prob(25))
-				to_chat(M, "<span class='warning'>[pick("So tired...","You feel very sleepy.","You have a hard time keeping your eyes open.","You try to stay awake.")]</span>")
+				to_chat(M, "<span class='warning'>[pick("Так устал...","Вы чувствуете сильную сонливость.","Вам трудно держать глаза открытыми.","Вы пытаетесь не заснуть.")]</span>")
 				M.drowsyness = max(M.drowsyness, 2)
 				sleepy_ticks += rand(10,14)
 				if(stamina)

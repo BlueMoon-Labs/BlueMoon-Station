@@ -1,14 +1,14 @@
 /datum/disease/magnitis
 	name = "Magnitis"
 	max_stages = 4
-	spread_text = "Airborne"
-	cure_text = "Iron"
+	spread_text = "Воздушно-капельный"
+	cure_text = "Железо"
 	cures = list(/datum/reagent/iron)
 	agent = "Fukkos Miracos"
 	viable_mobtypes = list(/mob/living/carbon/human)
 	disease_flags = CAN_CARRY|CAN_RESIST|CURABLE
 	permeability_mod = 0.75
-	desc = "This disease disrupts the magnetic field of your body, making it act as if a powerful magnet. Injections of iron help stabilize the field."
+	desc = "Эта болезнь нарушает магнитное поле тела, заставляя его действовать как мощный магнит. Инъекции железа помогают стабилизировать поле."
 	severity = DISEASE_SEVERITY_MEDIUM
 	infectable_biotypes = MOB_ORGANIC|MOB_ROBOTIC
 	process_dead = TRUE
@@ -18,7 +18,7 @@
 	switch(stage)
 		if(2)
 			if(prob(2))
-				to_chat(affected_mob, "<span class='danger'>You feel a slight shock course through your body.</span>")
+				to_chat(affected_mob, "<span class='danger'>Вы чувствуете лёгкий удар током по телу.</span>")
 			if(prob(2))
 				for(var/obj/M in orange(2,affected_mob))
 					if(!M.anchored && (M.flags_1 & CONDUCT_1))
@@ -29,9 +29,9 @@
 					step_towards(S,affected_mob)
 		if(3)
 			if(prob(2))
-				to_chat(affected_mob, "<span class='danger'>You feel a strong shock course through your body.</span>")
+				to_chat(affected_mob, "<span class='danger'>Вы чувствуете сильный удар током по телу.</span>")
 			if(prob(2))
-				to_chat(affected_mob, "<span class='danger'>You feel like clowning around.</span>")
+				to_chat(affected_mob, "<span class='danger'>Вам хочется клоунады.</span>")
 			if(prob(4))
 				for(var/obj/M in orange(4,affected_mob))
 					if(!M.anchored && (M.flags_1 & CONDUCT_1))
@@ -48,9 +48,9 @@
 						step_towards(S,affected_mob)
 		if(4)
 			if(prob(2))
-				to_chat(affected_mob, "<span class='danger'>You feel a powerful shock course through your body.</span>")
+				to_chat(affected_mob, "<span class='danger'>Вы чувствуете мощный удар током по телу.</span>")
 			if(prob(2))
-				to_chat(affected_mob, "<span class='danger'>You query upon the nature of miracles.</span>")
+				to_chat(affected_mob, "<span class='danger'>Вы размышляете о природе чудес.</span>")
 			if(prob(8))
 				for(var/obj/M in orange(6,affected_mob))
 					if(!M.anchored && (M.flags_1 & CONDUCT_1))

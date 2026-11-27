@@ -18,7 +18,7 @@ Bonus
 /datum/symptom/dizzy // Not the egg
 
 	name = "Dizziness"
-	desc = "The virus causes inflammation of the vestibular system, leading to bouts of dizziness."
+	desc = "Вирус вызывает воспаление вестибулярной системы, приводящее к приступам головокружения."
 	resistance = -2
 	stage_speed = -3
 	transmittable = -1
@@ -28,8 +28,8 @@ Bonus
 	symptom_delay_min = 15
 	symptom_delay_max = 40
 	threshold_desc = list(
-		"Transmission 6" = "Also causes druggy vision.",
-		"Stealth 4" = "The symptom remains hidden until active.",
+		"Передача 6" = "Также вызывает дурманящее зрение.",
+		"Скрытность 4" = "Симптом остаётся скрытым до активации.",
 	)
 
 /datum/symptom/dizzy/Start(datum/disease/advance/A)
@@ -47,9 +47,9 @@ Bonus
 	switch(A.stage)
 		if(1, 2, 3, 4)
 			if(prob(base_message_chance) && !suppress_warning)
-				to_chat(M, "<span class='warning'>[pick("You feel dizzy.", "Your head spins.")]</span>")
+				to_chat(M, "<span class='warning'>[pick("Вам кружится голова.", "Ваша голова кружится.")]</span>")
 		else
-			to_chat(M, "<span class='userdanger'>A wave of dizziness washes over you!</span>")
+			to_chat(M, "<span class='userdanger'>На вас накатывает волна головокружения!</span>")
 			M.Dizzy(5)
 			if(power >= 2)
 				M.set_drugginess(5)

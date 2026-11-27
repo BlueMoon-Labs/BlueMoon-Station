@@ -64,7 +64,7 @@
 		if(target.client.prefs.chat_on_map)
 			target.create_chat_message(mother, understood_language, text, spans)
 		else
-			var/image/speech_overlay = image('icons/mob/talk.dmi', mother, "default0", FLY_LAYER)
+			var/image/speech_overlay = image(SPEECH_BUBBLE_ICON, mother, "default0", FLY_LAYER)
 			INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(flick_overlay), speech_overlay, list(target.client), 30)
 
 	var/message = target.compose_message(mother, understood_language, text, null, null, null, TRUE)

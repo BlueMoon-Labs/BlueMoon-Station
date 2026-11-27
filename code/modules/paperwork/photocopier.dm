@@ -36,6 +36,9 @@
 /// Photocopier copy fee.
 #define PHOTOCOPIER_FEE 5
 
+#define PHOTOCOPIER_COPY_TIME (4 SECONDS)
+#define PHOTOCOPIER_PRINT_SOUND 'sound/effects/printer.ogg'
+
 /// Paper blanks (form templates, basically). Loaded from `config/blanks.json`.
 /// If invalid or not found, set to null.
 GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
@@ -84,6 +87,8 @@ GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
 	var/starting_paper = 30
 	/// A stack for all the empty paper we have newly inserted (LIFO)
 	var/list/paper_stack = list()
+	var/obj/item/photo/pda_printed_photo
+	var/pda_print_timer
 
 /obj/machinery/photocopier/Initialize(mapload)
 	. = ..()
@@ -99,6 +104,11 @@ GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
 		paper_stack -= gone
 
 /obj/machinery/photocopier/Destroy()
+	if(pda_print_timer)
+		deltimer(pda_print_timer)
+		pda_print_timer = null
+	QDEL_NULL(pda_printed_photo)
+
 	// object_copy can be a traitor objective, don't qdel
 	if(object_copy)
 		object_copy.forceMove(drop_location())
@@ -226,6 +236,8 @@ GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
 				balloon_alert(usr, "Буфер обмена пуст!")
 				return FALSE
 			var/datum/picture/selection = tempAI.aicamera.selectpicture(usr)
+			if(!selection || QDELETED(src) || check_busy(usr))
+				return FALSE
 			do_copies(CALLBACK(src, PROC_REF(make_photo_copy), selection, PHOTO_COLOR), usr, PHOTO_PAPER_USE, PHOTO_TONER_USE, 1)
 			return TRUE
 
@@ -321,8 +333,8 @@ GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
 		if(isnull(copied_obj)) // something went wrong, so other copies will go wrong too
 			break
 
-		playsound(src, 'sound/effects/printer.ogg', 50, vary = FALSE)
-		sleep(4 SECONDS)
+		playsound(src, PHOTOCOPIER_PRINT_SOUND, 50, vary = FALSE)
+		sleep(PHOTOCOPIER_COPY_TIME)
 
 		// reveal our copied item
 		copied_obj.forceMove(drop_location())
@@ -418,6 +430,39 @@ GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
 	delete_paper(PHOTO_PAPER_USE)
 	toner_cartridge.charges -= PHOTO_TONER_USE
 	return copied_pic
+
+/obj/machinery/photocopier/proc/pda_photo_print_error()
+	if(!is_operational())
+		return "Принтер не работает."
+	if(busy)
+		return "Принтер занят."
+	if(!toner_cartridge || toner_cartridge.charges < PHOTO_TONER_USE)
+		return "В принтере недостаточно тонера."
+	if(get_paper_count() < PHOTO_PAPER_USE)
+		return "В принтере закончилась бумага."
+
+/obj/machinery/photocopier/proc/start_pda_photo_print(datum/picture/photo)
+	var/error_message = pda_photo_print_error()
+	if(error_message)
+		return error_message
+	if(QDELETED(photo))
+		return "Фотография недоступна."
+	busy = TRUE
+	copies_left = 1
+	pda_printed_photo = make_photo_copy(photo, PHOTO_COLOR)
+	use_power(ACTIVE_POWER_USE)
+	playsound(src, PHOTOCOPIER_PRINT_SOUND, 50, vary = FALSE)
+	pda_print_timer = addtimer(CALLBACK(src, PROC_REF(finish_pda_photo_print)), PHOTOCOPIER_COPY_TIME, TIMER_STOPPABLE)
+
+/obj/machinery/photocopier/proc/finish_pda_photo_print()
+	pda_print_timer = null
+	var/obj/item/photo/printed_photo = pda_printed_photo
+	pda_printed_photo = null
+	if(!QDELETED(printed_photo))
+		printed_photo.forceMove(drop_location())
+		give_pixel_offset(printed_photo)
+	copies_left = 0
+	reset_busy()
 
 /**
  * Handles the copying of documents.
@@ -660,6 +705,8 @@ GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
 	max_charges = 200
 
 #undef PHOTOCOPIER_FEE
+#undef PHOTOCOPIER_COPY_TIME
+#undef PHOTOCOPIER_PRINT_SOUND
 #undef BLANKS_FILE_NAME
 #undef PAPER_PAPER_USE
 #undef PHOTO_PAPER_USE

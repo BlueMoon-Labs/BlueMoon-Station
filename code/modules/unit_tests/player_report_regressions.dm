@@ -124,6 +124,105 @@
 /datum/unit_test/mime_pda_and_lipstick
 	var/saved_debug_signal
 
+/datum/unit_test/pda_camera_share_photo
+	var/saved_debug_signal
+
+/datum/unit_test/pda_messenger_new_recipient_draft/Run()
+	var/obj/item/modular_computer/pda/source = allocate(/obj/item/modular_computer/pda)
+	var/obj/item/modular_computer/pda/target = allocate(/obj/item/modular_computer/pda)
+	target.imprint_id("Тестовый получатель", "Повар")
+	var/datum/computer_file/program/messenger/source_app = locate() in source.get_all_files()
+	var/datum/computer_file/program/messenger/target_app = locate() in target.get_all_files()
+	var/target_ref = REF(target_app)
+	GLOB.pda_messenger_directory_time = -1
+	TEST_ASSERT(target_ref in source_app.get_messengers(), "Получателя нет в адресной книге.")
+	source_app.view_messages(target_ref)
+	TEST_ASSERT_NULL(source_app.find_chat_by_recipient(target_ref), "Открытие нового адресата создало пустой чат.")
+	source_app.view_messages(null, "")
+	TEST_ASSERT_NULL(source_app.find_chat_by_recipient(target_ref), "Выход без черновика создал пустой чат.")
+
+	source_app.view_messages(target_ref)
+	source_app.view_messages(null, "Черновик новому адресату")
+	var/datum/pda_chat/chat = source_app.find_chat_by_recipient(target_ref)
+	TEST_ASSERT_NOTNULL(chat, "Выход с черновиком не создал чат.")
+	TEST_ASSERT_EQUAL(chat.message_draft, "Черновик новому адресату", "Черновик нового адресата потерян.")
+	TEST_ASSERT(chat.visible_in_recents, "Чат с черновиком пропал из недавних.")
+	source_app.view_messages(target_ref)
+	TEST_ASSERT_EQUAL(source_app.viewing_messages_of, REF(chat), "Адресная книга не открыла чат с черновиком.")
+	source_app.view_messages(null, "")
+	TEST_ASSERT_EQUAL(chat.message_draft, "", "Пустой ввод не очистил предыдущий черновик.")
+
+/datum/unit_test/pda_camera_share_photo/Destroy()
+	if(!isnull(saved_debug_signal))
+		SSnetworks.ntnet_debug_global_signal = saved_debug_signal
+	return ..()
+
+/datum/unit_test/pda_camera_share_photo/Run()
+	var/mob/living/carbon/human/sender = allocate(/mob/living/carbon/human)
+	var/obj/item/modular_computer/pda/source = allocate(/obj/item/modular_computer/pda)
+	var/obj/item/modular_computer/pda/target = allocate(/obj/item/modular_computer/pda)
+	sender.put_in_hands(source)
+	source.imprint_id("Фотограф", "Ассистент")
+	target.imprint_id("Получатель", "Повар")
+	var/datum/computer_file/program/pda_camera/camera = locate() in source.get_all_files()
+	var/datum/computer_file/program/messenger/source_app = locate() in source.get_all_files()
+	var/datum/computer_file/program/messenger/target_app = locate() in target.get_all_files()
+	TEST_ASSERT(camera && source_app && target_app, "На тестовых ПДА отсутствует камера или мессенджер.")
+	saved_debug_signal = SSnetworks.ntnet_debug_global_signal
+	SSnetworks.ntnet_debug_global_signal = TRUE
+	GLOB.pda_messenger_directory_time = -1
+	camera.share_contacts = source_app.get_messengers()
+	var/contact_ref = REF(target_app)
+	TEST_ASSERT(contact_ref in camera.share_contacts, "Получателя нет в адресной книге.")
+	TEST_ASSERT_EQUAL(camera.get_share_messenger(sender), source_app, "Камера не видит мессенджер своего ПДА.")
+	remove_messenger(source_app)
+	remove_messenger(target_app)
+
+	var/datum/picture/draft = allocate(/datum/picture)
+	draft.picture_image = icon('icons/obj/items_and_weapons.dmi', "photo")
+	source.picture = draft
+	source_app.admin_photo_url = "https://example.invalid/draft.png"
+	var/datum/picture/local_photo = new
+	local_photo.picture_image = icon('icons/effects/camera_image_base.dmi', "")
+	camera.tab = "local"
+	camera.selected_id = "local"
+	camera.local_photos = list("local" = local_photo)
+	TEST_ASSERT(camera.share_photo(sender, contact_ref), "Локальный снимок не попал в черновик.")
+	TEST_ASSERT_EQUAL(source.active_program, source_app, "После выбора получателя не открылся мессенджер.")
+	TEST_ASSERT_NULL(target_app.find_chat_by_recipient(REF(source_app)), "Выбор получателя отправил сообщение без подтверждения.")
+	var/datum/pda_chat/draft_chat = source_app.get_compose_chat()
+	var/base64 = local_photo.get_base64()
+	TEST_ASSERT_EQUAL(draft_chat?.photo_attachment, "data:image/png;base64,[base64]", "В черновик попал другой снимок.")
+	TEST_ASSERT(source_app.send_chat_message(sender, "Подпись к снимку", draft_chat), "Снимок с подписью не отправился.")
+	TEST_ASSERT_NULL(draft_chat.photo_attachment, "Успешно отправленное вложение осталось в черновике.")
+	var/datum/pda_chat/chat = target_app.find_chat_by_recipient(REF(source_app))
+	TEST_ASSERT(chat && length(chat.messages) == 1, "Получатель не получил локальный снимок.")
+	var/datum/pda_message/received = chat.messages[1]
+	TEST_ASSERT_EQUAL(received.photo_name, "data:image/png;base64,[base64]", "Получен другой снимок.")
+	TEST_ASSERT_EQUAL(received.message, "Подпись к снимку", "Текст не прошёл вместе с вложением.")
+	TEST_ASSERT_EQUAL(source.picture, draft, "Снимок в черновике мессенджера заменён.")
+	TEST_ASSERT_EQUAL(source_app.admin_photo_url, "https://example.invalid/draft.png", "Ссылка в черновике мессенджера сброшена.")
+
+	COOLDOWN_RESET(source_app, last_text)
+	TEST_ASSERT(source.switch_program(camera, sender), "Не удалось перейти к галерее.")
+	camera.tab = "cloud"
+	camera.selected_id = "cloud"
+	camera.cloud_selection = new
+	var/album_url = "https://example.invalid/album.png"
+	camera.cloud_selection.picture_url = album_url
+	draft_chat.message_draft = "Текст до выбора снимка"
+	camera.share_contacts = source_app.get_messengers()
+	target.toff = TRUE
+	TEST_ASSERT(!camera.share_photo(sender, contact_ref), "Выключенный ПДА получил снимок.")
+	target.toff = FALSE
+	TEST_ASSERT(camera.open_photo_chat(sender, source_app, draft_chat, camera.get_selection()), "Облачный снимок не попал в черновик.")
+	TEST_ASSERT_EQUAL(draft_chat.message_draft, "Текст до выбора снимка", "Выбор снимка стёр набранный текст.")
+	TEST_ASSERT_EQUAL(draft_chat.photo_attachment, album_url, "После закрытия галереи вложение пропало.")
+	TEST_ASSERT(source_app.send_chat_message(sender, draft_chat.message_draft, draft_chat), "Не удалось отправить облачный снимок.")
+	TEST_ASSERT_EQUAL(length(chat.messages), 2, "Облачный снимок не появился в переписке.")
+	received = chat.messages[2]
+	TEST_ASSERT_EQUAL(received.photo_name, album_url, "Потеряна ссылка на снимок из альбома.")
+
 /datum/unit_test/mime_pda_and_lipstick/Destroy()
 	if(!isnull(saved_debug_signal))
 		SSnetworks.ntnet_debug_global_signal = saved_debug_signal

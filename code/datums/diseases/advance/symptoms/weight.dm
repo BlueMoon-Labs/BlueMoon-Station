@@ -19,7 +19,7 @@ Bonus
 /datum/symptom/weight_loss
 
 	name = "Weight Loss"
-	desc = "The virus mutates the host's metabolism, making it almost unable to gain nutrition from food."
+	desc = "Вирус мутирует метаболизм хозяина, делая его почти неспособным получать питание из пищи."
 	stealth = -2
 	resistance = 2
 	stage_speed = -2
@@ -30,7 +30,7 @@ Bonus
 	symptom_delay_min = 15
 	symptom_delay_max = 45
 	threshold_desc = list(
-		"Stealth 4" = "The symptom is less noticeable."
+		"Скрытность 4" = "Симптом менее заметен."
 	)
 
 /datum/symptom/weight_loss/Start(datum/disease/advance/A)
@@ -46,8 +46,8 @@ Bonus
 	switch(A.stage)
 		if(1, 2, 3, 4)
 			if(prob(base_message_chance))
-				to_chat(M, "<span class='warning'>[pick("You feel hungry.", "You crave for food.")]</span>")
+				to_chat(M, "<span class='warning'>[pick("Вы чувствуете голод.", "Вам хочется есть.")]</span>")
 		else
-			to_chat(M, "<span class='warning'><i>[pick("So hungry...", "You'd kill someone for a bite of food...", "Hunger cramps seize you...")]</i></span>")
+			to_chat(M, "<span class='warning'><i>[pick("Так голоден...", "Вы бы убили за кусочек еды...", "Вас хватают голодные спазмы...")]</i></span>")
 			M.overeatduration = max(M.overeatduration - 100, 0)
 			M.adjust_nutrition(-100)

@@ -3,7 +3,7 @@
 /datum/symptom
 	// Buffs/Debuffs the symptom has to the overall engineered disease.
 	var/name = ""
-	var/desc = "If you see this something went very wrong." //Basic symptom description
+	var/desc = "Если вы это видите, что-то пошло очень не так." //Basic symptom description
 	var/threshold_desc = "" //Description of threshold effects
 	var/stealth = 0
 	var/resistance = 0

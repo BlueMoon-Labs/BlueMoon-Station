@@ -1,6 +1,6 @@
 /obj/effect/overlay/typing_indicator/additional
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	icon = 'icons/mob/talk.dmi'
+	icon = SPEECH_BUBBLE_ICON
 	appearance_flags = RESET_COLOR | TILE_BOUND | PIXEL_SCALE
 	layer = ABOVE_FLY_LAYER
 

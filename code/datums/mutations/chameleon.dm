@@ -2,7 +2,7 @@
 // Получение мутации будет усиливать квирк хамелеона, который работает "умнее"
 /datum/mutation/human/chameleon
 	name = "Chameleon"
-	desc = "A genome that causes the holder's skin to become transparent over time."
+	desc = "Геном, из-за которого кожа носителя со временем становится прозрачной."
 	quality = POSITIVE
 	mutator_security_level = CHAMELEON_PRINT_CODE
 	difficulty = 16

@@ -18,7 +18,7 @@ Bonus
 /datum/symptom/voice_change
 
 	name = "Voice Change"
-	desc = "The virus alters the pitch and tone of the host's vocal cords, changing how their voice sounds."
+	desc = "Вирус изменяет высоту и тембр голосовых связок хозяина, меняя звучание его голоса."
 	stealth = -1
 	resistance = -2
 	stage_speed = -2
@@ -31,9 +31,9 @@ Bonus
 	var/scramble_language = FALSE
 	var/datum/language/current_language
 	threshold_desc = list(
-		"Transmission 14" = "The host's language center of the brain is damaged, leading to complete inability to speak or understand any language.",
-		"Stage Speed 7" = "Changes voice more often.",
-		"Stealth 3" = "The symptom remains hidden until active."
+		"Передача 14" = "Языковой центр мозга хозяина повреждается, приводя к полной неспособности говорить или понимать любой язык.",
+		"Скорость стадий 7" = "Голос меняется чаще.",
+		"Скрытность 3" = "Симптом остаётся скрытым до активации."
 	)
 
 /datum/symptom/voice_change/Start(datum/disease/advance/A)
@@ -55,7 +55,7 @@ Bonus
 	switch(A.stage)
 		if(1, 2, 3, 4)
 			if(prob(base_message_chance) && !suppress_warning)
-				to_chat(M, "<span class='warning'>[pick("Your throat hurts.", "You clear your throat.")]</span>")
+				to_chat(M, "<span class='warning'>[pick("У вас болит горло.", "Вы прочищаете горло.")]</span>")
 		else
 			if(ishuman(M))
 				var/mob/living/carbon/human/H = M

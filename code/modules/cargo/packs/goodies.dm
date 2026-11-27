@@ -102,6 +102,12 @@
 	cost = 3000
 	contains = list(/obj/item/construction/rcd/industrial)
 
+/datum/supply_pack/goody/throwingknife
+	name = "Throwing knife"
+	desc = "Один нож, идеально отбалансированный для метания! Плох во всём остальном"
+	cost = 300
+	contains = list(/obj/item/kitchen/knife/combat/marksman)
+
 /datum/supply_pack/goody/radbgone
 	name = "Rradiation treatment kit Single-Pack"
 	desc = "Аптечка первой помощи, предназначенная для борьбы с последствиями радиационного облучения. Выбор 9 из 10 облученных инженеров."

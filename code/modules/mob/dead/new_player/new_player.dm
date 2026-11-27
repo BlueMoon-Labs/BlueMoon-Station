@@ -569,6 +569,7 @@
 	H.dna.update_dna_identity()
 	var/datum/mind/player_mind = mind
 	if(player_mind)
+		player_mind.set_syndimatic_character(client.prefs, client.ckey, H)
 		if(transfer_after)
 			player_mind.late_joiner = TRUE
 		player_mind.active = 0					//we wish to transfer the key manually

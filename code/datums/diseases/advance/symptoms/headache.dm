@@ -19,7 +19,7 @@ BONUS
 /datum/symptom/headache
 
 	name = "Headache"
-	desc = "The virus causes inflammation inside the brain, causing constant headaches."
+	desc = "Вирус вызывает воспаление внутри мозга, вызывая постоянные головные боли."
 	stealth = -1
 	resistance = 4
 	stage_speed = 2
@@ -30,9 +30,9 @@ BONUS
 	symptom_delay_min = 15
 	symptom_delay_max = 30
 	threshold_desc = list(
-		"Stage Speed 6" = "Headaches will cause severe pain, that weakens the host.",
-		"Stage Speed 9" = "Headaches become less frequent but far more intense, preventing any action from the host.",
-		"Stealth 4" = "Reduces headache frequency until later stages.",
+		"Скорость стадий 6" = "Головные боли вызывают сильную боль, ослабляющую хозяина.",
+		"Скорость стадий 9" = "Головные боли становятся реже, но гораздо интенсивнее, не позволяя хозяину действовать.",
+		"Скрытность 4" = "Снижает частоту головных болей до более поздних стадий.",
 	)
 
 /datum/symptom/headache/Start(datum/disease/advance/A)
@@ -53,10 +53,10 @@ BONUS
 	var/mob/living/M = A.affected_mob
 	if(power < 2)
 		if(prob(base_message_chance) || A.stage >=4)
-			to_chat(M, "<span class='warning'>[pick("Your head hurts.", "Your head pounds.")]</span>")
+			to_chat(M, "<span class='warning'>[pick("У вас болит голова.", "Ваша голова раскалывается.")]</span>")
 	if(power >= 2 && A.stage >= 4)
-		to_chat(M, "<span class='warning'>[pick("Your head hurts a lot.", "Your head pounds incessantly.")]</span>")
+		to_chat(M, "<span class='warning'>[pick("У вас сильно болит голова.", "Ваша голова нестерпимо раскалывается.")]</span>")
 		M.adjustStaminaLoss(25)
 	if(power >= 3 && A.stage >= 5)
-		to_chat(M, "<span class='userdanger'>[pick("Your head hurts!", "You feel a burning knife inside your brain!", "A wave of pain fills your head!")]</span>")
+		to_chat(M, "<span class='userdanger'>[pick("У вас болит голова!", "Вы чувствуете раскалённый нож внутри мозга!", "Волну боли захлёстывает вашу голову!")]</span>")
 		M.Stun(35)
