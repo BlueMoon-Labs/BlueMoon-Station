@@ -751,38 +751,36 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 		return ""
 	var/html = "<div style='padding:8px; font-family:\"Times New Roman\",serif; font-size:14px; line-height:1.5; color:#000; background:#fff;'>"
 	var/list/field_data_map = list()
-	var/list/sorted_field_indices = list()
 	if(LAZYLEN(paper.raw_field_input_data))
 		for(var/datum/paper_field/field in paper.raw_field_input_data)
 			field_data_map["[field.field_index]"] = field.field_data?.raw_text || ""
-			sorted_field_indices += field.field_index
-		sorted_field_indices = sortTim(sorted_field_indices, GLOBAL_PROC_REF(cmp_numeric_asc))
-	var/field_data_pos = 1
+	var/static/regex/field_marker = regex(@"\[_+\]")
+	var/field_index = 0
 	for(var/datum/paper_input/input as anything in paper.raw_text_inputs)
 		var/text = input.raw_text
-		// Заполнение документов между []
 		if(LAZYLEN(field_data_map))
 			var/search_pos = 1
 			var/start
-			var/end
-			while(search_pos && field_data_pos <= sorted_field_indices.len)
-				start = findtext(text, "\[", search_pos)
-				end = findtext(text, "\]", start)
-				if(!start || !end || end <= start + 1)
-					break
-				var/replacement = field_data_map["[sorted_field_indices[field_data_pos]]"]
-				text = copytext(text, 1, start) + replacement + copytext(text, end + 1)
+			while((start = field_marker.Find(text, search_pos)))
+				var/end = start + length(field_marker.match)
+				var/field_key = "[field_index++]"
+				if(!(field_key in field_data_map))
+					search_pos = end
+					continue
+				var/replacement = field_data_map[field_key]
+				if(input.advanced_html)
+					replacement = html_encode(replacement)
+				text = copytext(text, 1, start) + replacement + copytext(text, end)
 				search_pos = start + length(replacement)
-				field_data_pos++
 		if(!input.advanced_html)
 			text = html_encode(text)
 			text = replacetext(text, "\n", "<br>")
 		if(input.bold)
 			text = "<b>[text]</b>"
 		if(input.font)
-			text = "<span style='font-family:[input.font];'>[text]</span>"
+			text = "<span style='font-family:[html_encode(input.font)];'>[text]</span>"
 		if(input.colour)
-			text = "<span style='color:[input.colour];'>[text]</span>"
+			text = "<span style='color:[html_encode(input.colour)];'>[text]</span>"
 		html += text
 	html += "</div>"
 	return html

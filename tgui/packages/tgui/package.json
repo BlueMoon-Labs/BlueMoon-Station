@@ -6,7 +6,7 @@
     "@popperjs/core": "^2.11.8",
     "common": "workspace:*",
     "dateformat": "^5.0.3",
-    "dompurify": "^3.3.1",
+    "dompurify": "^3.5.0",
     "js-yaml": "^4.1.1",
     "marked": "^17.0.2",
     "react": "^19.2.4",

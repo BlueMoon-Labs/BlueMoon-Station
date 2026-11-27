@@ -775,7 +775,8 @@
 
 
 /mob/living/carbon/fully_replace_character_name(oldname,newname)
-	..()
+	if(!..())
+		return
 	if(dna)
 		dna.real_name = real_name
 

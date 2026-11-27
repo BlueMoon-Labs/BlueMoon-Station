@@ -14,6 +14,7 @@ import {
   Tabs,
 } from '../components';
 import { Window } from '../layouts';
+import { PaperHtml } from './common/PaperMarkup';
 
 const STATE_COLORS = {
   1: '#f87171',
@@ -859,10 +860,7 @@ const CommDetailPanel = (props) => {
           >
             {hasPaper ? (
               msg.paper_html ? (
-                <Box
-                  dangerouslySetInnerHTML={{ __html: msg.paper_html }}
-                  style={{ whiteSpace: 'normal' }}
-                />
+                <PaperHtml text={msg.paper_html} />
               ) : (
                 <Box
                   style={{
