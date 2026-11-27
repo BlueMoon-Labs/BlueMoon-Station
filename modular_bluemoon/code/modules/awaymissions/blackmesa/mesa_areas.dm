@@ -1,7 +1,8 @@
 /area/awaymission/ihategordon
 	name = "Main sector H complex"
-	shipambience ='modular_bluemoon/sound/ambience/mesa/mesaxenlab.ogg'
-	ambientsounds = list('modular_bluemoon/sound/ambience/mesa/mesainsideambience.ogg' , 'modular_bluemoon/sound/ambience/mesa/mesaamb1.ogg' , 'modular_bluemoon/sound/ambience/mesa/BMAS1.ogg' , 'modular_bluemoon/sound/ambience/mesa/BMAS2.ogg' , 'modular_bluemoon/sound/ambience/mesa/BMAS3.ogg' )
+	shipambience ='modular_bluemoon/sound/ambience/mesa/ambinside.ogg'
+	ambientsounds = list('modular_bluemoon/sound/ambience/mesa/metal1.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal2.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal3.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal5.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal6.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal7.ogg' )
+	area_flags = NOTELEPORT
 
 /area/awaymission/ihategordon/entrance
 	name = "Facility entrance"
@@ -82,6 +83,8 @@
 /area/awaymission/ihategordon/rocks
 	name = "Facility rocks"
 	icon_state = "awaycontent20"
+	outdoors = TRUE
+	var/initial_gas_mix = OPENTURF_DEFAULT_ATMOS
 
 /area/awaymission/ihategordon/dining_room
 	name = "main dining room"
@@ -94,6 +97,12 @@
 /area/awaymission/ihategordon/dorm_rooms
 	name = "restrooms"
 	icon_state = "awaycontent6"
+
+/area/awaymission/ihategordon/dorm_rooms/stillalive
+	name = "Still Alive Room"
+	icon_state = "awaycontent6"
+	shipambience = 'modular_bluemoon/sound/ambience/mesa/stillalive.ogg'
+	ambientsounds = null
 
 /area/awaymission/ihategordon/secret_rooms
 	name = "secret"
@@ -126,9 +135,148 @@
 /area/awaymission/ihategordon/outsideofmesa
 	name = "Outside of facility"
 	icon_state = "awaycontent6"
-	shipambience ='modular_bluemoon/sound/ambience/mesa/mesaoutsideambient.ogg'
-	ambientsounds = list('modular_bluemoon/sound/ambience/mesa/mesaoutsideambient.ogg','modular_bluemoon/sound/ambience/mesa/outsideofcomplex.ogg')
+	outdoors = TRUE
+	shipambience ='modular_bluemoon/sound/ambience/mesa/outside.ogg'
+	ambientsounds = list( 'modular_bluemoon/sound/ambience/mesa/battle1.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle2.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle3.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle4.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle5.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle6.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle7.ogg' )
+	var/initial_gas_mix = OPENTURF_DEFAULT_ATMOS
 
 /area/awaymission/ihategordon/outsideofmesa/hecu_camp
 	name = "Facility hecu main camp"
 	icon_state = "awaycontent15"
+	outdoors = TRUE
+
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone
+	name = "Facility restricted zone"
+	icon_state = "awaycontent25"
+	outdoors = TRUE
+	// Boss arena: silent zone - no battle ambients, no ship hum
+	shipambience = null
+	ambientsounds = null
+
+/area/awaymission/ihategordon/outsideofmesa/bombardment
+	name = "Bombardment Zone"
+	icon_state = "awaycontent26"
+	outdoors = TRUE
+
+
+/area/awaymission/ihategordon/hecuannouce
+	name = "hecu warning announcement area"
+	icon_state = "3"
+
+/area/awaymission/ihategordon/hecuannouce/Entered(atom/movable/arrived, atom/old_loc)
+	. = ..()
+	if(!isliving(arrived))
+		return
+	var/mob/living/player = arrived
+	if(!player.client || player.stat == DEAD || !SSblackmesa_events)
+		return
+	SSblackmesa_events.activate_hecu_roles()
+
+// =============================================================================
+// IHATEGORDON CUSTOM ZONES
+// Специальные зоны для кастомного космоса и ивентов
+// =============================================================================
+
+/area/awaymission/ihategordon/custom_space
+	name = "Ihategordon Void"
+	icon_state = "space"
+	always_unpowered = TRUE
+	power_environ = FALSE
+	power_light = FALSE
+	power_equip = FALSE
+	requires_power = FALSE
+	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	ambientsounds = null
+	var/ignore_mesa_events = TRUE
+
+/area/awaymission/ihategordon/custom_walking
+	name = "Ihategordon Walking Zone"
+	icon_state = "awaycontent1"
+	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	ambientsounds = null
+	has_gravity = TRUE
+	var/ignore_mesa_events = TRUE
+
+/area/awaymission/ihategordon/custom_event
+	name = "Ihategordon Event Zone"
+	icon_state = "awaycontent2"
+	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	ambientsounds = null
+	has_gravity = TRUE
+
+
+
+//боссы
+// Apache и Benrey - обычная локация комплекса: зоны живут внутри
+// restricted_zone (наследуют outdoors и тихий эмбиент арены).
+// Gonarch и Nihilanth - зоны зена, родитель custom_walking не трогаем.
+
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone/apache
+	name = "Apache Boss Battle"
+	icon_state = "awaycontent1"
+
+/area/awaymission/ihategordon/custom_walking/gonarch
+	name = "Gonarch Boss Battle"
+	icon_state = "awaycontent2"
+
+/area/awaymission/ihategordon/custom_walking/nihilanth
+	name = "Nihilanth Boss Battle"
+	icon_state = "awaycontent4"
+
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone/benrey
+	name = "Benrey Boss Battle"
+	icon_state = "awaycontent4"
+
+// =============================================================================
+// НАГРАДЫ ЗА БОССОВ
+// При гибели босса метадоллары получают ВСЕ игроки, находящиеся
+// в его зоне в момент убийства (и только в ней).
+// =============================================================================
+
+GLOBAL_VAR_INIT(mesa_boss_zone_rewards, list(
+	/mob/living/simple_animal/hostile/megafauna/helicopter = list(/area/awaymission/ihategordon/outsideofmesa/restricted_zone/apache, 5),
+	/mob/living/simple_animal/hostile/asteroid/elite/gonarch = list(/area/awaymission/ihategordon/custom_walking/gonarch, 3),
+	/mob/living/simple_animal/hostile/blackmesa/xen/nihilanth = list(/area/awaymission/ihategordon/custom_walking/nihilanth, 10),
+	/mob/living/simple_animal/hostile/boss/benrey = list(/area/awaymission/ihategordon/outsideofmesa/restricted_zone/benrey, 5),
+))
+
+/proc/mesa_boss_zone_reward(mob/living/boss)
+	if(QDELETED(boss))
+		return
+	var/list/reward = null
+	for(var/mob_type in GLOB.mesa_boss_zone_rewards)
+		if(istype(boss, mob_type))
+			reward = GLOB.mesa_boss_zone_rewards[mob_type]
+			break
+	if(!reward)
+		return
+	var/zone_type = reward[1]
+	var/reward_amount = reward[2]
+	var/paid = 0
+	// joined_player_list хранит ckey, а не client - итерируем живых игроков
+	// как в mesa_event_manager.dm и берём client из моба.
+	for(var/mob/living/M in GLOB.player_list)
+		if(!M || isnewplayer(M) || !isliving(M) || M.stat == DEAD || !M.client)
+			continue
+		var/turf/T = get_turf(M)
+		if(!T || !istype(get_area(T), zone_type))
+			continue
+		if(!SSmetadollars)
+			continue
+		SSmetadollars.add_amount(M.client, reward_amount, "mesa_boss")
+		paid++
+	if(!paid)
+		return
+	var/announce = "<h2><span class='greenannounce big'><b>[boss] повержен! Награда [reward_amount] М$ получена всеми бойцами в зоне.</b></span></h2>"
+	for(var/mob/living/M in GLOB.player_list)
+		if(!M || isnewplayer(M) || !isliving(M) || M.stat == DEAD)
+			continue
+		var/area/A = get_area(M)
+		var/turf/MT = get_turf(M)
+		if(!A || !MT)
+			continue
+		if(!istype(A, /area/awaymission/ihategordon) \
+			&& !(SSblackmesa_events && SSblackmesa_events.mesa_turf_in_mission(MT)))
+			continue
+		to_chat(M, announce)
+	log_game("MESA BOSS: [boss] погиб, награду в зоне получили [paid] игрок(ов).")

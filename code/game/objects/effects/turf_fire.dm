@@ -95,6 +95,7 @@
 		hex_color = fire_color
 		color = fire_color
 		base_icon_state = "greyscale"
+	attach_fire_smoke()
 	UpdateFireState()
 	alpha = 160 // be slightly transparent
 	//process() // process once instantly, helps prevent weird fire behavior
@@ -222,6 +223,8 @@
 		if(TURF_FIRE_STATE_LARGE)
 			icon_state = "[base_icon_state]_big"
 			set_light_range(3)
+	if(fire_smoke_holder && !QDELETED(fire_smoke_holder) && fire_smoke_holder.particles)
+		fire_smoke_holder.particles.spawning = current_fire_state * 2
 
 #undef TURF_FIRE_TEMP_BASE
 #undef TURF_FIRE_POWER_LOSS_ON_LOW_TEMP

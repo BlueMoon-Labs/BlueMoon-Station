@@ -190,6 +190,7 @@
 #include "binary_insert.dm"
 #include "bitrunning.dm"
 #include "bitrunning_avatar_disconnect.dm"
+#include "blackmesa_hecu_sleeper_damage.dm"
 #include "blob_multiz.dm"
 #include "blood_brothers.dm"
 #include "blood_brothers_bond.dm"

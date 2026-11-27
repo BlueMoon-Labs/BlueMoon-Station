@@ -44,11 +44,11 @@ SUBSYSTEM_DEF(ambience)
 			var/obj/machinery/quantum_server/server = avatar_connection?.server_ref?.resolve()
 			var/datum/lazy_template/virtual_domain/domain = server?.generated_domain
 			var/list/domain_tracks = domain?.ambient_sounds
-			if(domain_tracks?.len)
+			if(istype(domain_tracks, /list) && domain_tracks.len)
 				ambient_tracks = domain_tracks
 
 		//Run play_ambience() on the client-mob and set a cooldown
-		ambience_listening_clients[client_iterator] = world.time + current_area.play_ambience(client_mob, ambient_tracks?.len ? pick(ambient_tracks) : null)
+		ambience_listening_clients[client_iterator] = world.time + current_area.play_ambience(client_mob, istype(ambient_tracks, /list) && ambient_tracks.len ? pick(ambient_tracks) : null)
 
 		//We REALLY don't want runtimes in SSambience
 		if(client_iterator)
@@ -59,7 +59,7 @@ SUBSYSTEM_DEF(ambience)
 
 ///Attempts to play an ambient sound to a mob, returning the cooldown in deciseconds
 /area/proc/play_ambience(mob/M, sound/override_sound, volume = 27)
-	var/sound/new_sound = override_sound || pick(ambientsounds)
+	var/sound/new_sound = override_sound || (istype(ambientsounds, /list) && ambientsounds.len ? pick(ambientsounds) : null)
 	var/pref_vol = M.client?.prefs?.get_sound_volume("ambience") || volume
 	new_sound = sound(new_sound, repeat = 0, wait = 0, volume = pref_vol, channel = CHANNEL_AMBIENCE)
 	SEND_SOUND(M, new_sound)

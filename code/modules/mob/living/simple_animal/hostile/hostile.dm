@@ -111,7 +111,17 @@
 
 	if(!targets_from)
 		targets_from = src
-	wanted_objects = typecacheof(wanted_objects)
+	// typecacheof обходит всё дерево типов - кэшируем по типу моба, иначе
+	// каждая волна зомби платила полный проход на каждого моба. Copy() обязателен:
+	// некоторые сабтипы (bees) мутируют wanted_objects через -= / |=, а общий
+	// кэшированный ассоциативный массив протёк бы между экземплярами.
+	var/static/list/wanted_objects_cache = list()
+	var/list/cached_wanted_objects = wanted_objects_cache[type]
+	if(!cached_wanted_objects) {
+		cached_wanted_objects = typecacheof(wanted_objects)
+		wanted_objects_cache[type] = cached_wanted_objects
+	}
+	wanted_objects = cached_wanted_objects.Copy()
 
 	var/chosen_profile = select_ai_profile()
 	//Явно выключенные типы (AI_OFF на типе) - игровые оболочки и постоянные

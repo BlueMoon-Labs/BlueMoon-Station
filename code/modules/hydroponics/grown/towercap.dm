@@ -229,6 +229,7 @@
 		icon_state = burn_icon
 		burning = TRUE
 		set_light(6)
+		attach_fire_smoke()
 		Burn()
 		START_PROCESSING(SSobj, src)
 
@@ -283,6 +284,7 @@
 		icon_state = "bonfire"
 		burning = 0
 		set_light(0)
+		remove_fire_smoke()
 		STOP_PROCESSING(SSobj, src)
 
 /obj/structure/bonfire/buckle_mob(mob/living/M, force = FALSE, check_loc = TRUE)

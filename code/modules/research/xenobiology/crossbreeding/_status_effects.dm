@@ -910,6 +910,8 @@
 
 /datum/status_effect/stabilized/pink/tick()
 	for(var/mob/living/simple_animal/M in view(7,get_turf(owner)))
+		if(istype(M, /mob/living/simple_animal/hostile/infected))
+			continue
 		if(!(M in mobs))
 			mobs += M
 			M.apply_status_effect(/datum/status_effect/pinkdamagetracker)

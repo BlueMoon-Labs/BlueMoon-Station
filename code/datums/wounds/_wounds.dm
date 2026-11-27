@@ -176,7 +176,7 @@
 		var/vis_dist = COMBAT_MESSAGE_RANGE
 
 		if(severity != WOUND_SEVERITY_MODERATE)
-			msg = "<b>[msg]</b>"
+			msg = "<span class='danger big'><b>[limb.ru_name_capital] персонажа [victim] [occur_text]!</b></span>"
 			vis_dist = DEFAULT_MESSAGE_RANGE
 
 		victim.visible_message(msg, "<span class='userdanger'>Моя [limb.ru_name] [occur_text]!</span>", vision_distance = vis_dist)

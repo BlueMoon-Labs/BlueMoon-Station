@@ -43,6 +43,10 @@
 	footstep_type = FOOTSTEP_MOB_SHOE
 	alert_sounds = list('modular_bluemoon/sound/creatures/mesa/benrey/benreylaugh.ogg','modular_bluemoon/sound/creatures/mesa/benrey/youdie.ogg')
 
+/mob/living/simple_animal/hostile/boss/benrey/death(gibbed)
+	mesa_boss_zone_reward(src)
+	. = ..(gibbed)
+
 
 /datum/action/boss/benrey_summon_sketelons
 	name = "Summon skeletons"
@@ -120,7 +124,8 @@
 
 /obj/effect/temp_visual/benrey_death/Destroy()
 	for(var/mob/M in range(7,src))
-		shake_camera(M, 7, 1)
+		if(istype(get_area(M), /area/awaymission/ihategordon))
+			shake_camera(M, 7, 1)
 	var/turf/T = get_turf(src)
 	playsound(T,'sound/magic/summon_magic.ogg', 50, 1, 1)
 	new /obj/effect/temp_visual/benrey_scatter(T)
@@ -178,3 +183,119 @@
 	knockdown = 0
 	icon = 'icons/effects/effects.dmi'
 	icon_state = "impact_laser_blue"
+
+// Sweetvoice hand item for emote - works like kiss emote
+/obj/item/hand_item/sweetvoice_blower
+	name = "sweet voice"
+	desc = "SWEET VOICE is ready to be deployed."
+	icon = 'icons/obj/projectiles.dmi'
+	icon_state = "red_laser"
+	var/list/intent_colors = list(
+		"help" = "#00ff00",   // Зеленый для помощи
+		"disarm" = "#ffff00", // Желтый для разоружения
+		"grab" = "#00ffff",   // Голубой для захвата
+		"harm" = "#ff0000"    // Красный для вреда
+	)
+	var/list/intent_pitches = list(
+		"help" = 1.2,    // Высокий тон для помощи
+		"disarm" = 1.0,  // Нормальный тон для разоружения
+		"grab" = 0.9,    // Низкий тон для захвата
+		"harm" = 0.8     // Самый низкий тон для вреда
+	)
+
+/obj/item/hand_item/sweetvoice_blower/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/two_handed, require_twohands=TRUE)
+
+/obj/item/hand_item/sweetvoice_blower/can_give()
+	return FALSE
+
+/obj/item/hand_item/sweetvoice_blower/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+	. = ..()
+
+	if(!isliving(user))
+		return
+
+	var/mob/living/L = user
+	var/user_intent = L.a_intent
+	var/projectile_color = intent_colors[user_intent] || "#ffffff"
+	var/sound_pitch = intent_pitches[user_intent] || 1.0
+
+	// Тон передаём через frequency (абсолютная частота = базовая 44100 Гц
+	// x множитель намерения), vary=TRUE включает её применение - иначе
+	// playsound возьмёт случайную частоту из get_rand_frequency().
+	playsound(user.loc, 'modular_bluemoon/sound/weapons/mesa/sweetvoice.ogg', 50, TRUE, 3, frequency = 44100 * sound_pitch)
+
+	var/obj/item/projectile/sweetvoice/blown_voice = new(get_turf(user))
+	blown_voice.color = projectile_color
+	user.visible_message("<b>[user]</b> издаёт сладкий голос в сторону [target]!", span_notice("Вы издаёте сладкий голос в сторону [target]!"))
+
+	//Shooting Code:
+	blown_voice.original = target
+	blown_voice.fired_from = user
+	blown_voice.pixels_per_second = TILES_TO_PIXELS(7) // Speed of sweet voice
+	blown_voice.firer = user // don't hit ourself that would be really annoying
+	blown_voice.impacted = list(user = TRUE) // just to make sure we don't hit the wearer
+	blown_voice.preparePixelProjectile(target, user)
+	blown_voice.fire()
+	qdel(src)
+
+// Sweetvoice projectile for emote - harmless fun projectile
+/obj/item/projectile/sweetvoice
+	name = "sweet voice"
+	icon = 'icons/obj/projectiles.dmi'
+	icon_state = "red_laser" // Using laser pointer dot icon
+	damage = 0
+	nodamage = TRUE
+	knockdown = 0
+	stamina = 0
+	pass_flags = PASSTABLE | PASSGLASS | PASSGRILLE
+	projectile_phasing = PASSTABLE | PASSGLASS | PASSGRILLE
+	range = 7
+	color = "#ffffff" // Dynamic color set by emote
+
+// Временное свечение sweet voice: живёт секунду, светит цветом снаряда и
+// следует за целью - собственный свет моба не трогаем.
+/obj/effect/temp_visual/sweetvoice_glow
+	name = "sweet voice glow"
+	desc = "A brief bloom of amplified voice-light."
+	density = FALSE
+	duration = 1 SECONDS
+	light_range = 2
+	light_power = 1
+	var/mob/living/glow_target
+	var/follow_timer
+
+/obj/effect/temp_visual/sweetvoice_glow/Initialize(mapload, mob/living/target = null, color = "#ffffff")
+	. = ..()
+	glow_target = target
+	light_color = color
+	if(istype(glow_target))
+		follow_timer = addtimer(CALLBACK(src, PROC_REF(follow_glow_target)), 0.4 SECONDS)
+
+/obj/effect/temp_visual/sweetvoice_glow/proc/follow_glow_target()
+	if(QDELETED(src) || QDELETED(glow_target) || glow_target.stat == DEAD)
+		return
+	var/turf/TT = get_turf(glow_target)
+	if(istype(TT) && TT != get_turf(src))
+		Move(TT)
+
+/obj/effect/temp_visual/sweetvoice_glow/Destroy()
+	deltimer(follow_timer)
+	..()
+
+/obj/item/projectile/sweetvoice/on_hit(atom/target, blocked = FALSE)
+	. = ..()
+	if(!target)
+		return
+
+	// Only affect living mobs
+	if(isliving(target))
+		var/mob/living/L = target
+		if(L == firer)
+			return // Don't affect the firer
+
+		// Свечение - отдельный временный источник света, привязанный к цели:
+		// set_light() на самом мобе затирал его собственный свет, а первый
+		// из двух таймеров гасил свечение второго попадания.
+		new /obj/effect/temp_visual/sweetvoice_glow(get_turf(L), L, color)
