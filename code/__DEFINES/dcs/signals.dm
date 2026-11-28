@@ -30,6 +30,8 @@
 #define COMSIG_GLOB_PRE_RANDOM_EVENT "!pre_random_event"
 	/// Do not allow this random event to continue.
 	#define CANCEL_PRE_RANDOM_EVENT (1<<0)
+/// a gun has fired its shot: (obj/item/gun/gun, mob/living/user, atom/target, projectile_type) - projectile_type is the chambered bullet's type before the shot, or null
+#define COMSIG_GLOB_GUN_FIRED "!gun_fired"
 
 /// a weather event of some kind occured
 #define COMSIG_WEATHER_TELEGRAPH(event_type) "!weather_telegraph [event_type]"
@@ -366,6 +368,9 @@
 #define COMSIG_GUN_AUTOFIRE_SELECTED "gun_autofire_selected"
 ///When a gun is switched off of automatic fire mode
 #define COMSIG_GUN_AUTOFIRE_DESELECTED "gun_autofire_deselected"
+///from base of /obj/item/gun/proc/process_fire() before the shot: (mob/living/user, atom/target)
+#define COMSIG_GUN_TRY_FIRE "gun_try_fire"
+	#define COMPONENT_CANCEL_GUN_FIRE (1<<0)
 ///The gun needs to update the gun hud!
 #define COMSIG_UPDATE_AMMO_HUD "update_ammo_hud"
 

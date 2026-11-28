@@ -122,6 +122,16 @@
 	cosmic.body.adjustStaminaLoss(20)
 	cosmic.body.Move(water_floor, NORTH)
 	TEST_ASSERT_EQUAL(cosmic.body.getStaminaLoss(), 14, "Шаг возле собственной звезды восстанавливает выносливость.")
+	var/datum/heretic_innate/hammer/heft = create_path(PATH_HAMMER)
+	var/mob/living/carbon/human/smith = heft.body
+	var/obj/item/shield/riot/tower/tower = allocate(/obj/item/shield/riot/tower)
+	smith.put_in_hands(tower)
+	smith.update_equipment_speed_mods()
+	TEST_ASSERT(!smith.has_movespeed_modifier(/datum/movespeed_modifier/equipment_speedmod), "Громоздкое в руках Молот не замедляет.")
+	TEST_ASSERT(LAZYACCESS(smith.movespeed_mod_immunities, "[/datum/movespeed_modifier/pull_slowdown]"), "Тащить тело Молоту не тяжело.")
+	heft.unbind()
+	TEST_ASSERT(smith.has_movespeed_modifier(/datum/movespeed_modifier/equipment_speedmod), "Без черты громоздкое в руках снова замедляет.")
+	TEST_ASSERT(!LAZYACCESS(smith.movespeed_mod_immunities, "[/datum/movespeed_modifier/pull_slowdown]"), "Без черты тащить снова тяжело.")
 
 /// Ответные черты получают заряд только от фактических ранений.
 /datum/unit_test/heretic_innates/damage/Run()
@@ -163,6 +173,25 @@
 	wax.next_tick = 0
 	wax.tick()
 	TEST_ASSERT_EQUAL(round(wax.reserve, DAMAGE_PRECISION), 8, "Горящий воск не лечит.")
+	var/datum/heretic_innate/lead/lead = create_path(PATH_LEAD)
+	var/mob/living/carbon/human/gunner = create_victim()
+	lead.body.adjustStaminaLoss(30)
+	heretic_lead_test_shot(gunner, lead.body)
+	TEST_ASSERT_EQUAL(round(lead.body.getStaminaLoss(), DAMAGE_PRECISION), 22, "Пуля в Свинец восстанавливает выносливость.")
+	heretic_lead_test_shot(gunner, lead.body)
+	TEST_ASSERT_EQUAL(round(lead.body.getStaminaLoss(), DAMAGE_PRECISION), 22, "Тугое ухо срабатывает раз в 6 секунд.")
+	var/datum/heretic_innate/dusk/dusk_innate = create_path(PATH_DUSK)
+	var/datum/eldritch_knowledge/base_dusk/dusk = dusk_innate.knowledge_ref.resolve()
+	dusk_light(dusk_innate.body, 0)
+	dusk.refresh_light()
+	dusk_innate.next_tick = 0
+	dusk_innate.tick()
+	TEST_ASSERT(HAS_TRAIT(dusk_innate.body, TRAIT_SILENT_STEP), "В тени шаги Сумрака беззвучны.")
+	dusk_light(dusk_innate.body, 1)
+	dusk.refresh_light()
+	dusk_innate.next_tick = 0
+	dusk_innate.tick()
+	TEST_ASSERT(!HAS_TRAIT(dusk_innate.body, TRAIT_SILENT_STEP), "На свету шаги Сумрака слышны.")
 
 /// Перенос тела, смерть и снятие роли не оставляют черты и заряды прежнему телу.
 /datum/unit_test/heretic_innates/lifecycle/Run()

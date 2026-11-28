@@ -18,6 +18,8 @@
 	var/list/ritual_hints
 	/// Причина последнего провала on_finished_recipe; руна показывает её исполнителю и пишет в лог.
 	var/finish_failure_reason
+	/// Слабые ссылки на созданные этим знанием клинки, старые первыми; общий предел HERETIC_BLADE_LIMIT. Ленивый список: только LAZY*-макросы, пустой - null.
+	var/list/created_blades
 
 /datum/eldritch_knowledge/New()
 	. = ..()
@@ -55,7 +57,56 @@
 
 /// Причина отказа обряда, не зависящая от компонентов на руне, или null.
 /datum/eldritch_knowledge/proc/recipe_block_reason(mob/living/user)
-	return null
+	return blade_limit_reason(user)
+
+/datum/eldritch_knowledge/proc/crafts_blade()
+	for(var/result_type in result_atoms)
+		if(ispath(result_type, /obj/item/melee/sickly_blade))
+			return TRUE
+	return FALSE
+
+/datum/eldritch_knowledge/proc/prune_blades()
+	for(var/datum/weakref/blade_ref as anything in created_blades)
+		if(!blade_ref?.resolve())
+			LAZYREMOVE(created_blades, blade_ref)
+
+/// Старейший свой клинок не при еретике: на полу, в чужих руках или в контейнере.
+/datum/eldritch_knowledge/proc/reclaimable_blade(mob/living/user)
+	for(var/datum/weakref/blade_ref as anything in created_blades)
+		var/obj/item/melee/sickly_blade/blade = blade_ref.resolve()
+		if(blade && get_atom_on_turf(blade) != user)
+			return blade
+
+/datum/eldritch_knowledge/proc/blade_limit_reason(mob/living/user)
+	if(!crafts_blade())
+		return null
+	prune_blades()
+	if(LAZYLEN(created_blades) < HERETIC_BLADE_LIMIT || reclaimable_blade(user))
+		return null
+	return "Достигнут предел связанных клинков: [HERETIC_BLADE_LIMIT], и все они при вас. Новый клинок рассыпает старейший из тех, что вы уронили, отдали или потеряли."
+
+/datum/eldritch_knowledge/proc/crumble_blade(obj/item/melee/sickly_blade/blade, reason = "при создании нового клинка")
+	LAZYREMOVE(created_blades, WEAKREF(blade))
+	var/turf/place = get_turf(blade)
+	var/mob/holder = get_atom_on_turf(blade, /mob)
+	if(ismob(holder))
+		to_chat(holder, span_warning("[blade] рассыпается в пепел прямо у вас в руках."))
+	if(place)
+		place.visible_message(span_warning("[blade] темнеет и рассыпается пеплом."))
+		new /obj/effect/decal/cleanable/ash(place)
+		playsound(place, 'modular_bluemoon/sound/heretic/blade_crumble.ogg', 40, TRUE)
+	log_game("HERETIC BLADE: [blade] рассыпается [reason] в [AREACOORD(place)].")
+	qdel(blade)
+
+/// Новый клинок сверх предела рассыпает старейший из тех, что не при еретике.
+/datum/eldritch_knowledge/proc/track_blade(obj/item/melee/sickly_blade/blade, mob/living/user)
+	prune_blades()
+	while(LAZYLEN(created_blades) >= HERETIC_BLADE_LIMIT)
+		var/obj/item/melee/sickly_blade/oldest = reclaimable_blade(user)
+		if(!oldest)
+			break
+		crumble_blade(oldest)
+	LAZYADD(created_blades, WEAKREF(blade))
 
 /// Причина не начинать обряд, который иначе сорвётся на середине, или null.
 /datum/eldritch_knowledge/proc/ritual_start_reason(mob/living/user, turf/location, duration)
@@ -67,11 +118,12 @@
 		return "Вы не можете действовать: вы погибли."
 	if(user.stat || user.IsUnconscious())
 		return "Вы не можете действовать: вы потеряли сознание."
-	if(user.IsStun() || user.IsParalyzed())
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic?.ascended && (user.IsStun() || user.IsParalyzed()))
 		return "Вы не можете действовать: вас оглушили."
-	if(user.combat_flags & COMBAT_FLAG_HARD_STAMCRIT)
+	if(!heretic?.ascended && (user.combat_flags & COMBAT_FLAG_HARD_STAMCRIT))
 		return "Вы не можете действовать: вы выбились из сил."
-	if(user.restrained())
+	if(user.restrained(ignore_grab = heretic?.ascended))
 		return "Вы не можете действовать: вас связали или держат в захвате."
 	if(IS_IN_STASIS(user))
 		return "Вы не можете действовать: вас держит стазис."
@@ -84,7 +136,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	if(QDELETED(src) || !heretic || heretic.get_knowledge(type) != src)
 		return "Знание обряда больше недоступно."
-	if(user.incapacitated())
+	if(heretic_incapacitated(user))
 		return heretic_incapacitated_reason(user)
 	if(!user.Adjacent(ritual_turf))
 		return "Вы отошли от руны."
@@ -103,8 +155,14 @@
 /datum/eldritch_knowledge/proc/on_finished_recipe(mob/living/user, list/atoms, loc)
 	if(!length(result_atoms))
 		return FALSE
+	var/limit_reason = blade_limit_reason(user)
+	if(limit_reason)
+		finish_failure_reason = limit_reason
+		return FALSE
 	for(var/result_type in result_atoms)
-		new result_type(loc)
+		var/atom/result = new result_type(loc)
+		if(istype(result, /obj/item/melee/sickly_blade))
+			track_blade(result, user)
 	return TRUE
 
 /datum/eldritch_knowledge/proc/cleanup_atoms(list/atoms)
@@ -114,6 +172,10 @@
 			qdel(ingredient)
 
 /datum/eldritch_knowledge/proc/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
+	return FALSE
+
+/// Клик Хваткой не вплотную; TRUE тратит заряд руки.
+/datum/eldritch_knowledge/proc/on_mansus_grasp_ranged(atom/target, mob/user, click_parameters)
 	return FALSE
 
 /datum/eldritch_knowledge/proc/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
@@ -281,6 +343,7 @@
 	servant.set_master(IS_HERETIC(user))
 	summoned.mind.add_antag_datum(servant)
 	track_flesh_servant(servant)
+	summon_ensouled(summoned, servant.master)
 	message_admins("[key_name_admin(user)] призвал [key_name_admin(summoned)] в [ADMIN_VERBOSEJMP(summoned)].")
 	log_game("[key_name(user)] призвал [key_name(summoned)] в [AREACOORD(summoned)].")
 	return TRUE
@@ -307,12 +370,13 @@
 		"Любое вознесение делает вас целью всей станции и даёт общую стойкость.",
 		"Здоровья 150, на ногах вы держитесь до крита, ушибы и ожоги слабее на 40%, по выносливости проходит лишь 30% урона.",
 		"Оглушения, сбивания, обездвиживание и потеря сознания вчетверо короче, раны не замедляют.",
+		"Оглушение и чужой захват не мешают приёмам пути; наручники, сон и стазис - мешают.",
 		"Снотворное и нарколепсия не усыпляют, электрошок почти не действует.",
 		"Дышать не нужно, холод и давление не страшны, наручники рвутся за 5 секунд.",
 		"Имплант защиты разума вашу магию не глушит.",
 		"Если вас 5 секунд не ранят, каждые 2 секунды заживает по 2 ушиба и 2 ожога; кровь восполняется сама.",
 		"После вознесения побег клинком закрыт.",
-		"Экипаж видит при осмотре, что дубинки, станы и снотворное вас почти не берут; светошумовые гранаты всё ещё валят.",
+		"Экипаж видит при осмотре, что станы и снотворное вас почти не берут, а светошумовые валят после завесы явления.",
 		"Смерть снимает всё это, оживление возвращает.",
 		"Уже на обряде над станцией встаёт Знак пути и звучит небо; вознёсшись, вы затмеваете им планету, со смертью он тускнеет.",
 		"Финальный обряд проводится только на станции: шахта, Лаваленд и шаттлы вне станции не подходят.",
@@ -330,6 +394,16 @@
 	var/mob/living/applied_body
 	var/list/ascension_spell_instances = list()
 	var/list/ascension_spell_ready_at = list()
+
+/datum/eldritch_knowledge/final_eldritch/New()
+	var/list/hints = ritual_hints.Copy()
+	hints.Insert(2,
+		"Нужны [HERETIC_ASCENSION_BODIES] трупа людей, которыми управлял игрок: экипаж, гости, антагонисты. Ищите их в морге.",
+		"Первые [HERETIC_ASCENDED_EMERGENCE_SECONDS] секунд - явление: оглушения не действуют, урон ещё на [HERETIC_ASCENDED_EMERGENCE_DAMAGE_CUT]% слабее.",
+		"Явление видно всем: вокруг вас дрожит завеса, а когда она спадает, экипаж слышит это и снова может вас ранить.",
+	)
+	ritual_hints = hints
+	return ..()
 
 /proc/heretic_ascension_in_open_space(atom/rune_loc)
 	var/turf/rune_turf = get_turf(rune_loc)
@@ -356,6 +430,19 @@
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	return !!(heretic?.simulated || body.mind || body.last_mind)
+
+/// Какие тела годятся для вознесения, где их искать и сколько подходящих уже лежит у руны.
+/proc/heretic_ascension_body_hint(list/available_atoms, mob/living/user)
+	var/valid = 0
+	var/unsuitable = 0
+	for(var/mob/living/carbon/human/body in available_atoms)
+		if(body == user || body.stat != DEAD)
+			continue
+		if(heretic_ascension_body_valid(body, user))
+			valid++
+		else
+			unsuitable++
+	return "Годятся трупы людей, которыми когда-либо управлял игрок: экипаж, гости станции, чужие антагонисты. Ищите их в морге - выньте из холодильника или мешка и положите на руну или рядом. Мартышки, пустые клоны, живые, еретики и их слуги не подходят. Сейчас у руны подходящих тел: [valid] из [HERETIC_ASCENSION_BODIES][unsuitable ? ", неподходящих: [unsuitable]" : ""]."
 
 /datum/eldritch_knowledge/final_eldritch/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -387,6 +474,7 @@
 	log_game("[key_name(user)] завершает вознесение [name] в [AREACOORD(user)].")
 	announce_ascension(user)
 	on_body_gain(user)
+	user.apply_status_effect(/datum/status_effect/heretic_emergence)
 	return TRUE
 
 /datum/eldritch_knowledge/final_eldritch/on_body_gain(mob/living/user)

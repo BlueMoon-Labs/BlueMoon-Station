@@ -208,7 +208,9 @@
 		sleep(25)
 		if(user.is_holding(src))
 			var/turf/T = get_turf(user)
-			process_fire(user, user, FALSE, null, BODY_ZONE_HEAD)
+			if(!process_fire(user, user, FALSE, null, BODY_ZONE_HEAD))
+				user.visible_message("<span class='suicide'>[user] panics and starts choking to death!</span>")
+				return(OXYLOSS)
 			user.visible_message("<span class='suicide'>[user] blows [user.ru_ego()] brain[user.p_s()] out with [src]!</span>")
 			playsound(src, 'sound/weapons/dink.ogg', 30, 1)
 			var/turf/target = get_ranged_target_turf(user, turn(user.dir, 180), BRAINS_BLOWN_THROW_RANGE)
@@ -264,8 +266,7 @@
 /obj/item/gun/ballistic/proc/blow_up(mob/user)
 	. = 0
 	for(var/obj/item/ammo_casing/AC in magazine.stored_ammo)
-		if(AC.BB)
-			process_fire(user, user, FALSE)
+		if(AC.BB && process_fire(user, user, FALSE))
 			. = 1
 
 

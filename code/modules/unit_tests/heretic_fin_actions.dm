@@ -42,6 +42,7 @@
 		),
 		PATH_FLESH = list(
 			/obj/effect/proc_holder/spell/self/heretic_power/flesh,
+			/obj/effect/proc_holder/spell/pointed/heretic_flesh_shed,
 			/obj/effect/proc_holder/spell/targeted/shed_human_form,
 			/obj/effect/proc_holder/spell/targeted/worm_contract,
 			/obj/effect/proc_holder/spell/targeted/emplosion/eldritch,
@@ -99,7 +100,7 @@
 		),
 		PATH_SAND = list(
 			/obj/effect/proc_holder/spell/self/heretic_sand/release,
-			/obj/effect/proc_holder/spell/pointed/heretic_sand/final,
+			/obj/effect/proc_holder/spell/self/heretic_sand/final,
 		),
 		PATH_WAX = list(
 			/obj/effect/proc_holder/spell/self/heretic_wax/release,
@@ -112,6 +113,23 @@
 		PATH_DANCE = list(
 			/obj/effect/proc_holder/spell/self/heretic_dance/style,
 			/obj/effect/proc_holder/spell/self/heretic_dance/great_horovod,
+		),
+		PATH_LEAD = list(
+			/obj/effect/proc_holder/spell/pointed/heretic_lead/hex,
+			/obj/effect/proc_holder/spell/self/heretic_lead/school,
+			/obj/effect/proc_holder/spell/self/heretic_lead/standoff,
+			/obj/effect/proc_holder/spell/pointed/heretic_lead/tripwire,
+			/obj/effect/proc_holder/spell/pointed/heretic_lead/powder_charge,
+		),
+		PATH_DUSK = list(
+			/obj/effect/proc_holder/spell/self/heretic_dusk/form,
+			/obj/effect/proc_holder/spell/pointed/heretic_dusk/beam,
+			/obj/effect/proc_holder/spell/self/heretic_dusk/covenant,
+			/obj/effect/proc_holder/spell/self/heretic_dusk/noon,
+			/obj/effect/proc_holder/spell/self/heretic_dusk/desecrate,
+		),
+		PATH_HAMMER = list(
+			/obj/effect/proc_holder/spell/self/heretic_hammer/swing,
 		),
 	)
 	for(var/knowledge_type in subtypesof(/datum/eldritch_knowledge/spell))

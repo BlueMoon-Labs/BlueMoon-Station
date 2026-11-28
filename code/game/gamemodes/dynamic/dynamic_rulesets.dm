@@ -181,7 +181,7 @@
 		antag_fraction += ((1 + ruleset.scaled_times) * ruleset.get_antag_cap(population)) / mode.roundstart_pop_ready
 
 	for(var/i in 1 to max_scale)
-		if(antag_fraction < 0.25)
+		if(antag_fraction < DYNAMIC_SCALE_UP_ANTAG_FRACTION)
 			scaled_times += 1
 			antag_fraction += get_antag_cap(population) / mode.roundstart_pop_ready // we added new antags, gotta update the %
 
@@ -328,6 +328,15 @@
 			// they're not eligible for this antag type.
 			if(!exclusive_candidate)
 				candidates.Remove(candidate_player)
+
+/// Сколько раз рулсет можно масштабировать: каждому шагу нужны свои кандидаты.
+/datum/dynamic_ruleset/roundstart/proc/max_scaled_times(population)
+	if(!scaling_cost)
+		return 0
+	return max(0, FLOOR(length(candidates) / max(1, get_antag_cap(population)), 1) - 1)
+
+/datum/dynamic_ruleset/roundstart/scale_up(population, max_scale)
+	return ..(population, min(max_scale, max_scaled_times(population)))
 
 /// Do your checks if the ruleset is ready to be executed here.
 /// Should ignore certain checks if forced is TRUE

@@ -66,6 +66,8 @@
 	. = ..()
 	if(IS_HERETIC(user))
 		. += span_notice("Раздавите его в руке, и сила завесы на время затянет раны и вернёт дыхание.")
+	else
+		. += span_notice("Отнесите его учёным: деструктивный анализатор даст за него [HERETIC_VEIL_CRYSTAL_POINTS] очков исследований. Не оставляйте кристалл где попало: еретик раздавит его и залечит раны.")
 
 /obj/item/heretic_veil_crystal/attack_self(mob/living/user)
 	if(!IS_HERETIC(user))

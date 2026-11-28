@@ -166,4 +166,4 @@
 	if(do_after(user, 25, target = src))
 		user.adjustStaminaLoss(20)
 		user.adjustOxyLoss(20)
-		..()
+		return ..()

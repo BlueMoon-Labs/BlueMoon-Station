@@ -111,6 +111,64 @@
 	visit.finish()
 	GLOB.heretic_sacrificed_minds = previous_sacrificed
 
+/// Вознёсшегося оглушение не прерывает возврат потерянного сердца, наручники прерывают; до вознесения прерывает и оглушение.
+/datum/unit_test/heretic_heart_recovery_stun/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/summon/heart)
+	var/datum/eldritch_knowledge/spell/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/summon/heart)
+	var/obj/effect/proc_holder/spell/self/heretic_summon/heart/spell = knowledge.granted_spell
+	spell.recovery_time = 1 SECONDS
+	var/turf/lost = run_loc_floor_top_right
+	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart, lost)
+	TEST_ASSERT(heart.bind(heretic.owner), "Сердце привязано к еретику.")
+
+	addtimer(CALLBACK(user, TYPE_PROC_REF(/mob/living, Paralyze), 10 SECONDS), 0.3 SECONDS)
+	spell.recover_missing_item(user, heretic)
+	TEST_ASSERT_EQUAL(heart.loc, lost, "До вознесения оглушение срывает возврат сердца.")
+	TEST_ASSERT(!spell.recovery_in_progress, "Сорванный возврат освобождает способность.")
+	user.SetParalyzed(0)
+
+	heretic.ascended = TRUE
+	addtimer(CALLBACK(src, PROC_REF(cuff), user), 0.3 SECONDS)
+	spell.recover_missing_item(user, heretic)
+	TEST_ASSERT_EQUAL(heart.loc, lost, "Вознёсшегося наручники держат: возврат сорван.")
+	user.uncuff()
+
+	addtimer(CALLBACK(user, TYPE_PROC_REF(/mob/living, Paralyze), 10 SECONDS), 0.3 SECONDS)
+	spell.recover_missing_item(user, heretic)
+	var/turf/landed = heart.loc
+	user.SetParalyzed(0)
+	TEST_ASSERT(landed != lost, "Вознёсшегося оглушение не прерывает возврат сердца.")
+	TEST_ASSERT((heart in user.GetAllContents()) || (heart in heretic.summon_items) || landed == get_turf(user), "Вернувшееся сердце у еретика, под ним или ждёт за завесой.")
+
+/datum/unit_test/heretic_heart_recovery_stun/proc/cuff(mob/living/carbon/human/user)
+	user.handcuffed = allocate(/obj/item/restraints/handcuffs, user)
+	user.update_handcuffed()
+
+/// Сердце, сжатое в радиусе от цели, отзывается у неё не чаще отката; дальняя или лежащая без сознания цель ничего не чувствует.
+/datum/unit_test/heretic_hunt_heartbeat/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart, get_turf(user))
+	user.put_in_hands(heart)
+	TEST_ASSERT(heart.bind(user.mind), "Сердце привязано к еретику.")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/datum/mind/soul = allocate_mind()
+	soul.current = victim
+	victim.mind = soul
+	heretic.set_hunt_target(soul)
+	TEST_ASSERT(!heretic.hunt_heartbeat_notice(victim, HERETIC_HUNT_HEARTBEAT_RANGE + 1), "Дальняя цель чужого сердца не слышит.")
+	TEST_ASSERT(COOLDOWN_FINISHED(heretic, hunt_heartbeat_cooldown), "Промах по дальности не тратит откат.")
+	victim.SetUnconscious(10 SECONDS)
+	TEST_ASSERT(!heretic.hunt_heartbeat_notice(victim, 1), "Цель без сознания сердца не слышит.")
+	victim.SetUnconscious(0)
+	TEST_ASSERT(heart.track(user, heretic), "Сердце ищет цель.")
+	TEST_ASSERT(!COOLDOWN_FINISHED(heretic, hunt_heartbeat_cooldown), "Сжатое рядом сердце отозвалось у цели.")
+	TEST_ASSERT(!heretic.hunt_heartbeat_notice(victim, 1), "Повтор раньше отката молчит.")
+	COOLDOWN_RESET(heretic, hunt_heartbeat_cooldown)
+	TEST_ASSERT(heretic.hunt_heartbeat_notice(victim, HERETIC_HUNT_HEARTBEAT_RANGE), "После отката цель снова слышит сердце на краю радиуса.")
+
 /// Поиск цели сердцем предлагает ссылку на смену цели, а затянувшаяся охота один раз подсказывает сменить её.
 /datum/unit_test/heretic_hunt_retarget_hint/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()

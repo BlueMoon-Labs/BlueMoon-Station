@@ -166,6 +166,33 @@
 	update_style_status()
 	return TRUE
 
+/proc/heretic_dance_style_unlocked(mob/user, style_id)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_dance/dance = heretic?.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	dance?.announce_style(user, style_id)
+
+/// Новый стиль объясняется в момент изучения, вместе со всем, что он открыл: связку, Попурри и номера.
+/datum/eldritch_knowledge/base_dance/proc/announce_style(mob/user, style_id)
+	var/datum/heretic_dance_style/style = GLOB.heretic_dance_styles[style_id]
+	if(!user || !style || !style_known(style_id))
+		return FALSE
+	var/list/parts = list("Новый стиль - [style.name]: [style.role], доля [heretic_dance_seconds(style.beat_ds)] с. Фигура «[style.figure_name]»: [style.figure_text].")
+	var/count = length(known_styles())
+	if(count == 2)
+		parts += "Стиль меняет клик по барабану справа. Смена в сильную долю - связка: Такт сохраняется, вход стиля, следующий акцент удвоен."
+	if(count == DANCE_MEDLEY_STYLES)
+		parts += "Три разных стиля связками за [DANCE_MEDLEY_WINDOW / (1 SECONDS)] секунд боя - Попурри: вход каждого стиля вдвойне."
+	for(var/id in GLOB.heretic_dance_routines)
+		var/datum/heretic_dance_routine/routine = GLOB.heretic_dance_routines[id]
+		if((routine.from_style != style_id && routine.to_style != style_id) || !style_known(routine.from_style) || !style_known(routine.to_style))
+			continue
+		var/datum/heretic_dance_style/from = GLOB.heretic_dance_styles[routine.from_style]
+		var/datum/heretic_dance_style/into = GLOB.heretic_dance_styles[routine.to_style]
+		parts += "Открыт номер «[routine.name]»: «[from.figure_name]» в [from.name], связка в [into.name] и «[into.figure_name]»."
+	to_chat(user, span_eldritch(jointext(parts, " ")))
+	SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "style_unlocked", user, style_id)
+	return TRUE
+
 /datum/status_effect/heretic_dance_style
 	id = "heretic_dance_style"
 	duration = -1

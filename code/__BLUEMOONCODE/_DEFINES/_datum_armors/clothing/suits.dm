@@ -388,6 +388,196 @@
 	magic = 0
 	wound = 0
 
+/datum/armor/heretic_ash
+	melee = 45
+	bullet = 45
+	laser = 55
+	energy = 55
+	bomb = 35
+	bio = 20
+	fire = 100
+	acid = 20
+
+/datum/armor/heretic_blade
+	melee = 65
+	bullet = 45
+	laser = 45
+	energy = 45
+	bomb = 35
+	bio = 20
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_blood
+	melee = 45
+	bullet = 60
+	laser = 45
+	energy = 50
+	bomb = 35
+	bio = 20
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_cosmic
+	melee = 45
+	bullet = 45
+	laser = 50
+	energy = 60
+	bomb = 35
+	bio = 20
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_dance
+	melee = 45
+	bullet = 45
+	laser = 55
+	energy = 55
+	bomb = 35
+	bio = 20
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_dusk
+	melee = 50
+	bullet = 40
+	laser = 65
+	energy = 45
+	bomb = 35
+	bio = 20
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_echo
+	melee = 45
+	bullet = 50
+	laser = 50
+	energy = 55
+	bomb = 35
+	bio = 20
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_flesh
+	melee = 55
+	bullet = 55
+	laser = 45
+	energy = 45
+	bomb = 35
+	bio = 60
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_glass
+	melee = 35
+	bullet = 35
+	laser = 65
+	energy = 65
+	bomb = 35
+	bio = 20
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_hammer
+	melee = 65
+	bullet = 45
+	laser = 40
+	energy = 50
+	bomb = 45
+	bio = 20
+	fire = 35
+	acid = 20
+
+/datum/armor/heretic_lead
+	melee = 55
+	bullet = 60
+	laser = 35
+	energy = 50
+	bomb = 35
+	bio = 20
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_lock
+	melee = 55
+	bullet = 55
+	laser = 45
+	energy = 45
+	bomb = 35
+	bio = 20
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_moon
+	melee = 45
+	bullet = 50
+	laser = 55
+	energy = 50
+	bomb = 35
+	bio = 20
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_rust
+	melee = 60
+	bullet = 55
+	laser = 40
+	energy = 45
+	bomb = 35
+	bio = 20
+	fire = 20
+	acid = 60
+
+/datum/armor/heretic_sand
+	melee = 50
+	bullet = 55
+	laser = 45
+	energy = 50
+	bomb = 60
+	bio = 20
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_spirit
+	melee = 50
+	bullet = 45
+	laser = 55
+	energy = 50
+	bomb = 35
+	bio = 20
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_tide
+	melee = 50
+	bullet = 55
+	laser = 45
+	energy = 50
+	bomb = 35
+	bio = 20
+	fire = 50
+	acid = 50
+
+/datum/armor/heretic_void
+	melee = 50
+	bullet = 50
+	laser = 50
+	energy = 50
+	bomb = 50
+	bio = 20
+	fire = 20
+	acid = 20
+
+/datum/armor/heretic_wax
+	melee = 50
+	bullet = 60
+	laser = 35
+	energy = 55
+	bomb = 35
+	bio = 20
+	fire = 20
+	acid = 20
+
 /datum/armor/flagellantcuirass
 	melee = 10
 	bullet = 10

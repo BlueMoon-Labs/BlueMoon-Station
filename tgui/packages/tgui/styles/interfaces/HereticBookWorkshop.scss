@@ -1,0 +1,303 @@
+/* Мастерская Мансуса: книги одной типографии (bookWorkshopSheets в HereticBookAtmosphere.tsx). Бумага, сетка, переплёт и латунь общие, характер книге даёт рука владельца на внешнем поле. */
+.HereticBook.HereticBook--workshop {
+  /* Таблица атласа: оттиск доски без рамки-медальона, только вдавленный край */
+  .HereticBook__plate { padding: 8px 6px 6px; border: 0; background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 16%, transparent), inset 1px 1px 2px color-mix(in srgb, var(--ink) 14%, transparent), 1px 1px 0 #ffffff40; }
+  .HereticBook__plate::after { display: none; }
+  .HereticBook__illumination { background: var(--plate-ink, var(--ink)); animation: heretic-engrave-in 1.8s cubic-bezier(.35, .1, .25, 1) backwards, heretic-wet-ink 2.8s ease-out backwards; }
+  /* Буквица прижата к слову, чтобы оно читалось целиком, а не «У чение» */
+  .HereticBook__pageBody .HereticBook__lead::first-letter { margin-right: 1px; padding-left: 5px; padding-right: 5px; }
+}
+
+/* Поле владельца напечатано на самом листе, поэтому сетка нужна везде, где виден лист: в живом и приглушённом виде */
+.HereticBook.HereticBook--workshop:not([data-book-view='plain']) {
+  --cover: #2a231d; --cover-light: #6d5a3c;
+  .HereticBook__page--left { padding-left: 60px; padding-right: 32px; }
+  .HereticBook__page--right { padding-right: 60px; padding-left: 32px; }
+  .HereticBook__pageBody::before, .HereticBook__gutter, .HereticBook__pageOrnament { display: none; }
+  .HereticBook__page { box-shadow: inset 0 0 14px #3a2a1420; clip-path: none; }
+  .HereticBook__binding { border-radius: 5px 7px 6px 5px; border-color: #6d5a3c; box-shadow: 0 2px 0 #000, 0 6px 0 #140e0a, 0 9px 11px #000a, inset 0 0 0 3px #0005, inset 0 0 0 4px #57482f; }
+  .HereticBook__clasp { background: linear-gradient(90deg, #2b2318, #7d6536 45%, #2b2318); border-color: #17120c; }
+  /* ::before и ::after листа - слои редких событий владельца */
+  .HereticBook__page::before, .HereticBook__page::after { content: ''; position: absolute; inset: auto; width: auto; border: 0; border-radius: 0; opacity: 1; mask-image: none; pointer-events: none; background: none center / 100% 100% no-repeat; z-index: 0; }
+}
+
+.HereticBookAtmosphere--workshop {
+  .HereticBookAtmosphere__corner::after, .HereticBookAtmosphere__motes { display: none; }
+  &.HereticBookAtmosphere--living:not(.HereticBookAtmosphere--reacting) .HereticBookAtmosphere__toy { animation: book-pendant-sway 7.5s ease-in-out infinite; }
+}
+
+/* Замок: взломщик. Железо-галловые чернила, ржавчина, сургуч. */
+.HereticBook--Lock {
+  --paper: #dccfae; --paper-edge: #a08a62; --ink: #33271d; --faded: #5a4732; --accent: #84451f; --ribbon: #5a4028; --rule: #a68f68;
+  --plate-ink: #3a2a1c; --tab-active: #6e4526; --tab-ink: #f0e2bd; --light: #ffd9902a; --reveal: heretic-reveal-lock;
+  --initial-bg: linear-gradient(135deg, #7a4a25, #4a2a14); --initial-ink: #f0e2bd; --initial-frame: #33200f;
+  .HereticBook__bookTitle { font-variant: small-caps; font-size: 31px; }
+}
+/* Ключ на нитке под печатью висит и без событий; изредка качается, будто дверь по ту сторону дёрнули */
+.HereticBook.HereticBook--Lock:not([data-book-view='plain']) .HereticBook__page--left::before { left: -6.05%; top: 30.9%; width: 25.39%; height: 30.6%; background-image: var(--lock-anim-key); transform-origin: 50% 0; }
+.HereticBook.HereticBook--Lock[data-book-view='muted'] .HereticBook__page--left::before { opacity: .55; }
+.HereticBook.HereticBook--Lock[data-book-view='living'] .HereticBook__page--left::before { animation: heretic-lock-key 34s ease-in-out infinite; }
+/* Свет в прорезанной скважине: кто-то проходит с лампой за дверью */
+.HereticBook.HereticBook--Lock[data-book-view='living'] .HereticBook__page--right::before { left: calc(93.16% - 70px); top: calc(48.5% - 60px); width: 140px; height: 120px; background: radial-gradient(ellipse 7px 14px at 50% 52%, #ffe9b0 0 40%, #ffbf5acc 70%, transparent 100%), radial-gradient(ellipse 64px 9px at 26% 52%, #ffd27a55, transparent 70%), radial-gradient(circle at 50% 50%, #ffc96a40, transparent 34px); opacity: 0; animation: heretic-lock-light 41s ease-in-out 9s infinite; }
+@keyframes heretic-lock-key { 0%, 68%, 100% { transform: rotate(0); } 70.5% { transform: rotate(5deg); } 74% { transform: rotate(-3.6deg); } 77.5% { transform: rotate(2.5deg); } 81% { transform: rotate(-1.6deg); } 84.5% { transform: rotate(.9deg); } 88% { transform: rotate(-.4deg); } 92% { transform: rotate(0); } }
+@keyframes heretic-lock-light { 0%, 60%, 100% { opacity: 0; transform: translateX(5px); } 64% { opacity: .9; transform: translateX(2px); } 66% { opacity: .55; } 68% { opacity: 1; transform: translateX(0); } 76% { opacity: .95; transform: translateX(-3px); } 82% { opacity: 0; transform: translateX(-6px); } }
+
+/* Пепел: псаломщик последнего огня. Горелая спичка, палец в золе, подпалины. */
+.HereticBook--Ash {
+  --paper: #d6cbb4; --paper-edge: #8c7c66; --ink: #2a2420; --faded: #554a40; --accent: #b3541c; --ribbon: #4a3f36; --rule: #9c8c72;
+  --plate-ink: #2c2622; --tab-active: #a84e1a; --tab-ink: #f3e3c4; --light: #ffb86a24; --reveal: heretic-reveal-ember;
+  --initial-bg: linear-gradient(180deg, #3a322c, #1d1815); --initial-ink: #f0b070; --initial-frame: #8a4a20;
+  .HereticBook__bookTitle, h2 { font-variant: small-caps; }
+  .HereticBook__lead::first-letter { text-shadow: none; }
+}
+/* Средняя спичка под полоской на несколько секунд разгорается и гаснет */
+.HereticBook.HereticBook--Ash[data-book-view='living'] .HereticBook__page--left::before { left: 2.15%; top: 22.27%; width: 9.38%; height: 11.07%; background-image: var(--ash-anim-flame); transform-origin: 50% 100%; opacity: 0; animation: heretic-ash-flame 43s ease-in-out 6s infinite; }
+.HereticBook.HereticBook--Ash[data-book-view='living'] .HereticBook__page--left::after { left: calc(6.84% - 80px); top: calc(31.79% - 80px); width: 160px; height: 160px; background: radial-gradient(circle, #ffb45a70, #ff8a2a26 42%, transparent 68%); mix-blend-mode: screen; opacity: 0; animation: heretic-ash-glow 43s ease-in-out 6s infinite; }
+/* Обугленная кромка выгоревшего угла на несколько секунд снова тлеет */
+.HereticBook.HereticBook--Ash[data-book-view='living'] .HereticBook__page--right::before { left: 73.63%; top: 0; width: 26.37%; height: 27.34%; background-image: var(--ash-anim-ember); mix-blend-mode: screen; opacity: 0; animation: heretic-ash-ember 29s linear 14s infinite; }
+@keyframes heretic-ash-flame { 0%, 70%, 100% { opacity: 0; transform: scale(.3, .1); } 72% { opacity: 1; transform: scale(.7, .5); } 74% { opacity: 1; transform: scale(1, 1.05) skewX(-3deg); } 77% { transform: scale(.92, .9) skewX(4deg); } 80% { transform: scale(1.04, 1) skewX(-2deg); } 83% { opacity: 1; transform: scale(.9, .84) skewX(3deg); } 86% { opacity: .9; transform: scale(.8, .6); } 88% { opacity: 0; transform: scale(.4, .15); } }
+@keyframes heretic-ash-glow { 0%, 70%, 89%, 100% { opacity: 0; } 74% { opacity: 1; } 77% { opacity: .75; } 80% { opacity: 1; } 83% { opacity: .7; } 86% { opacity: .4; } }
+@keyframes heretic-ash-ember { 0%, 66%, 98%, 100% { opacity: 0; } 71% { opacity: 1; } 75% { opacity: .55; } 79% { opacity: 1; } 84% { opacity: .6; } 88% { opacity: .95; } 93% { opacity: .4; } }
+
+/* Ржавчина: обходчик машин. Химический карандаш, сырость, ржавые потёки и зелень меди. */
+.HereticBook--Rust {
+  --paper: #d8d1ac; --paper-edge: #8f8a5e; --ink: #2b2a22; --faded: #55523f; --accent: #3f6f5c; --ribbon: #3d5a48; --rule: #9a9670;
+  --plate-ink: #43301f; --tab-active: #a2562a; --tab-ink: #efe6c4; --light: #e9d59024; --reveal: heretic-reveal-rust;
+  --initial-bg: linear-gradient(135deg, #3f6f5c, #24402f); --initial-ink: #efe6c4; --initial-frame: #a2562a;
+  .HereticBook__bookTitle, h2 { letter-spacing: .02em; font-variant: small-caps; }
+}
+/* Шестерня приклёпана к полю и видна без событий; изредка с заеданием проворачивается на зуб и медленно отходит назад */
+.HereticBook.HereticBook--Rust:not([data-book-view='plain']) .HereticBook__page--left::before { left: -.59%; top: 33.59%; width: 14.84%; height: 9.9%; background-image: var(--rust-anim-gear); transform-origin: 50% 50%; }
+.HereticBook.HereticBook--Rust[data-book-view='muted'] .HereticBook__page--left::before { opacity: .55; }
+.HereticBook.HereticBook--Rust[data-book-view='living'] .HereticBook__page--left::before { animation: heretic-rust-gear 53s linear infinite; }
+/* На средней скобе набухает ржавая капля и срывается вниз */
+.HereticBook.HereticBook--Rust[data-book-view='living'] .HereticBook__page--right::before { left: 92.87%; top: 29.04%; width: 2.15%; height: 1.95%; background-image: var(--rust-anim-drop); transform-origin: 50% 0; opacity: 0; animation: heretic-rust-drop 31s ease-in 11s infinite; }
+@keyframes heretic-rust-gear { 0%, 80%, 100% { transform: rotate(0); } 81% { transform: rotate(8deg); } 81.6% { transform: rotate(6deg); } 83% { transform: rotate(17deg); } 83.6% { transform: rotate(15deg); } 85.4% { transform: rotate(27deg); } 86% { transform: rotate(25.7deg); } 90% { transform: rotate(25.7deg); } 96% { transform: rotate(0); } }
+@keyframes heretic-rust-drop { 0%, 72% { opacity: 0; transform: translateY(0) scale(.2); } 80% { opacity: 1; transform: translateY(0) scale(1); } 85% { opacity: 1; transform: translateY(3px) scale(1, 1.18); } 94% { opacity: .85; transform: translateY(150px) scale(.9, 1.3); } 97%, 100% { opacity: 0; transform: translateY(168px) scale(.6); } }
+
+/* Плоть: прозектор. Сангина, пришитый лоскут, булавки, жирные пятна, прикус. */
+.HereticBook--Flesh {
+  --paper: #e0cdbd; --paper-edge: #a07f6c; --ink: #33211d; --faded: #5e423a; --accent: #8a3a2c; --ribbon: #6b2f2a; --rule: #b0907c;
+  --plate-ink: #7c3324; --tab-active: #8f3d36; --tab-ink: #f4e2d0; --light: #ffcfb024; --reveal: heretic-reveal-flesh;
+  --initial-bg: linear-gradient(180deg, #8a3a2c, #551d18); --initial-ink: #f4e2d0; --initial-frame: #3a1612;
+}
+/* Лоскут пришит к полю и виден без событий; изредка делает два вдоха - шов натягивается */
+.HereticBook.HereticBook--Flesh:not([data-book-view='plain']) .HereticBook__page--left::before { left: -1.17%; top: 31.84%; width: 15.62%; height: 13.93%; background-image: var(--flesh-anim-flap); transform-origin: 50% 50%; }
+.HereticBook.HereticBook--Flesh[data-book-view='muted'] .HereticBook__page--left::before { opacity: .55; }
+.HereticBook.HereticBook--Flesh[data-book-view='living'] .HereticBook__page--left::before { animation: heretic-flesh-breath 41s ease-in-out 5s infinite; }
+/* Под бумагой правого листа наливаются и уходят вены */
+.HereticBook.HereticBook--Flesh[data-book-view='living'] .HereticBook__page--right::before { left: 80.86%; top: 11.46%; width: 19.14%; height: 27.34%; background-image: var(--flesh-anim-veins); mix-blend-mode: multiply; opacity: 0; animation: heretic-flesh-veins 37s ease-in-out 17s infinite; }
+@keyframes heretic-flesh-breath { 0%, 74%, 100% { transform: scale(1); } 79% { transform: scale(1.055, 1.035); } 84% { transform: scale(1); } 89% { transform: scale(1.045, 1.03); } 95% { transform: scale(1); } }
+@keyframes heretic-flesh-veins { 0%, 72%, 100% { opacity: 0; } 76% { opacity: .95; } 79% { opacity: .4; } 82% { opacity: 1; } 86% { opacity: .45; } 89% { opacity: .8; } 94% { opacity: 0; } }
+
+/* Клинок: фехтмейстер. Стальное перо с росчерком, циркуль и линейка, разрез навылет. */
+.HereticBook--Blade {
+  --paper: #e2decf; --paper-edge: #9a9a94; --ink: #1f232b; --faded: #474d59; --accent: #33486f; --ribbon: #2f3f5e; --rule: #a3a6a8;
+  --plate-ink: #1f2430; --tab-active: #3c5484; --tab-ink: #e9ecf0; --light: #dfe8ff22; --reveal: heretic-reveal-blade;
+  --initial-bg: linear-gradient(135deg, #dfe3e8, #8e98a8); --initial-ink: #1f2430; --initial-frame: #33486f;
+  .HereticBook__kicker { font-variant: small-caps; letter-spacing: .12em; }
+  .HereticBook__bookTitle { font-size: 31px; font-variant: small-caps; }
+  .HereticBook__line { border-bottom: 1px solid #616b821b; }
+  .HereticBook__lead::first-letter { text-shadow: none; }
+}
+/* В разрезе сверху вниз проходит полоса стали: с той стороны листа провели клинком */
+.HereticBook.HereticBook--Blade[data-book-view='living'] .HereticBook__page--left::before { left: .78%; top: 28.65%; width: 12.11%; height: 18.88%; background-image: var(--blade-anim-glint); opacity: 0; animation: heretic-blade-glint 47s ease-in-out 8s infinite; }
+/* Последнее имя в списке на несколько секунд вычёркивается и проступает снова */
+.HereticBook.HereticBook--Blade[data-book-view='living'] .HereticBook__page--right::before { left: 87.7%; top: 67.71%; width: 9.57%; height: .33%; background: linear-gradient(#1e222c, #1e222c) 0 50% / 100% 2px no-repeat; transform: rotate(-.7deg); opacity: 0; animation: heretic-blade-strike 59s ease-in-out 21s infinite; }
+@keyframes heretic-blade-glint { 0%, 76% { opacity: 0; clip-path: inset(0 0 100% 0); } 77% { opacity: 1; clip-path: inset(0 0 100% 0); } 81% { opacity: 1; clip-path: inset(0 0 0 0); } 84% { opacity: .55; } 86% { opacity: 1; } 90% { opacity: 1; clip-path: inset(0 0 0 0); } 94% { opacity: 1; clip-path: inset(100% 0 0 0); } 95%, 100% { opacity: 0; clip-path: inset(100% 0 0 0); } }
+@keyframes heretic-blade-strike { 0%, 62% { opacity: .9; clip-path: inset(0 100% 0 0); } 65% { opacity: .9; clip-path: inset(0 0 0 0); } 72% { opacity: .9; clip-path: inset(0 0 0 0); } 76%, 100% { opacity: 0; clip-path: inset(0 0 0 0); } }
+
+/* Луна: актёр, потерявший лицо. Зеркальное письмо лиловыми анилиновыми чернилами, карточка труппы с соскобленным лицом, моль. */
+.HereticBook--Moon {
+  --paper: #d8d4cc; --paper-edge: #9e98a0; --ink: #2c2733; --faded: #564d5e; --accent: #5a3f6e; --ribbon: #4a3a58; --rule: #a49cab;
+  --plate-ink: #34293d; --tab-active: #5a4470; --tab-ink: #eee8f2; --light: #eef0ff26; --reveal: heretic-reveal-silver;
+  --initial-bg: linear-gradient(160deg, #6a5080, #3c2c4a); --initial-ink: #eee8f2; --initial-frame: #2a2030;
+  .HereticBook__bookTitle, h2 { font-style: italic; }
+  .HereticBook__lead::first-letter { text-shadow: none; }
+}
+.HereticBook.HereticBook--Moon:not([data-book-view='plain']) .HereticBook__page { box-shadow: inset 0 0 14px #4a405418; }
+/* На соскобленном лице изредка проступает улыбка тем же лиловым и уходит обратно в бумагу */
+.HereticBook.HereticBook--Moon[data-book-view='living'] .HereticBook__page--left::before { left: 4.25%; top: 36.6%; width: 4.79%; height: 3.19%; background-image: var(--moon-anim-smile); opacity: 0; animation: heretic-moon-smile 43s ease-in-out 7s infinite; }
+/* Лунный свет из окна косой полосой проходит вниз по полю правого листа */
+.HereticBook.HereticBook--Moon[data-book-view='living'] .HereticBook__page--right::before { left: 84%; top: 14%; width: 16%; height: 26%; background: linear-gradient(162deg, transparent 28%, #f6f7ff40 42%, #f8f9ff70 50%, #f6f7ff40 58%, transparent 72%); mix-blend-mode: screen; opacity: 0; animation: heretic-moon-light 31s linear 2s infinite; }
+@keyframes heretic-moon-smile { 0%, 70%, 100% { opacity: 0; } 74% { opacity: .35; } 78% { opacity: .9; } 86% { opacity: .85; } 90% { opacity: .2; } 92% { opacity: 0; } }
+@keyframes heretic-moon-light { 0%, 66% { opacity: 0; transform: translateY(0); } 72% { opacity: 1; } 90% { opacity: .9; } 96%, 100% { opacity: 0; transform: translateY(95%); } }
+
+/* Космос: звездочёт. Берлинская лазурь, вклеенная цианотипия неба, проколы иглой циркуля, журнал наблюдений. */
+.HereticBook--Cosmic {
+  --paper: #d6ccb0; --paper-edge: #988c70; --ink: #1f2532; --faded: #46506a; --accent: #1f3d6b; --ribbon: #22365a; --rule: #a39a82;
+  --plate-ink: #222c3e; --tab-active: #2a4a78; --tab-ink: #ecf0f6; --light: #fff1c826; --reveal: heretic-reveal-stars;
+  --initial-bg: linear-gradient(160deg, #2c4f86, #182c4e); --initial-ink: #eef2f8; --initial-frame: #c9b98a;
+  .HereticBook__kicker { color: var(--faded); }
+  .HereticBook__titleRule { border-color: var(--accent); }
+  .HereticBook__bookTitle { font-variant: small-caps; letter-spacing: .02em; }
+  .HereticBook__lead::first-letter { text-shadow: none; }
+}
+/* Ночью за листом лампа: проколы созвездий светятся насквозь, свет дрожит и гаснет */
+.HereticBook.HereticBook--Cosmic[data-book-view='living'] .HereticBook__page--left::before { left: 0; top: 32.55%; width: 15.63%; height: 39.06%; background-image: var(--cosmic-anim-pricks); opacity: 0; animation: heretic-cosmic-pricks 47s ease-in-out 5s infinite; }
+/* Блуждающая звезда: на правом листе в конце её пути проступает ещё один прокол */
+.HereticBook.HereticBook--Cosmic[data-book-view='living'] .HereticBook__page--right::before { left: calc(87.5% - 10px); top: calc(31.6% - 10px); width: 20px; height: 20px; background: radial-gradient(circle, #fff6dc 0 1.6px, #ffd48a99 3px, transparent 8px); opacity: 0; animation: heretic-cosmic-star 29s ease-in-out 11s infinite; }
+@keyframes heretic-cosmic-pricks { 0%, 64%, 100% { opacity: 0; } 68% { opacity: .8; } 70% { opacity: .55; } 72% { opacity: 1; } 79% { opacity: .9; } 80.5% { opacity: .6; } 83% { opacity: .95; } 87% { opacity: 0; } }
+@keyframes heretic-cosmic-star { 0%, 70%, 100% { opacity: 0; transform: translate(4px, -3px); } 76% { opacity: 1; transform: translate(1px, -1px); } 88% { opacity: .9; transform: translate(0, 0); } 94% { opacity: 0; } }
+
+/* Пучина: лоцман, ушедший под воду. Сепия каракатицы, прессованная водоросль, лот-линь с промерами, соль по линиям прилива. */
+.HereticBook--Tide {
+  --paper: #d0cfbc; --paper-edge: #8e917e; --ink: #2a261e; --faded: #4f4a3c; --accent: #5a3e28; --ribbon: #45352a; --rule: #9c9c88;
+  --plate-ink: #2c2a22; --tab-active: #5a4430; --tab-ink: #eef0e6; --light: #e6f2ea1c; --reveal: heretic-reveal-tide;
+  --initial-bg: linear-gradient(160deg, #5c4632, #2e3a34); --initial-ink: #eef0e6; --initial-frame: #8a9a8a;
+  .HereticBook__bookTitle { font-weight: 400; font-style: italic; }
+}
+.HereticBook.HereticBook--Tide:not([data-book-view='plain']) .HereticBook__page { box-shadow: inset 0 0 14px #3a4a4018; }
+/* Прилив: вода изредка поднимается по полю от обреза до старой линии и уходит */
+.HereticBook.HereticBook--Tide[data-book-view='living'] .HereticBook__page--left::before { left: 0; top: 59.64%; width: 17.58%; height: 40.36%; background-image: var(--tide-anim-flood); opacity: 0; animation: heretic-tide-flood 39s ease-in-out 3s infinite; }
+/* Капля стекает по полю правого листа от соляной корки */
+.HereticBook.HereticBook--Tide[data-book-view='living'] .HereticBook__page--right::before { left: calc(92.4% - 4px); top: 33%; width: 10px; height: 26px; background: radial-gradient(ellipse 4px 6px at 50% 76%, #3f4a3ee6, #56644fa0 60%, transparent 100%), linear-gradient(180deg, transparent, #6a786455 70%, transparent); opacity: 0; animation: heretic-tide-drop 53s ease-in 14s infinite; }
+@keyframes heretic-tide-flood { 0%, 66%, 100% { opacity: 0; transform: translateY(46%); clip-path: inset(0 0 46% 0); } 68% { opacity: 1; } 76% { transform: translateY(0); clip-path: inset(0 0 0 0); } 80% { opacity: 1; transform: translateY(2%); clip-path: inset(0 0 2% 0); } 90% { opacity: .5; transform: translateY(40%); clip-path: inset(0 0 40% 0); } 94% { opacity: 0; } }
+@keyframes heretic-tide-drop { 0%, 80%, 100% { opacity: 0; transform: translateY(0) scaleY(.7); } 82% { opacity: 1; transform: translateY(0) scaleY(1); } 92% { opacity: .9; transform: translateY(90px) scaleY(1.4); } 96% { opacity: 0; transform: translateY(104px) scaleY(1.2); } }
+
+/* Стекло: витражник. Гризайль кистью, карточка образцов стекла, картон с номерами кусков, прорез стеклореза навылет, серебряная протрава. */
+.HereticBook--Glass {
+  --paper: #d9d0bb; --paper-edge: #9a8c76; --ink: #2b231d; --faded: #54483c; --accent: #93661c; --ribbon: #5a3c1c; --rule: #a69a84;
+  --plate-ink: #2e241c; --tab-active: #8a5f1c; --tab-ink: #f6eedc; --light: #fff0c826; --reveal: heretic-reveal-glass;
+  --initial-bg: linear-gradient(160deg, #a8781e, #5a3a12); --initial-ink: #f6eedc; --initial-frame: #33241c;
+  .HereticBook__lead::first-letter { text-shadow: none; }
+}
+/* Солнце сквозь образцы: по полю под карточкой проходят цветные пятна света */
+.HereticBook.HereticBook--Glass[data-book-view='living'] .HereticBook__page--left::before { left: .5%; top: 44.5%; width: 15%; height: 12%; background: radial-gradient(ellipse 30% 26% at 30% 40%, #ff7a8acc, transparent), radial-gradient(ellipse 28% 24% at 64% 34%, #7a9cffcc, transparent), radial-gradient(ellipse 30% 26% at 36% 72%, #ffcc5acc, transparent), radial-gradient(ellipse 24% 22% at 70% 74%, #8ed08acc, transparent); mix-blend-mode: multiply; opacity: 0; animation: heretic-glass-sun 41s ease-in-out 8s infinite; }
+/* Блик пробегает по кромке прореза стеклореза на правом листе */
+.HereticBook.HereticBook--Glass[data-book-view='living'] .HereticBook__page--right::before { left: calc(97.4% - 7px); top: calc(66.1% - 7px); width: 14px; height: 14px; background: radial-gradient(circle, #fffbea 0 1.5px, #fff1c088 4px, transparent 7px); opacity: 0; animation: heretic-glass-glint 37s ease-in-out 16s infinite; }
+@keyframes heretic-glass-sun { 0%, 68%, 100% { opacity: 0; transform: translate(-10px, -4px); } 74% { opacity: .85; } 86% { opacity: .8; transform: translate(10px, 6px); } 92% { opacity: 0; transform: translate(16px, 9px); } }
+@keyframes heretic-glass-glint { 0%, 76%, 100% { opacity: 0; transform: translate(0, 0); } 79% { opacity: 1; } 90% { opacity: 1; transform: translate(-38px, 24px); } 93% { opacity: 0; transform: translate(-41px, 26px); } }
+
+/* Кровь: сборщик десятины. Пишет своей кровью, каждая строка кончается каплей; корпия пришита к полю. */
+.HereticBook--Blood {
+  --paper: #e6d2bf; --paper-edge: #a07a64; --ink: #3a1712; --faded: #6a3a30; --accent: #7a1f17; --ribbon: #5e1a12; --rule: #b08f7e;
+  --plate-ink: #3a1410; --tab-active: #7a2219; --tab-ink: #f3e2d4; --light: #ffd0c02a; --reveal: heretic-reveal-blood;
+  --initial-bg: linear-gradient(135deg, #8a2a1c, #4a120c); --initial-ink: #f3e2d4; --initial-frame: #3a0c08;
+}
+/* Свежая капля: у конца засохшего потёка набухает новая и сбегает ниже, потом впитывается */
+.HereticBook.HereticBook--Blood[data-book-view='living'] .HereticBook__page--left::before { left: 4.79%; top: 48.31%; width: 3.91%; height: 9.77%; background-image: var(--blood-anim-drop); clip-path: inset(0 0 100% 0); opacity: 0; animation: heretic-blood-drop 43s ease-in 7s infinite; }
+/* Пятно на изнанке намокает: кровь снова проступила сквозь лист */
+.HereticBook.HereticBook--Blood[data-book-view='living'] .HereticBook__page--right::before { left: calc(93.75% - 40px); top: calc(36.46% - 40px); width: 80px; height: 80px; background: radial-gradient(circle at 50% 50%, #7a2418 0 22%, #9a3a2a99 40%, transparent 66%); mix-blend-mode: multiply; opacity: 0; animation: heretic-blood-seep 31s ease-in-out 2s infinite; }
+@keyframes heretic-blood-drop { 0%, 60% { opacity: 0; clip-path: inset(0 0 100% 0); } 61% { opacity: 1; clip-path: inset(0 0 96% 0); } 64% { clip-path: inset(0 0 92% 0); } 70% { clip-path: inset(0 0 40% 0); } 74% { clip-path: inset(0 0 0 0); opacity: 1; } 86% { opacity: .85; clip-path: inset(0 0 0 0); } 97%, 100% { opacity: 0; clip-path: inset(0 0 0 0); } }
+@keyframes heretic-blood-seep { 0%, 62%, 100% { opacity: 0; transform: scale(.7); } 72% { opacity: .55; transform: scale(1); } 84% { opacity: .4; transform: scale(1.06); } 96% { opacity: 0; transform: scale(1.08); } }
+
+/* Эхо: оглохший звонарь. Растр (пятиперое перо) и медянка, притирка с края колокола, отмарывание на соседнем листе. */
+.HereticBook--Echo {
+  --paper: #dcdac9; --paper-edge: #9a9a88; --ink: #22302b; --faded: #4a5a52; --accent: #2f6457; --ribbon: #2a4a40; --rule: #9fa898;
+  --plate-ink: #26332e; --tab-active: #35594f; --tab-ink: #eef0e6; --light: #e8fff020; --reveal: heretic-reveal-echo;
+  --initial-bg: linear-gradient(160deg, #3d6a5c, #1f3a32); --initial-ink: #eef0e6; --initial-frame: #6d5a3c;
+  .HereticBook__bookTitle { font-size: 31px; }
+}
+/* Станы дрогнули: прошёл звук, линии на миг двоятся и успокаиваются */
+.HereticBook.HereticBook--Echo[data-book-view='living'] .HereticBook__page--left::before { left: 0; top: 7.81%; width: 13.28%; height: 10.42%; background-image: var(--echo-anim-staff); opacity: 0; animation: heretic-echo-tremor 47s linear 5s infinite; }
+/* Ответ: на пустом стане в обведённом такте проступает нота, от неё расходятся круги */
+.HereticBook.HereticBook--Echo[data-book-view='living'] .HereticBook__page--right::before { left: 94.53%; top: 35.03%; width: 6.25%; height: 4.17%; background-image: var(--echo-anim-answer); opacity: 0; animation: heretic-echo-answer 39s ease-in-out 12s infinite; }
+.HereticBook.HereticBook--Echo[data-book-view='living'] .HereticBook__page--right::after { left: calc(97.27% - 40px); top: calc(37.37% - 40px); width: 80px; height: 80px; background: repeating-radial-gradient(circle, transparent 0 9px, #2f645755 10px, transparent 12px 18px); mask-image: radial-gradient(circle, #000 30%, transparent 70%); opacity: 0; animation: heretic-echo-rings 39s ease-out 12s infinite; }
+@keyframes heretic-echo-tremor { 0%, 66% { opacity: 0; transform: translate(0); } 66.5% { opacity: .9; transform: translate(1.6px, -.4px); } 67% { transform: translate(-1.5px, .4px); } 67.5% { transform: translate(1.3px, 0); } 68% { transform: translate(-1.1px, -.3px); } 68.6% { transform: translate(.9px, .3px); opacity: .8; } 69.3% { transform: translate(-.7px, 0); } 70.1% { transform: translate(.5px, 0); opacity: .6; } 71% { transform: translate(-.35px, 0); } 72.2% { transform: translate(.2px, 0); opacity: .35; } 74%, 100% { opacity: 0; transform: translate(0); } }
+@keyframes heretic-echo-answer { 0%, 64%, 100% { opacity: 0; } 70% { opacity: .95; } 82% { opacity: .9; } 90% { opacity: 0; } }
+@keyframes heretic-echo-rings { 0%, 66% { opacity: 0; transform: scale(.4); } 69% { opacity: .9; transform: scale(.7); } 80% { opacity: 0; transform: scale(1.5); } 100% { opacity: 0; } }
+
+/* Песок: летописец часов. Калам и сепия, присыпанные песком; песок набился в залом, на обрезе зарубки часов. */
+.HereticBook--Sand {
+  --paper: #e4cfa1; --paper-edge: #a88a58; --ink: #3d2a14; --faded: #6a5030; --accent: #8a6430; --ribbon: #6a4a22; --rule: #b39a6a;
+  --plate-ink: #3e2b16; --tab-active: #8a6430; --tab-ink: #f6ead0; --light: #ffe2a02a; --reveal: heretic-reveal-sand;
+  --initial-bg: linear-gradient(180deg, #a07a40, #5e4220); --initial-ink: #f6ead0; --initial-frame: #3e2b16;
+}
+/* Последняя песчинка ещё не упала: из-под верхнего обреза бежит струйка и ложится в залом. Песок бежит только пока струйка видна. */
+.HereticBook.HereticBook--Sand[data-book-view='living'] .HereticBook__page--left::before { left: 5.27%; top: 19.53%; width: 3.91%; height: 15.95%; background: var(--sand-anim-trickle) 50% 0 / 100% 50% repeat-y; mask-image: linear-gradient(#0000, #000 22%, #000 86%, #0000); opacity: 0; animation: heretic-sand-flow 51s linear 3s infinite, heretic-sand-trickle 51s ease-in-out 3s infinite; }
+/* Порыв: с засыпанной кляксы сдувает песчинки к обрезу */
+.HereticBook.HereticBook--Sand[data-book-view='living'] .HereticBook__page--right::before { left: 89.84%; top: 30.92%; width: 15.63%; height: 5.86%; background-image: var(--sand-anim-gust); opacity: 0; animation: heretic-sand-gust 33s ease-out 9s infinite; }
+@keyframes heretic-sand-flow { 0%, 60% { background-position: 50% 0%; } 83% { background-position: 50% 900%; } 83.1%, 100% { background-position: 50% 0%; } }
+@keyframes heretic-sand-trickle { 0%, 60%, 100% { opacity: 0; clip-path: inset(0 0 100% 0); } 64% { opacity: 1; clip-path: inset(0 0 0 0); } 76% { opacity: 1; clip-path: inset(0 0 0 0); } 80% { opacity: .9; clip-path: inset(60% 0 0 0); } 83% { opacity: 0; clip-path: inset(100% 0 0 0); } }
+@keyframes heretic-sand-gust { 0%, 66%, 100% { opacity: 0; transform: translateX(-24px); } 69% { opacity: .95; transform: translateX(-8px); } 76% { opacity: .6; transform: translateX(16px); } 82% { opacity: 0; transform: translateX(34px); } }
+
+/* Воск: пономарь ночных бдений. Сажевые чернила, пчелиный воск, провощённая бумага. */
+.HereticBook--Wax {
+  --paper: #e1d5a9; --paper-edge: #a8935a; --ink: #2a2218; --faded: #55452c; --accent: #7a5a14; --ribbon: #6b5320; --rule: #ab9a6a;
+  --plate-ink: #2e261b; --tab-active: #7d6220; --tab-ink: #f3e9c6; --light: #ffe2a02a; --reveal: heretic-reveal-wax;
+  --initial-bg: linear-gradient(160deg, #f1e6bd, #cfba7c); --initial-ink: #3a2c12; --initial-frame: #8a7030;
+  .HereticBook__lead::first-letter { text-shadow: none; }
+}
+/* Свежий натёк со слепка: изредка выступает, стекает до капли и застывает */
+.HereticBook.HereticBook--Wax[data-book-view='living'] .HereticBook__page--left::before { left: 3.22%; top: 41.41%; width: 6.84%; height: 16.28%; background-image: var(--wax-anim-drip); opacity: 0; animation: heretic-wax-drip 43s linear 5s infinite; }
+/* Чужое лицо в провощённом пятне: проступает, как оттиск с оборота, и уходит */
+.HereticBook.HereticBook--Wax[data-book-view='living'] .HereticBook__page--right::before { left: 89.06%; top: 19.34%; width: 8.59%; height: 7.68%; background-image: var(--wax-anim-face); mix-blend-mode: multiply; opacity: 0; animation: heretic-wax-face 31s ease-in-out 11s infinite; }
+@keyframes heretic-wax-drip { 0%, 72% { opacity: 0; clip-path: inset(0 0 100% 0); } 73% { opacity: 1; clip-path: inset(0 0 94% 0); animation-timing-function: cubic-bezier(.5, 0, .8, .6); } 87% { opacity: 1; clip-path: inset(0 0 0 0); } 92% { opacity: 1; clip-path: inset(0 0 0 0); } 99%, 100% { opacity: 0; clip-path: inset(0 0 0 0); } }
+@keyframes heretic-wax-face { 0%, 70%, 100% { opacity: 0; } 81% { opacity: .85; } 89% { opacity: .7; } 98% { opacity: 0; } }
+
+/* Дух: перевозчик с поминальным списком. Выцветшая медянка, натирки монет, сырость, траурный креп. */
+.HereticBook--Spirit {
+  --paper: #d7dbcb; --paper-edge: #98a295; --ink: #26302c; --faded: #46544d; --accent: #2f6a5a; --ribbon: #1d2321; --rule: #a3ab9c;
+  --plate-ink: #33423c; --tab-active: #35584e; --tab-ink: #e9efe6; --light: #dffff02a; --reveal: heretic-reveal-spirit;
+  --initial-bg: linear-gradient(180deg, #2b3531, #161b19); --initial-ink: #dfeee6; --initial-frame: #5d7067;
+  .HereticBook__lead::first-letter { text-shadow: none; }
+}
+/* Имя в пустой строке списка: пишется само бледным светом и гаснет */
+.HereticBook.HereticBook--Spirit[data-book-view='living'] .HereticBook__page--left::before { left: .2%; top: 22.4%; width: 12.89%; height: 3.26%; background-image: var(--spirit-anim-name); opacity: 0; animation: heretic-spirit-name 47s linear 7s infinite; }
+/* Сырость проступает по старому подтёку и высыхает */
+.HereticBook.HereticBook--Spirit[data-book-view='living'] .HereticBook__page--right::before { left: 78.81%; top: 61.72%; width: 21.19%; height: 38.28%; background-image: var(--spirit-anim-damp); mix-blend-mode: multiply; opacity: 0; animation: heretic-spirit-damp 38s ease-in-out 16s infinite; }
+@keyframes heretic-spirit-name { 0%, 80% { opacity: 0; clip-path: inset(0 100% 0 0); } 81% { opacity: 1; clip-path: inset(0 96% 0 0); } 88% { opacity: 1; clip-path: inset(0 0 0 0); } 94% { opacity: .9; clip-path: inset(0 0 0 0); } 99%, 100% { opacity: 0; clip-path: inset(0 0 0 0); } }
+@keyframes heretic-spirit-damp { 0%, 74%, 100% { opacity: 0; } 84% { opacity: .95; } 90% { opacity: .85; } 99% { opacity: 0; } }
+
+/* Пляска: распорядитель бала. Бурый кармин, растр, румяна, следы каблука. */
+.HereticBook--Dance {
+  --paper: #e5d5be; --paper-edge: #a88a72; --ink: #2e211c; --faded: #5a4238; --accent: #7c2331; --ribbon: #8a1f2c; --rule: #b39a84;
+  --plate-ink: #3a2420; --tab-active: #7a2530; --tab-ink: #f4e6d2; --light: #ffd8b02a; --reveal: heretic-reveal-dance;
+  --initial-bg: linear-gradient(135deg, #8a2a36, #4f141d); --initial-ink: #f4e6d2; --initial-frame: #3a0f15;
+}
+/* Следы на схеме фигуры: проступают по одному в такт, будто фигуру кто-то прошёл, и выцветают */
+.HereticBook.HereticBook--Dance[data-book-view='living'] .HereticBook__page--left::before { left: 1.56%; top: 52.54%; width: 9.86%; height: 16.02%; background-image: var(--dance-anim-steps); mix-blend-mode: multiply; opacity: 0; animation: heretic-dance-steps 36s linear 4s infinite; }
+/* Ноты на пустом стане стоят и без событий; изредка подпрыгивают в такт */
+.HereticBook.HereticBook--Dance:not([data-book-view='plain']) .HereticBook__page--right::before { display: block; left: 87.3%; top: 16.67%; width: 12.7%; height: 7.16%; background-image: var(--dance-anim-notes); mix-blend-mode: multiply; }
+.HereticBook.HereticBook--Dance[data-book-view='muted'] .HereticBook__page--right::before { opacity: .55; }
+.HereticBook.HereticBook--Dance[data-book-view='living'] .HereticBook__page--right::before { animation: heretic-dance-notes 49s ease-out 13s infinite; }
+@keyframes heretic-dance-steps { 0%, 76% { opacity: 0; clip-path: inset(0 0 100% 0); } 76.1% { opacity: 1; clip-path: inset(0 0 100% 0); animation-timing-function: steps(4, start); } 88% { opacity: 1; clip-path: inset(0 0 0 0); } 93% { opacity: 1; clip-path: inset(0 0 0 0); } 99%, 100% { opacity: 0; clip-path: inset(0 0 0 0); } }
+@keyframes heretic-dance-notes { 0%, 84%, 100% { transform: translateY(0); } 85% { transform: translateY(-4px); } 86% { transform: translateY(0); } 87% { transform: translateY(-3px); } 88% { transform: translateY(0); } 89% { transform: translateY(-2px); } 90% { transform: translateY(0); } }
+
+/* Пустота: тот, кто исчезает. Твёрдый карандаш, выцветание до белого, иней. */
+.HereticBook--Void {
+  --paper: #e3e5df; --paper-edge: #a9b2b2; --ink: #2f3c44; --faded: #4a5a63; --accent: #4a6272; --ribbon: #5a6e7a; --rule: #a9b4b6;
+  --plate-ink: #3e4a52; --tab-active: #51697a; --tab-ink: #f1f5f4; --light: #e6fbff30; --reveal: heretic-reveal-frost;
+  --initial-bg: linear-gradient(160deg, #f4f7f6, #c3ced2); --initial-ink: #3a4d58; --initial-frame: #8fa0a8;
+  .HereticBook__bookTitle { margin-top: 12px !important; font-size: 31px; font-weight: 400; }
+  .HereticBook__lead::first-letter { text-shadow: 0 0 6px #fff; }
+  h2 { font-weight: 400; letter-spacing: .015em; }
+}
+.HereticBook.HereticBook--Void:not([data-book-view='plain']) .HereticBook__page { box-shadow: inset 0 0 14px #5a6a7018; }
+/* Вторая волна инея: изредка нарастает от угла вниз по полю и тает */
+.HereticBook.HereticBook--Void[data-book-view='living'] .HereticBook__page--left::before { left: .5%; top: 31%; width: 16%; height: 26.7%; background-image: var(--void-anim-frost); opacity: 0; animation: heretic-void-frost 53s linear 6s infinite; }
+/* Талое пятно: на правый лист дышат, пятно запотевает и высыхает */
+.HereticBook.HereticBook--Void[data-book-view='living'] .HereticBook__page--right::before { left: calc(93.16% - 44px); top: calc(30.6% - 44px); width: 88px; height: 88px; background: radial-gradient(circle, #ffffffd0 0 30%, #ffffff70 52%, transparent 70%); opacity: 0; animation: heretic-void-breath 29s ease-in-out 3s infinite; }
+@keyframes heretic-void-frost { 0%, 52% { opacity: 0; clip-path: inset(0 0 100% 0); } 53% { opacity: 1; clip-path: inset(0 0 100% 0); } 70% { opacity: 1; clip-path: inset(0 0 0 0); } 82% { opacity: 1; clip-path: inset(0 0 0 0); } 97%, 100% { opacity: 0; clip-path: inset(0 0 0 0); } }
+@keyframes heretic-void-breath { 0%, 58%, 100% { opacity: 0; transform: scale(.7); } 66% { opacity: .85; transform: scale(1); } 72% { opacity: .8; transform: scale(1.04); } 94% { opacity: 0; transform: scale(1.08); } }
+
+/* Свинец: стрелок. Жировой карандаш, штемпель оружейной, копоть, пробоина. */
+.HereticBook--Lead {
+  --paper: #d3cdbb; --paper-edge: #8f8a7c; --ink: #25221f; --faded: #4d4840; --accent: #a3261d; --ribbon: #6e231c; --rule: #9d978a;
+  --plate-ink: #2b2825; --tab-active: #8c2a22; --tab-ink: #f2e8d2; --light: #ffe1a01f; --reveal: heretic-reveal-lead;
+  --initial-bg: linear-gradient(180deg, #4a4640, #2a2724); --initial-ink: #f2e8d2; --initial-frame: #8a6e3a;
+  .HereticBook__titleRule { border-color: var(--rule); }
+}
+/* Дымок из пробоины: изредка кромка тлеет и вверх уходит струйка */
+.HereticBook.HereticBook--Lead[data-book-view='living'] .HereticBook__page--left::before { left: -2.15%; top: 11.72%; width: 19.53%; height: 27.34%; background-image: var(--lead-anim-smoke); transform-origin: 50% 100%; opacity: 0; animation: heretic-lead-smoke 37s ease-out 4s infinite; }
+.HereticBook.HereticBook--Lead[data-book-view='living'] .HereticBook__page--left::after { left: calc(7.62% - 30px); top: calc(39.06% - 30px); width: 60px; height: 60px; background: radial-gradient(circle, transparent 0 7.5px, #ff8a3cdd 9px, #ff5a1a66 12px, transparent 17px); mix-blend-mode: screen; opacity: 0; animation: heretic-lead-ember 37s ease-out 4s infinite; }
+@keyframes heretic-lead-smoke { 0%, 62% { opacity: 0; transform: translateY(16px) scale(.8, .55); } 70% { opacity: .9; transform: translateY(6px) scale(.92, .85); } 86% { opacity: .5; transform: translateY(-10px) scale(1.1, 1.05); } 97%, 100% { opacity: 0; transform: translateY(-26px) scale(1.3, 1.15); } }
+@keyframes heretic-lead-ember { 0%, 59%, 100% { opacity: 0; } 61% { opacity: 1; } 63% { opacity: .5; } 65% { opacity: .9; } 78% { opacity: 0; } }
+/* Новое попадание: в мишень на правом поле входит пуля - вспышка, тлеющий венчик, свежая дыра и облачко копоти */
+.HereticBook.HereticBook--Lead[data-book-view='living'] .HereticBook__page--right::before { left: calc(93.95% - 30px); top: calc(64.45% - 30px); width: 60px; height: 60px; background: radial-gradient(circle, #0b0908 0 3.5px, #2b241f 4.5px, #ffbf66e6 5.5px, #ff6a1a80 8.5px, transparent 13px); opacity: 0; animation: heretic-lead-hit 41s ease-out 11s infinite; }
+.HereticBook.HereticBook--Lead[data-book-view='living'] .HereticBook__page--right::after { left: calc(93.95% - 36px); top: calc(64.45% - 36px); width: 72px; height: 72px; background: radial-gradient(circle, #2b282580 0 18%, #2b282540 40%, transparent 68%); opacity: 0; animation: heretic-lead-soot 41s ease-out 11s infinite; }
+@keyframes heretic-lead-hit { 0%, 66% { opacity: 0; transform: scale(1.8); filter: brightness(1.6); } 66.5% { opacity: 1; transform: scale(1.25); filter: brightness(1.8); } 68% { opacity: 1; transform: scale(1); filter: brightness(1); } 80% { opacity: .85; transform: scale(1); filter: brightness(.55); } 96%, 100% { opacity: 0; transform: scale(1); filter: brightness(.5); } }
+@keyframes heretic-lead-soot { 0%, 66.4% { opacity: 0; transform: scale(.4); } 68% { opacity: .9; transform: scale(.85); } 78% { opacity: .45; transform: translateY(-8px) scale(1.25); } 90%, 100% { opacity: 0; transform: translateY(-18px) scale(1.5); } }
+
+/* Молот: кузнец изнанки. Копоть, окалина, счёт ударов на полях. */
+.HereticBook--Hammer {
+  --paper: #d2c4a8; --paper-edge: #4a3a2c; --ink: #1d1916; --faded: #4b4239; --accent: #9e3c18; --ribbon: #6b2a14; --rule: #7d6c5a;
+  --plate-ink: #2a2220; --tab-active: #8e3a18; --tab-ink: #f6e2c0; --light: #ff8a3a1c; --reveal: heretic-reveal-hammer;
+  --initial-bg: radial-gradient(ellipse 62% 58% at 50% 56%, #181514 0 28%, #3a2216 40%, #9e3c18 58%, #e08a40 72%, transparent 88%); --initial-ink: #f6e2c0; --initial-frame: transparent;
+}
+/* Удар по полю: окалина у края разгорается, из-под молота брызжут искры и всё снова темнеет */
+.HereticBook.HereticBook--Hammer[data-book-view='living'] .HereticBook__page--left::before { left: 0; top: 28.65%; width: 14.65%; height: 18.49%; background-image: var(--hammer-anim-glow); mix-blend-mode: screen; opacity: 0; animation: heretic-hammer-glow 41s linear 9s infinite; }
+.HereticBook.HereticBook--Hammer[data-book-view='living'] .HereticBook__page--left::after { left: 0; top: 24.04%; width: 17.58%; height: 22.14%; background-image: var(--hammer-anim-sparks); background-size: 600% 100%; opacity: 0; animation: heretic-hammer-sparks 41s step-end 9s infinite; }
+@keyframes heretic-hammer-glow { 0%, 80%, 84.024%, 100% { opacity: 0; } 80.366% { opacity: .4; } 80.732% { opacity: .8; } 81.098%, 81.463% { opacity: 1; } 81.829% { opacity: .9; } 82.195% { opacity: .75; } 82.561% { opacity: .6; } 82.927% { opacity: .45; } 83.293% { opacity: .3; } 83.659% { opacity: .15; } }
+@keyframes heretic-hammer-sparks { 0% { opacity: 0; background-position: 0 0; } 81.098% { opacity: 1; background-position: 0 0; } 81.463% { opacity: 1; background-position: 20% 0; } 81.829% { opacity: 1; background-position: 40% 0; } 82.195% { opacity: 1; background-position: 60% 0; } 82.561% { opacity: 1; background-position: 80% 0; } 82.927% { opacity: 1; background-position: 100% 0; } 83.293%, 100% { opacity: 0; background-position: 100% 0; } }

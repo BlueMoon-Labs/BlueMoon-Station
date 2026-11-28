@@ -657,6 +657,7 @@
 /datum/unit_test/heretic_spirit_deed/Run()
 	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SPIRIT)
 	var/mob/living/carbon/human/user = heretic.owner.current
+	allocated += new /datum/heretic_test_station_level(user.z)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
 	user.a_intent = INTENT_HELP
 	var/obj/structure/bed/bed = allocate(/obj/structure/bed, get_step(user, NORTH))
@@ -1302,6 +1303,7 @@
 	TEST_ASSERT(!(whisper_verb in ghost.verbs), "Призраку без клиента шёпот не открывается.")
 	spirit.open_whisper(corpse, ghost)
 	TEST_ASSERT(whisper_verb in ghost.verbs, "Призрак тела получил шёпот.")
+	TEST_ASSERT_NOTNULL(ghost.alerts["heretic_spirit_obol"], "Призрак видит значок обола, по которому шепчут и указывают.")
 	TEST_ASSERT(abs(spirit.obols[corpse] - world.time - HERETIC_SPIRIT_WHISPER_TIME) < 1, "Шёпот открыт на 5 минут.")
 	var/mob/dead/observer/stranger = allocate(/mob/dead/observer, get_turf(corpse))
 	TEST_ASSERT(!spirit.deliver_whisper(stranger, "Я тоже хочу"), "Чужой призрак не шепчет.")
@@ -1320,9 +1322,10 @@
 	spirit.open_whisper(corpse, ghost)
 	qdel(heretic_craft_on(corpse, "spirit_obol"))
 	TEST_ASSERT(!(whisper_verb in ghost.verbs), "Снятый обол закрывает шёпот.")
+	TEST_ASSERT_NULL(ghost.alerts["heretic_spirit_obol"], "Снятый обол убирает значок.")
 	TEST_ASSERT(!spirit.deliver_whisper(ghost, "После"), "Без обола шёпот не доходит.")
 
-/// Одна кнопка «Притянуть душу» вместо смещения и удержания: её даёт «Душа на ладони», а «Удержать душу» своей кнопки не даёт; кнопка активна, только пока есть отделённая вами душа.
+/// Одна кнопка «Притянуть душу» вместо смещения и удержания: её даёт «Душа на ладони», а «Удержать душу» своей кнопки не даёт; кнопка активна и без отделённой души, а клик мимо тела и души объясняет, куда целиться.
 /datum/unit_test/heretic_spirit_soul_buttons/Run()
 	var/datum/antagonist/heretic/heretic = spirit_hold_heretic()
 	var/mob/living/carbon/human/user = heretic.owner.current
@@ -1337,13 +1340,13 @@
 		if(istype(spell, /obj/effect/proc_holder/spell/pointed/heretic_spirit/hold))
 			buttons++
 	TEST_ASSERT_EQUAL(buttons, 1, "У души одна кнопка.")
-	TEST_ASSERT(!pull.can_cast(user, FALSE, TRUE), "Без отделённой души кнопка неактивна.")
-	TEST_ASSERT(findtext(pull.heretic_failure_reason, "нет отделённой"), "Отказ объясняет, откуда берётся душа: [pull.heretic_failure_reason]")
+	TEST_ASSERT(pull.can_cast(user, FALSE, TRUE), "Без отделённой души кнопка активна: по телу она отделит душу сама.")
+	TEST_ASSERT(!pull.can_target(get_step(user, WEST), user, TRUE), "Клик по пустому полу не принимается.")
+	TEST_ASSERT(findtext(pull.heretic_failure_reason, "по телу"), "Отказ объясняет, что целиться надо в тело или душу: [pull.heretic_failure_reason]")
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
 	var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(victim, spirit)
 	TEST_ASSERT(pull.can_cast(user, FALSE, TRUE), "С отделённой душой кнопка активна.")
 	qdel(soul)
-	TEST_ASSERT(!pull.can_cast(user, FALSE, TRUE), "Вернувшаяся душа снова гасит кнопку.")
 
 /datum/unit_test/proc/spirit_hold_heretic()
 	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
@@ -1587,10 +1590,14 @@
 	qdel(ferryman)
 	TEST_ASSERT_EQUAL(user.pass_flags, flags_plain, "Без обоих источников флаги прохода прежние.")
 
-/// Удержать душу на четвёртой ступени, Бесплотность на пятой, Метка Духа на шестой, Фонарь с Кошелём на восьмой; цены при знаниях.
+/// Удержать душу на третьей ступени, Переправа на четвёртой, Бесплотность на пятой, Метка Духа на шестой, Фонарь с Кошелём на восьмой; цены при знаниях.
 /datum/unit_test/heretic_spirit_layout/Run()
 	var/datum/heretic_path/path = GLOB.heretic_paths[PATH_SPIRIT]
-	TEST_ASSERT_EQUAL(path.knowledge[4], /datum/eldritch_knowledge/spell/spirit_hold, "Удержать душу на четвёртой ступени.")
+	TEST_ASSERT_EQUAL(path.knowledge[3], /datum/eldritch_knowledge/spell/spirit_hold, "Удержать душу на третьей ступени.")
+	TEST_ASSERT_EQUAL(path.knowledge[4], /datum/eldritch_knowledge/spell/spirit_step, "Переправа на четвёртой ступени.")
+	var/datum/eldritch_knowledge/first_capture = path.knowledge[2]
+	var/datum/eldritch_knowledge/capture = path.knowledge[3]
+	TEST_ASSERT(initial(first_capture.cost) + initial(capture.cost) <= HERETIC_STARTING_KNOWLEDGE, "Захват по карману со стартовыми очками.")
 	TEST_ASSERT_EQUAL(path.knowledge[5], /datum/eldritch_knowledge/spell/spirit_incorporeal, "Бесплотность на пятой ступени.")
 	TEST_ASSERT_EQUAL(path.knowledge[6], /datum/eldritch_knowledge/spirit_mark, "Метка Духа на шестой ступени.")
 	TEST_ASSERT_EQUAL(path.knowledge[8], /datum/eldritch_knowledge/spirit_relic, "Фонарь на восьмой ступени.")
@@ -1611,10 +1618,17 @@
 	for(var/fragment in list("[HERETIC_SPIRIT_OBOL_LIMIT] обол", "[HERETIC_SPIRIT_WHISPER_TIME / (1 MINUTES)] минут", "«Помощи»"))
 		TEST_ASSERT(findtext(base.desc, fragment), "Описание базы называет «[fragment]».")
 	var/datum/eldritch_knowledge/hold = allocate(/datum/eldritch_knowledge/spell/spirit_hold)
-	var/obj/effect/proc_holder/spell/hold_spell = /obj/effect/proc_holder/spell/pointed/heretic_spirit/hold
+	var/obj/effect/proc_holder/spell/pointed/heretic_spirit/hold/hold_spell = /obj/effect/proc_holder/spell/pointed/heretic_spirit/hold
 	for(var/fragment in list("[HERETIC_SPIRIT_HOLD_DURATION / (1 SECONDS)] секунд", "[HERETIC_SPIRIT_HOLD_BREAK_DAMAGE]+", "[HERETIC_SPIRIT_HOLD_COOLDOWN / (1 SECONDS)] секунд", "[HERETIC_SPIRIT_HOLD_TELEGRAPH / (1 SECONDS)] секунд", "растолкать за [HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды", "за [HERETIC_POCKET_PULL_TIME / (1 SECONDS)] секунд"))
 		TEST_ASSERT(findtext(hold.desc, fragment), "Описание Удержать душу называет «[fragment]».")
-		TEST_ASSERT(findtext(initial(hold_spell.desc), fragment), "Кнопка Удержать душу называет «[fragment]».")
+		TEST_ASSERT(findtext(initial(hold_spell.hold_desc), fragment), "Кнопка Удержать душу называет «[fragment]».")
+	var/datum/eldritch_knowledge/final_eldritch/spirit_final/finale = allocate(/datum/eldritch_knowledge/final_eldritch/spirit_final)
+	for(var/fragment in list("[HERETIC_SPIRIT_FERRY_RANGE] клетках", "[HERETIC_SPIRIT_FERRY_OBOLS] обола", "Причал", "втрое"))
+		TEST_ASSERT(findtext(finale.desc, fragment), "Вознесение называет «[fragment]».")
+	var/obj/structure/heretic_spirit_mooring/mooring_type = /obj/structure/heretic_spirit_mooring
+	TEST_ASSERT(findtext(initial(mooring_type.desc), "втрое"), "Причал при осмотре называет нулевой жезл.")
+	var/datum/eldritch_knowledge/spirit_relic/relic = allocate(/datum/eldritch_knowledge/spirit_relic)
+	TEST_ASSERT(findtext(relic.desc, "до дна"), "Фонарь описывает плату Кошеля.")
 	var/datum/eldritch_knowledge/incorporeal = allocate(/datum/eldritch_knowledge/spell/spirit_incorporeal)
 	var/obj/effect/proc_holder/spell/incorporeal_spell = /obj/effect/proc_holder/spell/self/heretic_spirit/incorporeal
 	for(var/fragment in list("[HERETIC_SPIRIT_INCORPOREAL_DURATION / (1 SECONDS)] секунд", "[HERETIC_SPIRIT_INCORPOREAL_COOLDOWN / (1 SECONDS)] секунд"))
@@ -1962,6 +1976,62 @@
 	TEST_ASSERT_EQUAL(spell.charge_max, HERETIC_SPIRIT_HOLD_COOLDOWN, "После захвата кнопка перезаряжается 40 секунд.")
 	hold?.release("проверка")
 
+/// «Притянуть душу» по живому телу без души сама отделяет её за обол, без урона, и сразу тянет; вплотную со «Удержать душу» берёт её в руку. Без обола, вплотную без «Удержать душу», у чужой души, союзника и под антимагией - отказ без траты.
+/datum/unit_test/heretic_spirit_pull_separates/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spirit_grasp)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/obj/effect/proc_holder/spell/pointed/heretic_spirit/hold/spell = spirit_pull_spell(heretic)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, locate(origin.x + 3, origin.y, origin.z))
+	spirit.combat_resource = 0
+	TEST_ASSERT(!spell.can_target(victim, user, TRUE), "Без обола душу кнопкой не отделить.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "обол"), "Отказ называет обол: [spell.heretic_failure_reason]")
+	spirit.combat_resource = 2
+	TEST_ASSERT(spell.can_target(victim, user, TRUE), "По телу без души кнопка готова: [spell.heretic_failure_reason]")
+	spell.cast(list(victim), user)
+	var/datum/status_effect/heretic_spirit/separated/soul = victim.has_status_effect(/datum/status_effect/heretic_spirit/separated)
+	TEST_ASSERT_NOTNULL(soul, "Кнопка отделила душу.")
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 1, "Отделение кнопкой стоит обол.")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Отделение кнопкой не ранит.")
+	TEST_ASSERT(soul?.shifted, "Отделённая душа сразу притянута.")
+	TEST_ASSERT_EQUAL(get_dist(origin, soul?.anchor), 1, "Душа сдвинулась к перевозчику.")
+	var/mob/living/carbon/human/close = allocate(/mob/living/carbon/human, locate(origin.x, origin.y + 1, origin.z))
+	TEST_ASSERT(!spell.can_target(close, user, TRUE), "Вплотную без «Удержать душу» душу некуда тянуть.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "Удержать душу"), "Отказ называет знание захвата: [spell.heretic_failure_reason]")
+	spell.cast(list(close), user)
+	TEST_ASSERT_NULL(close.has_status_effect(/datum/status_effect/heretic_spirit/separated), "Отказ не отделяет душу.")
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 1, "Отказ не тратит обол.")
+	var/mob/living/carbon/human/warded = allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y + 2, origin.z))
+	var/datum/component/anti_magic/protection = warded.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	TEST_ASSERT(!spell.can_target(warded, user, TRUE), "Антимагия не даёт отделить душу.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "защищена от магии"), "Отказ называет антимагию: [spell.heretic_failure_reason]")
+	TEST_ASSERT_EQUAL(protection.charges, 5, "Проверка не тратит заряды антимагии.")
+	var/datum/antagonist/heretic/ally = allocate_heretic(locate(origin.x + 2, origin.y + 1, origin.z))
+	TEST_ASSERT(!spell.can_target(ally.owner.current, user, TRUE), "Душу союзника Мансуса не отделить.")
+	var/datum/antagonist/heretic/rival = allocate_heretic(locate(origin.x + 4, origin.y + 3, origin.z))
+	rival.selected_path = PATH_SPIRIT
+	rival.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/datum/eldritch_knowledge/base_spirit/rival_spirit = rival.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/mob/living/carbon/human/claimed = allocate(/mob/living/carbon/human, locate(origin.x + 3, origin.y + 3, origin.z))
+	TEST_ASSERT_NOTNULL(rival_spirit.separate(claimed, rival_spirit), "Соперник отделил душу.")
+	TEST_ASSERT(!spell.can_target(claimed, user, TRUE), "Чужую отделённую душу не перехватить.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "друг"), "Отказ называет чужого перевозчика: [spell.heretic_failure_reason]")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/spirit_hold)
+	TEST_ASSERT(spell.can_target(close, user, TRUE), "Со «Удержать душу» соседнее тело годится: [spell.heretic_failure_reason]")
+	spell.cast(list(close), user)
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 0, "Отделение вплотную тоже стоит обол.")
+	var/list/budget = new_wait_budget(3 SECONDS, "душа соседа в руке")
+	while(!close.has_status_effect(/datum/status_effect/heretic_spirit_hold))
+		if(!wait_budget_tick(budget))
+			break
+	var/datum/status_effect/heretic_spirit_hold/hold = close.has_status_effect(/datum/status_effect/heretic_spirit_hold)
+	TEST_ASSERT_NOTNULL(hold, "Вплотную одна кнопка отделяет душу и берёт её в руку.")
+	hold?.release("проверка")
+
 /// Пустое тело: стеклянные глаза, блёклые краски и нить от руки перевозчика к телу, которая тянется за ним; в руке видно, чья душа; возврат снимает всё.
 /datum/unit_test/heretic_spirit_empty_body/Run()
 	var/datum/antagonist/heretic/heretic = spirit_hold_heretic()
@@ -2070,7 +2140,7 @@
 	effect.end("проверка")
 	TEST_ASSERT_NULL(user.get_filter("heretic_spirit_phase"), "Плоть вернулась.")
 
-/// Урок Духа проходит шесть шагов по настоящим действиям: разлучение, рывок, жатва, душа в руке, спасение, обол.
+/// Урок Духа проходит пять шагов по настоящим действиям: душа отделена и притянута одной кнопкой, жатва, душа в руке, спасение, обол.
 /datum/unit_test/heretic_spirit_lesson/Run()
 	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SPIRIT)
 	var/mob/living/carbon/human/user = heretic.owner.current
@@ -2080,24 +2150,24 @@
 	var/datum/heretic_spirit_lesson/lesson = new(null, spirit, user, target)
 	allocated += lesson
 	TEST_ASSERT(heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_hold) && heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_reap), "Урок открывает Удержание и Жатву.")
-	TEST_ASSERT(spirit.sever(user, target), "Разлучение по мишени.")
-	TEST_ASSERT_EQUAL(lesson.stage, 2, "Разлучение открывает рывок.")
+	TEST_ASSERT(findtext(lesson.hint, "Притянуть"), "Первый шаг - кнопка души: [lesson.hint]")
+	var/obj/effect/proc_holder/spell/pointed/heretic_spirit/hold/pull = spirit_pull_spell(heretic)
+	pull.cast(list(target), user)
+	TEST_ASSERT_EQUAL(lesson.stage, 2, "Отделённая и притянутая одной кнопкой душа открывает Жатву.")
 	var/datum/status_effect/heretic_spirit/separated/soul = target.has_status_effect(/datum/status_effect/heretic_spirit/separated)
-	TEST_ASSERT(spirit.shift_soul(user, soul.anchor), "Душа притянута: [spirit.shift_failure]")
-	TEST_ASSERT_EQUAL(lesson.stage, 3, "Рывок открывает Жатву.")
-	TEST_ASSERT(soul.arm(heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_reap), 25), "Жатва занесена.")
+	TEST_ASSERT(soul?.arm(heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_reap), 25), "Жатва занесена.")
 	soul.reap_at = world.time
 	TEST_ASSERT(soul.finish_reap(), "Второй удар Жатвы.")
-	TEST_ASSERT_EQUAL(lesson.stage, 4, "Жатва открывает захват.")
+	TEST_ASSERT_EQUAL(lesson.stage, 3, "Жатва открывает захват.")
 	TEST_ASSERT(spirit.seize_soul(user, target), "Душа в руке: [spirit.hold_block_reason(user, target)]")
-	TEST_ASSERT_EQUAL(lesson.stage, 6, "Без полигона спасение пропускается, захват открывает обол.")
+	TEST_ASSERT_EQUAL(lesson.stage, 5, "Без полигона спасение пропускается, захват открывает обол.")
 	var/datum/status_effect/heretic_spirit_hold/hold = target.has_status_effect(/datum/status_effect/heretic_spirit_hold)
 	hold.release("проверка")
-	TEST_ASSERT_EQUAL(lesson.stage, 6, "Возврат души не пропускает обол.")
+	TEST_ASSERT_EQUAL(lesson.stage, 5, "Возврат души не пропускает обол.")
 	var/mob/living/carbon/human/corpse = spirit_corpse(get_step(user, NORTH))
 	TEST_ASSERT(spirit.place_obol(user, corpse), "Обол лёг: [spirit.grasp_failure_reason]")
 	TEST_ASSERT(lesson.finished(), "Урок пройден.")
-	TEST_ASSERT_EQUAL(length(lesson.steps()), 6, "В уроке шесть шагов.")
+	TEST_ASSERT_EQUAL(length(lesson.steps()), 5, "В уроке пять шагов.")
 
 /// Метка Духа лежит поверх тела, а не под ним.
 /datum/unit_test/heretic_spirit_mark_over_body/Run()
@@ -2125,6 +2195,382 @@
 	TEST_ASSERT(soul.item_state in icon_states(soul.lefthand_file), "Душа видна в левой руке.")
 	TEST_ASSERT(soul.item_state in icon_states(soul.righthand_file), "Душа видна в правой руке.")
 	hold.release("проверка")
+
+/area/unit_test_spirit_kitchen
+	name = "Spirit Kitchen Test Room"
+	requires_power = FALSE
+
+/area/unit_test_spirit_genetics
+	name = "Spirit Genetics Test Room"
+	requires_power = FALSE
+
+/area/unit_test_spirit_bar
+	name = "Spirit Bar Test Room"
+	requires_power = FALSE
+
+/// Дело Духа идёт без убийств людей: мёртвая мартышка, тело в морге и пол, где недавно умерли, засчитывают отдел; одно тело идёт в дело раз, а машины и остывший след - нет.
+/datum/unit_test/heretic_spirit_deed_sources/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SPIRIT)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	allocated += new /datum/heretic_test_station_level(user.z)
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	user.a_intent = INTENT_HELP
+	var/turf/origin = get_turf(user)
+	var/turf/kitchen = get_step(origin, EAST)
+	heretic_test_area(kitchen, /area/unit_test_spirit_kitchen)
+	var/mob/living/carbon/monkey/monkey = allocate(/mob/living/carbon/monkey, kitchen)
+	monkey.death()
+	TEST_ASSERT(spirit.on_mansus_grasp(monkey, user, TRUE), "Обол ложится на мёртвую мартышку: [spirit.grasp_failure_reason]")
+	TEST_ASSERT_EQUAL(length(heretic.deed.counted_keys), 1, "Мёртвая мартышка засчитывает отдел.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	TEST_ASSERT(!spirit.on_mansus_grasp(kitchen, user, TRUE), "След смерти тела, уже принятого оболом, второй раз не идёт.")
+	TEST_ASSERT(findtext(spirit.grasp_failure_reason, "уже принял"), "Отказ называет принятую смерть: [spirit.grasp_failure_reason]")
+	var/turf/genetics = get_step(kitchen, EAST)
+	heretic_test_area(genetics, /area/unit_test_spirit_genetics)
+	var/mob/living/simple_animal/chicken/machine = allocate(/mob/living/simple_animal/chicken, genetics)
+	machine.mob_biotypes = MOB_ROBOTIC
+	machine.death()
+	TEST_ASSERT(!spirit.on_mansus_grasp(machine, user, TRUE), "Машине обол не кладут.")
+	TEST_ASSERT(!spirit.on_mansus_grasp(genetics, user, TRUE), "Смерть машины не оставляет холодного следа.")
+	var/mob/living/simple_animal/chicken/tiny = allocate(/mob/living/simple_animal/chicken, genetics)
+	tiny.mob_size = MOB_SIZE_TINY
+	tiny.death()
+	TEST_ASSERT(!spirit.on_mansus_grasp(tiny, user, TRUE), "Мелочи мельче кошки обол не кладут.")
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human, genetics)
+	patient.death()
+	var/turf/ward = locate(origin.x + 4, origin.y + 4, origin.z)
+	patient.forceMove(ward)
+	TEST_ASSERT(spirit.on_mansus_grasp(genetics, user, TRUE), "Пол, где недавно умерли, засчитывает отдел, хотя тело унесли: [spirit.grasp_failure_reason]")
+	TEST_ASSERT_EQUAL(length(heretic.deed.counted_keys), 2, "Холодный след засчитал отдел.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/heretic_trace) in genetics, "След дела остаётся на том полу.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	TEST_ASSERT(!spirit.on_mansus_grasp(genetics, user, TRUE), "Прочитанный след исчезает.")
+	TEST_ASSERT(spirit.on_mansus_grasp(patient, user, TRUE), "Обол на унесённое тело ложится: [spirit.grasp_failure_reason]")
+	TEST_ASSERT_EQUAL(length(heretic.deed.counted_keys), 2, "Тело, чья смерть уже зачтена, дело не продвигает.")
+	var/turf/bar = locate(origin.x, origin.y + 2, origin.z)
+	heretic_test_area(bar, /area/unit_test_spirit_bar)
+	var/obj/structure/bodycontainer/morgue/morgue = allocate(/obj/structure/bodycontainer/morgue, bar)
+	var/mob/living/carbon/human/stored = spirit_corpse(bar)
+	stored.forceMove(morgue)
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	TEST_ASSERT(spirit.on_mansus_grasp(morgue, user, TRUE), "Обол ложится на тело в закрытом морге: [spirit.grasp_failure_reason]")
+	TEST_ASSERT_NOTNULL(heretic_craft_on(stored, "spirit_obol"), "Монеты легли на тело в морге.")
+	TEST_ASSERT_EQUAL(length(heretic.deed.counted_keys), 3, "Тело в морге засчитывает отдел.")
+	var/turf/cold = locate(origin.x + 3, origin.y + 3, origin.z)
+	var/mob/living/carbon/human/old = spirit_corpse(cold)
+	old.forceMove(ward)
+	var/list/old_mark = spirit.death_marks[cold]
+	TEST_ASSERT_NOTNULL(old_mark, "Смерть человека оставила холодный след.")
+	old_mark["until"] = world.time
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	TEST_ASSERT(!spirit.on_mansus_grasp(cold, user, TRUE), "Остывший след не засчитывается.")
+	TEST_ASSERT(findtext(spirit.grasp_failure_reason, "остыл"), "Отказ называет остывший след: [spirit.grasp_failure_reason]")
+
+/// Взрыв Метки Духа крюком бросает душу за спину перевозчика: связь цела и натянута, душа считается притянутой, и её сразу можно взять в руку.
+/datum/unit_test/heretic_spirit_mark_yank/Run()
+	var/datum/antagonist/heretic/heretic = spirit_hold_heretic()
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spirit_mark)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/datum/eldritch_knowledge/spirit_mark/mark_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spirit_mark)
+	var/obj/item/melee/sickly_blade/spirit/hook = allocate(/obj/item/melee/sickly_blade/spirit)
+	hook.force = 5
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	TEST_ASSERT(mark_knowledge.on_mansus_grasp(victim, user, TRUE), "Метка поставлена.")
+	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/heretic_spirit/separated), "Сама метка душу не отделяет.")
+	user.a_intent = INTENT_HARM
+	hook.attack(victim, user)
+	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/eldritch/spirit), "Крюк взорвал метку.")
+	var/datum/status_effect/heretic_spirit/separated/soul = victim.has_status_effect(/datum/status_effect/heretic_spirit/separated)
+	TEST_ASSERT_NOTNULL(soul, "Взрыв метки отделил душу.")
+	TEST_ASSERT_EQUAL(get_turf(soul.anchor), get_step(user, WEST), "Душа упала за спину перевозчика.")
+	TEST_ASSERT(soul.shifted, "Вырванная душа считается притянутой.")
+	TEST_ASSERT(soul.validate_link(), "Связь с телом цела.")
+	TEST_ASSERT_NULL(spirit.hold_block_reason(user, soul.anchor), "Душу сразу можно взять в руку: [spirit.hold_block_reason(user, soul.anchor)]")
+
+/// Кошель утонувших: связь разумного врага, истощённая до дна, роняет обол один раз; без Кошеля и у тела без разума платы нет.
+/datum/unit_test/heretic_spirit_purse_toll/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic(run_loc_floor_bottom_left)
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/turf/origin = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/victim = spirit_ferry_victim(get_step(origin, EAST))
+	var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(victim, spirit)
+	victim.forceMove(locate(origin.x + 3, origin.y, origin.z))
+	spirit.combat_resource = 0
+	soul.drained = soul.drain_limit - 1
+	soul.tick()
+	TEST_ASSERT_EQUAL(soul.drained, soul.drain_limit, "Связь истощена до дна.")
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 0, "Без Кошеля истощённая связь не платит.")
+	qdel(soul)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spirit_relic)
+	soul = spirit.separate(victim, spirit)
+	TEST_ASSERT_NOTNULL(soul, "Новая связь.")
+	victim.forceMove(locate(origin.x + 3, origin.y + 2, origin.z))
+	soul.drained = soul.drain_limit - 1
+	soul.tick()
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 1, "Кошель берёт обол с истощённой до дна связи.")
+	soul.tick()
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 1, "С одной связи Кошель берёт один обол.")
+	var/mob/living/carbon/human/mindless = spirit_ferry_victim(get_step(origin, NORTH), with_mind = FALSE)
+	var/datum/status_effect/heretic_spirit/separated/empty = spirit.separate(mindless, spirit)
+	mindless.forceMove(locate(origin.x, origin.y + 2, origin.z))
+	empty.drained = empty.drain_limit - 1
+	empty.tick()
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 1, "Тело без разума Кошелю не платит.")
+
+/// Кнопка души зовётся «Притянуть душу», пока захват не изучен; «Удержать душу» меняет имя и описание на панели, утрата знания возвращает прежние.
+/datum/unit_test/heretic_spirit_pull_rename/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spirit_grasp)
+	var/obj/effect/proc_holder/spell/pointed/heretic_spirit/hold/pull = spirit_pull_spell(heretic)
+	var/hold_fragment = "[HERETIC_SPIRIT_HOLD_DURATION / (1 SECONDS)] секунд"
+	TEST_ASSERT_EQUAL(pull.name, "Притянуть душу", "До захвата кнопка только тянет.")
+	TEST_ASSERT(!findtext(pull.desc, hold_fragment), "До захвата описание не обещает пустое тело.")
+	TEST_ASSERT(findtext(pull.desc, "Удержать душу"), "Описание называет знание, которое добавит захват.")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/spirit_hold)
+	TEST_ASSERT_EQUAL(pull.name, "Притянуть или взять душу", "После захвата кнопка зовётся по-новому.")
+	TEST_ASSERT(findtext(pull.desc, hold_fragment), "Описание кнопки называет срок пустого тела.")
+	TEST_ASSERT_EQUAL(pull.action?.name, pull.name, "Подпись на панели обновилась.")
+	TEST_ASSERT_EQUAL(pull.action?.desc, pull.desc, "Подсказка на панели обновилась.")
+	var/datum/eldritch_knowledge/spell/spirit_hold/hold_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_hold)
+	hold_knowledge.on_lose(heretic.owner.current)
+	heretic.researched_knowledge -= hold_knowledge.type
+	qdel(hold_knowledge)
+	TEST_ASSERT_EQUAL(pull.name, "Притянуть душу", "Утрата захвата возвращает прежнее имя.")
+	TEST_ASSERT_EQUAL(pull.action?.name, pull.name, "Подпись на панели вернулась.")
+
+/// Вознесение Духа ставит под героем Причал: пока он горит, оболы идут быстро, а призраки проявляются на стороне экипажа или перевозчика; жезл и призраки у берега ломают его быстрее, разбитый Причал гасит плату и не встаёт снова.
+/datum/unit_test/heretic_spirit_mooring/Run()
+	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = ascend_spirit_ferryman(center)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/datum/eldritch_knowledge/final_eldritch/spirit_final/finale = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/spirit_final)
+	var/obj/structure/heretic_spirit_mooring/mooring = spirit.mooring
+	TEST_ASSERT_NOTNULL(mooring, "Вознесение ставит Причал.")
+	TEST_ASSERT_EQUAL(get_turf(mooring), center, "Причал встаёт там, где герой вознёсся.")
+	TEST_ASSERT(spirit.moored(), "Причал горит.")
+	TEST_ASSERT_EQUAL(mooring.max_integrity, HERETIC_SPIRIT_MOORING_INTEGRITY, "Прочность Причала из правил.")
+	var/mob/dead/observer/shore = allocate(/mob/dead/observer, get_step(center, NORTH))
+	var/mob/dead/observer/ferry = allocate(/mob/dead/observer, run_loc_floor_bottom_left)
+	TEST_ASSERT(mooring.manifest(shore, HERETIC_SPIRIT_GHOST_SHORE), "Призрак проявляется на стороне экипажа.")
+	TEST_ASSERT_EQUAL(shore.invisibility, 0, "Проявившийся призрак виден живым.")
+	TEST_ASSERT_EQUAL(shore.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "Силуэт не перехватывает клики живых.")
+	TEST_ASSERT(mooring.manifest(ferry, HERETIC_SPIRIT_GHOST_FERRY), "Призрак проявляется на стороне перевозчика.")
+	TEST_ASSERT(/mob/dead/observer/proc/heretic_spirit_point in ferry.verbs, "Слуга перевозчика может указывать живых.")
+	TEST_ASSERT(!(/mob/dead/observer/proc/heretic_spirit_point in shore.verbs), "Призрак у берега перевозчику не служит.")
+	TEST_ASSERT_NOTNULL(ferry.alerts["heretic_spirit_obol"], "У слуги перевозчика есть значок.")
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
+	TEST_ASSERT(spirit.deliver_point(ferry, crew), "Слуга указывает живого без обола: [spirit.point_failure]")
+	TEST_ASSERT_NOTNULL(user.has_status_effect(/datum/status_effect/heretic_spirit_lead), "Перевозчик чует указанного.")
+	TEST_ASSERT(!spirit.deliver_point(shore, crew), "Призрак у берега перевозчику не указывает.")
+	TEST_ASSERT(spirit.deliver_whisper(ferry, "Повар в баре"), "Слуга шепчет перевозчику: [spirit.whisper_failure]")
+	TEST_ASSERT(abs(mooring.hand_multiplier() - (1 + HERETIC_SPIRIT_MOORING_HAND_BONUS)) < 0.01, "Призрак у берега помогает экипажу ломать фонарь.")
+	var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
+	var/mob/living/carbon/human/chaplain = allocate(/mob/living/carbon/human, get_step(center, SOUTH))
+	var/before = mooring.obj_integrity
+	mooring.attackby(rod, chaplain)
+	var/expected = max(rod.force, 10) * HERETIC_SPIRIT_MOORING_NULLROD_MULT * (1 + HERETIC_SPIRIT_MOORING_HAND_BONUS)
+	TEST_ASSERT(abs(before - mooring.obj_integrity - expected) < 0.5, "Жезл бьёт втрое, призрак у берега добавляет: [before - mooring.obj_integrity] из [expected].")
+	mooring.take_damage(mooring.max_integrity * 2, BRUTE, MELEE)
+	TEST_ASSERT(QDELETED(mooring), "Разбитый Причал исчезает.")
+	TEST_ASSERT(spirit.mooring_broken, "Причал помечен разбитым.")
+	TEST_ASSERT(!spirit.moored(), "Без Причала плата погасла.")
+	TEST_ASSERT_EQUAL(shore.invisibility, GLOB.observer_default_invisibility, "Призрак снова незрим.")
+	TEST_ASSERT(!(/mob/dead/observer/proc/heretic_spirit_point in ferry.verbs), "Слуга больше не служит.")
+	TEST_ASSERT_NULL(ferry.alerts["heretic_spirit_obol"], "Значок слуги снят.")
+	spirit.combat_resource = 0
+	spirit_ferry_victim(get_step(center, EAST)).death()
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 0, "Без Причала смерть рядом не платит.")
+	spirit.combat_resource = 3
+	COOLDOWN_RESET(spirit, spirit_recovery)
+	spirit.on_life(user)
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 3, "Без Причала оболы сверх двух сами не идут.")
+	finale.on_body_lose(user)
+	finale.on_body_gain(user)
+	TEST_ASSERT_NULL(spirit.mooring, "Разбитый Причал не встаёт снова.")
+
+/// Смерть перевозчика гасит целый Причал вместе с проявившимися призраками, а оживление ставит его снова под героем.
+/datum/unit_test/heretic_spirit_mooring_lifecycle/Run()
+	var/datum/antagonist/heretic/heretic = ascend_spirit_ferryman(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/datum/eldritch_knowledge/final_eldritch/spirit_final/finale = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/spirit_final)
+	var/obj/structure/heretic_spirit_mooring/first = spirit.mooring
+	TEST_ASSERT_NOTNULL(first, "Причал стоит.")
+	var/mob/dead/observer/ghost = allocate(/mob/dead/observer, get_step(user, NORTH))
+	first.manifest(ghost, HERETIC_SPIRIT_GHOST_SHORE)
+	finale.on_body_lose(user)
+	TEST_ASSERT(QDELETED(first), "Без вознёсшегося тела Причал гаснет.")
+	TEST_ASSERT(!spirit.mooring_broken, "Погасший Причал не считается разбитым.")
+	TEST_ASSERT_EQUAL(ghost.invisibility, GLOB.observer_default_invisibility, "Призраки снова незримы.")
+	var/turf/elsewhere = locate(user.x + 3, user.y + 3, user.z)
+	user.forceMove(elsewhere)
+	finale.on_body_gain(user)
+	TEST_ASSERT_NOTNULL(spirit.mooring, "Оживший перевозчик ставит Причал снова.")
+	TEST_ASSERT_EQUAL(get_turf(spirit.mooring), elsewhere, "Новый Причал встаёт под героем.")
+
+/// Проявившегося видно только у фонаря; слуг не больше четырёх, недавно умерший слугой не станет; «Ваш Причал» видит только хозяин; Причал полигона не зовёт призраков раунда.
+/datum/unit_test/heretic_spirit_mooring_rules/Run()
+	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = ascend_spirit_ferryman(center)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/obj/structure/heretic_spirit_mooring/mooring = spirit.mooring
+	TEST_ASSERT_NOTNULL(mooring, "Причал стоит.")
+	TEST_ASSERT(mooring in GLOB.heretic_spirit_moorings, "Причал раунда зовёт призраков.")
+	var/mob/dead/observer/ghost = allocate(/mob/dead/observer, get_step(center, NORTH))
+	TEST_ASSERT(mooring.manifest(ghost, HERETIC_SPIRIT_GHOST_SHORE), "Призрак проявился.")
+	TEST_ASSERT_EQUAL(ghost.invisibility, 0, "У фонаря призрак виден живым.")
+	ghost.forceMove(locate(center.x > 40 ? center.x - 30 : center.x + 30, center.y, center.z))
+	TEST_ASSERT_EQUAL(ghost.invisibility, GLOB.observer_default_invisibility, "Вдали от фонаря призрак снова незрим.")
+	ghost.forceMove(get_step(center, NORTH))
+	TEST_ASSERT_EQUAL(ghost.invisibility, 0, "Вернувшись к фонарю, призрак снова виден.")
+	var/mob/living/carbon/human/fresh = spirit_corpse(get_step(center, SOUTH), with_mind = TRUE)
+	var/mob/dead/observer/avenger = allocate(/mob/dead/observer, get_step(center, EAST))
+	avenger.mind = fresh.mind
+	TEST_ASSERT(!mooring.manifest(avenger, HERETIC_SPIRIT_GHOST_FERRY), "Только что умерший не служит перевозчику.")
+	TEST_ASSERT(mooring.manifest(avenger, HERETIC_SPIRIT_GHOST_SHORE), "У берега недавно умерший стоять может.")
+	var/servants = 0
+	var/list/players = list()
+	for(var/index in 1 to 5)
+		var/mob/dead/observer/servant = allocate(/mob/dead/observer, get_step(center, WEST))
+		servant.mind = allocate_mind()
+		servant.mind.key = "spiritservanttest[index]"
+		var/datum/client_interface/spirit_player/player = new
+		player.mob = servant
+		players[ckey(servant.mind.key)] = player
+		GLOB.directory[ckey(servant.mind.key)] = player
+		if(mooring.manifest(servant, HERETIC_SPIRIT_GHOST_FERRY))
+			servants++
+	for(var/player_key in players)
+		GLOB.directory -= player_key
+	TEST_ASSERT_EQUAL(servants, 4, "Слуг у перевозчика не больше четырёх.")
+	TEST_ASSERT_EQUAL(servants, HERETIC_SPIRIT_FERRY_SERVANT_LIMIT, "Предел слуг взят из правил.")
+	var/datum/eldritch_knowledge/final_eldritch/spirit_final/finale = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/spirit_final)
+	TEST_ASSERT(findtext(jointext(finale.details, " "), "До [HERETIC_SPIRIT_FERRY_SERVANT_LIMIT] призраков, умерших больше [HERETIC_SPIRIT_FERRY_GRACE / (1 MINUTES)] минут"), "Кодекс называет предел слуг и паузу после смерти из правил.")
+	var/datum/antagonist/heretic/rival = allocate_heretic(get_step(center, SOUTHWEST))
+	TEST_ASSERT(!findtext(jointext(mooring.examine(rival.owner.current), " "), "Ваш Причал"), "Чужому еретику Причал не «ваш».")
+	TEST_ASSERT(findtext(jointext(mooring.examine(user), " "), "Ваш Причал"), "Хозяин узнаёт свой Причал.")
+	spirit.unmoor()
+	heretic.simulated = TRUE
+	var/obj/structure/heretic_spirit_mooring/training = spirit.moor(user, FALSE)
+	TEST_ASSERT_NOTNULL(training, "Причал полигона стоит.")
+	TEST_ASSERT(!(training in GLOB.heretic_spirit_moorings), "Причал полигона не зовёт призраков раунда.")
+	TEST_ASSERT_NULL(training.offer_timer, "Причал полигона не рассылает приглашений.")
+
+/// Холодный след виден перевозчику, Хватка мимо него подсказывает, что след рядом; смерть вне станции следа не оставляет, а обол там дело не продвигает.
+/datum/unit_test/heretic_spirit_death_mark_hint/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SPIRIT)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	user.a_intent = INTENT_HELP
+	var/turf/origin = get_turf(user)
+	var/turf/far = locate(origin.x + 3, origin.y + 3, origin.z)
+	var/mob/living/carbon/human/outsider = spirit_corpse(far, with_mind = TRUE)
+	TEST_ASSERT_NULL(spirit.death_marks[far], "Смерть вне станции следа не оставляет.")
+	TEST_ASSERT(spirit.place_obol(user, outsider), "Обол ложится и вне станции: [spirit.grasp_failure_reason]")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 0, "Вне станции обол дело не продвигает.")
+	allocated += new /datum/heretic_test_station_level(origin.z)
+	var/turf/cold = locate(origin.x + 3, origin.y, origin.z)
+	heretic_test_area(cold, /area/unit_test_spirit_kitchen)
+	spirit_corpse(cold, with_mind = TRUE)
+	var/list/mark = spirit.death_marks[cold]
+	TEST_ASSERT_NOTNULL(mark, "Смерть на станции оставила след.")
+	var/image/trail = mark ? mark["image"] : null
+	TEST_ASSERT(istype(trail) && trail.loc == cold, "У следа есть картинка для перевозчика.")
+	var/turf/beside = get_step(cold, WEST)
+	TEST_ASSERT(!spirit.on_mansus_grasp(beside, user, TRUE), "Хватка мимо следа его не читает.")
+	TEST_ASSERT(findtext(spirit.grasp_failure_reason, "рядом"), "Отказ подсказывает, что след рядом: [spirit.grasp_failure_reason]")
+	TEST_ASSERT(spirit.on_mansus_grasp(cold, user, TRUE), "Хватка по следу его читает: [spirit.grasp_failure_reason]")
+	TEST_ASSERT_NULL(spirit.death_marks[cold], "Прочитанный след убран.")
+
+/// Смерть на полигоне не оставляет следов настоящему перевозчику, а учебный видит следы только полигона.
+/datum/unit_test/heretic_spirit_death_mark_training_side/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SPIRIT)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/turf/origin = get_turf(user)
+	allocated += new /datum/heretic_test_station_level(origin.z)
+	var/turf/kitchen = locate(origin.x + 3, origin.y, origin.z)
+	heretic_test_area(kitchen, /area/unit_test_spirit_kitchen)
+	var/turf/arena = locate(origin.x + 3, origin.y + 3, origin.z)
+	heretic_test_area(arena, /area/antag_training)
+	spirit_corpse(arena, with_mind = TRUE)
+	TEST_ASSERT_NULL(spirit.death_marks[arena], "Смерть на полигоне не оставляет следа настоящему перевозчику.")
+	var/mob/living/carbon/human/outsider = spirit_corpse(get_step(arena, WEST), with_mind = TRUE)
+	heretic_test_area(get_turf(outsider), /area/antag_training)
+	TEST_ASSERT(spirit.place_obol(user, outsider), "Обол ложится и на полигоне: [spirit.grasp_failure_reason]")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 0, "Тело на полигоне не продвигает дело настоящего перевозчика.")
+	heretic.simulated = TRUE
+	spirit_corpse(kitchen, with_mind = TRUE)
+	TEST_ASSERT_NULL(spirit.death_marks[kitchen], "Учебный перевозчик не получает следов станции.")
+	var/turf/second_arena = locate(origin.x + 2, origin.y + 3, origin.z)
+	heretic_test_area(second_arena, /area/antag_training)
+	spirit_corpse(second_arena, with_mind = TRUE)
+	TEST_ASSERT_NOTNULL(spirit.death_marks[second_arena], "Учебный перевозчик видит след смерти на полигоне.")
+
+/// Заглушка игрока: экран с картинками и моб, в котором он сидит.
+/datum/client_interface/spirit_player
+	var/list/images = list()
+	var/mob/mob
+
+/// Следы смерти снимаются с экрана игрока, который вышел из тела, и при их уборке после ухода.
+/datum/unit_test/heretic_spirit_death_mark_logout/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SPIRIT)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/turf/origin = get_turf(user)
+	allocated += new /datum/heretic_test_station_level(origin.z)
+	var/turf/cold = locate(origin.x + 3, origin.y, origin.z)
+	heretic_test_area(cold, /area/unit_test_spirit_kitchen)
+	spirit_corpse(cold, with_mind = TRUE)
+	var/list/mark = spirit.death_marks[cold]
+	TEST_ASSERT_NOTNULL(mark, "Смерть на станции оставила след.")
+	var/image/trail = mark["image"]
+	var/viewer_key = "spiritmarkviewertest"
+	var/datum/client_interface/spirit_player/viewer = new
+	viewer.images += trail
+	GLOB.directory[viewer_key] = viewer
+	spirit.marks_viewer_ckey = viewer_key
+	SEND_SIGNAL(user, COMSIG_MOB_CLIENT_LOGOUT, viewer)
+	var/hidden_on_logout = !(trail in viewer.images)
+	viewer.images += trail
+	spirit.marks_viewer_ckey = viewer_key
+	spirit.drop_death_mark(cold)
+	var/hidden_on_drop = !(trail in viewer.images)
+	GLOB.directory -= viewer_key
+	TEST_ASSERT(hidden_on_logout, "Вышедший из тела игрок больше не видит следов.")
+	TEST_ASSERT(hidden_on_drop, "Убранный след снимается с экрана игрока, даже если он уже не в теле.")
+
+/// Слуги без игрока не занимают места у перевозчика; умерший недавно не служит, даже если тела уже нет.
+/datum/unit_test/heretic_spirit_ferry_servants_present/Run()
+	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = ascend_spirit_ferryman(center)
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/obj/structure/heretic_spirit_mooring/mooring = spirit.mooring
+	TEST_ASSERT_NOTNULL(mooring, "Причал стоит.")
+	for(var/index in 1 to HERETIC_SPIRIT_FERRY_SERVANT_LIMIT)
+		var/mob/dead/observer/absent = allocate(/mob/dead/observer, get_step(center, WEST))
+		TEST_ASSERT(mooring.manifest(absent, HERETIC_SPIRIT_GHOST_FERRY), "Призрак встаёт слугой: [mooring.manifest_failure]")
+	var/mob/dead/observer/newcomer = allocate(/mob/dead/observer, get_step(center, WEST))
+	newcomer.mind = allocate_mind()
+	TEST_ASSERT(mooring.manifest(newcomer, HERETIC_SPIRIT_GHOST_FERRY), "Ушедшие из игры слуги места не занимают: [mooring.manifest_failure]")
+	var/mob/living/carbon/human/gibbed = allocate(/mob/living/carbon/human, get_step(center, SOUTH))
+	gibbed.mind = allocate_mind()
+	gibbed.mind.current = gibbed
+	gibbed.mind.key = "spiritferrygracetest"
+	gibbed.death()
+	gibbed.mind.current = null
+	var/mob/dead/observer/avenger = allocate(/mob/dead/observer, get_step(center, EAST))
+	avenger.mind = gibbed.mind
+	TEST_ASSERT(!mooring.manifest(avenger, HERETIC_SPIRIT_GHOST_FERRY), "Только что умерший без тела не служит перевозчику.")
+	TEST_ASSERT(findtext(mooring.manifest_failure, "умерли"), "Отказ называет паузу после смерти: [mooring.manifest_failure]")
+	avenger.mind = null
 
 /// Пока перевозчик тянет душу, от него к ней натянута своя леска; рывок её убирает, а не рисует Переправу.
 /datum/unit_test/heretic_spirit_pull_line/Run()

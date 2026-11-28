@@ -182,6 +182,8 @@
 			return_list[BLOCK_RETURN_NORMAL_BLOCK_CHANCE] = 100
 			return_list[BLOCK_RETURN_BLOCK_CAPACITY] = round(charges)
 		return
+	if(return_list?[HERETIC_BLOCK_ABSORBED])
+		return BLOCK_NONE
 	last_time_used = world.time + recharge_delay
 	if(charges < 1)
 		return BLOCK_NONE
@@ -201,4 +203,5 @@
 			update_shield_overlay(TRUE)
 	return_list[BLOCK_RETURN_NORMAL_BLOCK_CHANCE] = 100
 	return_list[BLOCK_RETURN_BLOCK_CAPACITY] += rounded_charges
+	return_list[HERETIC_BLOCK_ABSORBED] = TRUE
 	return BLOCK_SUCCESS | BLOCK_PHYSICAL_EXTERNAL

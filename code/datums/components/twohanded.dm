@@ -135,19 +135,19 @@
 	if(wielded)
 		return
 	if(ismonkey(user))
-		to_chat(user, "<span class='warning'>It's too heavy for you to wield fully.</span>")
+		to_chat(user, "<span class='warning'>Слишком тяжело: в обе руки не взять.</span>")
 		return
 	if(user.get_inactive_held_item())
 		if(require_twohands)
-			to_chat(user, "<span class='notice'>[parent] is too cumbersome to carry in one hand!</span>")
+			to_chat(user, "<span class='notice'>[parent] не удержать одной рукой!</span>")
 			user.dropItemToGround(parent, force=TRUE)
 		else
-			to_chat(user, "<span class='warning'>You need your other hand to be empty!</span>")
+			to_chat(user, "<span class='warning'>Вторая рука должна быть свободна!</span>")
 		return
 	if(user.calculate_emply_hand_slots() < 1)
 		if(require_twohands)
 			user.dropItemToGround(parent, force=TRUE)
-		to_chat(user, "<span class='warning'>You don't have enough intact hands.</span>")
+		to_chat(user, "<span class='warning'>Не хватает целых рук.</span>")
 		return
 
 	// wield update status
@@ -166,13 +166,13 @@
 		parent_item.force = force_wielded
 	if(sharpened_increase)
 		parent_item.force += sharpened_increase
-	parent_item.name = "[parent_item.name] (Wielded)"
-	parent_item.update_icon()
 
 	if(iscyborg(user))
-		to_chat(user, "<span class='notice'>You dedicate your module to [parent].</span>")
+		to_chat(user, "<span class='notice'>Вы целиком отдаёте модуль под [parent].</span>")
 	else
-		to_chat(user, "<span class='notice'>You grab [parent] with both hands.</span>")
+		to_chat(user, "<span class='notice'>Вы берёте [parent] в обе руки.</span>")
+	parent_item.name = "[parent_item.name] (Wielded)"
+	parent_item.update_icon()
 
 	// Play sound if one is set
 	if(wieldsound)
@@ -245,11 +245,11 @@
 	// Show message if requested
 	if(show_message)
 		if(iscyborg(user))
-			to_chat(user, "<span class='notice'>You free up your module.</span>")
+			to_chat(user, "<span class='notice'>Вы освобождаете модуль.</span>")
 		else if(require_twohands)
-			to_chat(user, "<span class='notice'>You drop [parent].</span>")
+			to_chat(user, "<span class='notice'>Вы роняете [parent].</span>")
 		else
-			to_chat(user, "<span class='notice'>You are now carrying [parent] with one hand.</span>")
+			to_chat(user, "<span class='notice'>Теперь вы держите [parent] одной рукой.</span>")
 
 	// Play sound if set
 	if(unwieldsound)

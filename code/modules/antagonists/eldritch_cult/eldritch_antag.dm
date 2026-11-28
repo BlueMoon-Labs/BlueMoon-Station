@@ -26,6 +26,7 @@
 	reminded_times_left = 2 // BLUEMOON ADD
 
 /datum/antagonist/heretic/admin_add(datum/mind/new_owner,mob/admin)
+	warn_admin_about_heretic_count(admin)
 	give_equipment = TRUE
 	new_owner.add_antag_datum(src)
 	message_admins("[key_name_admin(admin)] has heresized [key_name_admin(new_owner)].")
@@ -34,7 +35,8 @@
 /datum/antagonist/heretic/greet()
 	owner.current.playsound_local(get_turf(owner.current), 'sound/ambience/antag/ecult_op.ogg', 100, FALSE, pressure_affected = FALSE)
 	to_chat(owner, span_eldritch_big("Вы — еретик!"))
-	to_chat(owner, span_eldritch("Кнопка «Призвать кодекс» кладёт книгу в руку, Z открывает её. Выберите путь - выбор необратим. Первые шаги по порядку - в кодексе, глава «Помощь», раздел «Начало»."))
+	to_chat(owner, span_eldritch("Кнопка «Призвать кодекс» кладёт книгу в руку, Z открывает её. Выберите путь: сменить его можно один раз, в первые [DisplayTimeText(HERETIC_PATH_RESET_WINDOW)] после выбора и до первой жертвы. Первые шаги по порядку - в кодексе, глава «Помощь», раздел «Начало»."))
+	to_chat(owner, span_notice("Не хотите играть еретиком? В первые [DisplayTimeText(HERETIC_ROLE_ABANDON_WINDOW)] и до первой жертвы от роли можно отказаться в кодексе, глава «Помощь», раздел «Начало»."))
 	var/hotkey_help = html_encode(format_ability_hotkey_help(owner.current.client?.prefs))
 	to_chat(owner, span_notice(hotkey_help))
 	to_chat(owner, span_notice("Мансус защищает еретиков и их слуг от боевой магии друг друга независимо от наличия кодекса. Обычный физический урон эта защита не останавливает. Еретики и их слуги не подходят для подношений. Чужое вознесение не закрывает ваш путь к вознесению."))
@@ -44,6 +46,7 @@
 
 /datum/antagonist/heretic/on_gain()
 	var/mob/living/current = owner.current
+	role_gained_at = world.time
 	owner.teach_crafting_recipe(/datum/crafting_recipe/heretic/codex)
 	owner.special_role = ROLE_HERETIC
 	if(ishuman(current))
@@ -76,6 +79,7 @@
 		return
 	role_removed = TRUE
 	clear_combat_resource_alert()
+	clear_evolution()
 	if(innate_body)
 		remove_innate_effects(innate_body)
 	STOP_PROCESSING(SSprocessing, src)
@@ -232,6 +236,7 @@
 	RegisterSignal(current, COMSIG_MOB_ITEM_AFTERATTACK, PROC_REF(on_item_afterattack))
 	update_combat_resource_alert(FALSE, current)
 	update_codex_alert(current)
+	heretic_lead_refresh_patina(current)
 
 /datum/antagonist/heretic/remove_innate_effects(mob/living/mob_override)
 	. = ..()
@@ -248,6 +253,7 @@
 		handle_clown_mutation(current, removing = FALSE)
 	current.faction -= "heretics"
 	UnregisterSignal(current, list(COMSIG_MOB_DEATH, COMSIG_PARENT_QDELETING, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, COMSIG_MOB_ITEM_AFTERATTACK))
+	heretic_lead_refresh_patina_later(current)
 
 /datum/antagonist/heretic/proc/on_innate_body_deleted(mob/living/source)
 	SIGNAL_HANDLER
@@ -272,6 +278,7 @@
 /datum/antagonist/heretic/get_admin_commands()
 	. = ..()
 	.["Equip"] = CALLBACK(src,PROC_REF(equip_cultist))
+	.["Сбросить путь"] = CALLBACK(src, PROC_REF(admin_reset_path))
 
 /datum/antagonist/heretic/roundend_report()
 	var/list/parts = list()

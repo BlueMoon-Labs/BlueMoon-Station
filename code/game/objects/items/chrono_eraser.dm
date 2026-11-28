@@ -68,7 +68,7 @@
 /obj/item/gun/energy/chrono_gun/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
 	if(field)
 		field_disconnect(field)
-	..()
+	return ..()
 
 /obj/item/gun/energy/chrono_gun/Destroy()
 	if(TED)

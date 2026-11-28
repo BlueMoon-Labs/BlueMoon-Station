@@ -14,8 +14,10 @@
 	TEST_ASSERT_NOTNULL(warp, "Под волной искажается пространство.")
 	TEST_ASSERT_EQUAL(warp.plane, GRAVITY_PULSE_PLANE, "Искажение рисуется на плоскости искажений.")
 	TEST_ASSERT(wave.anchored && wave.mouse_opacity == MOUSE_OPACITY_TRANSPARENT, "Волна не мешает кликам.")
-	TEST_ASSERT(length(wave.overlays), "Волна светится в темноте.")
-	TEST_ASSERT(length(wave.filters), "По кольцу волны бежит рябь.")
+	var/wave_glows = FALSE
+	for(var/atom/movable/child as anything in wave.vis_contents)
+		wave_glows ||= child.plane == EMISSIVE_PLANE
+	TEST_ASSERT(wave_glows, "Волна светится в темноте.")
 	var/obj/effect/temp_visual/heretic_vfx/burst/burst = heretic_vfx_burst(center, /particles/heretic_ascension/test_short, 0.1 SECONDS)
 	TEST_ASSERT_NOTNULL(burst, "Выброс частиц создаётся.")
 	TEST_ASSERT(istype(burst.particles, /particles/heretic_ascension/test_short), "Эмиттер несёт частицы нужного пути.")
@@ -46,6 +48,42 @@
 		TEST_ASSERT(wait_for_qdeleted(light), "Свет вспышки гаснет.")
 	TEST_ASSERT_NULL(target.get_filter(HERETIC_VFX_PULSE_FILTER), "Контур снимается после вспышки.")
 	TEST_ASSERT_NULL(target.get_filter(HERETIC_VFX_RAYS_FILTER), "Лучи снимаются после вспышки.")
+
+/// Кольцо волны и стягивания пиксельное: последний кадр нарисован ровно под радиус, масштаб целый, сама волна не растягивается; свечение повторяет кадр.
+/datum/unit_test/heretic_vfx_ring_pixel_frames/Run()
+	var/turf/center = run_loc_floor_bottom_left
+	for(var/radius in 1 to 7)
+		var/obj/effect/temp_visual/heretic_vfx/shockwave/wave = heretic_vfx_shockwave(center, "#81e7ee", radius, 0.3 SECONDS)
+		heretic_vfx_check_ring(wave, "ring_[radius * world.icon_size]", "волна радиуса [radius]")
+		qdel(wave)
+		qdel(locate(/obj/effect/temp_visual/heretic_vfx/warp) in center)
+	var/obj/effect/temp_visual/heretic_vfx/gather/gather = heretic_vfx_gather(center, "#ffffff", 3, 0.3 SECONDS)
+	heretic_vfx_check_ring(gather, null, "стягивание")
+	qdel(gather)
+
+/datum/unit_test/heretic_vfx_ring_pixel_frames/proc/heretic_vfx_check_ring(obj/effect/temp_visual/heretic_vfx/carrier, final_state, label)
+	TEST_ASSERT_NOTNULL(carrier, "[label]: создаётся.")
+	var/matrix/carrier_shape = carrier.transform
+	TEST_ASSERT(carrier_shape.a == 1 && carrier_shape.e == 1, "[label]: сам носитель не растягивается.")
+	var/atom/movable/ring
+	var/atom/movable/glow
+	for(var/atom/movable/child as anything in carrier.vis_contents)
+		if(child.plane == EMISSIVE_PLANE)
+			glow = child
+		else
+			ring = child
+	TEST_ASSERT_NOTNULL(ring, "[label]: несёт пиксельное кольцо.")
+	TEST_ASSERT_NOTNULL(glow, "[label]: кольцо светится в темноте.")
+	TEST_ASSERT(ring.icon_state in icon_states(ring.icon), "[label]: кадр [ring.icon_state] нарисован.")
+	if(final_state)
+		TEST_ASSERT_EQUAL(ring.icon_state, final_state, "[label]: последний кадр нарисован ровно под радиус.")
+	var/matrix/shape = ring.transform
+	TEST_ASSERT((shape.a == 1 || shape.a == 2) && shape.e == shape.a && !shape.b && !shape.d, "[label]: масштаб кадра целый, без поворота.")
+	TEST_ASSERT(ring.appearance_flags & PIXEL_SCALE, "[label]: двойной масштаб без сглаживания.")
+	var/icon/frame = icon(ring.icon, ring.icon_state)
+	TEST_ASSERT_EQUAL(ring.pixel_x + frame.Width() / 2, world.icon_size / 2, "[label]: кольцо в центре клетки.")
+	var/matrix/glow_shape = glow.transform
+	TEST_ASSERT(glow.icon == ring.icon && glow.icon_state == ring.icon_state && glow_shape.a == shape.a && glow.pixel_x == ring.pixel_x, "[label]: свечение повторяет кадр кольца.")
 
 /// Эмиттер перестаёт порождать частицы по окончании выброса, а не живёт до конца полёта с полным потоком.
 /datum/unit_test/heretic_vfx_burst_stops_emitting/Run()
@@ -110,6 +148,7 @@
 		if(!wait_budget_tick(budget))
 			break
 	TEST_ASSERT_NULL(user.get_filter(HERETIC_VFX_RAYS_FILTER), "Лучи гаснут и снимаются.")
+	heretic_release_sky(final_knowledge)
 
 /// Смерть рассыпает нимб частицами пути.
 /datum/unit_test/heretic_ascension_aura_disperses/Run()
@@ -207,6 +246,7 @@
 		TEST_ASSERT(QDELETED(child), "[child.type] уходит вместе с нарастанием.")
 	TEST_ASSERT_NULL(locate(/obj/effect/heretic_ritual_crescendo) in run_loc_floor_bottom_left, "На руне не остаётся нарастания.")
 	TEST_ASSERT_NULL(locate(/obj/effect/abstract/heretic_crescendo_warp) in run_loc_floor_bottom_left, "Над руной не остаётся искажения.")
+	heretic_release_sky(final_knowledge)
 
 /datum/actionspeed_modifier/heretic_crescendo_test
 	variable = TRUE
@@ -249,6 +289,7 @@
 	TEST_ASSERT_EQUAL(crescendo.ritual_duration, expected, "Такты нарастания рассчитаны на настоящую длину обряда.")
 	TEST_ASSERT_EQUAL(rune.observed_visual_lifetime, expected + 1 SECONDS, "Печать обряда живёт столько же, сколько обряд.")
 	user.remove_actionspeed_modifier(/datum/actionspeed_modifier/heretic_crescendo_test)
+	heretic_release_sky(final_knowledge)
 
 /// Новые эффекты создаются без аргументов и удаляются без ошибок; общий create_and_destroy в сборке закомментирован.
 /datum/unit_test/heretic_vfx_types_create_and_destroy/Run()
@@ -374,3 +415,32 @@
 	var/obj/effect/temp_visual/heretic_vfx/burst/short = heretic_vfx_stream(start, get_step(start, EAST), /particles/heretic_ascension/test_short, 0.1 SECONDS)
 	TEST_ASSERT_EQUAL(short.particles.width, plain.width, "Короткому потоку хватает обычного холста.")
 	TEST_ASSERT(wait_for_qdeleted(stream) && wait_for_qdeleted(short), "Потоки иссякают.")
+
+/// Светящаяся копия и частицы на теле рисуются отдельно от него: иначе копия ложится на тело белой заливкой, а контур тела обводит частицы.
+/datum/unit_test/heretic_vfx_glow_kept_apart_on_body/Run()
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/effect/abstract/heretic_particle_holder/holder = heretic_vfx_attach_particles(body, /particles/heretic_ascension/test_short)
+	TEST_ASSERT(holder.appearance_flags & KEEP_APART, "Частицы не входят в общий рисунок тела.")
+	TEST_ASSERT(holder.glow.appearance_flags & KEEP_APART, "Светящаяся копия частиц не рисуется поверх тела.")
+	TEST_ASSERT(!(holder.vis_flags & VIS_UNDERLAY), "Обычные частицы летят перед телом.")
+	heretic_vfx_release_particles(body, holder)
+	var/obj/effect/abstract/heretic_vfx_attached/mark = heretic_vfx_attach(body, 'modular_bluemoon/icons/effects/heretic_vfx.dmi', "moon_eye")
+	TEST_ASSERT(mark.glow.appearance_flags & KEEP_APART, "Светящаяся копия знака на теле не рисуется поверх тела.")
+	qdel(mark)
+
+/// Завеса явления обводит только тело: частицы за ним, свечение под ним.
+/datum/unit_test/heretic_emergence_keeps_body_readable/Run()
+	var/list/found = list()
+	var/datum/antagonist/heretic/heretic = allocate_ascended_heretic(found)
+	var/datum/eldritch_knowledge/final_eldritch/knowledge = found[1]
+	var/mob/living/carbon/human/body = heretic.owner.current
+	knowledge.on_body_gain(body)
+	var/datum/status_effect/heretic_emergence/emergence = body.apply_status_effect(/datum/status_effect/heretic_emergence)
+	TEST_ASSERT_NOTNULL(emergence?.motes, "Явление несёт частицы пути.")
+	TEST_ASSERT(emergence.motes.vis_flags & VIS_UNDERLAY, "Частицы явления летят за телом, а не по нему.")
+	TEST_ASSERT(emergence.motes.appearance_flags & KEEP_APART, "Контур явления не обводит частицы.")
+	TEST_ASSERT_NOTNULL(body.get_filter("heretic_emergence_glow"), "Завеса дрожит свечением под телом.")
+	TEST_ASSERT_EQUAL(body.filter_data["heretic_emergence_glow"]["type"], "drop_shadow", "Свечение завесы ложится под тело и не заливает его.")
+	qdel(emergence)
+	TEST_ASSERT_NULL(body.get_filter("heretic_emergence_glow"), "Свечение завесы снято.")
+	knowledge.on_body_lose(body)

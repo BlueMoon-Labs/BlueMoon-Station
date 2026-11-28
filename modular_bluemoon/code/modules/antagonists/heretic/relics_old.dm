@@ -9,14 +9,14 @@
 	var/knowledge_type
 
 /obj/item/heretic_relic/proc/get_path(mob/living/user, chargecost = 0)
-	if(!isliving(user) || user.incapacitated() || !user.is_holding(src) || user.check_magic_resistance(chargecost = chargecost))
+	if(!isliving(user) || heretic_incapacitated(user) || !user.is_holding(src) || user.check_magic_resistance(chargecost = chargecost))
 		return null
 	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
 	return heretic?.get_knowledge(knowledge_type)
 
 /obj/item/heretic_relic/censer
 	name = "ember censer"
-	desc = "Костяная кадильница с тлеющей пастью. Коснитесь горящего существа, чтобы погасить его и сохранить пламя (до трёх зарядов). Нажмите на пол в центре своего угольного следа, чтобы забрать его как один заряд, пожертвовав областью огня. Используйте в руке, чтобы после короткого замаха выдохнуть весь запас конусом на три клетки перед собой. Нужен один уголёк; между выдохами — 12 секунд."
+	desc = "Костяная кадильница с тлеющей пастью. Коснитесь горящего существа, чтобы погасить его и сохранить пламя (до трёх зарядов). Нажмите на пол в центре своего угольного следа, чтобы забрать его как один заряд, пожертвовав областью огня. Используйте в руке, чтобы после короткого замаха выдохнуть весь запас конусом на три клетки перед собой. Нужен один уголёк; между выдохами — 12 секунд. После вознесения один заряд сразу разжигает погасший и просохший Пепельный фонарь."
 	icon_state = "crucible_empty"
 	knowledge_type = /datum/eldritch_knowledge/base_ash
 	var/stored_fire = 0
@@ -28,6 +28,9 @@
 
 /obj/item/heretic_relic/censer/afterattack(atom/target, mob/living/user, proximity_flag, click_parameters)
 	. = ..()
+	if(proximity_flag && istype(target, /obj/structure/heretic_ash_lantern))
+		relight_lantern(user, target)
+		return
 	if(proximity_flag && isturf(target))
 		for(var/obj/effect/heretic_combat_zone/ash/trail in target)
 			if(!istype(trail, /obj/effect/heretic_combat_zone/ash/lord_trail))
@@ -35,6 +38,25 @@
 				break
 	if(proximity_flag && isliving(target))
 		capture_fire(user, target)
+
+/// Один заряд пламени сразу разжигает просохший Пепельный фонарь.
+/obj/item/heretic_relic/censer/proc/relight_lantern(mob/living/user, obj/structure/heretic_ash_lantern/lantern)
+	if(!get_path(user))
+		return FALSE
+	var/reason = lantern.censer_block_reason(user)
+	if(!reason && stored_fire <= 0)
+		reason = "В кадильнице нет пламени: сохраните его, погасив горящего врага или свой угольный след."
+	if(reason)
+		to_chat(user, span_warning(reason))
+		return FALSE
+	if(!lantern.relight(user))
+		return FALSE
+	stored_fire--
+	if(!stored_fire)
+		icon_state = "crucible_empty"
+		user.update_inv_hands()
+		set_light(0)
+	return TRUE
 
 /obj/item/heretic_relic/censer/proc/capture_trail(mob/living/user, obj/effect/heretic_combat_zone/ash/trail)
 	var/datum/eldritch_knowledge/path = get_path(user)
@@ -143,19 +165,19 @@
 	var/burst_done = FALSE
 
 /obj/structure/heretic_rust_heart/attack_hand(mob/living/carbon/human/user)
-	if(user.a_intent != INTENT_HARM || zone?.master_mind?.resolve() != user.mind || user.incapacitated() || burst_pending)
+	if(user.a_intent != INTENT_HARM || zone?.master_mind?.resolve() != user.mind || heretic_incapacitated(user) || burst_pending)
 		return ..()
 	burst_pending = TRUE
 	visible_message(span_warning("Корни [src] натягиваются и трещат, готовясь разорваться!"))
 	new /obj/effect/temp_visual/heretic_oldpath/rust(get_turf(src))
 	playsound(src, pick(GLOB.heretic_rust_root_sounds), 50, TRUE)
-	if(do_after(user, 1 SECONDS, target = src))
+	if(do_after(user, 1 SECONDS, target = src, timed_action_flags = IGNORE_INCAPACITATED))
 		burst(user)
 	if(!QDELETED(src))
 		burst_pending = FALSE
 
 /obj/structure/heretic_rust_heart/proc/burst(mob/living/user)
-	if(QDELETED(zone) || zone.master_mind?.resolve() != user.mind || !IS_HERETIC(user) || !user.Adjacent(src) || user.incapacitated())
+	if(QDELETED(zone) || zone.master_mind?.resolve() != user.mind || !IS_HERETIC(user) || !user.Adjacent(src) || heretic_incapacitated(user))
 		return FALSE
 	for(var/turf/open/floor/tile in range(zone.radius, src))
 		if(!can_see(src, tile, zone.radius))

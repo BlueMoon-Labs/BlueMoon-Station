@@ -1242,6 +1242,8 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 /// Gets the combined speed modification of all worn items
 /// Except base mob type doesnt really wear items
 /mob/proc/equipped_speed_mods()
+	if(HAS_TRAIT(src, TRAIT_HERETIC_HAMMER_HEFT))
+		return
 	for(var/obj/item/I in held_items)
 		if(I.item_flags & SLOWS_WHILE_IN_HAND)
 			. += I.slowdown

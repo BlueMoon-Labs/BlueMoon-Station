@@ -141,6 +141,10 @@
 	TEST_ASSERT_NOTNULL(warning, "Предупреждение ставит свой таймер.")
 	TEST_ASSERT(abs(warning.timeToRun - world.time - (HERETIC_POCKET_DURATION - HERETIC_POCKET_WARNING)) < 1, "Предупреждение за [HERETIC_POCKET_WARNING / (1 SECONDS)] с до конца: [warning.timeToRun - world.time] дс.")
 	TEST_ASSERT(findtext(jointext(pocket.rift.examine(crew), " "), "шагнул в никуда"), "Экипаж видит улику у разрыва.")
+	var/rift_text = jointext(pocket.rift.examine(crew), " ")
+	TEST_ASSERT(findtext(rift_text, "пленник и похититель выпадут здесь же") && !findtext(rift_text, "оглушённым"), "Без дальнего выхода экипажу не обещают оглушения: [rift_text]")
+	TEST_ASSERT(!heretic_capture_hint_to(victim, victim) && !victim.mind.heretic_capture_hint_seen, "В изнанке разовая подсказка о хватке не тратится.")
+	TEST_ASSERT(!findtext(jointext(pocket.rift.examine(user), " "), "За разрывом кого-то держат"), "Хозяину разрыва подсказка экипажа не показывается.")
 	TEST_ASSERT_EQUAL(heretic_pocket_anchor(get_turf(victim)), entry, "Для охоты изнанка остаётся у своего входа.")
 	TEST_ASSERT_NULL(heretic.hunt_target_unavailable_reason(victim.mind), "Цель в изнанке доступна для обряда.")
 	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book, user)
@@ -151,6 +155,7 @@
 	TEST_ASSERT_EQUAL(pocket_data["tear"], HERETIC_POCKET_TEAR_TIME / (1 SECONDS), "Кодекс берёт время разрыва из дефайна.")
 	TEST_ASSERT_EQUAL(pocket_data["cooldown"], HERETIC_POCKET_COOLDOWN / (1 SECONDS), "Кодекс берёт перезарядку изнанки из дефайна.")
 	TEST_ASSERT_EQUAL(pocket_data["hold"], HERETIC_POCKET_ENTRY_HOLD / (1 SECONDS), "Кодекс берёт удержание на входе из дефайна.")
+	TEST_ASSERT_EQUAL(pocket_data["breach"], HERETIC_POCKET_BREACH_STUN / (1 SECONDS), "Кодекс берёт отдачу сорванного разрыва из дефайна.")
 
 /// Изнанка отказывает вне станции, чужой цели, цели в шкафу, под антимагией, под запретом телепортов у входа, еретика или цели, еретику в крите или в наручниках, при открытой изнанке и в перезарядке.
 /datum/unit_test/heretic_pocket/refusals/Run()
@@ -325,6 +330,8 @@
 
 	TEST_ASSERT(heretic.pocket_pull(user, victim, entry, pull_time = 0), "Цель уходит в изнанку.")
 	var/datum/heretic_pocket/pocket = heretic.pocket
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, get_step(entry, NORTH))
+	TEST_ASSERT(findtext(jointext(pocket.rift.examine(crew), " "), "оглушённым на [HERETIC_POCKET_BREACH_STUN / (1 SECONDS)] с"), "С дальним выходом экипаж знает, что даст сорванный разрыв.")
 	var/list/exits = heretic.pocket_exits(user)
 	var/list/exit_turfs = list()
 	for(var/label in exits)
@@ -348,6 +355,18 @@
 	TEST_ASSERT(pocket.leave(user, window_spot), "Еретик выходит к ремеслу-окну.")
 	TEST_ASSERT_EQUAL(get_dist(user, window_spot), 1, "Занятая клетка выхода даёт соседний пол.")
 	heretic.researched_knowledge -= probe.type
+
+/// Свободная клетка под запретом телепортов не служит посадкой: её заменяет разрешённый сосед или ничего.
+/datum/unit_test/heretic_pocket/landing/Run()
+	allocated += new /datum/heretic_test_station_level(run_loc_floor_bottom_left.z)
+	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	TEST_ASSERT_EQUAL(heretic_pocket_landing(center), center, "Свободная разрешённая клетка сама служит посадкой.")
+	heretic_test_area(center, /area/unit_test_pocket_noteleport)
+	var/turf/landing = heretic_pocket_landing(center)
+	TEST_ASSERT(landing && landing != center && heretic_pocket_exit_allowed(landing), "Клетка под запретом отдаёт разрешённого соседа.")
+	for(var/direction in GLOB.alldirs)
+		heretic_test_area(get_step(center, direction), /area/unit_test_pocket_noteleport)
+	TEST_ASSERT_NULL(heretic_pocket_landing(center), "Без разрешённого пола рядом посадки нет.")
 
 /// Обряд сердцем в изнанке проходит как на станции: жертва уходит в Мансус, изнанка остаётся открытой.
 /datum/unit_test/heretic_pocket/heart_rite/Run()
@@ -780,6 +799,11 @@
 	pocket.on_timeout()
 	TEST_ASSERT_EQUAL(get_turf(user), entry, "Без своих выходов еретик выпадает у входа.")
 	TEST_ASSERT_EQUAL(get_turf(victim), entry, "Цель выпадает у входа.")
+	reset_pocket(pocket, victim)
+	TEST_ASSERT(heretic.pocket_pull(user, victim, entry, pull_time = 0), "Цель уходит в изнанку перед жезлом без выходов.")
+	pocket.rift.attackby(rod, crew)
+	TEST_ASSERT_EQUAL(get_turf(user), entry, "Без своих выходов сорванный разрыв роняет еретика у входа.")
+	TEST_ASSERT(!user.IsParalyzed(), "У входа рядом с экипажем отдача не оглушает.")
 
 	var/turf/near = locate(entry.x + 2, entry.y + 1, entry.z)
 	var/turf/far = locate(entry.x + 3, entry.y + 3, entry.z)
@@ -816,6 +840,8 @@
 		TEST_ASSERT(!pocket.active, "Изнанка закрыта ([closer]).")
 		TEST_ASSERT_EQUAL(get_turf(user), far, "Еретика выносит к выходу подальше от входа ([closer]).")
 		TEST_ASSERT_EQUAL(get_turf(victim), entry, "Цель выпадает у входа ([closer]).")
+		TEST_ASSERT_EQUAL(user.IsParalyzed() ? TRUE : FALSE, closer != "время", "Отдача оглушает у выхода только за сорванный разрыв ([closer]).")
+		user.SetParalyzed(0)
 
 	probe.exits = list()
 	var/turf/stood = locate(entry.x + 2, entry.y + 2, entry.z)

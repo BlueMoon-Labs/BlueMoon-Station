@@ -130,10 +130,28 @@
 	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_dance_worn.dmi'
 	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_dance_worn.dmi'
 
+/obj/item/melee/sickly_blade/hammer
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_blades_hammer_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_blades_hammer_righthand.dmi'
+	inhand_x_dimension = 64
+	inhand_y_dimension = 64
+	held_offset_x = 0
+	held_offset_y = 0
+
+/datum/heretic_path/dusk
+	robe_state = "dusk_armor"
+	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_dusk_worn.dmi'
+	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_dusk_worn.dmi'
+
 /datum/heretic_path/spirit
 	robe_state = "spirit_armor"
 	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_spirit_worn.dmi'
 	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_spirit_worn.dmi'
+
+/datum/heretic_path/lead
+	robe_state = "lead_armor"
+	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_lead_worn.dmi'
+	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_lead_worn.dmi'
 
 /obj/item/melee/sickly_blade/spirit
 	lefthand_file = 'modular_bluemoon/icons/obj/heretic_blades_spirit_lefthand.dmi'
@@ -154,6 +172,14 @@
 /obj/item/melee/sickly_blade/dance
 	lefthand_file = 'modular_bluemoon/icons/obj/heretic_blades_dance_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/obj/heretic_blades_dance_righthand.dmi'
+	inhand_x_dimension = 32
+	inhand_y_dimension = 32
+	held_offset_x = 0
+	held_offset_y = 0
+
+/obj/item/melee/sickly_blade/lead
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_blades_lead_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_blades_lead_righthand.dmi'
 	inhand_x_dimension = 32
 	inhand_y_dimension = 32
 	held_offset_x = 0
@@ -188,6 +214,10 @@
 	held_offset_x = 0
 	held_offset_y = 0
 
+/obj/item/melee/sickly_blade/dusk
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_blades_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_blades_righthand.dmi'
+
 /obj/item/clothing/suit/hooded/cultrobes/eldritch/equipped(mob/user, slot)
 	. = ..()
 	attune_robes(user)
@@ -196,6 +226,7 @@
 /obj/item/clothing/suit/hooded/cultrobes/eldritch/proc/attune_robes(mob/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/heretic_path/path = GLOB.heretic_paths[heretic?.selected_path]
+	set_path_armor(path?.id)
 	if(!path?.robe_state || robe_path == path.id)
 		return FALSE
 	robe_path = path.id

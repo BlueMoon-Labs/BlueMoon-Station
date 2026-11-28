@@ -48,7 +48,7 @@
 	. = ..()
 	if(!finished || applied_body != user)
 		return
-	user.AddComponent(/datum/component/heretic_ash_lord)
+	user.AddComponent(/datum/component/heretic_ash_lord, src)
 
 /datum/eldritch_knowledge/final_eldritch/ash_final/on_body_lose(mob/living/user)
 	var/mob/living/body = applied_body || user
@@ -64,14 +64,17 @@
 	var/obj/effect/dummy/lighting_obj/moblight/glow
 	var/wet_until = 0
 	var/burning = FALSE
+	var/datum/weakref/knowledge_ref
 
-/datum/component/heretic_ash_lord/Initialize()
+/datum/component/heretic_ash_lord/Initialize(datum/eldritch_knowledge/final_eldritch/ash_final/knowledge)
 	if(!isliving(parent))
 		return COMPONENT_INCOMPATIBLE
+	knowledge_ref = WEAKREF(knowledge)
 	aura = new
 	embers = heretic_vfx_attach_particles(parent, /particles/heretic_ascension/ash/lord_embers)
 	smoke = heretic_vfx_attach_particles(parent, /particles/heretic_ascension/ash/lord_smoke, FALSE)
 	update_flame()
+	update_lantern_alert()
 
 /datum/component/heretic_ash_lord/RegisterWithParent()
 	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
@@ -82,7 +85,8 @@
 	UnregisterSignal(parent, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_LIFE, COMSIG_PARENT_EXAMINE))
 
 /datum/component/heretic_ash_lord/Destroy()
-	var/atom/movable/owner = parent
+	var/mob/living/owner = parent
+	owner.clear_alert(HERETIC_ASH_LANTERN_ALERT)
 	owner.vis_contents -= aura
 	var/turf/place = get_turf(owner)
 	if(burning && place)
@@ -93,7 +97,18 @@
 	smoke = null
 	QDEL_NULL(aura)
 	QDEL_NULL(glow)
+	knowledge_ref = null
 	return ..()
+
+/datum/component/heretic_ash_lord/proc/lantern_lit()
+	var/datum/eldritch_knowledge/final_eldritch/ash_final/knowledge = knowledge_ref?.resolve()
+	return knowledge?.lantern_lit()
+
+/datum/component/heretic_ash_lord/proc/update_lantern_alert()
+	var/mob/living/owner = parent
+	var/datum/eldritch_knowledge/final_eldritch/ash_final/knowledge = knowledge_ref?.resolve()
+	var/atom/movable/screen/alert/heretic_ash_lantern/alert = owner.throw_alert(HERETIC_ASH_LANTERN_ALERT, /atom/movable/screen/alert/heretic_ash_lantern)
+	alert?.show_state(lantern_lit(), !QDELETED(knowledge?.lantern))
 
 /// Вода уводит fire_stacks ниже нуля, а Life сушит их за тик, поэтому намокание держится отдельным сроком.
 /datum/component/heretic_ash_lord/proc/is_wet()
@@ -141,7 +156,7 @@
 	if(owner.stat == DEAD)
 		return
 	heretic_vfx_burst(owner, /particles/heretic_ascension/steam)
-	playsound(owner, 'sound/effects/extinguish.ogg', HERETIC_ASH_HISS_VOLUME, TRUE)
+	playsound(owner, 'modular_bluemoon/sound/heretic/ash_quench.ogg', HERETIC_ASH_HISS_VOLUME, TRUE)
 
 /datum/component/heretic_ash_lord/proc/set_smouldering(active)
 	if(embers?.particles)
@@ -156,16 +171,17 @@
 	var/turf/left = old_loc
 	if(!isopenturf(left) || isgroundlessturf(left))
 		return
+	var/trail_time = lantern_lit() ? HERETIC_ASH_TRAIL_DURATION : HERETIC_ASH_TRAIL_DIM_DURATION
 	var/obj/effect/heretic_combat_zone/ash/lord_trail/trail = locate() in left
 	if(trail)
-		trail.rekindle()
+		trail.rekindle(trail_time)
 		return
-	new /obj/effect/heretic_combat_zone/ash/lord_trail(left, source.mind)
+	new /obj/effect/heretic_combat_zone/ash/lord_trail(left, source.mind, trail_time)
 
 /datum/component/heretic_ash_lord/proc/on_life(mob/living/source, seconds, times_fired)
 	SIGNAL_HANDLER
 	if(update_flame())
-		heretic_heal_damage(source, 0, HERETIC_ASH_LORD_HEAL)
+		heretic_heal_damage(source, 0, lantern_lit() ? HERETIC_ASH_LORD_HEAL : HERETIC_ASH_LORD_DIM_HEAL)
 
 /datum/component/heretic_ash_lord/proc/on_examine(mob/living/source, mob/user, list/examine_list)
 	SIGNAL_HANDLER
@@ -173,6 +189,10 @@
 		examine_list += span_notice("Пламя на теле сбито водой и ненадолго погасло.")
 	else
 		examine_list += span_warning("Тело объято колдовским пламенем, за каждым шагом остаётся огненный след. Вода собьёт этот огонь на несколько секунд.")
+	if(lantern_lit())
+		examine_list += span_warning("Пламя питает Пепельный фонарь на месте обряда: погасите его водой или разбейте, и огонь ослабнет.")
+	else
+		examine_list += span_notice("Пепельный фонарь этого тела погас, и пламя заметно слабее.")
 
 /obj/effect/heretic_ash_aura
 	name = "ashen flame"
@@ -210,8 +230,9 @@
 	/// Свечение следа по смещению этажа
 	var/static/list/trail_glows = list()
 
-/obj/effect/heretic_combat_zone/ash/lord_trail/Initialize(mapload, datum/mind/master)
-	. = ..()
+/obj/effect/heretic_combat_zone/ash/lord_trail/Initialize(mapload, datum/mind/master, trail_time = HERETIC_ASH_TRAIL_DURATION)
+	duration = trail_time
+	. = ..(mapload, master)
 	var/offset_key = "[GET_TURF_PLANE_OFFSET(src)]"
 	if(!trail_glows[offset_key])
 		trail_glows[offset_key] = emissive_appearance('modular_bluemoon/icons/effects/heretic_vfx.dmi', "ash_trail_glow", offset_spokesman = src)
@@ -245,7 +266,8 @@
 	if(length(victims))
 		tick_zone(user, victims)
 
-/obj/effect/heretic_combat_zone/ash/lord_trail/proc/rekindle()
+/obj/effect/heretic_combat_zone/ash/lord_trail/proc/rekindle(trail_time = HERETIC_ASH_TRAIL_DURATION)
+	duration = trail_time
 	deltimer(expiry_timer)
 	expires_at = world.time + duration
 	expiry_timer = QDEL_IN_STOPPABLE(src, duration)
@@ -299,7 +321,7 @@
 	SIGNAL_HANDLER
 	for(var/datum/reagent/reagent as anything in reagents)
 		if(istype(reagent, /datum/reagent/water) || istype(reagent, /datum/reagent/firefighting_foam))
-			playsound(get_turf(src), 'sound/effects/extinguish.ogg', HERETIC_ASH_HISS_VOLUME, TRUE)
+			playsound(get_turf(src), 'modular_bluemoon/sound/heretic/ash_quench.ogg', HERETIC_ASH_HISS_VOLUME, TRUE)
 			heretic_vfx_burst(get_turf(src), /particles/heretic_ascension/steam)
 			doused = TRUE
 			qdel(src)

@@ -37,6 +37,7 @@
 #define HERETIC_MOON_EYE_FLICKER (0.7 SECONDS)
 #define HERETIC_MOON_HALO_SIZE 2
 #define HERETIC_MOON_HALO_COLOR "#c9d8ff70"
+#define HERETIC_MOON_MADNESS_HALO_COLOR "#ffc8ecb0"
 #define HERETIC_MOON_JITTER_INTERVAL (1 SECONDS)
 #define HERETIC_MOON_JITTER_CHANCE 40
 #define HERETIC_MOON_JITTER_OFFSET 3
@@ -105,10 +106,10 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/shard)
 	result_atoms = list(/obj/item/melee/sickly_blade/moon)
 	resource_rules = list(
-		"Держится 2 отражения, с Сумеречным покровом 3, после вознесения 5; новое вытесняет старейшее.",
-		"Копия живёт 45 секунд, с покровом 60 / 75 / 90; прочность 30, с покровом 40, после вознесения 50.",
-		"Копия бьёт раз в секунду: 5 ушибов и 18 выносливости, после вознесения 10 и 30, и вешает помутнение.",
-		"Соседняя копия ловит снаряд раз в 4 секунды; после вознесения - любая в 2 клетках, без задержки.",
+		"Держится 2 отражения, с Сумеречным покровом 3, при целом зеркале вознесения 5; новое вытесняет старейшее.",
+		"Копия живёт 45 секунд, с покровом 60 / 75 / 90; прочность 30, с покровом 40, при целом зеркале вознесения 50.",
+		"Копия бьёт раз в секунду: 5 ушибов и 18 выносливости, при целом зеркале вознесения 10 и 30, и вешает помутнение.",
+		"Соседняя копия ловит снаряд раз в 4 секунды; при целом зеркале вознесения - любая в 2 клетках, без задержки.",
 		"Двойник на посту не входит в предел, не дерётся и держится 10 минут.",
 	)
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_moon/post_voice
@@ -123,6 +124,8 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	var/shrouded = FALSE
 	var/refracting = FALSE
 	var/ascension_active = FALSE
+	var/mirror_broken = FALSE
+	var/datum/weakref/madness_ref
 	var/next_interception = 0
 	var/blade_mirth_chance = HERETIC_MOON_BLADE_MIRTH_CHANCE
 
@@ -150,6 +153,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	remove_combat_power()
 	clear_reflections()
 	wake_sleepwalkers()
+	end_madness()
 
 /datum/eldritch_knowledge/base_moon/proc/on_body_deleted(datum/source)
 	SIGNAL_HANDLER
@@ -168,31 +172,34 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 
 /datum/eldritch_knowledge/base_moon/proc/intercept_projectile(mob/living/source, real_attack, atom/object, damage, attack_text, attack_type, armour_penetration, mob/living/attacker, def_zone, list/return_list, attack_direction)
 	SIGNAL_HANDLER
-	if(!real_attack || damage <= 0 || !(attack_type & ATTACK_TYPE_PROJECTILE) || source != moon_body || source.incapacitated())
+	if(!real_attack || return_list?[HERETIC_BLOCK_ABSORBED] || damage <= 0 || !(attack_type & ATTACK_TYPE_PROJECTILE) || source != moon_body || heretic_incapacitated(source))
 		return BLOCK_NONE
-	if(!ascension_active && world.time < next_interception)
+	var/ascended = ascended_power()
+	if(!ascended && world.time < next_interception)
 		return BLOCK_NONE
 	if(ismob(attacker) && (attacker == source || IS_HERETIC(attacker) || IS_HERETIC_MONSTER(attacker)))
 		return BLOCK_NONE
 	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection as anything in reflections)
 		if(QDELETED(reflection) || reflection.stat == DEAD || !isturf(reflection.loc))
 			continue
-		if(ascension_active)
+		if(ascended)
 			if(reflection.z != source.z || get_dist(source, reflection) > HERETIC_MOON_ASCENDED_INTERCEPT_RANGE || !heretic_edge_line_clear(source, reflection))
 				continue
 		else if(!source.Adjacent(reflection))
 			continue
-		if(!ascension_active)
+		if(!ascended)
 			next_interception = world.time + 4 SECONDS
 		new /obj/effect/temp_visual/heretic_afterimage(get_turf(source), source, "#becfee")
 		source.visible_message(span_warning("Снаряд попадает в отражение [source], рассыпая его серебристой пылью!"))
 		reflection.death()
+		return_list?[HERETIC_BLOCK_ABSORBED] = TRUE
 		return BLOCK_SUCCESS
 	return BLOCK_NONE
 
 /datum/eldritch_knowledge/base_moon/on_death(mob/user)
 	clear_reflections()
 	wake_sleepwalkers()
+	end_madness()
 	moon_body?.remove_status_effect(/datum/status_effect/heretic_moon_shroud)
 
 /datum/eldritch_knowledge/base_moon/Destroy()
@@ -213,11 +220,15 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	if(!keep_temporary)
 		temporary_reflections.Cut()
 
+/// Сила вознесения держится, пока цело Лунное зеркало на месте обряда.
+/datum/eldritch_knowledge/base_moon/proc/ascended_power()
+	return ascension_active && !mirror_broken
+
 /datum/eldritch_knowledge/base_moon/proc/reflection_limit()
-	return ascension_active ? HERETIC_MOON_ASCENDED_LIMIT : shrouded ? HERETIC_MOON_SHROUD_LIMIT : HERETIC_MOON_BASE_LIMIT
+	return ascended_power() ? HERETIC_MOON_ASCENDED_LIMIT : shrouded ? HERETIC_MOON_SHROUD_LIMIT : HERETIC_MOON_BASE_LIMIT
 
 /datum/eldritch_knowledge/base_moon/proc/reflection_health()
-	return ascension_active ? HERETIC_MOON_ASCENDED_HEALTH : shrouded ? HERETIC_MOON_SHROUD_HEALTH : HERETIC_MOON_HEALTH
+	return ascended_power() ? HERETIC_MOON_ASCENDED_HEALTH : shrouded ? HERETIC_MOON_SHROUD_HEALTH : HERETIC_MOON_HEALTH
 
 /datum/eldritch_knowledge/base_moon/proc/sync_reflection_auras(manifest = FALSE)
 	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection as anything in reflections + temporary_reflections)
@@ -244,7 +255,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	return heretic || IS_HERETIC(moon_body)
 
 /datum/eldritch_knowledge/base_moon/proc/can_use(mob/living/user, ignore_grab = FALSE)
-	return !QDELETED(src) && isliving(user) && user == moon_body && user.stat == CONSCIOUS && isturf(user.loc) && !user.incapacitated(ignore_grab = ignore_grab)
+	return !QDELETED(src) && isliving(user) && user == moon_body && user.stat == CONSCIOUS && isturf(user.loc) && !heretic_incapacitated(user, ignore_grab)
 
 /datum/eldritch_knowledge/base_moon/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
 	grasp_failure_reason = null
@@ -309,6 +320,12 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 		qdel(walk)
 	sleepwalkers.Cut()
 
+/datum/eldritch_knowledge/base_moon/proc/end_madness()
+	var/datum/status_effect/heretic_lunatic/madness = active_madness()
+	madness_ref = null
+	if(madness)
+		madness.come_to_senses("Лунный смех [madness.owner] обрывается сам собой.")
+
 /datum/eldritch_knowledge/base_moon/proc/sleepwalk_of(mob/living/victim)
 	for(var/datum/status_effect/heretic_moon_sleepwalk/walk as anything in sleepwalkers)
 		if(walk.owner == victim && walk.asleep && !QDELETED(walk))
@@ -370,6 +387,12 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	moon_failure = sleepwalk_block_reason(user, victim)
 	if(moon_failure)
 		return FALSE
+	if(!heretic_moon_takes_will(victim))
+		victim.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+		to_chat(victim, span_warning("Веки на миг тяжелеют, но вы стряхиваете дрёму."))
+		to_chat(user, span_eldritch("Луна не взяла [victim] целиком: цель лишь клюёт носом и остаётся под помутнением."))
+		log_combat(user, victim, "насылает Сомнамбулу без согласия цели или без игрока в теле: только помутнение")
+		return TRUE
 	var/datum/status_effect/heretic_moon_sleepwalk/walk = victim.apply_status_effect(/datum/status_effect/heretic_moon_sleepwalk, src)
 	if(!walk || QDELETED(walk))
 		moon_failure = "Сомнамбула не удержала цель."
@@ -377,10 +400,81 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	log_combat(user, victim, "насылает Сомнамбулу")
 	return TRUE
 
+/datum/eldritch_knowledge/base_moon/proc/active_madness()
+	var/datum/status_effect/heretic_lunatic/madness = madness_ref?.resolve()
+	if(QDELETED(madness) || !madness.frenzy)
+		madness_ref = null
+		return null
+	return madness
+
+/datum/eldritch_knowledge/base_moon/proc/madness_block_reason(mob/living/user, atom/target)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/moon_madness)
+	if(QDELETED(src) || !user || user != moon_body || QDELETED(required))
+		return "Способность недоступна вашему пути или текущему телу."
+	if(!can_use(user))
+		return "Вы не можете действовать: дождитесь конца оглушения и выйдите на пол."
+	var/mob/living/carbon/victim = target
+	if(!iscarbon(victim) || victim == user)
+		return "Безумие берёт только людей и им подобных."
+	if(IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
+		return "Это союзник Мансуса: Луна не смеётся над своими."
+	if(victim.stat != CONSCIOUS)
+		return "Цель должна стоять на ногах и быть в сознании."
+	if(!isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > HERETIC_MOON_MADNESS_RANGE)
+		return "Цель должна стоять на полу не дальше [HERETIC_MOON_MADNESS_RANGE] клеток от вас."
+	if(!victim.has_status_effect(/datum/status_effect/heretic_moon_daze))
+		return "Безумие берёт только цель под лунным помутнением: сначала коснитесь её Хваткой, ударьте копией или взорвите Метку Луны."
+	if(victim.has_status_effect(/datum/status_effect/heretic_moon_sleepwalk))
+		return "Цель спит на ходу: спящий не безумствует."
+	if(active_madness())
+		return "Луна уже смеётся в одной голове: дождитесь, пока безумие пройдёт."
+	var/datum/status_effect/heretic_lunatic/lunatic = victim.has_status_effect(/datum/status_effect/heretic_lunatic)
+	if(lunatic?.frenzy || victim.has_status_effect(/datum/status_effect/heretic_moon_madness_rest))
+		return "Эта цель недавно уже безумствовала и пока не поддаётся."
+	return null
+
+/// На учебной арене манекены без игрока годятся Луне как настоящие люди.
+/proc/heretic_moon_training_ground(atom/thing)
+	return istype(get_area(thing), /area/antag_training)
+
+/// Волю тела Луна забирает только у игрока в теле, согласного на антаг-события: безумие, шествие за огоньком, Сомнамбула.
+/proc/heretic_moon_takes_will(mob/living/victim)
+	if(heretic_moon_training_ground(victim))
+		return TRUE
+	return !!GET_CLIENT(victim) && antag_opt_in_allows(victim.mind, HERETIC_MOON_MADNESS_OPT_IN)
+
+/// Согласный на антаг-события бросается на ближайшего, остальным достаются промахи и смех.
+/datum/eldritch_knowledge/base_moon/proc/madden(mob/living/user, mob/living/victim)
+	moon_failure = madness_block_reason(user, victim)
+	if(moon_failure)
+		return FALSE
+	if(!heretic_can_affect(user, victim, tinfoil = TRUE))
+		moon_failure = "Цель защищена от чар разума."
+		return FALSE
+	var/frenzy = heretic_moon_takes_will(victim)
+	victim.remove_status_effect(/datum/status_effect/heretic_lunatic)
+	var/datum/status_effect/heretic_lunatic/madness = victim.apply_status_effect(/datum/status_effect/heretic_lunatic, frenzy, user)
+	if(QDELETED(madness))
+		moon_failure = "Безумие не удержалось."
+		return FALSE
+	mirror_flash(victim)
+	playsound(victim, 'modular_bluemoon/sound/heretic/moon_masquerade.ogg', 35, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	if(!frenzy)
+		to_chat(user, span_eldritch("Луна не взяла [victim] целиком: [HERETIC_MOON_LUNATIC_DURATION / (1 SECONDS)] секунд цель будет стрелять мимо и смеяться невпопад."))
+		log_combat(user, victim, "насылает Лунное безумие без согласия цели или без игрока в теле: только промахи")
+		return TRUE
+	madness_ref = WEAKREF(madness)
+	to_chat(user, span_eldritch("[victim] хохочет вашим смехом и ищет, кого ударить."))
+	log_combat(user, victim, "насылает Лунное безумие")
+	return TRUE
+
 /// Причина сорвать Сомнамбулу к концу телеграфа, или null.
 /datum/eldritch_knowledge/base_moon/proc/sleepwalk_hold_reason(mob/living/victim)
 	if(!can_use(moon_body))
 		return "вы не удержали заклятие"
+	if(!heretic_moon_takes_will(victim))
+		return "игрок покинул тело цели"
 	if(victim.stat >= UNCONSCIOUS)
 		return "цель потеряла сознание"
 	if(!heretic_can_affect(moon_body, victim, chargecost = 0))
@@ -426,7 +520,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	var/direction = get_dir(here, goal)
 	for(var/step_direction in list(direction, turn(direction, 45), turn(direction, -45)))
 		var/turf/next = get_step(here, step_direction)
-		if(!next || get_dist(next, goal) >= get_dist(here, goal) || !sleepwalk_safe_turf(next) || next.is_blocked_turf(exclude_mobs = TRUE))
+		if(!next || get_dist(next, goal) >= get_dist(here, goal) || !sleepwalk_safe_turf(next) || !heretic_diagonal_step_safe(here, step_direction) || next.is_blocked_turf(exclude_mobs = TRUE))
 			continue
 		if(victim.Move(next, step_direction))
 			return TRUE
@@ -489,7 +583,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 
 /// Оба конца обмена остаются на открытом полу: нельзя выбрать шкаф, стену или космос.
 /datum/eldritch_knowledge/base_moon/proc/valid_reflection_turf(turf/target, mob/living/user, list/visible, mob/living/simple_animal/hostile/illusion/heretic_moon/ignored_reflection)
-	if(!user || user != moon_body || !isturf(user.loc) || user.stat != CONSCIOUS || user.incapacitated())
+	if(!user || user != moon_body || !isturf(user.loc) || user.stat != CONSCIOUS || heretic_incapacitated(user))
 		return FALSE
 	if(!istype(target, /turf/open/floor) || target.z != user.z || get_dist(user, target) > HERETIC_MOON_RANGE)
 		return FALSE
@@ -637,23 +731,24 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	reflection.death()
 	return TRUE
 
-/datum/eldritch_knowledge/base_moon/proc/create_mirages(mob/living/user)
-	var/list/visible = view(2, user)
-	var/list/positions = list()
-	for(var/turf/open/floor/position in visible)
-		if(position != get_turf(user) && valid_reflection_turf(position, user, visible))
-			positions += position
-	if(!length(positions))
+/// Обмен на пустой пол: там встаёт новая копия, и вы сразу меняетесь с ней местами.
+/datum/eldritch_knowledge/base_moon/proc/mirror_step(mob/living/user, turf/target)
+	moon_failure = null
+	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/existing as anything in exchange_candidates())
+		if(get_turf(existing) == target)
+			return exchange(user, existing)
+	if(!exchange_route_clear(user, target))
+		moon_failure = "Укажите свою копию, двойника или видимый свободный пол в пяти клетках; запрет телепортации и закрытые зоны не пускают."
 		return FALSE
-	clear_reflections(keep_temporary = TRUE)
-	for(var/turf/position as anything in shuffle(positions))
-		create_reflection(user, position, visible)
-		if(length(reflections) >= reflection_limit())
-			break
-	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection as anything in shuffle(reflections))
-		if(exchange(user, reflection))
-			break
-	return length(reflections) > 0
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection = create_reflection(user, target, replace_oldest = TRUE)
+	if(!reflection)
+		moon_failure = "Отражение не встало на этот пол."
+		return FALSE
+	if(exchange(user, reflection))
+		return TRUE
+	qdel(reflection)
+	moon_failure = "Отражение не пустило: обмен сорвался."
+	return FALSE
 
 /datum/eldritch_knowledge/base_moon/proc/exchange_candidates()
 	. = reflections.Copy()
@@ -665,14 +760,17 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 		return FALSE
 	if(!isturf(reflection.loc) || reflection.buckled)
 		return FALSE
+	return exchange_route_clear(user, get_turf(reflection), reflection)
+
+/// Оба конца обмена - видимый свободный пол без запрета телепортации.
+/datum/eldritch_knowledge/base_moon/proc/exchange_route_clear(mob/living/user, turf/destination, mob/living/ignored)
 	if(!user || user.buckled || user.anchored || HAS_TRAIT(user, TRAIT_NO_TELEPORT))
 		return FALSE
-	var/turf/destination = get_turf(reflection)
 	var/turf/origin = get_turf(user)
-	if(origin == destination)
+	if(!destination || origin == destination)
 		return FALSE
 	var/list/visible = view(HERETIC_MOON_RANGE, user)
-	if(!valid_reflection_turf(origin, user, visible) || !valid_reflection_turf(destination, user, visible, reflection))
+	if(!valid_reflection_turf(origin, user, visible) || !valid_reflection_turf(destination, user, visible, ignored))
 		return FALSE
 	var/area/origin_area = get_area(origin)
 	var/area/destination_area = get_area(destination)
@@ -696,8 +794,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 		new /obj/effect/temp_visual/heretic_moon_fx/rise(origin)
 	playsound(destination, 'modular_bluemoon/sound/heretic/moon_step.ogg', 35, TRUE)
 	user.visible_message(span_warning("На мгновение силуэт [user] раздваивается."))
-	if(shrouded)
-		user.apply_status_effect(/datum/status_effect/heretic_moon_shroud, 1 SECONDS)
+	user.apply_status_effect(/datum/status_effect/heretic_moon_shroud, 1 SECONDS)
 	return TRUE
 
 /mob/living/simple_animal/hostile/illusion/heretic_moon
@@ -792,7 +889,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 /// Копии вознёсшейся Луны изредка вспыхивают серебряными бликами.
 /mob/living/simple_animal/hostile/illusion/heretic_moon/proc/sync_shimmer()
 	var/datum/eldritch_knowledge/base_moon/knowledge = knowledge_ref?.resolve()
-	var/ascended = knowledge?.ascension_active && stat != DEAD
+	var/ascended = knowledge?.ascended_power() && stat != DEAD
 	if(ascended && !shimmer)
 		shimmer = heretic_vfx_attach_particles(src, /particles/heretic_ascension/moon/shimmer)
 	else if(!ascended && shimmer)
@@ -886,8 +983,9 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	do_attack_animation(victim, used_item = weapon)
 	if(!victim.has_status_effect(/datum/status_effect/heretic_moon_pressure) && heretic_can_affect(parent_mob, victim))
 		var/datum/eldritch_knowledge/base_moon/knowledge = knowledge_ref?.resolve()
-		var/pressure = knowledge?.ascension_active ? HERETIC_MOON_ASCENDED_PRESSURE : HERETIC_MOON_PRESSURE
-		var/damage = knowledge?.ascension_active ? HERETIC_MOON_ASCENDED_DAMAGE : HERETIC_MOON_DAMAGE
+		var/ascended = knowledge?.ascended_power()
+		var/pressure = ascended ? HERETIC_MOON_ASCENDED_PRESSURE : HERETIC_MOON_PRESSURE
+		var/damage = ascended ? HERETIC_MOON_ASCENDED_DAMAGE : HERETIC_MOON_DAMAGE
 		victim.apply_status_effect(/datum/status_effect/heretic_moon_pressure)
 		victim.apply_status_effect(/datum/status_effect/heretic_moon_daze)
 		var/stamina_before = victim.getStaminaLoss()
@@ -1119,9 +1217,9 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 
 /obj/effect/proc_holder/spell/pointed/heretic_moon/exchange
 	name = "Зеркальный обмен"
-	desc = "Поменяйтесь местами со своей копией или с двойником на посту в видимости до пяти клеток. Отражение встаёт на ваше прежнее место, двойник там же и держит пост. Оба места должны быть свободным полом. Перезарядка 12 секунд."
-	summary = "Меняет вас местами со своей копией или двойником на посту в 5 клетках. Перезарядка 12 секунд."
-	active_msg = "Выберите своё отражение или двойника для обмена местами."
+	desc = "Укажите свою копию или двойника на посту в видимости до пяти клеток - и поменяйтесь с ним местами: отражение встанет на ваше прежнее место, двойник продолжит держать пост там. Укажите пустой видимый пол - там поднимется новая копия, и вы сразу смените с ней место, оставив её позади. Секунду после обмена вы почти прозрачны, атака раскрывает вас. Оба места - свободный пол; запрет телепортации и закрытые зоны не пускают. Перезарядка 12 секунд."
+	summary = "Меняет вас местами с копией, двойником или новой копией на пустом полу в 5 клетках."
+	active_msg = "Укажите своё отражение, двойника или пустой пол для обмена местами."
 	deactive_msg = "Вы оставляете отражения на своих местах."
 	charge_max = 12 SECONDS
 	aim_assist = TRUE
@@ -1129,11 +1227,12 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 
 /obj/effect/proc_holder/spell/pointed/heretic_moon/exchange/can_target(atom/target, mob/user, silent)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
-	return heretic_check(user, knowledge && istype(target, /mob/living/simple_animal/hostile/illusion/heretic_moon) && knowledge.can_exchange(user, target), silent, "Выберите своё отражение или двойника на посту в видимости до пяти клеток. Оба места должны быть свободным полом.")
+	var/ready = istype(target, /mob/living/simple_animal/hostile/illusion/heretic_moon) ? knowledge?.can_exchange(user, target) : (isturf(target) && knowledge?.exchange_route_clear(user, target))
+	return heretic_check(user, ready, silent, "Укажите своё отражение, двойника на посту или пустой видимый пол в пяти клетках. Оба места должны быть свободным полом.")
 
-/// Копия дерётся вплотную к цели, а двойник бродит по посту, поэтому клик рядом с ними тоже ищет их.
+/// Копия дерётся вплотную к цели, а двойник бродит по посту, поэтому клик рядом с ними ищет их раньше пустого пола.
 /obj/effect/proc_holder/spell/pointed/heretic_moon/exchange/assisted_target(mob/user, atom/target)
-	if(intercept_check(user, target, TRUE))
+	if(!isturf(target) && intercept_check(user, target, TRUE))
 		return target
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	var/turf/clicked_turf = get_turf(target)
@@ -1145,12 +1244,16 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 			continue
 		best_reflection = reflection
 		best_distance = distance
-	return best_reflection || ..()
+	if(best_reflection)
+		return best_reflection
+	return (clicked_turf && intercept_check(user, clicked_turf, TRUE)) ? clicked_turf : target
 
 /obj/effect/proc_holder/spell/pointed/heretic_moon/exchange/cast(list/targets, mob/living/user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
-	if(!knowledge || !knowledge.exchange(user, targets[1]))
-		heretic_revert_cast(user)
+	var/atom/target = length(targets) ? targets[1] : null
+	var/done = isturf(target) ? knowledge?.mirror_step(user, target) : knowledge?.exchange(user, target)
+	if(!done)
+		heretic_revert_cast(user, knowledge?.moon_failure)
 
 /obj/effect/proc_holder/spell/self/heretic_moon
 	clothes_req = FALSE
@@ -1166,19 +1269,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	if(containment)
 		return heretic_check(user, FALSE, silent, containment)
 	var/mob/living/caster = user
-	return heretic_check(user, !istype(caster) || !caster.incapacitated(ignore_grab = usable_while_grabbed), silent, "Вы не можете действовать: дождитесь окончания оглушения или освободитесь.")
-
-/obj/effect/proc_holder/spell/self/heretic_moon/mirage
-	name = "Шествие миражей"
-	desc = "Замените старые отражения новой группой двойников вокруг себя до текущего предела и поменяйтесь местами со случайной копией, если обмен возможен. Перезарядка 25 секунд."
-	summary = "Новая группа копий вокруг вас и обмен со случайной из них. Перезарядка 25 секунд."
-	charge_max = 25 SECONDS
-	action_icon_state = "moon_parade"
-
-/obj/effect/proc_holder/spell/self/heretic_moon/mirage/cast(list/targets, mob/living/user)
-	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
-	if(!knowledge || !knowledge.create_mirages(user))
-		heretic_revert_cast(user)
+	return heretic_check(user, !istype(caster) || !heretic_incapacitated(caster, usable_while_grabbed), silent, "Вы не можете действовать: дождитесь окончания оглушения или освободитесь.")
 
 /obj/effect/proc_holder/spell/self/heretic_moon/eclipse
 	name = "Лунное затмение"
@@ -1189,7 +1280,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 
 /obj/effect/proc_holder/spell/self/heretic_moon/eclipse/cast(list/targets, mob/living/user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
-	if(!knowledge || user != knowledge.moon_body || !isturf(user.loc) || user.incapacitated())
+	if(!knowledge || user != knowledge.moon_body || !isturf(user.loc) || heretic_incapacitated(user))
 		heretic_revert_cast(user)
 		return
 	var/list/visible = view(2, user)
@@ -1222,7 +1313,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 
 /obj/effect/proc_holder/spell/self/heretic_moon/masquerade/cast(list/targets, mob/living/user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
-	if(!knowledge || user != knowledge.moon_body || !isturf(user.loc) || user.incapacitated())
+	if(!knowledge || user != knowledge.moon_body || !isturf(user.loc) || heretic_incapacitated(user))
 		heretic_revert_cast(user)
 		return
 	var/list/victims = knowledge.masquerade_targets(user)
@@ -1264,7 +1355,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 
 /obj/effect/proc_holder/spell/pointed/heretic_moon/sleepwalk
 	name = "Сомнамбула"
-	desc = "Укажите цель под лунным помутнением не дальше пяти клеток. Секунду её веки тяжелеют, затем 10 секунд она спит стоя с закрытыми глазами: не владеет телом и готова к обряду, а рядом с ней тихо играет музыкальная шкатулка. Раз в секунду цель шагает к вашей копии, оставленной ждать серебряным зеркалом, а цель охоты ещё и к двойнику на посту не дальше 10 клеток; если их нет, то к вам; обходит преграды, проходит сквозь людей и двери, к которым у неё есть доступ, и не ступает в космос, пропасть или лаву, а дойдя, стоит и спит ещё не меньше 3 секунд. Цель охоты, дошедшая до копии или двойника, даёт вам значок «Увести в отражение»: за 1 секунду он уводит её в изнанку, где бы на этом уровне вы ни стояли. Спящую можно растолкать за 2 секунды, а удар нулевым жезлом или вспышка в трёх клетках будят её сразу. Потеря сознания или смерть обрывают сон. Антимагия защищает; после пробуждения цель до минуты невосприимчива к Сомнамбуле. Перезарядка 40 секунд."
+	desc = "Укажите цель под лунным помутнением не дальше пяти клеток. Секунду её веки тяжелеют, затем 10 секунд она спит стоя с закрытыми глазами: не владеет телом и готова к обряду, а рядом с ней тихо играет музыкальная шкатулка. Раз в секунду цель шагает к вашей копии, оставленной ждать серебряным зеркалом, а цель охоты ещё и к двойнику на посту не дальше 10 клеток; если их нет, то к вам; обходит преграды, проходит сквозь людей и двери, к которым у неё есть доступ, и не ступает в космос, пропасть или лаву, а дойдя, стоит и спит ещё не меньше 3 секунд. Цель охоты, дошедшая до копии или двойника, даёт вам значок «Увести в отражение»: за 1 секунду он уводит её в изнанку, где бы на этом уровне вы ни стояли. Спящую можно растолкать за 2 секунды, а удар нулевым жезлом или вспышка в трёх клетках будят её сразу. Потеря сознания или смерть обрывают сон. Антимагия защищает; после пробуждения цель до минуты невосприимчива к Сомнамбуле. Сомнамбула берёт только согласных на антаг-события, чей игрок сейчас в теле; остальных лишь заново помутняет. Перезарядка 40 секунд."
 	summary = "Цель под помутнением 10 секунд спит на ходу и идёт к копии или к вам, а цель охоты ещё и к двойнику."
 	active_msg = "Укажите цель под лунным помутнением."
 	deactive_msg = "Лунный сон рассеивается в вашей ладони."
@@ -1286,9 +1377,33 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	if(!length(targets) || !knowledge?.sleepwalk(user, targets[1]))
 		heretic_revert_cast(user, knowledge?.moon_failure)
 
+/obj/effect/proc_holder/spell/pointed/heretic_moon/madness
+	name = "Лунное безумие"
+	desc = "Укажите цель под лунным помутнением не дальше 5 клеток. 15 секунд она хохочет, ноги сами несут её к ближайшему человеку в 4 клетках, а кулак бьёт его раз в 2 секунды; если рядом 3 секунды нет никого, безумие гаснет. Оружие она в ход не пускает, вас, ваших слуг и упавших не трогает. Безумие берёт только согласных на антаг-события, чей игрок сейчас в теле; остальные 12 секунд стреляют мимо и смеются невпопад. Вспышка в 3 клетках, нулевой жезл или обморок приводят безумную в чувство, фольга на голове защищает. Безумная у вас одна за раз, после безумия цель 3 минуты к нему невосприимчива. Перезарядка 60 секунд."
+	summary = "Помутнённая цель 15 секунд бросается с кулаками на ближайшего; несогласные лишь стреляют мимо."
+	active_msg = "Укажите цель под лунным помутнением."
+	deactive_msg = "Смех Луны стихает в вашей ладони."
+	charge_max = HERETIC_MOON_MADNESS_COOLDOWN
+	range = HERETIC_MOON_MADNESS_RANGE
+	aim_assist = TRUE
+	aim_assist_radius = 1
+	action_icon_state = "moon_parade"
+
+/obj/effect/proc_holder/spell/pointed/heretic_moon/madness/can_target(atom/target, mob/user, silent)
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	if(!heretic_check(user, knowledge, silent, "Способность недоступна вашему пути или текущему телу."))
+		return FALSE
+	var/reason = knowledge.madness_block_reason(user, target)
+	return heretic_check(user, !reason, silent, reason)
+
+/obj/effect/proc_holder/spell/pointed/heretic_moon/madness/cast(list/targets, mob/living/user)
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	if(!length(targets) || !knowledge?.madden(user, targets[1]))
+		heretic_revert_cast(user, knowledge?.moon_failure)
+
 /obj/effect/proc_holder/spell/pointed/heretic_moon/wisp
 	name = "Блуждающий огонёк"
-	desc = "Пустите медленный лунный огонёк в сторону цели: он летит по прямой до девяти клеток и гаснет у стены, закрытой двери или окна. Всех врагов в клетке от себя огонёк помутняет, а уже помутнённых 4 секунды ведёт за собой: сами они не ходят, но руки их слушаются. Удар от 10 урона или обморок отпускают ведомого, чужая хватка держит его на месте. Когда огонёк гаснет, ведомые остаются под лунным помутнением. Перезарядка 30 секунд."
+	desc = "Пустите медленный лунный огонёк в сторону цели: он летит по прямой до девяти клеток и гаснет у стены, закрытой двери или окна. Всех врагов в клетке от себя огонёк помутняет, а уже помутнённых 4 секунды ведёт за собой: сами они не ходят, но руки их слушаются. Ведёт он только согласных на антаг-события, чей игрок в теле, остальных лишь помутняет снова. Удар от 10 урона или обморок отпускают ведомого, чужая хватка держит его на месте. Когда огонёк гаснет, ведомые остаются под лунным помутнением. Перезарядка 30 секунд."
 	summary = "Огонёк летит до 9 клеток: помутнённых рядом 4 секунды ведёт за собой, остальных помутняет."
 	active_msg = "Укажите, куда пустить огонёк."
 	deactive_msg = "Огонёк гаснет в ладони."
@@ -1315,8 +1430,8 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	deactive_msg = "Вы оставляете отражения целыми."
 	charge_max = HERETIC_MOON_SHATTER_COOLDOWN
 	range = HERETIC_MOON_SHATTER_RANGE
-	action_icon = 'modular_bluemoon/icons/obj/heretic_moon_fx.dmi'
-	action_icon_state = "shatter"
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "moon_shatter"
 
 /obj/effect/proc_holder/spell/pointed/heretic_moon/shatter/can_target(atom/target, mob/user, silent)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
@@ -1407,15 +1522,41 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 
 /datum/eldritch_knowledge/spell/moon_exchange
 	name = "Зеркальный обмен"
-	summary = "Меняет вас местами со своей копией или двойником на посту в 5 клетках прямой видимости."
+	summary = "Кнопка меняет вас местами с копией, двойником или новой копией на пустом полу; рецепт даёт зеркало приказов."
 	details = list(
-		"Оба места - свободный пол; сквозь стены и закрытые двери обмен не ведёт.",
-		"Отражение встаёт на ваше прежнее место, двойник держит пост уже там. Перезарядка 12 секунд.",
+		"Укажите копию или двойника в 5 клетках - вы меняетесь местами, отражение встаёт на ваше место.",
+		"Укажите пустой видимый пол - там встаёт новая копия, и вы сразу меняетесь с ней.",
+		"Секунду после обмена вы почти прозрачны; оба места - свободный пол. Перезарядка 12 секунд.",
+		"Осколок стекла и лист серебра на руне дают серебряное зеркало, одно на еретика.",
+		"Зеркалом выберите копию: в «Помощи» она ждёт и зовёт сомнамбул, во «Вреде» гонится; затем укажите врага или пол.",
+		"Из изнанки можно выйти к ждущей копии, на соседнюю с ней клетку.",
 	)
 	role = HERETIC_ROLE_SUPPORT
 	cost = 1
 	route = PATH_MOON
+	required_atoms = list(/obj/item/shard, /obj/item/stack/sheet/mineral/silver)
+	result_atoms = list(/obj/item/heretic_path_relic/silver_mirror)
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_moon/exchange
+	var/datum/weakref/moon_ref
+
+/datum/eldritch_knowledge/spell/moon_exchange/on_body_gain(mob/living/user)
+	. = ..()
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	if(knowledge)
+		moon_ref = WEAKREF(knowledge)
+
+/// Без зеркала некому отменить приказ ожидания, поэтому копии снова гонятся за врагами.
+/datum/eldritch_knowledge/spell/moon_exchange/on_body_lose(mob/living/user)
+	var/datum/eldritch_knowledge/base_moon/knowledge = moon_ref?.resolve()
+	moon_ref = null
+	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection as anything in knowledge?.reflections)
+		if(reflection.holding_position)
+			reflection.hold_position(FALSE)
+	return ..()
+
+/datum/eldritch_knowledge/spell/moon_exchange/Destroy()
+	on_body_lose(null)
+	return ..()
 
 /datum/eldritch_knowledge/moon_mark
 	name = "Метка Луны"
@@ -1474,21 +1615,15 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 
 /datum/eldritch_knowledge/moon_shroud
 	name = "Сумеречный покров"
-	summary = "Возвращение в отражение к двойнику на посту, серебряное зеркало и больше прочных копий."
+	summary = "Кнопка «Возвращение в отражение» уводит вас к двойнику на посту; копий держится больше, и они прочнее."
 	details = list(
-		"«Возвращение в отражение»: 2 секунды на месте - и вы меняетесь местами с двойником на посту.",
-		"Работает в чужой хватке, только на своём уровне; наручники и зоны без телепортации не пускают. Перезарядка 60 с.",
-		"Держится 3 отражения, новые выдерживают 40 урона и живут 60 / 75 / 90 секунд по уровню покрова.",
-		"Зеркальный обмен делает вас почти прозрачным на секунду, атака снимает покров.",
-		"Осколок стекла и лист серебра на руне дают серебряное зеркало, одно на еретика.",
-		"Зеркалом выберите копию: в «Помощи» она ждёт и зовёт сомнамбул, во «Вреде» гонится; затем укажите врага или пол.",
-		"Из изнанки можно выйти к ждущей копии, на соседнюю с ней клетку.",
+		"Кнопка: 2 секунды стойте на месте - и вы меняетесь местами с двойником на посту.",
+		"Работает и в чужой хватке, но только на своём уровне; наручники и зоны без телепортации не пускают. Перезарядка 60 с.",
+		"Сразу и без кнопки: держится 3 отражения, новые выдерживают 40 урона и живут 60 / 75 / 90 секунд по уровню покрова.",
 	)
 	role = HERETIC_ROLE_ESCAPE
 	cost = 1
 	route = PATH_MOON
-	required_atoms = list(/obj/item/shard, /obj/item/stack/sheet/mineral/silver)
-	result_atoms = list(/obj/item/heretic_path_relic/silver_mirror)
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_moon/return_post
 	var/datum/weakref/moon_ref
 	var/datum/weakref/body_ref
@@ -1507,9 +1642,6 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	var/datum/eldritch_knowledge/base_moon/knowledge = moon_ref?.resolve()
 	if(knowledge)
 		knowledge.shrouded = FALSE
-		for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection as anything in knowledge.reflections)
-			if(reflection.holding_position)
-				reflection.hold_position(FALSE)
 		knowledge.trim_reflections()
 		knowledge.notify_resource_changed()
 	var/mob/living/body = body_ref?.resolve()
@@ -1529,7 +1661,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 		"Цель в 5 клетках под помутнением на 6 секунд: от Хватки, удара копии, Метки Луны, Затмения, Осколков или огонька.",
 		"Секунду веки цели тяжелеют, затем 10 секунд она спит стоя под тихую шкатулку и готова к обряду.",
 		"Раз в секунду она шагает к копии, оставленной ждать зеркалом, а цель охоты ещё и к двойнику в 10 клетках; иначе к вам.",
-		"Обходит преграды, проходит свои двери и сквозь людей; в космос, пропасть и лаву не ступает.",
+		"Обходит преграды, свои двери и людей, в космос и лаву не ступает; несогласных на антаг-события лишь помутняет.",
 		"Дойдя до копии, она спит ещё хотя бы 3 секунды; цель охоты там вы уводите значком «Увести в отражение» за 1 секунду.",
 		"Спящую можно растолкать за 2 секунды, а жезл или вспышка в 3 клетках будят её; обморок обрывает сон, антимагия защищает.",
 		"После сна цель до минуты невосприимчива к Сомнамбуле, к любому захвату - 15 секунд. Перезарядка 40 секунд.",
@@ -1540,17 +1672,22 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	route = PATH_MOON
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_moon/sleepwalk
 
-/datum/eldritch_knowledge/spell/moon_mirage
-	name = "Шествие миражей"
-	summary = "Заменяет отражения новой группой вокруг вас и меняет вас местами со случайной копией."
+/datum/eldritch_knowledge/spell/moon_madness
+	name = "Лунное безумие"
+	summary = "Помутнённая цель 15 секунд хохочет и бросается с кулаками на ближайшего."
 	details = list(
-		"Копий - до текущего предела, на свободном полу в 2 клетках.",
-		"Запрет телепортации оставляет вас на месте, копии всё равно встают. Перезарядка 25 секунд.",
+		"Цель под лунным помутнением в 5 клетках; безумная у вас одна за раз, перезарядка 60 секунд.",
+		"Ноги несут её к ближайшему человеку в 4 клетках, кулак бьёт раз в 2 секунды; никого рядом 3 секунды - безумие гаснет.",
+		"Оружие она в ход не пускает, вас, ваших слуг и упавших не трогает.",
+		"Безумие берёт только согласных на антаг-события и с игроком в теле; остальные 12 секунд стреляют мимо и смеются.",
+		"Вспышка в 3 клетках, нулевой жезл или обморок приводят её в чувство; фольга на голове защищает.",
+		"После безумия цель 3 минуты к нему невосприимчива.",
 	)
-	role = HERETIC_ROLE_DEFENSE
+	role = HERETIC_ROLE_CONTROL
+	gain_text = "Луна смеётся чужими голосами, и кулаки сами находят ближайшее лицо."
 	cost = 1
 	route = PATH_MOON
-	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_moon/mirage
+	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_moon/madness
 
 /datum/eldritch_knowledge/moon_refraction
 	name = "Осколки света"
@@ -1585,7 +1722,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 		"Затмение: 2 клетки вокруг вас и каждой копии в 5 клетках - 30 выносливости, спутанность и замедление на 3 с.",
 		"Задетые 6 секунд под помутнением; на вашем месте копия, вы почти исчезаете на 4 с. Перезарядка 45 с.",
 		"Блуждающий огонёк летит по прямой до 9 клеток и гаснет у стены, закрытой двери или окна.",
-		"Помутнённых в клетке от себя огонёк 4 секунды ведёт за собой, остальных помутняет.",
+		"Помутнённых согласных на антаг-события в клетке от себя огонёк 4 с ведёт за собой, прочих лишь помутняет.",
 		"Ведомые не ходят сами, но руки им служат; удар от 10 урона или обморок отпускают, хватка держит.",
 		"Угасший огонёк оставляет ведомых под помутнением - их берёт Сомнамбула. Перезарядка 30 секунд.",
 	)
@@ -1606,14 +1743,15 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 
 /datum/eldritch_knowledge/final_eldritch/moon_final
 	name = "Обратная сторона Луны"
-	summary = "До пяти прочных копий, перехват выстрелов без задержки и Лунный маскарад."
+	summary = "Лунное зеркало на руне даёт пять прочных копий и перехват без задержки; Лунный маскарад."
 	details = list(
 		"Нужны 3 назначенные души и 3 человеческих трупа на руне станции; станция узнаёт место и 30 секунд может помешать.",
-		"Общая стойкость вознесения; до 5 отражений, они бьют на 10 ушибов и 30 выносливости и выдерживают 50 урона.",
-		"Любая копия в 2 клетках на открытой линии ловит снаряд без задержки.",
+		"На руне встаёт Лунное зеркало: пока оно цело, до 5 копий бьют на 10 ушибов и 30 выносливости, держат 50 урона.",
+		"Пока зеркало цело, любая копия в 2 клетках на открытой линии ловит снаряд без задержки.",
 		"Лунный маскарад: до 5 ближайших врагов в 7 клетках теряют 30 выносливости, путаются и под помутнением.",
 		"Задетые 12 секунд стреляют мимо и смеются невпопад, рядом с каждым 10 секунд бьётся копия. Перезарядка 40 с.",
-		"Слабость: чужая вспышка в 3 клетках разбивает копии рядом и ослепляет вас на 2 секунды.",
+		"Слабость: экипаж знает о зеркале; разбитое оружием или вспышками, оно возвращает копиям обычную силу.",
+		"Чужая вспышка в 3 клетках разбивает копии рядом и ослепляет вас на 2 секунды.",
 	)
 	role = HERETIC_ROLE_ASCENSION
 	gain_text = "Я видел другую сторону. Там каждый взгляд принадлежит мне, но яркий свет всё ещё режет глаза."
@@ -1622,11 +1760,54 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
 	ascension_spells = list(/obj/effect/proc_holder/spell/self/heretic_moon/masquerade)
 	var/datum/weakref/moon_knowledge_ref
+	var/obj/structure/heretic_moon_mirror/moon_mirror
+	var/datum/weakref/mirror_owner_ref
 
 /datum/eldritch_knowledge/final_eldritch/moon_final/on_finished_recipe(mob/living/user, list/atoms, loc)
 	. = ..()
-	if(.)
-		to_chat(user, span_eldritch("За каждым плечом теперь скрывается ещё одна ваша тень. Предел отражений увеличен до пяти, копии в двух клетках на открытой линии без устали ловят выстрелы, а «Лунный маскарад» натравит тени на врагов вокруг и собьёт им прицел. Берегитесь чужих вспышек: свет разбивает отражения рядом и слепит вас."))
+	if(!.)
+		return
+	raise_moon_mirror(loc, user)
+	to_chat(user, span_eldritch("За каждым плечом теперь скрывается ещё одна ваша тень. Пока цело Лунное зеркало на месте обряда, предел отражений - пять, копии сильнее и в двух клетках на открытой линии без устали ловят выстрелы. Экипаж узнает о зеркале и придёт его разбить. «Лунный маскарад» натравит тени на врагов вокруг и собьёт им прицел. Берегитесь чужих вспышек: свет разбивает отражения рядом, слепит вас и трескает зеркало."))
+
+/datum/eldritch_knowledge/final_eldritch/moon_final/proc/raise_moon_mirror(atom/ritual_loc, mob/living/user)
+	var/turf/place = get_turf(ritual_loc)
+	if(!isopenturf(place) || isgroundlessturf(place))
+		place = get_turf(user)
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	if(!place || !knowledge || moon_mirror)
+		return null
+	knowledge.mirror_broken = FALSE
+	mirror_owner_ref = WEAKREF(knowledge)
+	moon_mirror = new(place)
+	RegisterSignal(moon_mirror, COMSIG_PARENT_QDELETING, PROC_REF(on_mirror_destroyed))
+	log_game("[key_name(user)] поднимает Лунное зеркало вознесения в [AREACOORD(place)].")
+	if(!simulated)
+		minor_announce("Над сектором «[get_area_name(place, TRUE)]» встало Лунное зеркало. Пока оно цело, отражения вознёсшегося еретика Луны сильнее. Разбейте его оружием или вспышками.", "Разрыв завесы - Лунное зеркало")
+	return moon_mirror
+
+/datum/eldritch_knowledge/final_eldritch/moon_final/proc/on_mirror_destroyed(datum/source)
+	SIGNAL_HANDLER
+	var/turf/place = get_turf(moon_mirror)
+	moon_mirror = null
+	var/datum/eldritch_knowledge/base_moon/knowledge = mirror_owner_ref?.resolve()
+	mirror_owner_ref = null
+	if(QDELETED(knowledge) || QDELING(src))
+		return
+	knowledge.mirror_broken = TRUE
+	knowledge.trim_reflections()
+	knowledge.sync_reflection_auras()
+	knowledge.notify_resource_changed()
+	log_game("Лунное зеркало вознесения разбито в [AREACOORD(place)].")
+	if(knowledge.moon_body)
+		to_chat(knowledge.moon_body, span_userdanger("Лунное зеркало разбито! Отражения тускнеют: их снова меньше, они хрупче и ловят выстрелы только вплотную и не чаще раза в 4 секунды."))
+
+/datum/eldritch_knowledge/final_eldritch/moon_final/Destroy()
+	if(moon_mirror)
+		UnregisterSignal(moon_mirror, COMSIG_PARENT_QDELETING)
+		QDEL_NULL(moon_mirror)
+	mirror_owner_ref = null
+	return ..()
 
 /datum/eldritch_knowledge/final_eldritch/moon_final/on_body_gain(mob/living/user)
 	. = ..()
@@ -1691,32 +1872,215 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 /datum/component/heretic_moon_circus/proc/on_examine(mob/living/source, mob/user, list/examine_list)
 	SIGNAL_HANDLER
 	examine_list += span_warning("Вокруг мелькают серебристые отражения, готовые принять выстрел на себя. Яркая вспышка рядом разобьёт их и на миг ослепит хозяина.")
+	var/datum/eldritch_knowledge/base_moon/knowledge = knowledge_ref?.resolve()
+	if(knowledge?.mirror_broken)
+		examine_list += span_notice("Отражения тусклые и хрупкие: Лунное зеркало разбито.")
+	else
+		examine_list += span_warning("Силу отражениям даёт Лунное зеркало на месте обряда: разбейте его, и копии ослабнут.")
 
-/// Лунатик после маскарада: оружие в руках бьёт мимо. Над головой качается треснувший лунный серп, тело в серебряном ореоле иногда двоится.
+/// Цель рейда экипажа: пока зеркало цело, отражения вознёсшейся Луны прочнее, многочисленнее и ловят выстрелы без задержки.
+/obj/structure/heretic_moon_mirror
+	name = "moon mirror"
+	desc = "Овальное зеркало в серебряной раме под золотым серпом стоит на месте обряда еретика Луны. В нём отражается не комната, а чужая ночь с луной. Пока оно цело, отражения вознёсшегося сильнее: их больше, они прочнее, бьют больнее и без устали ловят выстрелы. Разбейте его обычным оружием; каждая яркая вспышка рядом тоже бьёт по стеклу."
+	icon = 'modular_bluemoon/icons/obj/heretic_moon_fx.dmi'
+	icon_state = "moon_mirror"
+	anchored = TRUE
+	density = FALSE
+	layer = ABOVE_MOB_LAYER
+	max_integrity = HERETIC_MOON_MIRROR_INTEGRITY
+	light_range = 3
+	light_power = 1
+	light_color = HERETIC_MOON_SILVER
+	resistance_flags = FIRE_PROOF | ACID_PROOF | UNACIDABLE
+	var/cracked = FALSE
+
+/obj/structure/heretic_moon_mirror/Initialize(mapload)
+	. = ..()
+	RegisterSignal(SSdcs, COMSIG_GLOB_BRIGHT_FLASH, PROC_REF(on_bright_flash))
+	var/turf/place = get_turf(src)
+	new /obj/effect/temp_visual/heretic_moon_fx/rise(place)
+	heretic_vfx_burst(place, /particles/heretic_ascension/moon/shimmer)
+	playsound(place, heretic_moon_reflection_sound(), 60, TRUE, MEDIUM_RANGE_SOUND_EXTRARANGE)
+	alpha = 0
+	animate(src, alpha = 255, time = HERETIC_MOON_RIPPLE_TIME, easing = SINE_EASING | EASE_OUT)
+
+/obj/structure/heretic_moon_mirror/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, attack_dir, armour_penetration = 0)
+	. = ..()
+	if(QDELETED(src) || cracked || obj_integrity > max_integrity / 2)
+		return
+	cracked = TRUE
+	icon_state = "moon_mirror_cracked"
+	visible_message(span_warning("По [src] бежит трещина, отражения в нём дрожат."))
+	heretic_vfx_burst(src, /particles/heretic_ascension/moon/shards)
+
+/obj/structure/heretic_moon_mirror/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
+	playsound(src, 'sound/effects/glasshit.ogg', 70, TRUE)
+
+/obj/structure/heretic_moon_mirror/proc/on_bright_flash(datum/source, turf/origin, mob/user)
+	SIGNAL_HANDLER
+	var/turf/place = get_turf(src)
+	if(!origin || !place || origin.z != place.z || get_dist(origin, place) > HERETIC_MOON_FLASH_RANGE || IS_HERETIC(user))
+		return
+	if(!(place in heretic_field_view(HERETIC_MOON_FLASH_RANGE, origin)))
+		return
+	visible_message(span_warning("Вспышка бьёт в [src], и серебро темнеет!"))
+	take_damage(HERETIC_MOON_MIRROR_FLASH_DAMAGE, BRUTE, 0, FALSE)
+
+/obj/structure/heretic_moon_mirror/Destroy()
+	UnregisterSignal(SSdcs, COMSIG_GLOB_BRIGHT_FLASH)
+	var/turf/place = get_turf(src)
+	if(place)
+		visible_message(span_danger("[src] разлетается вдребезги, и лунный свет над станцией меркнет!"))
+		new /obj/effect/temp_visual/heretic_moon_shatter(place, src)
+		heretic_vfx_burst(place, /particles/heretic_ascension/moon/shards)
+		heretic_vfx_flash(place, HERETIC_MOON_SILVER, HERETIC_MOON_SHATTER_FLASH_RANGE + 1, HERETIC_MOON_SHATTER_FLASH_POWER, HERETIC_MOON_SHATTER_FLASH_TIME)
+		playsound(place, 'modular_bluemoon/sound/heretic/moon_break.ogg', 80, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
+	return ..()
+
+/// Лунатик: оружие в руках бьёт мимо. Над головой качается треснувший лунный серп, тело в серебряном ореоле иногда двоится.
+/// В безумии (frenzy) ноги несут его к ближайшему, а кулак бьёт; это только для согласных на антаг-события.
 /datum/status_effect/heretic_lunatic
 	id = "heretic_lunatic"
 	duration = HERETIC_MOON_LUNATIC_DURATION
 	tick_interval = HERETIC_MOON_JITTER_INTERVAL
 	status_type = STATUS_EFFECT_REFRESH
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_lunatic
+	on_remove_on_mob_delete = TRUE
 	var/obj/effect/abstract/heretic_vfx_attached/eye
 	var/mirth_chance = HERETIC_MOON_LUNATIC_MIRTH_CHANCE
+	var/frenzy = FALSE
+	var/datum/weakref/caster_ref
+	var/datum/weakref/prey_ref
+	var/next_strike = 0
+	var/stride_timer
+	/// Когда безумная в последний раз видела, на кого броситься.
+	var/last_prey_at = 0
+
+/datum/status_effect/heretic_lunatic/on_creation(mob/living/new_owner, frenzy = FALSE, mob/living/caster)
+	src.frenzy = !!frenzy
+	if(src.frenzy)
+		duration = HERETIC_MOON_MADNESS_DURATION
+		mirth_chance = 100
+		examine_text = span_danger("SUBJECTPRONOUN хохочет и бросается с кулаками на всех вокруг, в глазах пляшет лунный свет. Вспышка или нулевой жезл приведут в чувство.")
+	caster_ref = caster ? WEAKREF(caster) : null
+	. = ..()
+	if(!src.frenzy || QDELETED(src))
+		return
+	if(linked_alert)
+		linked_alert.name = "Лунное безумие"
+		linked_alert.desc = "Луна смеётся вашим голосом: ноги сами несут вас к ближайшему, а кулак бьёт его. Это не ваша воля, а чары еретика Луны. Пройдёт через [HERETIC_MOON_MADNESS_DURATION / (1 SECONDS)] секунд или когда рядом [HERETIC_MOON_MADNESS_IDLE_END / (1 SECONDS)] секунды не будет никого; вспышка, нулевой жезл или обморок прервут раньше."
+	owner.visible_message(span_danger("[owner] вдруг заходится хохотом, взгляд заливает лунное серебро!"), span_userdanger("Луна смеётся вашим голосом! Ноги сами несут вас к ближайшему, кулаки сжимаются. Это чары, и через [HERETIC_MOON_MADNESS_DURATION / (1 SECONDS)] секунд они пройдут."))
 
 /datum/status_effect/heretic_lunatic/on_apply()
 	. = ..()
 	ADD_TRAIT(owner, TRAIT_HERETIC_LUNATIC, id)
-	owner.add_filter(HERETIC_MOON_LUNATIC_HALO, 2, drop_shadow_filter(x = 0, y = 0, size = HERETIC_MOON_HALO_SIZE, color = HERETIC_MOON_HALO_COLOR))
+	owner.add_filter(HERETIC_MOON_LUNATIC_HALO, 2, drop_shadow_filter(x = 0, y = 0, size = frenzy ? HERETIC_MOON_HALO_SIZE + 1 : HERETIC_MOON_HALO_SIZE, color = frenzy ? HERETIC_MOON_MADNESS_HALO_COLOR : HERETIC_MOON_HALO_COLOR))
 	eye = heretic_vfx_attach(owner, 'modular_bluemoon/icons/effects/heretic_vfx.dmi', "moon_eye")
 	if(eye)
 		eye.pixel_y = HERETIC_MOON_EYE_HEIGHT
 		animate(eye, color = HERETIC_MOON_EYE_DIM, time = HERETIC_MOON_EYE_FLICKER, loop = -1, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
 		animate(color = COLOR_WHITE, time = HERETIC_MOON_EYE_FLICKER, easing = SINE_EASING)
+	if(frenzy)
+		RegisterSignal(SSdcs, COMSIG_GLOB_BRIGHT_FLASH, PROC_REF(on_bright_flash))
+		RegisterSignal(owner, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
+		RegisterSignal(owner, COMSIG_MOB_STATCHANGE, PROC_REF(on_stat_change))
+		ADD_TRAIT(owner, TRAIT_MOBILITY_NOMOVE, id)
+		owner.update_mobility()
+		last_prey_at = world.time
+		stride_timer = addtimer(CALLBACK(src, PROC_REF(stride)), HERETIC_MOON_MADNESS_STEP, TIMER_STOPPABLE)
 	return TRUE
+
+/// Ноги безумной не слушаются хозяйку: шаг или удар делает сама Луна.
+/datum/status_effect/heretic_lunatic/proc/stride()
+	stride_timer = null
+	if(QDELETED(src) || QDELETED(owner))
+		return
+	if(!heretic_moon_takes_will(owner))
+		come_to_senses("[owner] обмякает, и безумный смех стихает.")
+		return
+	rampage()
+	if(world.time - last_prey_at >= HERETIC_MOON_MADNESS_IDLE_END)
+		come_to_senses("[owner] озирается, не находит, на кого броситься, и безумный смех стихает.")
+		return
+	stride_timer = addtimer(CALLBACK(src, PROC_REF(stride)), HERETIC_MOON_MADNESS_STEP, TIMER_STOPPABLE)
+
+/// Безумие не продлевается маскарадом и не сокращается им.
+/datum/status_effect/heretic_lunatic/refresh(effect, ...)
+	if(frenzy)
+		return
+	return ..()
 
 /datum/status_effect/heretic_lunatic/tick()
 	if(prob(HERETIC_MOON_JITTER_CHANCE) && heretic_vfx_watched(owner))
 		jitter()
 	heretic_moon_mirth(owner, mirth_chance)
+
+/// Ближайший стоящий на ногах человек в поле зрения, кроме еретиков, их слуг и тел, оставленных игроком.
+/datum/status_effect/heretic_lunatic/proc/find_prey()
+	var/mob/living/carbon/best
+	var/best_distance = INFINITY
+	for(var/mob/living/carbon/candidate in view(HERETIC_MOON_MADNESS_REACH, owner))
+		if(candidate == owner || candidate.stat != CONSCIOUS || !CHECK_MOBILITY(candidate, MOBILITY_STAND) || IS_HERETIC(candidate) || IS_HERETIC_MONSTER(candidate) || (candidate.mind && !GET_CLIENT(candidate) && !heretic_moon_training_ground(candidate)))
+			continue
+		var/distance = get_dist(owner, candidate)
+		if(distance < best_distance)
+			best = candidate
+			best_distance = distance
+	return best
+
+/// Шаг к ближайшему или удар кулаком; чужая хватка держит безумного на месте, наручники - руки.
+/datum/status_effect/heretic_lunatic/proc/rampage()
+	if(owner.stat != CONSCIOUS || owner.incapacitated() || !isturf(owner.loc) || owner.buckled)
+		return FALSE
+	var/mob/living/carbon/prey = find_prey()
+	if(!prey)
+		return FALSE
+	last_prey_at = world.time
+	if(prey_ref?.resolve() != prey)
+		prey_ref = WEAKREF(prey)
+		owner.visible_message(span_danger("[owner] с безумным хохотом бросается на [prey]!"))
+	owner.setDir(get_dir(owner, prey))
+	if(!owner.Adjacent(prey))
+		if(owner.pulledby)
+			return FALSE
+		var/turf/next = get_step_towards(owner, prey)
+		if(!isopenturf(next) || isgroundlessturf(next) || !heretic_diagonal_step_safe(get_turf(owner), get_dir(owner, next)))
+			return FALSE
+		return owner.Move(next, get_dir(owner, next))
+	if(world.time < next_strike)
+		return FALSE
+	next_strike = world.time + HERETIC_MOON_MADNESS_STRIKE_DELAY
+	var/mob/living/caster = caster_ref?.resolve()
+	log_combat(owner, prey, "бьёт в Лунном безумии", null, "наслал [key_name(caster)]")
+	owner.UnarmedAttack(prey, TRUE, INTENT_HARM)
+	return TRUE
+
+/datum/status_effect/heretic_lunatic/proc/come_to_senses(message)
+	if(QDELETED(src))
+		return
+	owner.visible_message(span_notice(message), span_notice("Смех обрывается, и руки снова слушаются вас."))
+	qdel(src)
+
+/datum/status_effect/heretic_lunatic/proc/on_bright_flash(datum/source, turf/origin, mob/user)
+	SIGNAL_HANDLER
+	var/turf/place = get_turf(owner)
+	if(!origin || !place || origin.z != place.z || get_dist(origin, place) > HERETIC_MOON_FLASH_RANGE)
+		return
+	if(place in heretic_field_view(HERETIC_MOON_FLASH_RANGE, origin))
+		come_to_senses("Вспышка бьёт [owner] по глазам, и безумный смех обрывается.")
+
+/datum/status_effect/heretic_lunatic/proc/on_attackby(datum/source, obj/item/item, mob/living/user, params)
+	SIGNAL_HANDLER
+	if(!istype(item, /obj/item/nullrod))
+		return NONE
+	log_game("[key_name(user)] приводит в чувство [key_name(owner)] из Лунного безумия нулевым жезлом в [AREACOORD(owner)].")
+	come_to_senses("[user] касается [owner] нулевым жезлом, и лунный смех стихает.")
+	return COMPONENT_NO_AFTERATTACK
+
+/datum/status_effect/heretic_lunatic/proc/on_stat_change(datum/source, new_stat)
+	SIGNAL_HANDLER
+	if(new_stat != CONSCIOUS)
+		qdel(src)
 
 /// Тело лунатика на миг двоится зеркальным отражением.
 /datum/status_effect/heretic_lunatic/proc/jitter()
@@ -1729,6 +2093,17 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	owner.remove_filter(HERETIC_MOON_LUNATIC_HALO)
 	eye?.fade_out()
 	eye = null
+	if(frenzy)
+		deltimer(stride_timer)
+		stride_timer = null
+		REMOVE_TRAIT(owner, TRAIT_MOBILITY_NOMOVE, id)
+		owner.update_mobility()
+		UnregisterSignal(SSdcs, COMSIG_GLOB_BRIGHT_FLASH)
+		UnregisterSignal(owner, list(COMSIG_PARENT_ATTACKBY, COMSIG_MOB_STATCHANGE))
+		if(!QDELETED(owner))
+			owner.apply_status_effect(/datum/status_effect/heretic_moon_madness_rest)
+	caster_ref = null
+	prey_ref = null
 	return ..()
 
 /datum/status_effect/heretic_lunatic/Destroy()
@@ -1737,9 +2112,16 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 
 /atom/movable/screen/alert/status_effect/heretic_lunatic
 	name = "Лунатик"
-	desc = "Лунный маскарад сбил вам прицел: выстрелы уходят в сторону, а смех подступает сам. Проходит через 12 секунд."
+	desc = "Лунные чары сбили вам прицел: выстрелы уходят в сторону, а смех подступает сам. Проходит через 12 секунд."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "moon_lunatic"
+
+/datum/status_effect/heretic_moon_madness_rest
+	id = "heretic_moon_madness_rest"
+	duration = HERETIC_MOON_MADNESS_IMMUNITY
+	tick_interval = -1
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = null
 
 /datum/status_effect/heretic_moon_daze
 	id = "heretic_moon_daze"
@@ -1749,6 +2131,11 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_moon_daze
 	examine_text = span_warning("SUBJECTPRONOUN смотрит сквозь вас, взгляд плывёт серебром.")
 	var/mutable_appearance/eyes_overlay
+
+/datum/status_effect/heretic_moon_daze/on_creation(mob/living/new_owner, ...)
+	. = ..()
+	if(!QDELETED(src) && linked_alert && !heretic_moon_takes_will(owner))
+		linked_alert.desc = "[HERETIC_MOON_DAZE_DURATION / (1 SECONDS)] секунд взгляд плывёт серебром. Волю вашего тела Луна не заберёт, но прицел еретик Луны сбить может: держитесь от него подальше."
 
 /datum/status_effect/heretic_moon_daze/on_apply()
 	. = ..()
@@ -1863,6 +2250,9 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 /datum/status_effect/heretic_moon_sleepwalk/tick()
 	if(!asleep || owner.stat >= UNCONSCIOUS)
 		return
+	if(!heretic_moon_takes_will(owner))
+		wake("[owner] вздрагивает и замирает: сонная поступь обрывается.")
+		return
 	var/datum/eldritch_knowledge/base_moon/moon = moon_ref?.resolve()
 	var/atom/destination = moon?.sleepwalk_destination(owner)
 	var/turf/goal = get_turf(destination)
@@ -1894,7 +2284,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 /datum/status_effect/heretic_moon_sleepwalk/proc/follow_route(datum/eldritch_knowledge/base_moon/moon)
 	var/turf/here = get_turf(owner)
 	var/turf/next = route[1]
-	if(!here || !isturf(owner.loc) || owner.buckled || next.z != here.z || get_dist(here, next) != 1 || !moon.sleepwalk_safe_turf(next))
+	if(!here || !isturf(owner.loc) || owner.buckled || next.z != here.z || get_dist(here, next) != 1 || !moon.sleepwalk_safe_turf(next) || !heretic_diagonal_step_safe(here, get_dir(here, next)))
 		route = null
 		return FALSE
 	if(owner.Move(next, get_dir(here, next)))
@@ -2153,6 +2543,10 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 		if(!heretic_can_affect(caster, victim))
 			continue
 		if(victim.has_status_effect(/datum/status_effect/heretic_moon_daze) && !victim.has_status_effect(/datum/status_effect/heretic_moon_sleepwalk))
+			if(!heretic_moon_takes_will(victim))
+				victim.apply_status_effect(/datum/status_effect/heretic_moon_daze)
+				to_chat(victim, span_warning("Серебряный огонёк манит за собой, но вы с трудом отводите взгляд."))
+				continue
 			victim.apply_status_effect(/datum/status_effect/heretic_moon_parade, src)
 			log_combat(caster, victim, "уводит Блуждающим огоньком")
 			continue
@@ -2222,14 +2616,19 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 	INVOKE_ASYNC(src, PROC_REF(step_after_wisp))
 
 /datum/status_effect/heretic_moon_parade/proc/step_after_wisp()
+	if(QDELETED(src))
+		return FALSE
+	if(!heretic_moon_takes_will(owner))
+		qdel(src)
+		return FALSE
 	var/turf/here = get_turf(owner)
 	var/turf/goal = get_turf(wisp)
-	if(QDELETED(src) || !here || !goal || !isturf(owner.loc) || owner.buckled || owner.pulledby || here.z != goal.z || get_dist(here, goal) <= 1)
+	if( !here || !goal || !isturf(owner.loc) || owner.buckled || owner.pulledby || here.z != goal.z || get_dist(here, goal) <= 1)
 		return FALSE
 	var/direction = get_dir(here, goal)
 	for(var/step_direction in list(direction, turn(direction, 45), turn(direction, -45)))
 		var/turf/next = get_step(here, step_direction)
-		if(!next || get_dist(next, goal) >= get_dist(here, goal) || !isopenturf(next) || isgroundlessturf(next) || next.is_blocked_turf(exclude_mobs = TRUE))
+		if(!next || get_dist(next, goal) >= get_dist(here, goal) || !isopenturf(next) || isgroundlessturf(next) || !heretic_diagonal_step_safe(here, step_direction) || next.is_blocked_turf(exclude_mobs = TRUE))
 			continue
 		if(owner.Move(next, step_direction))
 			return TRUE
@@ -2435,6 +2834,7 @@ GLOBAL_LIST_INIT(heretic_moon_hit_sounds, list('modular_bluemoon/sound/heretic/m
 #undef HERETIC_MOON_EYE_FLICKER
 #undef HERETIC_MOON_HALO_SIZE
 #undef HERETIC_MOON_HALO_COLOR
+#undef HERETIC_MOON_MADNESS_HALO_COLOR
 #undef HERETIC_MOON_JITTER_INTERVAL
 #undef HERETIC_MOON_JITTER_CHANCE
 #undef HERETIC_MOON_JITTER_OFFSET

@@ -151,6 +151,7 @@ GLOBAL_LIST_INIT(heretic_dance_routines, init_heretic_dance_routines())
 	routine_link_until = world.time + beat_ds * (meter + 1)
 	var/datum/heretic_dance_style/next = GLOB.heretic_dance_styles[routine.to_style]
 	user.balloon_alert(user, "номер: связка в [lowertext(next.name)]")
+	tip(user, "routine", "Фигура открыла номер «[routine.name]»: до конца следующего такта смените стиль на [next.name] в сильную долю (значок у барабана) и соберите «[next.figure_name]» за [DANCE_ROUTINE_TIME / (1 SECONDS)] секунд.")
 	pulse_hud(FALSE, FALSE)
 
 /// Смена стиля в сильную долю сразу после фигуры начинает номер; allowed - смена не торопливая.

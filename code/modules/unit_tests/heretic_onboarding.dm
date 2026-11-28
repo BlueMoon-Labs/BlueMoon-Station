@@ -64,8 +64,9 @@
 		TEST_ASSERT_EQUAL(base.ritual_result_name(), "клинок", "База [path_id] делает клинок.")
 		TEST_ASSERT_EQUAL(base.ritual_menu_name(), "[base.name] → клинок", "Меню руны [path_id] называет клинок.")
 		var/recipe_line = 0
+		var/first_ingredient = heretic_ritual_ingredient_name(base.required_atoms[1])
 		for(var/index in 1 to min(length(base.details), 4))
-			if(findtext(base.details[index], "Нож"))
+			if(findtext(base.details[index], "Нож") || findtext(base.details[index], first_ingredient))
 				recipe_line = index
 				break
 		TEST_ASSERT(recipe_line, "Рецепт клинка [path_id] в первых четырёх строках: [jointext(base.details, " | ")]")

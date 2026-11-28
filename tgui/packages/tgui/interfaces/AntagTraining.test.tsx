@@ -262,6 +262,41 @@ test('старт предлагает комплект и упражнение �
   ]);
 });
 
+test('кнопка урока пути видна только с уроком и запускает его по id', () => {
+  const plain = setup();
+  expect(plain.queryByText('Урок Стекла')).toBeNull();
+  plain.unmount();
+  for (const lesson of [
+    { id: 'glass', name: 'Урок Стекла', icon: 'border-all' },
+    { id: 'tide', name: 'Урок Пучины', icon: 'water' },
+    { id: 'wax', name: 'Урок Воска', icon: 'fire-flame-simple' },
+    { id: 'blood', name: 'Урок Крови', icon: 'droplet' },
+  ]) {
+    const ui = setup({ path_lesson: lesson });
+    fireEvent.click(ui.getByText(lesson.name));
+    expect(ui.topic.mock.calls.map(([message]) => [message.type, JSON.parse(message.payload)])).toEqual([['act/practice', { id: lesson.id }]]);
+    ui.unmount();
+  }
+});
+
+test('кнопка урока Песка видна на пути Песка и запускает урок', () => {
+  const plain = setup();
+  expect(plain.queryByText('Урок Песка')).toBeNull();
+  plain.unmount();
+  const ui = setup({ sand_lesson: 1 });
+  fireEvent.click(ui.getByText('Урок Песка'));
+  expect(ui.topic.mock.calls.map(([message]) => [message.type, JSON.parse(message.payload)])).toEqual([['act/practice', { id: 'sand' }]]);
+});
+
+test('кнопка урока Свинца видна на пути Свинца и запускает урок', () => {
+  const plain = setup();
+  expect(plain.queryByText('Урок Свинца')).toBeNull();
+  plain.unmount();
+  const ui = setup({ lead_lesson: 1 });
+  fireEvent.click(ui.getByText('Урок Свинца'));
+  expect(ui.topic.mock.calls.map(([message]) => [message.type, JSON.parse(message.payload)])).toEqual([['act/practice', { id: 'lead' }]]);
+});
+
 test('готовый предмет и компоненты используют конкретный изученный рецепт', () => {
   const ui = setup({ recipes: [{ id: 'recipe', name: 'Принцип поединка', ingredients: 'Нож, металл', hint: '', components: 1, result: 1 }] });
   fireEvent.click(ui.getByText('Путь и рецепты еретика'));

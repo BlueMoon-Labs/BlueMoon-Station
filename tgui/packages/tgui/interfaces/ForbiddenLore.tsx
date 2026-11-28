@@ -6,20 +6,24 @@ import { resolveAsset } from '../assets';
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
 import { sanitizeText } from '../sanitize';
-import { HereticBookAtmosphere } from './HereticBookAtmosphere';
+import { bookWorkshopSheets, HereticBookAtmosphere, isWorkshopBook } from './HereticBookAtmosphere';
 import { HereticBookPreferences, useBookPresentation } from './HereticBookPreferences';
-import { Headpiece, HereticIllumination, HereticPageOrnament, Manicule, RitualDiagram, Tailpiece } from './HereticIllumination';
+import { BookPathContext, Headpiece, HereticIllumination, HereticPageOrnament, Manicule, RitualDiagram, Tailpiece } from './HereticIllumination';
 
 type HereticPath = {
   id: string;
   name: string;
   desc: string;
   tagline?: string | null;
+  difficulty?: number | null;
+  playstyle?: string[];
+  first_steps?: string[];
   craft?: string | null;
   capture?: string | null;
   escape?: string | null;
   strength_points?: string[];
   weakness_points?: string[];
+  robe_armor?: string | null;
   practice?: string | null;
   strengths: string[];
   weaknesses: string[];
@@ -103,6 +107,7 @@ export type ForbiddenLoreData = {
   combat_abilities?: CombatAbility[];
   ability_hotkey_help?: string;
   preparation?: Preparation | null;
+  role_exit?: RoleExit;
   deed: { name: string; desc: string; hint: string; next_step?: string; combat_hint?: string; combat_available?: BooleanLike; tier: number; max_tier: number; progress: number; goal: number; counted: number } | null;
   hunt: {
     target_name: string | null;
@@ -113,11 +118,16 @@ export type ForbiddenLoreData = {
     sacrifices_required: number;
     deed_tiers?: number;
     ascension_bodies?: number;
+    emergence_seconds?: number;
+    emergence_damage_cut?: number;
+    blade_limit?: number;
+    escape_cooldown?: number;
+    evolution_stages?: [number, number];
     influences_harvested: number;
     influence_limit: number;
     influence_initial_count?: number;
     influence_interval_minutes?: number;
-    pocket: { duration: number; warning: number; pull: number; tear: number; cooldown: number; hold: number; grip: number; shake: number };
+    pocket: { duration: number; warning: number; pull: number; tear: number; cooldown: number; hold: number; grip: number; shake: number; breach: number };
   };
 };
 
@@ -140,7 +150,7 @@ const useLoreBackend = () => {
 
 const chapters = ['Путь', 'Знания', 'Ритуалы', 'Охота', 'Помощь'] as const;
 type Chapter = typeof chapters[number];
-const numerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'];
+const numerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX'];
 const bookTitles: Record<string, string> = {
   Unbound: 'Кодекс Рубцов', Ash: 'Псалтирь последнего огня', Rust: 'Железный завет',
   Flesh: 'Анатомия голода', Void: 'Палимпсест зимы', Blade: 'Трактат о последнем ударе',
@@ -150,7 +160,15 @@ const bookTitles: Record<string, string> = {
   Echo: 'Партитура последнего голоса',
   Sand: 'Хроника истёкшего часа', Wax: 'Служба негаснущей свечи',
   Spirit: 'Список непришедших', Dance: 'Партитура бала без конца',
+  Dusk: 'Часослов падшего света',
+  Lead: 'Устав последнего выстрела',
+  Hammer: 'Наковальня без дна',
 };
+
+/** Пути со своей правой страницей: assets/heretic-<путь>-recto.webp. */
+export const bookRectoPaths = new Set<string>(['Dusk', ...Object.keys(bookWorkshopSheets)]);
+const bookMaterial = (skin: string, side = '') => `url("${resolveAsset(`heretic-${skin.toLowerCase()}${side}.webp`)}")`;
+const workshopSheets = (skin: string) => Object.fromEntries((isWorkshopBook(skin) ? bookWorkshopSheets[skin] : []).map((sheet) => [`--${skin.toLowerCase()}-anim-${sheet}`, bookMaterial(skin, `-anim-${sheet}`)]));
 
 export const roleLabels: Record<string, string> = {
   craft: 'ремесло',
@@ -250,7 +268,7 @@ const PrepIcon = ({ name }: { name: string }) => (
   <svg className="HereticBook__prepIcon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">{prepIcons[name]}</svg>
 );
 
-const PathChoiceButton = ({ disabled, onConfirm }: { disabled: boolean; onConfirm: () => void }) => {
+const ArmedSeal = ({ disabled = false, idle, confirm, onConfirm }: { disabled?: boolean; idle: string; confirm: string; onConfirm: () => void }) => {
   const [armed, setArmed] = useState(false);
   const ref = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -276,10 +294,30 @@ const PathChoiceButton = ({ disabled, onConfirm }: { disabled: boolean; onConfir
         onConfirm();
       }}
     >
-      {armed ? 'Ещё раз, и пути назад не будет' : 'Принять этот путь'}
+      {armed ? confirm : idle}
     </button>
   );
 };
+
+type RoleExit = {
+  can_reset: BooleanLike;
+  reset_reason?: string | null;
+  reset_possible?: BooleanLike;
+  token_role?: BooleanLike;
+  can_abandon: BooleanLike;
+  abandon_reason?: string | null;
+  reset_window: number;
+  abandon_window: number;
+};
+
+const finalChoiceText = 'Выбор окончательный: сменить путь в кодексе уже нельзя.';
+
+// Сброс пути ещё не потрачен и не закрыт жертвой, вознесением или полигоном.
+const resetStillPossible = (exit?: RoleExit) => exit?.reset_possible === undefined || !!exit.reset_possible;
+
+const PathChoiceButton = ({ disabled, final, onConfirm }: { disabled: boolean; final: boolean; onConfirm: () => void }) => (
+  <ArmedSeal disabled={disabled} idle="Принять этот путь" confirm={final ? 'Ещё раз, и пути назад не будет' : 'Нажмите ещё раз, чтобы принять путь'} onConfirm={onConfirm} />
+);
 
 const ResearchButton = ({ knowledge }: { knowledge: Knowledge }) => {
   const { data, act } = useLoreBackend();
@@ -294,7 +332,7 @@ const ResearchButton = ({ knowledge }: { knowledge: Knowledge }) => {
     <div className="HereticBook__action">
       {!disabled && <Manicule />}
       {choosesPath ? (
-        <PathChoiceButton key={knowledge.id} disabled={disabled} onConfirm={() => act('research', { id: knowledge.id })} />
+        <PathChoiceButton key={knowledge.id} disabled={disabled} final={!resetStillPossible(data.role_exit)} onConfirm={() => act('research', { id: knowledge.id })} />
       ) : (
         <button type="button" className="HereticBook__seal" disabled={disabled} onClick={() => act('research', { id: knowledge.id })}>
           {knowledge.cost ? `Изучить за ${pointsText(knowledge.cost)}` : 'Изучить даром'}
@@ -410,13 +448,14 @@ const Page = ({ side, chapter, children, entryId, head, number }: { side: 'left'
     const page = scroll.closest('article');
     if (page) page.scrollTop = 0;
     if (window.matchMedia?.('(max-width: 600px)').matches
-      && document.activeElement?.closest('.HereticBook__line, .HereticBook__oath, .HereticBook__link')) {
+      && document.activeElement?.closest('.HereticBook__line, .HereticBook__pathCard, .HereticBook__guideLink, .HereticBook__link')) {
       scroll.scrollIntoView({ block: 'start', inline: 'nearest' });
     }
     measureScroll();
   }, [entryId]);
   return (
     <article className={`HereticBook__page HereticBook__page--${side}`} aria-label={side === 'left' ? 'Левая страница' : 'Правая страница'}>
+      <div className="HereticBook__gutter" aria-hidden="true" />
       <HereticPageOrnament path={data.book?.path || data.selected_path || 'Unbound'} />
       <div className="HereticBook__pageBody">
         <header className="HereticBook__runningHead">{head ?? (side === 'left' ? data.book?.title || bookTitles[data.selected_path || 'Unbound'] : chapter)}</header>
@@ -431,6 +470,69 @@ const Page = ({ side, chapter, children, entryId, head, number }: { side: 'left'
 
 /* Путь */
 
+const choiceGuideId = 'guide';
+const difficultyGroups = [
+  { level: 1, title: 'Для первого раза' },
+  { level: 2, title: 'Когда освоитесь' },
+  { level: 3, title: 'Для опытных' },
+];
+const difficultyWords: Record<number, string> = { 1: 'просто', 2: 'средне', 3: 'сложно' };
+const firstStepLabels = ['Сила', 'Дело', 'Цель'];
+
+const Difficulty = ({ level }: { level?: number | null }) => (level
+  ? <Marks total={3} filled={level} label={`Сложность ${level} из 3`} className="HereticBook__difficulty" />
+  : null);
+
+const PathCard = ({ path, active, signed, onOpen }: { path: HereticPath; active: boolean; signed: boolean; onOpen: () => void }) => (
+  <button
+    type="button"
+    className={`HereticBook__pathCard HereticBook__oath--${path.id}`}
+    aria-label={path.name}
+    aria-pressed={active}
+    onClick={onOpen}
+  >
+    <span className="HereticBook__cardHead">
+      <span className="HereticBook__oathName">{path.name}</span>
+      {signed && <svg className="HereticBook__signed" viewBox="0 0 16 16" role="img" aria-label="Выбранный путь"><path d="M8 1.6 9.6 3l2.1-.3.6 2 1.9 1-.7 2 .7 2-1.9 1-.6 2-2.1-.3L8 14.4 6.4 13l-2.1.3-.6-2-1.9-1 .7-2-.7-2 1.9-1 .6-2L6.4 3Z" /><path d="m5.6 8.2 1.6 1.6 3.2-3.4" fill="none" /></svg>}
+      <Difficulty level={path.difficulty} />
+    </span>
+    {!!path.playstyle?.length && <span className="HereticBook__cardTags">{path.playstyle.join(' · ')}</span>}
+    {!!path.tagline && <span className="HereticBook__cardLine">{plainText(path.tagline)}</span>}
+  </button>
+);
+
+const PathMeta = ({ path }: { path: HereticPath }) => {
+  if (!path.difficulty && !path.playstyle?.length) return null;
+  return (
+    <p className="HereticBook__pathMeta">
+      {!!path.difficulty && <span><Difficulty level={path.difficulty} /> {difficultyWords[path.difficulty] || ''}</span>}
+      {!!path.playstyle?.length && <span>{path.playstyle.join(' · ')}</span>}
+    </p>
+  );
+};
+
+const FirstSteps = ({ steps }: { steps: string[] }) => (
+  <section className="HereticBook__section HereticBook__firstSteps" aria-label="Первые шаги">
+    <h3>Первые шаги</h3>
+    {steps.map((step, index) => <p key={`${index}-${step}`}><b className="HereticBook__runIn">{firstStepLabels[index] || ''}.</b> {plainText(step)}</p>)}
+  </section>
+);
+
+const ChoiceGuide = ({ resetWindow, resetPossible, styles }: { resetWindow: number; resetPossible: boolean; styles: string[] }) => (
+  <>
+    <EntryHead kicker="Перед выбором" title="Как выбрать путь" />
+    <ol className="HereticBook__steps" aria-label="Как выбрать путь">
+      <li>Первый раз играете еретиком - берите путь из группы «Для первого раза»: там меньше кнопок и запасов.</li>
+      <li>Чёрточки у имени - сложность: сколько кнопок, запасов и шагов захвата держать в голове на первых ступенях.</li>
+      {styles.length > 0 && <li>Подпись под именем - стиль: {styles.join(', ')}. Выбирайте то, как вам привычнее играть.</li>}
+      <li>На странице пути «Первые шаги» - три строки: откуда сила, как двигать дело и чем брать цель. Если все три понятны, путь ваш.</li>
+      <li>Первая ступень даётся даром. {resetPossible ? `Ошиблись - путь можно один раз сменить в первые ${resetWindow} мин после выбора, пока нет жертв.` : finalChoiceText}</li>
+    </ol>
+    <p className="HereticBook__note">Боевой совет откроется на странице выбранного пути и на полигоне.</p>
+    <Tailpiece scene="path" />
+  </>
+);
+
 const PathAnatomy = ({ path }: { path: HereticPath }) => {
   const rows = [['Ремесло', path.craft], ['Захват', path.capture], ['Уход', path.escape]].filter(([, text]) => !!text);
   if (!rows.length) return null;
@@ -441,8 +543,10 @@ const PathAnatomy = ({ path }: { path: HereticPath }) => {
   );
 };
 
-const PathTraits = ({ title, points, fallback, tone }: { title: string; points?: string[]; fallback: string[]; tone: 'plus' | 'minus' }) => {
-  const lines = points?.length ? points : fallback.filter((text) => !!text);
+const traitLines = (points: string[] | undefined, fallback: string[]) => (points?.length ? points : fallback.filter((text) => !!text));
+const shownTraits = 3;
+
+const PathTraits = ({ title, lines, tone }: { title: string; lines: string[]; tone: 'plus' | 'minus' }) => {
   if (!lines.length) return null;
   return (
     <section className={`HereticBook__section HereticBook__traits HereticBook__traits--${tone}`} aria-label={title}>
@@ -452,13 +556,85 @@ const PathTraits = ({ title, points, fallback, tone }: { title: string; points?:
   );
 };
 
+const PathEntry = ({ path, openKnowledge }: { path: HereticPath; openKnowledge: () => void }) => {
+  const { data, act } = useLoreBackend();
+  const exit = data.role_exit;
+  const resetWindow = exit?.reset_window ?? 10;
+  const choosing = !data.selected_path;
+  const stages = data.knowledge.filter((entry) => entry.kind === 'path' && entry.path === path.id)
+    .sort((a, b) => a.stage - b.stage);
+  const steps = path.first_steps?.length ? path.first_steps : null;
+  const strengths = traitLines(path.strength_points, path.strengths);
+  const weaknesses = traitLines(path.weakness_points, path.weaknesses);
+  const traitLimit = choosing ? shownTraits : undefined;
+  const moreTraits = strengths.length > shownTraits || weaknesses.length > shownTraits;
+  return (
+    <>
+      <figure className={`HereticBook__plate HereticBook__plate--${path.id}`}>
+        <HereticIllumination path={path.id} />
+        <figcaption><span className="HereticBook__plateNumber">Таблица {numeral(data.paths.indexOf(path) + 1)}</span>{path.name}</figcaption>
+      </figure>
+      <h2 className="HereticBook__entryTitle">{path.name}</h2>
+      {path.tagline ? <p className="HereticBook__lead">{plainText(path.tagline)}</p> : <LoreText className="HereticBook__lead" text={path.desc} />}
+      <PathMeta path={path} />
+      {steps && <FirstSteps steps={steps} />}
+      {(!choosing || !steps) && <PathAnatomy path={path} />}
+      {choosing && stages[0] && <ResearchButton knowledge={stages[0]} />}
+      {data.selected_path === path.id && <button type="button" className="HereticBook__seal HereticBook__seal--quiet" onClick={openKnowledge}>К знаниям пути</button>}
+      {data.selected_path === path.id && !!exit?.can_reset && (
+        <section className="HereticBook__section" aria-label="Смена пути">
+          <p className="HereticBook__note">Перепутали путь? Сменить его можно один раз, в первые {resetWindow} мин после выбора и до первой жертвы. Ступени и улучшения пути вернутся очками, побочные знания и ступень дела останутся, клинки старого пути рассыпятся.</p>
+          <ArmedSeal idle="Сменить путь" confirm="Ещё раз: отпустить этот путь" onConfirm={() => act('reset_path')} />
+        </section>
+      )}
+      <PathTraits title="Сильные стороны" lines={strengths.slice(0, traitLimit)} tone="plus" />
+      <PathTraits title="Слабые стороны" lines={weaknesses.slice(0, traitLimit)} tone="minus" />
+      {!!path.robe_armor && <p className="HereticBook__aside"><b className="HereticBook__runIn">Мантия пути.</b> {path.robe_armor}</p>}
+      {data.selected_path === path.id && !!path.practice && <p className="HereticBook__aside"><b className="HereticBook__runIn">Совет.</b> {plainText(path.practice)}</p>}
+      {path.innate_name && (
+        <section className="HereticBook__section" aria-label="Врождённая черта">
+          <h3>Врождённая черта: {path.innate_name}</h3>
+          <p>{path.innate_desc}</p>
+          <p className="HereticBook__note">Действует с выбора пути, без затрат знаний.</p>
+        </section>
+      )}
+      {choosing && (moreTraits || (!!steps && (!!path.craft || !!path.capture || !!path.escape))) && (
+        <details className="HereticBook__fold">
+          <summary>Ещё о пути</summary>
+          {steps && <PathAnatomy path={path} />}
+          <PathTraits title="Другие сильные стороны" lines={strengths.slice(shownTraits)} tone="plus" />
+          <PathTraits title="Другие слабые стороны" lines={weaknesses.slice(shownTraits)} tone="minus" />
+        </details>
+      )}
+      {choosing && stages.length > 0 && (
+        <details className="HereticBook__fold">
+          <summary>Все ступени пути</summary>
+          <ol className="HereticBook__stageList">
+            {stages.map((entry) => <li key={entry.id}><span className="HereticBook__lineNumber">{numeral(entry.stage)}</span><span>{entry.name}</span><span className="HereticBook__leader" /><span className="HereticBook__amount">{entry.cost}</span></li>)}
+          </ol>
+        </details>
+      )}
+      <Tailpiece scene="path" />
+    </>
+  );
+};
+
 const PathChapter = ({ turn, openKnowledge }: { turn: () => void; openKnowledge: () => void }) => {
   const { data } = useLoreBackend();
-  const [previewId, setPreviewId] = useState(data.selected_path || data.paths[0]?.id);
-  const path = data.paths.find((entry) => entry.id === previewId) || data.paths[0];
+  const [previewId, setPreviewId] = useState(data.selected_path || choiceGuideId);
+  const path = previewId === choiceGuideId ? undefined : data.paths.find((entry) => entry.id === previewId) || data.paths[0];
   const skin = data.selected_path || 'Unbound';
-  const stages = data.knowledge.filter((entry) => entry.kind === 'path' && entry.path === path?.id)
-    .sort((a, b) => a.stage - b.stage);
+  const exit = data.role_exit;
+  const resetWindow = exit?.reset_window ?? 10;
+  const open = (id: string) => { if (id !== previewId) { setPreviewId(id); turn(); } };
+  const styles = Array.from(new Set(data.paths.flatMap((entry) => entry.playstyle || [])));
+  const [styleFilter, setStyleFilter] = useState<string | null>(null);
+  const style = styleFilter && styles.includes(styleFilter) ? styleFilter : null;
+  const listed = style ? data.paths.filter((entry) => entry.playstyle?.includes(style)) : data.paths;
+  const grouped = difficultyGroups.map((group) => ({ ...group, paths: listed.filter((entry) => entry.difficulty === group.level) }));
+  const ungrouped = listed.filter((entry) => !difficultyGroups.some((group) => group.level === entry.difficulty));
+  const groups = [...grouped, { level: 0, title: grouped.some((group) => group.paths.length) ? 'Другие пути' : '', paths: ungrouped }]
+    .filter((group) => group.paths.length);
   return (
     <>
       <Page side="left" chapter="Путь" head="Титульный лист" number={folio('Путь')}>
@@ -468,60 +644,33 @@ const PathChapter = ({ turn, openKnowledge }: { turn: () => void; openKnowledge:
           {data.book?.name && data.book.name !== data.book.title && <p className="HereticBook__latinTitle" lang="la">{data.book.name}</p>}
           <div className="HereticBook__titleRule" aria-hidden="true" />
         </div>
-        <nav className="HereticBook__oaths" aria-label="Пути Мансуса">
-          {data.paths.map((entry, index) => (
-            <button
-              type="button"
-              key={entry.id}
-              className={`HereticBook__oath HereticBook__oath--${entry.id}`}
-              aria-label={entry.name}
-              aria-pressed={entry.id === path?.id}
-              onClick={() => { if (entry.id !== path?.id) { setPreviewId(entry.id); turn(); } }}
-            >
-              <span className="HereticBook__oathNumber" aria-hidden="true">{numeral(index + 1)}</span>
-              <span className="HereticBook__oathName">{entry.name}</span>
-              {entry.id === data.selected_path && <svg className="HereticBook__signed" viewBox="0 0 16 16" role="img" aria-label="Выбранный путь"><path d="M8 1.6 9.6 3l2.1-.3.6 2 1.9 1-.7 2 .7 2-1.9 1-.6 2-2.1-.3L8 14.4 6.4 13l-2.1.3-.6-2-1.9-1 .7-2-.7-2 1.9-1 .6-2L6.4 3Z" /><path d="m5.6 8.2 1.6 1.6 3.2-3.4" fill="none" /></svg>}
-            </button>
-          ))}
+        <button type="button" className="HereticBook__guideLink" aria-pressed={!path} onClick={() => open(choiceGuideId)}>Как выбрать путь</button>
+        {styles.length > 1 && (
+          <div className="HereticBook__styleFilter" role="group" aria-label="Стиль игры">
+            {styles.map((entry) => (
+              <button key={entry} type="button" className="HereticBook__styleChip" aria-pressed={entry === style} onClick={() => setStyleFilter(entry === style ? null : entry)}>{entry}</button>
+            ))}
+          </div>
+        )}
+        <nav className="HereticBook__choice" aria-label="Пути Мансуса">
+          {groups.map((group) => {
+            const cards = group.paths.map((entry) => (
+              <PathCard key={entry.id} path={entry} active={entry.id === path?.id} signed={entry.id === data.selected_path} onOpen={() => open(entry.id)} />
+            ));
+            return group.title ? <ContentsGroup key={group.level} title={group.title}>{cards}</ContentsGroup> : <div key={group.level}>{cards}</div>;
+          })}
         </nav>
-        <p className="HereticBook__note HereticBook__note--center">{data.selected_path
-          ? 'Ваш путь уже выбран. Остальные можно только читать.'
-          : 'Дорог много, завеса одна. Первая ступень даётся даром, но выбрать можно лишь однажды.'}
+        <p className="HereticBook__note HereticBook__note--center">{!data.selected_path
+          ? `Дорог много, завеса одна. Первая ступень даётся даром. ${resetStillPossible(exit) ? `Сменить путь можно лишь раз: в первые ${resetWindow} мин после выбора и до первой жертвы.` : finalChoiceText}`
+          : exit?.can_reset
+            ? 'Ваш путь выбран. Пока жертв нет, его можно один раз сменить на странице этого пути.'
+            : 'Ваш путь уже выбран. Остальные можно только читать.'}
         </p>
       </Page>
-      <Page side="right" chapter="Путь" entryId={path?.id} head={path ? path.name : 'Путь'} number={folio('Путь', data.paths.indexOf(path)) + 1}>
+      <Page side="right" chapter="Путь" entryId={path?.id || choiceGuideId} head={path ? path.name : 'Перед выбором'} number={path ? folio('Путь', data.paths.indexOf(path)) + 1 : folio('Путь') + 1}>
         {path ? (
-          <>
-            <figure className={`HereticBook__plate HereticBook__plate--${path.id}`}>
-              <HereticIllumination path={path.id} />
-              <figcaption><span className="HereticBook__plateNumber">Таблица {numeral(data.paths.indexOf(path) + 1)}</span>{path.name}</figcaption>
-            </figure>
-            <h2 className="HereticBook__entryTitle">{path.name}</h2>
-            {path.tagline ? <p className="HereticBook__lead">{plainText(path.tagline)}</p> : <LoreText className="HereticBook__lead" text={path.desc} />}
-            <PathAnatomy path={path} />
-            {!data.selected_path && stages[0] && <ResearchButton knowledge={stages[0]} />}
-            {data.selected_path === path.id && <button type="button" className="HereticBook__seal HereticBook__seal--quiet" onClick={openKnowledge}>К знаниям пути</button>}
-            <PathTraits title="Сильные стороны" points={path.strength_points} fallback={path.strengths} tone="plus" />
-            <PathTraits title="Слабые стороны" points={path.weakness_points} fallback={path.weaknesses} tone="minus" />
-            {!!path.practice && <p className="HereticBook__aside"><b className="HereticBook__runIn">Совет.</b> {plainText(path.practice)}</p>}
-            {path.innate_name && (
-              <section className="HereticBook__section" aria-label="Врождённая черта">
-                <h3>Врождённая черта: {path.innate_name}</h3>
-                <p>{path.innate_desc}</p>
-                <p className="HereticBook__note">Действует с выбора пути, без затрат знаний.</p>
-              </section>
-            )}
-            {!data.selected_path && stages.length > 0 && (
-              <details className="HereticBook__fold">
-                <summary>Все ступени пути</summary>
-                <ol className="HereticBook__stageList">
-                  {stages.map((entry) => <li key={entry.id}><span className="HereticBook__lineNumber">{numeral(entry.stage)}</span><span>{entry.name}</span><span className="HereticBook__leader" /><span className="HereticBook__amount">{entry.cost}</span></li>)}
-                </ol>
-              </details>
-            )}
-            <Tailpiece />
-          </>
-        ) : <p>Нет доступных путей.</p>}
+          <PathEntry path={path} openKnowledge={openKnowledge} />
+        ) : data.paths.length ? <ChoiceGuide resetWindow={resetWindow} resetPossible={resetStillPossible(exit)} styles={styles} /> : <p>Нет доступных путей.</p>}
       </Page>
     </>
   );
@@ -546,7 +695,7 @@ const KnowledgeEntry = ({ knowledge, recipe }: { knowledge: Knowledge; recipe?: 
       <PassiveDetails knowledge={knowledge} />
       {knowledge.kind === 'side' && <p className="HereticBook__note">Побочное знание не двигает путь. Сначала оно берёт побочные очки, потом обычные.</p>}
       {recipe && <RitualRecipe ritual={recipe} />}
-      <Tailpiece />
+      <Tailpiece scene="knowledge" />
     </>
   );
 };
@@ -561,7 +710,7 @@ const AbilityEntry = ({ ability }: { ability: CombatAbility }) => (
       <p>{ability.usage}</p>
     </section>
     <p className="HereticBook__note">Перезарядку показывает кнопка способности на экране.</p>
-    <Tailpiece />
+    <Tailpiece scene="knowledge" />
   </>
 );
 
@@ -729,7 +878,7 @@ const RitualChapter = ({ turn }: { turn: () => void }) => {
             )}
             <RitualRecipe ritual={selected} />
             {!!selected.ascension && <p>Принесите {data.hunt.sacrifices_required} {countNoun(data.hunt.sacrifices_required, ['назначенную душу', 'назначенные души', 'назначенных душ'])} и изучите последнее знание. Обряд вознесения занимает 30 секунд, подношения не возвращаются.</p>}
-            <Tailpiece />
+            <Tailpiece scene="ritual" />
           </>
         ) : <p className="HereticBook__note">Нет ритуалов для просмотра.</p>}
       </Page>
@@ -869,11 +1018,17 @@ const HelpTopic = ({ id, title, open, children }: { id: HelpTopicId; title: stri
 );
 
 const HelpChapter = ({ topic, openHelp }: { topic: HelpTopicId; openHelp: (topic: HelpTopicId) => void }) => {
-  const { data } = useLoreBackend();
+  const { data, act } = useLoreBackend();
+  const exit = data.role_exit;
   const hunt = data.hunt;
   const pocket = hunt.pocket;
   const deedTiers = hunt.deed_tiers ?? 3;
   const bodies = hunt.ascension_bodies ?? 3;
+  const emergence = hunt.emergence_seconds ?? 15;
+  const emergenceCut = hunt.emergence_damage_cut ?? 75;
+  const bladeLimit = hunt.blade_limit ?? 3;
+  const escapeCooldown = hunt.escape_cooldown ?? 30;
+  const [evolutionFirst, evolutionSecond] = hunt.evolution_stages ?? [4, 7];
   return (
     <>
       <Page side="left" chapter="Помощь" head="Наставления">
@@ -881,19 +1036,27 @@ const HelpChapter = ({ topic, openHelp }: { topic: HelpTopicId; openHelp: (topic
         <HelpTopic id="start" title="Начало" open={topic === 'start'}>
           <RitualDiagram />
           <ol className="HereticBook__steps" aria-label="Первые пять минут">
-            <li>Откройте кодекс и выберите путь. «Призвать кодекс» кладёт книгу в руку и возвращает потерянную, Z открывает её. В главе Путь выбор подтверждают вторым нажатием, сменить путь потом нельзя.</li>
+            <li>Откройте кодекс и выберите путь. «Призвать кодекс» кладёт книгу в руку и возвращает потерянную, Z открывает её. В главе Путь выбор подтверждают вторым нажатием. {resetStillPossible(exit) ? `Ошиблись - путь можно один раз сменить на его странице в первые ${exit?.reset_window ?? 10} мин, пока нет жертв.` : finalChoiceText}</li>
             <li>Начертите руну: с кодексом в руке нажмите на пол и стойте 8 секунд. Нужен пол станции 3×3 без стен, космоса, лавы и других рун; стирают руну кодекс или Хватка.</li>
-            <li>Сделайте клинок: компоненты первого рецепта пути из главы Ритуалы положите на руну, нажмите на её центр пустой рукой и выберите строку «... → клинок».</li>
+            <li>Сделайте клинок: компоненты первого рецепта пути из главы Ритуалы положите на руну, нажмите на её центр пустой рукой и выберите строку «... → клинок». Клинков у вас держится не больше {bladeLimit}: новый рассыпает старейший из тех, что не при вас.</li>
             <li>Подготовьтесь: со второй ступени изучите «Ритуал оружейника», стол и противогаз на руне дадут мантию. Готовность клинка, брони и сердца видна в главе Охота.</li>
             <li>Охотьтесь: призовите живое сердце и сожмите его в руке (Z), оно назначит цель. Обезвредьте её и коснитесь сердцем. Жертва даёт очки знаний, как разломы и дело пути.</li>
           </ol>
+          <section className="HereticBook__section" aria-label="Отказ от роли">
+            <h3>Не хотите играть еретиком?</h3>
+            <p>В первые {exit?.abandon_window ?? 10} мин после получения роли и до первой жертвы от неё можно отказаться. Роль, цели и знания уйдут, а скрытую роль посреди раунда вам больше не предложат. Позже отказаться можно только через администрацию (F1).</p>
+            {!!exit?.token_role && <p className="HereticBook__note">Роль куплена жетоном: при отказе М$ за него не вернутся.</p>}
+            {exit?.can_abandon
+              ? <ArmedSeal idle="Отказаться от роли" confirm={exit.token_role ? 'Ещё раз: отказаться, М$ не вернутся' : 'Ещё раз: перестать быть еретиком'} onConfirm={() => act('abandon_role')} />
+              : !!exit?.abandon_reason && <p className="HereticBook__note">{exit.abandon_reason}</p>}
+          </section>
         </HelpTopic>
         <HelpTopic id="path" title="Путь и знания" open={topic === 'path'}>
           <Facts lines={[
-            'Ступени пути открываются по порядку, побочные знания - после нужной ступени.',
-            'Изучение рецепта не выдаёт предмет: проведите обряд на руне из главы Ритуалы.',
-            'Броню даёт Ритуал оружейника со второй ступени: стол и противогаз становятся мантией.',
+            `Ступени пути открываются по порядку, побочные знания - после нужной ступени. ${resetStillPossible(exit) ? `Сменить путь можно один раз, в первые ${exit?.reset_window ?? 10} мин и до первой жертвы: ступени вернутся очками.` : finalChoiceText}`,
+            'Изучение рецепта не выдаёт предмет: проведите обряд на руне из главы Ритуалы. Броню даёт Ритуал оружейника со второй ступени: стол и противогаз становятся мантией.',
             'Пассивку пути можно усилить дважды: за 1 и за 2 очка, сначала тратятся побочные.',
+            `По мере пути меняется облик: с ${evolutionFirst}-й ступени вплотную видны мелкие приметы, с ${evolutionSecond}-й - на открытых кистях и лице, вознесение видно всем. Перчатки, маска, очки и капюшон приметы прячут. Сумрак меняется с первой ступени и прямо на виду.`,
             'Хватка ставит метку, удар клинком её взрывает; по вещам и полу она работает тихо, без заклинания вслух. Запас силы пути виден под разворотом.',
           ]} />
         </HelpTopic>
@@ -920,7 +1083,7 @@ const HelpChapter = ({ topic, openHelp }: { topic: HelpTopicId; openHelp: (topic
             `Изнанка - ваша карманная комната: дверь пути уводит туда цель охоты вместе с вами. Живое сердце предлагает дверь пути, когда вы касаетесь им цели; дверь, которая работает издалека, можно выбрать и сжав сердце - рядом с «Найти цель». Пока вы выбираете дверь и тянете цель, сердце прижимает её к полу до ${pocket.grip} сек.: касанием в «Помощи» её не поднять, растолкать можно за ${pocket.shake} сек., нулевой жезл снимает хватку сразу. Внутри цель ${pocket.hold} сек. не может двинуться.`,
             `Общая дверь: если цель повержена на вашей руне или рядом, коснитесь руны в «Помощи» и выберите «Увести за руну», увод займёт ${pocket.pull} сек.`,
             `Изнанка держится ${pocket.duration} сек., за ${pocket.warning} до конца - предупреждение. Ваш крит закрывает её сразу, и все выпадают у входа.`,
-            '«Покинуть изнанку» выводит к вашим рунам, ремеслу пути, ко входу или туда, где вы стояли, если тянули цель издалека. Если разрыв закрыли или время вышло, вас выносит к вашему выходу подальше от входа. Цель и вещи выпадают у входа, ваши сердце и кодекс, оставленные на полу, уходят за завесу, а тёмные клинки выносит вместе с вами.',
+            `«Покинуть изнанку» выводит к вашим рунам, ремеслу пути, ко входу или туда, где вы стояли, если тянули цель издалека. Если разрыв закрыли или время вышло, вас выносит к вашему выходу подальше от входа. Если разрыв сорвали жезлом, Библией или руками, отдача оглушает вас там на ${pocket.breach} сек., а у разрыва видят, куда вас унесло. Цель и вещи выпадают у входа, ваши сердце и кодекс, оставленные на полу, уходят за завесу, а тёмные клинки выносит вместе с вами.`,
             `У входа остаётся разрыв: жезл или Библия закрывают его сразу, руками его можно разорвать за ${pocket.tear} сек. Снова открыть изнанку можно через ${pocket.cooldown} сек.`,
           ]} />
         </HelpTopic>
@@ -928,7 +1091,7 @@ const HelpChapter = ({ topic, openHelp }: { topic: HelpTopicId; openHelp: (topic
           <Facts lines={[
             'Живая жертва проходит Дом памяти: лабиринт комнат с правилом вашего пути.',
             'Три осколка нужно донести до печати перед вратами. Через 3 минуты Дом отпускает сам.',
-            'Жертва возвращается в коридор станции и помнит Дом, но не похищение: кто её схватил, где и как это было, стёрто вместе с минутами перед ним. Назвать вас она не может.',
+            'Жертва возвращается в коридор станции и помнит Дом, но не похищение: кто её схватил, где и как это было, стёрто вместе с минутами перед ним. Назвать вас она не может, но прошедшая испытание запомнит знак вашего пути и сможет назвать его СБ.',
           ]} />
         </HelpTopic>
       </Page>
@@ -939,17 +1102,17 @@ const HelpChapter = ({ topic, openHelp }: { topic: HelpTopicId; openHelp: (topic
             'В наручниках и смирительной рубашке магия, обряды и побег клинком недоступны.',
             'Имплант защиты разума глушит их, пока стоит; снять его можно только хирургически.',
             'Побочное знание Разум за завесой снимает действие щита, вознёсшегося щит не держит.',
-            'Разбитый клинок переносит в безопасное место станции, следующий побег - через 10 секунд.',
+            `Разбитый клинок переносит в безопасное место станции, следующий побег - через ${escapeCooldown} сек.`,
             'Стан культа крови сбивает еретика на 2 секунды и оглушает на 1.',
           ]} />
         </HelpTopic>
         <HelpTopic id="ascension" title="Вознесение" open={topic === 'ascension'}>
           <p>Совершите {hunt.sacrifices_required} {countNoun(hunt.sacrifices_required, ['жертвоприношение', 'жертвоприношения', 'жертвоприношений'])} и изучите последнее знание пути.</p>
           <Facts lines={[
-            `Принесите на руну ${bodies} ${countNoun(bodies, ['труп', 'трупа', 'трупов'])} экипажа, которыми управлял человек; выбранные тела подсвечиваются зелёным. Обряд 30 секунд.`,
+            `Принесите на руну ${bodies} ${countNoun(bodies, ['труп', 'трупа', 'трупов'])} людей, которыми когда-либо управлял игрок: экипаж, гости, антагонисты. Ищите их в морге и выньте из холодильника или мешка; выбранные тела подсвечиваются зелёным. Обряд 30 секунд.`,
             'После второй жертвы станцию предупреждают; вознестись можно через 3 минуты после этого.',
             'Каждая попытка объявляется станции, между попытками не меньше 3 минут. Руна - в помещении, не в космосе.',
-            'Вознестись могут несколько еретиков. После вознесения побег клинком закрыт.',
+            `Первые ${emergence} сек. после обряда - явление: оглушения не действуют, урон ещё на ${emergenceCut}% слабее, экипаж видит завесу. Потом вы уязвимы, а побег клинком закрыт. Вознестись могут несколько еретиков.`,
           ]} />
         </HelpTopic>
         <HelpTopic id="deed" title="Дело пути" open={topic === 'deed'}>
@@ -1060,12 +1223,14 @@ export const ForbiddenLoreContent = () => {
   return (
     <div
       style={{
-        '--book-material': skin === 'Unbound' ? undefined : `url("${resolveAsset(`heretic-${skin.toLowerCase()}.webp`)}")`,
+        '--book-material': skin === 'Unbound' ? undefined : bookMaterial(skin),
+        '--book-material-recto': bookRectoPaths.has(skin) ? bookMaterial(skin, '-recto') : undefined,
         '--stack-left': `${3 + chapterIndex * 2}px`,
         '--stack-right': `${3 + (chapters.length - 1 - chapterIndex) * 2}px`,
+        ...workshopSheets(skin),
       } as CSSProperties}
       lang="ru"
-      className={`HereticBook HereticBook--${skin}`} data-book-path={skin} data-book-view={reading.effectivePresentation} data-book-motion={reading.reducedMotion ? 'reduced' : 'full'}>
+      className={`HereticBook HereticBook--${skin}${isWorkshopBook(skin) ? ' HereticBook--workshop' : ''}`} data-book-path={skin} data-book-view={reading.effectivePresentation} data-book-motion={reading.reducedMotion ? 'reduced' : 'full'}>
       <style>{bookFontFaces()}</style>
       <div className="HereticBook__tableShadow" />
       <div className="HereticBook__binding">
@@ -1098,15 +1263,17 @@ export const ForbiddenLoreContent = () => {
         <div className="HereticBook__leaves" />
         <div className="HereticBook__stack HereticBook__stack--left" aria-hidden="true" />
         <div className="HereticBook__stack HereticBook__stack--right" aria-hidden="true" />
-        <main key={chapter} id="heretic-book-spread" className="HereticBook__spread" data-chapter={chapters.indexOf(chapter)} role="tabpanel" aria-label={chapter}>
-          {chapter === 'Путь' && <PathChapter turn={turn} openKnowledge={() => open('Знания')} />}
-          {chapter === 'Знания' && <KnowledgeChapter turn={turn} selectedId={knowledgeId} select={setKnowledgeId} />}
-          {chapter === 'Ритуалы' && <RitualChapter turn={turn} />}
-          {chapter === 'Охота' && <HuntChapter retargetDeadline={retargetDeadline} openHelp={openHelp} openArmor={armor && !armor.known ? () => { setKnowledgeId(armor.id); open('Знания'); } : undefined} />}
-          {chapter === 'Помощь' && <HelpChapter topic={helpTopic} openHelp={openHelp} />}
-          <div className="HereticBook__spine" aria-hidden="true" />
-          {turnCount > 0 && reading.effectivePresentation === 'living' && !reading.reducedMotion && <div key={turnCount} className={`HereticBook__turningLeaf${turnBack ? ' HereticBook__turningLeaf--back' : ''}`} aria-hidden="true" onAnimationEnd={(event) => { if (event.target === event.currentTarget) setTurnCount(0); }} />}
-        </main>
+        <BookPathContext.Provider value={skin}>
+          <main key={chapter} id="heretic-book-spread" className="HereticBook__spread" data-chapter={chapters.indexOf(chapter)} role="tabpanel" aria-label={chapter}>
+            {chapter === 'Путь' && <PathChapter turn={turn} openKnowledge={() => open('Знания')} />}
+            {chapter === 'Знания' && <KnowledgeChapter turn={turn} selectedId={knowledgeId} select={setKnowledgeId} />}
+            {chapter === 'Ритуалы' && <RitualChapter turn={turn} />}
+            {chapter === 'Охота' && <HuntChapter retargetDeadline={retargetDeadline} openHelp={openHelp} openArmor={armor && !armor.known ? () => { setKnowledgeId(armor.id); open('Знания'); } : undefined} />}
+            {chapter === 'Помощь' && <HelpChapter topic={helpTopic} openHelp={openHelp} />}
+            <div className="HereticBook__spine" aria-hidden="true" />
+            {turnCount > 0 && reading.effectivePresentation === 'living' && !reading.reducedMotion && <div key={turnCount} className={`HereticBook__turningLeaf${turnBack ? ' HereticBook__turningLeaf--back' : ''}`} aria-hidden="true" onAnimationEnd={(event) => { if (event.target === event.currentTarget) setTurnCount(0); }} />}
+          </main>
+        </BookPathContext.Provider>
         {chapterIndex > 0 && <button type="button" className="HereticBook__corner HereticBook__corner--prev" title={chapters[chapterIndex - 1]} aria-label={`Предыдущая глава: ${chapters[chapterIndex - 1]}`} onClick={() => open(chapters[chapterIndex - 1])} />}
         {chapterIndex < chapters.length - 1 && <button type="button" className="HereticBook__corner HereticBook__corner--next" title={chapters[chapterIndex + 1]} aria-label={`Следующая глава: ${chapters[chapterIndex + 1]}`} onClick={() => open(chapters[chapterIndex + 1])} />}
         <HereticBookAtmosphere path={skin} presentation={reading.effectivePresentation} reducedMotion={reading.reducedMotion} />

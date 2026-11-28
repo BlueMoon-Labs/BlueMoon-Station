@@ -32,6 +32,7 @@
 	for(var/knowledge_type in list(/datum/eldritch_knowledge/dance_grasp, /datum/eldritch_knowledge/spell/dance_invite))
 		if(!heretic.get_knowledge(knowledge_type))
 			heretic.gain_knowledge(knowledge_type)
+	heretic.sync_path_stage()
 	set_stage(DANCE_LESSON_HITS)
 
 /datum/heretic_dance_lesson/Destroy()
@@ -67,7 +68,7 @@
 		if(DANCE_LESSON_HITS)
 			hint = "Шаг 1 из 5. Встаньте вплотную к мишени и ударьте её [DANCE_LESSON_HITS_NEEDED] раза в долю: бейте, когда кольцо у ваших ног сомкнётся: двойное кольцо - сильная доля. Засчитано: [hits] из [DANCE_LESSON_HITS_NEEDED]."
 		if(DANCE_LESSON_SQUARE)
-			hint = "Шаг 2 из 5. Квадрат Вальса: у мишени пройдите вперёд, вправо, назад и влево, по стороне на долю. Можно не отпускать клавишу: в каждую долю засчитывается шаг в нужную сторону, медный след покажет её, ромбы под ногами считают шаги. Фигуры собираются, пока играет музыка: в бою или пока есть Такт."
+			hint = "Шаг 2 из 5. Квадрат Вальса: у мишени пройдите вперёд, вправо, назад и влево, по стороне на долю. Можно не отпускать клавишу: в каждую долю засчитывается шаг в нужную сторону, медный след покажет её, ромбы под ногами считают шаги. Фигуры собираются, пока играет музыка: в бою, пока есть Такт, или под Напев из меню стилей."
 		if(DANCE_LESSON_SWITCH)
 			hint = "Шаг 3 из 5. Нажмите на барабан и выберите Танго. Попадёте в сильную долю - связка сохранит Такт и удвоит акцент; мимо - Танго вступит на следующей сильной доле."
 		if(DANCE_LESSON_INVITE)
@@ -77,7 +78,7 @@
 			if(changed)
 				INVOKE_ASYNC(src, PROC_REF(call_helper))
 		if(DANCE_LESSON_DONE)
-			hint = "Урок пройден. Танец срывают: растолкать за 2 секунды, схватить, повалить, пристегнуть, наушники-заглушки, нулевой жезл, святая вода."
+			hint = "Урок пройден. Танец срывают: растолкать за [HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды, схватить, повалить, пристегнуть, наушники-заглушки, нулевой жезл, святая вода."
 	if(changed)
 		say(hint)
 	session?.update_practice()
@@ -121,7 +122,7 @@
 				if("step_silent")
 					if(COOLDOWN_FINISHED(src, silent_hint))
 						COOLDOWN_START(src, silent_hint, DANCE_LESSON_SILENT_HINT_COOLDOWN)
-						say("музыка стихла, и шаги не складываются в фигуру. Ударьте мишень, чтобы она зазвучала снова.")
+						say("музыка стихла, и шаги не складываются в фигуру. Ударьте мишень, чтобы она зазвучала снова, или включите Напев в меню стилей.")
 		if(DANCE_LESSON_SWITCH)
 			switch(event)
 				if("switch_queued")

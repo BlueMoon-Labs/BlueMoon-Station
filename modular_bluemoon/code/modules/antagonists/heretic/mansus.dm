@@ -180,6 +180,32 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		"escape" = 'modular_bluemoon/sound/heretic/mansus/sand_escape.ogg',
 		"step" = 'modular_bluemoon/sound/heretic/mansus/sand_step.ogg',
 	),
+	PATH_DUSK = list(
+		"id" = "dusk",
+		"rule" = /datum/heretic_mansus_rule/dusk,
+		"title" = "Сумрак",
+		"description" = "Сумеречный зал: под высоким сводом мигают лампы, а в промежутках между ними шевелятся тени с крыльями.",
+		"ambience" = 'modular_bluemoon/sound/heretic/mansus/dusk_ambience.ogg',
+		"pickup" = 'modular_bluemoon/sound/heretic/mansus/dusk_pickup.ogg',
+		"deposit" = 'modular_bluemoon/sound/heretic/mansus/dusk_deposit.ogg',
+		"warning" = 'modular_bluemoon/sound/heretic/mansus/dusk_warning.ogg',
+		"hit" = 'modular_bluemoon/sound/heretic/mansus/dusk_hit.ogg',
+		"escape" = 'modular_bluemoon/sound/heretic/mansus/dusk_escape.ogg',
+		"step" = 'modular_bluemoon/sound/heretic/mansus/dusk_step.ogg',
+	),
+	PATH_HAMMER = list(
+		"id" = "hammer",
+		"rule" = /datum/heretic_mansus_rule/hammer,
+		"title" = "Молот",
+		"description" = "Кузня изнанки: чёрный камень в раскалённых швах, цепи над наковальнями, а под сводом ходит тень молота.",
+		"ambience" = 'modular_bluemoon/sound/heretic/mansus/hammer_ambience.ogg',
+		"pickup" = 'modular_bluemoon/sound/heretic/mansus/hammer_pickup.ogg',
+		"deposit" = 'modular_bluemoon/sound/heretic/mansus/hammer_deposit.ogg',
+		"warning" = 'modular_bluemoon/sound/heretic/mansus/hammer_warning.ogg',
+		"hit" = 'modular_bluemoon/sound/heretic/mansus/hammer_hit.ogg',
+		"escape" = 'modular_bluemoon/sound/heretic/mansus/hammer_escape.ogg',
+		"step" = 'modular_bluemoon/sound/heretic/mansus/hammer_step.ogg',
+	),
 	PATH_WAX = list(
 		"id" = "wax",
 		"rule" = /datum/heretic_mansus_rule/wax,
@@ -205,6 +231,19 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		"hit" = 'modular_bluemoon/sound/heretic/mansus/dance_hit.ogg',
 		"escape" = 'modular_bluemoon/sound/heretic/mansus/dance_escape.ogg',
 		"step" = 'modular_bluemoon/sound/heretic/mansus/dance_step.ogg',
+	),
+	PATH_LEAD = list(
+		"id" = "lead",
+		"rule" = /datum/heretic_mansus_rule/lead,
+		"title" = "Свинец",
+		"description" = "Заброшенный тир: деревянные мишени в пробоинах, под ногами хрустят гильзы, в воздухе стоит пороховой дым.",
+		"ambience" = 'modular_bluemoon/sound/heretic/mansus/lead_ambience.ogg',
+		"pickup" = 'modular_bluemoon/sound/heretic/mansus/lead_pickup.ogg',
+		"deposit" = 'modular_bluemoon/sound/heretic/mansus/lead_deposit.ogg',
+		"warning" = 'modular_bluemoon/sound/heretic/mansus/lead_warning.ogg',
+		"hit" = 'modular_bluemoon/sound/heretic/mansus/lead_hit.ogg',
+		"escape" = 'modular_bluemoon/sound/heretic/mansus/lead_escape.ogg',
+		"step" = 'modular_bluemoon/sound/heretic/mansus/lead_step.ogg',
 	),
 	PATH_SPIRIT = list(
 		"id" = "spirit",
@@ -1143,7 +1182,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 			victim.forceMove(destination)
 			show_passage(destination, "Воздух расходится, как незримая дверь, и из неё выпадает [victim].")
 		playsound(victim, theme["escape"], 45, FALSE)
-		victim.AddComponent(/datum/component/heretic_mansus_trace)
+		var/datum/component/heretic_mansus_trace/trace = victim.GetComponent(/datum/component/heretic_mansus_trace) || victim.AddComponent(/datum/component/heretic_mansus_trace)
 		if(exit_reason == "completed")
 			to_chat(victim, span_boldnotice("Имя, голос и дыхание снова ваши. Вы прошли испытание и открыли дверь домой. На коже остался бледный след врат."))
 			SEND_SIGNAL(victim, COMSIG_ADD_MOOD_EVENT, "heretic_mansus", hits_taken ? /datum/mood_event/heretic_mansus_returned : /datum/mood_event/heretic_mansus_returned/unscathed)
@@ -1153,6 +1192,8 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		else
 			to_chat(victim, span_notice("Стены Дома смыкаются за спиной. На коже остался бледный след незнакомой двери."))
 		to_chat(victim, span_userdanger(amnesia_note))
+		if(exit_reason == "completed")
+			remember_path_sign(trace)
 	// Возвращаем также брошенные вещи, контейнеры и посторонних: Release() уничтожает содержимое.
 	QDEL_LIST(scenery)
 	if(reservation)
@@ -1497,9 +1538,18 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	description = span_nicegreen("Я прошёл Дом памяти, и он ни разу меня не коснулся.\n")
 	mood_change = 4
 
-/// Косметический след остаётся на этом теле до конца раунда, не меняя органы или память.
+/// Прошедший Дом не помнит похитителя, но выносит знак его пути: улику для СБ в заметках и на коже.
+/datum/heretic_mansus_visit/proc/remember_path_sign(datum/component/heretic_mansus_trace/trace)
+	var/sign = theme["title"]
+	trace?.path_signs |= sign
+	var/note = "Из Дома памяти вы вынесли одну улику: над вратами горел знак пути «[sign]». Кто вас похитил, вы не помните, но этот знак можно назвать службе безопасности: по нему видно, с каким еретиком она имеет дело."
+	soul?.store_memory(note)
+	to_chat(victim, span_boldnotice(note))
+
+/// Косметический след остаётся на этом теле до конца раунда, не меняя органы или память; у прошедших Дом над ним выжжен знак пути.
 /datum/component/heretic_mansus_trace
 	dupe_mode = COMPONENT_DUPE_UNIQUE
+	var/list/path_signs = list()
 
 /datum/component/heretic_mansus_trace/Initialize()
 	if(!ishuman(parent))
@@ -1508,4 +1558,4 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 
 /datum/component/heretic_mansus_trace/proc/on_examine(datum/source, mob/user, list/examine_list)
 	SIGNAL_HANDLER
-	examine_list += span_warning("На коже проступает бледный контур двери. Стоит отвести взгляд, и кажется, что она приоткрылась.")
+	examine_list += span_warning("На коже проступает бледный контур двери. Стоит отвести взгляд, и кажется, что она приоткрылась.[length(path_signs) ? " Над ней выжжен знак пути: [jointext(path_signs, ", ")]." : ""]")

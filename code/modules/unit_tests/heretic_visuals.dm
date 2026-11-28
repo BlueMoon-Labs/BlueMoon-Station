@@ -3,7 +3,6 @@
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/carbon/human/wearer = heretic.owner.current
 	var/obj/item/clothing/suit/hooded/cultrobes/eldritch/robes = allocate(/obj/item/clothing/suit/hooded/cultrobes/eldritch)
-	var/datum/armor/original_armor = robes.armor
 	var/original_coverage = robes.body_parts_covered
 	var/mob/living/carbon/human/bystander = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	for(var/path_id in GLOB.heretic_paths)
@@ -30,7 +29,7 @@
 		TEST_ASSERT_EQUAL(robes.icon_state, path.robe_state, "На полу остаётся облик пути с опущенным капюшоном.")
 		TEST_ASSERT_EQUAL(robes.hood.loc, robes, "Снятый капюшон хранится в мантии.")
 		TEST_ASSERT_NULL(wearer.head, "Капюшон не остаётся на голове после снятия мантии.")
-		TEST_ASSERT_EQUAL(robes.armor, original_armor, "Визуальный путь не меняет защиту.")
+		TEST_ASSERT_EQUAL(robes.armor_type, heretic_robe_armor_type(path_id), "Защита меняется только на броню пути.")
 		TEST_ASSERT_EQUAL(robes.body_parts_covered, original_coverage, "Облик не меняет покрытие тела.")
 		TEST_ASSERT(bystander.equip_to_slot_if_possible(robes, ITEM_SLOT_OCLOTHING), "Мантию можно передать обычному члену экипажа.")
 		TEST_ASSERT_EQUAL(robes.robe_path, path_id, "Непосвящённый сохраняет последний облик.")
@@ -53,20 +52,37 @@
 /datum/unit_test/heretic_blade_inhand_appearance/Run()
 	for(var/blade_type in subtypesof(/obj/item/melee/sickly_blade))
 		var/obj/item/melee/sickly_blade/blade = allocate(blade_type)
-		var/expected_x = (blade.route in list(PATH_TIDE, PATH_GLASS, PATH_BLOOD, PATH_SAND, PATH_WAX, PATH_SPIRIT, PATH_DANCE)) ? 0 : -9
-		var/expected_y = (blade.route in list(PATH_TIDE, PATH_GLASS, PATH_BLOOD, PATH_SAND, PATH_WAX, PATH_SPIRIT, PATH_DANCE)) ? 0 : -8
+		var/expected_x = (blade.route in list(PATH_TIDE, PATH_GLASS, PATH_BLOOD, PATH_SAND, PATH_WAX, PATH_SPIRIT, PATH_DANCE, PATH_LEAD)) ? 0 : -9
+		var/expected_y = (blade.route in list(PATH_TIDE, PATH_GLASS, PATH_BLOOD, PATH_SAND, PATH_WAX, PATH_SPIRIT, PATH_DANCE, PATH_LEAD)) ? 0 : -8
 		if(blade.route == PATH_ECHO)
 			expected_x = 0
 			expected_y = -4
 		else if(blade.route == PATH_BLOOD)
 			expected_x = -8
 			expected_y = -2
+		else if(blade.route == PATH_HAMMER)
+			expected_x = -16
+			expected_y = -16
 		for(var/hand_icon in list(blade.lefthand_file, blade.righthand_file))
 			var/mutable_appearance/held = blade.build_worn_icon(default_icon_file = hand_icon, isinhands = TRUE)
 			TEST_ASSERT_EQUAL(held.icon_state, blade.icon_state, "Спрайт [blade.type] в руках должен соответствовать предмету.")
 			TEST_ASSERT(held.icon_state in icon_states(held.icon), "Спрайт [blade.type] существует для каждой руки.")
 			TEST_ASSERT_EQUAL(held.pixel_x, expected_x, "Спрайт сохраняет горизонтальное положение клинка в руке.")
 			TEST_ASSERT_EQUAL(held.pixel_y, expected_y, "Спрайт сохраняет высоту клинка в руке.")
+
+/// Клинок и реликвия каждого пути видны и на полу, и в руках: их стейты есть в своих файлах.
+/datum/unit_test/heretic_path_item_sprites/Run()
+	var/list/states_by_icon = list()
+	for(var/item_type in subtypesof(/obj/item/melee/sickly_blade) + subtypesof(/obj/item/heretic_path_relic))
+		var/obj/item/proto = item_type
+		var/icon_state = initial(proto.icon_state)
+		var/held_state = initial(proto.item_state) || icon_state
+		var/list/checks = list("[initial(proto.icon)]" = icon_state, "[initial(proto.lefthand_file)]" = held_state, "[initial(proto.righthand_file)]" = held_state)
+		for(var/icon_file in checks)
+			if(!states_by_icon[icon_file])
+				states_by_icon[icon_file] = icon_states(file(icon_file))
+			if(!(checks[icon_file] in states_by_icon[icon_file]))
+				TEST_FAIL("У [item_type] нет стейта \"[checks[icon_file]]\" в [icon_file].")
 
 /// Глаз показывает действие именно этого амулета, а не чужого источника зрения.
 /datum/unit_test/heretic_medallion_appearance/Run()

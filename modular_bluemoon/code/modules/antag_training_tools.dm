@@ -100,8 +100,8 @@ GLOBAL_LIST_INIT(antag_training_equipment, list(
 	"tactical_kit" = list("name" = "Тактическая аптечка", "category" = "Медицина", "desc" = "Боевой дефибриллятор и гипоспреи.", "type" = /obj/item/storage/firstaid/tactical),
 	"roller" = list("name" = "Каталка", "category" = "Медицина", "desc" = "Перевозка лежачего пациента.", "type" = /obj/item/roller),
 	"bodybag" = list("name" = "Мешок для тела", "category" = "Медицина", "type" = /obj/item/bodybag),
-	"nullrod" = list("name" = "Нуль-жезл", "category" = "Контрмеры", "desc" = "Защищает владельца от магии.", "type" = /obj/item/nullrod),
-	"holywater" = list("name" = "Святая вода", "category" = "Контрмеры", "desc" = "Выпитая смывает мелодию Пляски и выводит из стазиса Песка.", "type" = /obj/item/reagent_containers/food/drinks/bottle/holywater),
+	"nullrod" = list("name" = "Нуль-жезл", "category" = "Контрмеры", "desc" = "Защищает владельца от магии, снимает заговор Свинца с оружия и свинцовую тяжесть.", "type" = /obj/item/nullrod),
+	"holywater" = list("name" = "Святая вода", "category" = "Контрмеры", "desc" = "Выпитая смывает мелодию Пляски, выводит из стазиса Песка и снимает свинцовую тяжесть; плеск на оружие снимает заговор Свинца.", "type" = /obj/item/reagent_containers/food/drinks/bottle/holywater),
 	"foilhat" = list("name" = "Шапочка из фольги", "category" = "Контрмеры", "desc" = "Держит только ментальные чары.", "type" = /obj/item/clothing/head/foilhat),
 	"earmuffs" = list("name" = "Наушники-заглушки", "category" = "Контрмеры", "desc" = "Глушат такт Пляски.", "type" = /obj/item/clothing/ears/earmuffs),
 	"flashbang" = list("name" = "Светошумовая граната", "category" = "Контрмеры", "desc" = "Ослепляет и оглушает. В Болеро - фальшивая нота, сбивающая ступень.", "type" = /obj/item/grenade/flashbang),
@@ -452,6 +452,8 @@ GLOBAL_LIST_EMPTY(antag_training_gps)
 	return null
 
 /datum/antag_training_arena/proc/spawn_creature(template_id, zone_id, active = FALSE, datum/antag_training_session/creator, turf/near)
+	if(!istext(template_id) || !istext(zone_id))
+		return null
 	var/list/template = GLOB.antag_training_creatures[template_id]
 	var/list/zone = zones[zone_id] || hub?.pad_zone(zone_id, creator)
 	prune_targets()
@@ -624,7 +626,7 @@ GLOBAL_LIST_EMPTY(antag_training_gps)
 	return null
 
 /datum/antag_training_session/proc/build_structure(structure_id, mob/user)
-	var/list/template = GLOB.antag_training_structures[structure_id]
+	var/list/template = istext(structure_id) ? GLOB.antag_training_structures[structure_id] : null
 	if(!can_control(user) || !template || world.time < next_supply_at)
 		return null
 	arena.prune_supplies()
@@ -693,7 +695,7 @@ GLOBAL_LIST_EMPTY(antag_training_gps)
 	return states
 
 /datum/antag_training_session/proc/issue_equipment(equipment_id, mob/user)
-	var/list/equipment = GLOB.antag_training_equipment[equipment_id]
+	var/list/equipment = istext(equipment_id) ? GLOB.antag_training_equipment[equipment_id] : null
 	if(!can_control(user) || !equipment || world.time < next_supply_at)
 		return FALSE
 	next_supply_at = world.time + 1 SECONDS

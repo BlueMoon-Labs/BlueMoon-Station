@@ -35,16 +35,28 @@
 /datum/dynamic_ruleset/midround/director_preflight()
 	return null
 
+/datum/mind
+	/// Игрок сам отказался от антаг-роли в этом раунде: мидраунд-инжекции его больше не выбирают.
+	var/declined_antag_role = FALSE
+
+/// Живого члена экипажа роль находит без опроса, поэтому отошедший от клавиатуры (10782: пробуждение
+/// еретика досталось игроку без ввода 10 минут) и отказавшийся от роли в кандидаты не идут.
+/proc/midround_crew_pick_blocked(mob/living/player)
+	var/datum/client_interface/player_client = GET_CLIENT(player)
+	if(player_client?.is_afk())
+		return TRUE
+	return !!player.mind?.declined_antag_role
+
 /// Повторная фильтрация живых кандидатов непосредственно перед выдачей роли: между отбором
 /// (trim на бите) и отложенным исполнением игрок мог умереть, отключиться, улететь на ЦК
 /// или уже стать антагом другой инжекцией - протухший кандидат ронял бы execute() рантаймом.
 /datum/dynamic_ruleset/midround/proc/prune_stale_living_players()
 	for(var/mob/living/player in living_players.Copy())
-		if(QDELETED(player) || player.stat == DEAD || !player.client || !player.mind)
+		if(QDELETED(player) || player.stat == DEAD || !GET_CLIENT(player) || !player.mind)
 			living_players -= player
 		else if(is_centcom_level(player.z))
 			living_players -= player
-		else if(player.mind.special_role || player.mind.antag_datums?.len > 0)
+		else if(player.mind.special_role || player.mind.antag_datums?.len > 0 || midround_crew_pick_blocked(player))
 			living_players -= player
 
 /// Общий безопасный preflight для рулсетов, которые после trim_candidates() кладут всех
@@ -76,6 +88,9 @@
 
 /datum/dynamic_ruleset/midround/trim_candidates()
 	living_players = trim_list(mode.current_players[CURRENT_LIVING_PLAYERS])
+	for(var/mob/living/player in living_players.Copy())
+		if(midround_crew_pick_blocked(player))
+			living_players -= player
 	living_antags = trim_list(mode.current_players[CURRENT_LIVING_ANTAGS])
 	dead_players = trim_list(mode.current_players[CURRENT_DEAD_PLAYERS])
 	list_observers = trim_list(mode.current_players[CURRENT_OBSERVERS])
@@ -301,7 +316,7 @@
 
 /datum/dynamic_ruleset/midround/autotraitor/ready(forced = FALSE)
 	if (required_candidates > living_players.len)
-		ready_failure_reason = "подходящих членов экипажа [living_players.len] из [required_candidates] (преференс midround, роль, бан и возраст)"
+		ready_failure_reason = "подходящих членов экипажа [living_players.len] из [required_candidates] (преференс midround, роль, бан, возраст и активность)"
 		return FALSE
 	. = ..()
 	if(.)
@@ -364,13 +379,13 @@
 			living_players -= player
 
 /datum/dynamic_ruleset/midround/crew_conversion/proc/can_convert(mob/living/player)
-	if(issilicon(player) || is_centcom_level(player.z) || player.stat != CONSCIOUS)
+	if(issilicon(player) || is_centcom_level(player.z) || player.stat != CONSCIOUS || midround_crew_pick_blocked(player))
 		return FALSE
 	return !(player.mind && (player.mind.special_role || player.mind.antag_datums?.len > 0))
 
 /datum/dynamic_ruleset/midround/crew_conversion/ready(forced = FALSE)
 	if(required_candidates > living_players.len)
-		ready_failure_reason = "подходящих членов экипажа [living_players.len] из [required_candidates] (преференс midround, роль, бан, возраст и сознание)"
+		ready_failure_reason = "подходящих членов экипажа [living_players.len] из [required_candidates] (преференс midround, роль, бан, возраст, сознание и активность)"
 		return FALSE
 	. = ..()
 	if(.)

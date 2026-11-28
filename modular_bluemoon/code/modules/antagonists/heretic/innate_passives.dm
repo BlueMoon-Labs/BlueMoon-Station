@@ -184,7 +184,7 @@
 
 /datum/heretic_innate/proc/on_move(mob/living/source, atom/old_loc, direction, forced)
 	SIGNAL_HANDLER
-	if(!valid() || forced || body.incapacitated() || body.buckled || body.throwing || !isturf(old_loc) || !isturf(body.loc) || old_loc.z != body.z || get_dist(old_loc, body) != 1)
+	if(!valid() || forced || heretic_incapacitated(body) || body.buckled || body.throwing || !isturf(old_loc) || !isturf(body.loc) || old_loc.z != body.z || get_dist(old_loc, body) != 1)
 		steps.Cut()
 		return
 	if(world.time - last_step_at > HERETIC_INNATE_STEP_WINDOW)
@@ -220,7 +220,7 @@
 	return
 
 /datum/heretic_innate/proc/blade_hit(mob/living/victim, damage)
-	if(!valid() || body.incapacitated() || !isturf(body.loc) || !body.Adjacent(victim) || damage <= 0 || !victim.mind || !heretic_can_affect(body, victim, chargecost = 0))
+	if(!valid() || heretic_incapacitated(body) || !isturf(body.loc) || !body.Adjacent(victim) || damage <= 0 || !victim.mind || !heretic_can_affect(body, victim, chargecost = 0))
 		return
 	on_hit(victim, damage)
 

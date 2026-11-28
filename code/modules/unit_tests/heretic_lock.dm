@@ -1,50 +1,34 @@
-/// Ритуальный ключ размыкает одну свою печать без возврата ресурса и изменения остальных.
-/datum/unit_test/heretic_lock_selective_release/Run()
+/// Ритуальный ключ больше не взрывает печати: одну печать размыкает Открывающий удар, все видимые - Размыкание.
+/datum/unit_test/heretic_lock_key_ignores_seals/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/user = heretic.owner.current
 	heretic.selected_path = PATH_LOCK
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_lock)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/lock_key)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/lock_release)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_lock)
 	var/datum/eldritch_knowledge/lock_key/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/lock_key)
 	TEST_ASSERT(recipe.on_finished_recipe(user, list(), get_turf(user)), "Создаётся ритуальный ключ.")
 	var/obj/item/heretic_path_relic/lock_key/key = recipe.new_path_relic_ref.resolve()
 	allocated += key
 	user.put_in_hands(key)
-	key.releasing_time = 0
 	var/turf/center = get_step(get_step(user, EAST), EAST)
-	var/obj/structure/heretic_lock_seal/selected = knowledge.create_seal(center, user)
-	var/obj/structure/heretic_lock_seal/retained = knowledge.create_seal(get_step(user, NORTH), user)
-	TEST_ASSERT(selected && retained, "Созданы две печати для выборочного размыкания.")
-	TEST_ASSERT(!key.release_seal(user, selected), "Без знания Размыкания ключ не взрывает печать.")
-	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/lock_release)
-	retained.take_damage(10, BRUTE, MELEE)
-	var/integrity_before = retained.obj_integrity
-	var/expiry_before = retained.expires_at
-	var/keys_before = knowledge.combat_resource
-	var/datum/antagonist/heretic/stranger = allocate_heretic(get_step(user, NORTHEAST))
-	TEST_ASSERT(!key.release_seal(stranger.owner.current, selected), "Чужой разум не размыкает печати ключом владельца.")
-	var/obj/barrier = allocate(/obj, get_step(user, EAST))
-	barrier.density = TRUE
-	barrier.opacity = TRUE
-	TEST_ASSERT(!key.release_seal(user, selected), "За непрозрачной преградой нельзя выбрать печать.")
-	qdel(barrier)
+	var/obj/structure/heretic_lock_seal/seal = knowledge.create_seal(center, user)
+	TEST_ASSERT_NOTNULL(seal, "Печать стоит.")
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(center, EAST))
-	var/mob/living/outside = allocate(/mob/living/carbon/human, get_step(retained, NORTH))
-	TEST_ASSERT(key.release_seal(user, selected), "Ключ размыкает выбранную видимую печать.")
-	TEST_ASSERT(abs(victim.getBruteLoss() - 30) < DAMAGE_PRECISION, "Соседний враг получает обычный урон Размыкания.")
-	TEST_ASSERT_EQUAL(outside.getBruteLoss(), 0, "Сохранившаяся печать не взрывается возле другого врага.")
-	TEST_ASSERT(QDELETED(selected), "Выбранная печать израсходована.")
-	TEST_ASSERT_EQUAL(length(knowledge.seals), 1, "Остальная печать сохранена.")
-	TEST_ASSERT_EQUAL(knowledge.combat_resource, keys_before, "Ключ из взорванной печати не возвращается.")
-	TEST_ASSERT_EQUAL(retained.obj_integrity, integrity_before, "Остальная печать не чинится.")
-	TEST_ASSERT_EQUAL(retained.expires_at, expiry_before, "Срок жизни остальных печатей не обновляется.")
-	TEST_ASSERT(!key.release_seal(user, retained), "Перезарядка не даёт сразу разомкнуть другую печать.")
-	TEST_ASSERT(!key.can_cut(user), "Размыкание делит откат с добычей ключа из ладони.")
-	key.relic_cooldown = 0
-	TEST_ASSERT(!key.release_seal(user, selected), "Разрушенная печать больше не становится целью.")
+	user.a_intent = INTENT_HARM
+	key.afterattack(seal, user, FALSE)
+	TEST_ASSERT(!QDELETED(seal), "Ключ во вреде печать не взрывает.")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Ключ не ранит соседа печати.")
+	TEST_ASSERT(COOLDOWN_FINISHED(key, relic_cooldown), "Щелчок ключом по печати не тратит откат ключа.")
+	var/datum/eldritch_knowledge/lock_key/key_knowledge = allocate(/datum/eldritch_knowledge/lock_key)
+	var/datum/eldritch_knowledge/spell/lock_release/release = allocate(/datum/eldritch_knowledge/spell/lock_release)
+	TEST_ASSERT(!findtext(jointext(key_knowledge.details, " "), "печать"), "Ключница больше не обещает взрыв печати.")
+	TEST_ASSERT(!findtext(jointext(release.details, " "), "ключом"), "Размыкание не называет ключ.")
+	TEST_ASSERT(findtext(jointext(release.details, " "), "Открывающий удар"), "Размыкание называет одиночный взрыв Открывающим ударом.")
+	TEST_ASSERT(!findtext(jointext(key.examine(user), " "), "Размыкани"), "Осмотр ключа не обещает взрыв печати.")
 	knowledge.on_body_lose(user)
-	TEST_ASSERT(QDELETED(retained), "Потеря тела удаляет оставшуюся печать.")
+	TEST_ASSERT(QDELETED(seal), "Потеря тела удаляет печать.")
 
 /// Печати расходуют ключи только при успешной установке и имеют общий предел.
 /datum/unit_test/heretic_lock_seals/Run()
@@ -718,7 +702,7 @@
 	TEST_ASSERT(findtext(jointext(door.examine(crew), " "), "щёлкает сам по себе"), "Экипаж замечает улику при осмотре.")
 	TEST_ASSERT(findtext(jointext(door.examine(user), " "), "Ваше ремесло"), "Владелец узнаёт свой порог.")
 	var/list/resource = knowledge.get_combat_resource_data()
-	TEST_ASSERT_EQUAL(resource["state"], "Порогов: 1 из [HERETIC_LOCK_DOOR_LIMIT].", "Состояние запаса называет пороги.")
+	TEST_ASSERT(findtext(resource["state"], "Порогов: 1 из [HERETIC_LOCK_DOOR_LIMIT]."), "Состояние запаса называет пороги: [resource["state"]]")
 	COOLDOWN_RESET(heretic.deed, progress_cooldown)
 	TEST_ASSERT(!knowledge.on_mansus_grasp(door, user, TRUE), "Свой порог второй раз не помечается.")
 	TEST_ASSERT(findtext(knowledge.grasp_failure_reason, "уже ваш порог"), "Отказ называет порог: [knowledge.grasp_failure_reason]")
@@ -1066,14 +1050,14 @@
 	TEST_ASSERT_NOTNULL(capture_immunity(victim, "lock"), "Снятые наручники дают невосприимчивость.")
 	var/mob/living/carbon/human/mindless = allocate(/mob/living/carbon/human, get_step(victim_spot, NORTH))
 	var/datum/status_effect/heretic_lock_shackles/hold = mindless.apply_status_effect(/datum/status_effect/heretic_lock_shackles, knowledge)
-	var/obj/item/cuffs = mindless.legcuffed
-	TEST_ASSERT(istype(cuffs, /obj/item/restraints/legcuffs/heretic_lock), "На цели без разума путы.")
+	var/obj/item/cuffs = mindless.handcuffed
+	TEST_ASSERT(istype(cuffs, /obj/item/restraints/handcuffs/heretic_lock), "На цели без разума наручники.")
 	cuffs.breakouttime = 1
 	TEST_ASSERT_NULL(mindless.mind, "Вырывается цель без разума.")
 	INVOKE_ASYNC(mindless, TYPE_PROC_REF(/mob/living/carbon, resist_restraints))
-	TEST_ASSERT(wait_for_qdeleted(hold), "Рывок по таймеру пут освобождает.")
-	TEST_ASSERT(QDELETED(cuffs) && isnull(mindless.legcuffed), "Сброшенные путы исчезают.")
-	TEST_ASSERT_NULL(locate(/obj/item/restraints/legcuffs) in get_turf(mindless), "Сброшенные путы не остаются на полу.")
+	TEST_ASSERT(wait_for_qdeleted(hold), "Рывок по таймеру наручников освобождает.")
+	TEST_ASSERT(QDELETED(cuffs) && isnull(mindless.handcuffed), "Сброшенные наручники исчезают.")
+	TEST_ASSERT_NULL(locate(/obj/item/restraints/handcuffs) in get_turf(mindless), "Сброшенные наручники не остаются на полу.")
 	hold = victim.apply_status_effect(/datum/status_effect/heretic_lock_shackles, knowledge)
 	cuffs = victim.handcuffed
 	victim.uncuff()
@@ -1121,15 +1105,17 @@
 	for(var/fact in list("в [HERETIC_LOCK_SHACKLES_RANGE] клетках", "наручники на [HERETIC_LOCK_SHACKLES_DURATION / (1 SECONDS)] секунд", "за [HERETIC_LOCK_SHACKLES_BREAKOUT / (1 SECONDS)] секунд", "Перезарядка [HERETIC_LOCK_SHACKLES_COOLDOWN / (1 SECONDS)] секунд"))
 		TEST_ASSERT(findtext(spell_desc, fact), "Кнопка Замка на руках называет «[fact]».")
 	TEST_ASSERT(findtext(initial(spell.summary), "[HERETIC_LOCK_SHACKLES_DURATION / (1 SECONDS)] секунд"), "Строка кнопки называет срок наручников.")
-	TEST_ASSERT(findtext(path.combat_practice, "в [HERETIC_LOCK_SHACKLES_RANGE] клетках") && findtext(path.combat_practice, "[HERETIC_LOCK_SHACKLES_DURATION / (1 SECONDS)] секунд в призрачных наручниках") && findtext(path.combat_practice, "[HERETIC_LOCK_SHACKLES_OTHER / (1 SECONDS)] секунды в призрачных путах на ногах"), "Полигон называет дальность, наручники цели охоты и путы для прочих.")
-	var/obj/item/restraints/legcuffs/heretic_lock/fetters = allocate(/obj/item/restraints/legcuffs/heretic_lock)
-	TEST_ASSERT(findtext(shackles_text, "на [HERETIC_LOCK_SHACKLES_OTHER / (1 SECONDS)] секунды путает ноги") && findtext(spell_desc, "на [HERETIC_LOCK_SHACKLES_OTHER / (1 SECONDS)] секунды путает ноги") && findtext(fetters.desc, "через [HERETIC_LOCK_SHACKLES_OTHER / (1 SECONDS)] секунды"), "Замок на руках называет короткие путы для прочих.")
+	TEST_ASSERT(findtext(path.combat_practice, "в [HERETIC_LOCK_SHACKLES_RANGE] клетках") && findtext(path.combat_practice, "[HERETIC_LOCK_SHACKLES_DURATION / (1 SECONDS)] секунд в призрачных наручниках") && findtext(path.combat_practice, "[HERETIC_LOCK_SHACKLES_OTHER / (1 SECONDS)] секунды в призрачных наручниках"), "Полигон называет дальность и сроки наручников.")
+	TEST_ASSERT(findtext(shackles_text, "Любого другого замок держит [HERETIC_LOCK_SHACKLES_OTHER / (1 SECONDS)] секунды") && findtext(spell_desc, "любому другому на [HERETIC_LOCK_SHACKLES_OTHER / (1 SECONDS)] секунды") && findtext(cuffs.desc, "[HERETIC_LOCK_SHACKLES_OTHER / (1 SECONDS)]-[HERETIC_LOCK_SHACKLES_DURATION / (1 SECONDS)] секунд"), "Замок на руках называет короткие наручники для прочих.")
+	TEST_ASSERT(findtext(path.capture_summary, "на [HERETIC_LOCK_SHACKLES_OTHER / (1 SECONDS)] любому другому"), "Модель пути называет наручники для прочих.")
 	for(var/summary in list(shackles.summary, initial(spell.summary)))
-		TEST_ASSERT(findtext(summary, "Цели охоты [HERETIC_LOCK_SHACKLES_DURATION / (1 SECONDS)] секунд") && findtext(summary, "прочим [HERETIC_LOCK_SHACKLES_OTHER / (1 SECONDS)] секунды пут"), "Строка замка не обещает 12 секунд каждому: [summary]")
+		TEST_ASSERT(findtext(summary, "цели охоты на [HERETIC_LOCK_SHACKLES_DURATION / (1 SECONDS)] секунд") && findtext(summary, "любому другому на [HERETIC_LOCK_SHACKLES_OTHER / (1 SECONDS)]"), "Строка замка не обещает 12 секунд каждому: [summary]")
+	for(var/old_text in list(shackles_text, spell_desc, path.combat_practice, path.strengths, path.weaknesses))
+		TEST_ASSERT(!findtext(old_text, "путает ноги") && !findtext(old_text, "путах"), "Путы на ногах больше не обещаются: [old_text]")
 	TEST_ASSERT(findtext(key_text, "дальше [HERETIC_LOCK_DOOR_PASSAGE_RANGE] клеток") && findtext(key_text, "на болтах"), "Ключница называет дальность и болты.")
 	TEST_ASSERT(findtext(path.escape_summary, "в [HERETIC_LOCK_DOOR_PASSAGE_RANGE] клетках"), "Модель пути называет дальность перехода.")
 	var/datum/status_effect/heretic_lock_shackles/shackles_effect = /datum/status_effect/heretic_lock_shackles
-	for(var/shake_text in list(shackles_text, spell_desc, path.combat_practice, path.weaknesses, cuffs.desc, fetters.desc, initial(shackles_effect.examine_text)))
+	for(var/shake_text in list(shackles_text, spell_desc, path.combat_practice, path.weaknesses, cuffs.desc, initial(shackles_effect.examine_text)))
 		TEST_ASSERT(findtext(shake_text, "растолка") && findtext(shake_text, "[HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунд"), "Замок называет «растолкать»: [shake_text]")
 	TEST_ASSERT_EQUAL(path.knowledge[4], /datum/eldritch_knowledge/spell/lock_shackles, "Замок на руках на четвёртой ступени.")
 	TEST_ASSERT_EQUAL(path.knowledge[6], /datum/eldritch_knowledge/lock_mark, "Метка Замка на шестой ступени.")
@@ -1154,7 +1140,7 @@
 	TEST_ASSERT(findtext(knowledge.shackles_block_reason(user, inside), "сбитой с ног"), "Цель внутри Дома для замка не готова.")
 	TEST_ASSERT(findtext(knowledge.shackles_block_reason(user, outside), "сбитой с ног"), "Цель за оградой Дома не годится.")
 
-/// Дверь Замка: цель в своих наручниках или готовая у своего порога уводится за дверь при еретике рядом; стоящая, далёкая от порога и у чужого порога - нет; наручники держат цель охоты 12 секунд, прочим 3 секунды путают ноги без разоружения; выходы - свои пороги без сварки и болтов.
+/// Дверь Замка: цель в своих наручниках или готовая у своего порога уводится за дверь при еретике рядом; стоящая, далёкая от порога и у чужого порога - нет; наручники держат цель охоты 12 секунд, прочих 3 секунды и роняют оружие из рук; выходы - свои пороги без сварки и болтов.
 /datum/unit_test/heretic_lock_pocket_door/Run()
 	allocated += new /datum/heretic_test_station_level(run_loc_floor_bottom_left.z)
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
@@ -1202,16 +1188,16 @@
 	var/obj/item/melee/baton/weapon = allocate(/obj/item/melee/baton)
 	crew.put_in_hands(weapon)
 	var/datum/status_effect/heretic_lock_shackles/other_hold = crew.apply_status_effect(/datum/status_effect/heretic_lock_shackles, knowledge)
-	TEST_ASSERT(other_hold && abs(other_hold.duration - world.time - HERETIC_LOCK_SHACKLES_OTHER) < 1, "Не цель охоты спутана только на 3 секунды.")
-	TEST_ASSERT(istype(crew.legcuffed, /obj/item/restraints/legcuffs/heretic_lock) && isnull(crew.handcuffed), "Не цель охоты получает путы на ноги, а не наручники.")
-	TEST_ASSERT(weapon in crew.held_items, "Путы на ногах не обезоруживают.")
-	TEST_ASSERT(crew.has_movespeed_modifier(/datum/movespeed_modifier/equipment_speedmod), "Путы замедляют.")
-	TEST_ASSERT(findtext(knowledge.shackles_block_reason(user, crew, check_ready = FALSE), "уже спутаны"), "Второй замок на спутанного не ложится.")
-	var/obj/item/restraints/legcuffs/heretic_lock/fetters = crew.legcuffed
+	TEST_ASSERT(other_hold && abs(other_hold.duration - world.time - HERETIC_LOCK_SHACKLES_OTHER) < 1, "Не цель охоты скована только на 3 секунды.")
+	TEST_ASSERT(istype(crew.handcuffed, /obj/item/restraints/handcuffs/heretic_lock) && isnull(crew.legcuffed), "Не цель охоты тоже получает наручники, а не путы.")
+	TEST_ASSERT(!(weapon in crew.held_items) && isturf(weapon.loc), "Короткие наручники выбивают оружие из рук.")
+	var/atom/movable/screen/alert/crew_alert = crew.alerts["handcuffed"]
+	TEST_ASSERT(findtext(crew_alert?.desc, "пока не рассыплется") && !findtext(crew_alert?.desc, "[HERETIC_LOCK_SHACKLES_OTHER / (1 SECONDS)] секунд"), "Алерт скованного не выдаёт срок, а с ним и то, кто цель охоты: [crew_alert?.desc]")
+	TEST_ASSERT(findtext(knowledge.shackles_block_reason(user, crew, check_ready = FALSE), "уже в наручниках"), "Второй замок на скованного не ложится.")
+	var/obj/item/restraints/handcuffs/heretic_lock/short_cuffs = crew.handcuffed
 	qdel(other_hold)
-	TEST_ASSERT(QDELETED(fetters) && isnull(crew.legcuffed), "Путы исчезают вместе с замком.")
-	TEST_ASSERT(!crew.has_movespeed_modifier(/datum/movespeed_modifier/equipment_speedmod), "Без пут замедления нет.")
-	TEST_ASSERT_NULL(locate(/obj/item/restraints/legcuffs) in get_turf(crew), "Путы не остаются на полу.")
+	TEST_ASSERT(QDELETED(short_cuffs) && isnull(crew.handcuffed), "Наручники исчезают вместе с замком.")
+	TEST_ASSERT_NULL(locate(/obj/item/restraints/handcuffs) in get_turf(crew), "Наручники не остаются на полу.")
 
 	var/obj/machinery/door/airlock/second = allocate(/obj/machinery/door/airlock, locate(origin.x + 5, origin.y, origin.z))
 	TEST_ASSERT(knowledge.mark_door(user, second), "Второй шлюз стал порогом.")
@@ -1317,12 +1303,13 @@
 	TEST_ASSERT(pilot.IsKnockdown(), "Выброшенный пилот падает.")
 	TEST_ASSERT_NULL(mech.dna_lock, "Замок ДНК меха снят.")
 
-/// Ладонь в «Обезоружить» вынимает вещь из рюкзака цели в руку еретика; в других намерениях, с пустым рюкзаком и у защищённого от магии - нет.
+/// Ладонь в «Обезоружить» вынимает вещь из рюкзака цели в руку еретика; в других намерениях, с пустым рюкзаком, у защищённого от магии и у тела без игрока - нет.
 /datum/unit_test/heretic_lock_burglar/Run()
 	var/datum/antagonist/heretic/heretic = allocate_lock_palm()
 	var/mob/living/carbon/human/user = heretic.owner.current
 	var/datum/eldritch_knowledge/lock_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/lock_grasp)
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	victim.mock_client = new /datum/client_interface()
 	var/obj/item/storage/backpack/bag = allocate(/obj/item/storage/backpack)
 	TEST_ASSERT(victim.equip_to_slot_if_possible(bag, ITEM_SLOT_BACK), "Рюкзак надет.")
 	user.a_intent = INTENT_DISARM
@@ -1339,6 +1326,11 @@
 	qdel(protection)
 	TEST_ASSERT(grasp.on_mansus_grasp(victim, user, TRUE), "Ладонь в «Обезоружить» отпирает рюкзак.")
 	TEST_ASSERT(user.is_holding(loot), "Вещь из рюкзака в руке еретика.")
+	var/obj/item/pen/left_behind = allocate(/obj/item/pen)
+	TEST_ASSERT(SEND_SIGNAL(bag, COMSIG_TRY_STORAGE_INSERT, left_behind, null, TRUE, TRUE), "Вторая вещь в рюкзаке.")
+	victim.mock_client = null
+	TEST_ASSERT(!grasp.on_mansus_grasp(victim, user, TRUE), "Тело, оставленное игроком, Ладонь не обирает.")
+	TEST_ASSERT_EQUAL(left_behind.loc, bag, "Вещь осталась в рюкзаке ушедшего игрока.")
 
 /// Взрыв Метки Замка опускает на 6 секунд болты шлюзов комнаты цели: закрытый сразу, открытый пустой - захлопнув; шлюз другой комнаты и проём с человеком не трогает.
 /datum/unit_test/heretic_lock_mark_room/Run()
@@ -1413,7 +1405,7 @@
 	TEST_ASSERT(QDELETED(seal), "Жезл снимает печать.")
 	TEST_ASSERT_NULL(await_lock_seal(place, 0.5 SECONDS), "Снятая жезлом печать не встаёт.")
 
-/// Метка Замка висит на цели своим кольцом со скважиной, наручники и путы рисуются своим золотым замком, а штатный рисунок tg не проступает.
+/// Метка Замка висит на цели своим кольцом со скважиной, наручники рисуются своим золотым замком, а штатный рисунок tg не проступает; в руке у них свой рисунок.
 /datum/unit_test/heretic_lock_own_visuals/Run()
 	var/datum/status_effect/eldritch/lock/mark_type = /datum/status_effect/eldritch/lock
 	var/mark_icon = initial(mark_type.effect_sprite_icon)
@@ -1428,9 +1420,10 @@
 	var/list/tg_states = icon_states('icons/mob/clothing/restraints.dmi')
 	for(var/mob/living/carbon/human/prisoner as anything in list(victim, crew))
 		var/datum/status_effect/heretic_lock_shackles/hold = prisoner.apply_status_effect(/datum/status_effect/heretic_lock_shackles, knowledge)
-		var/obj/item/restraints/cuffs = prisoner.handcuffed || prisoner.legcuffed
+		var/obj/item/restraints/cuffs = prisoner.handcuffed
 		TEST_ASSERT(hold && cuffs, "[prisoner] скован.")
 		TEST_ASSERT(!(cuffs.item_state in tg_states), "Штатный рисунок [cuffs.item_state] не проступает.")
+		TEST_ASSERT((cuffs.item_state in icon_states(cuffs.lefthand_file)) && (cuffs.item_state in icon_states(cuffs.righthand_file)), "В обеих руках у наручников есть рисунок [cuffs.item_state].")
 		TEST_ASSERT(cuffs.icon_state in icon_states(cuffs.icon), "Значок [cuffs.icon_state] есть в листе.")
 		var/found = FALSE
 		for(var/mutable_appearance/overlay as anything in prisoner.overlays)
@@ -1470,7 +1463,7 @@
 	for(var/obj/effect/temp_visual/heretic_lock/flash in seal_spot)
 		TEST_ASSERT(flash.type != /obj/effect/temp_visual/heretic_lock, "Печать не вспыхивает хваткой.")
 
-/// Призрачные оковы и путы нельзя унести в руке: снятые чужими руками, они рассыпаются, а не ложатся в ладонь.
+/// Призрачные наручники нельзя унести в руке: снятые чужими руками, они рассыпаются, а не ложатся в ладонь.
 /datum/unit_test/heretic_lock_restraints_never_held/Run()
 	var/turf/origin = run_loc_floor_bottom_left
 	var/datum/antagonist/heretic/heretic = allocate_lock_palm(origin)
@@ -1478,12 +1471,12 @@
 	var/mob/living/carbon/human/helper = allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y, origin.z))
 	var/mob/living/carbon/human/passerby = allocate(/mob/living/carbon/human, locate(origin.x + 1, origin.y, origin.z))
 	passerby.apply_status_effect(/datum/status_effect/heretic_lock_shackles, knowledge)
-	var/obj/item/restraints/legcuffs/heretic_lock/fetters = passerby.legcuffed
-	TEST_ASSERT(istype(fetters), "Прохожему замок путает ноги.")
-	finish_unequip_mob(fetters, passerby, helper)
-	TEST_ASSERT_NULL(passerby.legcuffed, "Помощник снимает путы.")
-	TEST_ASSERT(QDELETED(fetters), "Снятые путы рассыпаются.")
-	TEST_ASSERT(isnull(helper.get_active_held_item()) && isnull(helper.get_inactive_held_item()), "Путы не ложатся в руку помощника.")
+	var/obj/item/restraints/handcuffs/heretic_lock/short_cuffs = passerby.handcuffed
+	TEST_ASSERT(istype(short_cuffs), "Прохожему замок сковывает руки.")
+	finish_unequip_mob(short_cuffs, passerby, helper)
+	TEST_ASSERT_NULL(passerby.handcuffed, "Помощник снимает короткие наручники.")
+	TEST_ASSERT(QDELETED(short_cuffs), "Снятые короткие наручники рассыпаются.")
+	TEST_ASSERT(isnull(helper.get_active_held_item()) && isnull(helper.get_inactive_held_item()), "Короткие наручники не ложатся в руку помощника.")
 	var/mob/living/carbon/human/target = allocate_hunt_victim(heretic, locate(origin.x + 1, origin.y + 1, origin.z))
 	target.apply_status_effect(/datum/status_effect/heretic_lock_shackles, knowledge)
 	var/obj/item/restraints/handcuffs/heretic_lock/manacles = target.handcuffed
@@ -1492,3 +1485,167 @@
 	TEST_ASSERT_NULL(target.handcuffed, "Помощник снимает наручники.")
 	TEST_ASSERT(QDELETED(manacles), "Снятые наручники рассыпаются.")
 	TEST_ASSERT(isnull(helper.get_active_held_item()) && isnull(helper.get_inactive_held_item()), "Наручники не ложатся в руку помощника.")
+
+/// Петли лабиринта: рука в «Обезоружить» поворачивает свою печать на клетку дальше и отталкивает врага; упёртый враг остаётся в клетке печати; повёрнутая не захлопывается снова, захлопнувшаяся не поворачивается; без Петель и на откате поворота нет.
+/datum/unit_test/heretic_lock_hinge_swing/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_LOCK
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_lock)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_lock/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_lock)
+	knowledge.gain_combat_resource(10)
+	knowledge.hinge_delay = 1
+	var/turf/origin = get_turf(user)
+	var/turf/seal_spot = get_step(origin, EAST)
+	var/turf/target_spot = get_step(seal_spot, EAST)
+	var/turf/beyond = get_step(target_spot, EAST)
+	var/obj/structure/heretic_lock_seal/seal = knowledge.create_seal(seal_spot, user)
+	TEST_ASSERT_NOTNULL(seal, "Печать стоит.")
+	allocated += seal
+	var/mob/living/carbon/human/guard = allocate(/mob/living/carbon/human, target_spot)
+	swing_by_hand(user, seal)
+	TEST_ASSERT_EQUAL(seal.loc, seal_spot, "Без Петель печать не поворачивается.")
+	TEST_ASSERT(findtext(knowledge.lock_failure, "Петли лабиринта"), "Отказ называет Петли: [knowledge.lock_failure]")
+	TEST_ASSERT(!QDELETED(seal) && seal.obj_integrity == seal.max_integrity, "Своя рука в «Обезоружить» печать не бьёт.")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/lock_hinges)
+	swing_by_hand(user, seal)
+	TEST_ASSERT_EQUAL(seal.loc, target_spot, "Печать повернулась на клетку дальше от еретика.")
+	TEST_ASSERT_EQUAL(guard.loc, beyond, "Стоявшего там врага печать оттолкнула.")
+	TEST_ASSERT(seal.rehinged, "Повёрнутая печать израсходовала петли.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_lock_click) in target_spot, "Над повёрнутой печатью щёлкает замок.")
+	user.forceMove(seal_spot)
+	swing_by_hand(user, seal)
+	TEST_ASSERT_EQUAL(seal.loc, target_spot, "Повёрнутая печать второй раз не поворачивается.")
+	seal.take_damage(500, BRUTE, MELEE)
+	TEST_ASSERT(QDELETED(seal), "Повёрнутая печать разбита.")
+	TEST_ASSERT_NULL(await_lock_seal(target_spot, 0.5 SECONDS), "Повёрнутая печать не захлопывается снова.")
+	COOLDOWN_RESET(knowledge, hinge_swing)
+	user.forceMove(origin)
+	guard.forceMove(target_spot)
+	var/obj/structure/wall_piece = allocate(/obj/structure, beyond)
+	wall_piece.density = TRUE
+	wall_piece.anchored = TRUE
+	var/obj/structure/heretic_lock_seal/second = knowledge.create_seal(seal_spot, user)
+	swing_by_hand(user, second)
+	TEST_ASSERT_EQUAL(second.loc, target_spot, "Печать поворачивается и к упёртому в стену врагу.")
+	TEST_ASSERT_EQUAL(guard.loc, target_spot, "Упёртый враг остаётся на месте.")
+	TEST_ASSERT(knowledge.held_by_seals(guard), "Неоттолкнутый враг оказался в клетке печати.")
+	qdel(second)
+	var/obj/structure/heretic_lock_seal/third = knowledge.create_seal(seal_spot, user)
+	swing_by_hand(user, third)
+	TEST_ASSERT_EQUAL(third.loc, seal_spot, "На откате поворот не срабатывает.")
+	TEST_ASSERT(findtext(knowledge.lock_failure, "не готовы"), "Отказ называет откат: [knowledge.lock_failure]")
+	COOLDOWN_RESET(knowledge, hinge_swing)
+	qdel(guard)
+	var/obj/structure/blocker = allocate(/obj/structure, target_spot)
+	blocker.density = TRUE
+	swing_by_hand(user, third)
+	TEST_ASSERT_EQUAL(third.loc, seal_spot, "В стену печать не поворачивается.")
+	TEST_ASSERT(findtext(knowledge.lock_failure, "свободного пола"), "Отказ называет преграду: [knowledge.lock_failure]")
+	qdel(blocker)
+	var/obj/structure/window/pane = allocate(/obj/structure/window, seal_spot)
+	pane.setDir(EAST)
+	swing_by_hand(user, third)
+	TEST_ASSERT_EQUAL(third.loc, seal_spot, "Сквозь окно на своей клетке печать не поворачивается.")
+	TEST_ASSERT(findtext(knowledge.lock_failure, "Окно"), "Отказ называет окно: [knowledge.lock_failure]")
+	qdel(pane)
+	third.rehinged = TRUE
+	swing_by_hand(user, third)
+	TEST_ASSERT_EQUAL(third.loc, seal_spot, "Захлопнувшаяся печать не поворачивается.")
+	var/datum/eldritch_knowledge/lock_hinges/hinges = heretic.get_knowledge(/datum/eldritch_knowledge/lock_hinges)
+	TEST_ASSERT(findtext(jointext(hinges.details, " "), "«Обезоружить»") && findtext(jointext(hinges.details, " "), "[HERETIC_LOCK_HINGE_SWING_COOLDOWN / (1 SECONDS)] секунд"), "Петли описывают поворот и его откат.")
+	TEST_ASSERT(findtext(third.desc, "повернуть печать"), "Осмотр печати называет поворот.")
+
+/// Значок ключей подписывает, что сделает Хватка в текущем намерении, и обновляется каждый тик жизни.
+/datum/unit_test/heretic_lock_grasp_modes/Run()
+	var/datum/antagonist/heretic/heretic = allocate_lock_palm()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_lock/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_lock)
+	var/list/expected = list(INTENT_HELP = "порог", INTENT_DISARM = "обокрасть", INTENT_GRAB = "отпереть", INTENT_HARM = "запереть")
+	for(var/intent in expected)
+		user.a_intent = intent
+		knowledge.on_life(user)
+		var/atom/movable/screen/alert/heretic_resource/indicator = user.alerts["heretic_path_resource"]
+		TEST_ASSERT(findtext(indicator?.name, expected[intent]), "Значок в намерении [intent] называет «[expected[intent]]»: [indicator?.name]")
+		var/list/resource = knowledge.get_combat_resource_data()
+		TEST_ASSERT(findtext(resource["state"], "Хватка"), "Состояние объясняет Хватку в намерении [intent]: [resource["state"]]")
+	user.a_intent = INTENT_HARM
+	var/list/harm_resource = knowledge.get_combat_resource_data()
+	TEST_ASSERT(findtext(harm_resource["state"], "болты"), "Режим вреда называет болты: [harm_resource["state"]]")
+	var/datum/antagonist/heretic/novice = allocate_heretic(locate(user.x + 2, user.y, user.z))
+	novice.selected_path = PATH_LOCK
+	novice.gain_knowledge(/datum/eldritch_knowledge/base_lock)
+	var/datum/eldritch_knowledge/base_lock/novice_lock = novice.get_knowledge(/datum/eldritch_knowledge/base_lock)
+	novice.owner.current.a_intent = INTENT_HARM
+	var/list/novice_resource = novice_lock.get_combat_resource_data()
+	TEST_ASSERT(findtext(novice_resource["name"], "удар"), "Без Ладони во вреде Хватка только бьёт: [novice_resource["name"]]")
+
+/// Ладонь доходит до меха и рюкзака настоящим щелчком Хватки: пилот выброшен, вещь из рюкзака в руке еретика, а над жертвой щёлкает замок-улика.
+/datum/unit_test/heretic_lock_palm_click_path/Run()
+	var/turf/origin = run_loc_floor_bottom_left
+	var/datum/antagonist/heretic/heretic = allocate_lock_palm(locate(origin.x + 1, origin.y + 1, origin.z))
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/obj/vehicle/sealed/mecha/working/ripley/mech = allocate(/obj/vehicle/sealed/mecha/working/ripley, locate(origin.x + 2, origin.y + 1, origin.z))
+	var/mob/living/carbon/human/pilot = allocate(/mob/living/carbon/human, get_turf(mech))
+	pilot.forceMove(mech)
+	mech.add_occupant(pilot)
+	var/obj/item/melee/touch_attack/mansus_fist/fist = allocate(/obj/item/melee/touch_attack/mansus_fist)
+	user.put_in_hands(fist)
+	user.a_intent = INTENT_HARM
+	user.next_action = 0
+	fist.melee_attack_chain(user, mech)
+	TEST_ASSERT(!(pilot in mech.occupants) && isturf(pilot.loc), "Щелчок Хваткой по меху выбрасывает пилота.")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, locate(origin.x + 1, origin.y + 2, origin.z))
+	victim.mock_client = new /datum/client_interface()
+	var/obj/item/storage/backpack/bag = allocate(/obj/item/storage/backpack)
+	TEST_ASSERT(victim.equip_to_slot_if_possible(bag, ITEM_SLOT_BACK), "Рюкзак надет.")
+	var/obj/item/pen/loot = allocate(/obj/item/pen)
+	TEST_ASSERT(SEND_SIGNAL(bag, COMSIG_TRY_STORAGE_INSERT, loot, null, TRUE, TRUE), "Вещь в рюкзаке.")
+	if(!QDELETED(fist))
+		qdel(fist)
+	fist = allocate(/obj/item/melee/touch_attack/mansus_fist)
+	user.put_in_hands(fist)
+	user.a_intent = INTENT_DISARM
+	user.next_action = 0
+	fist.melee_attack_chain(user, victim)
+	TEST_ASSERT(user.is_holding(loot), "Щелчок Хваткой в «Обезоружить» вынимает вещь из рюкзака.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_lock_click) in get_turf(victim), "Над обокраденным щёлкает замок-улика.")
+
+/datum/unit_test/heretic_lock_hinge_swing/proc/swing_by_hand(mob/living/user, obj/structure/heretic_lock_seal/seal)
+	user.next_action = 0
+	seal.attack_hand(user, INTENT_DISARM)
+
+/// Диагональный поворот печати не протаскивает врага через лаву на углу: Move делит шаг на два прямых, и враг остаётся в клетке печати.
+/datum/unit_test/heretic_lock_hinge_swing/diagonal_hazard/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_LOCK
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_lock)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/lock_hinges)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_lock/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_lock)
+	knowledge.gain_combat_resource(10)
+	var/turf/seal_spot = get_step(user, NORTHEAST)
+	var/turf/target_spot = get_step(seal_spot, NORTHEAST)
+	var/obj/structure/heretic_lock_seal/seal = knowledge.create_seal(seal_spot, user)
+	TEST_ASSERT_NOTNULL(seal, "Печать стоит.")
+	allocated += seal
+	var/mob/living/carbon/human/guard = allocate(/mob/living/carbon/human, target_spot)
+	var/datum/unit_test_move_probe/probe = allocate(/datum/unit_test_move_probe)
+	probe.RegisterSignal(guard, COMSIG_MOVABLE_MOVED, TYPE_PROC_REF(/datum/unit_test_move_probe, on_moved))
+	var/list/lava = list()
+	var/list/old_types = list()
+	for(var/direction in list(NORTH, EAST))
+		var/turf/side = get_step(target_spot, direction)
+		old_types += side.type
+		lava += side.ChangeTurf(/turf/open/lava/smooth, flags = CHANGETURF_INHERIT_AIR)
+	swing_by_hand(user, seal)
+	var/crossed_lava = length(probe.visited & lava)
+	var/turf/guard_spot = get_turf(guard)
+	probe.UnregisterSignal(guard, COMSIG_MOVABLE_MOVED)
+	for(var/index in 1 to length(lava))
+		var/turf/side = lava[index]
+		side.ChangeTurf(old_types[index], flags = CHANGETURF_INHERIT_AIR)
+	TEST_ASSERT_EQUAL(seal.loc, target_spot, "Печать повернулась по диагонали.")
+	TEST_ASSERT(!crossed_lava, "Печать не протаскивает врага через лаву на углу диагонали.")
+	TEST_ASSERT_EQUAL(guard_spot, target_spot, "Враг остался в клетке печати.")
+	TEST_ASSERT(knowledge.held_by_seals(guard), "Неоттолкнутого врага держит повёрнутая печать.")

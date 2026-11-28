@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { combineReducers, createStore, setGlobalStore } from 'common/redux';
 
 import { backendReducer, backendUpdate } from '../backend';
-import { ForbiddenLoreContent, ForbiddenLoreData } from './ForbiddenLore';
+import { bookRectoPaths, ForbiddenLoreContent, ForbiddenLoreData } from './ForbiddenLore';
 
 const makeData = (overrides: Partial<ForbiddenLoreData> = {}): ForbiddenLoreData => {
   const paths = [
@@ -10,7 +10,7 @@ const makeData = (overrides: Partial<ForbiddenLoreData> = {}): ForbiddenLoreData
     ['Blade', 'Клинок'], ['Moon', 'Луна'], ['Cosmic', 'Космос'],
     ['Lock', 'Замок'], ['Tide', 'Пучина'], ['Glass', 'Стекло'], ['Blood', 'Кровь'],
     ['Echo', 'Эхо'], ['Sand', 'Песок'], ['Wax', 'Воск'], ['Spirit', 'Дух'],
-    ['Dance', 'Пляска'],
+    ['Dance', 'Пляска'], ['Lead', 'Свинец'], ['Dusk', 'Сумрак'], ['Hammer', 'Молот'],
   ].map(([id, name]) => ({
     id, name, desc: `Учение: ${name}.`, strengths: ['Своя тактика.'], weaknesses: ['Своя уязвимость.'],
     innate_name: `Черта: ${name}`, innate_desc: `Врождённое свойство: ${name}.`,
@@ -52,7 +52,7 @@ const makeData = (overrides: Partial<ForbiddenLoreData> = {}): ForbiddenLoreData
       target_name: null, target_role: null, target_status: 'Цели ещё нет.',
       can_retarget: true, retarget_seconds: 0, sacrifices_required: 5,
       influences_harvested: 0, influence_limit: 6,
-      pocket: { duration: 40, warning: 10, pull: 1, tear: 10, cooldown: 60, hold: 3, grip: 3, shake: 2 },
+      pocket: { duration: 40, warning: 10, pull: 1, tear: 10, cooldown: 60, hold: 3, grip: 3, shake: 2, breach: 2 },
     },
     ...overrides,
   };
@@ -360,6 +360,91 @@ describe('Гримуар еретика', () => {
     expect(screen.getByText('Speculum sine Facie')).toBeTruthy();
   });
 
+  test('у корешка обе страницы гасят рамку, свою правую страницу путь задаёт отдельной картинкой', async () => {
+    setupStore(makeData({ selected_path: 'Blood' }));
+    const view = await renderBook();
+    const root = view.container.querySelector('[data-book-path="Blood"]') as HTMLElement;
+    expect(root.style.getPropertyValue('--book-material')).toMatch(/heretic-blood\.webp/);
+    expect(root.style.getPropertyValue('--book-material-recto')).toMatch(/heretic-blood-recto\.webp/);
+    expect(view.container.querySelectorAll('.HereticBook__page > .HereticBook__gutter[aria-hidden="true"]')).toHaveLength(2);
+    view.unmount();
+    // Своего правого листа теперь нет ни у одного пути, поэтому общий случай проверяется на пути, вынутом из набора
+    bookRectoPaths.delete('Blood');
+    try {
+      const plain = await renderBook();
+      const plainRoot = plain.container.querySelector('[data-book-path="Blood"]') as HTMLElement;
+      expect(plainRoot.style.getPropertyValue('--book-material-recto')).toBe('');
+      expect(plainRoot.style.getPropertyValue('--book-material')).toMatch(/heretic-blood\.webp/);
+    } finally {
+      bookRectoPaths.add('Blood');
+    }
+  });
+
+  test.each([['Lock', 'key'], ['Void', 'frost'], ['Lead', 'smoke'], ['Hammer', 'glow'], ['Hammer', 'sparks'], ['Ash', 'flame'], ['Ash', 'ember'], ['Rust', 'gear'], ['Rust', 'drop'], ['Flesh', 'flap'], ['Flesh', 'veins'], ['Blade', 'glint'], ['Moon', 'smile'], ['Cosmic', 'pricks'], ['Tide', 'flood'], ['Blood', 'drop'], ['Echo', 'staff'], ['Echo', 'answer'], ['Sand', 'trickle'], ['Sand', 'gust'], ['Wax', 'drip'], ['Wax', 'face'], ['Spirit', 'name'], ['Spirit', 'damp'], ['Dance', 'steps'], ['Dance', 'notes']])('%s: книга мастерской - свой правый лист, слой события и без старой рамки', async (path, sheet) => {
+    setupStore(makeData({ selected_path: path }));
+    const view = await renderBook();
+    const root = view.container.querySelector(`[data-book-path="${path}"]`) as HTMLElement;
+    const lower = path.toLowerCase();
+    expect(root.classList.contains('HereticBook--workshop')).toBe(true);
+    expect(root.style.getPropertyValue('--book-material-recto')).toContain(`heretic-${lower}-recto.webp`);
+    expect(root.style.getPropertyValue(`--${lower}-anim-${sheet}`)).toContain(`heretic-${lower}-anim-${sheet}.webp`);
+    expect(view.container.querySelector('.HereticBook__pageOrnament')).toBeNull();
+    expect(view.container.querySelector('.HereticBookAtmosphere--workshop')).toBeTruthy();
+  });
+
+  test('Стекло: книга мастерской без листов событий - оба события рисуются в стилях', async () => {
+    setupStore(makeData({ selected_path: 'Glass' }));
+    const view = await renderBook();
+    const root = view.container.querySelector('[data-book-path="Glass"]') as HTMLElement;
+    expect(root.classList.contains('HereticBook--workshop')).toBe(true);
+    expect(root.style.getPropertyValue('--book-material-recto')).toContain('heretic-glass-recto.webp');
+    expect(root.getAttribute('style')).not.toContain('-anim-');
+    expect(view.container.querySelector('.HereticBook__pageOrnament')).toBeNull();
+  });
+
+  test('книга не из мастерской остаётся при своей рамке и без слоёв событий мастерской', async () => {
+    setupStore(makeData({ selected_path: 'Dusk', book: { name: 'Часослов', title: 'Часослов падшего света', subtitle: '', path: 'Dusk', cover_state: 'dusk' } }));
+    const view = await renderBook();
+    const root = view.container.querySelector('[data-book-path="Dusk"]') as HTMLElement;
+    expect(root.classList.contains('HereticBook--workshop')).toBe(false);
+    expect(root.getAttribute('style')).not.toContain('-anim-');
+    expect(view.container.querySelector('.HereticBook__pageOrnament')).toBeTruthy();
+  });
+
+  test('книга Сумрака живёт на полях и кончает главы гравюрами-сценами, другая книга - прежним завитком', async () => {
+    const dusk = { name: 'Часослов', title: 'Часослов падшего света', subtitle: '', path: 'Dusk', cover_state: 'dusk' };
+    const data = makeData({ selected_path: 'Dusk', book: dusk });
+    const { store } = setupStore(data);
+    const view = await renderBook();
+    const pages = view.container.querySelectorAll('.HereticBook__page');
+    expect(pages).toHaveLength(2);
+    pages.forEach((page) => {
+      const life = page.querySelector('.HereticBook__duskLife') as HTMLElement;
+      expect(life.getAttribute('aria-hidden')).toBe('true');
+      expect(page.querySelector('.HereticBook__duskLife > .HereticBook__duskEye')).toBeTruthy();
+      expect(page.querySelectorAll('.HereticBook__duskMargin > i')).toHaveLength(4);
+      for (const sheet of ['blot', 'drip', 'ember', 'eye', 'line', 'wing']) {
+        expect(life.style.getPropertyValue(`--dusk-anim-${sheet}`)).toContain(`heretic-dusk-anim-${sheet}.webp`);
+      }
+    });
+    const scene = (name: string) => view.container.querySelector(`.HereticBook__scene--${name}`);
+    expect(scene('sun')?.getAttribute('style')).toContain('heretic-scene-dusk-sun.webp');
+    expect(view.container.querySelector('.HereticBook__tailpiece')).toBeNull();
+    fireEvent.click(screen.getByRole('tab', { name: 'Ритуалы' }));
+    expect(scene('halo')?.getAttribute('style')).toContain('heretic-scene-dusk-halo.webp');
+    fireEvent.click(screen.getByRole('tab', { name: 'Путь' }));
+    expect(scene('shadow')?.getAttribute('style')).toContain('heretic-scene-dusk-shadow.webp');
+    const root = view.container.querySelector('[data-book-path="Dusk"]') as HTMLElement;
+    expect(root.style.getPropertyValue('--book-material-recto')).toMatch(/heretic-dusk-recto\.webp/);
+
+    store.dispatch(backendUpdate({ data: { ...data, selected_path: 'Blood', book: { ...dusk, title: 'Кровь', path: 'Blood', cover_state: 'blood' } } }));
+    view.rerender(<ForbiddenLoreContent />);
+    expect(view.container.querySelector('.HereticBook__duskLife')).toBeNull();
+    expect(view.container.querySelector('.HereticBook__scene')).toBeNull();
+    expect(view.container.querySelector('.HereticBook__tailpiece')).toBeTruthy();
+    expect((view.container.querySelector('[data-book-path="Blood"]') as HTMLElement).style.getPropertyValue('--book-material-recto')).toMatch(/heretic-blood-recto\.webp/);
+  });
+
   test('показывает неизученный рецепт и обновляет его доступность без потери выбора', async () => {
     const data = makeData({ selected_path: 'Ash', path_stage: 1 });
     const knowledgeState = Object.fromEntries(data.knowledge.map((entry) => [entry.id, {
@@ -463,7 +548,7 @@ describe('Гримуар еретика', () => {
     await renderBook();
     expect(topic).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('tab', { name: 'Путь' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Пепел' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Как выбрать путь' }));
     expect(topic).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Луна' }));
     fireEvent.click(screen.getByRole('button', { name: 'Луна' }));
@@ -478,21 +563,21 @@ describe('Гримуар еретика', () => {
   test.each([
     ['Cosmic', 'Космос'], ['Glass', 'Стекло'], ['Blood', 'Кровь'],
     ['Echo', 'Эхо'], ['Sand', 'Песок'], ['Wax', 'Воск'], ['Spirit', 'Дух'],
-    ['Dance', 'Пляска'],
+    ['Dance', 'Пляска'], ['Lead', 'Свинец'], ['Dusk', 'Сумрак'], ['Hammer', 'Молот'],
   ])('%s: показывает все пути, подтверждает обет и отправляет только идентификатор знания', async (path, name) => {
     const data = makeData();
     const { topic } = setupStore(data);
     await renderBook();
     const index = screen.getByRole('navigation', { name: 'Пути Мансуса' });
-    expect(within(index).getAllByRole('button')).toHaveLength(16);
-    expect(within(index).getByText('XVI')).toBeTruthy();
+    expect(within(index).getAllByRole('button')).toHaveLength(19);
+    expect(screen.getByRole('heading', { name: 'Как выбрать путь' })).toBeTruthy();
     fireEvent.click(within(index).getByRole('button', { name }));
     expect(screen.getByRole('heading', { name })).toBeTruthy();
     fireEvent.click(screen.getByText('Все ступени пути'));
     expect(within(screen.getByText('Все ступени пути').closest('details')!).getByText(`Искусство: ${name}`)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Принять этот путь' }));
     expect(readActions(topic)).toHaveLength(0);
-    const confirm = screen.getByRole('button', { name: 'Ещё раз, и пути назад не будет' });
+    const confirm = screen.getByRole('button', { name: 'Нажмите ещё раз, чтобы принять путь' });
     expect(confirm.classList.contains('HereticBook__seal--armed')).toBe(true);
     fireEvent.click(confirm);
     expect(readActions(topic)).toEqual([{
@@ -503,8 +588,9 @@ describe('Гримуар еретика', () => {
   test('клик мимо снимает взведённый выбор пути без отправки', async () => {
     const { topic } = setupStore(makeData());
     await renderBook();
+    fireEvent.click(screen.getByRole('button', { name: 'Пепел' }));
     fireEvent.click(screen.getByRole('button', { name: 'Принять этот путь' }));
-    expect(screen.getByRole('button', { name: 'Ещё раз, и пути назад не будет' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Нажмите ещё раз, чтобы принять путь' })).toBeTruthy();
     act(() => { fireEvent.click(document.body); });
     const idle = screen.getByRole('button', { name: 'Принять этот путь' });
     expect(idle.classList.contains('HereticBook__seal--armed')).toBe(false);
@@ -520,6 +606,81 @@ describe('Гримуар еретика', () => {
     expect(screen.getByRole('heading', { name: 'Луна' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Принять этот путь' })).toBeNull();
     expect(screen.getByText('Ваш путь уже выбран. Остальные можно только читать.')).toBeTruthy();
+  });
+
+  const roleExit = (overrides = {}) => ({ can_reset: true, can_abandon: true, reset_window: 10, abandon_window: 10, ...overrides });
+
+  test('выбранный путь можно сменить вторым нажатием, пока сервер это разрешает', async () => {
+    const { topic } = setupStore(makeData({ selected_path: 'Ash', path_stage: 1, role_exit: roleExit() }));
+    await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Путь' }));
+    expect(screen.getByText(/его можно один раз сменить на странице этого пути/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Сменить путь' }));
+    expect(readActions(topic)).toHaveLength(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Ещё раз: отпустить этот путь' }));
+    expect(readActions(topic)).toEqual([{ type: 'act/reset_path', payload: {} }]);
+  });
+
+  test('без разрешения сервера кнопки смены пути нет, а на чужом пути её нет никогда', async () => {
+    setupStore(makeData({ selected_path: 'Ash', path_stage: 1, role_exit: roleExit({ can_reset: false, reset_reason: 'После первой жертвы дороги назад нет.' }) }));
+    const view = await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Путь' }));
+    expect(screen.queryByRole('button', { name: 'Сменить путь' })).toBeNull();
+    expect(screen.getByText('Ваш путь уже выбран. Остальные можно только читать.')).toBeTruthy();
+    view.unmount();
+    setupStore(makeData({ selected_path: 'Ash', path_stage: 1, role_exit: roleExit() }));
+    await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Путь' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Луна' }));
+    expect(screen.queryByRole('button', { name: 'Сменить путь' })).toBeNull();
+  });
+
+  test('от роли можно отказаться в разделе Начало, а после срока видна причина', async () => {
+    const { topic } = setupStore(makeData({ role_exit: roleExit() }));
+    const view = await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
+    const section = within(screen.getByRole('region', { name: 'Отказ от роли' }));
+    fireEvent.click(section.getByRole('button', { name: 'Отказаться от роли' }));
+    expect(readActions(topic)).toHaveLength(0);
+    fireEvent.click(section.getByRole('button', { name: 'Ещё раз: перестать быть еретиком' }));
+    expect(readActions(topic)).toEqual([{ type: 'act/abandon_role', payload: {} }]);
+    view.unmount();
+    setupStore(makeData({ role_exit: roleExit({ can_abandon: false, abandon_reason: 'После первой жертвы дороги назад нет.' }) }));
+    await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
+    const closed = within(screen.getByRole('region', { name: 'Отказ от роли' }));
+    expect(closed.queryByRole('button')).toBeNull();
+    expect(closed.getByText('После первой жертвы дороги назад нет.')).toBeTruthy();
+  });
+
+  test('пока сброс возможен, выбор пути обещает смену; после сброса и на полигоне выбор окончательный', async () => {
+    setupStore(makeData({ role_exit: roleExit({ reset_possible: 1 }) }));
+    const view = await renderBook();
+    expect(screen.getAllByText(/Сменить путь можно лишь раз/).length).toBeGreaterThan(0);
+    expect(within(screen.getByRole('list', { name: 'Как выбрать путь' })).getByText(/один раз сменить в первые 10 мин/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Пепел' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Принять этот путь' }));
+    expect(screen.getByRole('button', { name: 'Нажмите ещё раз, чтобы принять путь' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
+    expect(screen.getByRole('list', { name: 'Первые пять минут' }).textContent).toMatch(/один раз сменить на его странице/);
+    expect(screen.queryByText(/М\$ не вернутся|М\$ за него не вернутся/)).toBeNull();
+    view.unmount();
+
+    const { topic } = setupStore(makeData({ role_exit: roleExit({ reset_possible: 0, token_role: 1 }) }));
+    await renderBook();
+    expect(screen.queryByText(/Сменить путь можно лишь раз/)).toBeNull();
+    expect(screen.getAllByText(/Выбор окончательный: сменить путь в кодексе уже нельзя/).length).toBeGreaterThan(0);
+    expect(within(screen.getByRole('list', { name: 'Как выбрать путь' })).getByText(/Выбор окончательный/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Пепел' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Принять этот путь' }));
+    expect(screen.getByRole('button', { name: 'Ещё раз, и пути назад не будет' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
+    expect(screen.getByRole('list', { name: 'Первые пять минут' }).textContent).not.toMatch(/один раз сменить/);
+    const section = within(screen.getByRole('region', { name: 'Отказ от роли' }));
+    expect(section.getByText('Роль куплена жетоном: при отказе М$ за него не вернутся.')).toBeTruthy();
+    fireEvent.click(section.getByRole('button', { name: 'Отказаться от роли' }));
+    fireEvent.click(section.getByRole('button', { name: 'Ещё раз: отказаться, М$ не вернутся' }));
+    expect(readActions(topic)).toEqual([{ type: 'act/abandon_role', payload: {} }]);
   });
 
   test('дерево сохраняет закрытые ступени и объясняет причину блокировки', async () => {
@@ -712,7 +873,7 @@ describe('Гримуар еретика', () => {
 
   test('помощь объясняет изнанку числами сервера, а тема охоты ведёт к ней', async () => {
     const data = makeData();
-    data.hunt.pocket = { duration: 35, warning: 7, pull: 2, tear: 12, cooldown: 90, hold: 4, grip: 5, shake: 6 };
+    data.hunt.pocket = { duration: 35, warning: 7, pull: 2, tear: 12, cooldown: 90, hold: 4, grip: 5, shake: 6, breach: 3 };
     setupStore(data);
     await renderBook();
     fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
@@ -724,6 +885,7 @@ describe('Гримуар еретика', () => {
     expect(within(topic()).getByText(/цель 4 сек\. не может двинуться/)).toBeTruthy();
     expect(within(topic()).getByText(/прижимает её к полу до 5 сек\.: .* растолкать можно за 6 сек\./)).toBeTruthy();
     expect(within(topic()).getByText(/руками его можно разорвать за 12 сек\. Снова открыть изнанку можно через 90 сек\./)).toBeTruthy();
+    expect(within(topic()).getByText(/отдача оглушает вас там на 3 сек\./)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'изнанке', hidden: true }));
     expect(topic().open).toBe(true);
   });
@@ -839,22 +1001,25 @@ describe('Структурированный кодекс', () => {
     expect(view.container.querySelectorAll('[class*="HereticBook__role"]')).toHaveLength(0);
   });
 
-  test('путь показывает лид, ремесло, захват и уход абзацами, стороны списками и совет, а старый путь - прежние тексты', async () => {
-    const data = makeData();
+  test('выбранный путь показывает лид, ремесло, захват и уход абзацами, все стороны и совет, а старый путь - прежние тексты', async () => {
+    const data = makeData({ selected_path: 'Glass', path_stage: 1 });
     const glass = data.paths.find((path) => path.id === 'Glass')!;
     Object.assign(glass, {
       tagline: 'Смотрит через окна и запирает жертву в витраж.',
       craft: 'Хваткой настройте окно.', capture: 'Витраж на 10 секунд.', escape: 'Шаг сквозь своё окно.',
-      strength_points: ['Глаза по всей станции.', 'Луч без подготовки.', 'Саркофаг для обряда.'],
+      strength_points: ['Глаза по всей станции.', 'Луч без подготовки.', 'Саркофаг для обряда.', 'Призмы бьют из-за угла.'],
       weakness_points: ['Нулевой жезл снимает настройку.', 'Витраж видно заранее.', 'Удары бьют сильнее.'],
       practice: 'Настройте окно и шагните сквозь него.',
+      robe_armor: 'Крепче против лазеров и энергии, слабее против ударов и пуль.',
     });
     setupStore(data);
     await renderBook();
-    fireEvent.click(screen.getByRole('button', { name: 'Стекло' }));
-    expect(screen.getByText(glass.tagline!).className).toContain('HereticBook__lead');
+    fireEvent.click(screen.getByRole('tab', { name: 'Путь' }));
+    expect(screen.getByRole('heading', { name: 'Стекло' })).toBeTruthy();
+    expect(screen.getByText(glass.tagline!, { selector: 'p' }).className).toContain('HereticBook__lead');
     expect(screen.queryByText(glass.desc)).toBeNull();
     const model = screen.getByLabelText('Ремесло, захват и уход');
+    expect(model.closest('details')).toBeNull();
     expect(Array.from(model.querySelectorAll('p')).map((row) => row.textContent)).toEqual([
       `Ремесло. ${glass.craft}`, `Захват. ${glass.capture}`, `Уход. ${glass.escape}`,
     ]);
@@ -862,13 +1027,114 @@ describe('Структурированный кодекс', () => {
     expect(strong.getAllByRole('listitem').map((item) => item.textContent)).toEqual(glass.strength_points);
     const weak = within(screen.getByRole('region', { name: 'Слабые стороны' }));
     expect(weak.getAllByRole('listitem').map((item) => item.textContent)).toEqual(glass.weakness_points);
+    expect(screen.queryByText('Ещё о пути')).toBeNull();
     expect(screen.getByText('Совет.').parentElement?.textContent).toBe(`Совет. ${glass.practice}`);
+    expect(screen.getByText('Мантия пути.').parentElement?.textContent).toBe(`Мантия пути. ${glass.robe_armor}`);
     expect(screen.getByRole('heading', { name: 'Врождённая черта: Черта: Стекло' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Пепел' }));
     expect(screen.getByText('Учение: Пепел.')).toBeTruthy();
     expect(screen.queryByLabelText('Ремесло, захват и уход')).toBeNull();
     expect(within(screen.getByRole('region', { name: 'Сильные стороны' })).getByText('Своя тактика.').tagName).toBe('LI');
     expect(screen.queryByText(/^Совет/)).toBeNull();
+    expect(screen.queryByText('Мантия пути.')).toBeNull();
+  });
+
+  const choiceData = () => {
+    const data = makeData({ role_exit: { can_reset: false, can_abandon: true, reset_window: 7, abandon_window: 10 } });
+    const levels: Record<string, number> = { Rust: 1, Glass: 1, Ash: 1, Dance: 3 };
+    data.paths.forEach((path) => Object.assign(path, {
+      difficulty: levels[path.id] || 2,
+      playstyle: path.id === 'Glass' ? ['дальний бой'] : path.id === 'Dance' ? ['ритм'] : ['ближний бой'],
+    }));
+    return data;
+  };
+
+  test('до выбора открыта страница «Как выбрать», а пути стоят карточками по сложности со стилем и девизом', async () => {
+    const data = choiceData();
+    data.paths.find((path) => path.id === 'Glass')!.tagline = 'Бьёт светом из-за угла.';
+    const { topic } = setupStore(data);
+    await renderBook();
+    expect(screen.getByRole('heading', { name: 'Как выбрать путь' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Как выбрать путь' }).getAttribute('aria-pressed')).toBe('true');
+    const guide = within(screen.getByRole('list', { name: 'Как выбрать путь' }));
+    expect(guide.getByText(/один раз сменить в первые 7 мин после выбора, пока нет жертв/)).toBeTruthy();
+    expect(guide.getByText(/стиль: ближний бой, дальний бой, ритм\./)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Принять этот путь' })).toBeNull();
+    const index = screen.getByRole('navigation', { name: 'Пути Мансуса' });
+    expect(within(index).getAllByRole('region').map((group) => group.getAttribute('aria-label'))).toEqual(['Для первого раза', 'Когда освоитесь', 'Для опытных']);
+    const firstTime = within(within(index).getByRole('region', { name: 'Для первого раза' }));
+    expect(firstTime.getAllByRole('button').map((card) => card.getAttribute('aria-label'))).toEqual(['Пепел', 'Ржавчина', 'Стекло']);
+    const card = firstTime.getByRole('button', { name: 'Стекло' });
+    expect(card.querySelector('.HereticBook__cardTags')?.textContent).toBe('дальний бой');
+    expect(card.querySelector('.HereticBook__cardLine')?.textContent).toBe('Бьёт светом из-за угла.');
+    expect(card.querySelector('.HereticBook__difficulty')?.getAttribute('aria-label')).toBe('Сложность 1 из 3');
+    expect(within(within(index).getByRole('region', { name: 'Для опытных' })).getAllByRole('button').map((entry) => entry.getAttribute('aria-label'))).toEqual(['Пляска']);
+    expect(within(index).getAllByRole('button')).toHaveLength(19);
+    fireEvent.click(card);
+    expect(screen.getByRole('heading', { name: 'Стекло' })).toBeTruthy();
+    expect(card.getAttribute('aria-pressed')).toBe('true');
+    expect(readActions(topic)).toHaveLength(0);
+  });
+
+  test('кнопки стиля над списком оставляют пути одного стиля, повторное нажатие возвращает все', async () => {
+    const { topic } = setupStore(choiceData());
+    await renderBook();
+    const filter = within(screen.getByRole('group', { name: 'Стиль игры' }));
+    expect(filter.getAllByRole('button').map((chip) => chip.textContent)).toEqual(['ближний бой', 'дальний бой', 'ритм']);
+    const index = screen.getByRole('navigation', { name: 'Пути Мансуса' });
+    const rhythm = filter.getByRole('button', { name: 'ритм' });
+    fireEvent.click(rhythm);
+    expect(rhythm.getAttribute('aria-pressed')).toBe('true');
+    expect(within(index).getAllByRole('button').map((card) => card.getAttribute('aria-label'))).toEqual(['Пляска']);
+    expect(within(index).getAllByRole('region').map((group) => group.getAttribute('aria-label'))).toEqual(['Для опытных']);
+    fireEvent.click(filter.getByRole('button', { name: 'дальний бой' }));
+    expect(rhythm.getAttribute('aria-pressed')).toBe('false');
+    expect(within(index).getAllByRole('button').map((card) => card.getAttribute('aria-label'))).toEqual(['Стекло']);
+    fireEvent.click(filter.getByRole('button', { name: 'дальний бой' }));
+    expect(within(index).getAllByRole('button')).toHaveLength(19);
+    expect(readActions(topic)).toHaveLength(0);
+  });
+
+  test('с одним стилем на всех кнопок стиля нет', async () => {
+    const data = choiceData();
+    data.paths.forEach((path) => { path.playstyle = ['ближний бой']; });
+    setupStore(data);
+    await renderBook();
+    expect(screen.queryByRole('group', { name: 'Стиль игры' })).toBeNull();
+  });
+
+  test('до выбора путь показывает первые шаги над кнопкой, по три стороны, остальное под «Ещё о пути», а совета нет', async () => {
+    const data = choiceData();
+    const glass = data.paths.find((path) => path.id === 'Glass')!;
+    Object.assign(glass, {
+      tagline: 'Смотрит через окна.',
+      first_steps: ['Луч бесплатный.', 'Настраивайте окна.', 'Витраж запирает.'],
+      craft: 'Хваткой настройте окно.', capture: 'Витраж на 10 секунд.', escape: 'Шаг сквозь своё окно.',
+      strength_points: ['Раз.', 'Два.', 'Три.', 'Четыре.'],
+      weakness_points: ['Минус раз.', 'Минус два.', 'Минус три.', 'Минус четыре.', 'Минус пять.'],
+      practice: 'Настройте окно и шагните сквозь него.',
+    });
+    setupStore(data);
+    await renderBook();
+    fireEvent.click(screen.getByRole('button', { name: 'Стекло' }));
+    const steps = screen.getByRole('region', { name: 'Первые шаги' });
+    expect(Array.from(steps.querySelectorAll('p')).map((row) => row.textContent)).toEqual([
+      'Сила. Луч бесплатный.', 'Дело. Настраивайте окна.', 'Цель. Витраж запирает.',
+    ]);
+    const choose = screen.getByRole('button', { name: 'Принять этот путь' });
+    expect(steps.compareDocumentPosition(choose) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const meta = screen.getByText('просто').closest('p')!;
+    expect(meta.className).toBe('HereticBook__pathMeta');
+    expect(meta.textContent).toContain('дальний бой');
+    expect(within(screen.getByRole('region', { name: 'Сильные стороны' })).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Раз.', 'Два.', 'Три.']);
+    expect(within(screen.getByRole('region', { name: 'Слабые стороны' })).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Минус раз.', 'Минус два.', 'Минус три.']);
+    const more = screen.getByText('Ещё о пути').closest('details')!;
+    expect(more.open).toBe(false);
+    expect(screen.getByLabelText('Ремесло, захват и уход').closest('details')).toBe(more);
+    expect(Array.from(more.querySelectorAll('[aria-label="Другие сильные стороны"] li')).map((item) => item.textContent)).toEqual(['Четыре.']);
+    expect(Array.from(more.querySelectorAll('[aria-label="Другие слабые стороны"] li')).map((item) => item.textContent)).toEqual(['Минус четыре.', 'Минус пять.']);
+    expect(screen.queryByText(/^Совет/)).toBeNull();
+    expect(screen.queryByText(glass.practice!)).toBeNull();
   });
 
   test('строка под разворотом показывает запас и состояние сразу, правила - во всплывающем листе', async () => {
@@ -973,5 +1239,27 @@ describe('Структурированный кодекс', () => {
     expect(within(ascension as HTMLElement).getByText(/подсвечиваются зелёным/)).toBeTruthy();
     const hotkeys = document.querySelector('details[data-topic="hotkeys"]')!;
     expect(hotkeys.textContent).not.toMatch(/по умолчанию Q|видны в главе Знания/);
+  });
+
+  test('числа побега, предела клинков и явления в помощи приходят из данных', async () => {
+    const data = makeData();
+    data.hunt.escape_cooldown = 45;
+    data.hunt.blade_limit = 4;
+    data.hunt.emergence_seconds = 12;
+    data.hunt.emergence_damage_cut = 60;
+    data.hunt.evolution_stages = [5, 8];
+    setupStore(data);
+    await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
+    const path = document.querySelector('details[data-topic="path"]') as HTMLElement;
+    expect(path.textContent).toMatch(/с 5-й ступени вплотную видны мелкие приметы, с 8-й - на открытых кистях и лице/);
+    const custody = document.querySelector('details[data-topic="custody"]') as HTMLElement;
+    expect(custody.textContent).toMatch(/следующий побег - через 45 сек\./);
+    const start = document.querySelector('details[data-topic="start"]') as HTMLElement;
+    expect(start.textContent).toMatch(/не больше 4: новый рассыпает старейший/);
+    const ascension = document.querySelector('details[data-topic="ascension"]') as HTMLElement;
+    expect(ascension.textContent).toMatch(/Первые 12 сек\. после обряда - явление/);
+    expect(ascension.textContent).toMatch(/на 60% слабее/);
+    expect(ascension.textContent).toMatch(/Ищите их в морге/);
   });
 });

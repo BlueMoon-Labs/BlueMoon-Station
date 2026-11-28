@@ -202,8 +202,9 @@
 			if(button.icon_state != settings["bg_state"])
 				button.icon_state = settings["bg_state"]
 		else
-			if(button.icon != button_icon)
-				button.icon = button_icon
+			var/background_file = background_icon_file()
+			if(button.icon != background_file)
+				button.icon = background_file
 			if(button.icon_state != background_icon_state)
 				button.icon_state = background_icon_state
 
@@ -220,6 +221,12 @@
 	else
 		button.color = rgb(255,255,255,255)
 		return TRUE
+
+/// Способности еретика узнаются по фону bg_ecult и берут его из своего листа, а не из backgrounds.dmi tg.
+/datum/action/proc/background_icon_file()
+	if(background_icon_state == "bg_ecult")
+		return 'modular_bluemoon/icons/mob/actions/heretic_backgrounds.dmi'
+	return button_icon
 
 /datum/action/proc/ApplyIcon(atom/movable/screen/movable/action_button/current_button, force = FALSE)
 	if(icon_icon && button_icon_state && ((current_button.button_icon_state != button_icon_state) || force))

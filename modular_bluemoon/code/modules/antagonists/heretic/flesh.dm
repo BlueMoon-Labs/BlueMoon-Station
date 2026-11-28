@@ -22,6 +22,7 @@
 #define HERETIC_FLESH_PUPPET_ATTACK (1.5 SECONDS)
 #define HERETIC_FLESH_PUPPET_FOLLOW 2
 #define HERETIC_FLESH_PUPPET_REACH 7
+#define HERETIC_FLESH_PUPPET_SSD_GRACE (1 MINUTES)
 #define HERETIC_FLESH_REACH_SOUND 'modular_bluemoon/sound/heretic/flesh_stitch_1.ogg'
 #define HERETIC_FLESH_TEAR_SOUND 'modular_bluemoon/sound/heretic/flesh_latch_tear.ogg'
 #define HERETIC_FLESH_RISE_SOUND 'modular_bluemoon/sound/heretic/flesh_rise.ogg'
@@ -35,9 +36,14 @@
 /datum/eldritch_knowledge/base_flesh
 	var/mob/living/simple_animal/heretic_fleshling/fleshling
 	var/list/datum/status_effect/heretic_flesh_latch/latches = list()
+	var/obj/effect/proc_holder/spell/pointed/heretic_flesh_shed/shed_spell
+	var/shed_ready_at = 0
+	var/shed_failure
+	var/last_grasp_intent
 
 /datum/eldritch_knowledge/base_flesh/Destroy()
 	QDEL_NULL(fleshling)
+	QDEL_NULL(shed_spell)
 	for(var/datum/status_effect/heretic_flesh_latch/latch as anything in latches.Copy())
 		qdel(latch)
 	return ..()
@@ -45,7 +51,7 @@
 /datum/eldritch_knowledge/base_flesh/proc/grow_fleshling(mob/living/user, obj/item/organ/organ)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/command_knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/flesh_grasp) || heretic?.get_knowledge(/datum/eldritch_knowledge/flesh_ghoul)
-	if(QDELETED(organ) || !isturf(organ.loc) || !user.Adjacent(organ) || user.incapacitated() || !heretic || heretic.role_removed || heretic.selected_path != PATH_FLESH || heretic.get_knowledge(type) != src || QDELETED(command_knowledge))
+	if(QDELETED(organ) || !isturf(organ.loc) || !user.Adjacent(organ) || heretic_incapacitated(user) || !heretic || heretic.role_removed || heretic.selected_path != PATH_FLESH || heretic.get_knowledge(type) != src || QDELETED(command_knowledge))
 		return FALSE
 	if(!QDELETED(fleshling) || !heretic.can_add_servant() || combat_resource < HERETIC_FLESHLING_COST)
 		to_chat(user, span_warning("Нужны две биомассы и свободное место в свите. Можно удерживать только одного сшитого ползуна."))
@@ -71,6 +77,38 @@
 	playsound(place, HERETIC_FLESH_KNIT_SOUND, HERETIC_FLESH_EVENT_VOLUME, TRUE)
 	user.visible_message(span_warning("[user] вытягивает из органа сухожилия: они сплетаются в лапы, и сшитый ползун поднимается."))
 	return TRUE
+
+/// Хватка Плоти меняет действие по намерению: значок биомассы называет, что она сделает сейчас.
+/datum/eldritch_knowledge/base_flesh/get_combat_resource_data()
+	var/list/data = ..()
+	var/mob/living/body = grasp_body()
+	data["name"] = body?.a_intent == INTENT_DISARM ? "Биомасса: хватка вскрывает и шьёт" : "Биомасса: хватка поднимает и поглощает"
+	return data
+
+/datum/eldritch_knowledge/base_flesh/proc/grasp_body() as /mob/living
+	var/datum/antagonist/heretic/heretic = combat_resource_owner?.resolve()
+	return heretic?.owner?.current
+
+/datum/eldritch_knowledge/base_flesh/combat_resource_state()
+	var/datum/antagonist/heretic/heretic = combat_resource_owner?.resolve()
+	var/raises = heretic?.get_knowledge(/datum/eldritch_knowledge/flesh_grasp)
+	var/mob/living/body = grasp_body()
+	if(body?.a_intent == INTENT_DISARM)
+		. = "Сейчас «Разоружение»: хватка по трупу за [DisplayTimeText(HERETIC_FLESH_EXCISE_TIME)] вынимает орган"
+		. += raises ? ", по органу на полу за [HERETIC_FLESHLING_COST] биомассы шьёт ползуна, а рука по ползуну велит ему ждать." : "."
+		. += raises ? " На «Помощи» или «Вреде» хватка поднимет гуля и поглотит орган." : " На других намерениях хватка поглощает орган."
+		return
+	. = raises ? "Сейчас хватка по трупу поднимает гуля за 1 биомассу, а по органу на полу поглощает его: +1 биомасса." : "Сейчас хватка по органу на полу поглощает его: +1 биомасса."
+	. += raises ? " На «Разоружении» она вскрывает труп и шьёт ползуна из органа; рука на «Помощи» зовёт ползуна к вам." : " На «Разоружении» она вскрывает труп и вынимает орган."
+
+/datum/eldritch_knowledge/base_flesh/on_life(mob/user)
+	if(QDELETED(user) || grasp_body() != user)
+		return
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(last_grasp_intent != user.a_intent)
+		last_grasp_intent = user.a_intent
+		heretic?.update_combat_resource_alert(FALSE, user)
+	heretic?.update_flesh_retinue_alert(user)
 
 /datum/eldritch_knowledge/base_flesh/proc/on_fleshling_deleted(datum/source)
 	SIGNAL_HANDLER
@@ -302,7 +340,15 @@
 /proc/heretic_flesh_make_puppet(mob/living/body, datum/antagonist/heretic/master)
 	if(QDELETED(body) || !master)
 		return null
-	return body.AddComponent(/datum/component/heretic_flesh_puppet, master)
+	var/datum/component/heretic_flesh_puppet/puppet = body.AddComponent(/datum/component/heretic_flesh_puppet, master)
+	puppet?.call_ghosts()
+	return puppet
+
+/// Слуга встал с душой: голод спит и ждёт, не уйдёт ли игрок из тела.
+/proc/heretic_flesh_bind_servant(mob/living/body, datum/antagonist/heretic/master)
+	if(QDELETED(body) || !master || master.simulated)
+		return null
+	return body.AddComponent(/datum/component/heretic_flesh_puppet, master, TRUE)
 
 /datum/component/heretic_flesh_puppet
 	dupe_mode = COMPONENT_DUPE_UNIQUE
@@ -311,26 +357,131 @@
 	var/datum/weakref/guarded_ref
 	var/list/movement_path = list()
 	var/pathfinding = FALSE
+	/// Пока тело без души, им правит голод; с душой компонент спит и ждёт, не уйдёт ли игрок.
+	var/hollow = FALSE
+	/// Ключ последней души, которой уже рассказали о роли.
+	var/briefed_key
+	var/abandon_timer
+	/// Полные здоровье и урон тела: вернутся, когда в него войдёт душа.
+	var/full_health
+	var/full_melee_lower
+	var/full_melee_upper
 	COOLDOWN_DECLARE(attack_cooldown)
 	COOLDOWN_DECLARE(step_cooldown)
 	COOLDOWN_DECLARE(path_cooldown)
 
-/datum/component/heretic_flesh_puppet/Initialize(datum/antagonist/heretic/master)
+/datum/component/heretic_flesh_puppet/Initialize(datum/antagonist/heretic/master, ensouled = FALSE)
 	if(!isliving(parent) || !istype(master))
 		return COMPONENT_INCOMPATIBLE
+	var/mob/living/body = parent
 	master_ref = WEAKREF(master)
 	RegisterSignal(parent, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine))
-	START_PROCESSING(SSfastprocess, src)
+	RegisterSignal(parent, COMSIG_ATOM_ATTACK_GHOST, PROC_REF(on_attack_ghost))
+	RegisterSignal(parent, COMSIG_MOB_LOGIN, PROC_REF(on_login))
+	RegisterSignal(parent, COMSIG_MOB_LOGOUT, PROC_REF(on_logout))
+	RegisterSignal(parent, COMSIG_MOB_GHOSTIZE, PROC_REF(on_ghostize))
+	if(!ensouled)
+		go_hollow()
+		return
+	briefed_key = body.key
+	if(!soul_present())
+		on_logout(body)
 
 /datum/component/heretic_flesh_puppet/Destroy(force, silent)
 	STOP_PROCESSING(SSfastprocess, src)
+	deltimer(abandon_timer)
 	unguard()
 	if(parent)
-		UnregisterSignal(parent, COMSIG_PARENT_EXAMINE)
+		UnregisterSignal(parent, list(COMSIG_PARENT_EXAMINE, COMSIG_ATOM_ATTACK_GHOST, COMSIG_MOB_LOGIN, COMSIG_MOB_LOGOUT, COMSIG_MOB_GHOSTIZE))
+		restore_strength(parent)
 	master_ref = null
 	prey_ref = null
 	movement_path = null
 	return ..()
+
+/// Тело всё ещё слуга живого хозяина-еретика.
+/datum/component/heretic_flesh_puppet/proc/still_bound()
+	var/mob/living/body = parent
+	var/datum/antagonist/heretic/master = master_ref?.resolve()
+	var/datum/antagonist/heretic_monster/servant = IS_HERETIC_MONSTER(body)
+	return !QDELETED(body) && body.stat != DEAD && master && !master.role_removed && servant?.master == master
+
+/// Душа ушла: тело снова пустое и слабое, голод ведёт его, а призраков зовут вселиться.
+/datum/component/heretic_flesh_puppet/proc/go_hollow()
+	if(hollow)
+		return
+	var/mob/living/body = parent
+	hollow = TRUE
+	deltimer(abandon_timer)
+	abandon_timer = null
+	weaken(body)
+	START_PROCESSING(SSfastprocess, src)
+
+/datum/component/heretic_flesh_puppet/proc/call_ghosts()
+	var/mob/living/body = parent
+	notify_ghosts("[body.name] - пустой слуга еретика - ждёт души. Вселитесь, и он встанет в полную силу.", source = body, action = NOTIFY_ATTACK, flashwindow = FALSE, ignore_key = POLL_IGNORE_HERETIC_SERVANT, ignore_dnr_observers = TRUE, header = "Пустой слуга")
+
+/datum/component/heretic_flesh_puppet/proc/soul_left()
+	if(hollow)
+		return
+	if(!still_bound())
+		qdel(src)
+		return
+	var/mob/living/body = parent
+	go_hollow()
+	body.visible_message(span_warning("Взгляд [body] снова пустеет, тело движется рывками, как на нитках."))
+	var/mob/living/user = master_body()
+	if(user)
+		to_chat(user, span_warning("Душа покинула слугу [body]: он снова пустой и ослабший и идёт за вами сам, а призраков зовут вселиться."))
+	log_game("Пустой слуга еретика [key_name(body)] остался без души в [AREACOORD(body)].")
+	call_ghosts()
+
+/// Верб Ghost шлёт сигнал ещё до подтверждения: тело проверяют, когда игрок уже ответил.
+/datum/component/heretic_flesh_puppet/proc/on_ghostize(mob/living/source)
+	SIGNAL_HANDLER
+	if(!hollow)
+		abandon_timer = addtimer(CALLBACK(src, PROC_REF(left_body)), 1, TIMER_STOPPABLE | TIMER_UNIQUE | TIMER_OVERRIDE)
+
+/datum/component/heretic_flesh_puppet/proc/on_logout(mob/living/source)
+	SIGNAL_HANDLER
+	if(!hollow)
+		abandon_timer = addtimer(CALLBACK(src, PROC_REF(left_body)), HERETIC_FLESH_PUPPET_SSD_GRACE, TIMER_STOPPABLE | TIMER_UNIQUE | TIMER_OVERRIDE)
+
+/// В теле игрок или администратор, вышедший призраком на время.
+/datum/component/heretic_flesh_puppet/proc/soul_present()
+	var/mob/living/body = parent
+	return GET_CLIENT(body) || (body.key && body.key[1] == "@")
+
+/// Игрок ушёл и не вернулся: тело отдают призракам.
+/datum/component/heretic_flesh_puppet/proc/left_body()
+	abandon_timer = null
+	if(!soul_present())
+		soul_left()
+
+/// Предел здоровья не опускается ниже полученного урона: опустевший раненый слуга не падает замертво.
+/datum/component/heretic_flesh_puppet/proc/weaken(mob/living/body)
+	full_health = body.maxHealth
+	var/damage = CEILING(body.maxHealth - body.health, 1)
+	body.setMaxHealth(min(full_health, max(1, round(full_health * HERETIC_FLESH_HOLLOW_RATIO), damage + 1)))
+	body.updatehealth()
+	if(isanimal(body))
+		var/mob/living/simple_animal/animal = body
+		full_melee_lower = animal.melee_damage_lower
+		full_melee_upper = animal.melee_damage_upper
+		animal.melee_damage_lower = round(full_melee_lower * HERETIC_FLESH_HOLLOW_RATIO)
+		animal.melee_damage_upper = round(full_melee_upper * HERETIC_FLESH_HOLLOW_RATIO)
+
+/// Снятая роль сама вернёт телу прежний максимум, поэтому здесь его только поднимаем.
+/datum/component/heretic_flesh_puppet/proc/restore_strength(mob/living/body)
+	if(isnull(full_health) || QDELETED(body))
+		return
+	body.setMaxHealth(max(body.maxHealth, full_health))
+	body.updatehealth()
+	if(isanimal(body))
+		var/mob/living/simple_animal/animal = body
+		animal.melee_damage_lower = full_melee_lower
+		animal.melee_damage_upper = full_melee_upper
+	full_health = null
 
 /datum/component/heretic_flesh_puppet/proc/master_body()
 	var/datum/antagonist/heretic/master = master_ref?.resolve()
@@ -338,9 +489,75 @@
 
 /datum/component/heretic_flesh_puppet/proc/on_examine(datum/source, mob/user, list/examine_list)
 	SIGNAL_HANDLER
+	if(!hollow)
+		return
 	examine_list += span_warning("Взгляд пустой: телом движет чужой голод, а не душа.")
 	if(user == master_body())
-		examine_list += span_notice("Пустой слуга идёт за вами, бьёт цель Живого шва и тех, кто ранит вас; Касание безумия рядом с ним заставит его вцепиться.")
+		examine_list += span_notice("Пустой слуга [isanimal(parent) ? "вдвое слабее" : "живёт с половиной здоровья"] и только идёт за вами, бьёт цель Живого шва и тех, кто ранит вас; Касание безумия рядом с ним заставит его вцепиться. Если в него вселится призрак, слуга встанет в полную силу.")
+	else if(isobserver(user))
+		examine_list += span_notice("Нажмите на него, чтобы вселиться: слуга встанет в полную силу.")
+
+/// Тело пустое и свободно: в нём нет игрока, хотя ключ отключившегося ещё может за ним числиться.
+/datum/component/heretic_flesh_puppet/proc/body_free()
+	var/mob/living/body = parent
+	return hollow && !soul_present() && body.stat != DEAD
+
+/datum/component/heretic_flesh_puppet/proc/ghost_can_take(mob/dead/observer/ghost, silent = TRUE)
+	return istype(ghost) && ghost.client && body_free() && ghost.can_reenter_round(silent)
+
+/datum/component/heretic_flesh_puppet/proc/on_attack_ghost(datum/source, mob/dead/observer/ghost)
+	SIGNAL_HANDLER
+	if(!istype(ghost) || !ghost.client || !body_free())
+		return NONE
+	if(!ghost.can_reenter_round())
+		return COMPONENT_NO_ATTACK_HAND
+	INVOKE_ASYNC(src, PROC_REF(offer_body), ghost)
+	return COMPONENT_NO_ATTACK_HAND
+
+/datum/component/heretic_flesh_puppet/proc/offer_body(mob/dead/observer/ghost)
+	var/mob/living/body = parent
+	if(jobban_isbanned(ghost, ROLE_HERETIC) || jobban_isbanned(ghost, ROLE_INTEQ))
+		to_chat(ghost, span_warning("Вам закрыта роль слуги еретика."))
+		return
+	var/mob/living/user = master_body()
+	if(tgui_alert(ghost, "Вселиться в [body.name], пустого слугу еретика[user ? " [user.real_name]" : ""]? Слуга встанет в полную силу, а вашей целью станет помощь хозяину.", "Пустой слуга", list("Да", "Нет")) != "Да")
+		return
+	if(QDELETED(src) || QDELETED(ghost) || !ghost_can_take(ghost, FALSE))
+		to_chat(ghost, span_warning("Слуга уже занят или погиб."))
+		return
+	if(body.key)
+		body.ghostize(FALSE)
+	log_game("[key_name(ghost)] вселяется в пустого слугу еретика [key_name(body)] в [AREACOORD(body)].")
+	message_admins("[ADMIN_LOOKUPFLW(ghost)] вселяется в пустого слугу еретика [ADMIN_LOOKUPFLW(body)].")
+	ghost.transfer_ckey(body, FALSE)
+
+/datum/component/heretic_flesh_puppet/proc/on_login(mob/living/source)
+	SIGNAL_HANDLER
+	awaken()
+
+/// В тело вошла душа: голод отпускает его, слуга встаёт в полную силу.
+/datum/component/heretic_flesh_puppet/proc/awaken()
+	var/mob/living/body = parent
+	deltimer(abandon_timer)
+	abandon_timer = null
+	if(!hollow)
+		return
+	hollow = FALSE
+	STOP_PROCESSING(SSfastprocess, src)
+	prey_ref = null
+	movement_path.Cut()
+	unguard()
+	restore_strength(body)
+	var/datum/antagonist/heretic_monster/servant = IS_HERETIC_MONSTER(body)
+	var/mob/living/user = master_body()
+	if(servant)
+		servant.show_in_roundend = TRUE
+		if(body.key != briefed_key)
+			briefed_key = body.key
+			servant.send_briefing()
+	body.visible_message(span_warning("Пустой взгляд [body] вдруг становится осмысленным."))
+	if(user)
+		to_chat(user, span_notice("В пустого слугу [body] вселилась душа: он встаёт в полную силу и действует сам."))
 
 /// Слуга бросается на того, кто ранит хозяина.
 /datum/component/heretic_flesh_puppet/proc/guard(mob/living/user)
@@ -365,7 +582,7 @@
 		command_prey(source, attacker)
 
 /datum/component/heretic_flesh_puppet/proc/command_prey(mob/living/user, mob/living/victim)
-	if(user != master_body() || !prey_valid(user, victim))
+	if(!hollow || user != master_body() || !prey_valid(user, victim))
 		return FALSE
 	prey_ref = WEAKREF(victim)
 	movement_path.Cut()
@@ -381,9 +598,12 @@
 	if(QDELETED(body) || body.stat == DEAD || !master || master.role_removed || servant?.master != master)
 		qdel(src)
 		return
+	if(body.client)
+		awaken()
+		return
 	var/mob/living/user = master.owner?.current
 	guard(user)
-	if(body.client || QDELETED(user) || !isturf(body.loc) || !isturf(user.loc) || user.z != body.z || body.incapacitated() || HAS_TRAIT(body, TRAIT_HERETIC_FLESH_LATCHING))
+	if(QDELETED(user) || !isturf(body.loc) || !isturf(user.loc) || user.z != body.z || body.incapacitated() || HAS_TRAIT(body, TRAIT_HERETIC_FLESH_LATCHING))
 		return
 	var/mob/living/prey = prey_ref?.resolve()
 	if(prey && !prey_valid(user, prey))
@@ -460,7 +680,7 @@
 	melee_damage_upper = 6
 	attack_verb_continuous = "терзает"
 	attack_verb_simple = "терзает"
-	attack_sound = 'sound/effects/wounds/blood1.ogg'
+	attack_sound = HERETIC_DEMON_FLESH_SFX
 	faction = list("heretics")
 	wander = FALSE
 	del_on_death = TRUE
@@ -506,7 +726,7 @@
 
 /mob/living/simple_animal/heretic_fleshling/proc/command_prey(mob/living/user, mob/living/victim)
 	var/datum/antagonist/heretic/master = master_ref?.resolve()
-	if(master?.owner?.current != user || !isturf(user.loc) || !isturf(victim?.loc) || user.incapacitated() || !heretic_can_affect(user, victim, chargecost = 0) || get_dist(user, victim) > 5 || user.z != victim.z || !can_see(user, victim, 5))
+	if(master?.owner?.current != user || !isturf(user.loc) || !isturf(victim?.loc) || heretic_incapacitated(user) || !heretic_can_affect(user, victim, chargecost = 0) || get_dist(user, victim) > 5 || user.z != victim.z || !can_see(user, victim, 5))
 		return FALSE
 	prey_ref = WEAKREF(victim)
 	holding_position = FALSE
@@ -521,7 +741,7 @@
 
 /mob/living/simple_animal/heretic_fleshling/attack_hand(mob/living/carbon/human/user)
 	var/datum/antagonist/heretic/master = master_ref?.resolve()
-	if(master?.owner?.current == user && (user.a_intent in list(INTENT_HELP, INTENT_DISARM)) && !user.incapacitated() && user.Adjacent(src))
+	if(master?.owner?.current == user && (user.a_intent in list(INTENT_HELP, INTENT_DISARM)) && !heretic_incapacitated(user) && user.Adjacent(src))
 		prey_ref = null
 		holding_position = user.a_intent == INTENT_DISARM
 		movement_path.Cut()
@@ -539,7 +759,7 @@
 	if(QDELETED(user) || QDELETED(required) || !master_turf || !crawler_turf || master.role_removed || master.get_knowledge(required.type) != required || user.stat == DEAD || stat == DEAD || servant?.master != master || world.time >= expires_at || master_turf.z != crawler_turf.z || get_dist(master_turf, crawler_turf) > HERETIC_FLESHLING_LEASH)
 		qdel(src)
 		return
-	if(client || !isturf(loc) || !isturf(user.loc) || incapacitated() || user.incapacitated() || !CHECK_MOBILITY(src, MOBILITY_USE) || HAS_TRAIT(src, TRAIT_HERETIC_FLESH_LATCHING))
+	if(client || !isturf(loc) || !isturf(user.loc) || incapacitated() || heretic_incapacitated(user) || !CHECK_MOBILITY(src, MOBILITY_USE) || HAS_TRAIT(src, TRAIT_HERETIC_FLESH_LATCHING))
 		return
 	var/mob/living/prey = prey_ref?.resolve()
 	if(!isturf(prey?.loc) || !heretic_can_affect(user, prey, chargecost = 0) || prey.z != user.z || get_dist(user, prey) > 5 || !can_see(user, prey, 5))
@@ -596,13 +816,13 @@
 	range = 5
 	invocation = "S'UT'RE"
 	invocation_type = "whisper"
-	action_icon = HERETIC_FLESH_FX_ICON
-	action_icon_state = "flesh_stitch"
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "flesh_tendon"
 	action_background_icon_state = "bg_ecult"
 
 /obj/effect/proc_holder/spell/pointed/heretic_flesh_stitch/proc/valid_user(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return !QDELETED(src) && isliving(user) && heretic && !heretic.role_removed && heretic.selected_path == PATH_FLESH && heretic.owner?.current == user && user.stat == CONSCIOUS && !user.incapacitated() && heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh) && heretic.get_knowledge(/datum/eldritch_knowledge/flesh_grasp)
+	return !QDELETED(src) && isliving(user) && heretic && !heretic.role_removed && heretic.selected_path == PATH_FLESH && heretic.owner?.current == user && user.stat == CONSCIOUS && !heretic_incapacitated(user) && heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh) && heretic.get_knowledge(/datum/eldritch_knowledge/flesh_grasp)
 
 /obj/effect/proc_holder/spell/pointed/heretic_flesh_stitch/can_cast(mob/user, skipcharge, silent)
 	return ..() && heretic_check(user, valid_user(user), silent, "Способность недоступна вашему пути или текущему телу.")
@@ -674,6 +894,139 @@
 		to_chat(victim, span_warning("Сухожилие впивается в вас и стягивает движения!"))
 	user.Beam(victim, icon_state = "tendon", icon = HERETIC_FLESH_FX_ICON, time = HERETIC_FLESH_BEAM_TIME)
 	playsound(user, pick('modular_bluemoon/sound/heretic/flesh_stitch_1.ogg', 'modular_bluemoon/sound/heretic/flesh_stitch_2.ogg'), 60, TRUE)
+
+/// Свой гуль, мертвец или ползун, в которого можно уйти: в сознании, свободен и не дальше HERETIC_FLESH_SHED_RANGE клеток на том же уровне.
+/datum/eldritch_knowledge/base_flesh/proc/shed_servant_ready(mob/living/user, mob/living/servant)
+	if(QDELETED(servant) || servant == user || servant.stat != CONSCIOUS || servant.incapacitated() || servant.buckled || servant.anchored || !isturf(servant.loc) || servant.z != user.z || get_dist(user, servant) > HERETIC_FLESH_SHED_RANGE)
+		return FALSE
+	var/area/servant_area = get_area(servant)
+	return !(servant_area.area_flags & NOTELEPORT) && !HAS_TRAIT(servant, TRAIT_NO_TELEPORT)
+
+/// Указанный слуга, а при указании на себя - самый дальний из готовых.
+/datum/eldritch_knowledge/base_flesh/proc/shed_target(mob/living/user, atom/target)
+	var/list/servants = door_servants(user)
+	if(target != user)
+		return (target in servants) && shed_servant_ready(user, target) ? target : null
+	var/best_distance = -1
+	for(var/mob/living/servant as anything in servants)
+		if(!shed_servant_ready(user, servant))
+			continue
+		var/distance = get_dist(user, servant)
+		if(distance > best_distance)
+			. = servant
+			best_distance = distance
+
+/datum/eldritch_knowledge/base_flesh/proc/shed_block_reason(mob/living/user, mob/living/servant)
+	if(!isturf(user.loc))
+		return "Сначала выйдите из укрытия на пол."
+	if(heretic_incapacitated(user, TRUE))
+		return "Под оглушением и в оковах кожу не сбросить."
+	if(user.buckled || user.anchored)
+		return "Вы пристёгнуты: кожу не сбросить."
+	if(combat_resource < HERETIC_FLESH_SHED_COST)
+		return "Нужна [HERETIC_FLESH_SHED_COST] биомасса, у вас [combat_resource]."
+	var/area/origin_area = get_area(user)
+	if(HAS_TRAIT(user, TRAIT_NO_TELEPORT) || (origin_area.area_flags & NOTELEPORT))
+		return "Здесь Мансус не пропускает плоть сквозь пространство."
+	if(!servant)
+		return "В [HERETIC_FLESH_SHED_RANGE] клетках нет вашего гуля, мертвеца или ползуна в сознании и на свободе."
+	return null
+
+/datum/eldritch_knowledge/base_flesh/proc/shed_holds(mob/living/user, mob/living/servant)
+	return !QDELETED(src) && !shed_block_reason(user, shed_servant_ready(user, servant) ? servant : null)
+
+/// Сбросить кожу: секунда неподвижности, и вы меняетесь местами со слугой, оставив на старом месте пустую кожу.
+/datum/eldritch_knowledge/base_flesh/proc/shed_skin(mob/living/user, mob/living/servant)
+	user.visible_message(span_danger("Кожа [user] лопается по швам, и под ней что-то шевелится!"), span_notice("Вы выскальзываете из кожи к [servant]. Секунду не двигайтесь."))
+	playsound(user, HERETIC_FLESH_SHIFT_UNRAVEL_SOUND, HERETIC_FLESH_SHIFT_VOLUME, TRUE)
+	new /obj/effect/temp_visual/heretic_flesh_shed(get_turf(user))
+	if(!do_after(user, HERETIC_FLESH_SHED_CHANNEL, user, IGNORE_INCAPACITATED | IGNORE_HELD_ITEM, extra_checks = CALLBACK(src, PROC_REF(shed_holds), user, servant)))
+		shed_failure = shed_block_reason(user, shed_servant_ready(user, servant) ? servant : null) || "Уход сорван: вас сдвинули с места."
+		return FALSE
+	var/turf/origin = get_turf(user)
+	var/turf/landing = get_turf(servant)
+	user.pulledby?.stop_pulling()
+	servant.pulledby?.stop_pulling()
+	if(!do_teleport(user, landing, channel = TELEPORT_CHANNEL_MAGIC) || get_turf(user) != landing)
+		shed_failure = "Что-то не пустило плоть сквозь пространство."
+		return FALSE
+	spend_combat_resource(HERETIC_FLESH_SHED_COST)
+	servant.forceMove(origin)
+	new /obj/effect/decal/cleanable/heretic_flesh_skin(origin, user)
+	servant.Beam(user, icon_state = "tendon", icon = HERETIC_FLESH_FX_ICON, time = HERETIC_FLESH_BEAM_TIME)
+	new /obj/effect/temp_visual/heretic_flesh_knit(landing)
+	playsound(landing, HERETIC_FLESH_SHIFT_KNIT_SOUND, HERETIC_FLESH_SHIFT_VOLUME, TRUE)
+	user.visible_message(span_danger("[servant] расходится клубком жил, и из него вылезает [user], мокрый и без единого шва!"), span_notice("Вы сшиваетесь заново на месте [servant]. Старая кожа осталась позади."))
+	servant.visible_message(span_danger("Из лопнувшей кожи выползает [servant]!"))
+	log_game("[key_name(user)] сбрасывает кожу: из [AREACOORD(origin)] на место слуги [key_name(servant)] в [AREACOORD(landing)].")
+	return TRUE
+
+/obj/effect/proc_holder/spell/pointed/heretic_flesh_shed
+	name = "Сбросить кожу"
+	desc = "Укажите своего гуля, мертвеца или ползуна в 7 клетках, а на себя - уйдёте в самого дальнего. За 1 биомассу и секунду на месте вы выскальзываете из кожи и меняетесь со слугой местами, даже из чужой хватки. Оглушение, оковы, рывок с места и связанный слуга срывают уход. На старом месте остаются слуга и пустая кожа с вашей кровью. Перезарядка 60 секунд."
+	summary = "За биомассу и секунду меняет вас местами со своим слугой в 7 клетках, даже из хватки."
+	clothes_req = FALSE
+	charge_max = HERETIC_FLESH_SHED_COOLDOWN
+	range = HERETIC_FLESH_SHED_RANGE
+	self_castable = TRUE
+	invocation_type = "none"
+	heretic_stun_check = TRUE
+	usable_while_grabbed = TRUE
+	action_icon = HERETIC_FLESH_FX_ICON
+	action_icon_state = "flesh_shed"
+	action_background_icon_state = "bg_ecult"
+	active_msg = "Вы готовы сбросить кожу: укажите своего слугу или себя."
+	deactive_msg = "Кожа снова держится крепко."
+
+/obj/effect/proc_holder/spell/pointed/heretic_flesh_shed/proc/flesh_of(mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(QDELETED(src) || !ishuman(user) || !heretic || heretic.role_removed || heretic.selected_path != PATH_FLESH || heretic.owner?.current != user)
+		return null
+	return heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+
+/obj/effect/proc_holder/spell/pointed/heretic_flesh_shed/can_cast(mob/user, skipcharge, silent)
+	return ..() && heretic_check(user, !!flesh_of(user), silent, "Сбросить кожу может только еретик Плоти в своём теле.")
+
+/obj/effect/proc_holder/spell/pointed/heretic_flesh_shed/can_target(atom/target, mob/user, silent)
+	var/datum/eldritch_knowledge/base_flesh/flesh = flesh_of(user)
+	if(!flesh)
+		return heretic_check(user, FALSE, silent, "Сбросить кожу может только еретик Плоти в своём теле.")
+	var/reason = flesh.shed_block_reason(user, flesh.shed_target(user, target))
+	return heretic_check(user, !reason, silent, reason)
+
+/obj/effect/proc_holder/spell/pointed/heretic_flesh_shed/cast(list/targets, mob/user)
+	var/datum/eldritch_knowledge/base_flesh/flesh = flesh_of(user)
+	var/mob/living/servant = length(targets) ? flesh?.shed_target(user, targets[1]) : null
+	var/reason = flesh ? flesh.shed_block_reason(user, servant) : "Сбросить кожу может только еретик Плоти в своём теле."
+	if(reason)
+		heretic_revert_cast(user, reason)
+		return
+	if(!flesh.shed_skin(user, servant))
+		heretic_revert_cast(user, flesh.shed_failure)
+
+/// Пустая кожа еретика: улика, по крови на которой криминалист узнает хозяина.
+/obj/effect/decal/cleanable/heretic_flesh_skin
+	name = "shed skin"
+	desc = "Человеческая кожа, снятая целиком, как чулок: изнутри влажная, по краям висят обрывки сухожилий. Кто-то выбрался из неё совсем недавно. Кровь на изнанке скажет сканеру криминалиста, чья это кожа."
+	icon = HERETIC_FLESH_FX_ICON
+	icon_state = "flesh_skin"
+	mergeable_decal = FALSE
+	beauty = -150
+
+/obj/effect/decal/cleanable/heretic_flesh_skin/Initialize(mapload, mob/living/carbon/shedder)
+	. = ..(mapload)
+	if(istype(shedder))
+		add_blood_DNA(shedder.get_blood_dna_list())
+
+/// Кожа еретика лопается по швам перед уходом.
+/obj/effect/temp_visual/heretic_flesh_shed
+	icon = HERETIC_FLESH_LARGE_ICON
+	icon_state = "flesh_rupture"
+	duration = 0.6 SECONDS
+	randomdir = FALSE
+	pixel_x = HERETIC_FLESH_LARGE_OFFSET
+	pixel_y = HERETIC_FLESH_LARGE_OFFSET
+	layer = ABOVE_MOB_LAYER
 
 /datum/status_effect/heretic_flesh_stitch
 	id = "heretic_flesh_stitch"
@@ -862,6 +1215,85 @@
 	phobia = null
 	return ..()
 
+/// Живые тела свиты: гули, мертвецы, призванные и ползун.
+/datum/antagonist/heretic/proc/flesh_retinue_bodies()
+	. = list()
+	for(var/datum/antagonist/heretic_monster/monster as anything in all_flesh_servants())
+		var/mob/living/body = monster.owner?.current
+		if(!QDELETED(body) && body.stat != DEAD)
+			. += body
+
+/datum/antagonist/heretic/proc/update_flesh_retinue_alert(mob/living/body)
+	body ||= owner?.current
+	if(QDELETED(body))
+		return null
+	var/list/bodies = QDELETED(src) || role_removed || selected_path != PATH_FLESH ? list() : flesh_retinue_bodies()
+	if(!length(bodies))
+		body.clear_alert(HERETIC_FLESH_RETINUE_ALERT)
+		return null
+	var/atom/movable/screen/alert/heretic_flesh_retinue/indicator = body.throw_alert(HERETIC_FLESH_RETINUE_ALERT, /atom/movable/screen/alert/heretic_flesh_retinue, no_anim = TRUE)
+	indicator?.refresh(src, bodies)
+	return indicator
+
+/// Свита одним взглядом: сколько слуг, кто пустой и где; нажатие - «Сбросить кожу».
+/atom/movable/screen/alert/heretic_flesh_retinue
+	name = "Свита"
+	desc = "Ваши слуги."
+	icon = HERETIC_FLESH_FX_ICON
+	icon_state = "flesh_retinue"
+	maptext_width = 32
+	maptext_height = 12
+	maptext_y = 1
+	var/datum/weakref/heretic_ref
+	var/shown_count
+	var/shown_limit
+
+/atom/movable/screen/alert/heretic_flesh_retinue/proc/refresh(datum/antagonist/heretic/heretic, list/bodies)
+	heretic_ref = WEAKREF(heretic)
+	bodies ||= heretic.flesh_retinue_bodies()
+	var/count = length(bodies)
+	var/limit = heretic.servant_limit()
+	if(count == shown_count && limit == shown_limit)
+		return
+	shown_count = count
+	shown_limit = limit
+	name = "Свита: [count] из [limit]"
+	maptext = MAPTEXT("<div style='text-align:center;color:#ffd8cf;font-size:8px;background-color:#1d1114'>[count]/[limit]</div>")
+	describe(heretic, bodies)
+
+/atom/movable/screen/alert/heretic_flesh_retinue/proc/describe(datum/antagonist/heretic/heretic, list/bodies)
+	var/mob/living/user = heretic.owner?.current
+	var/list/lines = list()
+	for(var/mob/living/servant as anything in bodies)
+		var/datum/component/heretic_flesh_puppet/puppet = servant.GetComponent(/datum/component/heretic_flesh_puppet)
+		var/where = !user || servant.z != user.z ? "на другом уровне" : "в [get_dist(user, servant)] клетках"
+		var/state = puppet?.hollow ? ", пустой" : ""
+		var/mob/living/simple_animal/heretic_fleshling/crawler = servant
+		if(istype(crawler))
+			state += ", распадётся через [DisplayTimeText(max(0, crawler.expires_at - world.time))]"
+		lines += "[servant.name]: [round(servant.health)] из [servant.maxHealth] здоровья[state], [where]."
+	desc = "[jointext(lines, " ")] У пустого слуги вдвое меньше здоровья, а призванные ещё и бьют вдвое слабее, пока в них не вселится призрак. Чтобы сбросить кожу, нажмите и укажите гуля, мертвеца или ползуна в [HERETIC_FLESH_SHED_RANGE] клетках - уйдёте в него, или себя - уйдёте в самого дальнего."
+
+/atom/movable/screen/alert/heretic_flesh_retinue/MouseEntered(location, control, params)
+	var/datum/antagonist/heretic/heretic = heretic_ref?.resolve()
+	if(heretic && !QDELETED(heretic))
+		refresh(heretic)
+		describe(heretic, heretic.flesh_retinue_bodies())
+	return ..()
+
+/atom/movable/screen/alert/heretic_flesh_retinue/Click(location, control, params)
+	. = ..()
+	if(!.)
+		return
+	var/mob/living/user = usr
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_flesh/flesh = heretic?.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+	var/obj/effect/proc_holder/spell/pointed/heretic_flesh_shed/shed = flesh?.shed_spell
+	if(QDELETED(shed) || user != owner || !(shed in user.mind?.spell_list) || !shed.can_cast(user, FALSE))
+		return FALSE
+	shed.Trigger(user, FALSE)
+	return TRUE
+
 /// Узел органа расплетается в сухожильные лапы.
 /obj/effect/temp_visual/heretic_flesh_knit
 	icon = HERETIC_FLESH_LARGE_ICON
@@ -968,6 +1400,7 @@
 #undef HERETIC_FLESH_PUPPET_ATTACK
 #undef HERETIC_FLESH_PUPPET_FOLLOW
 #undef HERETIC_FLESH_PUPPET_REACH
+#undef HERETIC_FLESH_PUPPET_SSD_GRACE
 #undef HERETIC_FLESH_REACH_SOUND
 #undef HERETIC_FLESH_TEAR_SOUND
 #undef HERETIC_FLESH_RISE_SOUND

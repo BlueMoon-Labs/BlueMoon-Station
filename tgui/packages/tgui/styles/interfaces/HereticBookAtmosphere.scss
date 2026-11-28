@@ -83,6 +83,10 @@
   &--Wax { --band-1: #664151; --band-2: #efe2c4; --mote: #fff7e0; --mote-glow: #fff1b8aa; }
   &--Spirit { --band-1: #385d59; --band-2: #c9efe3; --mote: #b9f5e0; --mote-glow: #9be8cfdd; }
   &--Dance { --band-1: #8f1d21; --band-2: #f2c879; --mote: #c8303a; --mote-glow: #ff6a5a44; }
+  &--Dusk { --band-1: #1e1833; --band-2: #b39d66; --mote: #8c7f73; --mote-glow: #e08c3066; }
+  &--Dusk &__corner::after { left: 27%; top: 27%; background: radial-gradient(circle, #fbfaf0 0 1.2px, #dcdbc099 2.4px, transparent 7px); filter: none; }
+  &--Lead { --band-1: #3a4048; --band-2: #d7b56a; --mote: #e0c27a; --mote-glow: #ff5a4a33; }
+  &--Hammer { --band-1: #2a2220; --band-2: #c0662f; --mote: #f0a050; --mote-glow: #ff7a2a66; }
 
   &__burst { position: absolute; right: -5px; top: calc(50% + 70px); width: 0; height: 0; }
   &__burst i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--mote); box-shadow: 0 0 6px var(--mote-glow); opacity: 0; }

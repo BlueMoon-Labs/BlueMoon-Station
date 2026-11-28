@@ -75,7 +75,12 @@
 	COOLDOWN_DECLARE(rejected_grasp_log)
 
 /obj/item/melee/touch_attack/mansus_fist/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
-	if(QDELETED(src) || QDELETED(user) || QDELETED(target) || grasp_in_progress || charges <= 0 || !proximity_flag || target == user)
+	if(QDELETED(src) || QDELETED(user) || QDELETED(target) || grasp_in_progress || charges <= 0 || target == user)
+		return
+	if(!proximity_flag)
+		if(ranged_grasp(target, user, click_parameters) && !QDELETED(src))
+			charges--
+			charges_check()
 		return
 	// Эффекты знаний могут уступить выполнение до расходования руки.
 	grasp_in_progress = TRUE
@@ -167,6 +172,15 @@
 		reject_grasp(target, user, "[failure_reason || "Цель не приняла ни одного эффекта."] Заряд сохранён.")
 	return use_charge
 
+/obj/item/melee/touch_attack/mansus_fist/proc/ranged_grasp(atom/target, mob/user, click_parameters)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/list/knowledge = heretic?.get_all_knowledge()
+	for(var/knowledge_type in knowledge)
+		var/datum/eldritch_knowledge/entry = knowledge[knowledge_type]
+		if(entry.on_mansus_grasp_ranged(target, user, click_parameters))
+			return TRUE
+	return FALSE
+
 /obj/item/melee/touch_attack/mansus_fist/proc/reject_grasp(atom/target, mob/user, reason)
 	if(!COOLDOWN_FINISHED(src, rejected_grasp_log))
 		return
@@ -188,15 +202,15 @@
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "living_heart"
 	summon_type = /obj/item/living_heart
-	summon_sound = 'sound/magic/enter_blood.ogg'
-	hide_sound = 'sound/magic/Demon_consume.ogg'
+	summon_sound = HERETIC_HEART_SUMMON_SFX
+	hide_sound = HERETIC_HEART_HIDE_SFX
 
 /obj/effect/proc_holder/spell/self/heretic_summon/book
 	name = "Призвать кодекс"
 	desc = "Достаёт кодекс в руку из-за завесы, из вашей сумки или кармана и сразу открывает его. Кодекс, который уже в руке, прячется за завесу. Если руки заняты, призванная книга ляжет в карман или рюкзак. Потерянный личный кодекс возвращается после 20 секунд неподвижности, из шкафа или брошенной сумки - после 60 секунд."
 	summary = "Достаёт кодекс в руку и открывает его; кодекс в руке прячет за завесу."
-	action_icon = 'modular_bluemoon/icons/obj/heretic.dmi'
-	action_icon_state = "codex"
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "heretic_codex"
 	summon_type = /obj/item/forbidden_book
 	var/recovery_in_progress = FALSE
 	var/recovery_time = 20 SECONDS
@@ -271,7 +285,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_summon/book/proc/recovery_allowed(mob/living/user, datum/antagonist/heretic/heretic, datum/weakref/original_ref)
 	recovery_failure = null
-	if(QDELETED(user) || QDELETED(heretic) || heretic.role_removed || IS_HERETIC(user) != heretic || heretic.owner?.current != user || user.incapacitated() || !isturf(user.loc) || !(src in user.mind.spell_list) || heretic.personal_codex != original_ref)
+	if(QDELETED(user) || QDELETED(heretic) || heretic.role_removed || IS_HERETIC(user) != heretic || heretic.owner?.current != user || heretic_incapacitated(user) || !isturf(user.loc) || !(src in user.mind.spell_list) || heretic.personal_codex != original_ref)
 		recovery_failure = "Для возвращения кодекса нужно оставаться в сознании, в своём теле и вне контейнера."
 		return FALSE
 	var/obj/item/forbidden_book/book = original_ref?.resolve()
@@ -305,7 +319,7 @@
 		to_chat(user, span_notice("Кодекс заперт в [container]. Мансус вытянет его оттуда: не двигайтесь [DisplayTimeText(delay)]."))
 	else
 		to_chat(user, span_notice("Вы зовёте личный кодекс. Не двигайтесь [DisplayTimeText(delay)]."))
-	var/completed = do_after(user, delay, target = user, timed_action_flags = IGNORE_HELD_ITEM, extra_checks = CALLBACK(src, PROC_REF(recovery_allowed), user, heretic, original_ref))
+	var/completed = do_after(user, delay, target = user, timed_action_flags = IGNORE_HELD_ITEM | IGNORE_INCAPACITATED, extra_checks = CALLBACK(src, PROC_REF(recovery_allowed), user, heretic, original_ref))
 	if(QDELETED(src))
 		return TRUE
 	recovery_in_progress = FALSE
@@ -335,7 +349,7 @@
 	. = ..()
 	if(!.)
 		return
-	if(user.incapacitated())
+	if(heretic_incapacitated(user))
 		if(!silent)
 			to_chat(user, span_warning("Вы не можете этого сделать в нынешнем состоянии!"))
 		return FALSE
@@ -500,7 +514,7 @@
 	if(!heretic_can_affect(user, targets[1]))
 		return
 	var/mob/living/victim = targets[1]
-	playsound(user, 'sound/effects/wounds/blood3.ogg', 65, TRUE)
+	playsound(user, HERETIC_SIPHON_SFX, 65, TRUE)
 	victim.Beam(user, icon_state = "siphon_vein", icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi', time = 10)
 	new /obj/effect/temp_visual/heretic_oldpath/flesh(get_turf(victim))
 	new /obj/effect/temp_visual/heretic_oldpath/flesh/mend(get_turf(user))
@@ -532,8 +546,8 @@
 /obj/effect/proc_holder/spell/aimed/rust_wave
 	heretic_stun_check = TRUE
 	name = "Длань покровителя"
-	desc = "Выпустите волну, которая покрывает ржавчиной поверхности на своём пути."
-	summary = "Заряд ржавчины на 15 клеток: 50 отравления и ржавый след."
+	desc = "Выпустите заряд ржавчины на 15 клеток: первый на пути получает 30 отравления, а закрытый мех на 3 секунды замирает - не ходит, не поворачивается и не стреляет. За зарядом местами ржавеет полоса шириной до 5 клеток. Защита от магии гасит заряд. Перезарядка 35 секунд."
+	summary = "Заряд ржавчины на 15 клеток: 30 отравления, мех замирает на 3 секунды."
 	projectile_type = /obj/item/projectile/magic/spell/rust_wave
 	charge_max = 350
 	clothes_req = FALSE
@@ -551,7 +565,7 @@
 	name = "rust bolt"
 	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
 	icon_state = "rust_bolt"
-	damage = 50
+	damage = 30
 	damage_type = TOX
 	nodamage = 0
 	hitsound = HERETIC_RUST_PATRON_HIT_SOUND
@@ -565,6 +579,12 @@
 		victim.visible_message(span_warning("Заряд ржавчины рассыпается хлопьями, едва коснувшись [victim]."))
 		return PROJECTILE_DELETE_WITHOUT_HITTING
 	return ..()
+
+/obj/item/projectile/magic/spell/rust_wave/on_hit(atom/target, blocked = FALSE, pierce_hit)
+	. = ..()
+	if(ismecha(target))
+		var/obj/vehicle/sealed/mecha/mech = target
+		mech.heretic_patron_jam(firer)
 
 /obj/item/projectile/magic/spell/rust_wave/Moved(atom/OldLoc, Dir)
 	. = ..()
@@ -585,7 +605,8 @@
 
 /obj/effect/proc_holder/spell/aimed/rust_wave/short
 	name = "Малая длань покровителя"
-	summary = "Заряд ржавчины на 7 клеток: 50 отравления и ржавый след."
+	desc = "Выпустите заряд ржавчины на 7 клеток: первый на пути получает 30 отравления, а закрытый мех на 3 секунды замирает. За зарядом местами ржавеет полоса шириной до 5 клеток. Защита от магии гасит заряд. Перезарядка 35 секунд."
+	summary = "Заряд ржавчины на 7 клеток: 30 отравления, мех замирает на 3 секунды."
 	projectile_type = /obj/item/projectile/magic/spell/rust_wave/short
 
 /obj/item/projectile/magic/spell/rust_wave/short
@@ -594,8 +615,8 @@
 /obj/effect/proc_holder/spell/pointed/cleave
 	heretic_stun_check = TRUE
 	name = "Рассечение"
-	desc = "Нанесите 20 ушибов, резаную рану и кровотечение выбранному человеку и врагам в одной клетке от него."
-	summary = "20 ушибов, рана и кровотечение человеку и врагам рядом с ним."
+	desc = "Нанесите 20 ушибов выбранному живому существу и врагам в одной клетке от него; людям ещё резаная рана и кровотечение."
+	summary = "20 ушибов цели и врагам рядом, людям ещё рана и кровотечение."
 	school = "transmutation"
 	charge_max = 350
 	clothes_req = FALSE
@@ -608,32 +629,34 @@
 
 /obj/effect/proc_holder/spell/pointed/cleave/cast(list/targets, mob/user)
 	if(!length(targets) || !can_target(targets[1], user))
-		heretic_revert_cast(user, heretic_failure_reason || "Выберите живого человека с конечностями.")
+		heretic_revert_cast(user, heretic_failure_reason || "Выберите живое существо.")
 		return FALSE
 	var/attempted_hit = FALSE
-	for(var/mob/living/carbon/human/victim in view(1, targets[1]))
-		if(!length(victim.bodyparts) || victim.stat == DEAD || victim == user || IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
+	for(var/mob/living/victim in view(1, targets[1]))
+		if(victim.stat == DEAD || victim == user || IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
 			continue
 		attempted_hit = TRUE
 		if(!heretic_can_affect(user, victim))
 			continue
-		var/obj/item/bodypart/limb = pick(victim.bodyparts)
-		var/datum/wound/slash/moderate/wound = new
-		wound.apply_wound(limb)
-		limb.generic_bleedstacks += 3
+		var/mob/living/carbon/human/person = victim
+		if(istype(person) && length(person.bodyparts))
+			var/obj/item/bodypart/limb = pick(person.bodyparts)
+			var/datum/wound/slash/moderate/wound = new
+			wound.apply_wound(limb)
+			limb.generic_bleedstacks += 3
 		victim.adjustBruteLoss(20)
 		new /obj/effect/temp_visual/cleave(victim.drop_location())
 	if(!attempted_hit)
-		heretic_revert_cast(user, "В месте удара не осталось живых противников с конечностями.")
+		heretic_revert_cast(user, "В месте удара не осталось живых противников.")
 
 /obj/effect/proc_holder/spell/pointed/cleave/can_target(atom/target, mob/user, silent)
 	. = ..()
 	if(!.)
 		return FALSE
-	if(!heretic_check(user, ishuman(target), silent, "Рассечение действует на людей; животные и учебные оперативники не подходят."))
+	if(!heretic_check(user, isliving(target), silent, "Рассечение режет живых существ: укажите саму цель, а не предмет или пол."))
 		return FALSE
-	var/mob/living/carbon/human/victim = target
-	return heretic_check(user, victim.stat != DEAD && length(victim.bodyparts), silent, "Нужен живой человек с конечностями.")
+	var/mob/living/victim = target
+	return heretic_check(user, victim.stat != DEAD, silent, "Мёртвых Рассечение не режет.")
 
 /obj/effect/proc_holder/spell/pointed/cleave/long
 	charge_max = 650
@@ -687,19 +710,19 @@
 /obj/effect/proc_holder/spell/targeted/touch/grasp_of_decay
 	heretic_stun_check = TRUE
 	name = "Хватка распада"
-	desc = "Коснитесь врага: 2 секунды на земле и 20 секунд распада, повреждающего тело и органы. Сбитого на ржавчине своего очага можно оплести Ржавыми корнями. Перезарядка 2 минуты."
-	summary = "Касание: 2 секунды на полу и 20 секунд распада."
+	desc = "Подготовьте руку и коснитесь врага или, стоя на ржавом полу, укажите его на виду до 7 клеток: через 0,8 секунды цепь подтащит его к вам, ржавя путь. Цель падает на 2 секунды и 20 секунд гниёт: ушибы, головокружение, органы. Цепь рвётся, если вы сошли с ржавчины или цель скрылась из виду; пристёгнутую или удерживаемую товарищем цель она не сдёрнет, а через пропасть, лаву и провал на нижний уровень не протащит - рывок кончится у края. Защита от магии гасит хватку. Перезарядка 2 минуты."
+	summary = "Цепь с ржавчины тянет врага из 7 клеток к вам: 2 секунды на полу и 20 секунд распада."
 	hand_path = /obj/item/melee/touch_attack/grasp_of_decay
 	school = "evocation"
-	charge_max = 1200
+	charge_max = HERETIC_RUST_CHAIN_COOLDOWN
 	clothes_req = FALSE
-	action_icon = 'modular_bluemoon/icons/obj/heretic_rust_fx.dmi'
-	action_icon_state = "decay_grasp_action"
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "rust_grasp_chain"
 	action_background_icon_state = "bg_ecult"
 
 /obj/item/melee/touch_attack/grasp_of_decay
 	name = "Grasp of Decay"
-	desc = "Ржавая гниющая ладонь, разлагающая чужую плоть изнутри."
+	desc = "Ржавая гниющая ладонь, разлагающая чужую плоть изнутри. Коснитесь врага или, стоя на ржавом полу, укажите его издалека: цепь подтащит его к вам."
 	icon = 'modular_bluemoon/icons/obj/heretic_rust_fx.dmi'
 	icon_state = "decay_grasp"
 	item_state = "decay_grasp"
@@ -708,18 +731,27 @@
 	catchphrase = "SKILI'EDUONIS"
 
 /obj/item/melee/touch_attack/grasp_of_decay/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
-	if(!proximity_flag || target == user)
+	if(target == user || chain_target)
+		return
+	if(!proximity_flag)
+		start_chain(target, user)
 		return
 	if(!iscarbon(target))
+		if(isliving(target))
+			to_chat(user, span_warning("Распад берёт только людей и других существ из плоти и крови. Хватка сохранена."))
 		return
 	var/mob/living/carbon/victim = target
 	if(IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
+		to_chat(user, span_warning("Распад не тронет своих. Хватка сохранена."))
+		return
+	if(victim.alerts["antag_training_safe"])
+		to_chat(user, span_notice("Цель в безопасном центре полигона. Хватка сохранена."))
 		return
 	if(!heretic_can_affect(user, target))
 		return ..()
 	playsound(user, 'modular_bluemoon/sound/heretic/rust_decay.ogg', 70, TRUE)
 	new /obj/effect/temp_visual/heretic_oldpath/rust(get_turf(victim))
-	victim.Knockdown(2 SECONDS)
+	victim.Knockdown(HERETIC_RUST_CHAIN_KNOCKDOWN)
 	victim.apply_status_effect(/datum/status_effect/corrosion_curse/lesser)
 	log_combat(user, victim, "коснулся хваткой распада")
 	return ..()
@@ -804,7 +836,7 @@
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "flesh_shapeshift"
 	action_background_icon_state = "bg_ecult"
-	sound = 'sound/magic/enter_blood.ogg'
+	sound = 'modular_bluemoon/sound/heretic/common/shapeshift.ogg'
 	possible_shapes = list(/mob/living/simple_animal/mouse,\
 		/mob/living/simple_animal/pet/dog/corgi,\
 		/mob/living/simple_animal/hostile/carp,\
@@ -1125,7 +1157,7 @@
 	mutations = list(MUT_MUTE)
 	duration = 30 SECONDS
 	charge_max = 1200 // needs to be higher than the duration or it'll be permanent
-	sound = 'sound/magic/blind.ogg'
+	sound = 'modular_bluemoon/sound/heretic/common/mute_cast.ogg'
 
 /obj/effect/proc_holder/spell/pointed/trigger/mute/can_target(atom/target, mob/user, silent)
 	. = ..()
@@ -1295,41 +1327,59 @@
 	heretic_stun_check = TRUE
 	usable_while_grabbed = TRUE
 	name = "Пустотный сдвиг"
-	desc = "Переместитесь на открытую клетку в поле зрения в 3–7 клетках от вас. Враги возле точек выхода и входа получают 20 ушибов и замедляются на 4 секунды. Работает в чужой хватке, но до вознесения не под оглушением."
+	desc = "Переместитесь на открытую клетку в поле зрения в 3–7 клетках от вас; щелчок ближе переносит по той же линии на 3 клетки. Враги возле точек выхода и входа получают 20 ушибов и замедляются на 4 секунды. Работает в чужой хватке, но до вознесения не под оглушением. На ЦентКоме и в других зонах без телепортации не работает."
 	summary = "Прыжок на 3-7 клеток: удар и замедление врагам у входа и выхода."
 	invocation_type = "whisper"
 	invocation = "PAS'VEIK"
 	clothes_req = FALSE
-	range = 7
+	range = HERETIC_VOID_BLINK_RANGE
 	action_background_icon_state = "bg_ecult"
 	charge_max = 300
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "voidblink"
 	selection_type = "range"
+	active_msg = "Укажите свободную клетку в поле зрения не дальше 7 клеток: ближе 3 сдвиг всё равно перенесёт на 3 клетки по той же линии."
+	deactive_msg = "Вы отпускаете пустоту."
+
+/// Щелчок ближе предела переносит по той же линии на минимальную дальность.
+/obj/effect/proc_holder/spell/pointed/void_blink/proc/blink_destination(mob/user, atom/target)
+	var/turf/origin = get_turf(user)
+	var/turf/clicked = get_turf(target)
+	if(!origin || !clicked || clicked.z != origin.z)
+		return clicked
+	var/distance = get_dist(origin, clicked)
+	if(!distance || distance >= HERETIC_VOID_BLINK_MIN_RANGE)
+		return clicked
+	var/scale = HERETIC_VOID_BLINK_MIN_RANGE / distance
+	return locate(origin.x + round((clicked.x - origin.x) * scale, 1), origin.y + round((clicked.y - origin.y) * scale, 1), origin.z)
 
 /obj/effect/proc_holder/spell/pointed/void_blink/can_target(atom/target, mob/user, silent)
 	if(!..())
 		return FALSE
-	var/turf/destination = get_turf(target)
+	var/turf/destination = blink_destination(user, target)
 	if(!heretic_check(user, destination && user.z == destination.z, silent, "Укажите клетку на своём уровне."))
 		return FALSE
-	if(!heretic_check(user, get_dist(user, destination) >= 3, silent, "Слишком близко: сдвиг переносит на 3–7 клеток."))
+	if(!heretic_check(user, get_dist(user, destination) >= HERETIC_VOID_BLINK_MIN_RANGE, silent, "Укажите клетку в стороне от себя: сдвиг переносит на [HERETIC_VOID_BLINK_MIN_RANGE]–[HERETIC_VOID_BLINK_RANGE] клеток."))
 		return FALSE
-	if(!heretic_check(user, destination in view(7, user), silent, "Укажите видимую клетку не дальше 7 клеток."))
+	var/extended = destination != get_turf(target) ? " Ближе [HERETIC_VOID_BLINK_MIN_RANGE] клеток сдвиг переносит дальше по той же линии, а там пути нет." : ""
+	if(!heretic_check(user, destination in view(HERETIC_VOID_BLINK_RANGE, user), silent, "Укажите видимую клетку не дальше [HERETIC_VOID_BLINK_RANGE] клеток.[extended]"))
 		return FALSE
-	return heretic_check(user, isopenturf(destination) && !is_blocked_turf(destination, TRUE), silent, "Точка выхода должна быть свободным полом без преград.")
+	if(!heretic_check(user, isopenturf(destination) && !is_blocked_turf(destination, TRUE), silent, "Точка выхода должна быть свободным полом без преград.[extended]"))
+		return FALSE
+	var/lock = heretic_void_teleport_lock(user, destination, user)
+	return heretic_check(user, !lock, silent, lock)
 
 /obj/effect/proc_holder/spell/pointed/void_blink/cast(list/targets, mob/user)
 	if(!length(targets) || !can_target(targets[1], user, TRUE))
 		heretic_revert_cast(user)
 		return
 	var/turf/departure = get_turf(user)
-	var/turf/destination = get_turf(targets[1])
+	var/turf/destination = blink_destination(user, targets[1])
 	if(!do_teleport(user, destination, channel = TELEPORT_CHANNEL_MAGIC))
 		heretic_revert_cast(user, "Пространство здесь закреплено: телепортация не работает.")
 		return
-	playsound(departure, 'sound/magic/voidblink.ogg', 80, TRUE)
-	playsound(destination, 'sound/magic/voidblink.ogg', 80, TRUE)
+	playsound(departure, HERETIC_VOID_BLINK_OUT_SFX, 80, TRUE)
+	playsound(destination, HERETIC_VOID_BLINK_IN_SFX, 80, TRUE)
 	new /obj/effect/temp_visual/voidin(departure)
 	new /obj/effect/temp_visual/voidout(destination)
 	new /obj/effect/temp_visual/heretic_oldpath/void(departure)
@@ -1341,7 +1391,7 @@
 		victims |= victim
 	for(var/mob/living/victim as anything in victims)
 		if(heretic_can_affect(user, victim))
-			victim.adjustBruteLoss(20)
+			victim.adjustBruteLoss(HERETIC_VOID_BLINK_DAMAGE)
 			victim.apply_status_effect(/datum/status_effect/heretic_void_chill)
 
 /obj/effect/temp_visual/voidin
@@ -1395,13 +1445,13 @@
 /obj/effect/proc_holder/spell/pointed/boogie_woogie
 	heretic_stun_check = TRUE
 	name = "Аплодисменты пустоты"
-	desc = "Хлопните в ладоши и поменяйтесь местами с выбранной целью. После успешного обмена враждебная цель замедляется на 4 секунды."
-	summary = "Обмен местами с живым существом в поле зрения."
+	desc = "Хлопните в ладоши и поменяйтесь местами с выбранной целью в 15 клетках. После успешного обмена враждебная цель замедляется на 4 секунды. Перезарядка 30 секунд. На ЦентКоме и в других зонах без телепортации не работает."
+	summary = "Обмен местами с живым существом в поле зрения раз в 30 секунд."
 	school = "transmutation"
-	charge_max = 100
+	charge_max = HERETIC_VOID_APPLAUSE_COOLDOWN
 	clothes_req = FALSE
 	invocation_type = "none"
-	range = 15
+	range = HERETIC_VOID_APPLAUSE_RANGE
 	message = "Мир вокруг вас внезапно меняется!"
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "void_applause"
@@ -1443,7 +1493,10 @@
 		return FALSE
 	if(!heretic_check(user, !victim.check_magic_resistance(chargecost = 0), silent, "Цель защищена от магии."))
 		return FALSE
-	return heretic_check(user, !is_blocked_turf(get_turf(victim), TRUE) && !is_blocked_turf(get_turf(user), TRUE), silent, "Одну из клеток занимает преграда.")
+	if(!heretic_check(user, !is_blocked_turf(get_turf(victim), TRUE) && !is_blocked_turf(get_turf(user), TRUE), silent, "Одну из клеток занимает преграда."))
+		return FALSE
+	var/lock = heretic_void_teleport_lock(user, get_turf(victim), user) || heretic_void_teleport_lock(victim, get_turf(user), user)
+	return heretic_check(user, !lock, silent, lock)
 
 /obj/effect/proc_holder/spell/aoe_turf/domain_expansion
 	heretic_stun_check = TRUE
@@ -1454,8 +1507,8 @@
 	clothes_req = FALSE
 	invocation_type = "none"
 	range = 0
-	action_icon = 'modular_bluemoon/icons/obj/heretic_void_fx.dmi'
-	action_icon_state = "void_domain"
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "void_domain_expand"
 	action_background_icon_state = "bg_ecult"
 	var/obj/effect/domain_expansion/active_domain
 

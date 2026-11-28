@@ -6,6 +6,8 @@
 #define HERETIC_WAX_SHELL_CAPACITY 45
 #define HERETIC_WAX_HEAL_LIMIT 25
 #define HERETIC_WAX_IMPRINT_DAMAGE 14
+#define HERETIC_WAX_MARK_DAMAGE 8
+#define HERETIC_WAX_SHATTER_RANGE 1
 #define HERETIC_WAX_EFFIGY_CAPACITY 30
 #define HERETIC_WAX_EFFIGY_SEALED_CAPACITY 45
 #define HERETIC_WAX_EFFIGY_HIT_LIMIT 15
@@ -74,8 +76,8 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 	id = PATH_WAX
 	deed_type = /datum/heretic_deed/wax
 	name = "Воск"
-	tagline = "Лепит кукол по отпечаткам пальцев, усыпляет по кукле и протекает под дверью."
-	craft_summary = "Хватка в «Помощи» по вещи с отпечатками, ID-карте или КПК лепит куклу; держатся 2 куклы."
+	tagline = "Лепит куклу по отпечаткам, колет её издали и усыпляет жертву, растопив воск."
+	craft_summary = "Хватка в «Помощи» по вещи с отпечатками, ID-карте или КПК лепит куклу, цель охоты первой; держатся 2 куклы."
 	capture_summary = "Растопите куклу 5 секунд - цель охоты в 9 клетках уснёт на 8 секунд, и кукла утянет её в изнанку."
 	escape_summary = "Протечь: 4 секунды вы неуязвимой лужицей ползёте под дверями и шлюзами; из изнанки выходите к своей свече."
 	strength_points = list(
@@ -83,7 +85,7 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 		"Спящую цель охоты кукла в руке утягивает в изнанку, не подходя к ней.",
 		"Протечь уводит под закрытым шлюзом, даже на болтах, и вырывает из чужих рук.",
 		"Волна ранит и замедляет врагов в 3 клетках, оттиск и двойник - в 5; выброс оболочки бьёт на 5 без замедления.",
-		"Оболочка принимает удары, канделябр переплавляет принятое в лечение.",
+		"Оболочка принимает удары, канделябр лечит принятое, а взрыв метки бесплатно снимает оттиск.",
 		"Вознёсшийся раз в 5 минут встаёт из крита у одной из трёх своих свечей.",
 	)
 	weakness_points = list(
@@ -111,7 +113,7 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 	summary = "Лепит кукол по чужим отпечаткам и колет их, отливает свечи из бумаги и бьёт веером воска за 1 Воск."
 	details = list(
 		"Нож и свеча на руне дают восковой клинок.",
-		"Хватка в «Помощи» по вещи с отпечатками живого человека с разумом, его ID-карте или КПК лепит его куклу в руку.",
+		"Хватка в «Помощи» по вещи с отпечатками, ID или КПК лепит куклу: цель охоты сразу, иначе меню; отмена тратит Хватку.",
 		"Держатся 2 куклы, новая вытесняет старую; потерянную опознают по бирке, огонь и нулевой жезл её губят.",
 		"Используйте куклу в руке: человек на вашем уровне чувствует укол и сторону, где кукла; перезарядка 30 секунд.",
 		"Укол по прицелу: ноги - шаг вбок, рука - роняет вещь, голова - кружение, рот - немота на 3 секунды.",
@@ -149,6 +151,8 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 	var/list/datum/status_effect/heretic_wax_melting/meltings = list()
 	var/datum/status_effect/heretic_wax_leak/leak
 	var/wax_failure
+	/// Подсказки, которые еретик уже видел: каждая показывается один раз.
+	var/list/taught_hints = list()
 	COOLDOWN_DECLARE(wax_recovery)
 	COOLDOWN_DECLARE(wax_harvest)
 
@@ -193,6 +197,14 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 	puppets.Cut()
 	return ..()
 
+/// Короткая подсказка при первом знакомстве с приёмом: каждая показывается один раз за роль.
+/datum/eldritch_knowledge/base_wax/proc/teach(mob/living/user, key, message)
+	if(!user || (key in taught_hints))
+		return FALSE
+	taught_hints += key
+	to_chat(user, span_notice("Подсказка Воска: [message]"))
+	return TRUE
+
 /datum/eldritch_knowledge/base_wax/proc/clear_wax()
 	QDEL_LIST(effects)
 	QDEL_LIST(marks)
@@ -207,7 +219,7 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 
 /datum/eldritch_knowledge/base_wax/proc/can_use(mob/living/user, allow_incapacitated = FALSE, ignore_grab = FALSE, ignore_leak = FALSE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return !QDELETED(src) && user && user == wax_body && (ignore_leak || !leak) && user.stat != DEAD && (allow_incapacitated || !user.incapacitated(ignore_grab = ignore_grab)) && isturf(user.loc) && heretic?.selected_path == PATH_WAX && !heretic.role_removed && heretic.get_knowledge(type) == src
+	return !QDELETED(src) && user && user == wax_body && (ignore_leak || !leak) && user.stat != DEAD && (allow_incapacitated || !heretic_incapacitated(user, ignore_grab)) && isturf(user.loc) && heretic?.selected_path == PATH_WAX && !heretic.role_removed && heretic.get_knowledge(type) == src
 
 /datum/eldritch_knowledge/base_wax/proc/line_clear(atom/start, atom/target, distance = HERETIC_WAX_RANGE)
 	var/turf/origin = get_turf(start)
@@ -300,15 +312,25 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 /datum/eldritch_knowledge/base_wax/proc/tile_open(turf/tile)
 	return isopenturf(tile) && !tile.is_blocked_turf(exclude_mobs = TRUE)
 
+/// Оболочка, которую сейчас выбросит «Снять печать» в «Разоружении».
+/datum/eldritch_knowledge/base_wax/proc/releasable_shell(mob/living/user)
+	var/datum/status_effect/heretic_wax/shell/shell = user?.has_status_effect(/datum/status_effect/heretic_wax/shell)
+	return (!QDELETED(shell) && shell.wax_ref?.resolve() == src && shell.capacity > 0) ? shell : null
+
 /datum/eldritch_knowledge/base_wax/get_combat_resource_data()
 	var/list/data = ..()
-	data["name"] = wax_body?.a_intent == INTENT_DISARM ? "Воск: выброс оболочки" : "Воск: волна"
+	data["name"] = (wax_body?.a_intent == INTENT_DISARM && releasable_shell(wax_body)) ? "Воск: выброс оболочки" : "Воск: волна"
 	return data
 
 /datum/eldritch_knowledge/base_wax/combat_resource_state()
 	var/datum/status_effect/heretic_wax/shell/shell = wax_body?.has_status_effect(/datum/status_effect/heretic_wax/shell)
 	. = "Кукол: [length(puppets)] из [HERETIC_WAX_PUPPET_LIMIT]. "
-	. += wax_body?.a_intent == INTENT_DISARM ? "Сейчас «Снять печать» расходует оставшуюся оболочку и её лечение, создавая веер в пяти клетках. Чтобы выпустить обычную волну за 1 воск, смените намерение «Разоружить»." : "Сейчас «Снять печать» выпускает волну за 1 воск в трёх клетках перед вами. В намерении «Разоружить» вместо неё расходуется оболочка."
+	if(wax_body?.a_intent != INTENT_DISARM)
+		. += "Сейчас «Снять печать» выпускает волну за 1 воск в трёх клетках перед вами. В намерении «Разоружить» вместо неё расходуется оболочка, если она на вас."
+	else if(releasable_shell(wax_body))
+		. += "Сейчас «Снять печать» расходует оставшуюся оболочку и её лечение, создавая веер в пяти клетках. Чтобы выпустить обычную волну за 1 воск, смените намерение «Разоружить»."
+	else
+		. += "Оболочки нет, поэтому «Снять печать» и в «Разоружении» выпустит обычную волну за 1 воск."
 	. += " Оболочка: [shell?.capacity || 0] защиты."
 	if(!QDELETED(active_effigy) && !QDELETED(active_effigy.effigy))
 		. += " Двойник: [active_effigy.owner.real_name], осталось [active_effigy.effigy.obj_integrity] переносимого урона и [round(max(0, active_effigy.duration - world.time) / (1 SECONDS), 0.1)] с. Бейте его своим восковым клинком."
@@ -371,11 +393,14 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 		return FALSE
 	var/release_range = HERETIC_WAX_RELEASE_RANGE
 	var/damage = 18
-	if(consume_shell)
-		var/datum/status_effect/heretic_wax/shell/shell = user.has_status_effect(/datum/status_effect/heretic_wax/shell)
-		if(QDELETED(shell) || shell.wax_ref?.resolve() != src || shell.capacity <= 0)
-			wax_failure = "Для выброса нужна неповреждённая часть погребальной оболочки."
+	var/datum/status_effect/heretic_wax/shell/shell = consume_shell ? releasable_shell(user) : null
+	if(consume_shell && !shell)
+		consume_shell = FALSE
+		if(combat_resource < 1)
+			wax_failure = "Оболочки для выброса нет, а обычной волне нужен 1 Воск; сейчас [combat_resource]. Оболочку на [HERETIC_WAX_SHELL_COST] Воска даёт «Погребальная оболочка»."
 			return FALSE
+		to_chat(user, span_notice("Оболочки нет, поэтому вместо выброса вышла обычная волна за 1 Воск."))
+	if(consume_shell)
 		damage = min(HERETIC_WAX_SHELL_RELEASE_LIMIT, shell.capacity * HERETIC_WAX_SHELL_RELEASE_FRACTION)
 		release_range = HERETIC_WAX_RANGE
 		qdel(shell)
@@ -412,23 +437,46 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 	QDEL_NULL(old_shell)
 	user.apply_status_effect(/datum/status_effect/heretic_wax/shell, src, required)
 	heretic_wax_sound(user, "shell", 55, TRUE)
+	lesson_event("shell", user)
+	teach(user, "shell", "в намерении «Разоружить» «Снять печать» выбросит оболочку веером на [HERETIC_WAX_RANGE] клеток, а канделябр в руке переплавит принятые ею удары разумных врагов в лечение.")
 	return TRUE
 
-/datum/eldritch_knowledge/base_wax/proc/imprint(mob/living/user, mob/living/victim)
+/// Тройной фитиль: оболочка, разбитая ударами, облепляет осколками всех врагов вплотную.
+/datum/eldritch_knowledge/base_wax/proc/shatter_shell(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/wax_imprint)
-	if(!can_use(user) || QDELETED(required) || !isturf(victim?.loc) || !line_clear(user, victim) || !heretic_can_affect(user, victim, chargecost = 0) || combat_resource < 1)
+	var/datum/eldritch_knowledge/wax_temper/temper = heretic?.get_knowledge(/datum/eldritch_knowledge/wax_temper)
+	if(QDELETED(temper) || !can_use(user))
 		return FALSE
-	if(!heretic_can_affect(user, victim))
+	. = FALSE
+	for(var/mob/living/victim in range(HERETIC_WAX_SHATTER_RANGE, user))
+		if(victim == user || !line_clear(user, victim, HERETIC_WAX_SHATTER_RANGE) || !heretic_can_affect(user, victim, chargecost = 0))
+			continue
+		seal(victim)
+		hinder(victim, temper)
+		new /obj/effect/temp_visual/heretic_wax/burst(get_turf(victim), src)
+		log_combat(user, victim, "облепляет осколками разбитой оболочки")
+		. = TRUE
+	if(.)
+		user.visible_message(span_danger("Восковая оболочка [user] лопается, и липкие осколки облепляют всех вокруг!"))
+
+/// free_source - знание, которое снимает оттиск бесплатно (взрыв метки): без цены, с малым уроном, печать идёт только на крепость двойника.
+/datum/eldritch_knowledge/base_wax/proc/imprint(mob/living/user, mob/living/victim, datum/eldritch_knowledge/free_source)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/required = free_source || heretic?.get_knowledge(/datum/eldritch_knowledge/spell/wax_imprint)
+	if(!can_use(user) || QDELETED(required) || !isturf(victim?.loc) || !line_clear(user, victim) || !heretic_can_affect(user, victim, chargecost = 0) || (!free_source && combat_resource < 1))
 		return FALSE
-	spend_combat_resource()
+	if(!free_source)
+		if(!heretic_can_affect(user, victim))
+			return FALSE
+		spend_combat_resource()
 	var/datum/status_effect/heretic_wax/seal/sealed = victim.has_status_effect(/datum/status_effect/heretic_wax/seal)
-	var/damage = HERETIC_WAX_IMPRINT_DAMAGE
+	var/damage = free_source ? HERETIC_WAX_MARK_DAMAGE : HERETIC_WAX_IMPRINT_DAMAGE
 	var/effigy_capacity = HERETIC_WAX_EFFIGY_CAPACITY
 	if(sealed?.wax_ref?.resolve() == src)
-		damage += 12
 		effigy_capacity = HERETIC_WAX_EFFIGY_SEALED_CAPACITY
-		victim.adjustStaminaLoss(25)
+		if(!free_source)
+			damage += 12
+			victim.adjustStaminaLoss(25)
 		qdel(sealed)
 	victim.adjustBruteLoss(damage)
 	if(!can_use(user) || QDELETED(victim))
@@ -441,6 +489,7 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 	notify_resource_changed()
 	new /obj/effect/temp_visual/heretic_wax/burst(get_turf(victim), src)
 	heretic_wax_sound(victim, "impact", 55, TRUE)
+	lesson_event("imprint", victim, effigy_capacity == HERETIC_WAX_EFFIGY_SEALED_CAPACITY)
 	return TRUE
 
 /datum/eldritch_knowledge/base_wax/proc/procession(mob/living/user, crown = FALSE)
@@ -467,7 +516,7 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 		return isturf(target.loc) && user.Adjacent(target) && cast_candle(user, target)
 	if(user.a_intent != INTENT_HELP || !isitem(target) || istype(target, /obj/item/melee/touch_attack))
 		return FALSE
-	if(target.loc != user && (!isturf(target.loc) || !user.Adjacent(target)))
+	if(!puppet_source_reachable(user, target))
 		return FALSE
 	return make_puppet(user, target)
 
@@ -515,36 +564,80 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 			return puppet
 	return null
 
+/// Кого можно слепить с вещи, по порядку: цель охоты, новые для дела люди, уже засчитанные; print -> подпись в меню.
+/datum/eldritch_knowledge/base_wax/proc/puppet_options(obj/item/source, mob/living/user, datum/antagonist/heretic/heretic)
+	. = list()
+	var/list/models = puppet_models(source, user)
+	if(!length(models))
+		grasp_failure_reason = "На [source] нет отпечатков или имени живого человека с разумом: свои отпечатки и имя не годятся."
+		return
+	var/list/hunted = list()
+	var/list/fresh = list()
+	var/list/counted = list()
+	var/wait_reason
+	for(var/print in models)
+		var/mob/living/carbon/human/candidate = models[print]
+		if(puppet_of(candidate))
+			continue
+		var/countable = heretic.deed && !(print in heretic.deed.counted_keys)
+		if(candidate.mind && candidate.mind == heretic.hunt_target)
+			hunted[print] = "[candidate.real_name] - цель охоты"
+		else if(!countable)
+			counted[print] = "[candidate.real_name] - уже в деле"
+		else if(heretic.deed_wait_reason(print))
+			wait_reason ||= heretic.deed_wait_reason(print)
+		else
+			fresh[print] = "[candidate.real_name] - новое лицо для дела"
+	. = hunted + fresh + counted
+	if(!length(.))
+		grasp_failure_reason = wait_reason || "Куклы всех, чьи отпечатки есть на [source], уже у вас."
+
+/// Меню нужно, когда выбирать есть из кого и первой не идёт цель охоты.
+/datum/eldritch_knowledge/base_wax/proc/puppet_menu_needed(mob/living/user, list/options, list/models, datum/antagonist/heretic/heretic)
+	var/mob/living/carbon/human/first_model = models[options[1]]
+	return length(options) > 1 && user.client && !(first_model.mind && first_model.mind == heretic.hunt_target)
+
+/// Цель охоты лепится сразу, из нескольких других игрок выбирает в круговом меню.
+/datum/eldritch_knowledge/base_wax/proc/choose_puppet_print(mob/living/user, obj/item/source, list/options, list/models, datum/antagonist/heretic/heretic)
+	if(!puppet_menu_needed(user, options, models, heretic))
+		return options[1]
+	var/list/choices = list()
+	var/list/prints_by_label = list()
+	for(var/print in options)
+		choices[options[print]] = image(icon = HERETIC_WAX_ITEMS_ICON, icon_state = "wax_puppet")
+		prints_by_label[options[print]] = print
+	var/label = show_radial_menu(user, source.loc == user ? user : source, choices, custom_check = CALLBACK(src, PROC_REF(puppet_source_reachable), user, source), require_near = TRUE, tooltips = TRUE)
+	return label ? prints_by_label[label] : null
+
+/// Хватка уже раскрыла в меню чужие отпечатки: без куклы она всё равно уходит.
+/datum/eldritch_knowledge/base_wax/proc/puppet_menu_wasted(mob/living/user, menu, reason)
+	if(!menu)
+		grasp_failure_reason = reason
+		return FALSE
+	to_chat(user, span_warning("[reason] Хватка ушла в воск впустую."))
+	return TRUE
+
+/datum/eldritch_knowledge/base_wax/proc/puppet_source_reachable(mob/living/user, obj/item/source)
+	return can_use(user) && !QDELETED(source) && (source.loc == user || (isturf(source.loc) && user.Adjacent(source)))
+
 /datum/eldritch_knowledge/base_wax/proc/make_puppet(mob/living/user, obj/item/source)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	if(!heretic || istype(source, /obj/item/heretic_wax_puppet))
 		return FALSE
+	var/list/options = puppet_options(source, user, heretic)
+	if(!length(options))
+		return FALSE
 	var/list/models = puppet_models(source, user)
-	if(!length(models))
-		grasp_failure_reason = "На [source] нет отпечатков или имени живого человека с разумом: свои отпечатки и имя не годятся."
-		return FALSE
-	var/fresh_print
-	var/counted_print
-	for(var/candidate_print in models)
-		if(puppet_of(models[candidate_print]))
-			continue
-		if(heretic.deed && !(candidate_print in heretic.deed.counted_keys))
-			fresh_print ||= candidate_print
-		else
-			counted_print ||= candidate_print
-	if(!fresh_print && !counted_print)
-		grasp_failure_reason = "Куклы всех, чьи отпечатки есть на [source], уже у вас."
-		return FALSE
-	var/print = fresh_print || counted_print
-	if(fresh_print)
-		var/wait_reason = heretic.deed_wait_reason(fresh_print)
-		if(wait_reason)
-			if(!counted_print)
-				grasp_failure_reason = wait_reason
-				return FALSE
-			print = counted_print
-	var/fresh = print == fresh_print
-	var/mob/living/carbon/human/model = models[print]
+	var/menu = puppet_menu_needed(user, options, models, heretic)
+	var/print = choose_puppet_print(user, source, options, models, heretic)
+	if(!print)
+		return puppet_menu_wasted(user, menu, "Кукла не выбрана.")
+	// Меню ждёт игрока: за это время вещь, человек или пауза дела могли измениться.
+	options = puppet_options(source, user, heretic)
+	if(!(print in options) || !puppet_source_reachable(user, source))
+		return puppet_menu_wasted(user, menu, grasp_failure_reason || "Пока вы выбирали, вещь или человек стали недоступны.")
+	var/mob/living/carbon/human/model = puppet_models(source, user)[print]
+	var/fresh = heretic.deed && !(print in heretic.deed.counted_keys)
 	while(length(puppets) >= HERETIC_WAX_PUPPET_LIMIT)
 		var/obj/item/heretic_wax_puppet/oldest = puppets[1]
 		puppets -= oldest
@@ -561,7 +654,9 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 	log_game("[key_name(user)] лепит восковую куклу [key_name(model)] по [by_prints ? "отпечаткам" : "имени"] на [source] ([source.type]) в [AREACOORD(place)].")
 	if(fresh)
 		heretic.advance_deed(print, place)
+	teach(user, "puppet", "используйте куклу в руке, чтобы уколоть человека по зоне прицела. «Растопить куклу» сама достанет её из сумки, с пояса или с пола рядом. Бирку с именем видят все, огонь куклу губит.")
 	notify_resource_changed()
+	lesson_event("puppet", model)
 	return TRUE
 
 /datum/eldritch_knowledge/base_wax/on_craft_removed(atom/crafted, craft_id)
@@ -706,23 +801,56 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 	name = "Игла в губы"
 	desc = "Еретик уколол вашу восковую куклу в губы: 3 секунды вы не можете говорить. Кукла у него в руках - найдите его, пока он не уколол снова."
 
-/datum/eldritch_knowledge/base_wax/proc/held_puppet(mob/living/user)
-	var/obj/item/heretic_wax_puppet/active = user.get_active_held_item()
-	if(istype(active) && (active in puppets))
-		return active
-	for(var/obj/item/heretic_wax_puppet/puppet in user.held_items)
-		if(puppet in puppets)
-			return puppet
-	return null
+/// Кукла при еретике: в руках, на поясе, в карманах и сумках или на соседней клетке.
+/datum/eldritch_knowledge/base_wax/proc/puppet_within_reach(mob/living/user, obj/item/heretic_wax_puppet/puppet)
+	if(QDELETED(puppet))
+		return FALSE
+	if(isturf(puppet.loc))
+		return user.Adjacent(puppet)
+	var/atom/holder = puppet.loc
+	while(holder && !isturf(holder))
+		if(holder == user)
+			return TRUE
+		holder = holder.loc
+	return FALSE
 
-/datum/eldritch_knowledge/base_wax/proc/puppet_sleep_block_reason(mob/living/user)
+/// Куклы для Сна по порядку: кукла цели охоты в руке, затем при себе, затем остальные так же.
+/datum/eldritch_knowledge/base_wax/proc/sleep_puppets(mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/list/ranks = list(list(), list(), list(), list())
+	for(var/obj/item/heretic_wax_puppet/puppet as anything in puppets)
+		if(!puppet_within_reach(user, puppet))
+			continue
+		var/mob/living/model = puppet.model_ref?.resolve()
+		var/hunted = model?.mind && model.mind == heretic?.hunt_target
+		var/list/rank = ranks[(hunted ? 1 : 3) + (user.is_holding(puppet) ? 0 : 1)]
+		rank += puppet
+	. = list()
+	for(var/list/rank as anything in ranks)
+		. += rank
+
+/datum/eldritch_knowledge/base_wax/proc/find_sleep_puppet(mob/living/user)
+	wax_failure = null
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/wax_puppet_sleep)
 	if(!can_use(user) || QDELETED(required))
-		return "Способность недоступна вашему пути или текущему телу."
-	var/obj/item/heretic_wax_puppet/puppet = held_puppet(user)
-	if(!puppet)
-		return "Возьмите в руку свою восковую куклу."
+		wax_failure = "Способность недоступна вашему пути или текущему телу."
+		return null
+	var/list/candidates = sleep_puppets(user)
+	if(!length(candidates))
+		wax_failure = length(puppets) ? "Ваших кукол нет при вас: держите куклу в руке, на поясе, в кармане или сумке либо встаньте рядом с ней." : "У вас нет восковой куклы: слепите её Хваткой в «Помощи» по вещи с отпечатками, ID-карте или КПК человека."
+		return null
+	for(var/obj/item/heretic_wax_puppet/puppet as anything in candidates)
+		var/reason = puppet_model_block_reason(user, puppet)
+		if(!reason)
+			return puppet
+		wax_failure ||= reason
+	return null
+
+/datum/eldritch_knowledge/base_wax/proc/puppet_sleep_block_reason(mob/living/user)
+	return find_sleep_puppet(user) ? null : wax_failure
+
+/datum/eldritch_knowledge/base_wax/proc/puppet_model_block_reason(mob/living/user, obj/item/heretic_wax_puppet/puppet)
 	var/mob/living/carbon/human/model = puppet.model_ref?.resolve()
 	var/reason = heretic_capture_block_reason(user, model, HERETIC_WAX_CAPTURE)
 	if(reason)
@@ -737,11 +865,40 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 		return "Вода на коже или в крови [model.real_name] не даёт воску растаять."
 	return null
 
-/datum/eldritch_knowledge/base_wax/proc/melt_puppet(mob/living/user)
-	wax_failure = puppet_sleep_block_reason(user)
-	if(wax_failure)
+/// Достаёт куклу в свободную руку: таять она может только в руке.
+/datum/eldritch_knowledge/base_wax/proc/take_puppet(mob/living/user, obj/item/heretic_wax_puppet/puppet)
+	if(!length(user.get_empty_held_indexes()))
+		wax_failure = "Освободите руку: кукла [puppet.model_name] при вас, но таять она может только в руке."
 		return FALSE
-	var/obj/item/heretic_wax_puppet/puppet = held_puppet(user)
+	if(puppet.loc == user && !user.temporarilyRemoveItemFromInventory(puppet))
+		wax_failure = "Кукла [puppet.model_name] не снимается. Возьмите её в руку сами."
+		return FALSE
+	if(!user.put_in_hands(puppet))
+		wax_failure = "Куклу [puppet.model_name] не удалось взять в руку."
+		return FALSE
+	to_chat(user, span_notice("Вы достаёте восковую куклу [puppet.model_name]."))
+	return TRUE
+
+/// Первая по порядку годная кукла, которую можно взять в руку: кукла в сумке при занятых руках уступает кукле в руке.
+/datum/eldritch_knowledge/base_wax/proc/ready_sleep_puppet(mob/living/user)
+	if(!find_sleep_puppet(user))
+		return null
+	var/take_failure
+	for(var/obj/item/heretic_wax_puppet/puppet as anything in sleep_puppets(user))
+		if(puppet_model_block_reason(user, puppet))
+			continue
+		if(user.is_holding(puppet))
+			return puppet
+		if(length(user.get_empty_held_indexes()) && take_puppet(user, puppet))
+			return puppet
+		take_failure ||= length(user.get_empty_held_indexes()) ? wax_failure : "Освободите руку: кукла [puppet.model_name] при вас, но таять она может только в руке."
+	wax_failure = take_failure
+	return null
+
+/datum/eldritch_knowledge/base_wax/proc/melt_puppet(mob/living/user)
+	var/obj/item/heretic_wax_puppet/puppet = ready_sleep_puppet(user)
+	if(!puppet)
+		return FALSE
 	var/mob/living/carbon/human/model = puppet.model_ref.resolve()
 	if(!model.apply_status_effect(/datum/status_effect/heretic_wax_melting, src, puppet))
 		wax_failure = "Кукла не поддалась жару."
@@ -932,9 +1089,16 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 	if(!..())
 		return FALSE
 	var/datum/eldritch_knowledge/base_wax/wax = wax_ref.resolve()
-	var/turf/position = get_step(wax.wax_body, get_dir(wax.wax_body, owner))
-	if(!wax.tile_open(position))
-		position = get_turf(wax.wax_body)
+	var/direction = get_dir(wax.wax_body, owner)
+	var/turf/position = get_step(wax.wax_body, direction)
+	if(position == get_turf(owner) || !wax.tile_open(position))
+		position = null
+		for(var/side in list(turn(direction, 90), turn(direction, -90), turn(direction, 180)))
+			var/turf/spot = get_step(wax.wax_body, side)
+			if(spot && wax.tile_open(spot))
+				position = spot
+				break
+		position ||= get_turf(wax.wax_body)
 	effigy = new(position, src, effigy_capacity)
 	to_chat(wax.wax_body, span_eldritch("Рядом с вами появился золотистый двойник [owner.real_name]. Бейте его своим восковым клинком: до [HERETIC_WAX_EFFIGY_HIT_LIMIT] урона за удар, всего [effigy_capacity], в течение 8 секунд. Сохраняйте открытую линию к цели в пяти клетках."))
 	to_chat(owner, span_userdanger("Рядом с еретиком застыл ваш восковой двойник! Его клинок может ранить и замедлить вас через оттиск. Разбейте двойника, скройтесь за преградой или отойдите дальше пяти клеток от него или еретика!"))
@@ -1158,7 +1322,7 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 /datum/status_effect/heretic_wax/shell/proc/absorb_attack(mob/living/source, real_attack, atom/object, damage, attack_text, attack_type, armour_penetration, mob/living/attacker, def_zone, list/return_list, attack_direction)
 	SIGNAL_HANDLER
 	var/datum/eldritch_knowledge/base_wax/wax = wax_ref?.resolve()
-	if(!real_attack || capacity <= 0 || !length(candles) || !wax?.can_use(source, allow_incapacitated = TRUE) || !(attack_type & (ATTACK_TYPE_MELEE | ATTACK_TYPE_UNARMED | ATTACK_TYPE_PROJECTILE | ATTACK_TYPE_THROWN)))
+	if(!real_attack || return_list?[HERETIC_BLOCK_ABSORBED] || capacity <= 0 || !length(candles) || !wax?.can_use(source, allow_incapacitated = TRUE) || !(attack_type & (ATTACK_TYPE_MELEE | ATTACK_TYPE_UNARMED | ATTACK_TYPE_PROJECTILE | ATTACK_TYPE_THROWN)))
 		return BLOCK_NONE
 	if(istype(object, /obj/item/nullrod))
 		qdel(src)
@@ -1185,11 +1349,14 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 	var/final_damage = remaining_damage - absorbed
 	return_list[BLOCK_RETURN_SET_DAMAGE_TO] = final_damage
 	return_list[BLOCK_RETURN_MITIGATION_PERCENT] = 100 * (1 - final_damage / damage)
+	if(final_damage <= 0)
+		return_list[HERETIC_BLOCK_ABSORBED] = TRUE
 	if(capacity <= 0)
 		source.remove_movespeed_modifier(/datum/movespeed_modifier/heretic_wax_shell)
 		wax_overlay.alpha = 90
 		source.update_icon()
 		heretic_wax_sound(source, "break", HERETIC_WAX_BREAK_VOLUME, TRUE)
+		wax.shatter_shell(source)
 	else
 		heretic_wax_sound(source, "absorb", 40, TRUE)
 	return BLOCK_SHOULD_CHANGE_DAMAGE | (final_damage <= 0 ? BLOCK_SUCCESS : BLOCK_NONE)
@@ -1353,10 +1520,12 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 		UnregisterSignal(required, COMSIG_PARENT_QDELETING)
 	return ..()
 
+/// Взрыв метки бесплатно снимает оттиск; если линии нет, бьёт и запечатывает, как прежде.
 /datum/status_effect/eldritch/wax/on_effect()
 	var/datum/eldritch_knowledge/base_wax/wax = wax_ref?.resolve()
-	if(wax?.can_use(wax.wax_body) && heretic_can_affect(wax.wax_body, owner, chargecost = 0))
-		owner.adjustBruteLoss(8)
+	var/datum/eldritch_knowledge/required = knowledge_ref?.resolve()
+	if(wax?.can_use(wax.wax_body) && !QDELETED(required) && heretic_can_affect(wax.wax_body, owner, chargecost = 0) && !wax.imprint(wax.wax_body, owner, required) && !QDELETED(owner))
+		owner.adjustBruteLoss(HERETIC_WAX_MARK_DAMAGE)
 		wax.seal(owner)
 	return ..()
 
@@ -1623,6 +1792,7 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 			log_combat(caster, owner, "усыпляет восковой куклой")
 			to_chat(caster, span_eldritch(wax.doll_sleep_notice(caster, owner)))
 			puppet.bind_sleep(owner.apply_status_effect(/datum/status_effect/heretic_capture_knockout/wax_doll, wax, HERETIC_WAX_CAPTURE, sleep_time))
+			wax.lesson_event("sleep", owner)
 		heretic_capture_release(owner, HERETIC_WAX_CAPTURE, sleep_time, fell_asleep ? INFINITY : heretic_capture_held_for(held_since))
 	steam = null
 	caster = null
@@ -1836,7 +2006,8 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
 	if(!proximity_flag || !wax?.can_use(user) || !user.Adjacent(target) || !heretic_can_affect(user, target, chargecost = 0))
 		return FALSE
-	wax.seal(target)
+	if(wax.seal(target))
+		wax.teach(user, "seal", "печать на враге держится 12 секунд: ваше Снятие оттиска по нему ударит сильнее и даст крепкого двойника.")
 	wax.harvest(user, target)
 	return TRUE
 
@@ -1875,9 +2046,11 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 
 /datum/eldritch_knowledge/wax_mark
 	name = "Метка Воска"
-	summary = "Хватка ставит метку на 15 секунд, удар восковым клинком её взрывает."
+	summary = "Хватка ставит метку на 15 секунд; удар восковым клинком взрывает её и бесплатно снимает оттиск."
 	details = list(
-		"Взрыв наносит 8 ушибов и оставляет восковую печать.",
+		"Взрыв наносит 8 ушибов, замедляет на 2 секунды и ставит рядом с вами двойника цели на 8 секунд без траты воска.",
+		"Печать от Хватки взрыв тратит на крепкого двойника: 45 урона вместо 30. Новый оттиск заменяет старого двойника.",
+		"Нет прямой линии до цели - взрыв лишь бьёт на 8 ушибов и ставит печать.",
 		"Взрыв по живому разумному врагу даёт единицу воска, общая задержка с боевыми попаданиями 6 секунд.",
 	)
 	role = HERETIC_ROLE_MARK
@@ -1899,14 +2072,15 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
 	if(wax)
 		QDEL_LIST(wax.marks)
+		wax.clear_knowledge_effects(src)
 
 /datum/eldritch_knowledge/spell/wax_puppet_sleep
 	name = "Сон по кукле"
-	summary = "Со своей куклой в руке растопите её 5 секунд: цель охоты в 9 клетках уснёт на 8 секунд."
+	summary = "Кукла сама ляжет в руку: растопите её 5 секунд, и цель охоты в 9 клетках уснёт на 8 секунд."
 	details = list(
 		"Человек должен быть на вашем уровне не дальше 9 клеток; стены не мешают. Кто не цель охоты, лишь задремлет на 3 секунды.",
-		"Он сразу чувствует жар, над ним шипит пар и шепчет кукла; кукла всё это время должна быть у вас в руке.",
-		"Жар срывается, если человек уйдёт дальше 9 клеток, намокнет, выпьет воды или его либо вас тронут нулевым жезлом.",
+		"Кукла берётся из руки, пояса, кармана, сумки или с пола рядом, цели охоты - первой; руки заняты - тает та, что в руке.",
+		"Жар рвут: кукла не в руке, уход дальше 9 клеток, вода на коже или в крови, нулевой жезл по вам или по нему.",
 		"Уснувший готов к обряду. Его можно разбудить нулевым жезлом или растолкать за 2 секунды; вода сон уже не рвёт.",
 		"Спящую цель охоты кукла в руке за 1,5 секунды утягивает в изнанку из 9 клеток; когда спящий проснётся, кукла треснет.",
 		"После попытки человек до 60 секунд невосприимчив к Сну и 15 секунд к любому захвату; если уснул - считая с пробуждения.",
@@ -1975,8 +2149,10 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 
 /datum/eldritch_knowledge/wax_temper
 	name = "Тройной фитиль"
-	summary = "Запас воска растёт до 6, новые оболочки принимают 55 урона."
+	summary = "Запас воска до 6, оболочка на 55 урона, а разбитая ударами оболочка облепляет врагов вплотную."
 	details = list(
+		"Когда удары разбивают оболочку до нуля, осколки ставят печать и замедляют на 2 секунды всех врагов вплотную.",
+		"Выброс оболочки, канделябр и истёкший срок осколков не дают; оглушённого фитиль не спасает.",
 		"Улучшение не заполняет запас и не чинит уже созданную оболочку.",
 		"Уровни: вместимость 6 / 7 / 8, оболочка 55 / 65 / 75.",
 	)
@@ -2037,7 +2213,7 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 	summary = "Стойкость вознесения, запас воска 8, Бессмертная процессия, а свечи держат вашу жизнь."
 	details = list(
 		"Нужны 3 назначенные души и 3 человеческих трупа на руне станции; обряд длится 30 секунд.",
-		"Запас вмещает 8 и возвращается по единице каждые 4 секунды.",
+		"Запас вмещает 8 и возвращается по единице каждые 4 секунды; оглушение и стамкрит не глушат приёмы пути.",
 		"Бессмертная процессия бесплатна: 5 свечей по 18 ушибов и 15 выносливости в 2 клетках, перезарядка 45 секунд.",
 		"Раз в 5 минут в крите или при смерти вы встаёте у ближайшей из 3 последних бумажных свечей с половиной здоровья.",
 		"Свеча держит жизнь, только если стоит на полу или столе внутри станции на вашем уровне; тело должно лежать на полу.",
@@ -2233,7 +2409,7 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 
 /obj/effect/proc_holder/spell/self/heretic_wax/release
 	name = "Снять печать"
-	desc = "За единицу воска немедленно поразите веер в трёх клетках перед собой: 18 ушибов, 20 выносливости, замедление на 2 секунды и восковая печать. В намерении «Разоружить» вместо заряда расходует всю погребальную оболочку: веер достигает пяти клеток и наносит две трети оставшейся прочности, до 30 ушибов, без печати и замедления. Запас лечения оболочки также теряется."
+	desc = "За единицу воска немедленно поразите веер в трёх клетках перед собой: 18 ушибов, 20 выносливости, замедление на 2 секунды и восковая печать. В намерении «Разоружить» вместо заряда расходует всю погребальную оболочку: веер достигает пяти клеток и наносит две трети оставшейся прочности, до 30 ушибов, без печати и замедления. Запас лечения оболочки также теряется. Если оболочки на вас нет, и в «Разоружении» выходит обычная волна за единицу воска."
 	summary = "За 1 Воск бьёт веером на 3 клетки: 18 ушибов, замедление и печать; в «Разоружении» тратит оболочку."
 	action_icon_state = "wax_release"
 	charge_max = 10 SECONDS
@@ -2259,8 +2435,8 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 
 /obj/effect/proc_holder/spell/self/heretic_wax/puppet_sleep
 	name = "Растопить куклу"
-	desc = "Держите в руке свою восковую куклу: человек в 9 клетках на вашем уровне 5 секунд чувствует жар и затем спит 8 секунд, если это цель охоты, иначе дремлет 3 секунды. Жар обрывается, если человек намокнет, выпьет воды, уйдёт дальше 9 клеток или его либо вас тронут нулевым жезлом. Спящего можно разбудить нулевым жезлом или растолкать за 2 секунды, вода сон уже не рвёт. Пока человек спит, кукла цела: спящую цель охоты она в руке за 1,5 секунды утянет в изнанку и рассыплется, а иначе треснет, когда он проснётся. Перезарядка 60 секунд."
-	summary = "Кукла в руке: через 5 секунд жара цель охоты в 9 клетках спит 8 секунд, другие дремлют 3."
+	desc = "Своя восковая кукла сама ляжет в свободную руку - из кармана, с пояса, из сумки или с пола рядом, первой кукла цели охоты; если обе руки заняты, тает кукла, которую вы держите. Человек в 9 клетках на вашем уровне 5 секунд чувствует жар и затем спит 8 секунд, если это цель охоты, иначе дремлет 3 секунды. Жар обрывается, если кукла уйдёт из руки, человек намокнет, выпьет воды, уйдёт дальше 9 клеток или его либо вас тронут нулевым жезлом. Спящего можно разбудить нулевым жезлом или растолкать за 2 секунды, вода сон уже не рвёт. Пока человек спит, кукла цела: спящую цель охоты она в руке за 1,5 секунды утянет в изнанку и рассыплется, а иначе треснет, когда он проснётся. Перезарядка 60 секунд."
+	summary = "Кукла сама ляжет в руку: через 5 секунд жара цель охоты в 9 клетках спит 8 секунд, другие дремлют 3."
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "wax_puppet"
 	charge_max = HERETIC_WAX_PUPPET_SLEEP_COOLDOWN
@@ -2336,7 +2512,21 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 /obj/effect/proc_holder/spell/pointed/heretic_wax/imprint/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
-	return heretic_check(user, wax?.can_use(user) && wax.combat_resource >= 1 && wax.line_clear(user, target) && heretic_can_affect(user, target, chargecost = 0), silent, "Нужны 1 Воск и видимый противник без защиты от магии; стены перекрывают путь.", target = target)
+	var/reason = wax ? wax.imprint_block_reason(user, target) : "Способность недоступна вашему пути или текущему телу."
+	return heretic_check(user, !reason, silent, reason, target = target)
+
+/datum/eldritch_knowledge/base_wax/proc/imprint_block_reason(mob/living/user, atom/target)
+	if(!can_use(user))
+		return "Способность недоступна вашему пути или текущему телу."
+	if(combat_resource < 1)
+		return "Нужен 1 Воск; сейчас [combat_resource]. Запас вернётся сам или от ударов по врагам."
+	if(!isliving(target))
+		return "Укажите живого противника, а не предмет или пол."
+	if(!line_clear(user, target))
+		return "До цели больше [HERETIC_WAX_RANGE] клеток или путь перекрывает стена, окно или дверь."
+	if(!heretic_can_affect(user, target, chargecost = 0))
+		return "Цель под защитой от магии."
+	return null
 
 /obj/effect/proc_holder/spell/pointed/heretic_wax/imprint/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -2352,6 +2542,8 @@ GLOBAL_LIST_INIT(heretic_wax_sounds, list(
 #undef HERETIC_WAX_SHELL_CAPACITY
 #undef HERETIC_WAX_HEAL_LIMIT
 #undef HERETIC_WAX_IMPRINT_DAMAGE
+#undef HERETIC_WAX_MARK_DAMAGE
+#undef HERETIC_WAX_SHATTER_RANGE
 #undef HERETIC_WAX_EFFIGY_CAPACITY
 #undef HERETIC_WAX_EFFIGY_SEALED_CAPACITY
 #undef HERETIC_WAX_EFFIGY_HIT_LIMIT

@@ -1008,6 +1008,26 @@
 		qdel(session)
 	TEST_ASSERT_EQUAL(GLOB.heretic_threat_warning_until, old_warning, "Подготовка путей не предупреждает станцию.")
 
+/// Урок Свинца открывается из панели полигона только на пути Свинца, показывает десять шагов и уходит вместе с упражнением.
+/datum/unit_test/antag_training_lead_lesson/Run()
+	var/datum/antag_training_session/session = allocate_training_session()
+	TEST_ASSERT(session.prepare(), "Полигон подготовлен.")
+	TEST_ASSERT(!session.start_practice("lead"), "Без пути Свинца урока нет.")
+	TEST_ASSERT(session.prepare_path(PATH_LEAD, 1), "Подготовлен путь Свинца.")
+	session.arena.next_spawn_at = 0
+	TEST_ASSERT(session.start_practice("lead"), "Урок Свинца начинается.")
+	var/datum/heretic_lead_lesson/lesson = session.lead_lesson
+	TEST_ASSERT_NOTNULL(lesson, "Сеанс держит урок Свинца.")
+	var/list/data = session.ui_data(session.current_body)
+	TEST_ASSERT(data["lead_lesson"], "Панель показывает кнопку урока.")
+	var/list/practice = data["practice"]
+	TEST_ASSERT_EQUAL(length(practice["steps"]), 10, "Панель показывает десять шагов урока.")
+	TEST_ASSERT(findtext(session.practice_hint, "Шаг 1 из 10"), "Подсказка упражнения - первый шаг урока.")
+	var/obj/item/ammo_casing/casing = locate() in orange(1, session.current_body)
+	TEST_ASSERT_NOTNULL(casing, "Урок кладёт гильзы рядом с учеником.")
+	session.stop_practice()
+	TEST_ASSERT(QDELETED(lesson) && QDELETED(casing), "Конец упражнения убирает урок и его реквизит.")
+
 /// Рецепты, комплекты и упражнения соблюдают квоты и не трогают чужие цели.
 /datum/unit_test/antag_training_practice_limits/Run()
 	var/datum/antag_training_session/session = allocate_training_session()

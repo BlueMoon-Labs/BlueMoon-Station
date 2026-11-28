@@ -5,8 +5,16 @@ GLOBAL_LIST_INIT(antag_training_practice_exercises, list(
 	"combat" = list("name" = "Довести цель до крита", "goal" = "Доведите цель до крита", "zone" = "range", "difficulty" = 1, "desc" = "Урон по неподвижной цели: оружие, приёмы своего пути и время до крита."),
 	"medicine" = list("name" = "Вылечить пациента", "goal" = "Полностью вылечите пациента", "zone" = "laboratory", "difficulty" = 1, "desc" = "Осмотр анализатором и лечение ушибов и ожогов обычными средствами."),
 	"hunt" = list("name" = "Первое подношение", "goal" = "Принесите учебную цель в жертву", "zone" = "laboratory", "difficulty" = 2, "desc" = "Цель охоты, живое сердце и обряд подношения на учебной цели."),
+	"glass" = list("name" = "Урок Стекла", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Стекла: призма, следящий луч по уходящей мишени, раскол меткой, переход между стёклами и кража сквозь стекло."),
+	"tide" = list("name" = "Урок Пучины", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Пучины: прорыв у раковины, Метка Пучины, Захлёб в своей воде, Течение и уход в слив к другому прорыву."),
+	"wax" = list("name" = "Урок Воска", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Воска: кукла по отпечаткам, Сон по кукле сквозь стену, печать и Снятие оттиска, погребальная оболочка."),
+	"dusk" = list("name" = "Урок Сумрака", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Сумрака по ступеням: два облика, заговор лампы и её луч, Шаг в тень и Удар из тени, Хватка тени и добивание, Завет, Лик ангела по мишени в тёмных очках и святая вода."),
+	"hammer" = list("name" = "Урок Молота", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Молота: две руки, Накал, Замах и Сокрушающий удар, Вбить в пол и лом напарника, Таран, вода из огнетушителя и Клеймо кузни."),
+	"blood" = list("name" = "Урок Крови", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Крови: связь, Метка Крови как вторая связь, взыскание по намерению и путы."),
 	"dance" = list("name" = "Урок Пляски", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Пляски: такт, Вальс, смена стиля, Приглашение и спасение партнёра."),
-	"spirit" = list("name" = "Урок Духа", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Духа: Разлучение, притяжение и удержание души, обол.")
+	"spirit" = list("name" = "Урок Духа", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Духа: душа отделяется и притягивается одной кнопкой, жатва, захват той же кнопкой, обол."),
+	"lead" = list("name" = "Урок Свинца", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Свинца: гильзы, Палец-ствол, Переплавка, заговор ружья, Пуля с именем, Ловля пули под огнём учебного стрелка, Рикошет, выбор Школы стрельбы, барабан Шестизарядника и Последний патрон."),
+	"sand" = list("name" = "Урок Песка", "zone" = "range", "difficulty" = 2, "desc" = "Пошаговый урок пути Песка: Осыпь с Засухой, Стазис, засечка и Откат.")
 ))
 
 /proc/init_antag_training_exercises()
@@ -366,12 +374,14 @@ GLOBAL_LIST_INIT(antag_training_practice_exercises, list(
 		var/active = practice_id == practice_key
 		if(!active && (practice["zone"] != zone_id || !practice_available(practice_key)))
 			continue
-		var/list/steps = active ? (dance_lesson?.steps() || spirit_lesson?.steps()) : null
+		var/list/steps = active ? (path_lesson?.steps() || dance_lesson?.steps() || spirit_lesson?.steps() || lead_lesson?.steps() || sand_lesson?.steps()) : null
 		if(!steps)
 			steps = list(list("name" = practice["goal"] || practice["name"], "done" = active && practice_complete, "current" = active && !practice_complete, "hint" = null))
 		. += list(list("id" = practice_key, "name" = practice["name"], "desc" = practice["desc"], "difficulty" = practice["difficulty"], "zone" = arena.zones[practice["zone"]]["name"], "practice" = TRUE, "score_rule" = null, "steps" = steps, "best" = null, "run" = active ? list("ended" = practice_complete, "success" = practice_complete, "result" = practice_hint) : null))
 
 /datum/antag_training_session/proc/practice_available(practice_key)
+	if(GLOB.heretic_path_lessons[practice_key])
+		return !!path_lesson_knowledge(practice_key)
 	switch(practice_key)
 		if("hunt")
 			return !!IS_HERETIC(current_body)
@@ -379,4 +389,8 @@ GLOBAL_LIST_INIT(antag_training_practice_exercises, list(
 			return !!dance_knowledge()
 		if("spirit")
 			return !!spirit_knowledge()
+		if("lead")
+			return !!lead_knowledge()
+		if("sand")
+			return !!sand_knowledge()
 	return TRUE

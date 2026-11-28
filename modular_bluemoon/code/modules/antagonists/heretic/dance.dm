@@ -23,6 +23,7 @@
 		"Схемы шагов видны всем и стираются шваброй или мылом.",
 		"Вне боя Такт быстро тает, а смена стиля мимо сильной доли ждёт следующей или делит его пополам.",
 		"Вознёсшегося сбивает фальшивая нота: светошумовая, клаксон или горн рядом; пока Болеро молчит, бола держит.",
+		"Фигуры вне боя собираются только под Напев, а его слышит каждый, кто стоит вплотную.",
 	)
 	knowledge = list(
 		/datum/eldritch_knowledge/base_dance,
@@ -47,7 +48,7 @@
 		"Хватка в любом намерении заражает человека (до 6, на 6 минут); в «Помощи» по полу рисует схему шагов (до 5).",
 		"Фигура: под музыку идите в каждую долю туда, куда ведёт медный след. Сработав, она остывает 16 долей (10-19 с).",
 		"Пропущенная доля начинает фигуру заново, один сбой после двух верных шагов прощается. Фигура без цели ждёт 4 доли.",
-		"Смена стиля в сильную долю - связка: вход стиля и двойной акцент; три стиля за 20 секунд - Попурри.",
+		"Вне боя шаги не идут в фигуру: Напев в меню стилей включает тихую музыку, но стоящие вплотную её слышат.",
 	)
 	role = HERETIC_ROLE_CRAFT
 	ritual_hint = "Подойдёт любая обувь, даже снятая с себя: положите её и нож на руну."
@@ -85,6 +86,8 @@
 	var/last_timing_strong = FALSE
 	var/last_timing_beat = 0
 	var/last_timing_early = FALSE
+	/// Со знаком: минус - раньше ближайшей доли.
+	var/last_timing_offset = 0
 	var/pending_style_id
 	var/previous_style_id
 	var/music_channel
@@ -115,6 +118,8 @@
 	var/pending_accuracy = HERETIC_DANCE_MISS
 	var/pending_strong = FALSE
 	var/pending_at = -1
+	/// Напев вне боя: тихая музыка для вас и соседей, шаги складываются в фигуры.
+	var/humming = FALSE
 	/// Мобы, которые сейчас в танце еретика и слышат его музыку.
 	var/list/mob/living/dancers = list()
 	var/list/obj/effect/heretic_dance_diagram/diagrams = list()
@@ -150,6 +155,7 @@
 
 /datum/eldritch_knowledge/base_dance/on_body_lose(mob/living/user)
 	if(dance_body)
+		set_humming(dance_body, FALSE)
 		UnregisterSignal(dance_body, list(COMSIG_PARENT_QDELETING, COMSIG_MOVABLE_MOVED))
 		set_passive(FALSE)
 		hide_aura()
@@ -179,6 +185,8 @@
 	on_dance_step(dance_body, movement_dir || get_dir(old_loc, source.loc), old_loc)
 
 /datum/eldritch_knowledge/base_dance/on_death(mob/user)
+	if(dance_body)
+		set_humming(dance_body, FALSE)
 	set_passive(FALSE)
 	clear_dance()
 	clear_hints()
@@ -218,13 +226,63 @@
 
 /datum/eldritch_knowledge/base_dance/proc/can_use(mob/living/user, allow_incapacitated = FALSE, ignore_grab = FALSE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return !QDELETED(src) && user && user == dance_body && user.stat != DEAD && (allow_incapacitated || !user.incapacitated(ignore_grab = ignore_grab)) && isturf(user.loc) && heretic?.selected_path == PATH_DANCE && !heretic.role_removed && heretic.get_knowledge(type) == src
+	return !QDELETED(src) && user && user == dance_body && user.stat != DEAD && (allow_incapacitated || !heretic_incapacitated(user, ignore_grab)) && isturf(user.loc) && heretic?.selected_path == PATH_DANCE && !heretic.role_removed && heretic.get_knowledge(type) == src
 
 /datum/eldritch_knowledge/base_dance/combat_resource_state()
+	return heretic_facts_text(dance_facts())
+
+/datum/eldritch_knowledge/base_dance/combat_resource_lines()
+	return dance_facts(TRUE)
+
+/// Живое состояние Такта по фразам; для значка - без пустых счётчиков и открытых стилей, они в кодексе.
+/datum/eldritch_knowledge/base_dance/proc/dance_facts(hud = FALSE)
 	var/datum/heretic_dance_style/style = current_style()
-	. = "Стиль: [style.name][passive_active ? " (пассивка работает)" : ""]. Схем шагов: [length(diagrams)] из [HERETIC_DANCE_DIAGRAM_LIMIT], заражённых: [length(earworms)] из [HERETIC_DANCE_EARWORM_LIMIT]."
+	. = list("Стиль: [style.name][passive_active ? " (пассивка работает)" : ""]")
+	if(!hud || length(diagrams) || length(earworms))
+		. += "Схем шагов: [length(diagrams)] из [HERETIC_DANCE_DIAGRAM_LIMIT], заражённых: [length(earworms)] из [HERETIC_DANCE_EARWORM_LIMIT]"
 	if(link_bonus)
-		. += " Следующий акцент удвоен связкой."
+		. += "Следующий акцент удвоен связкой"
+	if(humming)
+		. += "Вы напеваете"
+	var/list/style_names = list()
+	var/datum/heretic_dance_style/locked
+	for(var/id in GLOB.heretic_dance_styles)
+		var/datum/heretic_dance_style/candidate = GLOB.heretic_dance_styles[id]
+		if(style_known(id))
+			style_names += candidate.name
+		else
+			locked ||= candidate
+	if(!hud)
+		. += "Стили: [english_list(style_names, and_text = " и ")]"
+	var/list/routine_names = list()
+	for(var/id in GLOB.heretic_dance_routines)
+		var/datum/heretic_dance_routine/routine = GLOB.heretic_dance_routines[id]
+		if(style_known(routine.from_style) && style_known(routine.to_style))
+			routine_names += "«[routine.name]»"
+	if(length(routine_names))
+		. += "Номера: [english_list(routine_names, and_text = " и ")]"
+	if(locked && !hud)
+		var/datum/eldritch_knowledge/unlock = locked.unlock
+		. += "Следующий стиль, [locked.name], откроет «[initial(unlock.name)]»"
+
+/// Правила Такта по мере изучения: связка - со второго стиля, Колокол - с его знанием.
+/datum/eldritch_knowledge/base_dance/proc/open_resource_rules()
+	. = list()
+	var/datum/antagonist/heretic/heretic = combat_resource_owner?.resolve()
+	var/styles = length(known_styles())
+	for(var/rule in resource_rules)
+		if(findtext(rule, "Смена стиля") == 1 && styles < 2)
+			continue
+		if(findtext(rule, "Колокол") == 1 && !heretic?.get_knowledge(/datum/eldritch_knowledge/spell/dance_bell))
+			continue
+		. += rule
+
+/datum/eldritch_knowledge/base_dance/get_combat_resource_data()
+	. = ..()
+	var/list/rules = open_resource_rules()
+	var/state = .["state"]
+	.["rules"] = rules
+	.["description"] = jointext(rules, " ") + (state ? " [state]" : "")
 
 /datum/eldritch_knowledge/base_dance/proc/add_dancer(mob/living/dancer)
 	if(!istype(dancer) || (dancer in dancers))
@@ -322,6 +380,7 @@
 		return FALSE
 	if(by_hand)
 		user.visible_message(span_notice("[user] легко касается плеча [victim], будто приглашая на танец."), span_eldritch("Мелодия перешла к [victim]. Заражённых: [length(earworms)] из [HERETIC_DANCE_EARWORM_LIMIT]."))
+	tip(user || dance_body, "infect", "Над заражённым нота, видная только вам: он слышит вашу музыку. На них действуют Приглашение, барабан, Маскарад и колокол Пляски смерти, когда вы их изучите; сон, святая вода и нулевой жезл лечат.")
 	log_combat(user || dance_body, victim, "заражает навязчивым тактом")
 	notify_resource_changed()
 	SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "infect", victim, by_hand)
@@ -414,11 +473,15 @@
 
 /obj/effect/heretic_dance_diagram/proc/on_cleaned(datum/source, strength)
 	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
 	visible_message(span_notice("Медные следы стираются с пола."))
 	qdel(src)
 
 /obj/effect/heretic_dance_diagram/proc/on_entered(datum/source, atom/movable/arrived)
 	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
 	var/datum/eldritch_knowledge/base_dance/dance = dance_ref?.resolve()
 	var/mob/living/carbon/human/walker = arrived
 	if(!dance || !istype(walker) || walker.stat != CONSCIOUS || !walker.mind || IS_HERETIC(walker) || IS_HERETIC_MONSTER(walker))
@@ -471,16 +534,20 @@
 
 /obj/item/heretic_path_relic/dance
 	name = "drum of flayed skin"
-	desc = "Ручной барабан с медным ободом. Натянутая кожа ещё тёплая и зашита грубыми стежками. Удар раз в 4 доли (от 2 до 5 секунд, смотря по танцу) отыгрывает акцент текущего стиля по всем заражённым в 7 клеткам, которые слышат, и на 3 секунды показывает их сердцебиение сквозь стены; вне доли - вполсилы."
+	desc = "Ручной барабан с медным ободом. Натянутая кожа ещё тёплая и зашита грубыми стежками. Удар раз в 4 доли (от 2 до 5 секунд, смотря по танцу) отыгрывает акцент текущего стиля по всем заражённым в 7 клетках, которые слышат, и на 3 секунды показывает их сердцебиение сквозь стены; вне доли - вполсилы. Удар чуть раньше готовой доли засчитывается ею, а слишком ранний барабан не примет и скажет, сколько ждать."
 	icon = 'modular_bluemoon/icons/obj/heretic_dance.dmi'
 	icon_state = "dance_relic"
 	item_state = "dance_relic"
 	lefthand_file = 'modular_bluemoon/icons/obj/heretic_relics_dance_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/obj/heretic_relics_dance_righthand.dmi'
 	var/ready_beat = 0
+	/// Почему последний удар не прозвучал: кнопка барабана показывает это вместо перезарядки.
+	var/refusal
 
 /obj/item/heretic_path_relic/dance/attack_self(mob/living/user)
-	return beat(user)
+	. = beat(user)
+	if(!. && refusal)
+		to_chat(user, span_warning(refusal))
 
 /// Барабан бьёт и из кармана или сумки: руки на него не нужны.
 /obj/item/heretic_path_relic/dance/proc/carried_by_owner(mob/living/user)
@@ -491,6 +558,7 @@
 	return knowledge && heretic?.get_knowledge(knowledge.type) == knowledge
 
 /obj/item/heretic_path_relic/dance/proc/beat(mob/living/user)
+	refusal = null
 	if(!carried_by_owner(user))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -499,7 +567,8 @@
 		return FALSE
 	var/pressed_beat = dance.timed_beat_total(dance.timing(user))
 	if(pressed_beat < ready_beat)
-		to_chat(user, span_warning("Кожа ещё гудит от прошлого удара: следующий через [heretic_dance_seconds((ready_beat - pressed_beat) * dance.beat_ds)] с."))
+		var/beats = ready_beat - pressed_beat
+		refusal = "Рано: кожа ещё гудит. Барабан ответит [beats > 1 ? "через [beats] доли" : "на следующую долю"], через [heretic_dance_seconds(dance.time_to_beat(ready_beat))] с: бейте, когда кольцо у ног сомкнётся."
 		return FALSE
 	ready_beat = pressed_beat + HERETIC_DANCE_DRUM_BEATS
 	flick("dance_relic_beat", src)

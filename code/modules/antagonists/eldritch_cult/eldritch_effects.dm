@@ -44,20 +44,13 @@
 		var/preparation = preparation_hint(user)
 		if(preparation)
 			. += span_notice(preparation)
+	else if(!IS_HERETIC_MONSTER(user))
+		. += span_notice("Это знак еретика, о нём стоит сообщить службе безопасности. Нулевой жезл сотрёт круг одним касанием, Библия - тоже, но если по кругу уже бежит обряд, её придётся держать на нём [DisplayTimeText(HERETIC_RUNE_BIBLE_ERASE_TIME)]. Стёртый круг срывает обряд.")
 
 /obj/effect/eldritch/proc/preparation_hint(mob/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_void/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_void)
-	var/turf/open/floor/floor = get_turf(src)
-	if(!knowledge || !istype(floor))
-		return null
-	if(floor.GetTemperature() <= T0C)
-		return "Руна достаточно холодна для клинка Пустоты. Изготовление занимает [knowledge.ritual_time / (1 SECONDS)] сек."
-	var/obj/effect/heretic_combat_zone/void/winter = knowledge.combat_zone
-	if(!QDELETED(winter) && winter.master_mind?.resolve() == user.mind && (floor in winter.field_turfs))
-		var/remaining = max(0, winter.expires_at - world.time)
-		return "Зимний предел над руной: ещё [CEILING(remaining / (1 SECONDS), 1)] сек. Изготовление клинка занимает [knowledge.ritual_time / (1 SECONDS)] сек.[remaining < knowledge.ritual_time ? " Времени уже недостаточно - примените «Зимний предел» заново." : ""]"
-	return "Для клинка Пустоты сначала накройте руну своим Зимним пределом или охладите её до 0 °C. Сейчас [round(floor.GetTemperature() - T0C, 0.1)] °C."
+	return knowledge?.rune_hint(user, get_turf(src))
 
 /obj/effect/eldritch/attack_hand(mob/living/user, list/modifiers)
 	. = ..()
@@ -65,17 +58,23 @@
 		try_activate(user)
 
 /obj/effect/eldritch/proc/try_activate(mob/living/user)
-	if(!IS_HERETIC(user) || user.incapacitated() || !Adjacent(user) || is_in_use)
+	if(!IS_HERETIC(user) || heretic_incapacitated(user) || !Adjacent(user) || is_in_use)
 		return
 	is_in_use = TRUE
 	INVOKE_ASYNC(src, PROC_REF(activate), user)
 
 /obj/effect/eldritch/attackby(obj/item/item, mob/living/user)
 	. = ..()
-	if(istype(item, /obj/item/storage/book/bible) || istype(item, /obj/item/nullrod))
-		to_chat(user, span_notice("Вы разрушаете ритуальный круг с помощью [item]."))
-		log_game("[key_name(user)] разрушает руну трансмутации с помощью [item] в [AREACOORD(src)].")
-		qdel(src)
+	var/bible = istype(item, /obj/item/storage/book/bible)
+	if(!bible && !istype(item, /obj/item/nullrod))
+		return
+	if(bible && ritual_user)
+		user.visible_message(span_warning("[user] прижимает [item] к кругу, по которому бежит обряд."), span_notice("По кругу бежит обряд: держите [item] на нём [DisplayTimeText(HERETIC_RUNE_BIBLE_ERASE_TIME)], чтобы стереть его."))
+		if(!do_after(user, HERETIC_RUNE_BIBLE_ERASE_TIME, target = src) || QDELETED(src))
+			return
+	to_chat(user, span_notice("Вы разрушаете ритуальный круг с помощью [item]."))
+	log_game("[key_name(user)] разрушает руну трансмутации с помощью [item] в [AREACOORD(src)].")
+	qdel(src)
 
 /obj/effect/eldritch/proc/erase_by(mob/living/user, obj/item/tool)
 	if(is_in_use)
@@ -102,9 +101,9 @@
 			rituals[knowledge.ritual_menu_name()] = knowledge
 	var/choice = prompt_ritual(user, rituals)
 	if(pocket_victim && choice == HERETIC_POCKET_RUNE_CHOICE)
-		if(!QDELETED(src) && !QDELETED(user) && !user.incapacitated() && Adjacent(user))
+		if(!QDELETED(src) && !QDELETED(user) && !heretic_incapacitated(user) && Adjacent(user))
 			pull_behind_rune(user, pocket_victim)
-	else if(!QDELETED(src) && !QDELETED(user) && IS_HERETIC(user) && !user.incapacitated() && Adjacent(user) && rituals[choice])
+	else if(!QDELETED(src) && !QDELETED(user) && IS_HERETIC(user) && !heretic_incapacitated(user) && Adjacent(user) && rituals[choice])
 		var/datum/eldritch_knowledge/ritual = rituals[choice]
 		if(ritual.type == /datum/eldritch_knowledge/spell/basic && !heretic.hunt_target_available(heretic.hunt_target))
 			reject_ritual(user, ritual, heretic.hunt_target_unavailable_reason(heretic.hunt_target))
@@ -171,7 +170,7 @@
 	return FALSE
 
 /obj/effect/eldritch/proc/select_recipe_atoms(datum/eldritch_knowledge/ritual, list/atoms, list/selected_atoms, list/stack_usage, mob/living/user)
-	if(!ritual.recipe_snowflake_check(atoms, get_turf(src), selected_atoms, user))
+	if(ritual.blade_limit_reason(user) || !ritual.recipe_snowflake_check(atoms, get_turf(src), selected_atoms, user))
 		return FALSE
 	if(istype(ritual, /datum/eldritch_knowledge/final_eldritch))
 		for(var/mob/living/carbon/human/body in atoms.Copy())
@@ -313,7 +312,7 @@
 	if(QDELETED(src) || QDELETED(user))
 		ritual_interrupt_reason ||= "Руна или исполнитель больше недоступны."
 		return FALSE
-	if(user.incapacitated())
+	if(heretic_incapacitated(user))
 		ritual_interrupt_reason ||= heretic_incapacitated_reason(user)
 		return FALSE
 	var/containment_reason = heretic_containment_reason(user)
@@ -348,6 +347,10 @@
 			if(stack.amount != reserved_stack_amounts[stack])
 				ritual_interrupt_reason ||= "Количество материала в стопке изменилось."
 				return FALSE
+	var/blade_reason = ritual.blade_limit_reason(user)
+	if(blade_reason)
+		ritual_interrupt_reason ||= blade_reason
+		return FALSE
 	var/list/recheck_atoms = reserved_atoms.Copy()
 	var/list/recheck_selected = list()
 	if(!ritual.recipe_snowflake_check(recheck_atoms, get_turf(src), recheck_selected, user))
@@ -403,15 +406,13 @@
 	if(ascension_announced)
 		ascension_crescendo = new(get_turf(src), heretic.selected_path, ritual_duration, src, user)
 	protect_ritual_user(user)
-	to_chat(user, span_notice("Вы начинаете ритуал «[ritual.name]». Не отходите от руны, не меняйте предмет в активной руке и не трогайте компоненты. Пока идёт обряд, с вами нельзя поменяться местами."))
+	to_chat(user, span_notice("Вы начинаете ритуал «[ritual.name]». Не отходите от руны и не трогайте компоненты на ней; руки свободны, предметы в них можно менять. Пока идёт обряд, с вами нельзя поменяться местами."))
 	log_game("[key_name(user)] начинает ритуал «[ritual.name]» в [AREACOORD(src)].")
 	flick("[icon_state]_active", src)
 	playsound(src, 'modular_bluemoon/sound/heretic/ritual_begin.ogg', 50, TRUE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_exponent = 10, ignore_walls = FALSE)
-	var/obj/item/held_item = user.get_active_held_item()
-	if(!do_after(user, ritual_time, src, timed_action_flags = IGNORE_USER_LOC_CHANGE, extra_checks = CALLBACK(src, PROC_REF(ritual_valid), user, ritual)) || !ritual_valid(user, ritual))
+	// Компоненты берутся только с пола, поэтому предмет в руке обряду не важен; поднятый компонент срывает его через резерв.
+	if(!do_after(user, ritual_time, src, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_HELD_ITEM | IGNORE_INCAPACITATED, extra_checks = CALLBACK(src, PROC_REF(ritual_valid), user, ritual)) || !ritual_valid(user, ritual))
 		ritual_valid(user, ritual)
-		if(!QDELETED(user) && user.get_active_held_item() != held_item)
-			ritual_interrupt_reason ||= "Предмет в активной руке изменился."
 		var/reason = ritual_interrupt_reason || "Подготовка действия отменена."
 		if(ascension_announced && !QDELETED(ascension_ritual))
 			ascension_ritual.abort_ascension_ritual(ascension_area, world.time - ascension_started_at)
@@ -503,19 +504,20 @@
 		var/summon_hint = ""
 		if(ritual.type == /datum/eldritch_knowledge/living_heart)
 			summon_hint = " Это изготовление запасного сердца. Для своего сердца используйте «Призвать живое сердце»; потерянное вернётся после 5 секунд неподвижности."
+		else if(istype(ritual, /datum/eldritch_knowledge/base_rust))
+			var/datum/eldritch_knowledge/base_rust/rust = ritual
+			summon_hint = rust.trash_hint(available_atoms)
 		else if(ritual.type == /datum/eldritch_knowledge/codex_cicatrix)
 			summon_hint = " Это изготовление запасной книги. Уже выданный кодекс можно получить способностью «Призвать кодекс»."
+		else if(istype(ritual, /datum/eldritch_knowledge/final_eldritch))
+			summon_hint = " [heretic_ascension_body_hint(available_atoms, user)]"
 		return "Не хватает свободных компонентов: [jointext(missing, ", ")]. Компоненты другого незавершённого обряда недоступны.[summon_hint]"
 	var/block_reason = ritual.recipe_block_reason(user)
 	if(block_reason)
 		return block_reason
 	if(ritual.type == /datum/eldritch_knowledge/base_void)
-		var/turf/open/floor/floor = get_turf(src)
-		if(!istype(floor))
-			return "Руна должна находиться на открытом полу."
-		return "Температура воздуха на руне: [round(floor.GetTemperature() - T0C, 0.1)] °C; нужно не выше 0 °C. Можно обойтись без охлаждения: встаньте у руны, примените «Зимний предел» и сразу начните обряд. Поле должно сохраняться до его конца."
-	if(ritual.type == /datum/eldritch_knowledge/base_blade)
-		return "Достигнут предел связанных тёмных клинков, и все три при вас. Клинок, который вы уронили, отдали или у вас отняли, рассыпается при создании нового."
+		var/datum/eldritch_knowledge/base_void/void = ritual
+		return void.rune_cold_reason(get_turf(src))
 	if(ritual.type == /datum/eldritch_knowledge/spell/basic)
 		return "Нужны ваше живое сердце и назначенная цель: живая в крите, без сознания, в наручниках, оглушённая или сбитая с ног, либо её труп за меньшую награду. Цель, которая сама легла или уснула, не считается."
 	if(istype(ritual, /datum/eldritch_knowledge/final_eldritch))
@@ -523,7 +525,7 @@
 		var/place_reason = finale.ascension_block_reason(user, get_turf(src))
 		if(place_reason)
 			return place_reason
-		return "Нужны [HERETIC_ASCENSION_SACRIFICES] назначенных душ и [HERETIC_ASCENSION_BODIES] трупа членов экипажа. Подходят только тела, которыми управлял человек: очеловеченные мартышки, пустые клоны, тела еретиков и их слуг не годятся."
+		return "Нужны [HERETIC_ASCENSION_SACRIFICES] назначенных душ и [HERETIC_ASCENSION_BODIES] трупа на руне или рядом. [heretic_ascension_body_hint(available_atoms, user)]"
 	return "Особые условия обряда не выполнены. Проверьте требования выбранного ритуала в кодексе."
 
 /obj/effect/eldritch/big
@@ -824,7 +826,7 @@
 /obj/effect/broken_illusion/examine(mob/user)
 	. = ..()
 	if(!IS_HERETIC(user))
-		. += span_warning("Кто-то недавно потревожил завесу в этом месте. Не касайтесь разрыва: он запоминает прикосновение и ранит тех, кто тянется к нему снова. Запечатать его можно нейтрализатором аномалий.")
+		. += span_warning("Кто-то недавно потревожил завесу в этом месте. Не касайтесь разрыва: он запоминает прикосновение и ранит тех, кто тянется к нему снова. Запечатать его можно нейтрализатором аномалий из научного отдела: настоящий разрыв схлопнется в кристалл, который учёные разберут на очки исследований.")
 
 /obj/effect/reality_smash
 	name = "reality rift"
@@ -916,8 +918,8 @@
 		return "Кодекс должен быть при вас."
 	if(!Adjacent(user))
 		return "Подойдите к разлому вплотную."
-	if(user.incapacitated())
-		return "Сейчас разлом не исследовать: мешают наручники, оглушение или захват."
+	if(heretic_incapacitated(user))
+		return heretic_incapacitated_reason(user)
 
 /obj/effect/reality_smash/proc/perceived_by(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -952,7 +954,7 @@
 	var/datum/antagonist/heretic/original_heretic = IS_HERETIC(user)
 	harvesting_minds |= researcher
 	to_chat(user, span_notice("Вы вслушиваетесь в шёпот разлома..."))
-	var/completed = do_after(user, 10 SECONDS, src, extra_checks = CALLBACK(src, PROC_REF(can_harvest), user, book))
+	var/completed = do_after(user, 10 SECONDS, src, timed_action_flags = IGNORE_INCAPACITATED, extra_checks = CALLBACK(src, PROC_REF(can_harvest), user, book))
 	harvesting_minds -= researcher
 	if(QDELETED(src) || !completed || user.mind != researcher || IS_HERETIC(user) != original_heretic || !can_harvest(user, book))
 		reason = harvest_failure_reason(user, book)

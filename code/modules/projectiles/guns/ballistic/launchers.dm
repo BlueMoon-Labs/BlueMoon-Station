@@ -176,15 +176,15 @@
 		animate(user, pixel_z = 0, time = 5, easing = LINEAR_EASING)
 		sleep(5)
 		user.mob_transforming = FALSE
-		process_fire(user, user, TRUE)
-		if(!QDELETED(user)) //if they weren't gibbed by the explosion, take care of them for good.
-			user.gib()
-		return MANUAL_SUICIDE
+		if(process_fire(user, user, TRUE))
+			if(!QDELETED(user)) //if they weren't gibbed by the explosion, take care of them for good.
+				user.gib()
+			return MANUAL_SUICIDE
 	else
 		sleep(5)
-		shoot_with_empty_chamber(user)
-		sleep(20)
-		user.visible_message("<span class='warning'>[user] looks about the room realizing [user.ru_who()] still there. [user.ru_who(TRUE)] proceed to shove [src] down their throat and choke себя with it!</span>", \
-			"<span class='userdanger'>You look around after realizing you're still here, then proceed to choke yourself to death with [src]!</span>")
-		sleep(20)
-		return OXYLOSS
+	shoot_with_empty_chamber(user)
+	sleep(20)
+	user.visible_message("<span class='warning'>[user] looks about the room realizing [user.ru_who()] still there. [user.ru_who(TRUE)] proceed to shove [src] down their throat and choke себя with it!</span>", \
+		"<span class='userdanger'>You look around after realizing you're still here, then proceed to choke yourself to death with [src]!</span>")
+	sleep(20)
+	return OXYLOSS

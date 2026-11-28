@@ -1,12 +1,11 @@
-#define SPIRIT_LESSON_SEVER 1
-#define SPIRIT_LESSON_PULL 2
-#define SPIRIT_LESSON_REAP 3
-#define SPIRIT_LESSON_SEIZE 4
-#define SPIRIT_LESSON_RESCUE 5
-#define SPIRIT_LESSON_OBOL 6
-#define SPIRIT_LESSON_DONE 7
+#define SPIRIT_LESSON_PULL 1
+#define SPIRIT_LESSON_REAP 2
+#define SPIRIT_LESSON_SEIZE 3
+#define SPIRIT_LESSON_RESCUE 4
+#define SPIRIT_LESSON_OBOL 5
+#define SPIRIT_LESSON_DONE 6
 
-/// Урок Духа на полигоне: шесть шагов по порядку, каждый засчитывается настоящим действием пути.
+/// Урок Духа на полигоне: пять шагов по порядку, каждый засчитывается настоящим действием пути.
 /datum/heretic_spirit_lesson
 	var/datum/antag_training_session/session
 	var/datum/weakref/spirit_ref
@@ -27,9 +26,10 @@
 	for(var/knowledge_type in list(/datum/eldritch_knowledge/spirit_grasp, /datum/eldritch_knowledge/spell/spirit_hold, /datum/eldritch_knowledge/spell/spirit_reap))
 		if(!heretic.get_knowledge(knowledge_type))
 			heretic.gain_knowledge(knowledge_type)
+	heretic.sync_path_stage()
 	spirit.combat_resource = spirit.combat_resource_max
 	spirit.notify_resource_changed()
-	set_stage(SPIRIT_LESSON_SEVER)
+	set_stage(SPIRIT_LESSON_PULL)
 
 /datum/heretic_spirit_lesson/Destroy()
 	var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
@@ -48,7 +48,7 @@
 
 /datum/heretic_spirit_lesson/proc/steps()
 	. = list()
-	var/list/names = list("Разлучение", "Притянуть душу", "Жатва", "Душа в руке", "Спасение пустого тела", "Обол на глаза")
+	var/list/names = list("Притянуть душу", "Жатва", "Душа в руке", "Спасение пустого тела", "Обол на глаза")
 	for(var/index in 1 to length(names))
 		. += list(list("name" = names[index], "done" = stage > index, "current" = stage == index))
 
@@ -61,24 +61,22 @@
 	var/changed = stage != new_stage
 	stage = new_stage
 	switch(stage)
-		if(SPIRIT_LESSON_SEVER)
-			hint = "Шаг 1 из 6. Примените Разлучение к мишени: её душа останется на месте, а к телу протянется нить."
 		if(SPIRIT_LESSON_PULL)
-			hint = "Шаг 2 из 6. Отойдите от души на 2-5 клеток и примените «Притянуть душу» по силуэту или телу: через секунду душа сдвинется к вам. Вдали от души тело слабеет."
+			hint = "Шаг 1 из 5. Встаньте в 2-5 клетках от мишени и примените «Притянуть душу» по её телу: кнопка сама отделит душу за обол, через секунду душа сдвинется к вам, а к телу протянется нить. Вдали от души тело слабеет."
 		if(SPIRIT_LESSON_REAP)
-			hint = "Шаг 3 из 6. Примените Жатву к мишени и подождите 2 секунды: второй удар придёт по нити. Вдали от души он сильнее."
+			hint = "Шаг 2 из 5. Примените Жатву к мишени и подождите 2 секунды: второй удар придёт по нити. Вдали от души он сильнее."
 		if(SPIRIT_LESSON_SEIZE)
-			hint = "Шаг 4 из 6. Отделите душу мишени, встаньте вплотную к силуэту и примените по нему «Притянуть душу» со свободной рукой: душа окажется у вас в руке."
+			hint = "Шаг 3 из 5. Встаньте вплотную к мишени или её душе и примените ту же кнопку, теперь «Притянуть или взять душу», со свободной рукой: без отделённой души кнопка отделит её сама, и через секунду душа окажется у вас в руке."
 		if(SPIRIT_LESSON_RESCUE)
-			hint = "Шаг 5 из 6. Так экипаж спасает пустое тело: помощник трясёт его 2 секунды. Ударьте помощника, чтобы сорвать спасение, или посмотрите, как душа вернётся."
+			hint = "Шаг 4 из 5. Так экипаж спасает пустое тело: помощник трясёт его 2 секунды. Ударьте помощника, чтобы сорвать спасение, или посмотрите, как душа вернётся."
 			if(changed)
 				INVOKE_ASYNC(src, PROC_REF(call_helper))
 		if(SPIRIT_LESSON_OBOL)
-			hint = "Шаг 6 из 6. В намерении «Помощь» коснитесь Хваткой Мансуса учебного трупа: на глаза лягут монеты, и вы узнаете его последний миг."
+			hint = "Шаг 5 из 5. В намерении «Помощь» коснитесь Хваткой Мансуса учебного трупа: на глаза лягут монеты, и вы узнаете его последний миг."
 			if(changed)
 				INVOKE_ASYNC(src, PROC_REF(call_corpse))
 		if(SPIRIT_LESSON_DONE)
-			hint = "Урок пройден. Против Духа: коснуться своей души или вернуться на её клетку, разбить душу, нулевой жезл, растолкать пустое тело за 2 секунды."
+			hint = "Урок пройден. Дело Духа продвигают и мёртвые животные, тела в морге и пол, где недавно кто-то умер. Против Духа: коснуться своей души или вернуться на её клетку, разбить душу, нулевой жезл, растолкать пустое тело за 2 секунды."
 	if(changed)
 		say(hint)
 	session?.update_practice()
@@ -87,13 +85,9 @@
 	SIGNAL_HANDLER
 	var/mob/living/target = target_ref?.resolve()
 	switch(stage)
-		if(SPIRIT_LESSON_SEVER)
-			if(event == "separate" && subject == target)
-				say("душа мишени осталась на месте. Пока тело рядом с ней, нить провисает.")
-				set_stage(SPIRIT_LESSON_PULL)
 		if(SPIRIT_LESSON_PULL)
 			if(event == "pull" && subject == target)
-				say("душа оттащена от тела: связь натянулась.")
+				say("душа отделена и оттащена от тела: связь натянулась. Разлучение отделяет душу издалека и ещё ранит.")
 				set_stage(SPIRIT_LESSON_REAP)
 		if(SPIRIT_LESSON_REAP)
 			if(event == "reap_hit" && subject == target)
@@ -143,7 +137,6 @@
 	else
 		say("места для трупа на полигоне нет: удалите лишние цели или призовите «Тело для ритуала».")
 
-#undef SPIRIT_LESSON_SEVER
 #undef SPIRIT_LESSON_PULL
 #undef SPIRIT_LESSON_REAP
 #undef SPIRIT_LESSON_SEIZE

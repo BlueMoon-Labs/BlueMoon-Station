@@ -16,6 +16,16 @@
 	var/image/next_step_hint
 	var/image/lead_hint
 	var/obj/effect/abstract/heretic_vfx_image_anchor/hint_anchor
+	var/list/tips_shown = list()
+
+/// Совет первого раза: каждый звучит один раз за раунд и молчит, если подсказки такта скрыты.
+/datum/eldritch_knowledge/base_dance/proc/tip(mob/living/user, key, text)
+	if(!user || !beat_hints || (key in tips_shown))
+		return FALSE
+	tips_shown += key
+	to_chat(user, span_eldritch("Совет Пляски: [text]"))
+	SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "tip", user, key)
+	return TRUE
 
 /datum/eldritch_knowledge/base_dance/proc/hint_viewer()
 	if(!beat_hints || QDELETED(dance_body) || dance_body.stat == DEAD)
@@ -178,6 +188,20 @@
 	if(!dance)
 		return FALSE
 	dance.hotkey_style(user.mob, style_id)
+	return TRUE
+
+/datum/keybinding/living/heretic_dance_hum
+	hotkey_keys = list("Unbound")
+	name = "heretic_dance_hum"
+	full_name = "Пляска: напев"
+	description = "Пляска: напевать вполголоса вне боя. Шаги складываются в фигуры, но стоящие вплотную слышат мотив."
+
+/datum/keybinding/living/heretic_dance_hum/down(client/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user.mob)
+	var/datum/eldritch_knowledge/base_dance/dance = heretic?.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	if(!dance || user.mob != dance.dance_body)
+		return FALSE
+	dance.toggle_hum(user.mob)
 	return TRUE
 
 /datum/keybinding/living/heretic_dance_style/previous

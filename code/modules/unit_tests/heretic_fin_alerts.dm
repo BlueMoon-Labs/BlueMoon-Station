@@ -15,7 +15,6 @@
 		/atom/movable/screen/alert/status_effect/heretic_corrosion_curse,
 		/atom/movable/screen/alert/status_effect/heretic_corrosion_curse/lesser,
 		/atom/movable/screen/alert/restrained/handcuffed/heretic_lock,
-		/atom/movable/screen/alert/restrained/legcuffed/heretic_lock,
 		/atom/movable/screen/alert/status_effect/heretic_dance_mired,
 		/atom/movable/screen/alert/status_effect/heretic_blade_opening,
 		/atom/movable/screen/alert/status_effect/heretic_blade_dance,
@@ -98,7 +97,7 @@
 	TEST_ASSERT(findtext(fracture.linked_alert.name, "2"), "Имя алерта называет число трещин: [fracture.linked_alert.name]")
 	qdel(fracture)
 
-/// Призрачные оковы Замка показывают медальон вместо tg «Handcuffed»/«Legcuffed», и перерисовка тела его не сбрасывает.
+/// Призрачные наручники Замка показывают медальон вместо tg «Handcuffed», и перерисовка тела его не сбрасывает.
 /datum/unit_test/heretic_fin_lock_restraint_alerts/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_LOCK
@@ -115,12 +114,13 @@
 	qdel(hands)
 	TEST_ASSERT_NULL(quarry.alerts["handcuffed"], "Снятые наручники уносят алерт.")
 	var/mob/living/carbon/human/passerby = allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y, origin.z))
-	var/datum/status_effect/heretic_lock_shackles/legs = passerby.apply_status_effect(/datum/status_effect/heretic_lock_shackles, knowledge)
-	TEST_ASSERT_NOTNULL(legs, "Прохожему спутаны ноги.")
+	var/datum/status_effect/heretic_lock_shackles/short_hold = passerby.apply_status_effect(/datum/status_effect/heretic_lock_shackles, knowledge)
+	TEST_ASSERT_NOTNULL(short_hold, "Прохожий скован ненадолго.")
 	passerby.regenerate_icons()
-	var/atom/movable/screen/alert/fetters_alert = passerby.alerts["legcuffed"]
-	TEST_ASSERT_EQUAL(fetters_alert?.type, /atom/movable/screen/alert/restrained/legcuffed/heretic_lock, "Путы Замка держат свой алерт и после перерисовки.")
-	qdel(legs)
-	TEST_ASSERT_NULL(passerby.alerts["legcuffed"], "Снятые путы уносят алерт.")
+	var/atom/movable/screen/alert/short_alert = passerby.alerts["handcuffed"]
+	TEST_ASSERT_EQUAL(short_alert?.type, /atom/movable/screen/alert/restrained/handcuffed/heretic_lock, "Короткие наручники Замка держат свой алерт и после перерисовки.")
+	TEST_ASSERT_NULL(passerby.alerts["legcuffed"], "Путами на ногах замок больше не сковывает.")
+	qdel(short_hold)
+	TEST_ASSERT_NULL(passerby.alerts["handcuffed"], "Снятые наручники уносят алерт.")
 
 #undef HERETIC_FIN_ALERT_SHEET

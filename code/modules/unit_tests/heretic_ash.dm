@@ -6,6 +6,7 @@
 	heretic.ascended = TRUE
 	finale.finished = TRUE
 	finale.on_body_gain(user)
+	finale.plant_lantern(get_step(user, WEST), user)
 	return list("user" = user, "heretic" = heretic, "finale" = finale)
 
 /// Сухой Пепельный владыка горит, оставляет огненный след, который поджигает врагов, и лечится в огне.
@@ -646,7 +647,7 @@
 	set_ash_burning_downed(victim)
 	TEST_ASSERT(ash.try_shroud(user, victim), "Саван ложится на горящую сбитую цель.")
 	TEST_ASSERT("[HERETIC_ASH_BAKE_SOUND]" in ear.heard, "Саван запекается своим звуком.")
-	TEST_ASSERT(!("[file('sound/effects/extinguish.ogg')]" in ear.heard), "Запекание не звучит как залитый огонь.")
+	TEST_ASSERT(!("[file('modular_bluemoon/sound/heretic/ash_quench.ogg')]" in ear.heard), "Запекание не звучит как залитый огонь.")
 
 /// Поток Обряда ночного дозора рисуется пепельным огнём на каждой клетке, без tg-пламени.
 /datum/unit_test/heretic_ash_rite_flames/Run()

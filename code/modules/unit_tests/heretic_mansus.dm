@@ -745,7 +745,7 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 		for(var/event in list("ambience", "pickup", "deposit", "warning", "hit", "escape", "step"))
 			TEST_ASSERT(isfile(theme[event]), "Звук [theme_id]/[event] включён в ресурсы.")
 	var/list/rule_states = icon_states('modular_bluemoon/icons/obj/heretic_mansus_rules.dmi')
-	for(var/state in list("ash_ember", "rust_plate", "rust_plate_broken", "flesh_sphincter", "flesh_sphincter_closed", "void_ice", "blade_strip", "blade_strike", "cosmic_portal", "lock_key", "lock_door", "sand_hourglass", "sand_hourglass_spent", "spirit_cage", "spirit_cage_open", "spirit_soul", "blood_step", "dance_beat_tile", "dance_beat_tile_rest"))
+	for(var/state in list("ash_ember", "rust_plate", "rust_plate_broken", "flesh_sphincter", "flesh_sphincter_closed", "void_ice", "blade_strip", "blade_strike", "cosmic_portal", "lock_key", "lock_door", "sand_hourglass", "sand_hourglass_spent", "spirit_cage", "spirit_cage_open", "spirit_soul", "blood_step", "dance_beat_tile", "dance_beat_tile_rest", "lead_lane_warn", "lead_lane_shot", "lead_target", "lead_target_hit", "dusk_lamp", "dusk_lamp_off", "dusk_grasp", "hammer_shadow", "hammer_strike"))
 		TEST_ASSERT(state in rule_states, "Спрайт правила [state] существует.")
 	var/list/guidance_states = icon_states('modular_bluemoon/icons/obj/heretic_mansus_guidance.dmi')
 	for(var/state in list("trail", "sanctuary", "niche", "name"))
@@ -886,6 +886,29 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	visit.memories_found = 3
 	visit.finish(exit_reason = "completed")
 	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/heretic_mansus_unreturned), "Пройденное испытание не наказывает жертву.")
+
+/// Прошедший Дом помнит знак пути похитителя, а не его имя: в заметках и на коже; прерванный и просроченный выход знака не дают.
+/datum/unit_test/heretic_mansus_path_sign/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_RUST)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/mind/soul = fixture["soul"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/sign = GLOB.heretic_mansus_themes[PATH_RUST]["title"]
+	visit.memories_found = HERETIC_MANSUS_MEMORIES
+	visit.finish(exit_reason = "completed")
+	TEST_ASSERT(findtext(soul.memory, "знак пути «[sign]»"), "Заметки хранят знак пути: [soul.memory]")
+	TEST_ASSERT(findtext(soul.memory, visit.amnesia_note), "Похититель по-прежнему забыт.")
+	var/mob/living/carbon/human/officer = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	TEST_ASSERT(findtext(jointext(victim.examine(officer), " "), "знак пути: [sign]"), "Знак виден на коже при осмотре.")
+
+	for(var/exit_reason in list("timeout", "interrupted"))
+		fixture = make_mansus_fixture(path_id = PATH_RUST)
+		victim = fixture["victim"]
+		soul = fixture["soul"]
+		visit = fixture["visit"]
+		visit.finish(exit_reason = exit_reason)
+		TEST_ASSERT(!findtext(soul.memory, "знак пути"), "Без прохождения знака в заметках нет ([exit_reason]).")
+		TEST_ASSERT(!findtext(jointext(victim.examine(officer), " "), "знак пути"), "Без прохождения знака на коже нет ([exit_reason]).")
 
 /// Тень видит по прямой; колонна и ниша скрывают жертву, осколок в руках выдаёт её.
 /datum/unit_test/heretic_mansus_hunter_sight/Run()
@@ -1244,6 +1267,84 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	TEST_ASSERT_NOTNULL(rule.decoy, "Душа вылетает.")
 	hunter.forceMove(get_turf(rule.decoy))
 	TEST_ASSERT_EQUAL(visit.hunter_goal(hunter), get_turf(rule.decoy), "Тень гонится за душой.")
+
+/// Свинец: линия прицела через жертву стреляет через секунду, мишень обрывает линию, тени пули не страшны.
+/datum/unit_test/heretic_mansus_rule_lead/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_LEAD)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/lead/rule = visit.rule
+	TEST_ASSERT(length(rule.targets), "В тире стоят мишени.")
+	for(var/obj/effect/heretic_mansus_lead_target/cover as anything in rule.targets)
+		TEST_ASSERT(cover in visit.scenery, "Мишень убирается вместе с Домом.")
+		cover.forceMove(mansus_tile(visit, 2, 2))
+	victim.forceMove(mansus_tile(visit, 5, 13))
+	var/list/hazards = rule.take_aim(TRUE, FALSE)
+	TEST_ASSERT(length(hazards), "Линия прицела ложится.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/heretic_mansus_hazard/lead_lane) in get_turf(victim), "Линия проходит через жертву.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/heretic_mansus_hazard/lead_lane) in mansus_tile(visit, 2, 13), "Линия начинается у стены.")
+	TEST_ASSERT_EQUAL(visit.hits_taken, 0, "До выстрела удара нет.")
+	TEST_ASSERT(wait_for_var(visit, NAMEOF(visit, hits_taken), 1, 3 SECONDS), "Через секунду выстрел по линии бьёт жертву.")
+	visit.next_hazard_hit = 0
+	var/obj/effect/heretic_mansus_lead_target/cover = rule.targets[1]
+	cover.forceMove(mansus_tile(visit, 4, 14))
+	victim.forceMove(mansus_tile(visit, 5, 14))
+	var/obj/effect/heretic_mansus_hunter/hunter = visit.spawn_hunter()
+	hunter.ready_at = world.time + 1 MINUTES
+	hunter.forceMove(mansus_tile(visit, 3, 14))
+	var/list/covered = rule.take_aim(TRUE, FALSE)
+	TEST_ASSERT_EQUAL(length(covered), 2, "Линия обрывается на мишени.")
+	TEST_ASSERT_NULL(locate(/obj/effect/heretic_mansus_hazard/lead_lane) in get_turf(victim), "За мишенью линии нет.")
+	var/obj/effect/heretic_mansus_hazard/lead_lane/shot = covered[1]
+	TEST_ASSERT(wait_for_var(shot, NAMEOF(shot, armed), TRUE, 3 SECONDS), "Выстрел по линии отгремел.")
+	TEST_ASSERT_EQUAL(visit.hits_taken, 1, "Мишень приняла выстрел.")
+	TEST_ASSERT(!QDELETED(hunter), "Тени пули не страшны.")
+
+/// Сумрак: лампы Дома гаснут по очереди, в темноте тени отнимают силы, у горящей лампы безопасно.
+/datum/unit_test/heretic_mansus_rule_dusk/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_DUSK)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/dusk/rule = visit.rule
+	TEST_ASSERT(length(rule.lamps), "В зале стоят лампы.")
+	for(var/obj/effect/heretic_mansus_dusk_lamp/each as anything in rule.lamps)
+		TEST_ASSERT(each in visit.scenery, "Лампа убирается вместе с Домом.")
+		each.set_lit(FALSE)
+	var/obj/effect/heretic_mansus_dusk_lamp/lamp = rule.lamps[1]
+	lamp.forceMove(mansus_tile(visit, 2, 2))
+	victim.forceMove(mansus_tile(visit, 5, 13))
+	var/stamina = victim.getStaminaLoss()
+	TEST_ASSERT(rule.grasp(), "В темноте тени хватают.")
+	TEST_ASSERT(victim.getStaminaLoss() > stamina, "Тени отнимают силы.")
+	lamp.forceMove(mansus_tile(visit, 4, 14))
+	lamp.set_lit(TRUE)
+	victim.forceMove(mansus_tile(visit, 5, 14))
+	stamina = victim.getStaminaLoss()
+	TEST_ASSERT(!rule.grasp(), "У горящей лампы безопасно.")
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), stamina, "У горящей лампы силы не уходят.")
+	rule.cycle()
+	TEST_ASSERT(!lamp.lit, "Лампы гаснут по очереди.")
+
+/// Молот: тень молота ложится под жертву и рядом, через секунду молот бьёт по тени; сошедшего с тени не задевает.
+/datum/unit_test/heretic_mansus_rule_hammer/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_HAMMER)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/hammer/rule = visit.rule
+	victim.forceMove(mansus_tile(visit, 5, 13))
+	TEST_ASSERT(rule.raise(), "Молот поднимается над залом.")
+	TEST_ASSERT(get_turf(victim) in rule.shadowed, "Тень ложится под жертву.")
+	TEST_ASSERT(length(rule.shadowed) > 1, "Тень ложится и на клетки рядом.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_mansus_hammer_shadow) in get_turf(victim), "Тень видна заранее.")
+	TEST_ASSERT_EQUAL(visit.hits_taken, 0, "До удара жертва цела.")
+	TEST_ASSERT(rule.strike(), "Молот бьёт по тени.")
+	TEST_ASSERT_EQUAL(visit.hits_taken, 1, "Стоявшую в тени жертву бьёт.")
+	visit.next_hazard_hit = 0
+	TEST_ASSERT(rule.raise(), "Молот поднимается снова.")
+	victim.forceMove(mansus_tile(visit, 2, 2))
+	TEST_ASSERT(!(get_turf(victim) in rule.shadowed), "Жертва сошла с тени.")
+	TEST_ASSERT(!rule.strike(), "Сошедшего с тени молот не задевает.")
+	TEST_ASSERT_EQUAL(visit.hits_taken, 1, "Мимо тени ударов нет.")
 
 /// Клетка фикстурной раскладки: столбец и строка от 1 до 33, строки с севера.
 /datum/unit_test/proc/mansus_tile(datum/heretic_mansus_visit/visit, column, row)

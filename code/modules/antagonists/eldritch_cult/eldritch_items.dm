@@ -55,6 +55,7 @@
 	. += span_notice("Коснитесь сердцем обезвреженной цели охоты: круг проступит прямо под телом, и обряд займёт [DisplayTimeText(heretic.heart_rite_time(heretic.hunt_target?.current || user), 1)]. На руне трансмутации сердце кладут рядом с целью.")
 	. += span_notice("Если у пути есть дверь, сердце предложит увести цель в изнанку; если дверь работает издалека, сжатое сердце спросит, найти цель или увести её.")
 	. += span_notice("Сменить цель: Alt+ЛКМ по сердцу, кнопка в кодексе или касание сердцем поверженного члена экипажа. Не чаще раза в [DisplayTimeText(HERETIC_HUNT_REFRESH_COOLDOWN)].")
+	. += span_notice("Если цель не дальше [HERETIC_HUNT_HEARTBEAT_RANGE] клеток, сжатое сердце отзывается и в её груди, не чаще раза в [HERETIC_HUNT_HEARTBEAT_COOLDOWN / (1 SECONDS)] с: она поймёт, что её ищут, но не кто и откуда.")
 	. += span_notice("Значок слева у ног показывает согласие члена экипажа на охоту: серый перечёркнутый круг - нельзя, синее кольцо - только живым, оранжевый прицел и красный круг - примут и труп.")
 
 /obj/item/living_heart/AltClick(mob/user)
@@ -112,6 +113,7 @@
 		return
 	var/distance = get_dist(user_turf, target_turf)
 	var/direction = get_dir(user_turf, target_turf)
+	heretic.hunt_heartbeat_notice(target, distance)
 	balloon_alert(user, distance ? "[distance] кл., [dir2text_ru(direction)]" : "прямо здесь")
 	to_chat(user, span_notice("[target.real_name]: [distance <= 15 ? "совсем рядом" : distance <= 31 ? "поблизости" : "далеко"], [dir2text_ru(direction)]. [heretic.retarget_hint(src)]"))
 	if(!heretic.hunt_stale_hinted && world.time - heretic.hunt_assigned_at >= HERETIC_HUNT_STALE_TIME)
@@ -147,7 +149,7 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	force = 22
 	throwforce = 15
-	hitsound = 'sound/weapons/bladeslice.ogg'
+	hitsound = "heretic_blade_hit_common"
 	attack_verb = list("атаковал", "рубанул", "уколол", "порезал", "терзал")
 	wound_bonus = 5
 	bare_wound_bonus = 10
@@ -157,6 +159,16 @@
 	var/mark_type = /datum/status_effect/eldritch
 	var/route = PATH_SIDE
 	var/escape_in_progress = FALSE
+	/// Чем зовут оружие в сообщениях побега: «Возьмите [escape_noun] в руку».
+	var/escape_noun = "клинок"
+	var/escape_verb = "разбить"
+	/// Урон, который удар донёс до тела, даже если изрубленная до предела часть его не прибавила.
+	var/landed_damage = 0
+
+/obj/item/melee/sickly_blade/proc/note_landed_damage(mob/living/source, damage, damagetype)
+	SIGNAL_HANDLER
+	if(damage > 0 && (damagetype == BRUTE || damagetype == BURN) && !(source.status_flags & GODMODE))
+		landed_damage += damage
 
 /obj/item/melee/sickly_blade/attack(mob/living/target, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	if(!(IS_HERETIC(user) || IS_HERETIC_MONSTER(user)))
@@ -171,15 +183,21 @@
 		return
 	var/damage_before = target.getBruteLoss() + target.getFireLoss()
 	var/can_affect_before_hit = heretic_can_affect(user, target, chargecost = 0)
+	landed_damage = 0
+	RegisterSignal(target, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(note_landed_damage), TRUE)
 	. = ..()
-	if(QDELETED(target) || QDELETED(src) || target.getBruteLoss() + target.getFireLoss() <= damage_before || !heretic_can_affect(user, target) || !can_affect_before_hit)
+	UnregisterSignal(target, COMSIG_MOB_APPLY_DAMAGE)
+	if(QDELETED(target) || QDELETED(src))
+		return
+	var/strike_damage = max(0, target.getBruteLoss() + target.getFireLoss() - damage_before)
+	// По живому удар засчитывается, даже если часть тела уже изрублена до предела и урон не вырос.
+	if((!strike_damage && (!landed_damage || target.stat == DEAD)) || !heretic_can_affect(user, target) || !can_affect_before_hit)
 		return
 	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
 	if(!heretic)
 		return
 	heretic.hint_hunt_claim(user, target)
 	var/list/knowledge = heretic.get_all_knowledge()
-	var/strike_damage = target.getBruteLoss() + target.getFireLoss() - damage_before
 	for(var/knowledge_type in knowledge)
 		var/datum/eldritch_knowledge/entry = knowledge[knowledge_type]
 		if(entry.route == route)
@@ -198,6 +216,9 @@
 			entry.on_eldritch_blade(target, user, TRUE, null)
 
 /obj/item/melee/sickly_blade/attack_self(mob/user)
+	shatter_escape(user)
+
+/obj/item/melee/sickly_blade/proc/shatter_escape(mob/user)
 	if(QDELETED(src) || QDELETED(user) || escape_in_progress)
 		return
 	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
@@ -205,10 +226,10 @@
 		if(!origin)
 			return
 		if(!(src in user.held_items))
-			escape_failure(user, "Возьмите клинок в руку.")
+			escape_failure(user, "Возьмите [escape_noun] в руку.")
 			return
 		if(user.incapacitated())
-			escape_failure(user, "Вы не можете действовать. Разбить клинок нужно до оглушения или потери сознания.")
+			escape_failure(user, "Вы не можете действовать. [capitalize(escape_verb)] [escape_noun] нужно до оглушения или потери сознания.")
 			return
 		var/area/origin_area = get_area(origin)
 		if(HAS_TRAIT(user, TRAIT_NO_TELEPORT) || origin_area.area_flags & NOTELEPORT)
@@ -219,7 +240,7 @@
 			escape_failure(user, containment_reason)
 			return
 		if(HAS_TRAIT(user, TRAIT_HERETIC_ASCENDED))
-			escape_failure(user, "После вознесения Мансус вас больше не прячет: сбежать, разбив клинок, нельзя.")
+			escape_failure(user, "После вознесения Мансус вас больше не прячет: этот побег закрыт.")
 			return
 		var/escape_wait = user.mind.heretic_escape_ready_at - world.time
 		if(escape_wait > 0)
@@ -234,16 +255,16 @@
 		if(QDELETED(user) || current_turf?.z != origin.z || !(src in user.held_items) || user.incapacitated() || !(IS_HERETIC(user) || IS_HERETIC_MONSTER(user)))
 			escape_in_progress = FALSE
 			if(!QDELETED(user))
-				escape_failure(user, "Побег прерван: вы потеряли клинок, возможность действовать или покинули уровень.")
+				escape_failure(user, "Побег прерван: вы потеряли [escape_noun], возможность действовать или покинули уровень.")
 			return
 		if(safe_turf && do_teleport(user, safe_turf, forceMove = TRUE, channel = TELEPORT_CHANNEL_MAGIC))
 			user.mind.heretic_escape_ready_at = world.time + HERETIC_BLADE_ESCAPE_COOLDOWN
-			origin.visible_message(span_warning("Клинок в руке [user] разлетается осколками, воздух расходится тёмным швом, и [user] исчезает в нём."))
+			origin.visible_message(span_warning("[capitalize(escape_noun)] в руке [user] разлетается осколками, воздух расходится тёмным швом, и [user] исчезает в нём."))
 			new /obj/effect/temp_visual/eldritch_smoke(origin)
 			playsound(origin, "shatter", 70, TRUE)
 			new /obj/effect/temp_visual/eldritch_smoke(safe_turf)
-			user.visible_message(span_warning("Воздух расходится тёмным швом, и из него шагает [user], сжимая осколки клинка."))
-			to_chat(user,"<span class='warning'>Вы разбиваете [src], и чужая сила подхватывает ваше тело. Ржавые холмы услышали зов.</span>")
+			user.visible_message(span_warning("Воздух расходится тёмным швом, и из него шагает [user], сжимая в руке осколки."))
+			to_chat(user,"<span class='warning'>Вы успеваете [escape_verb] [escape_noun], и чужая сила подхватывает ваше тело. Ржавые холмы услышали зов.</span>")
 			log_game("HERETIC ESCAPE: [key_name(user)] escaped using [src] from [AREACOORD(origin)] to [AREACOORD(user)].")
 		else
 			escape_in_progress = FALSE
@@ -276,7 +297,10 @@
 /obj/item/melee/sickly_blade/examine(mob/user)
 	. = ..()
 	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
-		. += span_notice("Возьмите клинок в руку и нажмите «Разбить клинок и отступить» или активируйте его в руке: вы переместитесь в случайное безопасное место станции, потеряв оружие. Успейте до оглушения или потери сознания. Следующий побег возможен только через [DisplayTimeText(HERETIC_BLADE_ESCAPE_COOLDOWN)]. Наручники, смирительная рубашка и щит разума не дают разбить клинок. После вознесения побег клинком закрыт. При неудаче клинок сохранится.")
+		. += span_notice(escape_examine())
+
+/obj/item/melee/sickly_blade/proc/escape_examine()
+	return "Возьмите клинок в руку и нажмите «Разбить клинок и отступить» или активируйте его в руке: вы переместитесь в случайное безопасное место станции, потеряв оружие. Успейте до оглушения или потери сознания. Следующий побег возможен только через [DisplayTimeText(HERETIC_BLADE_ESCAPE_COOLDOWN)]. Одновременно у вас держится не больше [HERETIC_BLADE_LIMIT] клинков пути: новый рассыпает старейший из тех, что не при вас. Наручники, смирительная рубашка и щит разума не дают разбить клинок. После вознесения побег клинком закрыт. При неудаче клинок сохранится."
 
 /obj/item/melee/sickly_blade/rust
 	name = "rusted blade"
@@ -436,6 +460,14 @@
 	var/mob/living/carbon/human/local_user
 	///Список целей с активным кулдауном
 	var/list/mob/living/carbon/human/cooldown_targets = list()
+	/// Пока идёт, маска держится на лице неверного
+	var/grip_timer
+
+/obj/item/clothing/mask/gas/void_mask/examine(mob/user)
+	. = ..()
+	. += span_notice("Надетую на неверного маску тот [HERETIC_ASH_MASK_GRIP / (1 SECONDS)] секунд не снимет сам; раньше её может сорвать другой человек, сняв её с него как одежду. На тех, кто не согласен на охоту еретика, маска не держится: её снимут сразу.")
+	if(grip_timer)
+		. += span_warning("Сейчас маска вцепилась в лицо и отпустит через [round(timeleft(grip_timer) / (1 SECONDS)) + 1] с.")
 
 /obj/item/clothing/mask/gas/void_mask/equipped(mob/user, slot)
 	. = ..()
@@ -445,12 +477,36 @@
 
 		if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
 			return
+		if(!antag_opt_in_allows(user.mind, ANTAG_OPT_IN_HERETIC_HUNT))
+			to_chat(user, span_notice("Маска холодит лицо, но не держится: её можно снять в любой момент."))
+			return
 		ADD_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
+		deltimer(grip_timer)
+		grip_timer = addtimer(CALLBACK(src, PROC_REF(release_grip)), HERETIC_ASH_MASK_GRIP, TIMER_STOPPABLE)
+		to_chat(user, span_userdanger("Маска впивается в лицо! Сами вы снимете её только через [HERETIC_ASH_MASK_GRIP / (1 SECONDS)] секунд, раньше её может сорвать кто-то другой."))
+
+/// Хватка маски кончилась: теперь неверный снимет её сам.
+/obj/item/clothing/mask/gas/void_mask/proc/release_grip()
+	deltimer(grip_timer)
+	grip_timer = null
+	if(!HAS_TRAIT_FROM(src, TRAIT_NODROP, CLOTHING_TRAIT))
+		return
+	REMOVE_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
+	if(local_user)
+		to_chat(local_user, span_notice("Маска ослабла: теперь её можно снять."))
+
+/obj/item/clothing/mask/gas/void_mask/canStrip(mob/stripper, mob/owner)
+	return !(item_flags & ABSTRACT) && (stripper != owner || !HAS_TRAIT(src, TRAIT_NODROP))
+
+/obj/item/clothing/mask/gas/void_mask/doStrip(mob/stripper, mob/owner)
+	if(stripper != owner)
+		release_grip()
+	return ..()
 
 /obj/item/clothing/mask/gas/void_mask/dropped(mob/M)
+	release_grip()
 	local_user = null
 	STOP_PROCESSING(SSobj, src)
-	REMOVE_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
 	for(var/mob/living/carbon/human/target in cooldown_targets)
 		REMOVE_TRAIT(target, TRAIT_VOID_MASK_IMMUNE, VOID_MASK_TRAIT)
 	cooldown_targets.Cut()
@@ -458,6 +514,8 @@
 
 /obj/item/clothing/mask/gas/void_mask/Destroy()
 	STOP_PROCESSING(SSobj, src)
+	deltimer(grip_timer)
+	grip_timer = null
 	local_user = null
 	for(var/mob/living/carbon/human/target as anything in cooldown_targets)
 		REMOVE_TRAIT(target, TRAIT_VOID_MASK_IMMUNE, VOID_MASK_TRAIT)
@@ -518,7 +576,7 @@
 	force = 35
 	throwforce = 30
 	embedding = list(embed_chance=75, jostle_chance=2, ignore_throwspeed_threshold=TRUE, pain_stam_pct=0.4, pain_mult=3, jostle_pain_mult=5, rip_time=15)
-	hitsound = 'sound/weapons/bladeslice.ogg'
+	hitsound = "heretic_blade_hit_common"
 	attack_verb = list("атаковал", "рубанул", "уколол", "порезал", "терзал")
 	///turfs that you cannot draw carvings on
 	var/static/list/blacklisted_turfs = typecacheof(list(/turf/closed,/turf/open/space,/turf/open/lava))

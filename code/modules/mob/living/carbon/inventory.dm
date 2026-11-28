@@ -162,7 +162,8 @@
 /mob/living/carbon/wear_mask_update(obj/item/clothing/C, toggle_off = 1)
 	if(isclothing(C) && (C.tint || initial(C.tint)))
 		update_tint()
-	return ..()
+	. = ..()
+	SEND_SIGNAL(src, COMSIG_CARBON_FACE_COVER_UPDATED)
 
 //handle stuff to update when a mob equips/unequips a headgear.
 /mob/living/carbon/proc/head_update(obj/item/I, forced)
@@ -175,6 +176,7 @@
 	if(I.flags_inv & HIDEMASK || forced)
 		update_inv_wear_mask()
 	update_inv_head()
+	SEND_SIGNAL(src, COMSIG_CARBON_FACE_COVER_UPDATED)
 
 /mob/living/carbon/proc/get_holding_bodypart_of_item(obj/item/I)
 	var/index = get_held_index_of_item(I)

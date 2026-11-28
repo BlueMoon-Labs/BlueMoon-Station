@@ -84,11 +84,11 @@ CC BY-SA 3.0 согласно README каждого источника.
 | --- | --- |
 | `sky/ash_loop.ogg` | Aurora.3, снимок `d67d2c791285425efc7ec58e40396cf016c427cd`: [sound/ambience/fire/Fire_Ambient_01.ogg](https://github.com/Aurorastation/Aurora.3/commits/d67d2c791285425efc7ec58e40396cf016c427cd/sound/ambience/fire/Fire_Ambient_01.ogg), `Fire_Ambient_02.ogg`, `Fire_Ambient_03.ogg` |
 | `capture/moon_latch.ogg` | Baystation12, снимок `cf7e0488b7072dbf04dce078d086b80530b7d79d`: [sound/items/tinkly_bell.ogg](https://github.com/Baystation12/Baystation12/commits/cf7e0488b7072dbf04dce078d086b80530b7d79d/sound/items/tinkly_bell.ogg), добавил spookerton: [BronzeBell1 - Zabuhailo](https://freesound.org/people/Zabuhailo/sounds/178646/), [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
-| `blade_feint.ogg` | Baystation12, снимок `cf7e0488b7072dbf04dce078d086b80530b7d79d`: [sound/effects/metalscrape1.ogg](https://github.com/Baystation12/Baystation12/commits/cf7e0488b7072dbf04dce078d086b80530b7d79d/sound/effects/metalscrape1.ogg), добавил Markus |
-| `rust_heart_*.ogg`, `rust_wave_*.ogg`, `rust_grasp_1.ogg`, `rust_root_2.ogg`, `rust_mark_2.ogg`, `rust_formation_1.ogg`, `rust_formation_2.ogg`, `rust_roots.ogg` | Baystation12, снимок `cf7e0488b7072dbf04dce078d086b80530b7d79d`: [sound/effects/metalscrape1.ogg](https://github.com/Baystation12/Baystation12/commits/cf7e0488b7072dbf04dce078d086b80530b7d79d/sound/effects/metalscrape1.ogg), `metalscrape2.ogg`, `metalscrape3.ogg`, добавил Markus |
+| `blade_feint.ogg` | Baystation12, снимок `cf7e0488b7072dbf04dce078d086b80530b7d79d`: [sound/effects/metalscrape1.ogg](https://github.com/Baystation12/Baystation12/commits/cf7e0488b7072dbf04dce078d086b80530b7d79d/sound/effects/metalscrape1.ogg), добавил Markus (Atebite) в [PR #20918](https://github.com/Baystation12/Baystation12/pull/20918); исходную запись автор не указал, лицензия - CC BY-SA 3.0 по README Baystation12 |
+| `rust_heart_*.ogg`, `rust_wave_*.ogg`, `rust_grasp_1.ogg`, `rust_root_2.ogg`, `rust_mark_2.ogg`, `rust_formation_1.ogg`, `rust_formation_2.ogg`, `rust_roots.ogg` | Baystation12, снимок `cf7e0488b7072dbf04dce078d086b80530b7d79d`: [sound/effects/metalscrape1.ogg](https://github.com/Baystation12/Baystation12/commits/cf7e0488b7072dbf04dce078d086b80530b7d79d/sound/effects/metalscrape1.ogg), `metalscrape2.ogg`, `metalscrape3.ogg`, добавил Markus (Atebite) в [PR #20918](https://github.com/Baystation12/Baystation12/pull/20918) |
 | `rust_heart_*.ogg`, `rust_wave_*.ogg`, `rust_grasp_2.ogg`, `rust_root_2.ogg`, `rust_formation_1.ogg`, `rust_formation_fall.ogg` | Nebula, снимок `064044947c69a7231c881fb7566adfd17125e100`: [sound/effects/rockcrumble.ogg](https://github.com/NebulaSS13/Nebula/commits/064044947c69a7231c881fb7566adfd17125e100/sound/effects/rockcrumble.ogg), добавил MistakeNot4892 |
 | `rust_plume.ogg`, `rust_seed_burst.ogg`, `rust_roots_release.ogg` | Nebula, снимок `064044947c69a7231c881fb7566adfd17125e100`: [sound/effects/rockcrumble.ogg](https://github.com/NebulaSS13/Nebula/commits/064044947c69a7231c881fb7566adfd17125e100/sound/effects/rockcrumble.ogg), добавил MistakeNot4892 |
-| `rust_patron_cast.ogg` | Baystation12, снимок `cf7e0488b7072dbf04dce078d086b80530b7d79d`: [sound/effects/metalscrape2.ogg](https://github.com/Baystation12/Baystation12/commits/cf7e0488b7072dbf04dce078d086b80530b7d79d/sound/effects/metalscrape2.ogg), добавил Markus |
+| `rust_patron_cast.ogg` | Baystation12, снимок `cf7e0488b7072dbf04dce078d086b80530b7d79d`: [sound/effects/metalscrape2.ogg](https://github.com/Baystation12/Baystation12/commits/cf7e0488b7072dbf04dce078d086b80530b7d79d/sound/effects/metalscrape2.ogg), добавил Markus (Atebite) в [PR #20918](https://github.com/Baystation12/Baystation12/pull/20918) |
 | `sky/rust_loop.ogg` | TauCetiClassic, снимок `b4b5a2e24005681125a7288a8d26560b65ee75f6`: [sound/effects/metal_creaking.ogg](https://github.com/TauCetiStation/TauCetiClassic/commits/b4b5a2e24005681125a7288a8d26560b65ee75f6/sound/effects/metal_creaking.ogg) |
 
 ## Замок
@@ -158,6 +158,29 @@ CC BY-SA 3.0 согласно README каждого источника.
 | `blood_drink.ogg` | [sound/items/drink.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/items/drink.ogg), [sound/effects/glug.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/glug.ogg) |
 | `blood_absorb.ogg` | [sound/effects/glug.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/glug.ogg) |
 
+## Свинец
+
+Оригинальные звуки пути Свинца, без сторонних записей: синтез на физических моделях (выстрел - ударная волна, рёв газов, отражения и зал; щелчки стальных деталей, звон латунных гильз, рикошет, малый и большой барабаны, колокол, расплав, бумага, засов, удары по доскам и мишеням, скрип настила, хлопок и горящие крупинки пороха, трение проволоки, шорох ткани, сердцебиение) и синтез речи (шёпот, хор, выдох), обработка - обрезка, смена скорости, разворот, фильтры, зал, сведение, уровень. CC BY-SA 3.0. Это `ascend_lead.ogg`, `ascend_lead_climax.ogg`, `lead_to_shot_in.ogg`, `lead_to_shot_out.ogg`, `lead_cock_1..3.ogg`, `lead_cylinder_spin_1..2.ogg`, `lead_cylinder_select_1..2.ogg`, `lead_fan_cock.ogg`, `lead_school_gunslinger.ogg`, `lead_school_hunter.ogg`, `lead_school_cannoneer.ogg`, `lead_standoff_in.ogg`, `lead_tripwire_set.ogg`, `lead_tripwire_click.ogg`, `lead_charge_set.ogg`, `lead_charge_arm.ogg`, `lead_pop.ogg`, `lead_last_round_charge.ogg`, `lead_last_round_shot.ogg`, `lead_phantom_shot_1..2.ogg`, `lead_drum_count_1..2.ogg`, `capture/lead_latch.ogg` и `mansus/lead_*.ogg`, кроме `mansus/lead_deposit.ogg` и `mansus/lead_warning.ogg`.
+
+Остальные звуки пути сведены из записей ресурсов BlueMoon ниже (обрезка, смена скорости, разворот, фильтры, сведение, уровень) и синтеза: удары и звон металла, щелчки механизма барабана, звон латунных гильз, хлопки пороха и клубы дыма, свист пули, пузыри, пар, низкий гул. CC BY-SA 3.0. Синтез без сторонних записей: `lead_catch_1..3.ogg`, `lead_named_hit_1..2.ogg`, `lead_rain_warn.ogg`, `lead_rain_1..2.ogg`, `lead_revolver_shot_1..3.ogg`, `lead_misfire_1..3.ogg`, `lead_gun_turns.ogg`, `lead_revolver_empty_1..2.ogg`, `lead_standoff_out.ogg`, `lead_crucible_bubble_1..2.ogg`, `book_lead_page.ogg`, `mansus/lead_deposit.ogg`, `mansus/lead_warning.ogg`, `sky/lead_loop.ogg`, `sky/lead_event.ogg`.
+
+| Файлы | Источник |
+| --- | --- |
+| `lead_hit_1.ogg`, `lead_hit_3.ogg` | `sound/weapons/bladeslice.ogg` |
+| `lead_hit_2.ogg` | `sound/weapons/bladesliceb.ogg` |
+| `lead_ricochet_1.ogg`, `lead_ricochet_2.ogg`, `lead_ricochet_3.ogg` | `sound/weapons/effects/ric1.ogg`, `ric2.ogg`, `ric3.ogg`, `ric4.ogg` |
+| `lead_named_cast_2.ogg` | `sound/hallucinations/psychosis/whisper_vocal.ogg` |
+| `lead_named_cast_1.ogg` | `sound/hallucinations/psychosis/whisper_voices_2.ogg` |
+| `lead_casing_1..3.ogg`, `lead_crucible_quench_1..2.ogg` | `sound/effects/wounds/sizzle2.ogg` |
+| `lead_crucible_quench_1.ogg` | `sound/machines/grill/grillsizzle.ogg` |
+| `book_lead_open.ogg` | `sound/effects/pageturn3.ogg` |
+
+## Сумрак
+
+Все звуки пути Сумрака (`dusk_*.ogg`, `book_dusk_*.ogg`, `capture/dusk_latch.ogg`, `mansus/dusk_*.ogg`, `sky/dusk_*.ogg`, `ascend_dusk.ogg`, `ascend_dusk_climax.ogg`) - оригинальные, без чужих записей. Шумовая фактура (дыхание, хрип, рык, крик, кости, плоть, ткань, крылья и перья, гул и мигание ламп, выключатель, стекло, искры, шипение, кислота, пар, вспышка, удар ножа, страницы, шаг, гул и ветер) и голосовые слои (шёпоты, хоры, бурдоны, стоны) - синтез. Голоса сломаны: перестановка и разворот слогов, заикания, формантный сдвиг, вокодер на хрипе и шуме, кольцевая модуляция, перегруз и обрывы. Колокол и нимб - модальный синтез. Обработка и синтез слоёв (давление, удары, треск) - своя обработка, CC BY-SA 3.0. `dusk_slash_light.ogg`, `dusk_tether.ogg`, `dusk_lamp_out_1.ogg`, `dusk_lamp_out_2.ogg`, `dusk_stance_wing.ogg`, `dusk_drag_done.ogg`, `dusk_lamp_beam.ogg`, `dusk_flicker_3.ogg`, `dusk_wing_twitch_1.ogg`, `dusk_wing_twitch_2.ogg`, `dusk_rot_spread_1.ogg`, `dusk_rot_spread_2.ogg`, `dusk_rot_lamp.ogg`, `dusk_covenant_rot.ogg`, `dusk_eclipse_warn.ogg`, `dusk_holy_burn_2.ogg`, `dusk_mutate_2.ogg`, `mansus/dusk_ambience.ogg`, `mansus/dusk_warning.ogg`, `sky/dusk_loop.ogg`, `sky/dusk_event.ogg`, `dusk_flicker_1.ogg`, `dusk_flicker_2.ogg`, `dusk_holy_burn_1.ogg`, `dusk_mutate_1.ogg`, `dusk_mutate_3.ogg`, `dusk_mark_burst.ogg`, `dusk_step_1.ogg`, `dusk_step_2.ogg`, `capture/dusk_latch.ogg`, `mansus/dusk_pickup.ogg`, `dusk_covenant_seraph.ogg`, `dusk_covenant_fallen.ogg`, `dusk_light_burn.ogg`, `dusk_shade_servant_burst.ogg` и `dusk_rot_cleanse.ogg` - синтез без голосовых слоёв, CC BY-SA 3.0.
+
+Звуки Заветов `dusk_shade_servant_1.ogg` и `dusk_shade_servant_2.ogg` собраны из той же библиотеки фактур Сумрака (шипение, дыхание, хрип, стон, рык, шёпоты, перья и ткань, всплеск) - синтез и своя обработка, CC BY-SA 3.0.
+
 ## Ресурсы BlueMoon
 
 CC BY-SA 3.0.
@@ -214,6 +237,38 @@ CC BY-SA 3.0.
 
 `cosmic_charge.ogg`, `moon_reflection.ogg`, `moon_step.ogg`, `moon_eclipse.ogg` построены на звуках этого каталога.
 
+## Удары клинков и общие звуки 2026-11
+
+Удары клинков путей `<путь>_blade_hit_1..3.ogg`, общий удар `common/blade_hit_1..3.ogg` и звуки `common/` сведены из синтеза и записей ниже (обрезка, смена скорости, фильтры, разворот, сведение, уровень). Записи - ресурсы BlueMoon, CC BY-SA 3.0. Синтез без сторонних записей: `rust_blade_hit_1.ogg`, `void_blade_hit_*.ogg`, `blade_blade_hit_1.ogg`, `blade_blade_hit_2.ogg`, `cosmic_blade_hit_*.ogg`, `dance_blade_hit_*.ogg`, `echo_blade_hit_*.ogg`, `lock_blade_hit_1.ogg`, `spirit_blade_hit_*.ogg`, `wax_blade_hit_1.ogg`, `wax_blade_hit_2.ogg`, `common/blade_hit_*.ogg`, `common/codex_learn_1.ogg`, `common/emergence_on.ogg`, `common/emergence_off.ogg`, `common/emergence_hit_*.ogg`, `common/crucible_bubble_*.ogg`, `common/mute_cast.ogg`, `void_blink_out_*.ogg`, `void_blink_in_*.ogg`, `ash_print_flare_2.ogg`.
+
+| Файлы | Источник |
+| --- | --- |
+| `ash_blade_hit_1.ogg`, `ash_blade_hit_3.ogg`, `wax_blade_hit_3.ogg`, `ash_quench.ogg`, `ash_lantern_break.ogg` | `sound/effects/wounds/sizzle2.ogg` |
+| `ash_blade_hit_2.ogg`, `ash_print_flare_1.ogg`, `common/codex_learn_2.ogg` | `sound/effects/wounds/sizzle1.ogg` |
+| `rust_blade_hit_2.ogg`, `common/codex_upgrade_2.ogg` | `sound/effects/break_stone.ogg` |
+| `rust_blade_hit_3.ogg` | `sound/effects/creak2.ogg` |
+| `flesh_blade_hit_1.ogg`, `flesh_blade_hit_3.ogg`, `common/shapeshift.ogg` | `sound/effects/meatslap.ogg` |
+| `flesh_blade_hit_1.ogg`, `flesh_blade_hit_2.ogg`, `common/heart_summon_*.ogg`, `common/heart_hide_2.ogg`, `common/trap_grasp_1.ogg` | `sound/effects/wounds/blood2.ogg` |
+| `flesh_blade_hit_2.ogg`, `common/trap_grasp_2.ogg` | `sound/effects/gib_step.ogg` |
+| `flesh_blade_hit_3.ogg`, `blood_blade_hit_3.ogg`, `common/heart_summon_2.ogg` | `sound/effects/splat.ogg` |
+| `blood_blade_hit_1.ogg`, `common/heart_hide_*.ogg`, `common/siphon_1.ogg` | `sound/effects/wounds/blood3.ogg` |
+| `blood_blade_hit_2.ogg`, `blood_blade_hit_3.ogg`, `common/shapeshift.ogg`, `common/siphon_2.ogg` | `sound/effects/wounds/blood1.ogg` |
+| `blade_blade_hit_3.ogg` | `sound/items/unsheath2.ogg` |
+| `glass_blade_hit_1.ogg` | `sound/effects/Glassknock.ogg` |
+| `glass_blade_hit_2.ogg` | `sound/effects/hit_on_shattered_glass.ogg` |
+| `glass_blade_hit_3.ogg` | `sound/effects/Glasshit.ogg` |
+| `lock_blade_hit_2.ogg`, `common/codex_upgrade_1.ogg`, `common/crucible_brew.ogg` | `sound/effects/clangsmall1.ogg` |
+| `lock_blade_hit_3.ogg` | `sound/machines/BoltsDown.ogg` |
+| `sand_blade_hit_1.ogg`, `sand_blade_hit_2.ogg`, `sand_blade_hit_3.ogg` | `sound/effects/footstep/asteroid1.ogg`, `asteroid3.ogg`, `asteroid5.ogg` |
+| `tide_blade_hit_1.ogg`, `tide_blade_hit_3.ogg` | `sound/effects/watersplash.ogg` |
+| `tide_blade_hit_2.ogg`, `common/crucible_brew.ogg` | `sound/effects/slosh1.ogg` |
+| `common/heart_summon_*.ogg`, `common/heart_hide_*.ogg` | `sound/effects/heart_beat.ogg` |
+| `common/crucible_anchor.ogg` | `sound/effects/clang1.ogg` |
+| `common/trap_grasp_*.ogg`, `common/shapeshift.ogg` | `sound/effects/wounds/crack1.ogg` |
+| `ash_lantern_break.ogg` | `sound/effects/Glassbr1.ogg` |
+
+Удар клинка Луны - `moon_hit_1.ogg`, `moon_hit_2.ogg` (раздел «Луна 2026-10»). Доработка 2026-11: `ascend_flesh.ogg` удлинён и дополнен синтезированным телом темы (пульс, гул, хор), у `ascend_lock.ogg` и `ascend_blade.ogg` поднята средняя полоса, у `ascend_blade.ogg` убраны щелчки; в `mansus/*_deposit.ogg`, `mansus/blood_*.ogg`, `mansus/flesh_*.ogg` добавлены слои `sound/effects/wounds/blood2.ogg` и `sound/effects/gib_step.ogg` (ресурсы BlueMoon, CC BY-SA 3.0) и синтез.
+
 ## Луна 2026-10
 
 | Файлы | Источник |
@@ -225,15 +280,20 @@ CC BY-SA 3.0.
 
 ## Вознесение
 
-Темы `ascend_echo.ogg`, `ascend_sand.ogg`, `ascend_wax.ogg`, `ascend_spirit.ogg`, такты обряда `ascend_stage_1.ogg`, `ascend_stage_2.ogg`, `ascend_stage_3.ogg` и знамение `ascend_omen.ogg` - синтез (колокола, хор, орган, свечи, ветер, часы, вёсла и вода, гул и удары) и записи ниже (обрезка, смена скорости, разворот, фильтры, сведение, уровень). Кульминации `ascend_<путь>_climax.ogg` построены на `sky/<путь>_event.ogg` этого каталога (источники - в разделах выше): замедление, синтезированный удар завесы, зал, уровень. У `ascend_ash.ogg`, `ascend_blade.ogg`, `ascend_blood.ogg`, `ascend_cosmic.ogg`, `ascend_flesh.ogg`, `ascend_glass.ogg`, `ascend_lock.ogg`, `ascend_moon.ogg`, `ascend_rust.ogg`, `ascend_tide.ogg` и `ascend_void.ogg` срезана тишина в начале и в конце, `ascend_flesh.ogg` и `ascend_glass.ogg` выровнены по громкости.
+Темы `ascend_echo.ogg`, `ascend_sand.ogg`, `ascend_wax.ogg` и `ascend_spirit.ogg` и кульминации `ascend_ash_climax.ogg`, `ascend_tide_climax.ogg`, `ascend_wax_climax.ogg` - свои звуки без сторонних записей: синтез (трубы органа, колокола и часовые бруски по модам, ход часов, песок, капли воска, свечи, ветер, огонь, волна, зал и сведение); голоса и хор - синтез речи, раздробленный, перемешанный, развёрнутый и переведённый в шёпот и хрип, своя обработка; CC BY-SA 3.0. Такты обряда `ascend_stage_1.ogg`, `ascend_stage_2.ogg`, `ascend_stage_3.ogg` и знамение `ascend_omen.ogg` - синтез (колокола, хор, гул и удары) и записи ниже (обрезка, смена скорости, разворот, фильтры, сведение, уровень). Остальные кульминации `ascend_<путь>_climax.ogg` построены на `sky/<путь>_event.ogg` этого каталога (источники - в разделах выше): замедление, синтезированный удар завесы, зал, уровень. У `ascend_ash.ogg`, `ascend_blade.ogg`, `ascend_blood.ogg`, `ascend_cosmic.ogg`, `ascend_flesh.ogg`, `ascend_glass.ogg`, `ascend_lock.ogg`, `ascend_moon.ogg`, `ascend_rust.ogg`, `ascend_tide.ogg` и `ascend_void.ogg` срезана тишина в начале и в конце, `ascend_flesh.ogg` и `ascend_glass.ogg` выровнены по громкости.
 
 | Файлы | Источник |
 | --- | --- |
-| `ascend_echo.ogg` | `sound/hallucinations/psychosis/whisper_spells.ogg`, ресурс BlueMoon, CC BY-SA 3.0 |
-| `ascend_spirit.ogg`, `ascend_stage_2.ogg`, `ascend_omen.ogg` | `sound/spookoween/ghost_whisper.ogg` - запись tgstation [sound/music/antag/bloodcult/ghost_whisper.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/music/antag/bloodcult/ghost_whisper.ogg), CC BY-SA 3.0 |
+| `ascend_stage_2.ogg`, `ascend_omen.ogg` | `sound/spookoween/ghost_whisper.ogg` - запись tgstation [sound/music/antag/bloodcult/ghost_whisper.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/music/antag/bloodcult/ghost_whisper.ogg), CC BY-SA 3.0 |
 
-`ascend_sand.ogg`, `ascend_wax.ogg`, `ascend_stage_1.ogg` и `ascend_stage_3.ogg` - синтез без сторонних записей.
+`ascend_stage_1.ogg` и `ascend_stage_3.ogg` - синтез без сторонних записей. У `mansus/ash_warning.ogg`, `mansus/ash_pickup.ogg`, `mansus/ash_escape.ogg`, `mansus/void_warning.ogg`, `mansus/blood_warning.ogg`, `mansus/blood_pickup.ogg`, `mansus/blood_escape.ogg`, `mansus/flesh_warning.ogg`, `mansus/flesh_pickup.ogg`, `mansus/flesh_escape.ogg`, `mansus/rust_warning.ogg`, `mansus/rust_pickup.ogg`, `mansus/tide_warning.ogg`, `mansus/sand_warning.ogg`, `mansus/sand_pickup.ogg` и `mansus/void_pickup.ogg` подняты гармоники удара и уровень.
 
 ## Синтез
 
 Остальные файлы - синтез без сторонних записей, в том числе `blade_regrow.ogg`, `void_mark_burst_1.ogg`, `void_mark_burst_2.ogg`, `tide_gurgle1..3.ogg`, `sand_*`, `wax_*`, `echo_*`, `sand_countdown_1..3.ogg`, `resource_gain.ogg`, `resource_spend.ogg`, `mansus/` (кроме слоёв записей в шагах и ударах, см. «Ресурсы BlueMoon»), синтезированные слои `capture/`, `sky/`, `spirit_*.ogg` и путей выше, а также все звуки Танца: `dance/`, `dance_*.ogg`, `book_dance_*.ogg`, `sky/dance_*.ogg`, `mansus/dance_*.ogg`.
+
+## Молот
+
+Все звуки пути Молота (`hammer_*.ogg`, `book_hammer_open.ogg`, `book_hammer_page.ogg`, `ascend_hammer.ogg`, `ascend_hammer_climax.ogg`, `sky/hammer_loop.ogg`, `sky/hammer_event.ogg`) - оригинальные, без чужих записей. Шумовая фактура (удары молота по телу, броне, стене и полу, хруст, треск и раскол пола, лязг и падение наковальни, рёв горна и пламени, шипение пара и закалки, треск углей, рывок воздуха, скрип лома и металла, кожа рукояти, застёжка и страницы книги, далёкий гул) - синтез. Звон наковальни, общий для всего набора, и обратный звон - модальный синтез; гул горна на тритон, зал, фильтры, сведение и уровень - своя обработка. CC BY-SA 3.0.
+
+Изнанка-кузня и захват (`mansus/hammer_ambience.ogg`, `mansus/hammer_step.ogg`, `mansus/hammer_hit.ogg`, `mansus/hammer_warning.ogg`, `mansus/hammer_pickup.ogg`, `mansus/hammer_deposit.ogg`, `mansus/hammer_escape.ogg`, `capture/hammer_latch.ogg`) - тоже оригинальные, без чужих записей. Шаг по железной решётке (звон прутьев, дребезг, хруст окалины), удар тени молота в каменный пол, цепи, которыми поднимают молот, звяк горячего слитка, лязг о наковальню, выдох пламени и шипение закалки у ворот горна, гвоздь в камне и хомут защёлки, треск углей и тяга горна в фоне - синтез. Звон наковальни и обратный звон - тот же модальный синтез набора; гул горна, далёкие удары по наковальне, зал, фильтры, сведение, петля и уровень - своя обработка. CC BY-SA 3.0.

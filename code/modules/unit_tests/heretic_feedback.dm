@@ -259,6 +259,9 @@
 		PATH_WAX = list("heretic_wax"),
 		PATH_SPIRIT = list("heretic_spirit"),
 		PATH_DANCE = list("heretic_dance"),
+		PATH_DUSK = list("heretic_dusk"),
+		PATH_HAMMER = list("heretic_hammer"),
+		PATH_LEAD = list("heretic_lead"),
 	)
 	var/list/states_by_icon = list()
 	var/list/seen = list()
@@ -301,7 +304,7 @@
 		PATH_BLADE = list(/atom/movable/screen/alert/status_effect/heretic_parry, /atom/movable/screen/alert/status_effect/heretic_blade_oath, /atom/movable/screen/alert/status_effect/heretic_blade_brand, /atom/movable/screen/alert/status_effect/heretic_blade_throat, /atom/movable/screen/alert/status_effect/heretic_blade_opening, /atom/movable/screen/alert/status_effect/heretic_blade_dance),
 		PATH_MOON = list(/atom/movable/screen/alert/status_effect/heretic_lunatic, /atom/movable/screen/alert/status_effect/heretic_moon_daze, /atom/movable/screen/alert/status_effect/heretic_moon_sleepwalk, /atom/movable/screen/alert/heretic_moon_door, /atom/movable/screen/alert/status_effect/heretic_moon_parade),
 		PATH_ECHO = list(/atom/movable/screen/alert/status_effect/heretic_echo_ringing, /atom/movable/screen/alert/status_effect/heretic_echo_dissonance, /atom/movable/screen/alert/status_effect/heretic_echo_lullaby, /atom/movable/screen/alert/status_effect/heretic_echo_hush),
-		PATH_BLOOD = list(/atom/movable/screen/alert/status_effect/heretic_blood_clot, /atom/movable/screen/alert/status_effect/heretic_blood_slip, /atom/movable/screen/alert/status_effect/heretic_blood_exsanguinated, /atom/movable/screen/alert/status_effect/heretic_blood_drain, /atom/movable/screen/alert/status_effect/heretic_blood_trail, /atom/movable/screen/alert/status_effect/heretic_blood_seal, /atom/movable/screen/alert/status_effect/heretic_blood_tether),
+		PATH_BLOOD = list(/atom/movable/screen/alert/status_effect/heretic_blood_clot, /atom/movable/screen/alert/status_effect/heretic_blood_slip, /atom/movable/screen/alert/status_effect/heretic_blood_exsanguinated, /atom/movable/screen/alert/status_effect/heretic_blood_drain, /atom/movable/screen/alert/status_effect/heretic_blood_trail, /atom/movable/screen/alert/status_effect/heretic_blood_seal, /atom/movable/screen/alert/status_effect/heretic_blood_seal/mark, /atom/movable/screen/alert/status_effect/heretic_blood_tether),
 		PATH_SPIRIT = list(/atom/movable/screen/alert/status_effect/heretic_spirit_hold, /atom/movable/screen/alert/status_effect/heretic_spirit_incorporeal, /atom/movable/screen/alert/status_effect/heretic_spirit),
 		PATH_WAX = list(/atom/movable/screen/alert/status_effect/heretic_wax_seal, /atom/movable/screen/alert/status_effect/heretic_wax_clinging, /atom/movable/screen/alert/status_effect/heretic_wax_effigy, /atom/movable/screen/alert/status_effect/heretic_wax_melting, /atom/movable/screen/alert/status_effect/heretic_wax_leak, /atom/movable/screen/alert/status_effect/heretic_wax_shell, /atom/movable/screen/alert/status_effect/heretic_wax_prick),
 		PATH_RUST = list(/atom/movable/screen/alert/heretic_rust_healing, /atom/movable/screen/alert/status_effect/heretic_rust_roots, /atom/movable/screen/alert/status_effect/heretic_rust_corrosion, /atom/movable/screen/alert/status_effect/heretic_cloudstruck, /atom/movable/screen/alert/status_effect/heretic_amok, /atom/movable/screen/alert/status_effect/heretic_corrosion_curse),
@@ -310,9 +313,12 @@
 		PATH_TIDE = list(/atom/movable/screen/alert/status_effect/heretic_drenched, /atom/movable/screen/alert/status_effect/heretic_tide_drowning, /atom/movable/screen/alert/heretic_tide_depth),
 		PATH_GLASS = list(/atom/movable/screen/alert/status_effect/heretic_glass_fracture),
 		PATH_DANCE = list(/atom/movable/screen/alert/status_effect/heretic_dance_earworm, /atom/movable/screen/alert/status_effect/heretic_dance_invited, /atom/movable/screen/alert/status_effect/heretic_dance_partner, /atom/movable/screen/alert/status_effect/heretic_dance_lead, /atom/movable/screen/alert/status_effect/heretic_dance_horovod, /atom/movable/screen/alert/status_effect/heretic_dance_frenzy, /atom/movable/screen/alert/status_effect/heretic_dance_tarantism, /atom/movable/screen/alert/status_effect/heretic_dance_masquerade, /atom/movable/screen/alert/status_effect/heretic_dance_masked, /atom/movable/screen/alert/status_effect/heretic_dance_mired),
+		PATH_LEAD = list(/atom/movable/screen/alert/status_effect/heretic_lead_heavy, /atom/movable/screen/alert/status_effect/heretic_lead_zeroed),
+		PATH_DUSK = list(/atom/movable/screen/alert/heretic_dusk_suns, /atom/movable/screen/alert/status_effect/heretic_dusk_gripped, /atom/movable/screen/alert/status_effect/heretic_dusk_shadow, /atom/movable/screen/alert/status_effect/heretic_dusk_rot, /atom/movable/screen/alert/status_effect/heretic_dusk_lit, /atom/movable/screen/alert/status_effect/heretic_dusk_tether),
+		PATH_HAMMER = list(/atom/movable/screen/alert/heretic_hammer_anvils, /atom/movable/screen/alert/status_effect/heretic_hammer_catch, /atom/movable/screen/alert/status_effect/heretic_hammer_nailed, /atom/movable/screen/alert/status_effect/heretic_hammer_shattered, /atom/movable/screen/alert/status_effect/heretic_hammer_swing),
 		PATH_ASH = list(/atom/movable/screen/alert/status_effect/heretic_ash_shroud),
 		PATH_FLESH = list(/atom/movable/screen/alert/status_effect/heretic_flesh_latch),
-		PATH_LOCK = list(/atom/movable/screen/alert/restrained/handcuffed/heretic_lock, /atom/movable/screen/alert/restrained/legcuffed/heretic_lock),
+		PATH_LOCK = list(/atom/movable/screen/alert/restrained/handcuffed/heretic_lock),
 		PATH_SAND = list(/atom/movable/screen/alert/status_effect/heretic_sand_recall, /atom/movable/screen/alert/status_effect/heretic_sand_stasis, /atom/movable/screen/alert/status_effect/heretic_sand_rewind, /atom/movable/screen/alert/status_effect/heretic_sand_drought, /atom/movable/screen/alert/status_effect/heretic_sand_mired),
 	)
 	for(var/path_id in groups)

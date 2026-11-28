@@ -166,10 +166,10 @@
 
 		else user.newtonian_move(turn(direction, 180))
 
-		spray_extinguisher(src, target, reagents, power, precision)
+		spray_extinguisher(src, target, reagents, power, precision, user)
 
 // Общий конус распыления ручного и установленного на мехе огнетушителя.
-/proc/spray_extinguisher(atom/origin, atom/target, datum/reagents/reagents, power = 5, precision = FALSE)
+/proc/spray_extinguisher(atom/origin, atom/target, datum/reagents/reagents, power = 5, precision = FALSE, mob/user)
 	var/direction = get_dir(origin, target)
 	var/turf/T = get_turf(target)
 	var/turf/T1 = get_step(T, turn(direction, 90))
@@ -189,6 +189,7 @@
 		if(precision)
 			the_targets -= my_target
 		W.create_reagents(5)
+		W.fingerprintslast = user?.ckey
 		reagents.trans_to(W, 1)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(move_extinguisher_particles), water_particles, power), 2)
 

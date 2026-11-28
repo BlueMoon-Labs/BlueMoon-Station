@@ -54,7 +54,7 @@
 		return
 
 	if(istype(I,/obj/item/forbidden_book))
-		playsound(src, 'sound/misc/desceration-02.ogg', 75, TRUE)
+		playsound(src, 'modular_bluemoon/sound/heretic/common/crucible_anchor.ogg', 75, TRUE)
 		anchored = !anchored
 		to_chat(user,"<span class='notice'>Вы [anchored == FALSE ? "освобождаете" : "закрепляете"] тигель.</span>")
 		return
@@ -97,7 +97,7 @@
 			devour(user)
 		return
 
-	if(user.incapacitated() || !Adjacent(user))
+	if(heretic_incapacitated(user) || !Adjacent(user))
 		return
 	if(in_use)
 		to_chat(user, span_notice("Тигель уже занят приготовлением."))
@@ -121,7 +121,7 @@
 	in_use = TRUE
 	var/choice = show_radial_menu(user, src, choices, require_near = TRUE, tooltips = TRUE)
 	in_use = FALSE
-	if(QDELETED(src) || QDELETED(user) || !choice || user.incapacitated() || !Adjacent(user) || (!IS_HERETIC(user) && !IS_HERETIC_MONSTER(user)))
+	if(QDELETED(src) || QDELETED(user) || !choice || heretic_incapacitated(user) || !Adjacent(user) || (!IS_HERETIC(user) && !IS_HERETIC_MONSTER(user)))
 		return
 	brew(user, names_to_path[choice])
 
@@ -129,7 +129,7 @@
 	if(current_mass < max_mass || !ispath(potion_type, /obj/item/eldritch_potion))
 		return null
 	var/obj/item/eldritch_potion/potion = new potion_type(drop_location())
-	playsound(src, 'sound/misc/desceration-02.ogg', 75, TRUE)
+	playsound(src, 'modular_bluemoon/sound/heretic/common/crucible_brew.ogg', 75, TRUE)
 	visible_message(span_notice("Сияющая жидкость из [src] стекает в колбу: [potion.name]."))
 	set_mass(0)
 	return potion
@@ -150,7 +150,7 @@
 
 /obj/structure/eldritch_crucible/proc/refill()
 	refill_timer = null
-	playsound(src, 'sound/effects/bubbles.ogg', 40, TRUE)
+	playsound(src, HERETIC_CRUCIBLE_BUBBLE_SFX, 40, TRUE)
 	set_mass(current_mass + 1)
 
 ///Proc that eats the active limb of the victim
@@ -227,7 +227,7 @@
 	carbon_victim.drop_all_held_items()
 	carbon_victim.apply_damage(20,BRUTE,BODY_ZONE_R_LEG)
 	carbon_victim.apply_damage(20,BRUTE,BODY_ZONE_L_LEG)
-	playsound(src, 'sound/magic/demon_attack1.ogg', 75, TRUE)
+	playsound(src, HERETIC_TRAP_GRASP_SFX, 75, TRUE)
 	return ..()
 
 /obj/structure/trap/eldritch/mad

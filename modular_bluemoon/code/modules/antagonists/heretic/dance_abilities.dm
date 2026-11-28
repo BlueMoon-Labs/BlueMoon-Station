@@ -14,11 +14,16 @@
 		"Украденная выносливость восстанавливает вашу на столько же.",
 		"Танго: доля 0,75 с, удары в долю +6 ушибов, акцент валит цель на 1,5 секунды, фигура - выпад с 2 клеток.",
 		"Номер «Па-де-де»: квадрат Вальса, связка в Танго и очо - ведомый 3 с ваш партнёр, цель охоты 6 с, сердце уведёт её.",
+		"Стиль меняет клик по барабану справа. Смена в сильную долю - связка: Такт цел, вход стиля, следующий акцент вдвое.",
 	)
 	role = HERETIC_ROLE_GRASP
 	gain_text = "Я взял чужую руку, и её сила перешла ко мне вместе с ритмом."
 	cost = 1
 	route = PATH_DANCE
+
+/datum/eldritch_knowledge/dance_grasp/on_gain(mob/user)
+	. = ..()
+	heretic_dance_style_unlocked(user, HERETIC_DANCE_STYLE_TANGO)
 
 /datum/eldritch_knowledge/dance_grasp/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -87,6 +92,7 @@
 		"Тарантелла: доля 0,5 с, самый трудный темп; точные действия лечат 2, удары в долю копят тарантизм.",
 		"Стак отнимает 4 выносливости в сильную долю; пять стаков срывают цель в пляску на 3 секунды. Фигура - 4 точных удара.",
 		"Номер «Танго смерти»: очо, связка в Тарантеллу и 4 точных укуса - 6 секунд пляски и взрыв тарантизма на 32 ушиба.",
+		"Попурри: три разных стиля связками за 20 секунд боя - вход каждого стиля срабатывает вдвойне.",
 	)
 	role = HERETIC_ROLE_RELIC
 	ritual_hint = "Кожу даёт кожевенный станок или шкура животного; сердце - любое извлечённое сердце."
@@ -96,6 +102,10 @@
 	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_dance/drum
 	required_atoms = list(/obj/item/stack/sheet/leather, /obj/item/organ/heart)
 	result_atoms = list(/obj/item/heretic_path_relic/dance)
+
+/datum/eldritch_knowledge/spell/dance_drum/on_gain(mob/user)
+	. = ..()
+	heretic_dance_style_unlocked(user, HERETIC_DANCE_STYLE_TARANTELLA)
 
 /datum/eldritch_knowledge/spell/dance_drum/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
 	return new_path_relic_available()
@@ -144,13 +154,17 @@
 		"Попадание разбивает маску того, в кого попали; работает и в чужой хватке. В сильную долю маскарад длится 8 секунд.",
 		"Канкан: доля 0,6 с, столы вас не задерживают, акцент отбрасывает на 2 клетки.",
 		"Фигура Канкана - два шага вперёд и два назад: ленты слепят всех в 2 клетках, а вы проходите 3 клетки сквозь толпу.",
-		"Перезарядка 60 секунд.",
+		"В Болеро каждая маска - сперва заражённых, потом ваша - принимает на себя один выстрел в вас. Перезарядка 60 секунд.",
 	)
 	role = HERETIC_ROLE_ESCAPE
 	gain_text = "На балу у всех одно лицо. Попробуй найди среди них того, кто пришёл с ножом."
 	cost = 1
 	route = PATH_DANCE
 	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_dance/masquerade
+
+/datum/eldritch_knowledge/spell/dance_masquerade/on_gain(mob/user)
+	. = ..()
+	heretic_dance_style_unlocked(user, HERETIC_DANCE_STYLE_CANCAN)
 
 /datum/eldritch_knowledge/dance_heart
 	name = "Сердце не останавливается"
@@ -223,6 +237,10 @@
 	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
 	route = PATH_DANCE
 	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_dance/bell
+
+/datum/eldritch_knowledge/spell/dance_bell/on_gain(mob/user)
+	. = ..()
+	heretic_dance_style_unlocked(user, HERETIC_DANCE_STYLE_MACABRE)
 
 /datum/heretic_dance_style/tango
 	unlock = /datum/eldritch_knowledge/dance_grasp
@@ -471,7 +489,7 @@
 	var/datum/weakref/victim_ref
 
 /atom/movable/screen/heretic_dance_heartbeat/Initialize(mapload, mob/living/viewer, mob/living/victim)
-	. = ..()
+	. = ..(mapload)
 	if(QDELETED(viewer) || QDELETED(victim))
 		return INITIALIZE_HINT_QDEL
 	viewer_ref = WEAKREF(viewer)
@@ -495,6 +513,8 @@
 
 /atom/movable/screen/heretic_dance_heartbeat/proc/place()
 	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
 	var/mob/living/viewer = viewer_ref?.resolve()
 	var/turf/here = get_turf(viewer)
 	var/turf/there = get_turf(victim_ref?.resolve())
@@ -526,6 +546,8 @@
 
 /obj/effect/temp_visual/heretic_dance/horovod/proc/follow_leader(atom/movable/source)
 	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
 	var/turf/place = get_turf(source)
 	if(place)
 		forceMove(place)
@@ -589,7 +611,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_dance/drum
 	name = "Ударить в барабан"
-	desc = "Ударьте в барабан из кожи, если он у вас в руке, кармане или сумке. Раз в 4 доли: заражённые в 7 клетках получают ослабленный акцент стиля, а вы видите их сердца сквозь стены. Вне доли - только сердцебиение и 5 выносливости."
+	desc = "Ударьте в барабан из кожи, если он у вас в руке, кармане или сумке. Раз в 4 доли: заражённые в 7 клетках получают ослабленный акцент стиля, а вы видите их сердца сквозь стены. Вне доли - только сердцебиение и 5 выносливости. Удар чуть раньше готовой доли засчитывается ею; слишком ранний барабан не примет и скажет, сколько ждать."
 	summary = "Барабан из руки или кармана: ослабленный акцент стиля по заражённым в 7 клетках."
 	action_icon_state = "dance_drum"
 	charge_max = 1 SECONDS
@@ -600,14 +622,18 @@
 		heretic_revert_cast(user, "Барабана из кожи нет при вас: положите на руну кожу и извлечённое сердце.")
 		return
 	if(!drum.beat(user))
-		revert_cast(user)
+		if(drum.refusal)
+			heretic_revert_cast(user, drum.refusal)
+		else
+			revert_cast(user)
 		return
 	var/datum/eldritch_knowledge/base_dance/dance = dance_of(user)
-	charge_max = max(initial(charge_max), HERETIC_DANCE_DRUM_BEATS * dance.beat_ds - HERETIC_DANCE_BEAT_WINDOW)
+	// Кнопка остывает на долю раньше барабана: ранний удар в окне доли решает сам барабан.
+	charge_max = max(initial(charge_max), (HERETIC_DANCE_DRUM_BEATS - 1) * dance.beat_ds - HERETIC_DANCE_BEAT_WINDOW)
 
 /obj/effect/proc_holder/spell/self/heretic_dance/masquerade
 	name = "Маскарад"
-	desc = "На 6 секунд вы и до 4 заражённых в 7 клетках выглядите одинаковыми танцорами в масках, имена скрыты. Заражённые под масками переминаются каждую долю. Вы вырываетесь из хватки и становитесь быстрее. Попадание разбивает маску. В сильную долю маскарад длится 8 секунд. Перезарядка 60 секунд."
+	desc = "На 6 секунд вы и до 4 заражённых в 7 клетках выглядите одинаковыми танцорами в масках, имена скрыты. Заражённые под масками переминаются каждую долю. Вы вырываетесь из хватки и становитесь быстрее. Попадание разбивает маску. В сильную долю маскарад длится 8 секунд. В Болеро каждая маска - заражённых, потом ваша - принимает на себя один выстрел в вас. Перезарядка 60 секунд."
 	summary = "6 секунд вы и до 4 заражённых - одинаковые танцоры в масках."
 	action_icon_state = "dance_masquerade"
 	charge_max = HERETIC_DANCE_MASQUERADE_COOLDOWN

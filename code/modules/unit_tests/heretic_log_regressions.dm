@@ -124,8 +124,7 @@
 	TEST_ASSERT(glass.shards(user, place), "Создана первая призма.")
 	TEST_ASSERT(glass.shards(user, get_step(place, EAST)), "Создана вторая призма.")
 	TEST_ASSERT(glass.shards(user, get_step(place, NORTHEAST)), "Создана третья призма.")
-	TEST_ASSERT(!spell.can_target(get_step(user, NORTHEAST), user, TRUE), "Четвёртая призма запрещена.")
-	TEST_ASSERT(findtext(spell.heretic_failure_reason, "предел"), "Причина указывает на лимит.")
+	TEST_ASSERT(spell.can_target(get_step(user, NORTHEAST), user, TRUE), "Четвёртая призма при полном пределе сменяет старейшую, а не отказывает.")
 	var/list/prisms = glass.prisms.Copy()
 	glass.combat_resource = 0
 	TEST_ASSERT(spell.can_target(prisms[1], user, TRUE), "При полном лимите и пустом запасе можно повернуть свою призму.")
@@ -480,7 +479,7 @@
 	TEST_ASSERT(QDELETED(injector), "Стартовый инъектор у бывшего еретика исчезает.")
 	TEST_ASSERT(!QDELETED(stranger_heart), "Непривязанное сердце остаётся.")
 
-/// Клинок Пустоты в тепле не начинается, если Зимний предел погаснет раньше конца обряда.
+/// Клинок Пустоты в тепле без осколков не начинается, если Зимний предел погаснет раньше конца обряда.
 /datum/unit_test/heretic_log_void_field_expiring
 	var/turf/open/floor/ritual_floor
 	var/original_temperature
@@ -495,6 +494,7 @@
 	var/mob/living/user = heretic.owner.current
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_void)
 	var/datum/eldritch_knowledge/base_void/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/base_void)
+	recipe.combat_resource = 0
 	ritual_floor = get_turf(user)
 	original_temperature = ritual_floor.GetTemperature()
 	ritual_floor.air.set_temperature(T0C + 20)

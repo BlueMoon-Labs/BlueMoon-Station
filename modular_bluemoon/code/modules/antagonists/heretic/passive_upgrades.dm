@@ -58,7 +58,7 @@
 	return null
 
 /datum/antagonist/heretic/proc/upgrade_passive(knowledge_type, mob/living/user, expected_level)
-	if(!user || user.mind != owner || IS_HERETIC(user) != src || user.incapacitated())
+	if(!user || user.mind != owner || IS_HERETIC(user) != src || heretic_incapacitated(user))
 		return FALSE
 	var/error_message = passive_upgrade_error(knowledge_type)
 	if(error_message)
@@ -70,6 +70,8 @@
 	var/side_payment = min(side_knowledge_points, knowledge.passive_level)
 	side_knowledge_points -= side_payment
 	knowledge_points -= knowledge.passive_level - side_payment
+	path_spent_side += side_payment
+	path_spent_knowledge += knowledge.passive_level - side_payment
 	knowledge.passive_level++
 	knowledge.on_passive_upgrade(user)
 	refresh_book_ui()

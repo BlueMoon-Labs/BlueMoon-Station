@@ -10,7 +10,6 @@
 #define HERETIC_SAND_RELEASE_STAMINA 10
 #define HERETIC_SAND_BURIAL_DAMAGE 28
 #define HERETIC_SAND_BURIAL_RADIUS 2
-#define HERETIC_SAND_FINAL_DAMAGE 40
 #define HERETIC_SAND_EXTRA_DELAY (1.5 SECONDS)
 #define HERETIC_SAND_COUNTDOWN (0.5 SECONDS)
 #define HERETIC_SAND_COUNTDOWN_VOLUME 35
@@ -36,7 +35,7 @@
 #define HERETIC_SAND_SUN_START 0.3
 #define HERETIC_SAND_SUN_PEAK 1.6
 #define HERETIC_SAND_SUN_END 2
-#define HERETIC_SAND_SUN_HEIGHT 12
+#define HERETIC_SAND_SUN_HEIGHT 42
 #define HERETIC_SAND_NOON_WAVE_RADIUS 3
 #define HERETIC_SAND_NOON_WAVE_TIME (0.8 SECONDS)
 #define HERETIC_SAND_NOON_FLASH_RANGE 5
@@ -46,6 +45,9 @@
 #define HERETIC_SAND_NOON_QUAKE_TIME (0.35 SECONDS)
 #define HERETIC_SAND_NOON_QUAKE_RADIUS 7
 #define HERETIC_SAND_NOON_PULSE_TIME (0.5 SECONDS)
+#define HERETIC_SAND_NOON_TRAINING_RANGE 6
+#define HERETIC_SAND_NOON_SPREAD 15
+#define HERETIC_SAND_NOON_NEAR 3
 #define HERETIC_SAND_ANCHOR_CRAFT "sand_anchor"
 #define HERETIC_SAND_ANCHOR_CLUE "Песок в часах течёт вверх."
 #define HERETIC_SAND_CAPTURE "sand"
@@ -55,7 +57,6 @@
 #define HERETIC_SAND_STASIS_TELEGRAPH (1 SECONDS)
 #define HERETIC_SAND_STASIS_COOLDOWN (40 SECONDS)
 #define HERETIC_SAND_STASIS_CHECK (0.5 SECONDS)
-#define HERETIC_SAND_REWIND_TIME (3 SECONDS)
 #define HERETIC_SAND_REWIND_COOLDOWN (30 SECONDS)
 #define HERETIC_SAND_REWIND_GRACE (2 SECONDS)
 #define HERETIC_SAND_REWIND_SLOWDOWN 1
@@ -99,25 +100,25 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	id = PATH_SAND
 	deed_type = /datum/heretic_deed/sand
 	name = "Песок"
-	tagline = "Часы отматывают беглецов назад и валят с ног, Стазис останавливает время врага."
+	tagline = "Ставит часы, которые бьют в свой срок, останавливает время врага и отматывает себя назад."
 	craft_summary = "Хватка в «Помощи» по полу ставит до 3 засечек: к ним ведёт Откат, с Течением часа у них обряд вдвое быстрее."
-	capture_summary = "Удар часов валит цель под Засухой с ног, Стазис держит её 10 секунд; сердце уводит её в изнанку."
-	escape_summary = "Откат реликвией за 3 секунды переносит к засечке в 25 клетках; из изнанки выходите к своей засечке."
+	capture_summary = "Осыпь вплотную или Хватка - Засуха, Стазис держит цель 10 с, хоть стоящую; сердце уводит её в изнанку."
+	escape_summary = "Откат реликвией за 3 с к засечке в 25 клетках, на соседний этаж за 5 с; из изнанки - к засечке."
 	strength_points = list(
 		"С Течением часа ритуалы, руна и обряд сердцем у засечки идут вдвое быстрее, в изнанке - если её вход рядом.",
-		"Засуха замедляет шаг и растягивает наручники и лечение, а удар часов валит цель под ней с ног.",
+		"Осыпь и Хватка насылают Засуху: шаг медленнее, наручники и лечение дольше, удар часов валит с ног.",
 		"Часы метки и Погребения отматывают цель на свою клетку из 9 клеток, хоть из-за угла.",
 		"Клетка удара часов на 4,5 секунды становится Зыбуном: вошедший враг вязнет на полторы секунды.",
 		"Стазис держит цель 10 секунд без урона и кровотечения; начатый Откат не срывают урон и оглушение.",
-		"Вокруг вознёсшегося пули и заряды в 4 клетках летят втрое медленнее.",
+		"Вознесение поднимает 3 Полуденных часа: раз в минуту они лечат вас и ведут к себе сквозь этажи.",
 	)
 	weakness_points = list(
 		"Засечку выдаёт песок, текущий вверх; у неё 30 прочности, нулевой жезл снимает её сразу.",
 		"Стазис спадает от нулевого жезла, святой воды в крови или если растолкать за 2 секунды; антимагия защищает.",
-		"Откат 3 секунды на виду, его срывают смерть, наручники и щит разума.",
+		"Откат 3 секунды на виду, на другой этаж - 5; его срывают смерть, наручники и щит разума.",
+		"Крепкая чужая хватка не даёт начать Откат и Пересыпание; из простого волочения можно.",
 		"От часов спасает разбить их, уйти дальше 9 клеток или на другой этаж; антимагия и запрет телепортации тоже.",
-		"Урон пути ближний: Осыпь бьёт соседей, Стазис достаёт на 3 клетки.",
-		"Замедление вознёсшегося не касается лучей, ближнего боя и брошенных предметов.",
+		"Полуденные часы объявлены станции: разбитые не лечат и не принимают Последний полдень.",
 	)
 	knowledge = list(
 		/datum/eldritch_knowledge/base_sand,
@@ -137,12 +138,12 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	summary = "Осыпь бьёт соседей и ставит часы; Хватка в «Помощи» по полу ставит засечки."
 	details = list(
 		"Нож и стекло создают клинок истёкшего часа.",
-		"Осыпь за единицу песка: соседям 20 ушибов и 10 выносливости, затем часы на 4 соседних клетках.",
+		"Осыпь за единицу песка: соседям 20 ушибов, 10 выносливости и Засуха, затем часы на 4 соседних клетках.",
 		"Часы бьют свою клетку, когда пустеет верхняя колба, через 1,5 секунды: 32 ушиба, 20 выносливости; прочность 15.",
 		"Клетка удара 4,5 секунды остаётся Зыбуном: вошедший враг вязнет на 1,5 секунды, одна воронка - один раз.",
-		"Хватка в «Помощи» по свободному полу станции ставит засечку; до 3, новая вытесняет старую.",
+		"Хватка в «Помощи» по свободному полу ставит засечку; до 3, новая вытесняет старую.",
 		"У засечки 30 прочности, песок в ней течёт вверх, нулевой жезл её снимает; смерть её не трогает.",
-		"Засечка в новом отделе продвигает дело пути; из изнанки можно выйти к своей засечке.",
+		"Засечка в новом отделе станции продвигает дело пути; из изнанки можно выйти к своей засечке на станции.",
 	)
 	role = HERETIC_ROLE_CRAFT
 	gain_text = "Я перевернул часы. Сверху осталось столько же песка. Снизу появилась моя тень."
@@ -157,7 +158,7 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 		"Хватка даёт две единицы раз в 6 секунд, взрыв метки - одну.",
 		"Осыпь и Пересыпание стоят единицу, Стазис и Погребение - две; при 13 часах Осыпь убирает старые часы без цели.",
 		"Одну и ту же цель часы бьют не чаще раза в 0,8 секунды.",
-		"Смена тела обрывает часы, Стазис и точку возврата; засечки остаются.",
+		"Смена тела обрывает часы, Стазис и точку возврата; засечки и Полуденные часы остаются.",
 	)
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_sand/release
 	grasp_visual = /obj/effect/temp_visual/heretic_sand/grasp
@@ -177,8 +178,22 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	var/harvest_interval = HERETIC_SAND_HARVEST
 	/// Когда в последний раз звучал звук каждого вида часов: поле из 13 часов бьёт разом, а слышно один удар.
 	var/list/sounds_heard_at = list()
+	/// Шаги основного цикла, о которых уже подсказали: каждая подсказка звучит один раз.
+	var/list/taught = list()
+	var/list/obj/structure/heretic_sand_noon/noon_clocks = list()
+	var/noon_raised = FALSE
+	/// Часы полигона: их подъём и распад станции не объявляют.
+	var/noon_silent = FALSE
+	var/noon_timer
+	var/next_noon_at = 0
 	COOLDOWN_DECLARE(grasp_harvest)
 	COOLDOWN_DECLARE(recovery)
+
+/datum/eldritch_knowledge/base_sand/on_gain(mob/user)
+	. = ..()
+	var/datum/antag_training_session/session = GLOB.antag_training_sessions[user?.ckey]
+	if(session?.current_body == user && !session.sand_lesson)
+		to_chat(user, span_notice("Для Песка на полигоне есть пошаговый урок: панель полигона, вкладка «Начать», раздел «2. Упражнение», кнопка «Урок Песка»."))
 
 /datum/eldritch_knowledge/base_sand/on_body_gain(mob/living/user)
 	if(!user?.mind || sand_body == user)
@@ -197,31 +212,43 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	sand_body = null
 	ascension_active = FALSE
 	remove_combat_power()
-	clear_sand()
+	clear_sand(keep_noon = TRUE)
 
 /datum/eldritch_knowledge/base_sand/proc/on_body_deleted(datum/source)
 	SIGNAL_HANDLER
 	on_body_lose(sand_body)
 
 /datum/eldritch_knowledge/base_sand/on_death(mob/user)
-	clear_sand()
+	clear_sand(noon_reason = "еретик Песка погиб")
 	combat_resource = 0
 	notify_resource_changed()
 
 /datum/eldritch_knowledge/base_sand/Destroy()
+	clear_noon("еретик Песка лишился своей силы")
 	on_body_lose(sand_body)
 	for(var/obj/structure/heretic_sand_anchor/craft_anchor as anything in anchors.Copy())
 		qdel(craft_anchor)
 	anchors.Cut()
 	return ..()
 
-/datum/eldritch_knowledge/base_sand/proc/clear_sand()
+/// Полуденные часы переживают смену тела: вознесение переходит в новое тело вместе с ними.
+/datum/eldritch_knowledge/base_sand/proc/clear_sand(keep_noon = FALSE, noon_reason)
 	QDEL_LIST(hourglasses)
 	QDEL_LIST(marks)
 	QDEL_LIST(stases)
 	QDEL_LIST(mires)
 	QDEL_NULL(anchor)
+	if(!keep_noon)
+		clear_noon(noon_reason)
 	last_clock_hits.Cut()
+
+/// Подсказка шага основного цикла звучит один раз за раунд.
+/datum/eldritch_knowledge/base_sand/proc/teach(step, message)
+	if(QDELETED(sand_body) || (step in taught))
+		return FALSE
+	taught += step
+	to_chat(sand_body, span_notice("Подсказка Песка: [message]"))
+	return TRUE
 
 /datum/eldritch_knowledge/base_sand/combat_resource_state()
 	return "Засечек: [length(anchors)] из [HERETIC_SAND_ANCHOR_LIMIT]."
@@ -233,7 +260,7 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 
 /datum/eldritch_knowledge/base_sand/proc/can_use(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return !QDELETED(src) && isliving(user) && user == sand_body && !user.incapacitated() && isturf(user.loc) && heretic?.selected_path == PATH_SAND && !heretic.role_removed && heretic.get_knowledge(type) == src
+	return !QDELETED(src) && isliving(user) && user == sand_body && !heretic_incapacitated(user) && isturf(user.loc) && heretic?.selected_path == PATH_SAND && !heretic.role_removed && heretic.get_knowledge(type) == src
 
 /datum/eldritch_knowledge/base_sand/proc/update_capacity(ignore_sustain = FALSE, ignore_ascension = FALSE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(sand_body)
@@ -321,6 +348,23 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	new /obj/effect/temp_visual/heretic_sand/trip(get_turf(victim))
 	heretic_sand_sound(victim, "trip", 55, TRUE)
 	victim.visible_message(span_danger("Песок забивается [victim] в суставы, и ноги подкашиваются!"), span_userdanger("Песок скрипит в суставах - ноги подкашиваются!"))
+	teach("trip", "часы сбили [victim] с ног. Сбитая или увязшая в Зыбуне цель не успеет шагнуть из смыкающегося песка Стазиса.")
+	SEND_SIGNAL(src, COMSIG_HERETIC_SAND_EVENT, "trip", victim)
+	return TRUE
+
+/// Засуха на поражённого: с этой секунды Стазис берёт его и стоящим.
+/datum/eldritch_knowledge/base_sand/proc/dry_out(mob/living/victim)
+	if(QDELETED(victim))
+		return FALSE
+	victim.apply_status_effect(/datum/status_effect/heretic_sand_drought)
+	if(!victim.has_status_effect(/datum/status_effect/heretic_sand_drought))
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(sand_body)
+	if(heretic?.get_knowledge(/datum/eldritch_knowledge/spell/sand_stasis))
+		teach("drought", "с [victim] сыплется песок - это Засуха на [HERETIC_SAND_DROUGHT_DURATION / (1 SECONDS)] секунд. Сейчас Стазис: цель не дальше [HERETIC_SAND_STASIS_RANGE] клеток, [HERETIC_SAND_STASIS_COST] песка. Стоящая может шагнуть из песка за секунду смыкания, сбитая часами или увязшая - нет.")
+	else
+		teach("drought", "с [victim] сыплется песок - это Засуха на [HERETIC_SAND_DROUGHT_DURATION / (1 SECONDS)] секунд. Изучите Стазис: он останавливает время цели под Засухой или на Зыбуне.")
+	SEND_SIGNAL(src, COMSIG_HERETIC_SAND_EVENT, "drought", victim)
 	return TRUE
 
 /// Первый звук вида kind за этот тик: следующие часы того же тика молчат.
@@ -379,7 +423,8 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 		return FALSE
 	make_room_for_hourglasses(fresh, kept)
 	for(var/mob/living/victim in range(1, user))
-		hit(victim, HERETIC_SAND_RELEASE_DAMAGE, HERETIC_SAND_RELEASE_STAMINA)
+		if(hit(victim, HERETIC_SAND_RELEASE_DAMAGE, HERETIC_SAND_RELEASE_STAMINA))
+			dry_out(victim)
 		if(!can_use(user))
 			return TRUE
 	for(var/direction in GLOB.cardinals)
@@ -396,12 +441,15 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	if(locate(/obj/structure/heretic_sand_anchor) in place)
 		grasp_failure_reason = "Здесь уже стоят песочные часы."
 		return FALSE
-	if(!isopenturf(place) || isgroundlessturf(place) || !is_station_level(place.z) || place.is_blocked_turf(exclude_mobs = TRUE))
-		grasp_failure_reason = "Засечка встаёт только на свободном полу станции, не в космосе."
+	if(!isopenturf(place) || isgroundlessturf(place) || place.is_blocked_turf(exclude_mobs = TRUE))
+		grasp_failure_reason = "Засечка встаёт только на свободном полу, не в космосе."
 		return FALSE
-	grasp_failure_reason = heretic.deed_wait_reason(heretic.deed_key_for(place))
-	if(grasp_failure_reason)
+	var/area/place_area = get_area(place)
+	if(place_area.area_flags & NOTELEPORT)
+		grasp_failure_reason = "Здесь время не течёт вспять: в зоне, закрытой для телепортации, засечка не удержит Откат."
 		return FALSE
+	var/deed_key = heretic.deed_key_for(place)
+	var/wait = is_station_level(place.z) ? heretic.deed_wait_reason(deed_key) : "Это вне станции: засечка держит Откат, но в дело не идёт и выхода из изнанки к ней нет."
 	while(length(anchors) >= HERETIC_SAND_ANCHOR_LIMIT)
 		var/obj/structure/heretic_sand_anchor/oldest = anchors[1]
 		log_game("[key_name(user)] теряет засечку Песка в [AREACOORD(oldest)]: её вытеснила новая.")
@@ -410,9 +458,12 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	new /obj/structure/heretic_sand_anchor/craft(place, src)
 	new /obj/effect/temp_visual/heretic_sand/cast(place)
 	heretic_sand_sound(place, "point", 40)
-	to_chat(user, span_eldritch("Песок в часах потёк вверх: засечка поставлена. Засечек: [length(anchors)] из [HERETIC_SAND_ANCHOR_LIMIT]."))
+	to_chat(user, span_eldritch("Песок в часах потёк вверх: засечка поставлена. Засечек: [length(anchors)] из [HERETIC_SAND_ANCHOR_LIMIT].[wait ? " [wait]" : ""]"))
 	log_game("[key_name(user)] ставит засечку Песка в [AREACOORD(place)].")
-	heretic.advance_deed(heretic.deed_key_for(place), place)
+	if(!wait)
+		heretic.advance_deed(deed_key, place)
+	teach("anchor", "засечка держит Откат. Реликвия «Неперевёрнутые часы» (стекло и лист золота на руне) переносит к засечке за [HERETIC_SAND_REWIND_TIME / (1 SECONDS)] секунды из [HERETIC_SAND_REWIND_RANGE] клеток, с этажа выше или ниже - за [HERETIC_SAND_REWIND_FLOOR_TIME / (1 SECONDS)] секунд.")
+	SEND_SIGNAL(src, COMSIG_HERETIC_SAND_EVENT, "anchor", place)
 	notify_resource_changed()
 	return TRUE
 
@@ -443,19 +494,45 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 			return TRUE
 	return FALSE
 
-/datum/eldritch_knowledge/base_sand/proc/nearest_anchor(atom/origin, range = HERETIC_SAND_REWIND_RANGE)
+/// Ближайшая засечка для Отката: сначала на своём этаже, затем этажом выше или ниже в тех же 25 клетках.
+/datum/eldritch_knowledge/base_sand/proc/nearest_anchor(atom/origin, range = HERETIC_SAND_REWIND_RANGE, other_floors = TRUE)
 	var/turf/center = get_turf(origin)
-	var/best_distance = INFINITY
-	for(var/obj/structure/heretic_sand_anchor/craft_anchor as anything in anchors)
-		var/turf/place = get_turf(craft_anchor)
-		var/area/place_area = get_area(place)
-		if(!center || !place || place.z != center.z || (place_area.area_flags & NOTELEPORT) || place.is_blocked_turf(exclude_mobs = TRUE))
-			continue
-		var/distance = get_dist(center, place)
-		if(!distance || distance > range || distance >= best_distance)
-			continue
-		best_distance = distance
-		. = craft_anchor
+	if(!center)
+		return null
+	var/list/floors = list(center.z)
+	if(other_floors)
+		for(var/turf/neighbour in list(GET_TURF_ABOVE(center), GET_TURF_BELOW(center)))
+			floors += neighbour.z
+	for(var/floor_z in floors)
+		var/best_distance = INFINITY
+		for(var/obj/structure/heretic_sand_anchor/craft_anchor as anything in anchors)
+			var/turf/place = get_turf(craft_anchor)
+			if(!place || place.z != floor_z || !anchor_usable(craft_anchor))
+				continue
+			var/distance = max(abs(place.x - center.x), abs(place.y - center.y))
+			if((floor_z == center.z && !distance) || distance > range || distance >= best_distance)
+				continue
+			best_distance = distance
+			. = craft_anchor
+		if(.)
+			return
+
+/datum/eldritch_knowledge/base_sand/proc/anchor_usable(atom/target)
+	var/turf/place = get_turf(target)
+	var/area/place_area = get_area(place)
+	return !QDELETED(target) && place && !(place_area.area_flags & NOTELEPORT) && !place.is_blocked_turf(exclude_mobs = TRUE)
+
+/// Почему Откат не начнётся отсюда; перезарядку проверяет сам источник.
+/datum/eldritch_knowledge/base_sand/proc/rewind_block_reason(mob/living/user)
+	var/containment = heretic_containment_reason(user)
+	if(containment)
+		return containment
+	if(user.buckled || user.anchored || HAS_TRAIT(user, TRAIT_NO_TELEPORT))
+		return "Что-то держит вас на месте: Откат не начнётся."
+	var/area/origin_area = get_area(user)
+	if(origin_area.area_flags & NOTELEPORT)
+		return "Здесь время не течёт вспять: из этой зоны Откат недоступен."
+	return null
 
 /datum/eldritch_knowledge/base_sand/proc/stasis_block_reason(mob/living/user, atom/target, check_cost = TRUE, check_ready = TRUE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -470,13 +547,23 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 		return "Цель должна быть на полу не дальше трёх клеток по открытой линии."
 	if(victim.has_status_effect(/datum/status_effect/heretic_sand_stasis))
 		return "Цель уже застыла."
-	if(check_ready && !victim.has_status_effect(/datum/status_effect/heretic_sand_drought))
-		return "Стазис берёт только цель под Засухой: сначала коснитесь её Хваткой."
-	if(check_ready && !heretic_capture_downed(victim))
-		return "Застывает только сбитая с ног или обессиленная цель: сон и добровольный отдых сами по себе не в счёт."
+	if(check_ready && !stasis_ready(victim))
+		return "Стазис берёт цель под Засухой или на вашем Зыбуне: заденьте её Осыпью вплотную или Хваткой."
 	if(check_cost && combat_resource < HERETIC_SAND_STASIS_COST)
 		return "Для Стазиса нужно [HERETIC_SAND_STASIS_COST] единицы песка."
 	return null
+
+/// Цель под Засухой или в своём Зыбуне; стоит она или лежит, решает только, успеет ли шагнуть из смыкающегося песка.
+/datum/eldritch_knowledge/base_sand/proc/stasis_ready(mob/living/victim)
+	if(victim.has_status_effect(/datum/status_effect/heretic_sand_drought))
+		return TRUE
+	var/datum/status_effect/heretic_sand_mired/mired = victim.has_status_effect(/datum/status_effect/heretic_sand_mired)
+	if(mired?.sand_ref?.resolve() == src)
+		return TRUE
+	for(var/obj/effect/heretic_sand_mire/mire in victim.loc)
+		if(mire.sand_ref?.resolve() == src)
+			return TRUE
+	return FALSE
 
 /datum/eldritch_knowledge/base_sand/proc/stasis(mob/living/user, mob/living/victim)
 	sand_failure = stasis_block_reason(user, victim)
@@ -503,15 +590,29 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	if(!victim.apply_status_effect(/datum/status_effect/heretic_sand_stasis, src))
 		return FALSE
 	log_combat(user, victim, "погружает в песочный стазис")
+	teach("stasis", "время [victim] остановлено на [HERETIC_SAND_STASIS_DURATION / (1 SECONDS)] секунд. Цель охоты сейчас уводит в изнанку живое сердце; экипаж может растолкать цель за [HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды, нулевой жезл и святая вода развеивают песок.")
+	SEND_SIGNAL(src, COMSIG_HERETIC_SAND_EVENT, "stasis", victim)
 	return TRUE
 
 /datum/eldritch_knowledge/base_sand/proc/step_through(mob/living/user, turf/target)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/sand_step)
-	if(!can_use(user) || QDELETED(required) || combat_resource < 1 || user.buckled || user.anchored || HAS_TRAIT(user, TRAIT_NO_TELEPORT) || !line_clear(user, target, HERETIC_SAND_STEP_RANGE) || target == get_turf(user) || target.is_blocked_turf())
+	sand_failure = null
+	if(!can_use(user) || QDELETED(required))
+		return FALSE
+	if(combat_resource < 1)
+		sand_failure = "Для Пересыпания нужна единица песка."
+	else if(user.buckled || user.anchored || HAS_TRAIT(user, TRAIT_NO_TELEPORT))
+		sand_failure = "Что-то держит вас на месте: песок не пересыплется."
+	else if(!istype(target) || target == get_turf(user) || !line_clear(user, target, HERETIC_SAND_STEP_RANGE))
+		sand_failure = "Нужна клетка не дальше [HERETIC_SAND_STEP_RANGE] клеток по открытой линии: стены, окна и ящики её перекрывают."
+	else if(target.is_blocked_turf())
+		sand_failure = "Клетка занята: песку некуда пересыпаться."
+	if(sand_failure)
 		return FALSE
 	var/turf/origin = get_turf(user)
 	if(!do_teleport(user, target, channel = TELEPORT_CHANNEL_MAGIC) || get_turf(user) != target)
+		sand_failure = "Песок не пересыпался: перенос что-то остановило."
 		return FALSE
 	if(!can_use(user) || QDELETED(required) || heretic.get_knowledge(required.type) != required)
 		return TRUE
@@ -522,11 +623,17 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	heretic_sand_sound(target, "step", 55, TRUE)
 	return TRUE
 
-/datum/eldritch_knowledge/base_sand/proc/burial(mob/living/user, turf/target, final_cast = FALSE)
+/datum/eldritch_knowledge/base_sand/proc/burial(mob/living/user, turf/target)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	var/required_type = final_cast ? /datum/eldritch_knowledge/final_eldritch/sand_final : /datum/eldritch_knowledge/spell/sand_burial
-	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(required_type)
-	if(!can_use(user) || QDELETED(required) || !line_clear(user, target) || (final_cast && (!ascension_active || !heretic.ascended)))
+	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/sand_burial)
+	sand_failure = null
+	if(!can_use(user) || QDELETED(required))
+		return FALSE
+	if(combat_resource < 2)
+		sand_failure = "Для Погребения нужно 2 песка: Хватка по врагу даёт 2, удары клинком - по единице."
+		return FALSE
+	if(!istype(target) || !line_clear(user, target))
+		sand_failure = "Центр Погребения - клетка не дальше [HERETIC_SAND_RANGE] клеток по открытой линии."
 		return FALSE
 	var/list/tiles = list()
 	var/list/obj/structure/heretic_sand_hourglass/field_hourglasses = list()
@@ -541,35 +648,237 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 				field_hourglasses += hourglass
 		if(!occupied)
 			tiles += tile
-	if(!length(tiles) || (!final_cast && !spend_combat_resource(2)))
+	if(!length(tiles))
+		sand_failure = "Всё поле уже занято вашими часами."
+		return FALSE
+	if(!spend_combat_resource(2))
 		return FALSE
 	make_room_for_hourglasses(length(tiles), field_hourglasses)
 	for(var/mob/living/victim in range(1, target))
 		if(line_clear(target, victim, 1))
-			if(hit(victim, final_cast ? HERETIC_SAND_FINAL_DAMAGE : HERETIC_SAND_BURIAL_DAMAGE, 15) && !final_cast && !QDELETED(victim))
-				victim.apply_status_effect(/datum/status_effect/heretic_sand_drought)
+			if(hit(victim, HERETIC_SAND_BURIAL_DAMAGE, 15))
+				dry_out(victim)
 			if(!can_use(user))
 				return TRUE
 	for(var/turf/tile as anything in tiles)
-		var/obj/structure/heretic_sand_hourglass/hourglass = create_hourglass(tile, required, final_cast ? 44 : HERETIC_SAND_CLOCK_DAMAGE, distance = area_reach)
+		var/obj/structure/heretic_sand_hourglass/hourglass = create_hourglass(tile, required, HERETIC_SAND_CLOCK_DAMAGE, distance = area_reach)
 		for(var/mob/living/victim in tile)
 			if(hourglass?.record_target(victim))
 				break
-	if(final_cast)
-		last_noon(user, target)
-		GLOB.heretic_sky.event(required)
 	new /obj/effect/temp_visual/heretic_sand/ascend(target)
-	heretic_sand_sound(target, final_cast ? "noon" : "burial", 70)
+	heretic_sand_sound(target, "burial", 70)
 	return TRUE
 
-/// Последний полдень: над целью вспыхивает солнце, по песку идёт волна, взлетают песчинки, пол дрожит.
-/datum/eldritch_knowledge/base_sand/proc/last_noon(mob/living/user, turf/target)
+/// Полдень над часами: вспыхивает солнце, по песку идёт волна, взлетают песчинки, пол дрожит.
+/datum/eldritch_knowledge/base_sand/proc/last_noon(turf/target)
 	new /obj/effect/temp_visual/heretic_sand_sun(target)
 	heretic_vfx_shockwave(target, HERETIC_SAND_INK, HERETIC_SAND_NOON_WAVE_RADIUS, HERETIC_SAND_NOON_WAVE_TIME)
 	heretic_vfx_burst(target, /particles/heretic_ascension/sand)
 	heretic_vfx_flash(target, HERETIC_SAND_SUN_LIGHT, HERETIC_SAND_NOON_FLASH_RANGE, HERETIC_SAND_NOON_FLASH_POWER, HERETIC_SAND_NOON_FLASH_TIME)
 	heretic_vfx_quake(target, HERETIC_SAND_NOON_QUAKE_RADIUS, HERETIC_SAND_NOON_QUAKE, HERETIC_SAND_NOON_QUAKE_TIME)
-	heretic_vfx_pulse(user, HERETIC_SAND_SUN_LIGHT, 2, HERETIC_SAND_NOON_PULSE_TIME)
+	heretic_sand_sound(target, "noon", 70)
+
+/// Вознесение поднимает Полуденные часы: сначала на засечках, остальные - в случайных отсеках станции.
+/datum/eldritch_knowledge/base_sand/proc/raise_noon(mob/living/user)
+	if(noon_raised || !can_use(user))
+		return FALSE
+	noon_raised = TRUE
+	var/list/area_names = list()
+	for(var/turf/spot as anything in noon_spots(user))
+		for(var/obj/structure/heretic_sand_anchor/craft/craft_anchor in spot)
+			to_chat(user, span_notice("Засечка в [get_area_name(spot, TRUE)] уходит под Полуденные часы."))
+			qdel(craft_anchor)
+		var/obj/structure/heretic_sand_noon/clock = new(spot, src)
+		area_names += get_area_name(clock, TRUE)
+		new /obj/effect/temp_visual/heretic_sand/ascend(spot)
+	if(!length(noon_clocks))
+		return FALSE
+	next_noon_at = world.time + HERETIC_SAND_NOON_PERIOD
+	noon_timer = addtimer(CALLBACK(src, PROC_REF(strike_noon)), HERETIC_SAND_NOON_PERIOD, TIMER_STOPPABLE)
+	log_game("[key_name(user)] поднимает Полуденные часы Песка: [english_list(area_names)].")
+	to_chat(user, span_eldritch("Полуденные часы встали: [english_list(area_names)]. Раз в [HERETIC_SAND_NOON_PERIOD / (1 SECONDS)] секунд каждые стоящие часы залечивают вам [HERETIC_SAND_NOON_HEAL] урона и дают единицу песка, а Последний полдень уносит вас к ним на любой этаж."))
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	noon_silent = heretic?.simulated
+	if(!noon_silent)
+		priority_announce("Еретик Песка поднял Полуденные часы: [english_list(area_names)]. Раз в минуту они бьют полдень и затягивают его раны, а пока стоят хоть одни, он уходит к ним сквозь этажи. Разбейте их любым оружием; нулевой жезл раскалывает часы за два удара.", "Полуденные часы", 'sound/misc/notice1.ogg')
+	return TRUE
+
+/// Клетки для Полуденных часов: засечки на станции, затем случайный пол общих отсеков станции; на полигоне - пол рядом с еретиком.
+/datum/eldritch_knowledge/base_sand/proc/noon_spots(mob/living/user)
+	. = list()
+	var/turf/origin = get_turf(user)
+	var/training = istype(get_area(origin), /area/antag_training)
+	for(var/index in length(anchors) to 1 step -1)
+		var/turf/place = get_turf(anchors[index])
+		if(length(.) < HERETIC_SAND_NOON_CLOCKS && noon_spot_valid(place, training) && !(place in .))
+			. += place
+	var/list/candidates = list()
+	if(training)
+		for(var/turf/open/place in range(HERETIC_SAND_NOON_TRAINING_RANGE, origin))
+			if(get_dist(place, origin) > 1 && noon_spot_valid(place, TRUE))
+				candidates += place
+	else
+		candidates = public_noon_floor()
+	for(var/pass in 1 to 2)
+		var/list/pool = candidates.Copy()
+		while(length(.) < HERETIC_SAND_NOON_CLOCKS && length(pool))
+			var/turf/place = pick_n_take(pool)
+			if(place in .)
+				continue
+			var/crowded = FALSE
+			for(var/turf/taken as anything in .)
+				if(pass == 1 && taken.z == place.z && get_dist(taken, place) < (training ? 2 : HERETIC_SAND_NOON_SPREAD))
+					crowded = TRUE
+					break
+			if(!crowded)
+				. += place
+
+/// Весь пол общих отсеков станции, куда встанут часы.
+/datum/eldritch_knowledge/base_sand/proc/public_noon_floor()
+	. = list()
+	for(var/area_type in GLOB.the_station_areas)
+		if(!heretic_station_public_area(GLOB.areas_by_type[area_type]))
+			continue
+		for(var/turf/open/place in get_area_turfs(area_type))
+			if(noon_spot_valid(place, FALSE))
+				. += place
+			CHECK_TICK
+
+/// Часы ростом в две клетки: над их клеткой нужен свободный пол, иначе верх упрётся в стену.
+/datum/eldritch_knowledge/base_sand/proc/noon_spot_valid(turf/place, training)
+	var/area/place_area = get_area(place)
+	if(!isopenturf(place) || isgroundlessturf(place) || !place_area || (place_area.area_flags & NOTELEPORT) || istype(place_area, /area/shuttle) || place.is_blocked_turf(exclude_mobs = TRUE))
+		return FALSE
+	var/turf/head = get_step(place, NORTH)
+	if(!isopenturf(head) || head.is_blocked_turf(exclude_mobs = TRUE) || !heretic_sand_noon_keeps_passage(place))
+		return FALSE
+	return training ? istype(place_area, /area/antag_training) : is_station_level(place.z)
+
+/// По клетке можно пройти: пол без плотного; двери и люди проходу не мешают.
+/proc/heretic_sand_noon_walkable(turf/place)
+	if(!isopenturf(place) || isgroundlessturf(place) || place.density)
+		return FALSE
+	for(var/atom/movable/thing as anything in place.contents)
+		if(thing.density && !ismob(thing) && !istype(thing, /obj/machinery/door))
+			return FALSE
+	return TRUE
+
+/// Часы не перекрывают проход: все проходимые соседи клетки остаются связаны в обход неё, так что коридор в одну клетку не годится.
+/proc/heretic_sand_noon_keeps_passage(turf/place)
+	var/static/list/ring = list(NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST, NORTHWEST)
+	var/list/open = list()
+	var/start = 0
+	for(var/index in 1 to length(ring))
+		open += heretic_sand_noon_walkable(get_step(place, ring[index]))
+		if(!open[index] && !start)
+			start = index
+	if(!start)
+		return TRUE
+	var/groups = 0
+	var/has_side = FALSE
+	for(var/offset in 1 to length(ring))
+		var/index = (start + offset - 1) % length(ring) + 1
+		if(open[index])
+			if(index % 2)
+				has_side = TRUE
+			continue
+		if(has_side)
+			groups++
+		has_side = FALSE
+	return groups <= 1
+
+/// Полдень: каждые стоящие часы бьют, затягивают раны вознёсшегося и дают ему песок; запертый или скованный полдень пропускает, но часы продолжают отсчёт.
+/datum/eldritch_knowledge/base_sand/proc/strike_noon()
+	deltimer(noon_timer)
+	noon_timer = null
+	var/count = length(noon_clocks)
+	if(!count)
+		return FALSE
+	next_noon_at = world.time + HERETIC_SAND_NOON_PERIOD
+	noon_timer = addtimer(CALLBACK(src, PROC_REF(strike_noon)), HERETIC_SAND_NOON_PERIOD, TIMER_STOPPABLE)
+	for(var/obj/structure/heretic_sand_noon/clock as anything in noon_clocks.Copy())
+		clock.strike()
+	if(!ascension_active || !can_use(sand_body))
+		if(!QDELETED(sand_body))
+			to_chat(sand_body, span_warning("Бьёт полдень, но вы не можете его принять: раны не затянулись."))
+		return TRUE
+	heretic_heal_pool(sand_body, HERETIC_SAND_NOON_HEAL * count)
+	gain_combat_resource(count)
+	heretic_vfx_pulse(sand_body, HERETIC_SAND_SUN_LIGHT, 2, HERETIC_SAND_NOON_PULSE_TIME)
+	to_chat(sand_body, span_eldritch("Бьёт полдень: часов [count] - раны затягиваются, песка прибавилось."))
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(sand_body)
+	var/datum/eldritch_knowledge/final_eldritch/sand_final/finale = heretic?.get_knowledge(/datum/eldritch_knowledge/final_eldritch/sand_final)
+	if(finale)
+		GLOB.heretic_sky.event(finale)
+	SEND_SIGNAL(src, COMSIG_HERETIC_SAND_EVENT, "noon", sand_body)
+	return TRUE
+
+/// Часы рассыпаются не от рук экипажа: еретику и станции говорят, что полдня больше не будет.
+/datum/eldritch_knowledge/base_sand/proc/clear_noon(reason)
+	deltimer(noon_timer)
+	noon_timer = null
+	var/had_clocks = length(noon_clocks)
+	for(var/obj/structure/heretic_sand_noon/clock as anything in noon_clocks.Copy())
+		clock.sand_ref = null
+		qdel(clock)
+	noon_clocks.Cut()
+	if(!had_clocks || !reason)
+		return
+	log_game("Полуденные часы Песка рассыпаются ([had_clocks] шт.): [reason].")
+	if(!QDELETED(sand_body))
+		to_chat(sand_body, span_userdanger("Полуденные часы рассыпались: полдень больше не наступит."))
+	if(!noon_silent)
+		minor_announce("Полуденные часы рассыпались: [reason]. Полдень больше не наступит.", "Полуденные часы")
+
+/datum/eldritch_knowledge/base_sand/proc/noon_clock_broken(obj/structure/heretic_sand_noon/clock)
+	noon_clocks -= clock
+	var/left = length(noon_clocks)
+	log_game("Полуденные часы Песка разбиты в [AREACOORD(clock)], осталось [left].")
+	if(!QDELETED(sand_body))
+		var/news = left ? "Полуденные часы в [get_area_name(clock, TRUE)] разбиты. Осталось: [left]." : "Последние Полуденные часы разбиты: полдень больше не наступит."
+		to_chat(sand_body, span_userdanger(news))
+	if(!left)
+		deltimer(noon_timer)
+		noon_timer = null
+
+/// Ближайшие Полуденные часы не у самых ног: сначала на своём этаже, потом на любом.
+/datum/eldritch_knowledge/base_sand/proc/nearest_noon_clock(mob/living/user)
+	var/turf/center = get_turf(user)
+	var/best_score = INFINITY
+	for(var/obj/structure/heretic_sand_noon/clock as anything in noon_clocks)
+		var/turf/place = get_turf(clock)
+		if(!place || !clock.landing())
+			continue
+		var/same_floor = place.z == center.z
+		var/distance = get_dist(center, place)
+		if(same_floor && distance <= HERETIC_SAND_NOON_NEAR)
+			continue
+		var/score = (same_floor ? 0 : 1000) + (same_floor ? distance : 0)
+		if(score >= best_score)
+			continue
+		best_score = score
+		. = clock
+
+/// Последний полдень: Откат к Полуденным часам на любом этаже.
+/datum/eldritch_knowledge/base_sand/proc/noon_return(mob/living/user)
+	sand_failure = null
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!can_use(user))
+		return FALSE
+	if(!ascension_active || !heretic?.ascended)
+		sand_failure = "Последний полдень доступен только вознёсшемуся."
+		return FALSE
+	var/obj/structure/heretic_sand_noon/clock = nearest_noon_clock(user)
+	if(!clock)
+		sand_failure = length(noon_clocks) ? "Другие Полуденные часы недоступны: их обступили или они рядом с вами." : "Все Полуденные часы разбиты."
+		return FALSE
+	sand_failure = rewind_block_reason(user)
+	if(!sand_failure && !user.apply_status_effect(/datum/status_effect/heretic_sand_rewind/noon, src, clock))
+		sand_failure = "Откат уже идёт."
+	if(sand_failure)
+		return FALSE
+	log_game("[key_name(user)] начинает Последний полдень к часам в [AREACOORD(clock)].")
+	return TRUE
 
 /// Полуденное солнце над целью: вспыхивает с лучами и тает.
 /obj/effect/temp_visual/heretic_sand_sun
@@ -952,6 +1261,74 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	sand.anchors += src
 	AddComponent(/datum/component/heretic_craft, sand, HERETIC_SAND_ANCHOR_CRAFT, HERETIC_SAND_ANCHOR_CLUE)
 
+/// Полуденные часы вознесения: бьют полдень для вознёсшегося, пока экипаж их не разобьёт.
+/obj/structure/heretic_sand_noon
+	name = "noon hourglass"
+	desc = "Песочные часы в человеческий рост на песчаниковом постаменте, на крышке горит латунное солнце. Раз в минуту они бьют полдень: раны еретика Песка затягиваются, а пока стоят хоть одни такие часы, он уходит к ним сквозь этажи. Разбейте их любым оружием; нулевой жезл раскалывает их за два удара."
+	icon = 'modular_bluemoon/icons/obj/heretic_sand_noon.dmi'
+	icon_state = "sand_noon"
+	anchored = TRUE
+	density = TRUE
+	max_integrity = HERETIC_SAND_NOON_INTEGRITY
+	layer = ABOVE_MOB_LAYER
+	light_range = 2
+	light_power = 0.8
+	light_color = HERETIC_SAND_SUN_LIGHT
+	var/datum/weakref/sand_ref
+
+/obj/structure/heretic_sand_noon/Initialize(mapload, datum/eldritch_knowledge/base_sand/sand)
+	. = ..()
+	if(QDELETED(sand))
+		return INITIALIZE_HINT_QDEL
+	sand_ref = WEAKREF(sand)
+	sand.noon_clocks += src
+	add_overlay(emissive_appearance(icon, "sand_noon_glow", offset_spokesman = src))
+
+/obj/structure/heretic_sand_noon/examine(mob/user)
+	. = ..()
+	var/datum/eldritch_knowledge/base_sand/sand = sand_ref?.resolve()
+	if(sand?.noon_timer)
+		. += span_warning("До полудня [DisplayTimeText(max(0, sand.next_noon_at - world.time), 1)]. Прочность: [round(obj_integrity / max_integrity * 100)]%.")
+
+/// Клетка у часов, куда принесёт Последний полдень: сами часы занимают свою.
+/obj/structure/heretic_sand_noon/proc/landing()
+	for(var/direction in list(SOUTH, EAST, WEST, NORTH, SOUTHEAST, SOUTHWEST, NORTHEAST, NORTHWEST))
+		var/turf/spot = get_step(src, direction)
+		var/area/spot_area = get_area(spot)
+		if(isopenturf(spot) && !isgroundlessturf(spot) && !spot.is_blocked_turf(exclude_mobs = TRUE) && !(spot_area.area_flags & NOTELEPORT))
+			return spot
+	return null
+
+/obj/structure/heretic_sand_noon/proc/strike()
+	flick("sand_noon_strike", src)
+	var/datum/eldritch_knowledge/base_sand/sand = sand_ref?.resolve()
+	sand?.last_noon(get_turf(src))
+	visible_message(span_danger("[src] бьют полдень: латунное солнце вспыхивает, песок взлетает и осыпается обратно!"))
+
+/obj/structure/heretic_sand_noon/attackby(obj/item/item, mob/living/user, params)
+	if(!istype(item, /obj/item/nullrod))
+		return ..()
+	user.do_attack_animation(src)
+	user.changeNext_move(CLICK_CD_MELEE)
+	visible_message(span_warning("[user] бьёт [src] нулевым жезлом, и по стеклу бежит трещина."))
+	take_damage(max_integrity / 2, BRUTE, MELEE, FALSE)
+	return TRUE
+
+/obj/structure/heretic_sand_noon/deconstruct(disassembled = TRUE)
+	var/turf/place = get_turf(src)
+	if(place)
+		visible_message(span_danger("[src] раскалываются, и песок полудня бесполезно рассыпается по полу."))
+		new /obj/effect/temp_visual/heretic_sand/impact(place)
+		heretic_sand_sound(place, "unseal", 60)
+	return ..()
+
+/// Пропавшие не через clear_noon() часы - разбитые: еретику об этом скажут.
+/obj/structure/heretic_sand_noon/Destroy()
+	var/datum/eldritch_knowledge/base_sand/sand = sand_ref?.resolve()
+	sand_ref = null
+	sand?.noon_clock_broken(src)
+	return ..()
+
 /obj/item/melee/sickly_blade/sand
 	name = "last-hour blade"
 	desc = "Вырванный сектор циферблата с заточенными часовыми зубцами. Стрелка мечется внутри разорванного обода, отсекая ещё не наступившие секунды."
@@ -963,7 +1340,7 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 
 /obj/item/heretic_path_relic/sand_relic
 	name = "unturned hourglass"
-	desc = "Песочные часы, которые удобно держать в ладони. Если в 25 клетках на вашем уровне стоит ваша засечка, применение начинает Откат: 3 секунды вокруг вас кружит песок, вы замедлены, затем переноситесь к ближайшей засечке вне зон, закрытых для телепортации; смерть, наручники и щит разума срывают перенос, перезарядка 30 секунд. Без засечек рядом первое применение оставляет на пять секунд разрушаемую точку возврата, повторное возвращает к ней через открытую линию не длиннее пяти клеток; перезарядка 20 секунд с установки. В зоне, закрытой для телепортации, точка не ставится и не возвращает; часы называют причину отказа. Раны и эффекты сохраняются. Щелчок реликвией по своим боевым часам в пяти клетках за единицу песка однократно продлевает отсчёт на 1,5 секунды."
+	desc = "Песочные часы, которые удобно держать в ладони. Если в 25 клетках на вашем этаже стоит ваша засечка, применение начинает Откат: 3 секунды вокруг вас кружит песок, вы замедлены, затем переноситесь к ближайшей засечке вне зон, закрытых для телепортации. Нет засечки на этаже - годится засечка этажом выше или ниже, но Откат длится 5 секунд. Смерть, наручники и щит разума срывают перенос, крепкая чужая хватка не даёт его начать; перезарядка 30 секунд. Без засечек рядом первое применение оставляет на пять секунд разрушаемую точку возврата, повторное возвращает к ней через открытую линию не длиннее пяти клеток; перезарядка 20 секунд с установки. В зоне, закрытой для телепортации, точка не ставится и не возвращает; часы называют причину отказа. Раны и эффекты сохраняются. Щелчок реликвией по своим боевым часам в пяти клетках за единицу песка однократно продлевает отсчёт на 1,5 секунды."
 	icon = 'modular_bluemoon/icons/obj/heretic_sand.dmi'
 	icon_state = "sand_relic"
 	item_state = "sand_relic"
@@ -988,8 +1365,9 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
 	if(!authorized(user) || !sand?.can_use(user))
 		return FALSE
-	if(!sand.anchor && sand.nearest_anchor(user))
-		return begin_rewind(user, sand)
+	var/obj/structure/heretic_sand_anchor/target = sand.anchor ? null : sand.nearest_anchor(user)
+	if(target)
+		return begin_rewind(user, sand, target)
 	sand.sand_failure = sand.anchor ? point_return_block_reason(user, sand) : point_block_reason(user, sand)
 	if(sand.sand_failure)
 		to_chat(user, span_warning(sand.sand_failure))
@@ -1036,29 +1414,19 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 		return "Клетку точки возврата заняли: вернуться некуда."
 	return null
 
-/obj/item/heretic_path_relic/sand_relic/proc/begin_rewind(mob/living/user, datum/eldritch_knowledge/base_sand/sand)
-	sand.sand_failure = rewind_block_reason(user)
-	if(!sand.sand_failure && !user.apply_status_effect(/datum/status_effect/heretic_sand_rewind, sand))
+/obj/item/heretic_path_relic/sand_relic/proc/begin_rewind(mob/living/user, datum/eldritch_knowledge/base_sand/sand, obj/structure/heretic_sand_anchor/target)
+	sand.sand_failure = COOLDOWN_FINISHED(src, relic_cooldown) ? sand.rewind_block_reason(user) : "Песок в часах ещё не осел: до Отката осталось [DisplayTimeText(COOLDOWN_TIMELEFT(src, relic_cooldown))]."
+	target = target || sand.nearest_anchor(user)
+	if(!sand.sand_failure && !target)
+		sand.sand_failure = "Рядом нет свободной засечки: на своём этаже или этажом выше и ниже - в [HERETIC_SAND_REWIND_RANGE] клетках."
+	if(!sand.sand_failure && !user.apply_status_effect(/datum/status_effect/heretic_sand_rewind, sand, target))
 		sand.sand_failure = "Откат уже идёт."
 	if(sand.sand_failure)
 		to_chat(user, span_warning(sand.sand_failure))
 		return FALSE
 	COOLDOWN_START(src, relic_cooldown, HERETIC_SAND_REWIND_COOLDOWN)
-	log_game("[key_name(user)] начинает Откат Песка в [AREACOORD(user)].")
+	log_game("[key_name(user)] начинает Откат Песка в [AREACOORD(user)] к засечке в [AREACOORD(target)].")
 	return TRUE
-
-/obj/item/heretic_path_relic/sand_relic/proc/rewind_block_reason(mob/living/user)
-	if(!COOLDOWN_FINISHED(src, relic_cooldown))
-		return "Песок в часах ещё не осел: до Отката осталось [DisplayTimeText(COOLDOWN_TIMELEFT(src, relic_cooldown))]."
-	var/containment = heretic_containment_reason(user)
-	if(containment)
-		return containment
-	if(user.buckled || user.anchored || HAS_TRAIT(user, TRAIT_NO_TELEPORT))
-		return "Что-то держит вас на месте: Откат не начнётся."
-	var/area/origin_area = get_area(user)
-	if(origin_area.area_flags & NOTELEPORT)
-		return "Здесь время не течёт вспять: из этой зоны Откат недоступен."
-	return null
 
 /datum/status_effect/heretic_sand_rewind
 	id = "heretic_sand_rewind"
@@ -1068,12 +1436,39 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	on_remove_on_mob_delete = TRUE
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_sand_rewind
 	var/datum/weakref/sand_ref
+	var/datum/weakref/target_ref
+	var/rewind_time = HERETIC_SAND_REWIND_TIME
 	var/obj/effect/abstract/heretic_vfx_attached/vortex
 	var/rewind_timer
 
-/datum/status_effect/heretic_sand_rewind/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_sand/sand)
+/datum/status_effect/heretic_sand_rewind/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_sand/sand, atom/target)
 	sand_ref = WEAKREF(sand)
+	target_ref = WEAKREF(target)
+	var/turf/start = get_turf(new_owner)
+	var/turf/finish = get_turf(target)
+	rewind_time = travel_time(start, finish)
+	duration = rewind_time + HERETIC_SAND_REWIND_GRACE
 	return ..()
+
+/// С другого этажа песку дольше нести: Откат на соседний этаж длиннее.
+/datum/status_effect/heretic_sand_rewind/proc/travel_time(turf/start, turf/finish)
+	return (start && finish && start.z != finish.z) ? HERETIC_SAND_REWIND_FLOOR_TIME : HERETIC_SAND_REWIND_TIME
+
+/// Куда унесёт песок: выбранная засечка, а если её разбили - ближайшая другая.
+/datum/status_effect/heretic_sand_rewind/proc/destination(datum/eldritch_knowledge/base_sand/sand)
+	var/obj/structure/heretic_sand_anchor/target = target_ref?.resolve()
+	if((target in sand.anchors) && sand.anchor_usable(target))
+		return get_turf(target)
+	return get_turf(sand.nearest_anchor(owner, other_floors = rewind_time >= HERETIC_SAND_REWIND_FLOOR_TIME))
+
+/datum/status_effect/heretic_sand_rewind/proc/lost_reason()
+	return "рядом не осталось свободной засечки."
+
+/datum/status_effect/heretic_sand_rewind/proc/start_text()
+	return "Песок подхватывает вас. Через [DisplayTimeText(rewind_time)] вы окажетесь у засечки[rewind_time >= HERETIC_SAND_REWIND_FLOOR_TIME ? " на другом этаже" : ""]."
+
+/datum/status_effect/heretic_sand_rewind/proc/arrival_log(turf/origin, turf/destination)
+	log_game("[key_name(owner)] откатывается к засечке Песка из [AREACOORD(origin)] в [AREACOORD(destination)].")
 
 /datum/status_effect/heretic_sand_rewind/on_apply()
 	. = ..()
@@ -1085,8 +1480,8 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 		vortex.pixel_x = HERETIC_SAND_EFFECT_SHIFT
 		vortex.pixel_y = HERETIC_SAND_EFFECT_SHIFT
 	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_owner_death))
-	rewind_timer = addtimer(CALLBACK(src, PROC_REF(complete)), HERETIC_SAND_REWIND_TIME, TIMER_STOPPABLE)
-	owner.visible_message(span_danger("Вокруг [owner] песок поднимается с пола и течёт вверх: время вокруг течёт вспять!"), span_notice("Песок подхватывает вас. Через [DisplayTimeText(HERETIC_SAND_REWIND_TIME)] вы окажетесь у засечки."))
+	rewind_timer = addtimer(CALLBACK(src, PROC_REF(complete)), rewind_time, TIMER_STOPPABLE)
+	owner.visible_message(span_danger("Вокруг [owner] песок поднимается с пола и течёт вверх: время вокруг течёт вспять!"), span_notice(start_text()))
 	heretic_sand_sound(owner, "rewind", 50)
 
 /datum/status_effect/heretic_sand_rewind/proc/on_owner_death(datum/source)
@@ -1102,8 +1497,8 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	var/area/origin_area = get_area(owner)
 	if(!isturf(owner.loc) || owner.buckled || owner.anchored || HAS_TRAIT(owner, TRAIT_NO_TELEPORT) || (origin_area.area_flags & NOTELEPORT))
 		return "что-то держит вас на месте."
-	if(!sand.nearest_anchor(owner))
-		return "рядом не осталось свободной засечки."
+	if(!destination(sand))
+		return lost_reason()
 	return null
 
 /datum/status_effect/heretic_sand_rewind/proc/complete()
@@ -1115,15 +1510,16 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 		qdel(src)
 		return FALSE
 	var/turf/origin = get_turf(owner)
-	var/turf/destination = get_turf(sand.nearest_anchor(owner))
+	var/turf/destination = destination(sand)
 	if(!do_teleport(owner, destination, channel = TELEPORT_CHANNEL_MAGIC) || get_turf(owner) != destination)
-		to_chat(owner, span_warning("Откат сорвался: песок не нашёл пути к засечке."))
+		to_chat(owner, span_warning("Откат сорвался: песок не нашёл пути."))
 		qdel(src)
 		return FALSE
 	new /obj/effect/temp_visual/heretic_sand/cast(origin)
 	new /obj/effect/temp_visual/heretic_sand/cast(destination)
 	heretic_sand_sound(destination, "arrive", 55)
-	log_game("[key_name(owner)] откатывается к засечке Песка из [AREACOORD(origin)] в [AREACOORD(destination)].")
+	arrival_log(origin, destination)
+	SEND_SIGNAL(sand, COMSIG_HERETIC_SAND_EVENT, "rewind", destination)
 	qdel(src)
 	return TRUE
 
@@ -1140,14 +1536,41 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	sand_ref = null
 	return ..()
 
+/// Последний полдень: тот же Откат, но к Полуденным часам на любом этаже.
+/datum/status_effect/heretic_sand_rewind/noon
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_sand_rewind/noon
+
+/datum/status_effect/heretic_sand_rewind/noon/travel_time(turf/start, turf/finish)
+	return HERETIC_SAND_REWIND_TIME
+
+/datum/status_effect/heretic_sand_rewind/noon/destination(datum/eldritch_knowledge/base_sand/sand)
+	var/obj/structure/heretic_sand_noon/clock = target_ref?.resolve()
+	if(!sand.ascension_active || !(clock in sand.noon_clocks))
+		return null
+	return clock.landing()
+
+/datum/status_effect/heretic_sand_rewind/noon/lost_reason()
+	return "Полуденные часы разбиты или обступлены."
+
+/datum/status_effect/heretic_sand_rewind/noon/start_text()
+	var/obj/structure/heretic_sand_noon/clock = target_ref?.resolve()
+	return "Полдень зовёт вас: через [DisplayTimeText(rewind_time)] вы окажетесь у часов в [get_area_name(clock, TRUE)]."
+
+/datum/status_effect/heretic_sand_rewind/noon/arrival_log(turf/origin, turf/destination)
+	log_game("[key_name(owner)] уходит Последним полднем из [AREACOORD(origin)] к часам в [AREACOORD(destination)].")
+
 /datum/movespeed_modifier/heretic_sand_rewind
 	multiplicative_slowdown = HERETIC_SAND_REWIND_SLOWDOWN
 
 /atom/movable/screen/alert/status_effect/heretic_sand_rewind
 	name = "Откат"
-	desc = "Песок уносит вас к ближайшей засечке. Смерть, наручники и щит разума сорвут перенос."
+	desc = "Песок уносит вас к засечке: на своём этаже за 3 секунды, на соседний за 5. Смерть, наручники и щит разума сорвут перенос, разбитую засечку заменит ближайшая другая."
 	icon = 'modular_bluemoon/icons/obj/heretic_sand.dmi'
 	icon_state = "sand_rewind_alert"
+
+/atom/movable/screen/alert/status_effect/heretic_sand_rewind/noon
+	name = "Последний полдень"
+	desc = "Песок уносит вас к Полуденным часам. Смерть, наручники, щит разума и разбитые часы сорвут перенос."
 
 /datum/status_effect/heretic_sand_drought
 	id = "heretic_sand_drought"
@@ -1155,7 +1578,7 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	tick_interval = -1
 	status_type = STATUS_EFFECT_REFRESH
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_sand_drought
-	examine_text = span_warning("SUBJECTPRONOUN осыпается сухим песком: суставы пересохли, и удар песочных часов собьёт с ног.")
+	examine_text = span_warning("SUBJECTPRONOUN осыпается сухим песком: суставы пересохли, удар песочных часов собьёт с ног, а песок Стазиса возьмёт и стоящего.")
 	/// Песок, осыпающийся с пересохшего тела.
 	var/obj/effect/abstract/heretic_particle_holder/dust
 	COOLDOWN_DECLARE(trip_cooldown)
@@ -1183,7 +1606,7 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 
 /atom/movable/screen/alert/status_effect/heretic_sand_drought
 	name = "Засуха"
-	desc = "Руки и суставы пересохли: шаг чуть медленнее, а наручники, обыск, лечение и снятие оков идут в полтора раза дольше. Удар песочных часов сейчас собьёт вас с ног на полторы секунды."
+	desc = "Руки и суставы пересохли: шаг чуть медленнее, а наручники, обыск, лечение и снятие оков идут в полтора раза дольше. Удар песочных часов сейчас собьёт вас с ног на полторы секунды, а Стазис еретика возьмёт и стоящего: когда вокруг смыкается песок, шагните прочь."
 	icon = 'modular_bluemoon/icons/obj/heretic_sand.dmi'
 	icon_state = "sand_drought"
 
@@ -1432,7 +1855,7 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	caught[victim_key] = TRUE
 	if(!victim.Immobilize(HERETIC_SAND_MIRE_HOLD))
 		return FALSE
-	victim.apply_status_effect(/datum/status_effect/heretic_sand_mired)
+	victim.apply_status_effect(/datum/status_effect/heretic_sand_mired, sand)
 	return TRUE
 
 /obj/effect/heretic_sand_mire/Destroy()
@@ -1450,6 +1873,12 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	status_type = STATUS_EFFECT_REFRESH
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_sand_mired
 	var/obj/effect/abstract/heretic_vfx_attached/grip
+	/// Чей песок держит: Стазис берёт увязшего только в своём Зыбуне.
+	var/datum/weakref/sand_ref
+
+/datum/status_effect/heretic_sand_mired/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_sand/sand)
+	sand_ref = WEAKREF(sand)
+	return ..()
 
 /datum/status_effect/heretic_sand_mired/on_apply()
 	. = ..()
@@ -1472,7 +1901,7 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 
 /atom/movable/screen/alert/status_effect/heretic_sand_mired
 	name = "Зыбун"
-	desc = "Вы увязли в зыбучем песке еретика и вырвете ноги через полторы секунды. Стрелять и драться можно, сойти с места - нет. Каждая воронка держит одного человека один раз."
+	desc = "Вы увязли в зыбучем песке еретика и вырвете ноги через полторы секунды. Стрелять и драться можно, сойти с места - нет, и песок Стазиса возьмёт вас наверняка. Каждая воронка держит одного человека один раз."
 	icon = 'modular_bluemoon/icons/obj/heretic_sand.dmi'
 	icon_state = "sand_mired"
 
@@ -1480,7 +1909,7 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	next_step = "В намерении «Помощь» коснитесь Хваткой Мансуса свободного пола в ещё не зачтённом отделе: там встанет засечка."
 	name = "Засечки"
 	desc = "Ставьте Хваткой Мансуса в намерении «Помощь» засечки - песочные часы на свободном полу станции - в разных отделах. Каждый отдел засчитывается один раз."
-	craft_wait = "засечка не встаёт"
+	craft_wait = "засечка встаёт, но в дело не идёт"
 	hint = "Держатся три засечки, новая вытесняет самую старую. Песок в них течёт вверх, и экипаж это заметит; засечка ломается обычными ударами (30 прочности), нулевой жезл снимает её сразу. У засечки реликвия принимает вас при Откате, а Течение часа ускоряет обряды."
 	trace_name = "sand of the spent hour"
 	trace_desc = "Мелкий золотой песок лежит кольцом, будто высыпался из перевёрнутых часов."
@@ -1496,9 +1925,10 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	name = "Сухая ладонь"
 	summary = "Хватка насылает на врага Засуху на 8 секунд и даёт 2 песка."
 	details = list(
+		"Цикл захвата в два шага: Засуха от Хватки или Осыпи вплотную, затем Стазис - сбивать цель не нужно.",
 		"Под Засухой шаг чуть медленнее, а наручники, обыск, лечение и снятие оков идут в полтора раза дольше.",
 		"Удар ваших часов сбивает цель под Засухой с ног на 1,5 секунды, не чаще раза в 4 секунды.",
-		"Сбитую так цель сразу можно остановить Стазисом - чужое оглушение не нужно.",
+		"Сбитая часами или увязшая в Зыбуне цель не успеет шагнуть из смыкающегося песка Стазиса.",
 		"С цели под Засухой сыплется песок - видно, кого часы собьют и кого брать Стазисом.",
 		"Песок от Хватки - раз в 6 секунд; антимагия и союзники не дают ни Засухи, ни песка.",
 	)
@@ -1512,8 +1942,7 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
 	if(!proximity_flag || !sand?.can_use(user) || !isturf(target?.loc) || !heretic_can_affect(user, target, chargecost = 0))
 		return FALSE
-	var/mob/living/victim = target
-	victim.apply_status_effect(/datum/status_effect/heretic_sand_drought)
+	sand.dry_out(target)
 	if(COOLDOWN_FINISHED(sand, grasp_harvest))
 		sand.gain_combat_resource(2)
 		COOLDOWN_START(sand, grasp_harvest, HERETIC_SAND_HARVEST)
@@ -1521,10 +1950,10 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 
 /datum/eldritch_knowledge/spell/sand_stasis
 	name = "Стазис"
-	summary = "За 2 песка останавливает время поверженной цели под Засухой на 10 секунд."
+	summary = "За 2 песка останавливает время цели под Засухой или на вашем Зыбуне на 10 секунд."
 	details = list(
-		"Цель в 3 клетках по открытой линии, под Засухой, сбита с ног (хоть вашими часами) или обессилена; сон не в счёт.",
-		"Секунду песок смыкается: если цель увели с клетки или Засуха спала, Стазис рассыпается.",
+		"Цель в 3 клетках по открытой линии, под Засухой или на вашем Зыбуне; сбивать её не нужно.",
+		"Секунду песок смыкается: стоящая цель может шагнуть прочь, и Стазис рассыпается; сбитая или увязшая - нет.",
 		"10 секунд цель не действует, не получает урона и не истекает кровью; тянуть её может только еретик.",
 		"Застывшая цель готова к обряду; сердце уводит её в изнанку, где первые 3 секунды переход держит её на месте.",
 		"Стазис спадает от нулевого жезла, святой воды в крови, вашей смерти или если растолкать за 2 секунды; антимагия спасает.",
@@ -1577,11 +2006,12 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	name = "Неперевёрнутые часы"
 	summary = "Стекло и лист золота дают карманные часы: Откат к засечке или точка возврата."
 	details = list(
-		"Откат работает, если засечка в 25 клетках на вашем уровне: 3 секунды вас кружит песок и замедляет, затем вы у засечки.",
+		"Откат ведёт к засечке в 25 клетках на вашем этаже: 3 секунды вас кружит песок и замедляет, затем вы у засечки.",
+		"Нет засечки на этаже - годится засечка этажом выше или ниже в тех же 25 клетках, но Откат идёт 5 секунд.",
 		"Засечки в зонах без телепортации не подходят; смерть, наручники и щит разума срывают Откат.",
+		"Крепкая чужая хватка не даёт начать Откат, из волочения можно; начатый Откат вырывает вас из рук.",
 		"Перезарядка Отката 30 секунд; раны и эффекты сохраняются. Реликвия одна.",
-		"Без засечек рядом часы ставят точку возврата на 5 секунд; второе применение возвращает к ней, если она в 5 клетках.",
-		"У точки 25 прочности, перезарядка 20 секунд; преграды и запрет телепортации мешают возврату.",
+		"Без засечек рядом часы ставят точку возврата (25 прочности) на 5 секунд, второе применение - к ней из 5 клеток.",
 		"Щелчок по своим часам в 5 клетках за единицу песка один раз продлевает их отсчёт на 1,5 секунды, всего до 3 секунд.",
 	)
 	role = HERETIC_ROLE_RELIC
@@ -1692,21 +2122,30 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 
 /datum/eldritch_knowledge/final_eldritch/sand_final
 	name = "Хранитель Последнего Часа"
-	summary = "Время вокруг вас замедляет чужие пули, запас песка растёт, открывается Последний полдень."
+	summary = "Встают 3 Полуденных часа: экипаж их бьёт, а вы уходите к ним сквозь этажи; чужие пули вязнут."
 	details = list(
 		"Нужны 3 назначенные души и 3 человеческих трупа на руне станции; станция узнаёт место обряда, он длится 30 секунд.",
-		"Общая стойкость вознесения, запас песка 8, единица восстанавливается каждые 4 секунды.",
-		"Пули и заряды врагов в 4 клетках летят втрое медленнее; лучи, ближний бой и броски - нет.",
-		"В шкафу или мехе поле не действует.",
-		"Последний полдень - бесплатное Погребение: первый удар наносит 40 ушибов, а часы бьют на 44.",
-		"Перезарядка Последнего полудня 30 секунд.",
+		"Общая стойкость вознесения: станы не глушат приёмы пути; запас песка 8, единица каждые 4 секунды.",
+		"Встают 3 Полуденных часа: на засечках, если не перекроют проход, остальные в общих отсеках; станции объявят где.",
+		"Раз в 60 секунд бьёт полдень: каждые стоящие часы лечат вам 15 урона и дают единицу песка.",
+		"Последний полдень: за 3 секунды Откат к ближайшим часам, хоть на другом этаже; перезарядка 45 секунд.",
+		"Часы (120 прочности) разбивают оружием, нулевой жезл - за два удара; со смертью они рассыпаются.",
+		"Пули и заряды врагов в 4 клетках летят втрое медленнее; лучи, ближний бой, броски и стрельба в шкафу или мехе - нет.",
 	)
 	role = HERETIC_ROLE_ASCENSION
 	gain_text = "Все часы остановились. Я услышал, как станция сделала следующий вдох без их разрешения."
 	route = PATH_SAND
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
-	ascension_spells = list(/obj/effect/proc_holder/spell/pointed/heretic_sand/final)
+	ascension_spells = list(/obj/effect/proc_holder/spell/self/heretic_sand/final)
 	var/datum/weakref/sand_knowledge_ref
+
+/datum/eldritch_knowledge/final_eldritch/sand_final/on_finished_recipe(mob/living/user, list/atoms, loc)
+	. = ..()
+	if(!.)
+		return
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
+	sand?.raise_noon(user)
 
 /datum/eldritch_knowledge/final_eldritch/sand_final/on_body_gain(mob/living/user)
 	. = ..()
@@ -1910,8 +2349,8 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 
 /obj/effect/proc_holder/spell/self/heretic_sand/release
 	name = "Осыпь"
-	desc = "За единицу песка нанесите соседним врагам 20 ушибов и 10 урона выносливости, затем поставьте часы на четырёх соседних клетках. Они взорвутся через 1,5 секунды только на своей клетке: 32 ушиба и 20 урона выносливости; цель под Засухой упадёт, а клетка на 4,5 секунды станет Зыбуном. Если часов слишком много, старые без запомненной цели уступят место."
-	summary = "Соседям 20 ушибов и 10 выносливости, затем часы на 4 клетках: 32 ушиба через 1,5 секунды."
+	desc = "За единицу песка нанесите соседним врагам 20 ушибов и 10 урона выносливости и нашлите на них Засуху, затем поставьте часы на четырёх соседних клетках. Они взорвутся через 1,5 секунды только на своей клетке: 32 ушиба и 20 урона выносливости; цель под Засухой упадёт, а клетка на 4,5 секунды станет Зыбуном. Если часов слишком много, старые без запомненной цели уступят место."
+	summary = "Соседям 20 ушибов, 10 выносливости и Засуха, затем часы на 4 клетках: 32 ушиба через 1,5 секунды."
 	charge_max = 12 SECONDS
 	action_icon_state = "sand_release"
 
@@ -1944,8 +2383,8 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 
 /obj/effect/proc_holder/spell/pointed/heretic_sand/stasis
 	name = "Стазис"
-	desc = "Остановите время цели в 3 клетках под Засухой, сбитой с ног (хоть ударом ваших часов) или обессиленной: 10 секунд она не действует и не получает урона. Стазис развеется от нулевого жезла, святой воды или если растолкать цель за 2 секунды. Стоит 2 песка, перезарядка 40 секунд."
-	summary = "10 секунд застывшего времени для цели под Засухой, сбитой или обессиленной; 2 песка."
+	desc = "Остановите время цели в 3 клетках под Засухой или на вашем Зыбуне: 10 секунд она не действует и не получает урона. Песок смыкается секунду: стоящая цель может шагнуть прочь, сбитая часами или увязшая - нет. Стазис развеется от нулевого жезла, святой воды или если растолкать цель за 2 секунды. Стоит 2 песка, перезарядка 40 секунд."
+	summary = "10 секунд застывшего времени для цели под Засухой или на Зыбуне; 2 песка."
 	charge_max = HERETIC_SAND_STASIS_COOLDOWN
 	range = HERETIC_SAND_STASIS_RANGE
 	action_icon_state = "sand_stasis"
@@ -1976,7 +2415,7 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
 	if(!length(targets) || !sand?.step_through(user, get_turf(targets[1])))
-		heretic_revert_cast(user)
+		heretic_revert_cast(user, sand?.sand_failure)
 
 /obj/effect/proc_holder/spell/pointed/heretic_sand/burial
 	name = "Погребение"
@@ -1989,20 +2428,20 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
 	if(!length(targets) || !sand?.burial(user, get_turf(targets[1])))
-		heretic_revert_cast(user)
+		heretic_revert_cast(user, sand?.sand_failure)
 
-/obj/effect/proc_holder/spell/pointed/heretic_sand/final
+/obj/effect/proc_holder/spell/self/heretic_sand/final
 	name = "Последний полдень"
-	desc = "Бесплатное Погребение: первый удар наносит 40 ушибов, часы — 44. Требует вознесения."
-	summary = "Бесплатное Погребение: первый удар 40 ушибов, часы - 44."
-	charge_max = 30 SECONDS
+	desc = "Откат к Полуденным часам: 3 секунды вас кружит песок, затем вы у ближайших стоящих часов, хоть на другом этаже; часы не дальше 3 клеток от вас на своём этаже не в счёт. Смерть, наручники, щит разума и разбитые часы срывают перенос. Перезарядка 45 секунд."
+	summary = "Откат к ближайшим Полуденным часам на любом этаже за 3 секунды."
+	charge_max = HERETIC_SAND_NOON_COOLDOWN
 	action_icon_state = "sand_final"
 
-/obj/effect/proc_holder/spell/pointed/heretic_sand/final/cast(list/targets, mob/living/user)
+/obj/effect/proc_holder/spell/self/heretic_sand/final/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
-	if(!length(targets) || !sand?.burial(user, get_turf(targets[1]), final_cast = TRUE))
-		heretic_revert_cast(user)
+	if(!sand?.noon_return(user))
+		heretic_revert_cast(user, sand?.sand_failure)
 
 #undef HERETIC_SAND_RANGE
 #undef HERETIC_SAND_DELAY
@@ -2016,7 +2455,6 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 #undef HERETIC_SAND_RELEASE_STAMINA
 #undef HERETIC_SAND_BURIAL_DAMAGE
 #undef HERETIC_SAND_BURIAL_RADIUS
-#undef HERETIC_SAND_FINAL_DAMAGE
 #undef HERETIC_SAND_EXTRA_DELAY
 #undef HERETIC_SAND_COUNTDOWN
 #undef HERETIC_SAND_COUNTDOWN_VOLUME
@@ -2050,6 +2488,9 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 #undef HERETIC_SAND_NOON_QUAKE_TIME
 #undef HERETIC_SAND_NOON_QUAKE_RADIUS
 #undef HERETIC_SAND_NOON_PULSE_TIME
+#undef HERETIC_SAND_NOON_TRAINING_RANGE
+#undef HERETIC_SAND_NOON_SPREAD
+#undef HERETIC_SAND_NOON_NEAR
 #undef HERETIC_SAND_ANCHOR_CRAFT
 #undef HERETIC_SAND_ANCHOR_CLUE
 #undef HERETIC_SAND_CAPTURE
@@ -2059,7 +2500,6 @@ GLOBAL_LIST_INIT(heretic_sand_sounds, list(
 #undef HERETIC_SAND_STASIS_TELEGRAPH
 #undef HERETIC_SAND_STASIS_COOLDOWN
 #undef HERETIC_SAND_STASIS_CHECK
-#undef HERETIC_SAND_REWIND_TIME
 #undef HERETIC_SAND_REWIND_COOLDOWN
 #undef HERETIC_SAND_REWIND_GRACE
 #undef HERETIC_SAND_REWIND_SLOWDOWN

@@ -2,7 +2,7 @@
 	var/book_type = /obj/item/forbidden_book
 	var/book_name = "Codex Cicatrix"
 	var/book_title = "Кодекс Рубцов"
-	var/book_subtitle = "Шестнадцать дорог за одну завесу"
+	var/book_subtitle = "Девятнадцать дорог за одну завесу"
 	var/book_desc = "Строки проступают между старыми шрамами на страницах."
 	var/book_cover = "codex"
 	var/book_ink = "#b2ac7d"
@@ -448,6 +448,11 @@
 			animate(src, transform = opening, time = 0.15 SECONDS, easing = SINE_EASING)
 			animate(transform = settling, time = 0.2 SECONDS, easing = SINE_EASING)
 			animate(transform = book_rest_transform, time = 0.15 SECONDS, easing = SINE_EASING)
+		if(PATH_DUSK)
+			opening.Turn(-3)
+			transform = opening
+			animate(src, transform = book_rest_transform, alpha = 150, time = 0.1 SECONDS, easing = JUMP_EASING)
+			animate(alpha = book_rest_alpha, time = 0.5 SECONDS, easing = SINE_EASING)
 		if(PATH_SAND)
 			opening.Turn(-8)
 			transform = opening
@@ -460,6 +465,14 @@
 			opening.Turn(12)
 			transform = opening
 			animate(src, transform = book_rest_transform, time = 0.6 SECONDS, easing = ELASTIC_EASING)
+		if(PATH_LEAD)
+			animate(src, pixel_y = book_rest_y - 2, time = 0.1 SECONDS, easing = SINE_EASING)
+			animate(pixel_y = book_rest_y, time = 0.5 SECONDS, easing = BOUNCE_EASING)
+		if(PATH_HAMMER)
+			opening.Scale(1.06, 0.94)
+			transform = opening
+			animate(src, transform = book_rest_transform, pixel_y = book_rest_y - 3, time = 0.08 SECONDS, easing = SINE_EASING)
+			animate(pixel_y = book_rest_y, time = 0.4 SECONDS, easing = BOUNCE_EASING)
 		if(PATH_SPIRIT)
 			animate(src, pixel_y = book_rest_y + 4, alpha = 180, time = 0.4 SECONDS, easing = SINE_EASING)
 			animate(pixel_y = book_rest_y, alpha = book_rest_alpha, time = 0.6 SECONDS, easing = SINE_EASING)
@@ -480,7 +493,7 @@
 		user.playsound_local(get_turf(user), 'modular_bluemoon/sound/heretic/book_close.ogg', 20, FALSE)
 
 /obj/item/forbidden_book/proc/turn_page(mob/user)
-	if(!user?.is_holding(src) || !IS_HERETIC(user) || user.incapacitated() || !COOLDOWN_FINISHED(src, page_turn_cooldown))
+	if(!user?.is_holding(src) || !IS_HERETIC(user) || heretic_incapacitated(user) || !COOLDOWN_FINISHED(src, page_turn_cooldown))
 		return FALSE
 	COOLDOWN_START(src, page_turn_cooldown, 0.3 SECONDS)
 	var/datum/heretic_path/path = GLOB.heretic_paths[book_path]

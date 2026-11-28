@@ -9,19 +9,30 @@ GLOBAL_LIST_INIT(heretic_paths, init_heretic_paths())
 GLOBAL_VAR_INIT(heretic_threat_warning_until, 0)
 GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 	/datum/eldritch_knowledge/spell/silence = 1,
+	/datum/eldritch_knowledge/eldritch_coin = 1,
+	/datum/eldritch_knowledge/prophet_greaves = 1,
 	/datum/eldritch_knowledge/armor = 2,
 	/datum/eldritch_knowledge/ashen_eyes = 2,
+	/datum/eldritch_knowledge/spell/mansus_whisper = 2,
+	/datum/eldritch_knowledge/amber_focus = 2,
 	/datum/eldritch_knowledge/essence = 3,
 	/datum/eldritch_knowledge/void_cloak = 3,
+	/datum/eldritch_knowledge/spell/wave_of_desperation = 3,
+	/datum/eldritch_knowledge/newborn_ether = 3,
 	/datum/eldritch_knowledge/spell/rust_wave = 4,
+	/datum/eldritch_knowledge/spell/mansus_veil = 4,
 	/datum/eldritch_knowledge/rune_carver = 4,
+	/datum/eldritch_knowledge/backdoor_keys = 4,
 	/datum/eldritch_knowledge/curse/corrosion = 5,
 	/datum/eldritch_knowledge/curse/paralysis = 5,
+	/datum/eldritch_knowledge/spell/lights_out = 5,
 	/datum/eldritch_knowledge/spell/blood_siphon = 6,
 	/datum/eldritch_knowledge/crucible = 6,
 	/datum/eldritch_knowledge/unshielded_mind = 6,
+	/datum/eldritch_knowledge/spell/space_phase = 6,
 	/datum/eldritch_knowledge/summon/ashy = 7,
 	/datum/eldritch_knowledge/summon/rusty = 7,
+	/datum/eldritch_knowledge/rust_sower = 7,
 	/datum/eldritch_knowledge/spell/cleave = 8,
 ))
 
@@ -45,6 +56,9 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 		/datum/heretic_path/spirit,
 		/datum/heretic_path/wax,
 		/datum/heretic_path/dance,
+		/datum/heretic_path/lead,
+		/datum/heretic_path/dusk,
+		/datum/heretic_path/hammer,
 	)
 	path_types |= subtypesof(/datum/heretic_path)
 	for(var/datum/heretic_path/path_type as anything in path_types)
@@ -89,7 +103,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 		"Хватка, клинок, Угасание и потоки поджигают, а горящие враги кормят вас угольками.",
 		"Пепельный саван держит горящую сбитую цель 10 секунд, увести её можно из 3 клеток.",
 		"Угасание за уголёк тушит вас, лечит и оставляет огонь на пути погони.",
-		"Пепельный переход проводит сквозь стены, огонь и жара вам не страшны.",
+		"Пепельный переход проводит сквозь стены; со Власти Пепла жар вас не ранит.",
 		"Метка Пепла перескакивает по толпе и выматывает всех по очереди.",
 		"Возрождение ночного дозорного лечит вас за счёт до 4 горящих врагов в 4 клетках.",
 	)
@@ -97,7 +111,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 		"Хватка, клинок и метка бьют только вплотную.",
 		"Огнетушитель и вода тушат поджоги и смывают саван, а мокрая цель не загорается и угольков не даёт.",
 		"Защита от магии не даёт поджечь цель хваткой и потоками.",
-		"Вознёсшегося гасят вода и пена: 7 секунд он без огненного следа и без лечения.",
+		"Вознёсшегося гасят вода и пена на 7 секунд, а его Пепельный фонарь можно залить или разбить.",
 		"До вознесения оглушение и стамкрит глушат заклинания пути; из крепкой хватки уводит только Пепельный переход.",
 		"Тряпка, швабра и нулевой жезл стирают тлеющие отпечатки.",
 	)
@@ -125,13 +139,13 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 	strength_points = list(
 		"Хватка ломает обычные шлюзы и рушит обычную стену, а Ржавая формация поднимает стену, сквозь которую идёте вы.",
 		"Ржавый пол разъедает чужаков, а на нём вы лечитесь и хуже поддаётесь дубинкам; очаг лечит и свиту.",
-		"Ржавые корни приковывают сбитую цель к полу очага, и увести её можно из любой клетки очага.",
+		"Ржавые корни приковывают сбитую цель к полу очага, а Хватка распада цепью тащит её туда издалека.",
 		"Метка и клинок разъедают тело коррозией, метка ржавит вещи в руках и одежду.",
 		"Энтропийное облако слепит врагов и стравливает их друг с другом.",
 		"Мерзкая хватка ржавит пол 3×3 под врагом: плацдарм для лечения даже вдали от очага.",
 	)
 	weakness_points = list(
-		"Вне своей ржавчины вы заметно слабее, поэтому вас выманивают с неё.",
+		"Вне своей ржавчины вы заметно слабее и не бросите цепь, поэтому вас выманивают с неё.",
 		"Ржавчина видна всем и выдаёт вашу территорию; лом, сварка и нулевой жезл рвут корни и стены.",
 		"Укреплённые стены поддаются хватке лишь с шансом 50%.",
 		"Ржавое сердце вознёсшегося разбивается оружием, и ржавый пол теряет силу вознесения.",
@@ -157,19 +171,19 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 	tagline = "Поднимает свиту из мёртвых и органов, шьёт её раны, а слуги держат сбитую цель жилами."
 	craft_summary = "Хватка поглощает органы ради биомассы и на «Разоружении» вынимает орган из трупа; новый вид - дело пути."
 	capture_summary = "Касание безумия валит на 3 секунды, слуга рядом держит цель до 10 секунд; из 7 клеток её уводят в изнанку."
-	escape_summary = "Своего ухода нет: прикрывает свита, лечит Сшивание; из изнанки выходите к живому гулю, мертвецу или ползуну."
+	escape_summary = "Сбросить кожу уводит в слугу в 7 клетках даже из хватки; из изнанки - к живому гулю, мертвецу или ползуну."
 	strength_points = list(
 		"Свита до 4 слуг: гули, мертвецы, пророк, преследователь и ползун; без призрака слуга встаёт пустым.",
 		"Касание безумия валит цель, а слуга в 3 клетках вцепляется в неё и держит до 10 секунд.",
 		"Живой шов бьёт врага на 5 клеток, натравливает слуг или вытаскивает раненого слугу из боя.",
 		"Сшивание и игла лечат свиту и возвращают слугам руки и ноги.",
-		"Пророк разведывает сквозь стены и держит связь всей свиты.",
+		"Сбросить кожу за секунду уводит вас в своего слугу за 7 клеток даже из хватки, а он встаёт на ваше место.",
 		"Вознёсшийся червь пожирает трупы, лечится и растёт до 16 сегментов.",
 	)
 	weakness_points = list(
-		"Пустой слуга без призрака только идёт за вами и бьёт цель шва; потерянную свиту собирают заново.",
-		"Щит разума, синтетику и истощённый труп не поднять, а вскрытый хваткой труп выдаёт вас при осмотре.",
-		"Без слуг нечем прикрыть отход, а увод срывается, если слугу оглушат или скуют или цель оттащат от него.",
+		"Пустой слуга без призрака вдвое слабее и только бьёт цель шва; потерянную свиту приходится собирать заново.",
+		"Щит разума, синтетику и истощённый труп не поднять, а вскрытый хваткой труп и сброшенная кожа выдают вас.",
+		"Без слуги нет ни ухода, ни увода; увод срывается, если слугу оглушат или скуют или цель оттащат от него.",
 		"Хватку слуги рвут острое на «Помощи», нулевой жезл, «растолкать» и сбитый или скованный слуга.",
 		"Червь огромен и заметен, сегменты рубятся по одному, и с каждым отпадает хвост.",
 		"До вознесения оглушение, стамкрит и крепкая чужая хватка глушат заклинания пути.",
@@ -191,8 +205,8 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 	id = PATH_VOID
 	deed_type = /datum/heretic_deed/void
 	name = "Пустота"
-	tagline = "Сковывает холодом, вмораживает в лёд и выбирает дистанцию прыжками и обменом."
-	craft_summary = "Хватка гасит лампу и покрывает её инеем: у неё вы копите осколки и лечитесь, из изнанки выходите к ней."
+	tagline = "Гасит свет, сковывает холодом, вмораживает врага в лёд и прыгает сквозь пустоту."
+	craft_summary = "Клинок из ножа на руне: на холоде даром, в тепле за осколок зимы. Лампы в инее от хватки - ваш холод."
 	capture_summary = "Темница на 10 секунд вмораживает сбитого или скованного врага; из шара сердце уводит в изнанку за 1 секунду."
 	escape_summary = "Пустотный сдвиг переносит на 3-7 клеток даже из хватки, Аплодисменты меняют местами с кем-то вдали."
 	strength_points = list(
@@ -238,7 +252,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 		"Ответ и взрыв метки выбивают оружие, щит или дубинку из руки, Выпад сближает на 5 клеток и сбивает с ног.",
 		"Клинок у горла держит заложника 12 секунд, а цель охоты вы за 1,5 секунды уводите разрезом в изнанку.",
 		"Выжидание гасит выстрелы с любой стороны, пули и лазеры спереди уходят вбок.",
-		"Проигравшего дуэль сердце сразу берёт целью охоты, а отказ рядом с вами сбивает труса с ног.",
+		"Проигравшего дуэль сердце сразу берёт целью охоты, отказ рядом идёт в дело и валит согласных на антаг-события.",
 	)
 	weakness_points = list(
 		"Для Выжидания нужна пустая вторая рука, а блоков всего 3-4 на 2-3 секунды.",
@@ -246,6 +260,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 		"Заложника отпускают удар по вам на 15+, оглушение, шаг дальше клетки и жезл; растолкать можно за 2 секунды.",
 		"Вызванный видит ваше имя, а Хватка или чужая магия в дуэли - поражение: Темп в ноль и порез на шее на 5 минут.",
 		"Орбиту вознесённого сдирает один выстрел картечи.",
+		"Последний выпад полсекунды тянет по полу видимую линию: шаг в сторону - и Темп сгорает впустую.",
 	)
 	knowledge = list(
 		/datum/eldritch_knowledge/base_blade,
@@ -255,7 +270,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 		/datum/eldritch_knowledge/blade_disarm,
 		/datum/eldritch_knowledge/blade_guard,
 		/datum/eldritch_knowledge/spell/blade_dance,
-		/datum/eldritch_knowledge/spell/blade_recall,
+		/datum/eldritch_knowledge/spell/blade_last_thrust,
 		/datum/eldritch_knowledge/blade_riposte,
 		/datum/eldritch_knowledge/final_eldritch/blade_final,
 	)
@@ -274,15 +289,15 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 		"Помутнение вешают Хватка, удары копий и огонёк; Сомнамбула ведёт помутнённую к копии, к вам или к двойнику.",
 		"Спящую у копии или двойника цель охоты вы уводите в изнанку с любого места уровня.",
 		"Возвращение в отражение уводит из чужой хватки к двойнику в другом конце уровня.",
-		"Обмен, миражи и Затмение путают, кто настоящий, а Блуждающий огонёк уводит толпу помутнённых.",
+		"Обмен и Затмение путают, кто настоящий; Лунное безумие бросает помутнённого с кулаками на своих.",
 	)
 	weakness_points = list(
 		"Копии хрупкие: 30 урона, пара ударов или выстрелов их разбивает.",
 		"Двойник не моргает и запаздывает в стекле; нулевой жезл или вспышка рядом его рассеивают.",
-		"Сомнамбула берёт только помутнённых, а спящую выдаёт тихая музыкальная шкатулка.",
-		"Спящую можно растолкать за 2 секунды, а нулевой жезл или вспышка в 3 клетках будят её сразу.",
+		"Сомнамбула и безумие берут только помутнённых; спящую выдаёт шкатулка, безумного - хохот.",
+		"Спящего или безумного будит вспышка в 3 клетках или нулевой жезл; спящую можно растолкать за 2 секунды.",
 		"Без двойника на посту уходить некуда; наручники и зоны без телепортации держат вас.",
-		"Вознёсшегося выдаёт свет: чужая вспышка в 3 клетках разбивает копии и слепит его.",
+		"Силу вознёсшегося держит Лунное зеркало на руне, а чужая вспышка в 3 клетках разбивает его копии.",
 	)
 	knowledge = list(
 		/datum/eldritch_knowledge/base_moon,
@@ -291,7 +306,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 		/datum/eldritch_knowledge/moon_mark,
 		/datum/eldritch_knowledge/moon_shroud,
 		/datum/eldritch_knowledge/spell/moon_exchange,
-		/datum/eldritch_knowledge/spell/moon_mirage,
+		/datum/eldritch_knowledge/spell/moon_madness,
 		/datum/eldritch_knowledge/moon_refraction,
 		/datum/eldritch_knowledge/spell/moon_eclipse,
 		/datum/eldritch_knowledge/final_eldritch/moon_final,
@@ -374,6 +389,11 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 			return TRUE
 	return FALSE
 
+/// Что экипажу делать с подтверждённой угрозой: кто перед ними, как спасать похищенных и как держать задержанного.
+/proc/heretic_threat_announcement_text()
+	var/ascension = heretic_ascension_happened() ? "Один из них уже разорвал завесу, остальные могут последовать за ним." : "Вознесения пока не было: еретики остаются смертными людьми, их можно задержать обычными средствами."
+	return "Угроза подтверждена: последователи запретных путей (еретики) уже приносят членов экипажа в жертву. [ascension] Если начнётся заключительный обряд, станция получит отдельное оповещение, но не раньше чем через [DisplayTimeText(HERETIC_THREAT_WARNING_TIME)]. Сообщайте службе безопасности о кругах из чёрной смолы, разрывах в воздухе и пропавших людях. Нулевой жезл или Библия стирают круги и закрывают разрывы, а разрыв можно и разорвать руками за [DisplayTimeText(HERETIC_POCKET_TEAR_TIME)]: за ним держат похищенного. Задержанного держите в смирительной рубашке или наручниках: так он не колдует и не уходит через разбитый клинок; наручники еретик может раз сорвать волной, рубашку - нет. Имплант защиты разума глушит большинство еретиков, но не вознёсшихся и не тех, кто изучил защиту от него, поэтому одного импланта мало: держите задержанного скованным."
+
 /datum/antagonist/heretic/proc/announce_threat()
 	if(ascension_notice_sent)
 		return FALSE
@@ -383,11 +403,11 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 		return FALSE
 	GLOB.heretic_threat_warning_until = world.time + HERETIC_THREAT_WARNING_TIME
 	ascension_ready_at = GLOB.heretic_threat_warning_until
-	priority_announce("Зафиксировано усиление оккультной активности: последователи запретных путей уже приносят экипаж в жертву. [heretic_ascension_happened() ? "Один из них уже разорвал завесу, остальные могут последовать за ним." : "Вознесения пока не было."] О начале заключительного обряда станция получит отдельное оповещение, и оно возможно не раньше чем через три минуты. Сообщайте службе безопасности о ритуальных знаках и необъяснимых исчезновениях экипажа. Задержанного еретика держите в наручниках или смирительной рубашке, а для долгого содержания установите ему имплант защиты разума: так магия запретных путей, их обряды и побег через разбитый клинок недоступны.", "Предупреждение об оккультной активности", 'sound/misc/notice1.ogg')
+	priority_announce(heretic_threat_announcement_text(), "Предупреждение об оккультной активности", 'sound/misc/notice1.ogg')
 	return TRUE
 
 /datum/antagonist/heretic/proc/research_knowledge(knowledge_type, mob/living/user)
-	if(!user || user.mind != owner || IS_HERETIC(user) != src || user.incapacitated())
+	if(!user || user.mind != owner || IS_HERETIC(user) != src || heretic_incapacitated(user))
 		return FALSE
 	var/error_message = research_error(knowledge_type)
 	if(error_message)
@@ -406,9 +426,12 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 			if(path.knowledge[1] == knowledge_type)
 				selected_path = path.id
 				break
+		path_selected_at = world.time
 		create_deed()
 	if(!(knowledge_type in GLOB.heretic_side_knowledge))
 		path_stage++
+		sync_path_stage()
+		path_spent_knowledge += initial(knowledge.cost)
 		var/datum/heretic_path/current_path = GLOB.heretic_paths[selected_path]
 		if(path_stage == length(current_path.knowledge) - 1)
 			announce_threat()

@@ -98,6 +98,7 @@ type ProfileEntry = {
   antagInitialGrant: number;
   antagLossRefundWindow: number;
   antagLossActivityThreshold: number;
+  antagLossGrace?: number;
   maxQuiet: number;
   quietThreshold: number;
   securityPerPlayers: number;
@@ -1088,7 +1089,8 @@ const ANTAG_ROWS: ProfileRowSpec[] = [
   },
   {
     label: 'Страховка ранней потери роли',
-    render: (profile) => `${profile.antagLossRefundWindow} мин`,
+    render: (profile) =>
+      `${profile.antagLossRefundWindow} мин, выплата после отсрочки ${profile.antagLossGrace ?? 2.5} мин`,
   },
   {
     label: 'Активность до полной отработки цены',

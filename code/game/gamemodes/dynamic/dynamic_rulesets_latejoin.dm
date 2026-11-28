@@ -184,24 +184,51 @@
 		return FALSE
 	return ..()
 
-/// Новому еретику нужны полчаса до первых жертв: под эвак он не успеет, а лишний на малом онлайне душит станцию.
-/proc/heretic_injection_block_reason(living_crew)
-	if(SSshuttle.emergency && !EMERGENCY_IDLE_OR_RECALLED)
-		return "эвакуация уже вызвана"
-	var/active_heretics = 0
+/// Живые еретики не с полигона. ascended_out получает TRUE, если среди них есть вознёсшийся.
+/proc/count_active_heretics(list/ascended_out)
+	. = 0
 	for(var/datum/antagonist/heretic/heretic in GLOB.antagonists)
 		if(heretic.simulated || heretic.role_removed)
 			continue
 		var/mob/living/body = heretic.owner?.current
 		if(!istype(body) || body.stat == DEAD)
 			continue
-		if(heretic.ascended)
-			return "вознёсшийся еретик ещё жив"
-		active_heretics++
+		if(heretic.ascended && islist(ascended_out))
+			ascended_out[1] = TRUE
+		.++
+
+/// Новому еретику нужны полчаса до первых жертв: под эвак он не успеет, а лишний на малом онлайне душит станцию.
+/// Тот же лимит держат жетон метамагазина и предупреждение админу при ручной выдаче.
+/proc/heretic_injection_block_reason(living_crew)
+	if(SSshuttle.emergency && !EMERGENCY_IDLE_OR_RECALLED)
+		return "эвакуация уже вызвана"
+	var/list/ascended = list(FALSE)
+	var/active_heretics = count_active_heretics(ascended)
+	if(ascended[1])
+		return "вознёсшийся еретик ещё жив"
 	var/allowed = max(1, FLOOR(living_crew / HERETIC_CREW_PER_HERETIC, 1))
 	if(active_heretics >= allowed)
 		return "живых еретиков [active_heretics] при допустимых [allowed] на [living_crew] живого экипажа"
 	return null
+
+/// Живой экипаж для лимита еретиков вне рулсета: жетон и ручная выдача.
+/proc/heretic_limit_living_crew()
+	var/datum/game_mode/mode = SSticker.mode
+	return mode ? length(mode.current_players[CURRENT_LIVING_PLAYERS]) : 0
+
+/// Ручная выдача не запрещена, но админ видит, сколько еретиков уже есть и что сказал бы директор.
+/proc/warn_admin_about_heretic_count(mob/admin)
+	var/active_heretics = count_active_heretics()
+	var/block_reason = heretic_injection_block_reason(heretic_limit_living_crew())
+	if(!admin || (!active_heretics && !block_reason))
+		return null
+	var/list/lines = list()
+	if(active_heretics)
+		lines += "Живых еретиков уже [active_heretics]."
+	if(block_reason)
+		lines += "Директор сейчас нового не выдал бы: [block_reason]."
+	. = jointext(lines, " ")
+	to_chat(admin, span_warning(.))
 
 //BLUEMOON ADD START - я добавляю это сюда вместо модулей, чтобы было удобно изменять параметры (для наглядности)
 //////////////////////////////////////////////

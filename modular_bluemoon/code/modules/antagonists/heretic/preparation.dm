@@ -70,7 +70,7 @@
 	return list("ready" = FALSE, "can_call" = can_call, "action_label" = behind_veil ? "Призвать своё сердце" : "Вернуть своё сердце", "status" = status)
 
 /obj/item/forbidden_book/proc/call_heart(mob/living/user, datum/antagonist/heretic/heretic)
-	if(IS_HERETIC(user) != heretic || heretic.owner?.current != user || !user.is_holding(src) || user.incapacitated())
+	if(IS_HERETIC(user) != heretic || heretic.owner?.current != user || !user.is_holding(src) || heretic_incapacitated(user))
 		return FALSE
 	var/list/heart_data = heart_preparation_data(heretic)
 	if(!heart_data["can_call"])

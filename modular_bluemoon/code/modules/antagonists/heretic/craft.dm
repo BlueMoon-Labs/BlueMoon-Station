@@ -139,6 +139,7 @@
 	if(!already_held)
 		victim.AddElement(/datum/element/heretic_capture_shake)
 		heretic_capture_hold_fx(victim, source)
+		heretic_capture_crew_hint(victim)
 
 /proc/heretic_capture_unhold(mob/living/victim, source)
 	if(QDELETED(victim))

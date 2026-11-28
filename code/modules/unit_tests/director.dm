@@ -774,7 +774,7 @@
 	// от событийных seen_names, чтобы диагностика коллизии ruleset-vs-ruleset не путалась с event-vs-ruleset.
 	// test_pool_isolation и test_roundstart_intensity - фикстуры других тестов в этом же файле,
 	// не реальный игровой контент; требования тегирования на них не распространяются.
-	var/list/tagging_test_fixtures = list(/datum/dynamic_ruleset/midround/test_pool_isolation, /datum/dynamic_ruleset/latejoin/test_pool_isolation, /datum/dynamic_ruleset/roundstart/test_roundstart_intensity, /datum/dynamic_ruleset/midround/from_ghosts/test_assigned_minds)
+	var/list/tagging_test_fixtures = list(/datum/dynamic_ruleset/midround/test_pool_isolation, /datum/dynamic_ruleset/latejoin/test_pool_isolation, /datum/dynamic_ruleset/roundstart/test_roundstart_intensity, /datum/dynamic_ruleset/midround/from_ghosts/test_assigned_minds, /datum/dynamic_ruleset/midround/test_afk_filter)
 	var/list/ruleset_names = list()
 	for(var/datum/dynamic_ruleset/midround/ruleset_path as anything in subtypesof(/datum/dynamic_ruleset/midround))
 		if(!initial(ruleset_path.name) || (ruleset_path in tagging_test_fixtures))
@@ -1734,6 +1734,10 @@
 		quiet.stat = DEAD
 		SSdirector.tally_ruleset_intensity(rule)
 		var/antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(antag_wallets, 0, "Свежая потеря ждёт отсрочку: роль ещё может вернуться")
+		SSdirector.time_override += DIRECTOR_ANTAG_LOSS_GRACE
+		SSdirector.tally_ruleset_intensity(rule)
+		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
 		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), 8.5, "Тихая потеря одного из двух трейторов должна вернуть половину цены 17")
 		SSdirector.tally_ruleset_intensity(rule)
 		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
@@ -1757,6 +1761,8 @@
 		SSdirector.time_override += profile.antag_loss_refund_window + 1
 		late.stat = DEAD
 		SSdirector.tally_ruleset_intensity(late_rule)
+		SSdirector.time_override += DIRECTOR_ANTAG_LOSS_GRACE
+		SSdirector.tally_ruleset_intensity(late_rule)
 		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
 		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), 8.5, "Потеря после окна страховки не должна возвращать бюджет")
 
@@ -1774,6 +1780,8 @@
 		SSdirector.confirm_action_success(cryo_rule)
 		var/before_cryo = antag_wallets
 		cryo_mind.set_current(null)
+		SSdirector.tally_ruleset_intensity(cryo_rule)
+		SSdirector.time_override += DIRECTOR_ANTAG_LOSS_GRACE
 		SSdirector.tally_ruleset_intensity(cryo_rule)
 		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
 		TEST_ASSERT_EQUAL(round(antag_wallets - before_cryo, 0.1), 6, "Ранняя потеря роли через крио должна вернуть её стоимость")
@@ -1793,10 +1801,31 @@
 		var/before_removed = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
 		removed.mind.remove_antag_datum(removed_marker.type)
 		SSdirector.tally_ruleset_intensity(removed_rule)
+		SSdirector.time_override += DIRECTOR_ANTAG_LOSS_GRACE
+		SSdirector.tally_ruleset_intensity(removed_rule)
 		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
 		TEST_ASSERT_EQUAL(round(antag_wallets - before_removed, 0.1), 7, "Раннее снятие antagonist datum должно вернуть стоимость роли")
 		SSdirector.tally_ruleset_intensity(removed_rule)
 		TEST_ASSERT_EQUAL(round(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST] - before_removed, 0.1), 7, "Повторный подсчёт снятой роли не должен возвращать стоимость повторно")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Регрессия: world.time бывает дробным (404.84), и в float разность (T + отсрочка) - T
+/// выходит чуть меньше отсрочки - полис не закрывался ровно через DIRECTOR_ANTAG_LOSS_GRACE.
+/datum/unit_test/director_antag_loss_grace_fractional_time
+
+/datum/unit_test/director_antag_loss_grace_fractional_time/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		for(var/step in 1 to 100)
+			var/base = 1000 + step * 0.01
+			SSdirector.time_override = base
+			var/list/policy = list()
+			TEST_ASSERT(!SSdirector.antag_loss_grace_over(policy, TRUE), "Свежая потеря на [base] не должна сразу закрывать полис")
+			SSdirector.time_override += DIRECTOR_ANTAG_LOSS_GRACE
+			TEST_ASSERT(SSdirector.antag_loss_grace_over(policy, TRUE), "Потеря на [base] должна закрыть полис ровно через отсрочку")
 	catch(var/exception/e)
 		SSdirector.restore_simulation_state(saved)
 		throw e
@@ -2496,7 +2525,10 @@
 		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), control.intensity * DIRECTOR_ACTIVITY_MULT_MIN, "Живой тихий демон на станции должен давать вклад с множителем тихони")
 		spawned.stat = DEAD
 		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), 0, "Мёртвый демон не должен занимать intensity")
-		TEST_ASSERT_EQUAL(length(SSdirector.live_ghost_role_spawns), 0, "Пустая живая группа должна удаляться")
+		TEST_ASSERT_EQUAL(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST], 0, "В отсрочке страховка ещё не платит")
+		SSdirector.time_override = world.time + DIRECTOR_ANTAG_LOSS_GRACE
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), 0, "После отсрочки мёртвый демон по-прежнему не занимает intensity")
+		TEST_ASSERT_EQUAL(length(SSdirector.live_ghost_role_spawns), 0, "Пустая живая группа удаляется, когда закрыт последний полис")
 		var/antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
 		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), control.cost, "Ранняя тихая смерть естественной гост-роли должна вернуть её цену в антаг-кошельки")
 		SSdirector.get_active_intensity()
@@ -2546,6 +2578,8 @@
 		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), rule.intensity * DIRECTOR_ACTIVITY_MULT_MIN, "Живая тихая поздняя роль должна давать intensity с множителем тихони")
 		spawned.stat = DEAD
 		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), 0, "После смерти поздняя роль не должна занимать intensity")
+		SSdirector.time_override = world.time + DIRECTOR_ANTAG_LOSS_GRACE
+		SSdirector.get_active_intensity()
 		var/antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
 		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), rule.cost, "Ранняя потеря поздней роли должна вернуть цену в антаг-кошельки")
 	catch(var/exception/e)

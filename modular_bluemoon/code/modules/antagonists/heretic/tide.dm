@@ -26,8 +26,11 @@
 #define HERETIC_TIDE_SEA_LIFETIME (15 SECONDS)
 #define HERETIC_TIDE_SEA_PRESSURE_INTERVAL (4 SECONDS)
 #define HERETIC_TIDE_BREACH_CRAFT "tide_breach"
-#define HERETIC_TIDE_BREACH_CLUE "Вода не уходит в слив и темнее обычной."
+#define HERETIC_TIDE_BREACH_CLUE "Вода не уходит в слив и темнее обычной. Перекрыть её можно гаечным ключом, сваркой, шваброй или нулевым жезлом."
 #define HERETIC_TIDE_BREACH_WATER_TIME (HERETIC_TIDE_BREACH_REFRESH * 2)
+#define HERETIC_TIDE_SPRING_CRAFT "tide_spring"
+#define HERETIC_TIDE_SPRING_CLUE "Из источника воды бьёт чёрная вода. Перекройте источник гаечным ключом, заварите сваркой, уберите шваброй или коснитесь нулевым жезлом."
+#define HERETIC_TIDE_SPRING_VOLUME 35
 #define HERETIC_TIDE_CAPTURE "tide"
 #define HERETIC_TIDE_DROWN_RANGE 4
 #define HERETIC_TIDE_DROWN_COST 2
@@ -74,25 +77,25 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	id = PATH_TIDE
 	deed_type = /datum/heretic_deed/tide
 	name = "Пучина"
-	tagline = "Прорывы у источников воды дают чёрную воду: в ней враги идут ко дну, а вы уходите в слив."
+	tagline = "Затапливает отделы чёрной водой, топит в ней врагов и уходит в слив."
 	craft_summary = "Хватка по раковине, душу, туалету, кулеру, баку или лотку гидропоники открывает прорыв на 5 минут, их до 3."
 	capture_summary = "Сброс тянет к вам, Захлёб через секунду немит, а в вашей воде кладёт на дно; сердце уводит в изнанку."
-	escape_summary = "Уйти в слив: от своего прорыва к другому за 1,5 секунды; из изнанки выходите к своему прорыву."
+	escape_summary = "Уйти в слив: от своего прорыва к другому за 1,5 секунды, на другой этаж за 3; из изнанки - к прорыву."
 	strength_points = list(
-		"Прорыв 5 минут держит чёрную воду: враги в ней мокнут и вязнут по колено, вы ходите быстрее.",
+		"Прорыв 5 минут держит чёрную воду, Хватка по нему продлевает срок; враги в ней вязнут, вы быстрее.",
 		"Сброс валит с ног и тянет врагов вплотную - сразу под Захлёб и сердце; колокол меняет его на отталкивание.",
-		"В вашей воде Захлёб кладёт цель на дно: она лежит и еле ползёт, через 5 секунд теряет сознание.",
-		"В своей изнанке весь пол - ваша вода: захлёб, начатый снаружи, кончается беспамятством внутри.",
-		"Уйти в слив доступен с первой ступени; с Тысячей саженей вы ждёте в воде и бьёте Сбросом бесплатно.",
-		"Обрушение валит с ног всю область и оставляет море; вознёсшийся заливает пол вокруг себя.",
+		"Своя вода - прорыв, метка, Течение, море, изнанка: Захлёб в ней кладёт цель на дно до беспамятства.",
+		"Уйти в слив можно с первой ступени, в том числе на другой этаж станции.",
+		"С Тысячей саженей вы лечитесь на глубине своей воды и бьёте оттуда Сбросом бесплатно.",
+		"Вознесение открывает родники в общих отсеках станции: пока они бьют, вы залечиваете раны в своей воде.",
 	)
 	weakness_points = list(
-		"Прорыв виден: вода не уходит в слив; гаечный ключ или нулевой жезл по источнику его закрывают.",
-		"Захлёб срывают святая вода, нулевой жезл, растолкать за 2 секунды или 1,5 секунды на сухом полу.",
-		"Лежащую в вашей воде цель можно вытащить волоком на сухое: там вода из неё выходит.",
-		"Без второго своего прорыва на уровне уйти в слив некуда.",
-		"Лечения нет, а волны быстро расходуют давление.",
+		"Прорыв виден: вода не уходит в слив; ключ, сварка, швабра или нулевой жезл по источнику его закрывают.",
+		"Захлёб срывают 1,5 секунды на сухом (можно волоком), святая вода, нулевой жезл, растолкать за 2 секунды.",
+		"Крепкий захват и наручники отнимают силы пути; из слабого захвата в слив уйти можно, если есть второй прорыв.",
+		"Лечитесь только неподвижно на глубине, а волны быстро расходуют давление.",
 		"Обрушение выдаёт себя за секунду; воду вознёсшегося держат стены, окна, двери и машины.",
+		"Половодье объявляют всей станции: перекрытые родники и прорывы лишают вознёсшегося лечения.",
 	)
 	knowledge = list(
 		/datum/eldritch_knowledge/base_tide,
@@ -114,9 +117,9 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 		"Нож и лист металла создают гарпунный клинок.",
 		"Сброс тянет врагов к вам и оставляет скользкую лужу; намокшие 8 секунд медленнее, вы на воде не скользите.",
 		"Прорыв у раковины, душа, туалета, кулера, бака или лотка гидропоники 5 минут поит чёрной водой 2 клетки.",
-		"Прорывов до 3, новый вытесняет старый; ваша смерть их не закрывает, каждый отдел засчитывается делу раз.",
-		"Вода натекает раз в 20 секунд, враги в ней вязнут по колено; гаечный ключ или нулевой жезл по источнику её закрывают.",
-		"Уйти в слив доступен сразу: 2 давления, перезарядка 60 секунд.",
+		"Прорывов до 3, новый вытесняет старый, Хватка по своему продлевает его на 5 минут; смерть их не закрывает.",
+		"Вода натекает раз в 20 секунд, враги в ней вязнут; ключ, сварка, швабра или нулевой жезл по источнику её закрывают.",
+		"Уйти в слив доступен сразу: 2 давления, перезарядка 60 секунд; на другой этаж +1 давление и 3 секунды.",
 		"Из изнанки выходите к своему прорыву; весь её пол для вас - чёрная вода.",
 	)
 	role = HERETIC_ROLE_CRAFT
@@ -129,7 +132,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	resource_rules = list(
 		"Начальный запас 2 из 4, единица возвращается за 12 секунд, с Тысячей саженей быстрее.",
 		"Клинок даёт единицу раз в 6 секунд, Хватка глубины - 2, взрыв метки - 1.",
-		"Сброс, Захлебнуться и водоворот стоят 2, Уйти в слив - 2, с Течением 1.",
+		"Сброс, Захлебнуться и водоворот стоят 2, Уйти в слив - 2, с Течением 1, на другой этаж ещё +1.",
 		"Обрушение расходует весь запас, минимум 2; Сброс с глубины Тысячи саженей бесплатный.",
 		"Сброс тянет к вам, колокол переключает его на отталкивание. Смерть сбрасывает запас.",
 	)
@@ -144,6 +147,10 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	var/list/obj/effect/heretic_tide_puddle/sea/sea = list()
 	/// Источники с ремеслом «tide_breach», старейший первым; значение - прорыв.
 	var/list/atom/breaches = list()
+	/// Родники половодья: прорывы без срока и вне предела, значение - прорыв.
+	var/list/atom/springs = list()
+	var/spring_tide = FALSE
+	var/spring_tide_receded = FALSE
 	var/list/datum/status_effect/heretic_tide_drowning/drownings = list()
 	var/list/obj/effect/heretic_tide_current/current_cells = list()
 	var/obj/effect/proc_holder/spell/self/heretic_tide/dive/dive_power
@@ -207,7 +214,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 
 /datum/eldritch_knowledge/base_tide/Destroy()
 	on_body_lose(tide_body)
-	for(var/atom/source as anything in breaches.Copy())
+	for(var/atom/source as anything in drains())
 		close_breach(source)
 	return ..()
 
@@ -229,7 +236,18 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 
 /datum/eldritch_knowledge/base_tide/proc/can_use(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return !QDELETED(src) && isliving(user) && user == tide_body && !user.incapacitated() && isturf(user.loc) && heretic?.selected_path == PATH_TIDE && heretic.get_knowledge(type) == src
+	return !QDELETED(src) && isliving(user) && user == tide_body && !heretic_incapacitated(user) && isturf(user.loc) && heretic?.selected_path == PATH_TIDE && heretic.get_knowledge(type) == src
+
+/// Крепкий захват называется прямо: без причины отказ выглядит как поломка.
+/datum/eldritch_knowledge/base_tide/proc/use_block_reason(mob/living/user)
+	if(can_use(user))
+		return null
+	if(isliving(user) && user == tide_body && user.pulledby?.grab_state >= GRAB_AGGRESSIVE && !heretic_incapacitated(user, TRUE))
+		return "Вас крепко держат: пока не вырветесь из захвата, силы Пучины недоступны. Из слабого захвата уйти в слив можно."
+	var/containment = user == tide_body ? heretic_containment_reason(user) : null
+	if(containment)
+		return containment
+	return "Способность недоступна вашему пути или текущему телу."
 
 /datum/eldritch_knowledge/base_tide/proc/grant_dive(mob/living/user)
 	if(!user.mind || !QDELETED(dive_power))
@@ -243,8 +261,25 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	var/datum/eldritch_knowledge/current = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/tide_current)
 	return !QDELETED(current)
 
-/datum/eldritch_knowledge/base_tide/proc/dive_cost()
-	return flowing() ? HERETIC_TIDE_DIVE_FLOW_COST : HERETIC_TIDE_DIVE_COST
+/datum/eldritch_knowledge/base_tide/proc/dive_cost(atom/from_breach, atom/to_breach)
+	return (flowing() ? HERETIC_TIDE_DIVE_FLOW_COST : HERETIC_TIDE_DIVE_COST) + (other_floor(from_breach, to_breach) ? HERETIC_TIDE_DIVE_FLOOR_COST : 0)
+
+/datum/eldritch_knowledge/base_tide/proc/dive_time(atom/from_breach, atom/to_breach)
+	return other_floor(from_breach, to_breach) ? HERETIC_TIDE_DIVE_FLOOR_TIME : HERETIC_TIDE_DIVE_TIME
+
+/// Слив ведёт к прорывам своего уровня и других этажей той же связки уровней.
+/datum/eldritch_knowledge/base_tide/proc/drain_reaches(atom/entry, atom/exit)
+	var/turf/start = get_turf(entry)
+	var/turf/finish = get_turf(exit)
+	return start && finish && (start.z == finish.z || (finish.z in SSmapping.get_connected_levels(start.z)))
+
+/datum/eldritch_knowledge/base_tide/proc/other_floor(atom/entry, atom/exit)
+	var/turf/start = get_turf(entry)
+	var/turf/finish = get_turf(exit)
+	return start && finish && start.z != finish.z && drain_reaches(start, finish)
+
+/datum/eldritch_knowledge/base_tide/proc/drains()
+	return breaches + springs
 
 /// Течение удешевляет уход в слив; готовая способность остаётся готовой при смене перезарядки.
 /datum/eldritch_knowledge/base_tide/proc/update_dive()
@@ -263,7 +298,9 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	notify_resource_changed()
 
 /datum/eldritch_knowledge/base_tide/combat_resource_state()
-	return "Сброс сейчас [inward_tide ? "притягивает" : "отталкивает"]. Прорывов: [length(breaches)] из [HERETIC_TIDE_BREACH_LIMIT]."
+	. = "Сброс сейчас [inward_tide ? "притягивает" : "отталкивает"]. Прорывов: [length(breaches)] из [HERETIC_TIDE_BREACH_LIMIT]."
+	if(spring_tide_active())
+		. += " Половодье: открыто источников - [open_sources()], они лечат вас в своей воде."
 
 /datum/eldritch_knowledge/base_tide/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
 	if(!can_use(user) || !proximity_flag || !COOLDOWN_FINISHED(src, resource_harvest) || !heretic_can_affect(user, target, chargecost = 0))
@@ -279,12 +316,20 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 		for(var/mob/living/victim in puddle.loc)
 			if(victim != user)
 				keep_soaked(victim)
-	for(var/atom/source as anything in breaches)
-		var/datum/heretic_tide_breach/breach = breaches[source]
+	for(var/atom/source as anything in drains())
+		var/datum/heretic_tide_breach/breach = breaches[source] || springs[source]
 		for(var/obj/effect/heretic_tide_puddle/breach/puddle as anything in breach.puddles)
 			for(var/mob/living/victim in puddle.loc)
 				if(victim != user)
 					keep_soaked(victim)
+	for(var/obj/effect/heretic_tide_current/cell as anything in current_cells)
+		for(var/mob/living/victim in cell.loc)
+			if(victim != user)
+				keep_soaked(victim)
+	if(submerged)
+		heretic_heal_pool(user, HERETIC_TIDE_DEPTH_HEAL)
+	if(ascension_active && spring_tide_active() && (on_own_water(user) || in_own_flood(user)))
+		heretic_heal_pool(user, open_sources() * HERETIC_TIDE_SPRING_HEAL)
 	var/in_own_sea = in_sea(user) || submerged
 	if(in_own_sea && COOLDOWN_TIMELEFT(src, ascended_pressure) > HERETIC_TIDE_SEA_PRESSURE_INTERVAL)
 		COOLDOWN_START(src, ascended_pressure, HERETIC_TIDE_SEA_PRESSURE_INTERVAL)
@@ -308,7 +353,9 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	if(!heretic || !can_use(user) || QDELETED(source) || !isturf(source.loc) || !is_type_in_typecache(source, water_sources))
 		return FALSE
 	if(source.GetComponent(/datum/component/heretic_craft))
-		grasp_failure_reason = (source in breaches) ? "Здесь прорыв уже открыт: выберите другой источник воды." : "На этом источнике уже лежит чужое ремесло."
+		if(source in breaches)
+			return extend_breach(source, user)
+		grasp_failure_reason = (source in springs) ? "Этот родник половодья и так не иссякнет сам." : "На этом источнике уже лежит чужое ремесло."
 		return FALSE
 	grasp_failure_reason = heretic.deed_wait_reason(heretic.deed_key_for(source))
 	if(grasp_failure_reason)
@@ -318,26 +365,134 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 		log_game("[key_name(user)] теряет прорыв Пучины у [oldest] ([oldest.type]) в [AREACOORD(oldest)]: его вытеснил новый.")
 		close_breach(oldest)
 	source.AddComponent(/datum/component/heretic_craft, src, HERETIC_TIDE_BREACH_CRAFT, HERETIC_TIDE_BREACH_CLUE)
-	breaches[source] = new /datum/heretic_tide_breach(source, src)
+	var/datum/heretic_tide_breach/breach = new(source, src)
+	breaches[source] = breach
+	if(spring_tide_active())
+		breach.make_permanent()
 	playsound(source, 'modular_bluemoon/sound/heretic/tide_breach.ogg', HERETIC_TIDE_BREACH_VOLUME, TRUE)
-	to_chat(user, span_eldritch("Вода в [source] больше не уходит в слив: прорыв открыт на [DisplayTimeText(HERETIC_TIDE_BREACH_LIFETIME)]. Прорывов: [length(breaches)] из [HERETIC_TIDE_BREACH_LIMIT]."))
+	to_chat(user, span_eldritch("Вода в [source] больше не уходит в слив: прорыв открыт [breach.permanent ? "до конца половодья" : "на [DisplayTimeText(HERETIC_TIDE_BREACH_LIFETIME)], Хватка по нему продлит срок"]. Прорывов: [length(breaches)] из [HERETIC_TIDE_BREACH_LIMIT]."))
 	log_game("[key_name(user)] открывает прорыв Пучины у [source] ([source.type]) в [AREACOORD(source)].")
 	heretic.advance_deed(heretic.deed_key_for(source), source)
+	notify_resource_changed()
+	lesson_event("breach", source)
+	return TRUE
+
+/// Продлённый прорыв вытесняется последним.
+/datum/eldritch_knowledge/base_tide/proc/extend_breach(atom/source, mob/living/user)
+	var/datum/heretic_tide_breach/breach = breaches[source]
+	if(breach.permanent)
+		grasp_failure_reason = "Этот прорыв и так не закроется до конца половодья."
+		return FALSE
+	breach.extend()
+	breaches -= source
+	breaches[source] = breach
+	playsound(source, 'modular_bluemoon/sound/heretic/tide_breach.ogg', HERETIC_TIDE_BREACH_VOLUME, TRUE)
+	to_chat(user, span_eldritch("Прорыв в [source] снова полон: он продержится ещё [DisplayTimeText(HERETIC_TIDE_BREACH_LIFETIME)]."))
+	log_game("[key_name(user)] продлевает прорыв Пучины у [source] ([source.type]) в [AREACOORD(source)].")
 	notify_resource_changed()
 	return TRUE
 
 /datum/eldritch_knowledge/base_tide/proc/close_breach(atom/source)
-	if(!(source in breaches))
+	var/datum/heretic_tide_breach/breach = breaches[source] || springs[source]
+	if(!breach)
 		return
-	var/datum/heretic_tide_breach/breach = breaches[source]
+	var/craft_id = breach.spring ? HERETIC_TIDE_SPRING_CRAFT : HERETIC_TIDE_BREACH_CRAFT
 	breaches -= source
+	springs -= source
 	qdel(breach)
-	qdel(heretic_craft_on(source, HERETIC_TIDE_BREACH_CRAFT))
+	qdel(heretic_craft_on(source, craft_id))
+	if(QDELETED(src))
+		return
 	notify_resource_changed()
+	if(spring_tide_active() && !open_sources())
+		recede_spring_tide()
 
 /datum/eldritch_knowledge/base_tide/on_craft_removed(atom/crafted, craft_id)
-	if(craft_id == HERETIC_TIDE_BREACH_CRAFT)
+	if(craft_id == HERETIC_TIDE_BREACH_CRAFT || craft_id == HERETIC_TIDE_SPRING_CRAFT)
 		close_breach(crafted)
+
+/datum/eldritch_knowledge/base_tide/proc/spring_tide_active()
+	return spring_tide && !spring_tide_receded
+
+/datum/eldritch_knowledge/base_tide/proc/open_sources()
+	return length(breaches) + length(springs)
+
+/datum/eldritch_knowledge/base_tide/proc/in_own_flood(mob/living/user)
+	var/datum/component/heretic_tide_flood/flood = user?.GetComponent(/datum/component/heretic_tide_flood)
+	return !!flood?.own_puddle(user.loc)
+
+/datum/eldritch_knowledge/base_tide/proc/start_spring_tide()
+	set waitfor = FALSE
+	if(spring_tide)
+		return
+	raise_spring_tide(spring_candidates())
+
+/datum/eldritch_knowledge/base_tide/proc/spring_candidates()
+	. = list()
+	for(var/obj/machinery/machine as anything in GLOB.machines)
+		if(is_type_in_typecache(machine, water_sources) && spring_site(machine))
+			. += machine
+	for(var/obj/structure/fixture in world)
+		if(is_type_in_typecache(fixture, water_sources) && spring_site(fixture))
+			. += fixture
+		CHECK_TICK
+
+/// Родник бьёт только в общем отсеке самой станции, куда дойдёт любой: не в бриге, не в лаборатории, не в руине и не на шаттле.
+/datum/eldritch_knowledge/base_tide/proc/spring_site(atom/source)
+	if(QDELETED(source) || !isturf(source.loc) || !is_station_level(source.z) || source.GetComponent(/datum/component/heretic_craft))
+		return FALSE
+	var/area/place = get_area(source)
+	return (place.type in GLOB.the_station_areas) && heretic_station_public_area(place)
+
+/// Родники бьют сначала в разных отсеках, оставшиеся места добирают любые источники.
+/datum/eldritch_knowledge/base_tide/proc/raise_spring_tide(list/candidates)
+	if(spring_tide || QDELETED(src))
+		return 0
+	spring_tide = TRUE
+	for(var/atom/source as anything in breaches)
+		var/datum/heretic_tide_breach/breach = breaches[source]
+		breach.make_permanent()
+	var/list/shuffled = shuffle(candidates)
+	var/list/used_areas = list()
+	var/list/spring_areas = list()
+	for(var/pass in 1 to 2)
+		for(var/atom/source as anything in shuffled)
+			if(length(springs) >= HERETIC_TIDE_SPRING_COUNT)
+				break
+			if(QDELETED(source) || !isturf(source.loc) || source.GetComponent(/datum/component/heretic_craft) || !is_type_in_typecache(source, water_sources))
+				continue
+			var/area/place = get_area(source)
+			if(pass == 1 && (place in used_areas))
+				continue
+			used_areas |= place
+			open_spring(source)
+			spring_areas |= get_area_name(source, TRUE)
+	for(var/atom/source as anything in breaches)
+		spring_areas |= get_area_name(source, TRUE)
+	var/where = english_list(spring_areas)
+	log_game("[key_name(tide_body)] начинает половодье Пучины: родников [length(springs)], вечных прорывов [length(breaches)], отсеки: [where].")
+	message_admins("[key_name_admin(tide_body)] начинает половодье Пучины: родников [length(springs)], вечных прорывов [length(breaches)] ([where]).")
+	if(!open_sources())
+		spring_tide_receded = TRUE
+	else
+		priority_announce("Из раковин, душевых и других источников воды на станции бьёт чёрная вода: [where]. Пока источники открыты, вознёсшийся еретик Пучины залечивает раны в своей воде. Перекройте их гаечным ключом, заварите сваркой, уберите шваброй или коснитесь нулевым жезлом.", "Половодье", 'sound/misc/notice1.ogg')
+	notify_resource_changed()
+	return length(springs)
+
+/datum/eldritch_knowledge/base_tide/proc/open_spring(atom/source)
+	source.AddComponent(/datum/component/heretic_craft, src, HERETIC_TIDE_SPRING_CRAFT, HERETIC_TIDE_SPRING_CLUE)
+	springs[source] = new /datum/heretic_tide_breach(source, src, TRUE)
+	new /obj/effect/temp_visual/heretic_tide/burst(get_turf(source))
+	log_game("Половодье Пучины открывает родник у [source] ([source.type]) в [AREACOORD(source)].")
+
+/datum/eldritch_knowledge/base_tide/proc/recede_spring_tide()
+	spring_tide_receded = TRUE
+	log_game("Половодье Пучины ([key_name(tide_body)]) отступает: экипаж перекрыл все источники.")
+	message_admins("Половодье Пучины ([key_name_admin(tide_body)]) отступает: экипаж перекрыл все источники.")
+	priority_announce("Последний источник чёрной воды перекрыт. Половодье отступило: вознёсшийся еретик Пучины больше не залечивает раны в своей воде.", "Половодье отступило", 'sound/misc/notice2.ogg')
+	if(tide_body)
+		to_chat(tide_body, span_userdanger("Последний родник перекрыт: половодье отступило, вода больше не лечит вас."))
+	notify_resource_changed()
 
 /datum/eldritch_knowledge/base_tide/pocket_exits(mob/living/user)
 	. = list()
@@ -361,11 +516,11 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	return heretic.hunt_target_ready(victim) && on_wet_floor(victim)
 
-/// Своя вода - лужи прорывов и моря Обрушения этого знания и весь пол своей изнанки; прилив вознесения сюда не входит.
+/// Своя вода - лужи прорывов, родников, метки и моря этого знания, полоса Течения и весь пол своей изнанки; прилив вознесения сюда не входит.
 /datum/eldritch_knowledge/base_tide/proc/on_own_water(atom/movable/thing)
 	if(!isturf(thing?.loc))
 		return FALSE
-	if(in_own_pocket(thing))
+	if(in_own_pocket(thing) || on_own_current(thing))
 		return TRUE
 	for(var/obj/effect/heretic_tide_puddle/puddle in thing.loc)
 		if(!QDELETED(puddle) && puddle.tide_ref?.resolve() == src)
@@ -397,8 +552,8 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 /datum/eldritch_knowledge/base_tide/proc/drown_block_reason(mob/living/user, atom/target, check_cost = TRUE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/tide_drown)
-	if(!can_use(user) || QDELETED(required))
-		return "Способность недоступна вашему пути или текущему телу."
+	if(QDELETED(required) || !can_use(user))
+		return QDELETED(required) ? "Способность недоступна вашему пути или текущему телу." : use_block_reason(user)
 	var/reason = heretic_capture_block_reason(user, target, HERETIC_TIDE_CAPTURE)
 	if(reason)
 		return reason
@@ -438,6 +593,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 		return FALSE
 	new /obj/effect/temp_visual/heretic_tide/grasp(place)
 	log_combat(user, victim, "заставляет захлебнуться водой Пучины")
+	lesson_event("drown", victim, on_own_water(victim))
 	return TRUE
 
 /datum/eldritch_knowledge/base_tide/proc/create_current(mob/living/user, atom/target)
@@ -446,7 +602,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	var/turf/origin = get_turf(user)
 	var/turf/destination = get_turf(target)
 	if(!can_use(user) || QDELETED(required))
-		tide_failure = "Способность недоступна вашему пути или текущему телу."
+		tide_failure = QDELETED(required) ? "Способность недоступна вашему пути или текущему телу." : use_block_reason(user)
 		return FALSE
 	if(!destination || destination == origin || destination.z != origin.z || get_dist(origin, destination) > HERETIC_TIDE_CURRENT_RANGE)
 		tide_failure = "Укажите другую клетку не дальше восьми клеток от себя."
@@ -464,6 +620,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	current_pulse_timer = addtimer(CALLBACK(src, PROC_REF(current_pulse)), HERETIC_TIDE_CURRENT_INTERVAL, TIMER_STOPPABLE)
 	playsound(origin, GLOB.heretic_tide_event_sounds["current"], 45, TRUE)
 	update_water_haste()
+	lesson_event("current", destination)
 	return TRUE
 
 /datum/eldritch_knowledge/base_tide/proc/current_path(turf/origin, turf/destination)
@@ -509,7 +666,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	update_water_haste()
 
 /datum/eldritch_knowledge/base_tide/proc/adjacent_breach(mob/living/user)
-	for(var/atom/source as anything in breaches)
+	for(var/atom/source as anything in drains())
 		var/turf/place = get_turf(source)
 		if(place?.z == user.z && get_dist(user, place) <= HERETIC_TIDE_DIVE_REACH)
 			return source
@@ -531,15 +688,15 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	if(containment)
 		return containment
 	if(!can_use(user))
-		return "Способность недоступна вашему пути или текущему телу."
+		return use_block_reason(user)
+	var/list/network = drains()
 	var/turf/entry = get_turf(from_breach)
-	if(!(from_breach in breaches) || entry?.z != user.z || get_dist(user, entry) > HERETIC_TIDE_DIVE_REACH)
+	if(!(from_breach in network) || entry?.z != user.z || get_dist(user, entry) > HERETIC_TIDE_DIVE_REACH)
 		return "Встаньте вплотную к своему прорыву."
-	if(!(to_breach in breaches) || to_breach == from_breach)
+	if(!(to_breach in network) || to_breach == from_breach)
 		return "Выйти можно только у другого своего прорыва."
-	var/turf/exit_place = get_turf(to_breach)
-	if(exit_place?.z != user.z)
-		return "Этот прорыв на другом уровне: слив ведёт только к прорывам на вашем уровне."
+	if(!drain_reaches(entry, to_breach))
+		return "Этот прорыв на другом уровне, не связанном с вашим: слив ведёт только по этажам одной станции."
 	if(user.buckled || user.anchored || HAS_TRAIT(user, TRAIT_NO_TELEPORT))
 		return "Вас что-то держит на месте: уйти в воду не выйдет."
 	var/turf/exit = dive_exit(to_breach)
@@ -549,8 +706,9 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	var/area/exit_area = get_area(exit)
 	if((origin_area.area_flags & NOTELEPORT) || (exit_area.area_flags & NOTELEPORT))
 		return "Здесь вода не пропустит: вход или выход в зоне, закрытой для телепортации."
-	if(combat_resource < dive_cost())
-		return "Нужно [dive_cost()] давления."
+	var/cost = dive_cost(from_breach, to_breach)
+	if(combat_resource < cost)
+		return other_floor(from_breach, to_breach) ? "Нужно [cost] давления: переход на другой этаж стоит на [HERETIC_TIDE_DIVE_FLOOR_COST] дороже." : "Нужно [cost] давления."
 	return null
 
 /datum/eldritch_knowledge/base_tide/proc/dive_ready(mob/living/user, atom/from_breach, atom/to_breach)
@@ -564,13 +722,14 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	new /obj/effect/temp_visual/heretic_tide/wave(get_turf(user))
 	playsound(from_breach, 'modular_bluemoon/sound/heretic/tide_dive.ogg', HERETIC_TIDE_BREACH_VOLUME, TRUE)
 	var/list/sinking = heretic_tide_immerse(user, HERETIC_TIDE_WADE_CHEST)
-	var/sunk_in = do_after(user, HERETIC_TIDE_DIVE_TIME, target = from_breach, extra_checks = CALLBACK(src, PROC_REF(dive_ready), user, from_breach, to_breach))
+	var/sink_time = dive_time(from_breach, to_breach)
+	var/sunk_in = do_after(user, sink_time, target = from_breach, extra_checks = CALLBACK(src, PROC_REF(dive_ready), user, from_breach, to_breach))
 	heretic_tide_unimmerse(sinking)
 	if(!sunk_in)
-		tide_failure = dive_failure(user, from_breach, to_breach) || "Погружение прервано: полторы секунды стойте у прорыва неподвижно."
+		tide_failure = dive_failure(user, from_breach, to_breach) || "Погружение прервано: до конца погружения стойте у прорыва неподвижно."
 		return FALSE
 	tide_failure = dive_failure(user, from_breach, to_breach)
-	var/cost = dive_cost()
+	var/cost = dive_cost(from_breach, to_breach)
 	if(tide_failure || !spend_combat_resource(cost))
 		return FALSE
 	var/turf/origin = get_turf(user)
@@ -581,8 +740,9 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 		return FALSE
 	new /obj/effect/temp_visual/heretic_tide/burst(exit)
 	playsound(exit, 'modular_bluemoon/sound/heretic/tide_emerge.ogg', HERETIC_TIDE_BREACH_VOLUME, TRUE)
-	log_game("[key_name(user)] уходит в слив Пучины из [AREACOORD(origin)] к [to_breach] в [AREACOORD(exit)].")
+	log_game("[key_name(user)] уходит в слив Пучины из [AREACOORD(origin)] к [to_breach] в [AREACOORD(exit)][origin.z != exit.z ? " через этажи" : ""].")
 	update_water_haste()
+	lesson_event("dive", to_breach)
 	return TRUE
 
 /datum/eldritch_knowledge/base_tide/proc/line_clear(atom/start, atom/end, max_distance = HERETIC_TIDE_RANGE)
@@ -648,7 +808,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	submerged = TRUE
 	depth_water = heretic_tide_immerse(tide_body, HERETIC_TIDE_WADE_KNEE)
 	tide_body.throw_alert(HERETIC_TIDE_DEPTH_ALERT, /atom/movable/screen/alert/heretic_tide_depth)
-	tide_body.visible_message(span_warning("[tide_body] замирает, и чёрная вода поднимается вокруг него."), span_notice("Вы ушли на глубину: следующий Сброс бесплатный и бьёт на клетку дальше, давление копится быстрее. Шаг поднимет вас."))
+	tide_body.visible_message(span_warning("[tide_body] замирает, и чёрная вода поднимается вокруг него: раны под ней затягиваются, пока он стоит."), span_notice("Вы ушли на глубину: раны затягиваются, следующий Сброс бесплатный и бьёт на клетку дальше, давление копится быстрее. Шаг поднимет вас."))
 	playsound(tide_body, 'modular_bluemoon/sound/heretic/tide_dive.ogg', HERETIC_TIDE_GURGLE_VOLUME, TRUE, SILENCED_SOUND_EXTRARANGE)
 	return TRUE
 
@@ -669,9 +829,13 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 			continue
 		var/obj/effect/heretic_tide_puddle/sea/puddle
 		for(var/obj/effect/heretic_tide_puddle/sea/existing in tile)
-			if(existing.tide_ref?.resolve() == src)
-				puddle = existing
-				break
+			if(existing.tide_ref?.resolve() != src)
+				continue
+			if(istype(existing, /obj/effect/heretic_tide_puddle/sea/mark))
+				qdel(existing)
+				continue
+			puddle = existing
+			break
 		if(puddle)
 			puddle.refresh()
 		else
@@ -680,6 +844,20 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 			if(victim != tide_body)
 				keep_soaked(victim)
 	update_water_haste()
+
+/// Взрыв метки выплёскивает под целью клетку своей воды; уже стоящую свою воду он не подменяет.
+/datum/eldritch_knowledge/base_tide/proc/pool_under(mob/living/victim)
+	var/turf/open/place = victim.loc
+	if(!istype(place) || isgroundlessturf(place) || istype(place, /turf/open/lava))
+		return null
+	for(var/obj/effect/heretic_tide_puddle/puddle in place)
+		if(QDELETED(puddle) || puddle.tide_ref?.resolve() != src)
+			continue
+		if(istype(puddle, /obj/effect/heretic_tide_puddle/sea/mark))
+			puddle.refresh()
+		return puddle
+	. = new /obj/effect/heretic_tide_puddle/sea/mark(place, src)
+	keep_soaked(victim)
 
 /datum/eldritch_knowledge/base_tide/proc/wet_floor(turf/open/place)
 	if(!istype(place) || isspaceturf(place) || istype(place, /turf/open/lava))
@@ -873,7 +1051,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	if(sinking)
 		return HERETIC_TIDE_WADE_CHEST
 	var/datum/eldritch_knowledge/base_tide/tide = tide_ref?.resolve()
-	if(tide?.in_own_pocket(owner))
+	if(tide?.in_own_pocket(owner) || tide?.on_own_current(owner))
 		return HERETIC_TIDE_WADE_KNEE
 	for(var/obj/effect/heretic_tide_puddle/puddle in owner.loc)
 		if(!QDELETED(puddle))
@@ -942,6 +1120,8 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	if(tide?.can_use(tide.tide_body) && heretic_can_affect(tide.tide_body, owner, chargecost = 0))
 		owner.adjustBruteLoss(8)
 		owner.adjustStaminaLoss(12)
+		tide.pool_under(owner)
+		tide.lesson_event("mark", owner)
 	return ..()
 
 /obj/structure/heretic_tide_well
@@ -1244,7 +1424,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 /obj/effect/proc_holder/spell/self/heretic_tide/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_tide/tide = heretic?.get_knowledge(/datum/eldritch_knowledge/base_tide)
-	return ..() && heretic_check(user, tide?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
+	return ..() && heretic_check(user, tide?.can_use(user), silent, tide?.use_block_reason(user) || "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/heretic_tide/release
 	name = "Сброс давления"
@@ -1285,7 +1465,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 /obj/effect/proc_holder/spell/pointed/heretic_tide/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_tide/tide = heretic?.get_knowledge(/datum/eldritch_knowledge/base_tide)
-	return ..() && heretic_check(user, tide?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
+	return ..() && heretic_check(user, tide?.can_use(user), silent, tide?.use_block_reason(user) || "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -1335,7 +1515,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/drown
 	name = "Захлебнуться"
-	desc = "За 2 давления вода секунду смыкается вокруг цели на мокром полу в 4 клетках. Если цель не сошла с клетки, она 5 секунд захлёбывается: ни голоса, ни рации, 6 удушья в секунду, за захлёб до 30. В вашей воде - прорыв, море, изнанка - захлёб тянет на дно: цель лежит и еле ползёт. Если к концу она ещё на мокром полу, то теряет сознание на 10 секунд. Захват рвётся, если цель полторы секунды пробудет на сухом полу, выпьет святой воды или её обольют ею, коснутся нулевым жезлом, растолкают за 2 секунды или у неё окажется защита от магии."
+	desc = "За 2 давления вода секунду смыкается вокруг цели на мокром полу в 4 клетках. Если цель не сошла с клетки, она 5 секунд захлёбывается: ни голоса, ни рации, 6 удушья в секунду, за захлёб до 30. В вашей воде - прорыв, вода метки, полоса Течения, море, изнанка - захлёб тянет на дно: цель лежит и еле ползёт. Если к концу она ещё на мокром полу, то теряет сознание на 10 секунд. Захват рвётся, если цель полторы секунды пробудет на сухом полу, выпьет святой воды или её обольют ею, коснутся нулевым жезлом, растолкают за 2 секунды или у неё окажется защита от магии."
 	summary = "Через секунду цель на мокром полу 5 секунд захлёбывается, в вашей воде лежит на дне; 2 давления."
 	range = HERETIC_TIDE_DROWN_RANGE
 	charge_max = HERETIC_TIDE_DROWN_COOLDOWN
@@ -1359,8 +1539,8 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/current
 	name = "Течение"
-	desc = "На 20 секунд пускает полосу течения от вас к клетке не дальше 8 клеток: раз в секунду она сносит лежащих и брошенные вещи, а вас ускоряет. Давление не тратит, перезарядка 30 секунд."
-	summary = "Полоса течения на 20 секунд сносит лежащих и вещи и ускоряет вас."
+	desc = "На 20 секунд пускает полосу течения от вас к клетке не дальше 8 клеток. Полоса - ваша вода: враги на ней мокнут, Захлёб на ней тянет на дно. Раз в секунду она сносит лежащих и брошенные вещи, а вас ускоряет. Давление не тратит, перезарядка 30 секунд."
+	summary = "Полоса вашей воды на 20 секунд: мочит врагов, сносит лежащих и вещи, ускоряет вас."
 	range = HERETIC_TIDE_CURRENT_RANGE
 	charge_max = HERETIC_TIDE_CURRENT_COOLDOWN
 	active_msg = "Укажите, куда потечёт вода."
@@ -1378,8 +1558,8 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 
 /obj/effect/proc_holder/spell/self/heretic_tide/dive
 	name = "Уйти в слив"
-	desc = "Вплотную к своему прорыву выберите другой свой прорыв на этом уровне: через полторы секунды вы выходите у него. Стоит 2 давления, перезарядка 60 секунд; со знанием «Течение» - 1 давление и 30 секунд."
-	summary = "От своего прорыва к другому за 1,5 секунды; 2 давления, с Течением 1."
+	desc = "Вплотную к своему прорыву выберите другой свой прорыв: через полторы секунды вы выходите у него. Стоит 2 давления, перезарядка 60 секунд; со знанием «Течение» - 1 давление и 30 секунд. Прорыв на другом этаже той же станции: +1 давление и 3 секунды погружения. Работает из слабого захвата, но не из крепкого."
+	summary = "От своего прорыва к другому за 1,5 секунды, на другой этаж за 3; 2 давления, с Течением 1."
 	charge_max = HERETIC_TIDE_DIVE_COOLDOWN
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "tide_dive"
@@ -1392,12 +1572,17 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 		heretic_revert_cast(user, "Встаньте вплотную к своему прорыву.")
 		return
 	var/list/exits = list()
-	for(var/atom/source as anything in tide.breaches)
+	var/list/stack = SSmapping.get_connected_levels(user.z)
+	for(var/atom/source as anything in tide.drains())
 		var/turf/place = get_turf(source)
-		if(source != from_breach && place?.z == user.z)
-			exits["[length(exits) + 1]. [source.name]: [get_area_name(source, TRUE)]"] = source
+		if(source == from_breach || !tide.drain_reaches(user, place))
+			continue
+		var/floor = ""
+		if(place.z != user.z)
+			floor = stack.Find(place.z) > stack.Find(user.z) ? " (этаж выше, +[HERETIC_TIDE_DIVE_FLOOR_COST] давления)" : " (этаж ниже, +[HERETIC_TIDE_DIVE_FLOOR_COST] давления)"
+		exits["[length(exits) + 1]. [source.name]: [get_area_name(source, TRUE)][floor]"] = source
 	if(!length(exits))
-		heretic_revert_cast(user, "Нужен второй прорыв на этом же уровне: выйти можно только у другого своего прорыва.")
+		heretic_revert_cast(user, "Нужен второй прорыв на этом уровне или на другом этаже станции: выйти можно только у другого своего прорыва.")
 		return
 	var/choice = length(exits) == 1 ? exits[1] : tgui_input_list(user, "У какого прорыва выйти?", name, exits)
 	if(QDELETED(src))
@@ -1436,7 +1621,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 		"Цель в 4 клетках по открытой линии должна стоять в вашей воде или в водяной луже, хоть от Сброса; мокрой одежды мало.",
 		"Вода смыкается секунду: если цель сошла с клетки, захлёба нет, давление потрачено.",
 		"Цель немеет: ни голоса, ни рации; 6 удушья в секунду, за захлёб до 30, выше 50 не поднимает и не убивает.",
-		"В вашей воде - прорыв, море, изнанка - захлёб тянет на дно: цель лежит и еле ползёт, пока не выберется.",
+		"В вашей воде - прорыв, метка, Течение, море, изнанка - захлёб тянет на дно: цель лежит и еле ползёт.",
 		"Если к концу цель на мокром полу, она без сознания 10 секунд; сердце уводит её с первой секунды захлёба.",
 		"Срывают 1,5 секунды на сухом, святая вода в крови или облитие, жезл, растолкать за 2 секунды, антимагия, ваша смерть.",
 		"Потом цель до минуты невосприимчива к захлёбу, к любому захвату - 15 секунд. Перезарядка 40 секунд.",
@@ -1449,11 +1634,12 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 
 /datum/eldritch_knowledge/tide_mark
 	name = "Метка Пучины"
-	summary = "Хватка ставит метку на 15 секунд, удар гарпуном её взрывает."
+	summary = "Хватка ставит метку на 15 секунд; удар гарпуном её взрывает и разливает под целью вашу воду."
 	details = list(
 		"На груди цели висит якорь чёрной воды; удар гарпуном обрывает его на дно.",
-		"Взрыв: 8 ушибов и 12 выносливости.",
-		"Владелец клинка получает единицу давления.",
+		"Взрыв: 8 ушибов, 12 выносливости и единица давления владельцу клинка.",
+		"Под целью на 9 секунд остаётся клетка вашей чёрной воды: она мочит, а Захлёб на ней тянет на дно.",
+		"Так полный Захлёб возможен вдали от раковин; сошедшая с клетки цель из воды выходит.",
 	)
 	role = HERETIC_ROLE_MARK
 	gain_text = "Вода отступила, оставив на коже очертания невозможного берега."
@@ -1494,9 +1680,10 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 
 /datum/eldritch_knowledge/spell/tide_current
 	name = "Течение"
-	summary = "Полоса течения на 20 секунд сносит лежащих и вещи, ускоряет вас и удешевляет уход в слив."
+	summary = "Полоса вашей воды на 20 секунд сносит лежащих и вещи, ускоряет вас и удешевляет уход в слив."
 	details = list(
-		"Укажите клетку не дальше 8 клеток: полоса ложится от вас к ней.",
+		"Укажите клетку не дальше 8 клеток: полоса ложится от вас к ней и считается вашей водой.",
+		"Враги на полосе мокнут, Захлёб на ней тянет на дно, а утопающего течение уносит к концу полосы.",
 		"Раз в секунду сносит лежащих и брошенные вещи на клетку; стоящих, пристёгнутых и защищённых антимагией не трогает.",
 		"Стены, закрытые двери, окна и машины обрывают полосу; новое течение заменяет прежнее.",
 		"Без давления, перезарядка 30 секунд.",
@@ -1532,10 +1719,10 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 
 /datum/eldritch_knowledge/tide_depth
 	name = "Тысяча саженей"
-	summary = "Запас давления растёт до 5; неподвижно в своей воде вы уходите на глубину и бьёте оттуда Сбросом даром."
+	summary = "Запас давления до 5; неподвижно в своей воде вы уходите на глубину: там лечитесь и бьёте Сбросом даром."
 	details = list(
-		"Постойте 2 секунды неподвижно в своей воде - прорыв, море или изнанка: вы уходите на глубину.",
-		"На глубине давление возвращается раз в 4 секунды, экипаж видит вас по колено в чёрной воде.",
+		"Постойте 2 секунды неподвижно в своей воде - прорыв, метка, Течение, море или изнанка: вы уходите на глубину.",
+		"На глубине вы лечите 2 ушиба или ожога в секунду, давление возвращается раз в 4 секунды; вас видно по колено в воде.",
 		"Сброс с глубины бесплатный и бьёт на клетку дальше; он или любой шаг поднимают вас.",
 		"Запас 5, единица за 10 секунд; улучшения: запас 6 и 7, восстановление за 8 и 6 секунд.",
 		"Вознесение даёт запас 8 и восстановление за 4 секунды.",
@@ -1577,15 +1764,15 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 
 /datum/eldritch_knowledge/final_eldritch/tide_final
 	name = "Владыка Пучины"
-	summary = "Пол вокруг вас заливает чёрная вода, давление растёт, открывается Голос Пучины."
+	summary = "Половодье по всей станции, вода у ваших ног, давление растёт, открывается Голос Пучины."
 	details = list(
 		"Нужны 3 назначенные души и 3 человеческих трупа на руне станции; станция узнаёт место обряда, он длится 30 секунд.",
-		"Общая стойкость вознесения, запас давления 8, единица за 4 секунды.",
-		"Каждые 2 секунды вода заливает пол в 2 клетках, шаги оставляют лужи; без обновления вода уходит за 4 секунды.",
-		"Стены, закрытые двери, окна и машины воду держат, столы и перила пропускают.",
-		"Враги в воде мокнут на 8 секунд и замедляются, пока стоят в ней; вы по ней быстрее, пол не скользкий.",
+		"Общая стойкость вознесения, запас давления 8, единица за 4 секунды; пол в 2 клетках вокруг вас залит водой.",
+		"Половодье: прорывы не иссякают, в 6 источниках воды общих отсеков - коридоров, уборных, бара - бьют родники.",
+		"Каждый открытый прорыв или родник лечит вас на 0,5 в секунду, пока вы стоите в воде; станция узнаёт об этом.",
+		"Экипаж закрывает источники ключом, сваркой, шваброй или нулевым жезлом; последний закрытый кончает половодье.",
 		"Голос Пучины раз в 30 секунд: 30 ушибов, 40 выносливости, падение на 3 секунды и снос на 3 клетки.",
-		"Пристёгнутых и закреплённых волна не сносит. Смерть снимает усиления, оживление возвращает.",
+		"Враги в вашей воде мокнут и вязнут; её держат стены, двери, окна и машины. Смерть снимает усиления.",
 	)
 	role = HERETIC_ROLE_ASCENSION
 	gain_text = "Берег исчез. Осталось только моё дыхание, и море дышало вместе со мной. Теперь оно разливалось у моих ног, куда бы я ни шёл."
@@ -1606,6 +1793,21 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	tide.ascension_active = TRUE
 	tide.update_capacity()
 	user.AddComponent(/datum/component/heretic_tide_flood, tide)
+
+/// Половодье начинается один раз, с самого обряда: оживление и смена тела его не повторяют.
+/datum/eldritch_knowledge/final_eldritch/tide_final/on_finished_recipe(mob/living/user, list/atoms, loc)
+	. = ..()
+	if(!. || simulated)
+		return
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_tide/tide = heretic?.get_knowledge(/datum/eldritch_knowledge/base_tide)
+	tide?.start_spring_tide()
+
+/datum/eldritch_knowledge/final_eldritch/tide_final/on_ascended_examine(datum/source, mob/examiner, list/examine_list)
+	. = ..()
+	var/datum/eldritch_knowledge/base_tide/tide = tide_knowledge_ref?.resolve()
+	if(tide?.spring_tide_active() && tide.open_sources())
+		examine_list += span_warning("Раны на нём затягиваются чёрной водой: пока из источников воды на станции бьют родники и открыты его прорывы, он лечится в своей воде. Источников открыто: [tide.open_sources()]. Перекройте их ключом, сваркой, шваброй или нулевым жезлом.")
 
 /datum/eldritch_knowledge/final_eldritch/tide_final/on_body_lose(mob/living/user)
 	var/mob/living/body = applied_body || user
@@ -1828,9 +2030,14 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	if(tide && arrived != tide.tide_body)
 		tide.keep_soaked(arrived)
 
+/// Вода из взорванной метки: одна клетка ненадолго, но это своя вода, и Захлёб на ней тянет на дно.
+/obj/effect/heretic_tide_puddle/sea/mark
+	desc = "Чёрная вода выплеснулась из метки Пучины и стоит лужей на одной клетке. Вошедший в неё намокает и замедляется, а захлёбывающегося она тянет на дно. Через несколько секунд вода уходит."
+	lifetime = HERETIC_TIDE_MARK_WATER_TIME
+
 /// Вода прорыва держится, пока источник открыт: прорыв обновляет её раньше, чем она уйдёт.
 /obj/effect/heretic_tide_puddle/breach
-	desc = "Чёрная вода натекла из прорыва и не уходит в слив. Вошедший в неё намокает и замедляется. Прорыв закрывают гаечным ключом или нулевым жезлом по источнику воды."
+	desc = "Чёрная вода натекла из прорыва и не уходит в слив. Вошедший в неё намокает и замедляется. Прорыв закрывают гаечным ключом, сваркой, шваброй или нулевым жезлом по источнику воды."
 	lifetime = HERETIC_TIDE_BREACH_WATER_TIME
 	var/datum/weakref/breach_ref
 
@@ -1861,12 +2068,20 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	var/list/obj/effect/heretic_tide_puddle/breach/puddles = list()
 	var/refresh_timer
 	var/expiry_timer
+	/// Без срока: родник половодья или прорыв, который половодье сделало вечным.
+	var/permanent = FALSE
+	var/spring = FALSE
 
-/datum/heretic_tide_breach/New(atom/source, datum/eldritch_knowledge/base_tide/tide)
+/datum/heretic_tide_breach/New(atom/source, datum/eldritch_knowledge/base_tide/tide, spring = FALSE)
 	src.source = source
 	src.tide = tide
-	expiry_timer = addtimer(CALLBACK(src, PROC_REF(expire)), HERETIC_TIDE_BREACH_LIFETIME, TIMER_STOPPABLE)
+	src.spring = spring
+	if(spring)
+		permanent = TRUE
+	else
+		expiry_timer = addtimer(CALLBACK(src, PROC_REF(expire)), HERETIC_TIDE_BREACH_LIFETIME, TIMER_STOPPABLE)
 	RegisterSignal(source, COMSIG_ATOM_TOOL_ACT(TOOL_WRENCH), PROC_REF(on_wrench))
+	RegisterSignal(source, COMSIG_ATOM_TOOL_ACT(TOOL_WELDER), PROC_REF(on_weld))
 	RegisterSignal(source, COMSIG_ATOM_ITEM_INTERACTION, PROC_REF(on_item_interaction))
 	flood()
 
@@ -1875,7 +2090,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	deltimer(expiry_timer)
 	refresh_timer = null
 	expiry_timer = null
-	UnregisterSignal(source, list(COMSIG_ATOM_TOOL_ACT(TOOL_WRENCH), COMSIG_ATOM_ITEM_INTERACTION))
+	UnregisterSignal(source, list(COMSIG_ATOM_TOOL_ACT(TOOL_WRENCH), COMSIG_ATOM_TOOL_ACT(TOOL_WELDER), COMSIG_ATOM_ITEM_INTERACTION))
 	var/list/old_puddles = puddles
 	puddles = list()
 	QDEL_LIST(old_puddles)
@@ -1889,6 +2104,8 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	var/turf/center = get_turf(source)
 	if(!center)
 		return
+	if(spring)
+		playsound(source, 'modular_bluemoon/sound/heretic/tide_breach.ogg', HERETIC_TIDE_SPRING_VOLUME, TRUE)
 	for(var/turf/open/tile in RANGE_TURFS(HERETIC_TIDE_BREACH_RADIUS, center))
 		if(isgroundlessturf(tile) || istype(tile, /turf/open/lava) || !tide.line_clear(center, tile, HERETIC_TIDE_BREACH_RADIUS))
 			continue
@@ -1911,32 +2128,66 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 /datum/heretic_tide_breach/proc/expire()
 	tide.close_breach(source)
 
+/datum/heretic_tide_breach/proc/extend()
+	if(permanent)
+		return FALSE
+	deltimer(expiry_timer)
+	expiry_timer = addtimer(CALLBACK(src, PROC_REF(expire)), HERETIC_TIDE_BREACH_LIFETIME, TIMER_STOPPABLE)
+	flood()
+	return TRUE
+
+/datum/heretic_tide_breach/proc/make_permanent()
+	permanent = TRUE
+	deltimer(expiry_timer)
+	expiry_timer = null
+
 /datum/heretic_tide_breach/proc/on_wrench(atom/target, mob/living/user, obj/item/tool)
 	SIGNAL_HANDLER
-	close_by_wrench(user, tool)
+	close_by_hand(user, tool, "перекрывает [source] гаечным ключом", "гаечным ключом")
 	return TOOL_ACT_MELEE_CHAIN_BLOCKING
 
-/// Раковина разбирается ключом и моет предметы прямо в attackby, поэтому ключ и жезл перехватываются до него.
+/datum/heretic_tide_breach/proc/on_weld(atom/target, mob/living/user, obj/item/tool)
+	SIGNAL_HANDLER
+	weld_shut(user, tool)
+	return TOOL_ACT_MELEE_CHAIN_BLOCKING
+
+/// Раковина разбирается ключом и моет предметы прямо в attackby, поэтому ключ, сварка, швабра и жезл перехватываются до него.
 /datum/heretic_tide_breach/proc/on_item_interaction(atom/target, mob/living/user, obj/item/tool, params)
 	SIGNAL_HANDLER
 	if(tool.tool_behaviour == TOOL_WRENCH)
-		close_by_wrench(user, tool)
+		close_by_hand(user, tool, "перекрывает [source] гаечным ключом", "гаечным ключом")
+		return TOOL_ACT_MELEE_CHAIN_BLOCKING
+	if(tool.tool_behaviour == TOOL_WELDER)
+		weld_shut(user, tool)
+		return TOOL_ACT_MELEE_CHAIN_BLOCKING
+	if(istype(tool, /obj/item/mop))
+		close_by_hand(user, tool, "вычерпывает шваброй чёрную воду из [source]", "шваброй")
 		return TOOL_ACT_MELEE_CHAIN_BLOCKING
 	if(!istype(tool, /obj/item/nullrod))
 		return NONE
-	var/datum/component/heretic_craft/craft = heretic_craft_on(source, HERETIC_TIDE_BREACH_CRAFT)
+	var/datum/component/heretic_craft/craft = heretic_craft_on(source, spring ? HERETIC_TIDE_SPRING_CRAFT : HERETIC_TIDE_BREACH_CRAFT)
 	craft?.on_attackby(source, tool, user, params)
 	return TOOL_ACT_MELEE_CHAIN_BLOCKING
 
-/datum/heretic_tide_breach/proc/close_by_wrench(mob/living/user, obj/item/tool)
-	tool.play_tool_sound(source)
-	user.visible_message(span_warning("[user] перекрывает [source] гаечным ключом, и чёрная вода уходит в слив."), span_notice("Вы перекрываете [source], и чёрная вода уходит в слив."))
-	log_game("[key_name(user)] закрывает прорыв Пучины у [source] ([source.type]) гаечным ключом в [AREACOORD(source)].")
+/datum/heretic_tide_breach/proc/weld_shut(mob/living/user, obj/item/tool)
+	if(!tool.use(1))
+		to_chat(user, span_warning("Чтобы заварить [source], нужна зажжённая сварка с топливом."))
+		return FALSE
+	close_by_hand(user, tool, "заваривает слив [source]", "сваркой")
+	return TRUE
+
+/datum/heretic_tide_breach/proc/close_by_hand(mob/living/user, obj/item/tool, action, method)
+	if(tool.usesound)
+		tool.play_tool_sound(source)
+	else
+		playsound(source, GLOB.heretic_tide_event_sounds["drain"], HERETIC_TIDE_WELL_DRAIN_VOLUME, TRUE)
+	user.visible_message(span_warning("[user] [action], и чёрная вода уходит в слив."), span_notice("Вы закрываете [spring ? "родник" : "прорыв"] у [source], и чёрная вода уходит в слив."))
+	log_game("[key_name(user)] закрывает [spring ? "родник половодья" : "прорыв"] Пучины у [source] ([source.type]) [method] в [AREACOORD(source)].")
 	tide.close_breach(source)
 
 /obj/effect/heretic_tide_current
 	name = "abyssal current"
-	desc = "По полу тянется тёмная полоса воды и течёт в одну сторону. Лежащих и брошенные вещи она раз в секунду сносит на клетку к своему концу; стоящим не мешает. Течение держится 20 секунд."
+	desc = "По полу тянется тёмная полоса воды и течёт в одну сторону. Стоящих на ней она мочит и замедляет, а лежащих и брошенные вещи раз в секунду сносит на клетку к своему концу. Захлёбывающегося в ней тянет на дно. Течение держится 20 секунд."
 	icon = 'modular_bluemoon/icons/obj/heretic_tide_effects.dmi'
 	icon_state = "tide_current"
 	anchored = TRUE
@@ -1954,6 +2205,16 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 	setDir(direction)
 	src.terminal = terminal
 	RegisterSignal(loc, COMSIG_PARENT_EXAMINE, PROC_REF(on_floor_examine))
+
+/obj/effect/heretic_tide_current/Destroy()
+	var/turf/place = loc
+	tide_ref = null
+	. = ..()
+	if(!isturf(place))
+		return
+	for(var/mob/living/wader in place)
+		var/datum/status_effect/heretic_drenched/water = wader.has_status_effect(/datum/status_effect/heretic_drenched)
+		water?.update_immersion()
 
 /obj/effect/heretic_tide_current/proc/on_floor_examine(turf/source, mob/user, list/examine_list)
 	SIGNAL_HANDLER
@@ -2150,7 +2411,7 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 
 /atom/movable/screen/alert/heretic_tide_depth
 	name = "Тысяча саженей"
-	desc = "Вы на глубине своей воды: следующий Сброс бесплатный и бьёт на клетку дальше, давление возвращается раз в 4 секунды. Шаг, Сброс или смерть поднимают вас."
+	desc = "Вы на глубине своей воды: раны затягиваются на 2 в секунду, следующий Сброс бесплатный и бьёт на клетку дальше, давление возвращается раз в 4 секунды. Шаг, Сброс или смерть поднимают вас."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "tide_depth"
 
@@ -2194,6 +2455,9 @@ GLOBAL_LIST_INIT(heretic_tide_event_sounds, list(
 #undef HERETIC_TIDE_BREACH_CRAFT
 #undef HERETIC_TIDE_BREACH_CLUE
 #undef HERETIC_TIDE_BREACH_WATER_TIME
+#undef HERETIC_TIDE_SPRING_CRAFT
+#undef HERETIC_TIDE_SPRING_CLUE
+#undef HERETIC_TIDE_SPRING_VOLUME
 #undef HERETIC_TIDE_CAPTURE
 #undef HERETIC_TIDE_DROWN_RANGE
 #undef HERETIC_TIDE_DROWN_COST
