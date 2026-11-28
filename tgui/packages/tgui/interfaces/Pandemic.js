@@ -5,6 +5,25 @@ import { useBackend } from '../backend';
 import { Box, Button, Collapsible, Grid, Input, LabeledList, NoticeBox, Section, Stack, Table } from '../components';
 import { Window } from '../layouts';
 
+const bloodDnaLabels = new Map([
+  ['none', 'Нет данных'],
+  ['SYNTHESIZED', 'Синтезирована'],
+  ['REPLICATED', 'Скопирована'],
+]);
+
+const diseaseDetailsLabels = new Map([
+  ['none', '—'],
+  ['None', 'Нет'],
+  ['Unknown', 'Неизвестно'],
+  ['Blood', 'Через кровь'],
+  ['Fluids', 'Через биологические жидкости'],
+  ['On contact', 'При контакте'],
+  ['Airborne', 'Воздушно-капельный'],
+  ['advance microbes', 'Модифицированные микроорганизмы'],
+  ['An engineered disease which can contain a multitude of symptoms.',
+    'Искусственно созданное заболевание, которое может проявляться множеством симптомов.'],
+]);
+
 export const PandemicBeakerDisplay = (props) => {
   const { act, data } = useBackend();
   const {
@@ -13,26 +32,27 @@ export const PandemicBeakerDisplay = (props) => {
     has_blood,
     blood,
   } = data;
+  const { dna, type } = blood || {};
   const cant_empty = !has_beaker || beaker_empty;
   return (
     <Section
-      title="Beaker"
+      title="Ёмкость"
       buttons={(
         <>
           <Button
             icon="times"
-            content="Empty and Eject"
+            content="Опорожнить и извлечь"
             color="bad"
             disabled={cant_empty}
             onClick={() => act('empty_eject_beaker')} />
           <Button
             icon="trash"
-            content="Empty"
+            content="Опорожнить"
             disabled={cant_empty}
             onClick={() => act('empty_beaker')} />
           <Button
             icon="eject"
-            content="Eject"
+            content="Извлечь"
             disabled={!has_beaker}
             onClick={() => act('eject_beaker')} />
         </>
@@ -41,26 +61,26 @@ export const PandemicBeakerDisplay = (props) => {
         !beaker_empty ? (
           has_blood ? (
             <LabeledList>
-              <LabeledList.Item label="Blood DNA">
-                {(blood && blood.dna) || 'Unknown'}
+              <LabeledList.Item label="ДНК крови">
+                {bloodDnaLabels.get(dna) || dna || 'Неизвестно'}
               </LabeledList.Item>
-              <LabeledList.Item label="Blood Type">
-                {(blood && blood.type) || 'Unknown'}
+              <LabeledList.Item label="Группа крови">
+                {type === 'none' ? 'Нет данных' : type || 'Неизвестно'}
               </LabeledList.Item>
             </LabeledList>
           ) : (
             <Box color="bad">
-              No blood detected
+              Кровь не обнаружена.
             </Box>
           )
         ) : (
           <Box color="bad">
-            Beaker is empty
+            Ёмкость пуста.
           </Box>
         )
       ) : (
         <NoticeBox>
-          No beaker loaded
+          Ёмкость не установлена.
         </NoticeBox>
       )}
     </Section>
@@ -100,7 +120,7 @@ export const PandemicDiseaseDisplay = (props) => {
                         buttons={(
                           <Button
                             icon="flask"
-                            content="Create culture bottle"
+                            content="Создать флакон с культурой"
                             disabled={!is_ready}
                             onClick={() => act('create_culture_bottle', {
                               index: virus.index,
@@ -108,18 +128,18 @@ export const PandemicDiseaseDisplay = (props) => {
                         )}>
                         <Grid>
                           <Grid.Column>
-                            {virus.description}
+                            {diseaseDetailsLabels.get(virus.description) || virus.description}
                           </Grid.Column>
                           <Grid.Column>
                             <LabeledList>
-                              <LabeledList.Item label="Agent">
-                                {virus.agent}
+                              <LabeledList.Item label="Возбудитель">
+                                {diseaseDetailsLabels.get(virus.agent) || virus.agent}
                               </LabeledList.Item>
-                              <LabeledList.Item label="Spread">
-                                {virus.spread}
+                              <LabeledList.Item label="Путь передачи">
+                                {diseaseDetailsLabels.get(virus.spread) || virus.spread}
                               </LabeledList.Item>
-                              <LabeledList.Item label="Possible Cure">
-                                {virus.cure}
+                              <LabeledList.Item label="Возможное лекарство">
+                                {virus.cure === 'none' ? '—' : virus.cure}
                               </LabeledList.Item>
                             </LabeledList>
                           </Grid.Column>
@@ -127,25 +147,25 @@ export const PandemicDiseaseDisplay = (props) => {
                         {!!virus.is_adv && (
                           <>
                             <Section
-                              title="Statistics"
+                              title="Характеристики"
                               level={2}>
                               <Grid>
                                 <Grid.Column>
                                   <LabeledList>
-                                    <LabeledList.Item label="Resistance">
+                                    <LabeledList.Item label="Стойкость">
                                       {virus.resistance}
                                     </LabeledList.Item>
-                                    <LabeledList.Item label="Stealth">
+                                    <LabeledList.Item label="Скрытность">
                                       {virus.stealth}
                                     </LabeledList.Item>
                                   </LabeledList>
                                 </Grid.Column>
                                 <Grid.Column>
                                   <LabeledList>
-                                    <LabeledList.Item label="Stage speed">
+                                    <LabeledList.Item label="Скорость стадий">
                                       {virus.stage_speed}
                                     </LabeledList.Item>
-                                    <LabeledList.Item label="Transmissibility">
+                                    <LabeledList.Item label="Заразность">
                                       {virus.transmission}
                                     </LabeledList.Item>
                                   </LabeledList>
@@ -153,7 +173,7 @@ export const PandemicDiseaseDisplay = (props) => {
                               </Grid>
                             </Section>
                             <Section
-                              title="Symptoms"
+                              title="Симптомы"
                               level={2}>
                               {symptoms.map(symptom => (
                                 <Collapsible
@@ -203,7 +223,7 @@ export const PandemicSymptomDisplay = (props) => {
         <Box
           bold
           color="bad">
-          Neutered
+          Подавлен
         </Box>
       )}>
       <Grid>
@@ -212,19 +232,19 @@ export const PandemicSymptomDisplay = (props) => {
         </Grid.Column>
         <Grid.Column>
           <LabeledList>
-            <LabeledList.Item label="Level">
+            <LabeledList.Item label="Уровень">
               {level}
             </LabeledList.Item>
-            <LabeledList.Item label="Resistance">
+            <LabeledList.Item label="Стойкость">
               {resistance}
             </LabeledList.Item>
-            <LabeledList.Item label="Stealth">
+            <LabeledList.Item label="Скрытность">
               {stealth}
             </LabeledList.Item>
-            <LabeledList.Item label="Stage Speed">
+            <LabeledList.Item label="Скорость стадий">
               {stage_speed}
             </LabeledList.Item>
-            <LabeledList.Item label="Transmission">
+            <LabeledList.Item label="Заразность">
               {transmission}
             </LabeledList.Item>
           </LabeledList>
@@ -232,7 +252,7 @@ export const PandemicSymptomDisplay = (props) => {
       </Grid>
       {thresholds.length > 0 && (
         <Section
-          title="Thresholds"
+          title="Пороговые эффекты"
           level={3}>
           <LabeledList>
             {thresholds.map(threshold => {
@@ -255,7 +275,7 @@ export const PandemicAntibodyDisplay = (props) => {
   const { act, data } = useBackend();
   const resistances = data.resistances || [];
   return (
-    <Section title="Antibodies">
+    <Section title="Антитела">
       {resistances.length > 0 ? (
         <LabeledList>
           {resistances.map(resistance => (
@@ -264,7 +284,7 @@ export const PandemicAntibodyDisplay = (props) => {
               label={resistance.name}>
               <Button
                 icon="eye-dropper"
-                content="Create vaccine bottle"
+                content="Создать флакон с вакциной"
                 disabled={!data.is_ready}
                 onClick={() => act('create_vaccine_bottle', {
                   index: resistance.id,
@@ -277,7 +297,7 @@ export const PandemicAntibodyDisplay = (props) => {
           bold
           color="bad"
           mt={1}>
-          No antibodies detected.
+          Антитела не обнаружены.
         </Box>
       )}
     </Section>
@@ -311,11 +331,11 @@ export const PandemicCustomVirus = (props) => {
 
   return (
     <Section
-      title="Custom Strain Synthesis (Tier 4+)"
+      title="Синтез собственного штамма (ур. 4+)"
       buttons={(
         <Button
           icon="flask"
-          content="Synthesize"
+          content="Синтезировать"
           disabled={custom_cooldown > 0 || selectedSymptoms.length === 0}
           onClick={() => {
             act('create_custom_virus', { symptom_ids: selectedSymptoms });
@@ -325,19 +345,19 @@ export const PandemicCustomVirus = (props) => {
       )}>
       {custom_cooldown > 0 && (
         <NoticeBox>
-          Sequencer Cooling Down: {Math.ceil(custom_cooldown / 10)}s
+          Охлаждение секвенатора: {Math.ceil(custom_cooldown / 10)} с
         </NoticeBox>
       )}
       <Input
-        placeholder="Search Symptoms..."
+        placeholder="Поиск симптомов…"
         value={searchText}
         onInput={(e, value) => setSearchText(value)}
         fluid
         mb={1}
       />
-      <Section title="Selected Symptoms" level={2}>
+      <Section title="Выбранные симптомы" level={2}>
         {selectedSymptoms.length === 0 ? (
-          <Box color="label">None selected</Box>
+          <Box color="label">Нет выбранных симптомов</Box>
         ) : (
           selectedSymptoms.map(id => {
             const s = all_symptoms.find(sym => sym.id === id);
@@ -355,7 +375,7 @@ export const PandemicCustomVirus = (props) => {
           })
         )}
       </Section>
-      <Section title="Available Symptoms" level={2}>
+      <Section title="Доступные симптомы" level={2}>
         <Table>
           {(() => {
             const rows = [];
@@ -367,11 +387,12 @@ export const PandemicCustomVirus = (props) => {
                     <Table.Cell key={s.id} style={{ width: '33.33%' }}>
                       <Button
                         fluid
-                        content={`${s.name} (L${s.level})`}
+                        content={`${s.name} (ур. ${s.level})`}
                         icon={selectedSymptoms.includes(s.id) ? "check" : "plus"}
                         color={selectedSymptoms.includes(s.id) ? "good" : "default"}
                         onClick={() => toggleSymptom(s.id)}
-                        tooltip={`R:${s.resistance} S:${s.stealth} Sp:${s.stage_speed} T:${s.transmission}`}
+                        tooltip={`Стойкость: ${s.resistance}; скрытность: ${s.stealth}; `
+                          + `скорость стадий: ${s.stage_speed}; заразность: ${s.transmission}`}
                         disabled={!selectedSymptoms.includes(s.id) && selectedSymptoms.length >= 6}
                       />
                     </Table.Cell>
