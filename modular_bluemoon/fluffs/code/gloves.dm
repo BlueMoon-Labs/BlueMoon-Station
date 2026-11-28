@@ -100,6 +100,23 @@
 	icon_state = "transparent_gloves"
 	item_state = "transparent_gloves"
 
+/obj/item/clothing/gloves/color/black/duty
+	name = "duty gloves"
+	desc = "Gloves worn by the Sol Fed military. They look quite practical, and they're sure to survive hail, storms, and sand. They're worn by everyone called to duty."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/gloves.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/gloves.dmi'
+	icon_state = "duty_gloves"
+	item_state = "duty_gloves"
+	unique_reskin = list(
+		"duty" = list("icon_state" = "duty_gloves", item_state = "duty_gloves"),
+		"tan" = list("icon_state" = "tan_duty_gloves", item_state = "tan_duty_gloves"),
+	)
+
+/obj/item/clothing/gloves/color/black/duty/tan
+	name = "tan duty gloves"
+	icon_state = "tan_duty_gloves"
+	item_state = "tan_duty_gloves"
+
 /obj/item/modkit/hardlight_gloves_kit
 	name = "Fingerless hardlight gloves Kit"
 	desc = "A modkit for making a gripper gloves into a Fingerless hardlight gloves."

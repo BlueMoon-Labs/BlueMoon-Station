@@ -3155,3 +3155,9 @@
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/donator/bm/br_pilotjacket_s5
 	ckeywhitelist = list("hateredsoul", "angelnedemon")
+
+/datum/gear/donator/bm/solgoy_box
+	name = "Sol Fed army box"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/box/solgoy_box
+	ckeywhitelist = list("rockymed", "hartty", "dragon9090", "leony24", "theatlasgaming", "kennedykiller")

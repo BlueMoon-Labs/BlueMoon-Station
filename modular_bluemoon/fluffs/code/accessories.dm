@@ -544,3 +544,24 @@
 	item_state = "sawwr_coat"
 
 ////////////////////////
+
+/obj/item/clothing/accessory/bm
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
+
+/obj/item/clothing/accessory/bm/camo_jacket
+	name = "camouflage jacket"
+	desc = "An army jacket worn by the Sol Fed armed forces. It looks quite sturdy, though dated by today's standards. The material is tough, the weave is dense, and it must be well-made."
+	icon_state = "camo_jacket"
+	item_state = "camo_jacket"
+	minimize_when_attached = FALSE
+	unique_reskin = list(
+		"camo" = list("icon_state" = "camo_jacket", item_state = "camo_jacket"),
+		"grey" = list("icon_state" = "camo_jacket_grey", item_state = "camo_jacket_grey"),
+	)
+
+/obj/item/clothing/accessory/bm/camo_jacket/grey
+	name = "grey camouflage jacket"
+	desc = "An army jacket worn by the Sol Fed armed forces. It looks quite sturdy, though dated by today's standards. The material is tough, the weave is dense, and it must be well-made. This one is grey."
+	icon_state = "camo_jacket_grey"
+	item_state = "camo_jacket_grey"
