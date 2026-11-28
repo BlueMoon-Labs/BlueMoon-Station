@@ -808,9 +808,15 @@
 	},
 /area/security/brig)
 "aet" = (
-/obj/effect/spawner/lootdrop/trashbin,
-/turf/open/floor/plasteel,
-/area/space)
+/obj/effect/turf_decal/trimline/red/filled/corner{
+	dir = 8
+	},
+/obj/item/radio/intercom{
+	name = "Station Intercom (General)";
+	pixel_y = -28
+	},
+/turf/open/floor/plasteel/dark/side,
+/area/security/brig)
 "aeB" = (
 /obj/machinery/status_display/evac,
 /turf/closed/wall,
@@ -33807,25 +33813,13 @@
 /area/hallway/secondary/exit/departure_lounge)
 "dYL" = (
 /obj/structure/table,
-/obj/machinery/button/door{
-	id = "WardenWin";
-	name = "Warden Windows";
-	req_access_txt = "3";
-	pixel_x = -7;
-	pixel_y = 9
-	},
-/obj/machinery/button/door{
-	id = "armorywindow";
-	name = "Armory Window";
-	req_access_txt = "3";
-	pixel_x = -7
-	},
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 9
 	},
 /obj/structure/cable/white{
 	icon_state = "1-2"
 	},
+/obj/item/gun/ballistic/revolver/russian,
 /turf/open/floor/plasteel/dark,
 /area/security/warden)
 "dYP" = (
@@ -40099,10 +40093,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/medical/medbay/central)
-"fdk" = (
-/obj/effect/spawner/lootdrop/trashbin,
-/turf/open/floor/plasteel,
-/area/space/nearstation)
 "fdm" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
@@ -43625,6 +43615,11 @@
 /obj/machinery/camera/autoname{
 	dir = 1
 	},
+/obj/item/radio/intercom{
+	dir = 8;
+	name = "Station Intercom (General)";
+	pixel_y = -26
+	},
 /turf/open/floor/plasteel/dark/side,
 /area/security/brig)
 "fRO" = (
@@ -45465,7 +45460,7 @@
 	dir = 8
 	},
 /turf/open/floor/plasteel,
-/area/space)
+/area/maintenance/disposal)
 "gnb" = (
 /obj/machinery/airalarm{
 	dir = 1;
@@ -46649,17 +46644,9 @@
 /turf/open/floor/plasteel,
 /area/engineering/break_room)
 "gCc" = (
-/obj/effect/turf_decal/trimline/red/filled/corner{
-	dir = 1
-	},
-/obj/structure/disposalpipe/segment,
-/obj/structure/sign/poster/official/nanotrasen_logo{
-	pixel_x = -32
-	},
-/turf/open/floor/plasteel/dark/side{
-	dir = 8
-	},
-/area/security/brig)
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/maintenance/starboard)
 "gCj" = (
 /obj/structure/cable/white{
 	icon_state = "4-8"
@@ -47094,9 +47081,6 @@
 /obj/effect/turf_decal/stripes/white,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/security/prison/cells)
-"gHo" = (
-/turf/closed/wall,
-/area/space)
 "gHH" = (
 /obj/structure/table/reinforced,
 /obj/item/clipboard,
@@ -48397,16 +48381,16 @@
 /turf/open/floor/plasteel,
 /area/commons/toilet/auxiliary)
 "gZz" = (
-/obj/machinery/door/airlock/external{
-	name = "Security External Airlock";
-	req_access_txt = "1"
-	},
 /obj/machinery/door/firedoor,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 1
 	},
 /obj/structure/fans/tiny,
-/turf/open/floor/plasteel,
+/obj/machinery/door/airlock/external{
+	name = "Security External Airlock";
+	req_access_txt = "1"
+	},
+/turf/open/floor/plasteel/dark,
 /area/security/brig)
 "gZL" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
@@ -50396,7 +50380,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/emcloset,
 /turf/open/floor/plating,
-/area/space)
+/area/maintenance/starboard)
 "hxn" = (
 /turf/open/floor/carpet/red,
 /area/command/heads_quarters/hos/private)
@@ -66375,7 +66359,7 @@
 /area/cargo/qm)
 "kSM" = (
 /obj/structure/closet/secure_closet/brig{
-	id = "brig1";
+	id = "Cell 1";
 	name = "Cell 1 locker"
 	},
 /obj/effect/turf_decal/trimline/white/filled/line{
@@ -66590,6 +66574,11 @@
 /obj/structure/cable/white{
 	icon_state = "1-4"
 	},
+/obj/item/radio/intercom{
+	dir = 8;
+	name = "Station Intercom (General)";
+	pixel_y = -26
+	},
 /turf/open/floor/plasteel/dark/side,
 /area/security/brig)
 "kUY" = (
@@ -66729,9 +66718,13 @@
 /turf/open/floor/plasteel,
 /area/engineering/atmospherics_engine)
 "kVy" = (
-/obj/structure/lattice,
-/turf/open/space/basic,
-/area/space)
+/obj/item/radio/intercom{
+	dir = 8;
+	name = "Station Intercom (General)";
+	pixel_y = -26
+	},
+/turf/open/floor/plasteel/dark/side,
+/area/security/prison)
 "kVC" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -72637,13 +72630,13 @@
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "mhP" = (
+/obj/machinery/door/firedoor,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
 /obj/machinery/door/airlock/external{
 	name = "Security External Airlock";
 	req_access_txt = "1"
 	},
-/obj/machinery/door/firedoor,
-/obj/effect/mapping_helpers/airlock/cyclelink_helper,
-/turf/open/floor/plasteel,
+/turf/open/floor/plasteel/dark,
 /area/security/brig)
 "mhR" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
@@ -75950,8 +75943,20 @@
 	},
 /area/command/heads_quarters/cmo)
 "mUd" = (
-/turf/open/space/basic,
-/area/ai_monitored/command/nuke_storage)
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 8
+	},
+/obj/structure/transmitter/mounted{
+	pixel_x = -5;
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/security/brig)
 "mUk" = (
 /obj/structure/cable/white{
 	icon_state = "4-8"
@@ -77468,6 +77473,11 @@
 /obj/item/screwdriver,
 /obj/machinery/syndicatebomb/training,
 /obj/effect/turf_decal/tile/red/full,
+/obj/item/radio/intercom{
+	dir = 4;
+	name = "Station Intercom (General)";
+	pixel_x = 27
+	},
 /turf/open/floor/plasteel/dark,
 /area/security/brig_briefing)
 "njX" = (
@@ -89099,6 +89109,9 @@
 /area/command/bridge)
 "pKL" = (
 /obj/effect/turf_decal/trimline/red/filled/line,
+/obj/machinery/computer/brig_assistant_console{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark,
 /area/security/brig_briefing)
 "pKM" = (
@@ -91131,14 +91144,14 @@
 /area/commons/fishing_nook)
 "qhy" = (
 /obj/machinery/door/firedoor,
-/obj/machinery/door/airlock/security{
-	name = "Brigdorm";
-	id_tag = "Brigdorm"
-	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/structure/cable/white{
 	icon_state = "1-2"
+	},
+/obj/machinery/door/airlock/security{
+	name = "Brigdorm";
+	id_tag = "Brigdorm"
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/brig)
@@ -173158,13 +173171,13 @@ gjW
 lRm
 aig
 aaa
-uCE
+qgU
 uCE
 uCE
 myz
 uCE
 uCE
-uCE
+qgU
 aaa
 bHq
 bJc
@@ -174700,13 +174713,13 @@ aig
 nfL
 aig
 aaa
-mUd
+aaa
 uCE
 uCE
 uCE
 uCE
 uCE
-mUd
+aaa
 aaa
 bHr
 bHr
@@ -175687,10 +175700,10 @@ aaa
 aaa
 qgU
 aaa
-gHo
+aoF
 gmM
-gHo
-gHo
+aoF
+aoF
 aig
 aig
 auO
@@ -176506,7 +176519,7 @@ rFJ
 hMY
 aGc
 aig
-kVy
+qgU
 bHr
 usp
 bMW
@@ -181411,8 +181424,8 @@ cnp
 clK
 bgZ
 hxl
-aet
-fdk
+cwc
+cwc
 rsA
 xLj
 cze
@@ -181667,12 +181680,12 @@ clJ
 osW
 osW
 osW
-bvJ
-bvJ
-oza
-oza
+gCc
+gCc
+bHq
+bHq
 ksC
-oza
+bHq
 fzU
 fzU
 fzU
@@ -182168,7 +182181,7 @@ syO
 uYJ
 qlx
 qzW
-sNY
+mUd
 pky
 fIL
 eoc
@@ -182424,7 +182437,7 @@ ehg
 clG
 uAI
 uAI
-gCc
+lNx
 nTJ
 pky
 cAN
@@ -183167,7 +183180,7 @@ aSO
 aFm
 jLq
 wqx
-vTa
+kVy
 aFm
 qgU
 qgU
@@ -186796,7 +186809,7 @@ aTb
 qhy
 sDD
 hmC
-euz
+aet
 bgZ
 bgZ
 bgZ
