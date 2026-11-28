@@ -87954,7 +87954,6 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "pwg" = (
-/obj/machinery/disposal/bin,
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 5
 	},
