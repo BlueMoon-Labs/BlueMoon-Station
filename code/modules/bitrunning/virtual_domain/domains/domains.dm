@@ -31,8 +31,7 @@
 
 /obj/structure/closet/crate/secure/weapon/milsim/PopulateContents()
 	. = ..()
-	new /obj/item/kitchen/knife/combat(src)
-	new /obj/item/gun/energy/e_gun(src)
+	new /obj/item/gun/energy/laser/chameleon(src)
 	new /obj/item/radio/headset/headset_cargo(src)
 
 /obj/structure/closet/crate/secure/weapon/milsim/mechanic
@@ -45,14 +44,12 @@
 	new /obj/item/stack/cable_coil(src, 30)
 
 /obj/structure/closet/crate/secure/weapon/milsim/marksman
-	name = "marksman (лазерная винтовка/запасные батареи/оптика)"
+	name = "marksman (хамелеон-ган/оптика)"
 
 /obj/structure/closet/crate/secure/weapon/milsim/marksman/PopulateContents()
 	. = ..()
-	new /obj/item/gun/energy/laser(src)
+	new /obj/item/gun/energy/laser/chameleon(src)
 	new /obj/item/clothing/glasses/thermal(src)
-	new /obj/item/stock_parts/cell(src)
-	new /obj/item/stock_parts/cell(src)
 
 /obj/structure/closet/crate/secure/weapon/milsim/medic
 	name = "medic (гипоспрей/медприпасы/медHUD)"
@@ -83,21 +80,19 @@
 	new /obj/item/analyzer(src)
 
 /obj/structure/closet/crate/secure/weapon/milsim/sentinel
-	name = "sentinel (тяжёлое оружие/броня)"
+	name = "sentinel (хамелеон-ган/броня)"
 
 /obj/structure/closet/crate/secure/weapon/milsim/sentinel/PopulateContents()
 	. = ..()
-	new /obj/item/gun/ballistic/shotgun/automatic/combat(src)
-	new /obj/item/storage/box/lethalshot(src)
+	new /obj/item/gun/energy/laser/chameleon(src)
 	new /obj/item/clothing/suit/armor/vest(src)
 
 /obj/structure/closet/crate/secure/weapon/milsim/trooper
-	name = "trooper (штурмовая винтовка/патроны)"
+	name = "trooper (хамелеон-ган)"
 
 /obj/structure/closet/crate/secure/weapon/milsim/trooper/PopulateContents()
 	. = ..()
-	new /obj/item/gun/ballistic/automatic/pistol(src)
-	new /obj/item/ammo_box/magazine/m10mm(src)
+	new /obj/item/gun/energy/laser/chameleon(src)
 
 // Туман войны / ворота встречи
 
@@ -995,7 +990,7 @@
 		/obj/item/stack/spacecash/c500 = 2,
 		/obj/item/storage/firstaid/regular = 1,
 		/obj/item/clothing/suit/armor/vest = 1,
-		/obj/item/gun/ballistic/automatic/pistol = 1,
+		/obj/item/gun/energy/laser/chameleon = 1,
 	)
 	difficulty = BITRUNNER_DIFFICULTY_HIGH
 	help_text = "Последняя часть домена может оказаться весьма PvP-ориентированной. Лучше не ходить одному и пронести с собой диски способностей и снаряжения."
@@ -1009,7 +1004,7 @@
 		/obj/item/stack/spacecash/c500 = 3,
 		/obj/item/disk/bitrunning/item/ancient_milsim = 3,
 		/obj/item/choice_beacon/ancient_milsim = 2,
-		/obj/item/gun/ballistic/automatic/pistol = 1,
+		/obj/item/gun/energy/laser/chameleon = 1,
 		/obj/item/storage/firstaid/regular = 2,
 		/obj/item/grenade/empgrenade = 1,
 		/obj/item/clothing/suit/armor/vest = 1,
