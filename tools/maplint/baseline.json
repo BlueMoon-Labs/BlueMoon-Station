@@ -741,14 +741,12 @@
 	},
 	"_maps/map_files/Deltastation/DeltaStation2.dmm": {
 		"barricade_stacking": {
-			"/obj/structure/barricade/wooden": 38
+			"/obj/structure/barricade/wooden": 37
 		},
 		"multiple_lattice": {
 			"/obj/structure/lattice": 8
 		},
 		"multiple_tables": {
-			"/obj/structure/table": 2,
-			"/obj/structure/table/glass": 2,
 			"/obj/structure/table/wood": 2
 		},
 		"multiple_windows": {
