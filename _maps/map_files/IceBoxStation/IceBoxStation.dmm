@@ -18106,7 +18106,8 @@
 "dGC" = (
 /obj/machinery/portable_atmospherics/canister/nitrogen,
 /obj/machinery/power/apc/auto_name/north{
-	req_access = list("150")
+	req_access = list(150);
+	req_access_txt = "150"
 	},
 /obj/structure/cable{
 	icon_state = "0-2"
@@ -22444,7 +22445,8 @@
 	icon_state = "0-2"
 	},
 /obj/machinery/power/apc/auto_name/north{
-	req_access = list()
+	req_access = list(150);
+	req_access_txt = "150"
 	},
 /obj/machinery/vending/wardrobe/interdyne,
 /turf/open/floor/plasteel/white,
@@ -29721,7 +29723,10 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 9
 	},
-/obj/machinery/airalarm/directional/north,
+/obj/machinery/airalarm/directional/north{
+	req_access = list(150);
+	req_access_txt = "150"
+	},
 /turf/open/floor/plasteel/white,
 /area/ruin/icemoon/unpowered/glacier/virology)
 "fUl" = (
@@ -30568,7 +30573,8 @@
 	icon_state = "0-8"
 	},
 /obj/machinery/power/apc/auto_name/north{
-	req_access = list()
+	req_access = list(150);
+	req_access_txt = "150"
 	},
 /obj/item/kirbyplants/random{
 	pixel_y = 6
@@ -31575,7 +31581,10 @@
 /obj/effect/turf_decal/trimline/red/corner{
 	dir = 4
 	},
-/obj/machinery/power/apc/auto_name/south,
+/obj/machinery/power/apc/auto_name/south{
+	req_access = list(150);
+	req_access_txt = "150"
+	},
 /obj/structure/cable{
 	icon_state = "0-4"
 	},
@@ -32568,7 +32577,8 @@
 "gAI" = (
 /obj/machinery/photocopier,
 /obj/machinery/airalarm/directional/south{
-	req_access = list("150")
+	req_access = list(150);
+	req_access_txt = "150"
 	},
 /obj/structure/extinguisher_cabinet/directional/west,
 /obj/effect/turf_decal/bot/yellow,
@@ -44742,7 +44752,7 @@
 	name = "storage marker"
 	},
 /obj/machinery/power/apc/auto_name/north{
-	req_access = list("150")
+	req_access = list(150)
 	},
 /obj/structure/cable{
 	icon_state = "0-2"
@@ -45448,7 +45458,8 @@
 	},
 /obj/effect/turf_decal/bot/white,
 /obj/machinery/airalarm/directional/north{
-	req_access = list("150")
+	req_access = list(150);
+	req_access_txt = "150"
 	},
 /turf/open/floor/plasteel/dark/corner{
 	dir = 8
@@ -60063,12 +60074,16 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/obj/machinery/airalarm/directional/east,
+/obj/machinery/airalarm/directional/east{
+	req_access = list(150);
+	req_access_txt = "150"
+	},
 /obj/structure/cable{
 	icon_state = "0-2"
 	},
 /obj/machinery/power/apc/auto_name/north{
-	req_access = list()
+	req_access = list(150);
+	req_access_txt = "150"
 	},
 /obj/machinery/rnd/server/syndicate,
 /turf/open/floor/plasteel/dark/corner{
@@ -70773,7 +70788,8 @@
 "ocf" = (
 /obj/structure/chair/sofa/corp/left,
 /obj/machinery/airalarm/directional/north{
-	req_access = list("150")
+	req_access = list(150);
+	req_access_txt = "150"
 	},
 /mob/living/simple_animal/pet/cat/kitten{
 	faction = list("neutral", "Syndicate")
@@ -71231,7 +71247,8 @@
 	icon_state = "0-2"
 	},
 /obj/machinery/power/apc/auto_name/north{
-	req_access = list()
+	req_access = list(150);
+	req_access_txt = "150"
 	},
 /turf/open/floor/plasteel/white,
 /area/ruin/icemoon/unpowered/glacier/medbay)
@@ -77852,7 +77869,10 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/bot/yellow,
-/obj/machinery/airalarm/directional/north,
+/obj/machinery/airalarm/directional/north{
+	req_access = list(150);
+	req_access_txt = "150"
+	},
 /turf/open/floor/plasteel/white,
 /area/ruin/icemoon/unpowered/glacier/medbay)
 "pxC" = (
@@ -99936,6 +99956,12 @@
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/workout)
+"tRY" = (
+/obj/structure/sign/nanotrasen{
+	pixel_y = 32
+	},
+/turf/closed/mineral/random/snow,
+/area/icemoon/surface/outdoors)
 "tRZ" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
@@ -101759,7 +101785,8 @@
 	pixel_y = 4
 	},
 /obj/machinery/power/apc/auto_name/north{
-	req_access = list()
+	req_access = list(150);
+	req_access_txt = "150"
 	},
 /turf/open/floor/plasteel/dark/side,
 /area/ruin/icemoon/unpowered/glacier/xenobio)
@@ -105545,7 +105572,8 @@
 /area/maintenance/solars/starboard/fore)
 "uXL" = (
 /obj/machinery/airalarm/directional/north{
-	req_access = list("150")
+	req_access = list(150);
+	req_access_txt = "150"
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/janitorialcart,
@@ -106289,7 +106317,8 @@
 	level = 1
 	},
 /obj/machinery/airalarm/directional/north{
-	req_access = list("150")
+	req_access = list("150");
+	req_access_txt = "150"
 	},
 /obj/structure/rack,
 /obj/structure/disposalpipe/segment{
@@ -112031,7 +112060,8 @@
 /area/ruin/icemoon/unpowered/glacier/outsidestorage)
 "wkI" = (
 /obj/machinery/airalarm/syndicate{
-	pixel_y = 24
+	pixel_y = 24;
+	req_access_txt = "150"
 	},
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel/dark,
@@ -114942,12 +114972,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/turret_protected/aisat/atmos)
-"wNZ" = (
-/obj/structure/sign/nanotrasen{
-	pixel_y = 32
-	},
-/turf/closed/mineral/random/snow,
-/area/icemoon/surface/outdoors)
 "wOb" = (
 /obj/machinery/light/small/directional/west,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -139543,7 +139567,7 @@ vcT
 vcT
 vcT
 uKd
-wNZ
+tRY
 dlP
 dlP
 dlP
