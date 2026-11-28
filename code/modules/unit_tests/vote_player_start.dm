@@ -119,4 +119,15 @@
 		CONFIG_SET(number/vote_delay, saved_vote_delay)
 	return ..()
 
+/datum/unit_test/vote_ranked_partial_ballots/Run()
+	var/datum/controller/subsystem/vote/ballot = allocate(/datum/controller/subsystem/vote)
+	ballot.choices = list("Первый" = 0, "Второй" = 0, "Третий" = 0)
+	ballot.voted = list("one" = list(1), "two" = list(1), "three" = list(2), "four" = list(2), "five" = list(3))
+	var/list/winners = ballot.get_runoff_results()
+	TEST_ASSERT_EQUAL(length(winners), 1, "Частичный рейтинг помешал выбрать победителя")
+	TEST_ASSERT_EQUAL(winners[1], "Второй", "Выбывшие бюллетени повлияли на большинство")
+	var/list/exhausted = ballot.voted["five"]
+	TEST_ASSERT_EQUAL(length(exhausted), 1, "Подсчёт изменил рейтинг, поданный игроком")
+	TEST_ASSERT_EQUAL(ballot.choices["Третий"], 1, "В отчёте потерялись голоса первого тура")
+
 #undef VOTE_TEST_PLAYER_KEY

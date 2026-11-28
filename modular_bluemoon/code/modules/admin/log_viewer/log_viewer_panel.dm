@@ -368,9 +368,13 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	log_admin("[key_name(owner)] downloaded log archive [rel]")
 	owner << ftp(file(out), "[flat].[ext]")
 
+// Удаляет временный архив, созданный просмотрщиком логов.
 /proc/admin_log_delete_archive(path)
-	if(fexists(path))
-		fdel(path)
+	if(!istext(path) || findtextEx(path, ADMIN_LOG_ARCHIVE_DIR, 1, length(ADMIN_LOG_ARCHIVE_DIR) + 1) != 1)
+		return FALSE
+	if(!admin_log_valid_segment(copytext(path, length(ADMIN_LOG_ARCHIVE_DIR) + 1)))
+		return FALSE
+	return fexists(path) && fdel(path)
 
 /// GNU tar возвращает 1, если файл менялся во время чтения (живой лог текущего раунда) -
 /// архив при этом валиден и выбрасывать его нельзя. На Windows у bsdtar код 1 = настоящая ошибка.

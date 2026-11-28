@@ -47,6 +47,7 @@
 #define span_deconversion_message(str) ("<span class='deconversion_message'>" + (str) + "</span>")
 #define span_drone(str) ("<span class='drone'>" + (str) + "</span>")
 #define span_engradio(str) ("<span class='engradio'>" + (str) + "</span>")
+#define span_examine_meta(str) ("<span class='examine_meta'>" + (str) + "</span>")
 #define span_extremelybig(str) ("<span class='extremelybig'>" + (str) + "</span>")
 #define span_ghostalert(str) ("<span class='ghostalert'>" + (str) + "</span>")
 #define span_green(str) ("<span class='green'>" + (str) + "</span>")

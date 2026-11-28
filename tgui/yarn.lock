@@ -4885,15 +4885,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dompurify@npm:^3.3.1":
-  version: 3.3.1
-  resolution: "dompurify@npm:3.3.1"
+"dompurify@npm:^3.5.0":
+  version: 3.5.0
+  resolution: "dompurify@npm:3.5.0"
   dependencies:
     "@types/trusted-types": "npm:^2.0.7"
   dependenciesMeta:
     "@types/trusted-types":
       optional: true
-  checksum: 10/f71cca489e628591165d16e8cf4fa4f0d3e2ee48db4d73e9d2c5bedc6f915c92f9e9f101f8c4ba790bec0cdffe7f4e1747f5e31c69dc53ce7ae20a81ff6b0022
+  checksum: 10/958811c76d518c10683b78c06701552f3dd5fbc3b2de0070de5ebaa14bfd7587e1e6953e8c60852b87e02ae8e84174666f165849f6940b48efc913379e856423
   languageName: node
   linkType: hard
 
@@ -10518,7 +10518,7 @@ __metadata:
     "@types/react": "npm:^19.2.4"
     "@types/react-dom": "npm:^19.2.3"
     common: "workspace:*"
-    dompurify: "npm:^3.3.1"
+    dompurify: "npm:^3.5.0"
     react: "npm:^19.2.4"
     react-dom: "npm:^19.2.4"
     sass: "npm:^1.97.3"
@@ -10595,7 +10595,7 @@ __metadata:
     "@types/react-dom": "npm:^19.2.3"
     common: "workspace:*"
     dateformat: "npm:^5.0.3"
-    dompurify: "npm:^3.3.1"
+    dompurify: "npm:^3.5.0"
     js-yaml: "npm:^4.1.1"
     marked: "npm:^17.0.2"
     react: "npm:^19.2.4"

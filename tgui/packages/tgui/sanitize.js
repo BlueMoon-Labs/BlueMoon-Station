@@ -52,6 +52,82 @@ const advTag = ['img', 'video', 'source', 'track'];
 // Attributes that are explicitly forbidden (removed even if tag is allowed)
 const defAttr = ['class', 'style'];
 
+const paperAttrs = [
+  'align', 'bgcolor', 'border', 'cellpadding', 'cellspacing', 'color',
+  'colspan', 'face', 'height', 'rowspan', 'size', 'start', 'valign', 'width',
+];
+const paperMediaAttrs = [
+  'alt', 'controls', 'kind', 'label', 'loop', 'muted', 'poster',
+  'src', 'srclang', 'style', 'title', 'type',
+];
+const paperStyles = [
+  'background-color', 'border', 'border-collapse', 'border-radius', 'color',
+  'display', 'font-family', 'font-size', 'font-style', 'font-weight',
+  'height', 'line-height', 'margin', 'max-height', 'max-width', 'padding',
+  'text-align', 'text-decoration', 'vertical-align', 'white-space', 'width',
+];
+
+// Возвращает проверенные узлы для бумаги, факсов и книг.
+export const sanitizePaperMarkup = (input, advanced = false, allowMedia = advanced) => {
+  if (!DOMPurify.isSupported) {
+    const text = document.createDocumentFragment();
+    text.append(input);
+    return text;
+  }
+  const fragment = DOMPurify.sanitize(input, {
+    ALLOWED_TAGS: allowMedia ? defTag.concat(advTag) : defTag,
+    ALLOWED_ATTR: advanced ? paperAttrs.concat(paperMediaAttrs) : paperAttrs,
+    ALLOW_ARIA_ATTR: false,
+    ALLOW_DATA_ATTR: false,
+    RETURN_DOM_FRAGMENT: true,
+  });
+
+  if (advanced) {
+    for (const element of fragment.querySelectorAll('[style], [src], [poster]')) {
+      if (element.hasAttribute('style')) {
+        const values = paperStyles.map((property) => [
+          property, element.style.getPropertyValue(property),
+        ]);
+        element.removeAttribute('style');
+        for (const [property, value] of values) {
+          if (value) {
+            element.style.setProperty(property, value);
+          }
+        }
+      }
+      for (const attr of ['src', 'poster']) {
+        const url = element.getAttribute(attr);
+        if (url !== null && !/^https?:\/\//i.test(url)) {
+          element.removeAttribute(attr);
+        }
+      }
+    }
+  }
+  return fragment;
+};
+
+// Сохраняет только ссылки на штатный ответ или переход к игроку в тикете.
+const ticketLinks = {
+  admin: /^\?_src_=holder;admin_token=[0-9]+;ahelp=\[0x[0-9a-f]+\];ahelp_action=reply$/i,
+  mentor: /^\?_src_=mentor;(?:mentor_msg=(?:[a-z0-9]+|\[(?:0x[0-9a-f]+|mob_[0-9]+)\])(?:;mentor_token=[0-9]+)?|mentor_follow=\[(?:0x[0-9a-f]+|mob_[0-9]+)\];mentor_token=[0-9]+)$/i,
+};
+
+export const sanitizeTicketHtml = (html, role = '') => {
+  if (!DOMPurify.isSupported) {
+    const text = document.createElement('span');
+    text.textContent = html || '';
+    return text.innerHTML;
+  }
+  const links = ticketLinks[role];
+  return DOMPurify.sanitize(html || '', {
+    ALLOWED_TAGS: links ? defTag.concat('a') : defTag,
+    ALLOWED_ATTR: links ? paperAttrs.concat('href') : paperAttrs,
+    ALLOWED_URI_REGEXP: links,
+    ALLOW_ARIA_ATTR: false,
+    ALLOW_DATA_ATTR: false,
+  });
+};
+
 /**
  * Feed it a string and it should spit out a sanitized version.
  *

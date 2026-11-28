@@ -13,6 +13,7 @@ import {
   Tabs,
 } from '../components';
 import { Window } from '../layouts';
+import { sanitizeTicketHtml } from '../sanitize';
 
 const STATE_COLORS = {
   1: '#f87171',
@@ -281,7 +282,7 @@ const TicketChatPanel = (props) => {
                 borderRadius: '3px',
                 wordBreak: 'break-word',
               }}
-              dangerouslySetInnerHTML={{ __html: msg }}
+              dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(msg) }}
             />
           ))}
           <AutoScrollToBottom triggerKey={(ticket.interactions || []).length} />

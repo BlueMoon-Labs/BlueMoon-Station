@@ -73,11 +73,20 @@
 
 /mob/living/simple_animal/qareen/verb/toggle_name()
 	set name = "Set Name"
-	set desc = "Allows you to change your name."
+	set desc = "Позволяет изменить видимое имя."
 	set category = "Qareen"
 
-	var/choice = input("What was your name?") as text
-	src.name = choice
+	var/client/naming_client = client
+	if(!naming_client)
+		return
+	var/choice = tgui_input_text(src, "Как вас зовут?", "Имя", max_length = MAX_NAME_LEN)
+	if(isnull(choice) || QDELETED(src) || client != naming_client)
+		return
+	choice = reject_bad_text(trim(choice), MAX_NAME_LEN, ascii_only = FALSE)
+	if(!choice)
+		to_chat(src, span_warning("Введите имя до [MAX_NAME_LEN] символов без угловых скобок и косых черт."))
+		return
+	name = choice
 
 /mob/living/simple_animal/qareen/verb/changing_color()
 	set name = "Change Color"

@@ -534,11 +534,8 @@
 		ui = new(user, src, "PaperSheet", name)
 		ui.open()
 
-/obj/item/paper/ui_static_data(mob/user)
+/obj/item/paper/proc/get_paper_text_data()
 	var/list/static_data = list()
-
-	static_data["user_name"] = user.real_name
-
 	static_data["raw_text_input"] = list()
 	for(var/datum/paper_input/text_input as anything in raw_text_inputs)
 		static_data["raw_text_input"] += list(text_input.to_list())
@@ -547,17 +544,23 @@
 	for(var/datum/paper_field/field_input as anything in raw_field_input_data)
 		static_data["raw_field_input"] += list(field_input.to_list())
 
+	static_data["max_input_field_length"] = MAX_PAPER_INPUT_FIELD_LENGTH
+	static_data["paper_color"] = color ? color : COLOR_WHITE
+	static_data["default_pen_font"] = PEN_FONT
+	static_data["default_pen_color"] = COLOR_BLACK
+	return static_data
+
+/obj/item/paper/ui_static_data(mob/user)
+	var/list/static_data = get_paper_text_data()
+	static_data["user_name"] = user.real_name
+
 	static_data["raw_stamp_input"] = list()
 	for(var/datum/paper_stamp/stamp_input as anything in raw_stamp_data)
 		static_data["raw_stamp_input"] += list(stamp_input.to_list())
 
 	static_data["max_length"] = MAX_PAPER_LENGTH
-	static_data["max_input_field_length"] = MAX_PAPER_INPUT_FIELD_LENGTH
-	static_data["paper_color"] = color ? color : COLOR_WHITE
 	static_data["paper_name"] = name
 
-	static_data["default_pen_font"] = PEN_FONT
-	static_data["default_pen_color"] = COLOR_BLACK
 	static_data["signature_font"] = FOUNTAIN_PEN_FONT
 
 	return static_data;

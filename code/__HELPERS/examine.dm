@@ -47,6 +47,10 @@
 		chips += "<span class='examine_chip'>[trait]</span>"
 	return chips.Join(" ")
 
+// Поля записей могут содержать обычный текст или ранее экранированные символы.
+/proc/examine_record_text(text)
+	return html_encode_readable(html_decode("[text]"))
+
 /// Короткий текст выводится без спойлера.
 /proc/examine_spoiler(title, content, min_length = 0)
 	if(!length(content))

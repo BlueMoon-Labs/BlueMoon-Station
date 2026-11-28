@@ -1,3 +1,5 @@
+#ifdef ENABLE_SDQL2
+
 #define SDQL_qdel_datum(d) qdel(d)
 
 //SDQL2 datumized, /tg/station special!
@@ -200,8 +202,9 @@
 		message_admins("<span class='danger'>ERROR: Non-admin [key_name(usr)] attempted to execute a SDQL query!</span>")
 		log_admin("Non-admin [key_name(usr)] attempted to execute a SDQL query!")
 		return FALSE
-	var/prompt = tgui_alert(usr, "Run SDQL2 Query?", "SDQL2", list("Yes", "Cancel"))
-	if (prompt != "Yes")
+	// Показываем сам запрос в нативном окне и сверяем права после подтверждения.
+	var/prompt = tgui_alert(usr, "Выполнить запрос SDQL2?\n\n[query_text]", "SDQL2", list("Выполнить", "Отмена"), strict_byond = TRUE)
+	if(prompt != "Выполнить" || !check_rights(R_DEBUG))
 		return
 	var/list/results = world.SDQL2_query(query_text, key_name_admin(usr), "[key_name(usr)]")
 	if(length(results) == 3)
@@ -285,8 +288,7 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 	var/list/query_tree
 	var/state = SDQL2_STATE_IDLE
 	var/options = SDQL2_OPTIONS_DEFAULT
-	var/superuser = FALSE		//Run things like proccalls without using admin protections
-	var/allow_admin_interact = TRUE		//Allow admins to do things to this excluding varedit these two vars
+	var/allow_admin_interact = TRUE		// Разрешает админам управлять запросом через VV.
 	var/static/id_assign = 1
 	var/id = 0
 
@@ -312,12 +314,11 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 	var/obj/effect/statclick/SDQL2_delete/delete_click
 	var/obj/effect/statclick/SDQL2_action/action_click
 
-/datum/SDQL2_query/New(list/tree, SU = FALSE, admin_interact = TRUE, _options = SDQL2_OPTIONS_DEFAULT, finished_qdel = FALSE)
+/datum/SDQL2_query/New(list/tree, admin_interact = TRUE, _options = SDQL2_OPTIONS_DEFAULT, finished_qdel = FALSE)
 	if(IsAdminAdvancedProcCall() || !LAZYLEN(tree))
 		qdel(src)
 		return
 	LAZYADD(GLOB.sdql2_queries, src)
-	superuser = FALSE
 	allow_admin_interact = admin_interact
 	query_tree = tree
 	options = _options
@@ -586,7 +587,7 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 	if(type == "*")
 		for(var/i in location)
 			var/datum/d = i
-			if(d.can_vv_get() || superuser)
+			if(d.can_vv_get())
 				out += d
 			SDQL2_TICK_CHECK
 			SDQL2_HALT_CHECK
@@ -597,35 +598,35 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 
 	if(ispath(type, /mob))
 		for(var/mob/d in location)
-			if(typecache[d.type] && (d.can_vv_get() || superuser))
+			if(typecache[d.type] && d.can_vv_get())
 				out += d
 			SDQL2_TICK_CHECK
 			SDQL2_HALT_CHECK
 
 	else if(ispath(type, /turf))
 		for(var/turf/d in location)
-			if(typecache[d.type] && (d.can_vv_get() || superuser))
+			if(typecache[d.type] && d.can_vv_get())
 				out += d
 			SDQL2_TICK_CHECK
 			SDQL2_HALT_CHECK
 
 	else if(ispath(type, /obj))
 		for(var/obj/d in location)
-			if(typecache[d.type] && (d.can_vv_get() || superuser))
+			if(typecache[d.type] && d.can_vv_get())
 				out += d
 			SDQL2_TICK_CHECK
 			SDQL2_HALT_CHECK
 
 	else if(ispath(type, /area))
 		for(var/area/d in location)
-			if(typecache[d.type] && (d.can_vv_get() || superuser))
+			if(typecache[d.type] && d.can_vv_get())
 				out += d
 			SDQL2_TICK_CHECK
 			SDQL2_HALT_CHECK
 
 	else if(ispath(type, /atom))
 		for(var/atom/d in location)
-			if(typecache[d.type] && (d.can_vv_get() || superuser))
+			if(typecache[d.type] && d.can_vv_get())
 				out += d
 			SDQL2_TICK_CHECK
 			SDQL2_HALT_CHECK
@@ -633,13 +634,13 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 	else if(ispath(type, /datum))
 		if(location == world) //snowflake for byond shortcut
 			for(var/datum/d) //stupid byond trick to have it not return atoms to make this less laggy
-				if(typecache[d.type] && (d.can_vv_get() || superuser))
+				if(typecache[d.type] && d.can_vv_get())
 					out += d
 				SDQL2_TICK_CHECK
 				SDQL2_HALT_CHECK
 		else
 			for(var/datum/d in location)
-				if(typecache[d.type] && (d.can_vv_get() || superuser))
+				if(typecache[d.type] && d.can_vv_get())
 					out += d
 				SDQL2_TICK_CHECK
 				SDQL2_HALT_CHECK
@@ -655,7 +656,7 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 			for(var/i in found)
 				if(!is_object_datatype(i))
 					continue
-				world.SDQL_var(i, query_tree["call"][1], null, i, superuser, src)
+				world.SDQL_var(i, query_tree["call"][1], null, i, src)
 				obj_count_finished++
 				SDQL2_TICK_CHECK
 				SDQL2_HALT_CHECK
@@ -762,15 +763,15 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 		if(linebreak)
 			text_list += "<br>"
 
-/datum/SDQL2_query/CanProcCall()
-	if(!allow_admin_interact)
+/datum/SDQL2_query/CanProcCall(procname)
+	if(!allow_admin_interact || lowertext(procname) == "new")
 		return FALSE
 	return ..()
 
 /datum/SDQL2_query/vv_edit_var(var_name, var_value)
 	if(!allow_admin_interact)
 		return FALSE
-	if(var_name == NAMEOF(src, superuser) || var_name == NAMEOF(src, allow_admin_interact) || var_name == NAMEOF(src, query_tree))
+	if(var_name == NAMEOF(src, allow_admin_interact) || var_name == NAMEOF(src, query_tree))
 		return FALSE
 	return ..()
 
@@ -782,25 +783,25 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 			if(v == "#null")
 				SDQL_expression(d, set_list[sets])
 				break
+			if(v == NAMEOF(temp, vars) || !temp.can_vv_get(v))
+				break
 			if(++i == sets.len)
-				if(superuser)
-					if(temp.vars.Find(v))
-						temp.vars[v] = SDQL_expression(d, set_list[sets])
-				else
-					temp.vv_edit_var(v, SDQL_expression(d, set_list[sets]), TRUE)
+				temp.vv_edit_var(v, SDQL_expression(d, set_list[sets]), TRUE)
 				break
-			if(temp.vars.Find(v) && (istype(temp.vars[v], /datum) || istype(temp.vars[v], /client)))
-				temp = temp.vars[v]
-			else
+			if(!temp.vars.Find(v))
 				break
+			var/datum/nested = temp.vars[v]
+			if(!istype(nested) && !istype(nested, /client))
+				break
+			temp = nested
 
 /datum/SDQL2_query/proc/SDQL_function_blocking(datum/object, procname, list/arguments, source)
 	var/list/new_args = list()
 	for(var/arg in arguments)
 		new_args[++new_args.len] = SDQL_expression(source, arg)
 	if(object == GLOB) // Global proc.
-		return superuser? (call(procname)(new_args)) : (WrapAdminProcCall(GLOBAL_PROC, procname, new_args))
-	return superuser? (call(object, procname)(new_args)) : (WrapAdminProcCall(object, procname, new_args))
+		return WrapAdminProcCall(GLOBAL_PROC, procname, new_args)
+	return WrapAdminProcCall(object, procname, new_args)
 
 /datum/SDQL2_query/proc/SDQL_function_async(datum/object, procname, list/arguments, source)
 	set waitfor = FALSE
@@ -920,7 +921,7 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 			else
 				val += list(result)
 	else
-		val = world.SDQL_var(object, expression, i, object, superuser, src)
+		val = world.SDQL_var(object, expression, i, object, src)
 		i = expression.len
 
 	return list("val" = val, "i" = i)
@@ -986,7 +987,7 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 				to_chat(usr, "[spaces][whitespace][query_tree[item]]")
 
 //Staying as a world proc as this is called too often for changes to offset the potential IsAdminAdvancedProcCall checking overhead.
-/world/proc/SDQL_var(object, list/expression, start = 1, source, superuser, datum/SDQL2_query/query)
+/world/proc/SDQL_var(object, list/expression, start = 1, source, datum/SDQL2_query/query)
 	var/v
 	var/static/list/exclude = list("usr", "src", "marked", "global")
 	var/long = start < expression.len
@@ -1009,8 +1010,9 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 		start++
 		long = start < expression.len
 	else if(D != null && (!long || expression[start + 1] == ".") && (expression[start] in D.vars))
-		if(D.can_vv_get(expression[start]) || superuser)
-			v = D.vars[expression[start]]
+		var/var_name = expression[start]
+		if(var_name != NAMEOF(D, vars) && D.can_vv_get(var_name))
+			v = D.vars[var_name]
 		else
 			v = "SECRET"
 	else if(D != null && long && expression[start + 1] == ":" && hascall(D, expression[start]))
@@ -1076,7 +1078,7 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 		v = expression[start]
 	if(long)
 		if(expression[start + 1] == ".")
-			return SDQL_var(v, expression[start + 2], null, source, superuser, query)
+			return SDQL_var(v, expression[start + 2], null, source, query)
 		else if(expression[start + 1] == ":")
 			return (query.options & SDQL2_OPTION_BLOCKING_CALLS)? query.SDQL_function_async(object, v, expression[start + 2], source) : query.SDQL_function_blocking(object, v, expression[start + 2], source)
 		else if(expression[start + 1] == "\[" && islist(v))
@@ -1220,3 +1222,5 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 		log_game("[key_name(usr)] non-holder clicked on a statclick! ([src])")
 		return
 	usr.client.debug_variables(GLOB.sdql2_queries)
+
+#endif

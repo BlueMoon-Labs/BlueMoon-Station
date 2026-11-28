@@ -51,6 +51,8 @@
 	///A weak reference to the user who triggered this callback
 	var/datum/weakref/user
 
+GENERAL_PROTECT_DATUM(/datum/callback)
+
 /**
  * Create a new callback datum
  *
@@ -76,14 +78,7 @@
 	user = null
 	return ..()
 
-/**
- * Invoke this callback
- *
- * Calls the registered proc on the registered object, if the user ref
- * can be resolved it also inclues that as an arg
- *
- * If the datum being called on is varedited, the call is wrapped via [WrapAdminProcCall][/proc/WrapAdminProcCall]
- */
+// Вызывает процедуру колбэка с проверкой прав в административном контексте.
 /datum/callback/proc/Invoke(...)
 	if(!usr)
 		var/datum/weakref/W = user
@@ -103,20 +98,13 @@
 			calling_arguments = calling_arguments + args //not += so that it creates a new list so the arguments list stays clean
 		else
 			calling_arguments = args
-	if(datum_flags & DF_VAR_EDITED)
+	if((datum_flags & DF_VAR_EDITED) || (GLOB.AdminProcCallCount && IsAdminAdvancedProcCall()))
 		return WrapAdminProcCall(object, delegate, calling_arguments)
 	if (object == GLOBAL_PROC)
 		return call(delegate)(arglist(calling_arguments))
 	return call(object, delegate)(arglist(calling_arguments))
 
-/**
- * Invoke this callback async (waitfor=false)
- *
- * Calls the registered proc on the registered object, if the user ref
- * can be resolved it also inclues that as an arg
- *
- * If the datum being called on is varedited, the call is wrapped via WrapAdminProcCall
- */
+// Асинхронно вызывает процедуру с теми же проверками, что и Invoke.
 /datum/callback/proc/InvokeAsync(...)
 	set waitfor = FALSE
 
@@ -138,7 +126,7 @@
 			calling_arguments = calling_arguments + args //not += so that it creates a new list so the arguments list stays clean
 		else
 			calling_arguments = args
-	if(datum_flags & DF_VAR_EDITED)
+	if((datum_flags & DF_VAR_EDITED) || (GLOB.AdminProcCallCount && IsAdminAdvancedProcCall()))
 		return WrapAdminProcCall(object, delegate, calling_arguments)
 	if (object == GLOBAL_PROC)
 		return call(delegate)(arglist(calling_arguments))

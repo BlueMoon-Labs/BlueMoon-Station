@@ -10,7 +10,6 @@
 	 * Right now it is working only with PLURALITY_VOTING and APPROVAL_VOTING.
 	 *  */
 	var/use_vote_power = FALSE
-	var/vote_power = VOTE_WEIGHT_NORMAL
 	/**
 	 * Users' ckeys and their current vote power will be stored here to prevent messing with vote powers when user is ghosting or changing roles.
 	 * Resets every vote reset.
@@ -25,7 +24,7 @@
 
 /datum/controller/subsystem/vote/reset()
 	. = ..()
-	vote_power = initial(vote_power)
+	use_vote_power = FALSE
 	users_vote_power = list()
 
 /datum/controller/subsystem/vote/proc/get_vote_power_by_role(client/C) //taken from TauCetiClassic

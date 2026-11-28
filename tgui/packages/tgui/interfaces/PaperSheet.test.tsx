@@ -3,7 +3,7 @@
  * Renders PrimaryView against a real redux store (the same way the live UI
  * reads it through useBackend/useLocalState).
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import {
   combineReducers,
   createStore,
@@ -11,7 +11,8 @@ import {
 } from 'common/redux';
 
 import { backendReducer, backendUpdate } from '../backend';
-import { PrimaryView } from './PaperSheet';
+import { PaperHtml } from './common/PaperMarkup';
+import { PreviewView, PrimaryView } from './PaperSheet';
 
 const MODE_READING = 0;
 const MODE_WRITING = 1;
@@ -91,6 +92,29 @@ describe('PaperSheet PrimaryView', () => {
     expect(container.innerHTML).toContain('<strong>bold</strong>');
   });
 
+  test('keeps the starting number of an ordered list', () => {
+    setupStore({ raw_text_input: [{ raw_text: '3. Третий пункт' }] });
+    const { container } = render(<PrimaryView />);
+    expect(container.querySelector('ol')?.start).toBe(3);
+  });
+
+  test('retains focus when the server resends the same paper data', () => {
+    const makeData = () => ({
+      raw_text_input: [{ raw_text: 'Подпись: [______]' }],
+      raw_field_input: [],
+      held_item_details: heldPen,
+    });
+    const store = setupStore(makeData());
+    const { container } = render(<PrimaryView />);
+    const field = container.querySelector<HTMLInputElement>('#paperfield_0')!;
+    field.focus();
+
+    act(() => store.dispatch(backendUpdate({ data: makeData() })));
+
+    expect(container.querySelector('#paperfield_0')).toBe(field);
+    expect(document.activeElement).toBe(field);
+  });
+
   test('strips inline styles from regular paper input', () => {
     setupStore({
       raw_text_input: [
@@ -121,6 +145,52 @@ describe('PaperSheet PrimaryView', () => {
     expect(styledText).toBeTruthy();
     expect(styledText?.style.color).toBe('red');
     expect(styledText?.style.width).toBe('100px');
+  });
+
+  test('only creates fields from text nodes in saved papers', () => {
+    setupStore({
+      raw_text_input: [{
+        raw_text: '<div title="[______]">Подпись: [______]</div>',
+        advanced_html: true,
+      }],
+      held_item_details: heldPen,
+    });
+    const { container } = render(<PrimaryView />);
+    expect(container.querySelector('.paper-text div')?.getAttribute('title'))
+      .toBe('[______]');
+    expect(container.querySelectorAll('.paper-text input')).toHaveLength(1);
+    expect(container.querySelector('input#paperfield_0')).toBeTruthy();
+  });
+
+  test('removes interactive markup from saved spectator content', () => {
+    const { container } = render(<PaperHtml text={
+      '<strong id="test" onclick="">Сохранённый текст</strong><svg></svg>'
+    } />);
+    const text = container.querySelector('strong');
+    expect(text?.textContent).toBe('Сохранённый текст');
+    expect(text?.getAttributeNames()).toEqual([]);
+    expect(container.querySelector('svg')).toBeNull();
+  });
+
+  test('renders saved fax fields by visible position and keeps their values as text', () => {
+    const { container } = render(<PreviewView snapshot={{
+      ...baseStaticData,
+      raw_text_input: [{
+        raw_text: '<div title="[______]">Подпись: [______]</div>\n\n<img alt="Приложение" src="https://example.test/fax.png">',
+        advanced_html: true,
+      }],
+      raw_field_input: [{
+        field_index: '0',
+        field_data: { raw_text: '<b>Иван</b>' },
+        is_signature: true,
+      }],
+    }} />);
+    const [field] = container.querySelectorAll('input');
+    expect(container.querySelector('[title]')?.getAttribute('title')).toBe('[______]');
+    expect(container.querySelectorAll('input')).toHaveLength(1);
+    expect(field?.value).toBe('<b>Иван</b>');
+    expect(field?.disabled).toBe(true);
+    expect(container.querySelector('img')).toBeNull();
   });
 
   test('renders [____] as a disabled input field when reading', () => {
@@ -228,13 +298,7 @@ describe('PaperSheet PrimaryView', () => {
     expect(JSON.parse(saveCall[0].payload).text).toBe('saved text');
   });
 
-  // Regression: with a single innerHTML blob for the whole page, every
-  // textarea keystroke rewrote the DM text block and recreated its input
-  // fields, wiping whatever the user had typed into them. The DM block's
-  // HTML must stay byte-identical while the textarea preview updates, so
-  // React never touches the fields' DOM.
-  // (jsdom re-applies innerHTML on every rerender, so DOM node identity
-  // can't be asserted here - string identity is the contract that matters.)
+  // Набор текста в редакторе сохраняет узлы полей и уже введённый текст.
   test('typing in the textarea does not alter the DM text block', () => {
     setupStore({
       raw_text_input: [
@@ -260,6 +324,8 @@ describe('PaperSheet PrimaryView', () => {
     const blocks = container.querySelectorAll('.paper-text');
     expect(blocks.length).toBe(2);
     expect(blocks[0].innerHTML).toBe(dmBlockBefore);
+    expect(blocks[0].querySelector('input')).toBe(field);
+    expect(field.value).toBe('Иванов');
     expect(blocks[1].innerHTML).toContain('текст отчёта');
   });
 

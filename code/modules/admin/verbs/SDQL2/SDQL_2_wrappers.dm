@@ -93,6 +93,10 @@
 	return min(arglist(args))
 
 /proc/_new(type, arguments)
+	if(istext(type))
+		type = text2path(type)
+	if(!ispath(type) || ispath(type, /datum/callback))
+		return
 	return new type (arglist(arguments))
 
 /proc/_num2text(N, SigFig = 6)

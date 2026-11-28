@@ -47,7 +47,9 @@
 #define STATPANEL_CHANNEL_VOTING "voting"
 #define STATPANEL_CHANNEL_SPELLS "spells"
 #define STATPANEL_CHANNEL_TICKETS "tickets"
+#ifdef ENABLE_SDQL2
 #define STATPANEL_CHANNEL_SDQL2 "sdql2"
+#endif
 #define STATPANEL_CHANNEL_READYPLAYERS "readyplayers"
 /// Ready players payload is rebuilt at most this often (deciseconds).
 #define STATPANEL_READYPLAYERS_CACHE_DELAY 15
@@ -341,13 +343,13 @@ SUBSYSTEM_DEF(statpanels)
 										ivotedforthis = SSvote.voted[target.ckey] && (text2num(choice_id) in SSvote.voted[target.ckey])
 									else
 										ivotedforthis = (SSvote.voted[target.ckey] == text2num(choice_id))
-									vote_arry[++vote_arry.len] += list(ivotedforthis ? "\[X\]" : "\[ \]", display_choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
+									vote_arry[++vote_arry.len] += list(ivotedforthis ? "\[X\]" : "\[ \]", display_choice, "[REF(SSvote)];vote=[choice_id];ballot_id=[SSvote.ballot_id];statpannel=1")
 								if(SCHULZE_VOTING, INSTANT_RUNOFF_VOTING)
 									var/list/vote = SSvote.voted[target.ckey]
 									var/vote_position = " "
 									if(vote)
 										vote_position = vote.Find(text2num(choice_id))
-									vote_arry[++vote_arry.len] += list("\[[vote_position]\]", display_choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
+									vote_arry[++vote_arry.len] += list("\[[vote_position]\]", display_choice, "[REF(SSvote)];vote=[choice_id];ballot_id=[SSvote.ballot_id];statpannel=1")
 				var/raw_vote = json_encode(vote_arry)
 				if(target.statpanel_last_sent[STATPANEL_CHANNEL_VOTING] != raw_vote)
 					target << output("[url_encode(raw_vote)]", "statbrowser:update_voting")
@@ -385,6 +387,7 @@ SUBSYSTEM_DEF(statpanels)
 				if(target.statpanel_last_sent[STATPANEL_CHANNEL_TICKETS] != cached_tickets_encoded)
 					target << output("[cached_tickets_encoded];", "statbrowser:update_tickets")
 					target.statpanel_last_sent[STATPANEL_CHANNEL_TICKETS] = cached_tickets_encoded
+#ifdef ENABLE_SDQL2
 			if(!length(GLOB.sdql2_queries) && ("SDQL2" in target.panel_tabs))
 				target << output("", "statbrowser:remove_sdql2")
 				target.statpanel_last_sent -= STATPANEL_CHANNEL_SDQL2
@@ -400,6 +403,7 @@ SUBSYSTEM_DEF(statpanels)
 				if(target.statpanel_last_sent[STATPANEL_CHANNEL_SDQL2] != raw_sdql)
 					target << output(url_encode(raw_sdql), "statbrowser:update_sdql2")
 					target.statpanel_last_sent[STATPANEL_CHANNEL_SDQL2] = raw_sdql
+#endif
 
 		if(target.mob)
 			if(istype(target.mob, /mob/dead/new_player) && !SSticker.HasRoundStarted())
@@ -1323,6 +1327,8 @@ SUBSYSTEM_DEF(statpanels)
 #undef STATPANEL_CHANNEL_VOTING
 #undef STATPANEL_CHANNEL_SPELLS
 #undef STATPANEL_CHANNEL_TICKETS
+#ifdef ENABLE_SDQL2
 #undef STATPANEL_CHANNEL_SDQL2
+#endif
 #undef STATPANEL_CHANNEL_READYPLAYERS
 #undef STATPANEL_READYPLAYERS_CACHE_DELAY

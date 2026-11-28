@@ -1008,7 +1008,8 @@
 		toggle_headlamp(FALSE, TRUE) //This will reenable borg headlamps if doomsday is currently going on still.
 
 /mob/living/silicon/robot/fully_replace_character_name(oldname, newname)
-	..()
+	if(!..())
+		return
 	if(oldname != real_name)
 		notify_ai(RENAME, oldname, newname)
 	if(!QDELETED(builtInCamera))

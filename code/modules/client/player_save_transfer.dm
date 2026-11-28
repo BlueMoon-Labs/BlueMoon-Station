@@ -329,6 +329,8 @@
 		if("name")
 			return reject_bad_name(value, TRUE)
 		if("encoded")
+			if(key == "medical_records" || key == "security_records")
+				return normalize_character_record(value)
 			return html_encode_readable(html_decode(value))
 		if("emote")
 			return strip_html_simple(value, MAX_DEATHGASP_LEN)

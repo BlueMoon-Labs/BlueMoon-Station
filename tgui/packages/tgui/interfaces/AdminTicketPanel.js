@@ -14,6 +14,9 @@ import {
   Tabs,
 } from '../components';
 import { Window } from '../layouts';
+import { sanitizeTicketHtml } from '../sanitize';
+import { PaperHtml } from './common/PaperMarkup';
+import { PreviewView } from './PaperSheet';
 
 const STATE_COLORS = {
   1: '#f87171',
@@ -716,6 +719,8 @@ const TicketDetailPanel = (props) => {
             <NoticeBox info>Нет сообщений.</NoticeBox>
           )}
           {(ticket.interactions || []).map((msg, idx) => (
+            // Исходный текст сообщения тикета - недоверенный ввод.
+            // Раньше: dangerouslySetInnerHTML={{ __html: msg }} -> XSS.
             <Box
               key={idx}
               py={0.5}
@@ -728,7 +733,7 @@ const TicketDetailPanel = (props) => {
                 borderRadius: '3px',
                 wordBreak: 'break-word',
               }}
-              dangerouslySetInnerHTML={{ __html: msg }}
+              dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(msg, 'admin') }}
             />
           ))}
           <AutoScrollToBottom triggerKey={(ticket.interactions || []).length} />
@@ -857,12 +862,11 @@ const CommDetailPanel = (props) => {
               overflowY: 'auto',
             }}
           >
-            {hasPaper ? (
+            {msg.paper_document ? (
+              <PreviewView snapshot={msg.paper_document} />
+            ) : hasPaper ? (
               msg.paper_html ? (
-                <Box
-                  dangerouslySetInnerHTML={{ __html: msg.paper_html }}
-                  style={{ whiteSpace: 'normal' }}
-                />
+                <PaperHtml text={msg.paper_html} allowMedia={false} />
               ) : (
                 <Box
                   style={{

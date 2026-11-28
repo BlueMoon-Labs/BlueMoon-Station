@@ -160,6 +160,15 @@
 /proc/html_encode_readable(t)
 	return readd_quotes(html_encode(t))
 
+// Записи персонажа хранятся экранированными. Ограничиваем длину до кодирования.
+/proc/encode_character_record(text)
+	if(!istext(text))
+		return ""
+	return html_encode_readable(strip_control_chars(copytext_char(text, 1, MAX_FLAVOR_LEN)))
+
+/proc/normalize_character_record(text)
+	return istext(text) ? encode_character_record(html_decode(text)) : ""
+
 /// Shared finalizer for stripped_* input procs: sanitize then bound to max_length.
 /// Returns null on null input so callers can distinguish Cancel from empty text.
 /proc/finalize_stripped_input(name, max_length, no_trim)

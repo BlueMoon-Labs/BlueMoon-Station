@@ -150,7 +150,7 @@
 				if(istype(active2, /datum/data/record) && GLOB.data_core.security.Find(active2))
 					security["empty"] = FALSE
 					security["criminal"] = active2.fields["criminal"]
-					security["notes"] = active2.fields["notes"]
+					security["notes"] = html_decode(active2.fields["notes"])
 
 					var/list/minor_crimes = list()
 					for(var/datum/data/crime/c in active2.fields["mi_crim"])
@@ -503,7 +503,7 @@
 				if("notes")
 					if(!active2)
 						return
-					new_value = tgui_input_text(usr, "Введите заметки:", "Записи безопасности", active2.fields["notes"], max_length = 8192, multiline = TRUE, encode = TRUE)
+					new_value = tgui_input_text(usr, "Введите заметки:", "Записи безопасности", html_decode(active2.fields["notes"]), max_length = 8192, multiline = TRUE, encode = TRUE)
 					if(!length(new_value) || !can_use_console(usr))
 						return
 					active2.fields["notes"] = new_value

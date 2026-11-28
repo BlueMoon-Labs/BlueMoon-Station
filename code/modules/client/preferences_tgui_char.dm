@@ -3558,9 +3558,9 @@
 		if("ooc_notes")
 			prefs.features["ooc_notes"] = clip_text(text, MAX_FLAVOR_LEN)
 		if("security_records")
-			prefs.security_records = clip_text(text, MAX_FLAVOR_LEN)
+			prefs.security_records = encode_character_record(text)
 		if("medical_records")
-			prefs.medical_records = clip_text(text, MAX_FLAVOR_LEN)
+			prefs.medical_records = encode_character_record(text)
 		if("deathgasp")
 			if(isnull(text))
 				return
@@ -3588,9 +3588,9 @@
 		if("ooc_notes")
 			config = list("OOC-заметки", prefs.features["ooc_notes"], MAX_FLAVOR_LEN)
 		if("security_records")
-			config = list("Охранные записи", prefs.security_records, MAX_FLAVOR_LEN)
+			config = list("Охранные записи", html_decode(prefs.security_records), MAX_FLAVOR_LEN)
 		if("medical_records")
-			config = list("Медицинские записи", prefs.medical_records, MAX_FLAVOR_LEN)
+			config = list("Медицинские записи", html_decode(prefs.medical_records), MAX_FLAVOR_LEN)
 		if("deathgasp")
 			config = list("Эмоут смерти", prefs.features["custom_deathgasp"], MAX_DEATHGASP_LEN)
 		else
@@ -3615,8 +3615,8 @@
 	data["speciesLore"] = prefs.features["custom_species_lore"]
 	data["oocNotes"] = prefs.features["ooc_notes"]
 	data["deathgasp"] = prefs.features["custom_deathgasp"]
-	data["securityRecords"] = prefs.security_records
-	data["medicalRecords"] = prefs.medical_records
+	data["securityRecords"] = html_decode(prefs.security_records)
+	data["medicalRecords"] = html_decode(prefs.medical_records)
 
 	data["headshots"] = build_headshot_slots(prefs.features["headshot_links"], MAX_HEADSHOTS)
 	data["nakedHeadshots"] = build_headshot_slots(prefs.features["headshot_naked_links"], MAX_HEADSHOTS_NAKED)
