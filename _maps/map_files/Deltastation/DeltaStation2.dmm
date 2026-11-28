@@ -808,21 +808,26 @@
 	},
 /area/security/brig)
 "aet" = (
-/obj/machinery/conveyor{
-	dir = 8;
-	id = "garbage"
-	},
-/obj/machinery/door/window/eastright{
-	base_state = "left";
-	dir = 1;
-	icon_state = "left";
-	name = "Danger: Conveyor Access";
-	req_access_txt = "12"
+/obj/structure/cable/white{
+	icon_state = "1-2"
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/bot/yellow,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/obj/machinery/door/airlock/external{
+	name = "Supply Dock Airlock";
+	req_access_txt = "31"
+	},
 /turf/open/floor/plasteel,
-/area/maintenance/disposal)
+/area/cargo/storage)
 "aeB" = (
 /obj/machinery/status_display/evac,
 /turf/closed/wall,
@@ -38927,6 +38932,7 @@
 /obj/structure/chair{
 	dir = 8
 	},
+/obj/effect/landmark/start/security_officer,
 /turf/open/floor/glass/reinforced,
 /area/security/brig_briefing)
 "eQJ" = (
@@ -40108,20 +40114,13 @@
 /turf/open/floor/plasteel,
 /area/medical/medbay/central)
 "fdk" = (
-/obj/machinery/light{
-	dir = 1
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/delivery,
+/obj/structure/cable/white{
+	icon_state = "1-2"
 	},
-/obj/structure/disposalpipe/segment{
-	dir = 8
-	},
-/obj/structure/transmitter/mounted{
-	pixel_x = -5;
-	pixel_y = 32
-	},
-/turf/open/floor/plasteel/dark/side{
-	dir = 1
-	},
-/area/security/brig)
+/turf/open/floor/plasteel,
+/area/cargo/storage)
 "fdm" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
@@ -45489,15 +45488,13 @@
 /turf/open/floor/plasteel/dark,
 /area/security/office)
 "gmM" = (
-/obj/machinery/conveyor{
-	dir = 4;
-	id = "garbage"
+/obj/item/radio/intercom{
+	dir = 8;
+	name = "Station Intercom (General)";
+	pixel_y = -26
 	},
-/obj/machinery/recycler,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/stripes/yellow/line,
-/turf/open/floor/plating,
-/area/maintenance/disposal)
+/turf/open/floor/plasteel/dark/side,
+/area/security/prison)
 "gnb" = (
 /obj/machinery/airalarm{
 	dir = 1;
@@ -46331,6 +46328,7 @@
 /obj/structure/chair{
 	dir = 1
 	},
+/obj/effect/landmark/start/security_officer,
 /turf/open/floor/glass/reinforced,
 /area/security/brig_briefing)
 "gvE" = (
@@ -46681,13 +46679,15 @@
 /turf/open/floor/plasteel,
 /area/engineering/break_room)
 "gCc" = (
+/obj/effect/turf_decal/trimline/red/filled/corner{
+	dir = 8
+	},
 /obj/item/radio/intercom{
-	dir = 8;
 	name = "Station Intercom (General)";
-	pixel_y = -26
+	pixel_y = -28
 	},
 /turf/open/floor/plasteel/dark/side,
-/area/security/prison)
+/area/security/brig)
 "gCj" = (
 /obj/structure/cable/white{
 	icon_state = "4-8"
@@ -47123,10 +47123,20 @@
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/security/prison/cells)
 "gHo" = (
-/obj/structure/disposalpipe/segment,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating,
-/area/maintenance/disposal)
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 8
+	},
+/obj/structure/transmitter/mounted{
+	pixel_x = -5;
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/security/brig)
 "gHH" = (
 /obj/structure/table/reinforced,
 /obj/item/clipboard,
@@ -48697,6 +48707,7 @@
 /obj/structure/disposalpipe/segment{
 	dir = 8
 	},
+/obj/effect/landmark/start/security_officer,
 /turf/open/floor/glass/reinforced,
 /area/security/brig_briefing)
 "hcR" = (
@@ -50772,6 +50783,7 @@
 /obj/structure/disposalpipe/segment{
 	dir = 9
 	},
+/obj/effect/landmark/start/security_officer,
 /turf/open/floor/glass/reinforced,
 /area/security/brig_briefing)
 "hBo" = (
@@ -50880,15 +50892,16 @@
 /turf/open/floor/plasteel,
 /area/maintenance/port)
 "hCC" = (
-/obj/effect/turf_decal/trimline/red/filled/corner{
-	dir = 8
+/obj/machinery/conveyor{
+	dir = 8;
+	id = "garbage"
 	},
-/obj/item/radio/intercom{
-	name = "Station Intercom (General)";
-	pixel_y = -28
+/obj/effect/decal/cleanable/blood/splatter,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
 	},
-/turf/open/floor/plasteel/dark/side,
-/area/security/brig)
+/turf/open/floor/plating,
+/area/maintenance/disposal)
 "hCF" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/plasticflaps/opaque,
@@ -56411,6 +56424,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
+/obj/effect/landmark/start/security_officer,
 /turf/open/floor/glass/reinforced,
 /area/security/brig_briefing)
 "iKZ" = (
@@ -61813,7 +61827,6 @@
 /obj/effect/turf_decal/trimline/red/warning{
 	dir = 8
 	},
-/obj/structure/bed/roller,
 /obj/effect/turf_decal/trimline/red/mid_joiner{
 	dir = 8
 	},
@@ -61821,6 +61834,7 @@
 /obj/structure/cable/white{
 	icon_state = "4-8"
 	},
+/obj/machinery/suit_storage_unit/cmo,
 /turf/open/floor/plasteel/white/smooth/large,
 /area/security/brig/brig_medical)
 "jRQ" = (
@@ -65393,13 +65407,17 @@
 /turf/open/floor/plasteel,
 /area/station/cargo/bitrunning)
 "kHK" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/delivery,
-/obj/structure/cable/white{
-	icon_state = "1-2"
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 6
 	},
 /turf/open/floor/plasteel,
-/area/cargo/storage)
+/area/hallway/primary/central)
 "kHX" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
@@ -65958,17 +65976,21 @@
 /turf/open/floor/plating,
 /area/security/brig)
 "kOZ" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 4
+/obj/machinery/conveyor{
+	dir = 8;
+	id = "garbage"
 	},
-/obj/effect/turf_decal/tile/brown{
-	dir = 4
+/obj/machinery/door/window/eastright{
+	base_state = "left";
+	dir = 1;
+	icon_state = "left";
+	name = "Danger: Conveyor Access";
+	req_access_txt = "12"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 6
-	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel,
-/area/hallway/primary/central)
+/area/maintenance/disposal)
 "kPb" = (
 /obj/machinery/meter,
 /obj/effect/decal/cleanable/dirt,
@@ -66779,15 +66801,22 @@
 /turf/open/floor/plasteel,
 /area/engineering/atmospherics_engine)
 "kVy" = (
-/obj/structure/disposalpipe/segment{
-	dir = 4
+/obj/effect/turf_decal/trimline/red/warning{
+	dir = 1
 	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/delivery,
-/turf/open/floor/plasteel,
-/area/maintenance/disposal)
+/obj/effect/turf_decal/trimline/red/mid_joiner{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/structure/closet/secure_closet/brigdoc,
+/obj/item/clothing/suit/armor/brigdoc,
+/obj/item/clothing/head/helmet/sec,
+/obj/item/clothing/suit/armor/vest/alt,
+/obj/item/clothing/glasses/hud/security/sunglasses,
+/obj/item/storage/belt/security/full,
+/obj/item/clothing/head/helmet/brigdoc,
+/turf/open/floor/plasteel/white/smooth/large,
+/area/security/brig/brig_medical)
 "kVC" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -69433,6 +69462,16 @@
 	},
 /turf/open/floor/carpet,
 /area/service/lawoffice)
+"lAJ" = (
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/plasteel,
+/area/maintenance/disposal)
 "lAN" = (
 /obj/structure/table/wood,
 /obj/item/storage/fancy/candle_box{
@@ -76027,26 +76066,16 @@
 	},
 /area/command/heads_quarters/cmo)
 "mUd" = (
-/obj/structure/cable/white{
-	icon_state = "1-2"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
+/obj/machinery/door/poddoor{
+	id = "trash";
+	name = "Disposals Launch Seal"
 	},
 /obj/structure/fans/tiny,
-/obj/machinery/door/airlock/external{
-	name = "Supply Dock Airlock";
-	req_access_txt = "31"
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
 	},
 /turf/open/floor/plasteel,
-/area/cargo/storage)
+/area/maintenance/disposal)
 "mUk" = (
 /obj/structure/cable/white{
 	icon_state = "4-8"
@@ -104998,6 +105027,7 @@
 	dir = 1
 	},
 /obj/structure/disposalpipe/segment,
+/obj/effect/landmark/start/security_officer,
 /turf/open/floor/glass/reinforced,
 /area/security/brig_briefing)
 "tdI" = (
@@ -108906,9 +108936,15 @@
 /turf/open/floor/plasteel,
 /area/cargo/sorting)
 "tSk" = (
-/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/conveyor{
+	dir = 4;
+	id = "garbage"
+	},
+/obj/machinery/recycler,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/plating,
-/area/maintenance/starboard)
+/area/maintenance/disposal)
 "tSo" = (
 /obj/effect/turf_decal/tile/red/opposingcorners,
 /obj/effect/turf_decal/tile/yellow/opposingcorners{
@@ -117714,7 +117750,6 @@
 	},
 /area/security/brig)
 "vKq" = (
-/obj/machinery/vending/brigdoc_vendomat,
 /obj/effect/turf_decal/trimline/red/warning{
 	dir = 9
 	},
@@ -117722,6 +117757,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/neutral/full,
+/obj/item/kirbyplants/hedge,
 /turf/open/floor/plasteel/white/smooth/large,
 /area/security/brig/brig_medical)
 "vKw" = (
@@ -119610,16 +119646,9 @@
 /turf/open/floor/engine/o2,
 /area/engineering/atmos)
 "wjD" = (
-/obj/machinery/door/poddoor{
-	id = "trash";
-	name = "Disposals Launch Seal"
-	},
-/obj/structure/fans/tiny,
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 8
-	},
-/turf/open/floor/plasteel,
-/area/maintenance/disposal)
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/maintenance/starboard)
 "wjL" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -124568,14 +124597,8 @@
 /turf/closed/wall,
 /area/command/heads_quarters/captain/private)
 "xqL" = (
-/obj/machinery/conveyor{
-	dir = 8;
-	id = "garbage"
-	},
-/obj/effect/decal/cleanable/blood/splatter,
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 1
-	},
+/obj/structure/disposalpipe/segment,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/maintenance/disposal)
 "xrd" = (
@@ -126360,6 +126383,7 @@
 /obj/structure/cable/white{
 	icon_state = "1-2"
 	},
+/obj/effect/landmark/start/security_officer,
 /turf/open/floor/glass/reinforced,
 /area/security/brig_briefing)
 "xKE" = (
@@ -127005,7 +127029,6 @@
 /obj/effect/turf_decal/trimline/red/warning{
 	dir = 8
 	},
-/obj/machinery/suit_storage_unit/cmo,
 /obj/effect/turf_decal/trimline/red/mid_joiner{
 	dir = 8
 	},
@@ -127013,6 +127036,7 @@
 /obj/machinery/light{
 	dir = 8
 	},
+/obj/machinery/vending/brigdoc_vendomat,
 /turf/open/floor/plasteel/white/smooth/large,
 /area/security/brig/brig_medical)
 "xSL" = (
@@ -171969,7 +171993,7 @@ uFt
 uFt
 gjW
 gjW
-kOZ
+kHK
 cfD
 oit
 uSI
@@ -174265,7 +174289,7 @@ hWe
 hWe
 iaE
 mHt
-kHK
+fdk
 pGE
 hNS
 kcv
@@ -175029,7 +175053,7 @@ oMQ
 udU
 iZH
 snn
-mUd
+aet
 lHC
 ttC
 aaa
@@ -175275,9 +175299,9 @@ aad
 aoE
 apE
 aqG
-aet
-xqL
-gmM
+kOZ
+hCC
+tSk
 lTu
 aoE
 aaa
@@ -175531,7 +175555,7 @@ aac
 aad
 aoF
 apE
-kVy
+lAJ
 arh
 ash
 atF
@@ -175791,7 +175815,7 @@ apF
 aqI
 ari
 asi
-gHo
+xqL
 auO
 aoF
 aaa
@@ -176044,7 +176068,7 @@ aaa
 ajr
 aaa
 aoF
-wjD
+mUd
 aoF
 aoF
 aig
@@ -181216,7 +181240,7 @@ aFm
 aaa
 aaa
 lph
-itn
+kVy
 oGG
 jEG
 xgV
@@ -181766,8 +181790,8 @@ clJ
 osW
 osW
 osW
-tSk
-tSk
+wjD
+wjD
 bHq
 bHq
 ksC
@@ -182267,7 +182291,7 @@ syO
 uYJ
 qlx
 qzW
-fdk
+gHo
 pky
 fIL
 eoc
@@ -183266,7 +183290,7 @@ aSO
 aFm
 jLq
 wqx
-gCc
+gmM
 aFm
 qgU
 qgU
@@ -186895,7 +186919,7 @@ aTb
 qhy
 sDD
 hmC
-hCC
+gCc
 bgZ
 bgZ
 bgZ
