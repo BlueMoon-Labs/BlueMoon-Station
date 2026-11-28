@@ -1204,8 +1204,9 @@
 		return
 
 	var/is_boss = istype(creature, /mob/living/simple_animal/hostile/megafauna)
-	var/health_factor = is_boss ? 0.25 : 0.55
-	var/min_health = is_boss ? 150 : 20
+	var/difficulty = generated_domain?.difficulty || 0
+	var/health_factor = is_boss ? 0.3 + difficulty * 0.1 : 0.55
+	var/min_health = is_boss ? 250 : 20
 	var/new_max_health = max(min_health, round(creature.maxHealth * health_factor))
 	if(creature.maxHealth > new_max_health)
 		creature.maxHealth = new_max_health
