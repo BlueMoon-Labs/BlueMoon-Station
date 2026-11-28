@@ -55495,14 +55495,16 @@
 /obj/machinery/button/door{
 	id = "syndicate_icemoon_reactor_vent";
 	name = "Reactor Vent";
-	req_access = list("150");
-	pixel_x = -7
+	req_access = list(150);
+	pixel_x = -7;
+	req_access_txt = "150"
 	},
 /obj/machinery/button/door{
 	id = "syndicate_icemoon_reactor_access";
 	name = "Reactor Access";
-	req_access = list("150");
-	pixel_x = 5
+	req_access = list(150);
+	pixel_x = 5;
+	req_access_txt = "150"
 	},
 /obj/item/sealant{
 	pixel_x = -6;
@@ -99956,12 +99958,6 @@
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/workout)
-"tRY" = (
-/obj/structure/sign/nanotrasen{
-	pixel_y = 32
-	},
-/turf/closed/mineral/random/snow,
-/area/icemoon/surface/outdoors)
 "tRZ" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
@@ -113253,7 +113249,8 @@
 	id = "syndicate_icemoon_powerstation_windows";
 	name = "Window Shutters";
 	pixel_x = 24;
-	req_access = list("150")
+	req_access = list(150);
+	req_access_txt = "150"
 	},
 /obj/structure/window/plasma/reinforced/spawner/north,
 /obj/machinery/door/firedoor/border_only{
@@ -114972,6 +114969,12 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/turret_protected/aisat/atmos)
+"wNZ" = (
+/obj/structure/sign/nanotrasen{
+	pixel_y = 32
+	},
+/turf/closed/mineral/random/snow,
+/area/icemoon/surface/outdoors)
 "wOb" = (
 /obj/machinery/light/small/directional/west,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -139567,7 +139570,7 @@ vcT
 vcT
 vcT
 uKd
-tRY
+wNZ
 dlP
 dlP
 dlP
