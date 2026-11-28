@@ -10,6 +10,7 @@
 	var/capacitor_coefficient = 1
 	var/datum/lazy_template/virtual_domain/generated_domain
 	var/domain_randomized = FALSE
+	var/domain_completed = FALSE
 	var/is_ready = TRUE
 	var/glitch_chance = 0.2
 	var/list/datum/weakref/avatar_connection_refs = list()
@@ -28,6 +29,12 @@
 	/// Клетки приёма груза текущего домена; турфы резервации переживают её освобождение вместе с сигналами
 	var/list/turf/goal_turfs = list()
 	var/broadcasting = FALSE
+	var/obj/effect/mob_spawn/human/virtual_domain/hostile_ghost_spawner
+	var/list/turf/hostile_ghost_turfs = list()
+	var/hostile_ghost_alert_timer
+	var/hostile_ghost_alert_category
+	var/hostile_ghost_spawns_left = 0
+	var/list/mob/camera/hostile_domain_spawn/hostile_spawn_cameras = list()
 	COOLDOWN_DECLARE(broadcast_toggle_cd)
 	COOLDOWN_DECLARE(polling_cooldown)
 
@@ -43,6 +50,7 @@
 	spawned_threat_refs.Cut()
 	exit_turfs.Cut()
 	release_goal_turfs()
+	clear_hostile_ghost_spawner()
 	QDEL_NULL(generated_domain)
 	return ..()
 
@@ -221,6 +229,7 @@
 	return total
 
 /obj/machinery/quantum_server/proc/generate_loot(obj/cache, obj/machinery/byteforge/chosen_forge)
+	domain_completed = TRUE
 	SSblackbox.record_feedback("tally", "bitrunning_domain_primary_completed", 1, generated_domain.key)
 	for(var/mob/person in cache.contents)
 		SEND_SIGNAL(person, COMSIG_BITRUNNER_CACHE_SEVER)
@@ -230,6 +239,7 @@
 	SEND_SIGNAL(src, COMSIG_BITRUNNER_DOMAIN_COMPLETE, cache, generated_domain.reward_points)
 
 	points += generated_domain.reward_points
+	award_cargo_budget()
 	playsound(src, 'sound/machines/terminal_success.ogg', 30, vary = TRUE)
 
 	var/bonus = calculate_rewards()
@@ -252,6 +262,27 @@
 
 	chosen_forge.start_to_spawn(reward_cache)
 	return TRUE
+
+/obj/machinery/quantum_server/proc/get_cargo_budget_reward()
+	if(isnull(generated_domain))
+		return 0
+	if(generated_domain.cost >= BITRUNNER_COST_EXTREME)
+		return BITRUNNER_CARGO_BUDGET_HIGH
+	switch(generated_domain.difficulty)
+		if(BITRUNNER_DIFFICULTY_MEDIUM)
+			return BITRUNNER_CARGO_BUDGET_MEDIUM
+		if(BITRUNNER_DIFFICULTY_HIGH)
+			return BITRUNNER_CARGO_BUDGET_HIGH
+	return BITRUNNER_CARGO_BUDGET_LOW
+
+/obj/machinery/quantum_server/proc/award_cargo_budget()
+	var/datum/bank_account/department/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	if(isnull(cargo))
+		return
+	var/reward = get_cargo_budget_reward()
+	if(reward <= 0)
+		return
+	cargo.credit(reward, ECON_CONTRACT, null, "Битранинг: [generated_domain.name]")
 
 /obj/machinery/quantum_server/proc/generate_secondary_loot(obj/curiosity, obj/machinery/byteforge/chosen_forge)
 	SSblackbox.record_feedback("tally", "bitrunning_domain_secondary_completed", 1, generated_domain.key)
@@ -282,7 +313,8 @@
 	text += "### [generated_domain.name][domain_randomized ? " (Случайный)" : ""]\n"
 	text += "- **Сложность:** [generated_domain.difficulty]\n"
 	text += "- **Угрозы:** [domain_threats]\n"
-	text += "- **Базовая награда:** [base_points][domain_randomized ? " +1" : ""]\n\n"
+	text += "- **Базовая награда:** [base_points][domain_randomized ? " +1" : ""]\n"
+	text += "- **Бюджет карго:** +[get_cargo_budget_reward()]\n\n"
 	text += "- **Общий бонус:** [bonuses]x\n\n"
 
 	if(bonuses <= 1)
@@ -391,7 +423,8 @@
 	if(!length(connections))
 		balloon_alert_to_viewers("отключение домена...")
 		playsound(src, 'sound/machines/terminal_off.ogg', 40, vary = TRUE)
-		points = max(0, points - 1)
+		if(!domain_completed)
+			points = max(0, points - 1)
 		SStgui.update_uis(src)
 		reset()
 		return
@@ -411,7 +444,8 @@
 	if(!is_ready || QDELETED(src))
 		return
 
-	points = max(0, points - 1)
+	if(!domain_completed)
+		points = max(0, points - 1)
 	SStgui.update_uis(src)
 	reset()
 
@@ -434,6 +468,7 @@
 	is_ready = FALSE
 	retries_spent = 0
 	exit_turfs.Cut()
+	clear_hostile_ghost_spawner()
 	playsound(src, 'sound/machines/terminal_processing.ogg', 30, 2)
 
 	if(!load_domain(map_key) || !load_map_items() || !load_mob_segments())
@@ -471,10 +506,7 @@
 		start_broadcasting_network(BITRUNNER_CAMERA_NET)
 
 	if(generated_domain.announce_to_ghosts)
-		notify_ghosts("Битраннеры загрузили домен с возможностью взаимодействия с призраками. Проверьте меню спавнеров.",
-			src,
-			"Matrix Glitch",
-		)
+		setup_hostile_ghost_spawner()
 
 	return TRUE
 
@@ -566,21 +598,11 @@
 
 			new /obj/structure/hololadder(tile)
 
-	var/max_ghost_spawners = max(4, generated_domain.mission_max_candidates)
 	for(var/datum/turf_reservation/reservation as anything in generated_domain.reservations)
 		for(var/turf/tile as anything in reservation.reserved_turfs)
 			for(var/obj/effect/mob_spawn/human/virtual_domain/spawner in tile)
-				if(QDELETED(spawner))
-					continue
-				if(!generated_domain.announce_to_ghosts)
+				if(generated_domain.announce_to_ghosts)
 					qdel(spawner)
-					continue
-				if(length(generated_domain.ghost_spawners) >= max_ghost_spawners)
-					qdel(spawner)
-					continue
-				spawner.invisibility = INVISIBILITY_ABSTRACT
-				spawner.density = FALSE
-				generated_domain.ghost_spawners += spawner
 
 	if(!length(exit_turfs))
 		CRASH("Не удалось найти клетки выхода в сгенерированном домене.")
@@ -615,8 +637,10 @@
 
 /obj/machinery/quantum_server/proc/reset(fast = FALSE)
 	is_ready = FALSE
+	domain_completed = FALSE
 
 	sever_connections()
+	clear_hostile_ghost_spawner()
 
 	if(!fast)
 		notify_spawned_threats()
@@ -635,6 +659,7 @@
 
 /obj/machinery/quantum_server/proc/scrub_vdom()
 	sever_connections()
+	clear_hostile_ghost_spawner()
 	SEND_SIGNAL(src, COMSIG_BITRUNNER_DOMAIN_SCRUBBED)
 
 	if(generated_domain)
@@ -675,6 +700,282 @@
 	generated_domain = null
 	mutation_candidate_refs.Cut()
 	spawned_threat_refs.Cut()
+
+/obj/machinery/quantum_server/proc/setup_hostile_ghost_spawner()
+	clear_hostile_ghost_spawner()
+
+	if(!generated_domain || !generated_domain.announce_to_ghosts)
+		return
+
+	var/spawner_path = generated_domain.ghost_spawner_type
+	if(!spawner_path || !ispath(spawner_path, /obj/effect/mob_spawn/human/virtual_domain))
+		return
+
+	var/limit = generated_domain.ghost_spawn_limit || max(4, generated_domain.mission_max_candidates)
+	if(limit <= 0)
+		return
+	hostile_ghost_spawns_left = limit
+
+	var/obj/effect/mob_spawn/human/virtual_domain/spawner = new spawner_path(get_turf(src))
+	spawner.dynamic_domain_spawn = TRUE
+	spawner.dynamic_server = src
+	spawner.dynamic_domain = generated_domain
+	spawner.permanent = TRUE
+	spawner.uses = -1
+	spawner.skip_reentry_check = TRUE
+	spawner.icon = 'icons/effects/bitrunning.dmi'
+	spawner.icon_state = "glitch"
+	spawner.invisibility = INVISIBILITY_ABSTRACT
+	spawner.density = FALSE
+
+	hostile_ghost_spawner = spawner
+	hostile_ghost_alert_category = "bitrunning_hostile_ghost_[REF(src)]"
+	generated_domain.ghost_spawners += spawner
+
+	RegisterSignals(spawner, list(COMSIG_GHOSTROLE_SPAWNED, COMSIG_BITRUNNER_SPAWNED), PROC_REF(on_domain_mob_spawned))
+
+	build_hostile_ghost_turfs()
+	if(!length(hostile_ghost_turfs))
+		clear_hostile_ghost_spawner()
+		return
+	refresh_hostile_ghost_alert(TRUE)
+	hostile_ghost_alert_timer = addtimer(CALLBACK(src, PROC_REF(refresh_hostile_ghost_alert)), 10 SECONDS, TIMER_STOPPABLE|TIMER_LOOP)
+
+/obj/machinery/quantum_server/proc/begin_hostile_ghost_spawn_selection(mob/dead/observer/ghost, obj/effect/mob_spawn/human/virtual_domain/spawner)
+	if(!ghost || !ghost.client || !spawner || QDELETED(spawner))
+		return FALSE
+	if(!spawner.skip_reentry_check && !ghost.can_reenter_round(TRUE))
+		var/timeout = GLOB.client_ghost_timeouts[ghost.ckey]
+		if(!(ghost in GLOB.ghost_eligible_mobs))
+			to_chat(ghost, span_warning("Вы не можете взять гост-роль."))
+		else if(timeout && timeout != CANT_REENTER_ROUND && timeout > world.realtime)
+			to_chat(ghost, span_warning("Вы не можете вернуться в раунд. Чёрный список гост-ролей истечёт через [DisplayTimeText(timeout - world.realtime)]."))
+		else
+			to_chat(ghost, span_warning("Вы не можете вернуться в раунд."))
+		return FALSE
+	if(!generated_domain || !generated_domain.announce_to_ghosts)
+		return FALSE
+	if(hostile_ghost_spawns_left <= 0)
+		return FALSE
+
+	var/turf/start_turf
+	if(length(hostile_ghost_turfs))
+		start_turf = pick(hostile_ghost_turfs)
+	else if(length(exit_turfs))
+		start_turf = exit_turfs[1]
+	else if(length(goal_turfs))
+		start_turf = goal_turfs[1]
+	else
+		start_turf = get_turf(src)
+	if(!start_turf)
+		to_chat(ghost, span_warning("Не удалось начать выбор места появления."))
+		return FALSE
+	if(!is_turf_in_domain(start_turf) && length(hostile_ghost_turfs))
+		start_turf = pick(hostile_ghost_turfs)
+
+	var/mob/camera/hostile_domain_spawn/camera = new(start_turf, src, spawner)
+	camera.original_ghost = ghost
+	hostile_spawn_cameras += camera
+	ghost.transfer_ckey(camera)
+
+	var/atom/movable/screen/alert/bitrunning/hostile_spawn_cancel/cancel_alert = camera.throw_alert("hostile_spawn_cancel", /atom/movable/screen/alert/bitrunning/hostile_spawn_cancel, override = TRUE, place_first = TRUE)
+	if(cancel_alert)
+		var/mutable_appearance/alert_overlay = mutable_appearance('icons/effects/bitrunning.dmi', "redshift")
+		alert_overlay.layer = FLOAT_LAYER
+		alert_overlay.plane = FLOAT_PLANE
+		cancel_alert.cut_overlays()
+		cancel_alert.add_overlay(alert_overlay)
+
+	to_chat(camera, span_notice("Выбери место появления. Двигай камеру и кликни по свободному полу вне безопасной зоны и не ближе 7 тайлов к живым игрокам. Красная иконка справа сверху отменяет выбор."))
+	return TRUE
+
+/obj/machinery/quantum_server/proc/clear_hostile_ghost_spawner()
+	if(length(hostile_spawn_cameras))
+		for(var/mob/camera/hostile_domain_spawn/camera as anything in hostile_spawn_cameras.Copy())
+			if(camera.spawning)
+				continue
+			camera.cancel_selection()
+
+	if(hostile_ghost_alert_timer)
+		deltimer(hostile_ghost_alert_timer)
+		hostile_ghost_alert_timer = null
+
+	if(hostile_ghost_alert_category)
+		for(var/mob/dead/observer/ghost in GLOB.player_list)
+			ghost.clear_alert(hostile_ghost_alert_category)
+		hostile_ghost_alert_category = null
+
+	if(generated_domain && hostile_ghost_spawner)
+		generated_domain.ghost_spawners -= hostile_ghost_spawner
+
+	QDEL_NULL(hostile_ghost_spawner)
+	hostile_ghost_turfs.Cut()
+	hostile_ghost_spawns_left = 0
+
+/obj/machinery/quantum_server/proc/take_hostile_ghost_spawn_slot()
+	if(hostile_ghost_spawns_left <= 0)
+		return FALSE
+	hostile_ghost_spawns_left -= 1
+	return TRUE
+
+/obj/machinery/quantum_server/proc/release_hostile_ghost_spawn_slot()
+	hostile_ghost_spawns_left += 1
+
+/obj/machinery/quantum_server/proc/hostile_ghost_spawns_exhausted()
+	if(hostile_ghost_spawns_left > 0)
+		return
+	clear_hostile_ghost_spawner()
+
+/obj/machinery/quantum_server/proc/build_hostile_ghost_turfs()
+	hostile_ghost_turfs.Cut()
+
+	if(!generated_domain)
+		return
+
+	for(var/datum/turf_reservation/reservation as anything in generated_domain.reservations)
+		var/list/bottom_left_coords = reservation.bottom_left_coords
+		var/list/top_right_coords = reservation.top_right_coords
+		if(!length(bottom_left_coords) || !length(top_right_coords))
+			continue
+		var/turf/bottom_left = locate(bottom_left_coords[1], bottom_left_coords[2], bottom_left_coords[3])
+		var/turf/top_right = locate(top_right_coords[1], top_right_coords[2], top_right_coords[3])
+		if(!bottom_left || !top_right)
+			continue
+		for(var/turf/tile as anything in block(bottom_left, top_right))
+			var/area/tile_area = get_area(tile)
+			if(!tile_area || !(tile_area.area_flags & VIRTUAL_AREA) || (tile_area.area_flags & VIRTUAL_SAFE_AREA))
+				continue
+			if(!isopenturf(tile))
+				continue
+			if(istype(tile, /turf/open/space) || istype(tile, /turf/open/openspace) || istype(tile, /turf/open/lava) || istype(tile, /turf/open/chasm))
+				continue
+			hostile_ghost_turfs[tile] = TRUE
+
+/obj/machinery/quantum_server/proc/get_hostile_ghost_spawn_turf()
+	if(!length(hostile_ghost_turfs))
+		return null
+
+	for(var/i in 1 to 40)
+		var/turf/candidate = pick(hostile_ghost_turfs)
+		if(is_hostile_ghost_spawn_turf_valid(candidate))
+			return candidate
+
+	for(var/turf/candidate as anything in hostile_ghost_turfs)
+		if(is_hostile_ghost_spawn_turf_valid(candidate))
+			return candidate
+
+	return null
+
+/obj/machinery/quantum_server/proc/is_turf_in_domain(turf/candidate)
+	if(!candidate || QDELETED(candidate) || !generated_domain)
+		return FALSE
+	for(var/datum/turf_reservation/reservation as anything in generated_domain.reservations)
+		var/list/bottom_left_coords = reservation.bottom_left_coords
+		var/list/top_right_coords = reservation.top_right_coords
+		if(!length(bottom_left_coords) || !length(top_right_coords))
+			continue
+		if(candidate.z != bottom_left_coords[3])
+			continue
+		if(candidate.x < bottom_left_coords[1] || candidate.x > top_right_coords[1])
+			continue
+		if(candidate.y < bottom_left_coords[2] || candidate.y > top_right_coords[2])
+			continue
+		return TRUE
+	return FALSE
+
+/obj/machinery/quantum_server/proc/is_hostile_ghost_spawn_turf_valid(turf/candidate)
+	return isnull(get_hostile_ghost_spawn_error(candidate))
+
+/obj/machinery/quantum_server/proc/get_hostile_ghost_spawn_error(turf/candidate)
+	if(!candidate || QDELETED(candidate))
+		return "клетка недоступна"
+	if(!isopenturf(candidate))
+		return "это не открытый пол"
+	if(istype(candidate, /turf/open/space) || istype(candidate, /turf/open/openspace) || istype(candidate, /turf/open/lava) || istype(candidate, /turf/open/chasm))
+		return "это опасная поверхность"
+
+	var/area/tile_area = get_area(candidate)
+	if(!tile_area || !(tile_area.area_flags & VIRTUAL_AREA))
+		return "это не зона домена"
+	if(tile_area.area_flags & VIRTUAL_SAFE_AREA)
+		return "это безопасная зона"
+
+	if(candidate.is_blocked_turf(TRUE))
+		return "клетка занята объектом"
+	if(!is_turf_in_domain(candidate))
+		return "клетка вне домена"
+
+	for(var/mob/living/player in GLOB.player_list)
+		if(!player.client || player.stat == DEAD)
+			continue
+		if(player.z != candidate.z)
+			continue
+		if(get_dist(candidate, player) <= 7)
+			return "слишком близко к живому игроку"
+
+	return null
+
+/obj/machinery/quantum_server/proc/refresh_hostile_ghost_alert(announce = FALSE)
+	if(!generated_domain || !hostile_ghost_spawner || QDELETED(hostile_ghost_spawner) || !hostile_ghost_alert_category)
+		return
+
+	var/message = "В домене \"[generated_domain.name]\" доступна враждебная роль: [hostile_ghost_spawner.mob_name]. Нажмите на иконку, чтобы присоединиться."
+	var/mutable_appearance/alert_overlay = mutable_appearance('icons/effects/bitrunning.dmi', "glitch")
+	alert_overlay.layer = FLOAT_LAYER
+	alert_overlay.plane = FLOAT_PLANE
+
+	for(var/mob/dead/observer/ghost in GLOB.player_list)
+		if(!ghost.client)
+			continue
+		if(announce)
+			to_chat(ghost, "<span class='ghostalert'>[message]</span>")
+			window_flash(ghost.client)
+
+		var/atom/movable/screen/alert/notify_action/alert = ghost.throw_alert(hostile_ghost_alert_category, /atom/movable/screen/alert/notify_action, override = TRUE, place_first = TRUE)
+		if(!alert || alert.target == hostile_ghost_spawner)
+			continue
+		if(ghost.client.prefs?.UI_style)
+			alert.icon = ui_style2icon(ghost.client.prefs.UI_style)
+		alert.name = "Виртуальный домен"
+		alert.desc = message
+		alert.action = NOTIFY_ATTACK
+		alert.target = hostile_ghost_spawner
+		alert.cut_overlays()
+		alert.add_overlay(alert_overlay)
+
+/obj/machinery/quantum_server/proc/materialize_hostile_ghost(mob/living/spawned)
+	if(QDELETED(spawned))
+		return
+
+	var/turf/spawn_turf = get_turf(spawned)
+	if(!spawn_turf)
+		return
+	var/mutable_appearance/materializing = new /mutable_appearance(spawned)
+	materializing.alpha = 255
+	var/mutable_appearance/transform_scanline = mutable_appearance('modular_splurt/icons/effects/effects.dmi', "transform_effect", color = "#00E5FF")
+
+	var/obj/effect/overlay/materialization = new(spawn_turf)
+	materialization.icon = null
+	materialization.icon_state = null
+	materialization.layer = MOB_LAYER
+	materialization.plane = spawned.plane
+	materialization.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	materialization.transformation_animation(materializing, time = 3 SECONDS, transform_overlay = transform_scanline, reset_after = TRUE, replace_icon = FALSE)
+
+	spawned.Immobilize(3 SECONDS, ignore_canstun = TRUE)
+	spawned.alpha = 0
+	addtimer(CALLBACK(src, PROC_REF(finish_hostile_ghost_materialization), spawned, materialization), 3 SECONDS)
+
+	do_sparks(5, FALSE, spawn_turf)
+	playsound(spawn_turf, 'sound/effects/phasein.ogg', 60, TRUE)
+
+/obj/machinery/quantum_server/proc/finish_hostile_ghost_materialization(mob/living/spawned, atom/movable/materialization)
+	if(!QDELETED(materialization))
+		materialization.alpha = 0
+		qdel(materialization)
+	if(QDELETED(spawned))
+		return
+	spawned.alpha = 255
 
 #undef POLLING_COOLDOWN_TIME
 
@@ -720,7 +1021,7 @@
 		if(appearance_only)
 			prefs.copy_appearance_to(avatar)
 		else
-			prefs.copy_to(avatar)
+			prefs.copy_to(avatar, initial_spawn = TRUE)
 	ADD_TRAIT(avatar, TRAIT_CANNOT_CRYSTALIZE, "Bitrunning")
 	avatar.make_virtual_mob()
 	var/outfit_path = generated_domain.forced_outfit || netsuit
@@ -732,10 +1033,21 @@
 	to_wear.gloves = null
 	to_wear.l_pocket = null
 	to_wear.r_pocket = null
-	to_wear.suit = null
 	to_wear.suit_store = null
 
 	avatar.equipOutfit(to_wear, visualsOnly = TRUE)
+
+	if(!generated_domain.forced_outfit)
+		for(var/obj/thing in avatar.held_items)
+			qdel(thing)
+
+	if(load_loadout && !isnull(prefs))
+		SSjob.equip_loadout(null, avatar, bypass_prereqs = TRUE, can_drop = TRUE, preferences_source = prefs)
+
+	if(isnull(avatar.wear_suit))
+		var/obj/item/clothing/suit/armor/vest/vest = new(get_turf(avatar))
+		if(!avatar.equip_to_slot_if_possible(vest, ITEM_SLOT_OCLOTHING))
+			qdel(vest)
 
 	var/obj/item/clothing/under/avatar_uniform = avatar.w_uniform
 	if(istype(avatar_uniform))
@@ -744,19 +1056,15 @@
 		avatar_uniform.sensor_mode = SENSOR_OFF
 		avatar_uniform.sensor_mode_intended = SENSOR_OFF
 
-	if(!generated_domain.forced_outfit)
-		for(var/obj/thing in avatar.held_items)
-			qdel(thing)
-
 	var/obj/item/storage/backpack/bag = avatar.back
 	if(istype(bag))
-		QDEL_LIST(bag.contents)
-
 		bag.contents += list(
 			new /obj/item/storage/box/survival(bag),
 			new /obj/item/storage/firstaid/regular(bag),
 			new /obj/item/flashlight(bag),
 		)
+		if(!istype(avatar.belt, /obj/item/bitrunning_host_monitor))
+			bag.contents += new /obj/item/bitrunning_host_monitor(bag)
 
 	var/obj/item/card/id/outfit_id = avatar.wear_id
 	if(outfit_id)
@@ -783,7 +1091,14 @@
 	var/current_index = 1
 	shuffle_inplace(generated_domain.mob_modules)
 
+	var/list/turf/domain_turfs = list()
+	for(var/datum/turf_reservation/reservation as anything in generated_domain.reservations)
+		for(var/turf/tile as anything in reservation.reserved_turfs)
+			domain_turfs[tile] = TRUE
+
 	for(var/obj/effect/landmark/bitrunning/mob_segment/landmark in GLOB.bitrunning_landmarks.Copy())
+		if(!domain_turfs[get_turf(landmark)])
+			continue
 		if(current_index > length(generated_domain.mob_modules))
 			stack_trace("vdom: mobs segments are set to unique, but there are more landmarks than available segments")
 			return FALSE
@@ -802,6 +1117,7 @@
 			for(var/datum/weakref/spawn_ref as anything in mob_spawns)
 				var/mob/living/spawned_mob = spawn_ref.resolve()
 				if(spawned_mob && !QDELETED(spawned_mob))
+					soften_domain_mob(spawned_mob)
 					spawned_mob.AddComponent(/datum/component/virtual_entity, src)
 
 		qdel(landmark)
@@ -883,6 +1199,35 @@
 	examine_text += span_info("Под вашим взглядом пол едва пульсирует потоками закодированных данных.")
 	examine_text += span_info("Похоже, это часть места, предназначенного для получения зашифрованных грузов.")
 
+/obj/machinery/quantum_server/proc/soften_domain_mob(mob/living/creature)
+	if(QDELETED(creature) || !isliving(creature))
+		return
+
+	var/is_boss = istype(creature, /mob/living/simple_animal/hostile/megafauna)
+	var/difficulty = generated_domain?.difficulty || 0
+	var/health_factor = is_boss ? 0.3 + difficulty * 0.1 : 0.55
+	var/min_health = is_boss ? 250 : 20
+	var/new_max_health = max(min_health, round(creature.maxHealth * health_factor))
+	if(creature.maxHealth > new_max_health)
+		creature.maxHealth = new_max_health
+		creature.health = min(creature.health, new_max_health)
+		creature.updatehealth()
+
+	if(!istype(creature, /mob/living/simple_animal/hostile))
+		return
+
+	var/mob/living/simple_animal/hostile/hostile = creature
+	var/damage_factor = is_boss ? 0.6 : 0.7
+	hostile.melee_damage_lower = round(hostile.melee_damage_lower * damage_factor)
+	hostile.melee_damage_upper = max(hostile.melee_damage_lower, round(hostile.melee_damage_upper * damage_factor))
+
+	if(is_boss)
+		hostile.obj_damage = round(hostile.obj_damage * 0.5)
+		hostile.armour_penetration = min(hostile.armour_penetration, 10)
+		hostile.ranged_cooldown_time = round(hostile.ranged_cooldown_time * 1.5)
+	else if(hostile.ranged)
+		hostile.ranged_cooldown_time = round(hostile.ranged_cooldown_time * 1.25)
+
 /obj/machinery/quantum_server/proc/on_template_loaded(datum/lazy_template/source, list/created_atoms)
 	SIGNAL_HANDLER
 
@@ -896,6 +1241,7 @@
 			else
 				mutation_candidate_refs.Add(WEAKREF(creature))
 
+			soften_domain_mob(creature)
 			creature.AddComponent(/datum/component/virtual_entity, src)
 			continue
 
@@ -920,6 +1266,22 @@
 		return
 
 	spawned.AddComponent(/datum/component/virtual_entity, src)
+	var/obj/effect/mob_spawn/human/virtual_domain/spawner = source
+	if(istype(spawner) && spawner.dynamic_domain_spawn)
+		var/turf/spawn_turf = spawner.dynamic_spawn_turf
+		if(!spawn_turf)
+			spawn_turf = get_hostile_ghost_spawn_turf()
+		if(spawn_turf)
+			spawned.forceMove(spawn_turf)
+		materialize_hostile_ghost(spawned)
+	if(generated_domain?.death_points)
+		RegisterSignal(spawned, COMSIG_LIVING_DEATH, PROC_REF(on_domain_creature_death))
+
+/obj/machinery/quantum_server/proc/on_domain_creature_death(datum/source, gibbed)
+	SIGNAL_HANDLER
+
+	if(generated_domain)
+		generated_domain.add_points(1)
 
 /obj/machinery/quantum_server/proc/add_threats(mob/living/threat)
 	spawned_threat_refs.Add(WEAKREF(threat))
@@ -1235,6 +1597,8 @@
 		appearance_only = prefdisk.appearance_only
 		pref = prefdisk.loaded_preference
 	var/mob/living/carbon/new_avatar = generate_avatar(get_turf(entry_atom), netsuit, prefs = pref, load_loadout = load_loadout, appearance_only = appearance_only)
+	if(!isnull(new_avatar) && generated_domain?.death_points && !istype(entry_atom, /obj/effect/mob_spawn/human/virtual_domain))
+		RegisterSignal(new_avatar, COMSIG_LIVING_DEATH, PROC_REF(on_domain_creature_death))
 
 	if(!length(generated_domain.custom_spawns))
 		return new_avatar

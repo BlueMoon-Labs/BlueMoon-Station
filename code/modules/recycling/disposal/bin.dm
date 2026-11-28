@@ -158,9 +158,6 @@
 		update_icon()
 
 /obj/machinery/disposal/proc/can_stuff_mob_in(mob/living/target, mob/living/user, pushing = FALSE)
-	var/area/source_area = get_area(src)
-	if(source_area?.area_flags & VIRTUAL_AREA)
-		return FALSE
 	if(!pushing && !iscarbon(user) && !(SEND_SIGNAL(user, COMSIG_CHECK_VENTCRAWL))) //only carbon and ventcrawlers can climb into disposal by themselves.
 		if(iscyborg(user))
 			var/mob/living/silicon/robot/borg = user
@@ -518,10 +515,6 @@
 /obj/machinery/disposal/deliveryChute/Bumped(atom/movable/AM) //Go straight into the chute
 	if(!AM.CanEnterDisposals())
 		return
-	if(ismob(AM))
-		var/area/source_area = get_area(src)
-		if(source_area?.area_flags & VIRTUAL_AREA)
-			return
 	switch(dir)
 		if(NORTH)
 			if(AM.loc.y != loc.y+1)

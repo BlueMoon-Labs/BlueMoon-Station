@@ -206,3 +206,41 @@
 	range_heavy = 0
 	range_light = 3
 	range_flash = 2
+
+/obj/item/minespawner
+	name = "landmine deployment device"
+	desc = "When activated, will deploy a landmine after 3 seconds."
+	icon = 'icons/obj/device.dmi'
+	icon_state = "beacon"
+	item_state = "beacon"
+	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
+	w_class = WEIGHT_CLASS_SMALL
+	var/mine_type = /obj/effect/mine/explosive
+	var/active = FALSE
+
+/obj/item/minespawner/attack_self(mob/user, modifiers)
+	. = ..()
+	if(active)
+		return
+
+	playsound(src, 'sound/weapons/armbomb.ogg', 70, TRUE)
+	to_chat(user, span_warning("Вы взводите [src]. Мина развернётся через 3 секунды."))
+	active = TRUE
+	addtimer(CALLBACK(src, PROC_REF(deploy_mine)), 3 SECONDS)
+
+/obj/item/minespawner/proc/deploy_mine()
+	if(QDELETED(src))
+		return
+
+	var/turf/T = get_turf(src)
+	if(!T)
+		qdel(src)
+		return
+
+	playsound(T, 'sound/machines/chime.ogg', 30, FALSE, -3)
+	var/obj/effect/mine/new_mine = new mine_type(T)
+	visible_message(span_danger("[src] выпускает облачко дыма, открывая [new_mine]!"))
+	var/obj/effect/particle_effect/smoke/poof = new(T)
+	poof.lifetime = 3
+	qdel(src)

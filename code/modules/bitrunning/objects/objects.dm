@@ -275,9 +275,12 @@
 /obj/item/disk/bitrunning/ability/tier3
 	name = "bitrunning program: elite"
 	selectable_spells = list(
-		/obj/effect/proc_holder/spell/targeted/shapeshift/dragon,
+		/obj/effect/proc_holder/spell/targeted/shapeshift/dragon/bitrunning,
 		/obj/effect/proc_holder/spell/targeted/shapeshift/polar_bear,
 	)
+
+/obj/effect/proc_holder/spell/targeted/shapeshift/dragon/bitrunning
+	die_with_shapeshifted_form = FALSE
 
 /obj/effect/proc_holder/spell/targeted/conjure_item/cheese
 	name = "Summon Cheese"
@@ -359,7 +362,7 @@
 /obj/item/disk/bitrunning/item/tier3
 	name = "bitrunning gear: advanced"
 	selectable_items = list(
-		/obj/item/gun/energy/e_gun/nuclear,
+		/obj/item/gun/energy/e_gun/nuclear/pin,
 		/obj/item/dualsaber/green,
 		/obj/item/grenade/syndieminibomb,
 	)
@@ -694,7 +697,9 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	locked = FALSE
 	var/reward_points_cache = 0
 	var/list/completion_loot_cache = list()
+	var/list/bonus_loot_cache = list()
 	var/rewards_multiplier_cache = 1
+	var/difficulty_cache = BITRUNNER_DIFFICULTY_LOW
 
 /obj/structure/closet/crate/secure/bitrunning/decrypted/Initialize(
 	mapload,
@@ -704,13 +709,16 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	if(!isnull(completed_domain))
 		reward_points_cache = completed_domain.reward_points
 		completion_loot_cache = completed_domain.completion_loot
+		bonus_loot_cache = get_domain_bonus_loot(completed_domain)
 		rewards_multiplier_cache = rewards_multiplier
+		difficulty_cache = completed_domain.difficulty
 	. = ..()
 	playsound(src, 'sound/magic/blink.ogg', 50, TRUE)
 
 // Крэйт с наградой: руда зависит от очков домена и множителя.
 /obj/structure/closet/crate/secure/bitrunning/decrypted/PopulateContents()
-	spawn_loot(completion_loot_cache)
+	spawn_loot(completion_loot_cache, TRUE)
+	spawn_bonus_rewards()
 
 	new /obj/item/stack/ore/iron(src, calculate_loot(reward_points_cache, rewards_multiplier_cache, ORE_MULTIPLIER_IRON))
 	new /obj/item/stack/ore/glass(src, calculate_loot(reward_points_cache, rewards_multiplier_cache, ORE_MULTIPLIER_GLASS))
@@ -728,6 +736,43 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 		new /obj/item/stack/ore/diamond(src, calculate_loot(reward_points_cache, rewards_multiplier_cache, ORE_MULTIPLIER_DIAMOND))
 		new /obj/item/stack/ore/bluespace_crystal(src, calculate_loot(reward_points_cache, rewards_multiplier_cache, ORE_MULTIPLIER_BLUESPACE_CRYSTAL))
 
+/obj/structure/closet/crate/secure/bitrunning/decrypted/proc/spawn_bonus_rewards()
+	var/cash_bills = 2
+	switch(difficulty_cache)
+		if(BITRUNNER_DIFFICULTY_NONE)
+			cash_bills = 1
+		if(BITRUNNER_DIFFICULTY_LOW)
+			cash_bills = 2
+		if(BITRUNNER_DIFFICULTY_MEDIUM)
+			cash_bills = 4
+		if(BITRUNNER_DIFFICULTY_HIGH)
+			cash_bills = 6
+	new /obj/item/stack/spacecash/c500(src, max(1, cash_bills + rand(-1, 1)))
+	var/medkit_path = pick(
+		/obj/item/storage/firstaid/regular,
+		/obj/item/storage/firstaid/brute,
+		/obj/item/storage/firstaid/fire,
+		/obj/item/storage/firstaid/o2,
+		/obj/item/storage/firstaid/toxin,
+	)
+	new medkit_path(src)
+	spawn_random_bonus_loot(bonus_loot_cache)
+
+	var/list/rewards = list(
+		/obj/item/storage/belt/utility/full,
+		/obj/item/storage/firstaid/brute,
+		/obj/item/clothing/glasses/hud/health,
+		/obj/item/disk/bitrunning/ability/tier1,
+		/obj/item/reagent_containers/pill/mannitol,
+		/obj/item/reagent_containers/pill/neurine,
+		/obj/item/reagent_containers/pill/psicodine,
+	)
+
+	var/reward_count = difficulty_cache >= BITRUNNER_DIFFICULTY_HIGH ? 2 : 1
+	for(var/i in 1 to reward_count)
+		var/reward_path = pick(rewards)
+		new reward_path(src)
+
 /obj/structure/closet/crate/secure/bitrunning/decrypted/proc/calculate_loot(reward_points, rewards_multiplier, ore_multiplier)
 	PRIVATE_PROC(TRUE)
 
@@ -735,7 +780,7 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	var/random_sum = (rand() + 0.5) * base
 	return max(ROUND_UP(random_sum * ore_multiplier), 1)
 
-/obj/structure/closet/crate/secure/bitrunning/decrypted/proc/spawn_loot(list/completion_loot)
+/obj/structure/closet/crate/secure/bitrunning/decrypted/proc/spawn_loot(list/completion_loot, randomize = FALSE)
 	for(var/path in completion_loot)
 		if(!ispath(path))
 			return FALSE
@@ -743,10 +788,29 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 		if(isnull(completion_loot[path]))
 			return FALSE
 
-		for(var/i in 1 to completion_loot[path])
+		var/count = completion_loot[path]
+		if(randomize && count > 1)
+			count = rand(1, count)
+
+		for(var/i in 1 to count)
 			new path(src)
 
 	return TRUE
+
+/obj/structure/closet/crate/secure/bitrunning/decrypted/proc/spawn_random_bonus_loot(list/loot)
+	if(!length(loot))
+		return
+
+	var/list/paths = list()
+	for(var/path in loot)
+		paths += path
+
+	shuffle_inplace(paths)
+	var/count = length(paths) > 1 ? rand(2, length(paths)) : 1
+	for(var/i in 1 to count)
+		var/path = paths[i]
+		for(var/j in 1 to loot[path])
+			new path(src)
 
 #undef ORE_MULTIPLIER_IRON
 #undef ORE_MULTIPLIER_GLASS
@@ -1425,9 +1489,32 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 	)
 
 	granted_spells = list(
-		/obj/effect/proc_holder/spell/aoe_turf/knock,
+		/obj/effect/proc_holder/spell/aoe_turf/untie_shoes,
 		/obj/effect/proc_holder/spell/targeted/smoke,
 	)
+
+/obj/effect/proc_holder/spell/aoe_turf/untie_shoes
+	name = "Untie Shoelaces"
+	desc = "Безобидное заклинание, развязывающее шнурки у всех рядом."
+	school = "transmutation"
+	charge_max = 100
+	clothes_req = NONE
+	invocation = "LIGARE NON POTEST"
+	invocation_type = "whisper"
+	range = 3
+	cooldown_min = 20
+	action_icon_state = "knock"
+
+/obj/effect/proc_holder/spell/aoe_turf/untie_shoes/cast(list/targets, mob/user = usr)
+	SEND_SOUND(user, sound('sound/magic/knock.ogg'))
+	for(var/turf/T in targets)
+		for(var/mob/living/carbon/victim in T.contents)
+			if(victim == user)
+				continue
+			var/obj/item/clothing/shoes/worn_shoes = victim.shoes
+			if(!istype(worn_shoes) || !worn_shoes.can_be_tied || worn_shoes.tied == SHOES_UNTIED)
+				continue
+			worn_shoes.adjust_laces(SHOES_UNTIED)
 
 /obj/item/disk/bitrunning/gimmick/sports
 	name = "bitrunning gimmick: sports"
@@ -1463,20 +1550,28 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 
 /datum/bitrunning_gimmick/archer
 	name = "Archer"
+	container_item_type = /obj/item/storage/backpack/duffelbag
 
 	granted_items = list(
 		/obj/item/clothing/under/costume/kimono,
 		/obj/item/clothing/shoes/sandal,
 		/obj/item/gun/ballistic/bow,
+		/obj/item/storage/belt/quiver/full,
 	)
+
+/obj/item/storage/belt/quiver/full/PopulateContents()
+	for(var/i in 1 to 15)
+		new /obj/item/ammo_casing/caseless/arrow(src)
 
 /datum/bitrunning_gimmick/fisher
 	name = "Fisher"
+	container_item_type = /obj/item/storage/backpack/duffelbag
 
 	granted_items = list(
 		/obj/item/clothing/under/misc/overalls,
-		/obj/item/clothing/suit/jacket/miljacket,
-		/obj/item/clothing/head/soft/black,
+		/obj/item/clothing/head/fishing_hat,
+		/obj/item/fishing_rod,
+		/obj/item/bait_can/worm,
 		/obj/item/clothing/shoes/jackboots,
 	)
 
@@ -1488,19 +1583,17 @@ GLOBAL_LIST_EMPTY(bitrunning_landmarks)
 		/obj/item/clothing/shoes/laceup,
 		/obj/item/clothing/gloves/color/black,
 		/obj/item/clothing/glasses/sunglasses,
-		/obj/item/modular_computer/laptop/gamer,
+		/obj/item/modular_computer/laptop/preset/gamer,
 	)
 
-/obj/item/modular_computer/laptop/gamer
+/obj/item/modular_computer/laptop/preset/gamer
 	desc = "Дорогой ноутбук, который часто используют для метагейминга."
 	device_theme = PDA_THEME_TERMINAL
-	starting_programs = list(
-		/datum/computer_file/program/filemanager,
-		/datum/computer_file/program/notepad,
-	)
 	start_open = FALSE
 
-/obj/item/modular_computer/laptop/gamer/install_default_programs()
-	for(var/programs in starting_programs)
-		var/datum/computer_file/program/program_type = new programs
-		store_file(program_type)
+/obj/item/modular_computer/laptop/preset/gamer/install_programs()
+	var/obj/item/computer_hardware/hard_drive/hard_drive = all_components[MC_HDD]
+	if(!hard_drive)
+		return
+	hard_drive.store_file(new /datum/computer_file/program/filemanager)
+	hard_drive.store_file(new /datum/computer_file/program/notepad)

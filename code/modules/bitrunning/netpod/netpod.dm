@@ -1,4 +1,4 @@
-#define BASE_DISCONNECT_DAMAGE 40
+#define BASE_DISCONNECT_DAMAGE 20
 #define SCANNING_TOGGLE_COOLDOWN 5
 
 GLOBAL_LIST_INIT(netpod_outfit_sets, list(
@@ -452,8 +452,10 @@ GLOBAL_LIST_INIT(netpod_outfit_sets, list(
 		return
 
 	mob_occupant.flash_act(override_blindness_check = 1, visual = 1)
-	mob_occupant.adjustOrganLoss(ORGAN_SLOT_BRAIN, disconnect_damage)
-	INVOKE_ASYNC(mob_occupant, TYPE_PROC_REF(/mob/living, emote), "scream")
+	var/brain_damage = max(0, disconnect_damage)
+	mob_occupant.adjustOrganLoss(ORGAN_SLOT_BRAIN, brain_damage)
+	if(brain_damage > 0)
+		INVOKE_ASYNC(mob_occupant, TYPE_PROC_REF(/mob/living, emote), "scream")
 	to_chat(mob_occupant, span_danger("Вас насильно отключили от аватара! Мысли путаются!"))
 
 // Подключение игрока к аватару.

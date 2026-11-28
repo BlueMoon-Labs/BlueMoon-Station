@@ -853,6 +853,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 /turf/open/indestructible/honk/Initialize(mapload)
 	. = ..()
+	AddComponent(/datum/component/slippery, 80)
 
 /turf/open/indestructible/honk/Entered(atom/movable/arrived, atom/old_loc, list/atom/old_locs)
 	. = ..()

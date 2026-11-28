@@ -38,7 +38,7 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/virtual_domain)
 "j" = (
-/obj/machinery/suit_storage_unit,
+/obj/machinery/suit_storage_unit/security,
 /turf/template_noop,
 /area/virtual_domain/safehouse)
 "k" = (

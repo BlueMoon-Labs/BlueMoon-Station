@@ -37,7 +37,12 @@
 	shuffle_inplace(mobs)
 
 	var/list/turf/nearby = list()
+	var/datum/turf_reservation/origin_reservation = SSmapping.used_turfs[origin]
 	for(var/turf/tile as anything in RANGE_TURFS(2, origin))
+		if(isspaceturf(tile))
+			continue
+		if(origin_reservation && SSmapping.used_turfs[tile] != origin_reservation)
+			continue
 		if(!tile.is_blocked_turf())
 			nearby += tile
 
@@ -78,14 +83,14 @@
 
 /datum/modular_mob_segment/syndicate_team
 	mobs = list(
-		/mob/living/simple_animal/hostile/syndicate/ranged,
-		/mob/living/simple_animal/hostile/syndicate/melee,
+		/mob/living/simple_animal/hostile/syndicate/ranged/space,
+		/mob/living/simple_animal/hostile/syndicate/melee/space,
 	)
 
 /datum/modular_mob_segment/syndicate_elite
 	mobs = list(
-		/mob/living/simple_animal/hostile/syndicate/melee,
-		/mob/living/simple_animal/hostile/syndicate/ranged,
+		/mob/living/simple_animal/hostile/syndicate/melee/sword/space/stormtrooper,
+		/mob/living/simple_animal/hostile/syndicate/ranged/space/stormtrooper,
 	)
 
 /datum/modular_mob_segment/bears
@@ -251,6 +256,9 @@
 	var/list/obj/effect/mob_spawn/human/virtual_domain/ghost_spawners = list()
 	var/list/mob/living/ghost_mobs = list()
 	var/spawner_role = "Antagonist"
+	var/ghost_spawner_type = /obj/effect/mob_spawn/human/virtual_domain
+	var/ghost_spawn_limit = 0
+	var/death_points = FALSE
 
 /datum/lazy_template/virtual_domain/proc/can_view_name(scanner_tier, server_points)
 	return difficulty < scanner_tier && cost <= server_points + 5

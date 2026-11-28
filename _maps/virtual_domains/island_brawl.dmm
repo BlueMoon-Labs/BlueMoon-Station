@@ -271,7 +271,6 @@
 /turf/open/floor/plasteel/dark,
 /area/virtual_domain)
 "cW" = (
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/carpet/cyan,
 /area/virtual_domain)
 "db" = (
@@ -850,7 +849,6 @@
 /turf/open/floor/wood/large,
 /area/virtual_domain)
 "jL" = (
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/plasteel/white,
 /area/virtual_domain)
 "jP" = (
@@ -900,7 +898,6 @@
 /area/virtual_domain/fullbright)
 "kN" = (
 /obj/effect/turf_decal/sand/plating,
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/plating/beach/sand,
 /area/virtual_domain/fullbright)
 "lc" = (
@@ -1063,7 +1060,6 @@
 /turf/open/floor/plating/beach/sand,
 /area/virtual_domain/fullbright)
 "mV" = (
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/wood/large,
 /area/virtual_domain/fullbright)
 "mW" = (
@@ -1626,7 +1622,6 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 6
 	},
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/wood,
 /area/virtual_domain/fullbright)
 "uu" = (
@@ -1906,7 +1901,6 @@
 /turf/open/floor/plating/beach/sand,
 /area/virtual_domain/fullbright)
 "yy" = (
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/carpet/red,
 /area/virtual_domain/fullbright)
 "yz" = (
@@ -2142,7 +2136,6 @@
 /turf/open/water/beach,
 /area/virtual_domain/fullbright)
 "AK" = (
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/plasteel,
 /area/virtual_domain)
 "AX" = (
@@ -2440,7 +2433,6 @@
 	},
 /obj/structure/sink/directional/west,
 /obj/machinery/light/small/directional/west,
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /obj/effect/baseturf_helper/virtual_domain,
 /turf/open/floor/plasteel/white,
 /area/virtual_domain)
@@ -2588,7 +2580,6 @@
 /turf/open/floor/plasteel/dark,
 /area/virtual_domain)
 "GK" = (
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/wood/large,
 /area/virtual_domain)
 "GQ" = (
@@ -2683,7 +2674,6 @@
 /area/virtual_domain)
 "HR" = (
 /obj/structure/sign/poster/official/tactical_game_cards/directional/west,
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/eighties,
 /area/virtual_domain)
 "HT" = (
@@ -2843,7 +2833,6 @@
 /obj/item/reagent_containers/food/drinks/soda_cans/starkist{
 	pixel_x = -6
 	},
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/plating/beach/sand,
 /area/virtual_domain/fullbright)
 "Jw" = (
@@ -2961,7 +2950,6 @@
 /turf/open/floor/wood,
 /area/virtual_domain)
 "KT" = (
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/plasteel/dark,
 /area/virtual_domain)
 "KZ" = (
@@ -3010,7 +2998,6 @@
 /turf/open/floor/plasteel/white,
 /area/virtual_domain)
 "LN" = (
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/carpet/blue,
 /area/virtual_domain/fullbright)
 "LR" = (
@@ -3364,7 +3351,6 @@
 /turf/open/floor/wood/large,
 /area/virtual_domain)
 "Qj" = (
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/plasteel/freezer,
 /area/virtual_domain)
 "Qk" = (
@@ -3380,7 +3366,6 @@
 	},
 /obj/structure/sink/directional/west,
 /obj/machinery/light/small/directional/west,
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/plasteel/white,
 /area/virtual_domain)
 "Qm" = (
@@ -3443,7 +3428,6 @@
 /turf/open/floor/wood,
 /area/virtual_domain)
 "QI" = (
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/plating/beach/sand,
 /area/virtual_domain/fullbright)
 "QN" = (
@@ -3480,7 +3464,6 @@
 /turf/open/floor/plating/beach/sand,
 /area/virtual_domain/fullbright)
 "Rd" = (
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/carpet,
 /area/virtual_domain)
 "Re" = (
@@ -4117,7 +4100,6 @@
 /turf/open/floor/plasteel/white,
 /area/virtual_domain)
 "YM" = (
-/obj/effect/mob_spawn/human/virtual_domain/islander,
 /turf/open/floor/wood,
 /area/virtual_domain)
 "YN" = (

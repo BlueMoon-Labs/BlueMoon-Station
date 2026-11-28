@@ -31,8 +31,7 @@
 
 /obj/structure/closet/crate/secure/weapon/milsim/PopulateContents()
 	. = ..()
-	new /obj/item/kitchen/knife/combat(src)
-	new /obj/item/gun/energy/e_gun(src)
+	new /obj/item/gun/energy/laser/chameleon(src)
 	new /obj/item/radio/headset/headset_cargo(src)
 
 /obj/structure/closet/crate/secure/weapon/milsim/mechanic
@@ -45,14 +44,12 @@
 	new /obj/item/stack/cable_coil(src, 30)
 
 /obj/structure/closet/crate/secure/weapon/milsim/marksman
-	name = "marksman (лазерная винтовка/запасные батареи/оптика)"
+	name = "marksman (хамелеон-ган/оптика)"
 
 /obj/structure/closet/crate/secure/weapon/milsim/marksman/PopulateContents()
 	. = ..()
-	new /obj/item/gun/energy/laser(src)
+	new /obj/item/gun/energy/laser/chameleon(src)
 	new /obj/item/clothing/glasses/thermal(src)
-	new /obj/item/stock_parts/cell(src)
-	new /obj/item/stock_parts/cell(src)
 
 /obj/structure/closet/crate/secure/weapon/milsim/medic
 	name = "medic (гипоспрей/медприпасы/медHUD)"
@@ -83,21 +80,19 @@
 	new /obj/item/analyzer(src)
 
 /obj/structure/closet/crate/secure/weapon/milsim/sentinel
-	name = "sentinel (тяжёлое оружие/броня)"
+	name = "sentinel (хамелеон-ган/броня)"
 
 /obj/structure/closet/crate/secure/weapon/milsim/sentinel/PopulateContents()
 	. = ..()
-	new /obj/item/gun/ballistic/shotgun/automatic/combat(src)
-	new /obj/item/storage/box/lethalshot(src)
+	new /obj/item/gun/energy/laser/chameleon(src)
 	new /obj/item/clothing/suit/armor/vest(src)
 
 /obj/structure/closet/crate/secure/weapon/milsim/trooper
-	name = "trooper (штурмовая винтовка/патроны)"
+	name = "trooper (хамелеон-ган)"
 
 /obj/structure/closet/crate/secure/weapon/milsim/trooper/PopulateContents()
 	. = ..()
-	new /obj/item/gun/ballistic/automatic/pistol(src)
-	new /obj/item/ammo_box/magazine/m10mm(src)
+	new /obj/item/gun/energy/laser/chameleon(src)
 
 // Туман войны / ворота встречи
 
@@ -144,19 +139,6 @@
 	qdel(src)
 
 // Мины
-
-/obj/item/minespawner
-	name = "deactivated landmine"
-	desc = "При активации развернёт взрывную мину."
-	icon = 'icons/obj/grenade.dmi'
-	icon_state = "grenade"
-	var/mine_type = /obj/effect/mine/explosive
-
-/obj/item/minespawner/attack_self(mob/user, modifiers)
-	. = ..()
-	new mine_type(get_turf(user))
-	user.visible_message(span_notice("[user] взводит [src]."), span_notice("Вы взводите [src]."))
-	qdel(src)
 
 /obj/effect/mine/explosive/light/ancient_milsim
 	name = "low-yield landmine"
@@ -614,9 +596,9 @@
 	var/mob/living/carbon/human/body = new /mob/living/carbon/human(death_turf)
 	body.real_name = fake.body_name
 	body.name = body.real_name
-	body.death(FALSE)
 	if(fake.body_outfit)
 		body.equipOutfit(new fake.body_outfit())
+	body.death(FALSE)
 	body.AddComponent(/datum/component/heretic_sacrifice, src, fake.points_value)
 
 /datum/outfit/virtual_domain_heretic
@@ -640,8 +622,8 @@
 	layer = LOW_OBJ_LAYER
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
-/obj/effect/heretic_rune/big/proc/set_greyscale(color)
-	color = color
+/obj/effect/heretic_rune/big/proc/set_greyscale(new_color)
+	color = new_color
 
 /mob/living/simple_animal/hostile/fake_crewman
 	name = "crewmember"
@@ -751,6 +733,9 @@
 /datum/lazy_template/virtual_domain/island_brawl
 	name = "Island Brawl"
 	announce_to_ghosts = TRUE
+	ghost_spawner_type = /obj/effect/mob_spawn/human/virtual_domain/islander
+	ghost_spawn_limit = 4
+	death_points = TRUE
 	cost = BITRUNNER_COST_HIGH
 	desc = "«Мирный» остров, затерянный посреди ниоткуда. Карта завершится автоматически после определённого числа смертей."
 	difficulty = BITRUNNER_DIFFICULTY_HIGH
@@ -765,32 +750,19 @@
 		/obj/item/toy/beach_ball = 2,
 		/obj/item/clothing/shoes/sandal = 1,
 		/obj/item/clothing/glasses/sunglasses = 1,
-		/obj/item/gun/energy/laser/chameleon = 1,
-		/obj/item/disk/bitrunning/item/mini_uzi = 1,
+		/obj/item/stack/spacecash/c500 = 2,
 	)
 
 /datum/lazy_template/virtual_domain/island_brawl/setup_domain(list/created_atoms)
 	for(var/obj/effect/mob_spawn/human/virtual_domain/islander/spawner in created_atoms)
 		custom_spawns += spawner
-
 		RegisterSignal(spawner, COMSIG_QDELETING, PROC_REF(on_spawner_qdeleted))
-		RegisterSignals(spawner, list(COMSIG_GHOSTROLE_SPAWNED, COMSIG_BITRUNNER_SPAWNED), PROC_REF(on_spawn))
 
 /datum/lazy_template/virtual_domain/island_brawl/proc/on_spawner_qdeleted(obj/effect/mob_spawn/human/virtual_domain/islander/source)
 	SIGNAL_HANDLER
 
 	custom_spawns -= source
 	UnregisterSignal(source, COMSIG_QDELETING)
-
-/datum/lazy_template/virtual_domain/island_brawl/proc/on_spawn(datum/source, mob/living/spawned_mob)
-	SIGNAL_HANDLER
-
-	RegisterSignals(spawned_mob, list(COMSIG_LIVING_DEATH), PROC_REF(on_death))
-
-/datum/lazy_template/virtual_domain/island_brawl/proc/on_death(datum/source, gibbed)
-	SIGNAL_HANDLER
-
-	add_points(1)
 
 /obj/effect/mob_spawn/human/virtual_domain/islander
 	name = "Islander"
@@ -802,6 +774,9 @@
 
 /datum/lazy_template/virtual_domain/meta_central
 	name = "Meta Central"
+	announce_to_ghosts = TRUE
+	ghost_spawner_type = /obj/effect/mob_spawn/human/virtual_domain/pirate
+	ghost_spawn_limit = 2
 	cost = BITRUNNER_COST_LOW
 	desc = "Время от времени рабочие требуют у Nanotrasen прав. Это невыгодно."
 	difficulty = BITRUNNER_DIFFICULTY_LOW
@@ -813,7 +788,6 @@
 	map_name = "meta_central"
 	mob_modules = list(/datum/modular_mob_segment/revolutionary)
 	reward_points = BITRUNNER_REWARD_LOW
-	announce_to_ghosts = TRUE
 
 /datum/lazy_template/virtual_domain/pipedream
 	name = "Disposal Pipe Factory"
@@ -918,6 +892,8 @@
 /datum/lazy_template/virtual_domain/pirates
 	name = "Corsair Cove"
 	announce_to_ghosts = TRUE
+	ghost_spawner_type = /obj/effect/mob_spawn/human/virtual_domain/pirate
+	ghost_spawn_limit = 2
 	cost = BITRUNNER_COST_MEDIUM
 	desc = "Пробивайтесь к спрятанному сокровищу, забирайте добычу и уходите, пока пираты не переломили ход боя."
 	difficulty = BITRUNNER_DIFFICULTY_MEDIUM
@@ -1006,13 +982,15 @@
 /datum/lazy_template/virtual_domain/ancient_milsim
 	name = "Ancient Military Simulator"
 	announce_to_ghosts = TRUE
+	ghost_spawner_type = /obj/effect/mob_spawn/human/virtual_domain/ancient_milsim
+	ghost_spawn_limit = 4
 	cost = BITRUNNER_COST_HIGH
 	desc = "Воссоздайте события давно минувшей «горячей» части Пограничной войны в роли ударной группы Солариан, зачищающей базы CIN; при поддержке энтузиастов-реконструкторов SolFed. Многопользовательское прохождение и тщательная подготовка настоятельно рекомендуются."
 	completion_loot = list(
-		/obj/item/stack/spacecash/c500 = 4,
-		/obj/item/storage/firstaid/regular = 2,
-		/obj/item/clothing/suit/armor/vest = 2,
-		/obj/item/gun/ballistic/automatic/pistol = 2,
+		/obj/item/stack/spacecash/c500 = 2,
+		/obj/item/storage/firstaid/regular = 1,
+		/obj/item/clothing/suit/armor/vest = 1,
+		/obj/item/gun/energy/laser/chameleon = 1,
 	)
 	difficulty = BITRUNNER_DIFFICULTY_HIGH
 	help_text = "Последняя часть домена может оказаться весьма PvP-ориентированной. Лучше не ходить одному и пронести с собой диски способностей и снаряжения."
@@ -1026,10 +1004,10 @@
 		/obj/item/stack/spacecash/c500 = 3,
 		/obj/item/disk/bitrunning/item/ancient_milsim = 3,
 		/obj/item/choice_beacon/ancient_milsim = 2,
-		/obj/item/gun/ballistic/automatic/pistol = 2,
+		/obj/item/gun/energy/laser/chameleon = 1,
 		/obj/item/storage/firstaid/regular = 2,
-		/obj/item/grenade/empgrenade = 2,
-		/obj/item/clothing/suit/armor/vest = 2,
+		/obj/item/grenade/empgrenade = 1,
+		/obj/item/clothing/suit/armor/vest = 1,
 	)
 
 /datum/outfit/solfed_bitrun
@@ -1159,6 +1137,8 @@
 /datum/lazy_template/virtual_domain/syndicate_assault
 	name = "Syndicate Assault"
 	announce_to_ghosts = TRUE
+	ghost_spawner_type = /obj/effect/mob_spawn/human/virtual_domain/syndie
+	ghost_spawn_limit = 4
 	cost = BITRUNNER_COST_MEDIUM
 	desc = "Проникните на вражеский корабль и верните украденный груз."
 	difficulty = BITRUNNER_DIFFICULTY_MEDIUM
@@ -1232,3 +1212,163 @@
 	map_name = "xeno_nest"
 	mob_modules = list(/datum/modular_mob_segment/xenos)
 	reward_points = BITRUNNER_REWARD_LOW
+
+/proc/get_domain_bonus_loot(datum/lazy_template/virtual_domain/domain)
+	if(isnull(domain))
+		return list()
+	switch(domain.key)
+		if("abductor_ship")
+			return list(
+				/obj/item/stack/spacecash/c500 = 2,
+				/obj/item/reagent_containers/hypospray/medipen = 1,
+				/obj/item/stack/sheet/mineral/plasma = 5,
+			)
+		if("ash_drake")
+			return list(
+				/obj/item/stack/sheet/animalhide/ashdrake = 2,
+				/obj/item/toy/plush/drake = 1,
+				/obj/item/stack/sheet/bone = 5,
+			)
+		if("beach_bar")
+			return list(
+				/obj/item/toy/beach_ball = 1,
+				/obj/item/clothing/glasses/sunglasses = 1,
+				/obj/item/storage/cans/sixbeer = 1,
+			)
+		if("blood_drunk_miner")
+			return list(
+				/obj/item/reagent_containers/hypospray/medipen/survival = 1,
+				/obj/item/stack/sheet/animalhide/goliath_hide = 2,
+				/obj/item/stack/sheet/bone = 5,
+			)
+		if("breeze_bay")
+			return list(
+				/obj/item/fishing_rod = 1,
+				/obj/item/clothing/glasses/sunglasses = 1,
+				/obj/item/storage/cans/sixbeer = 1,
+			)
+		if("bubblegum")
+			return list(
+				/obj/item/toy/plush/bubbleplush = 1,
+				/obj/item/stack/sheet/bone = 5,
+				/obj/item/stack/spacecash/c500 = 2,
+			)
+		if("clown_planet")
+			return list(
+				/obj/item/clothing/shoes/clown_shoes/banana_shoes = 1,
+				/obj/item/bikehorn = 1,
+				/obj/item/grown/bananapeel/bluespace = 1,
+			)
+		if("colossus")
+			return list(
+				/obj/item/stack/sheet/mineral/diamond = 5,
+				/obj/item/stack/sheet/mineral/plasma = 5,
+				/obj/item/stack/sheet/bone = 5,
+			)
+		if("fredingtonfastingbear")
+			return list(
+				/obj/item/reagent_containers/food/snacks/pizzaslice/meat/pizzeria = 2,
+				/obj/item/kitchen/knife = 1,
+				/obj/item/storage/cans/sixbeer = 1,
+			)
+		if("gondola_asteroid")
+			return list(
+				/obj/item/stack/sheet/animalhide/gondola = 2,
+				/obj/item/reagent_containers/food/snacks/meat/slab/gondola/virtual_domain = 1,
+				/obj/item/reagent_containers/hypospray/medipen = 1,
+			)
+		if("grasslands_hunt")
+			return list(
+				/obj/item/kitchen/knife = 1,
+				/obj/item/stack/sheet/animalhide/generic = 2,
+				/obj/item/reagent_containers/food/snacks/meat/slab = 2,
+			)
+		if("heretic_hunt")
+			return list(
+				/obj/item/clothing/head/hooded/cult_hoodie/eldritch = 1,
+				/obj/item/reagent_containers/hypospray/medipen = 1,
+				/obj/item/stack/spacecash/c500 = 2,
+			)
+		if("hierophant")
+			return list(
+				/obj/item/stack/sheet/mineral/plasma = 5,
+				/obj/item/stack/sheet/mineral/diamond = 5,
+				/obj/item/stack/sheet/bone = 5,
+			)
+		if("island_brawl")
+			return list(
+				/obj/item/toy/beach_ball = 1,
+				/obj/item/clothing/glasses/sunglasses = 1,
+				/obj/item/stack/spacecash/c500 = 2,
+			)
+		if("meta_central")
+			return list(
+				/obj/item/clothing/glasses/hud/security/sunglasses = 1,
+				/obj/item/storage/firstaid/regular = 1,
+				/obj/item/stack/spacecash/c500 = 2,
+			)
+		if("pipedream")
+			return list(
+				/obj/item/storage/belt/utility/full = 1,
+				/obj/item/storage/toolbox/mechanical = 1,
+				/obj/item/stack/sheet/metal = 15,
+				/obj/item/stack/rods = 10,
+			)
+		if("pirates")
+			return list(
+				/obj/item/clothing/head/pirate = 1,
+				/obj/item/clothing/suit/pirate = 1,
+				/obj/item/stack/spacecash/c1000 = 1,
+			)
+		if("psyker_shuffle")
+			return list(
+				/obj/item/clothing/glasses/sunglasses/blindfold = 1,
+				/obj/item/clothing/suit/jacket/leather_trenchcoat = 1,
+				/obj/item/disk/bitrunning/ability/tier1 = 1,
+			)
+		if("psyker_zombies")
+			return list(
+				/obj/item/stock_parts/cell/high = 2,
+				/obj/item/storage/firstaid/brute = 1,
+				/obj/item/stack/spacecash/c500 = 2,
+			)
+		if("ancient_milsim")
+			return list(
+				/obj/item/storage/firstaid/regular = 1,
+				/obj/item/stack/spacecash/c500 = 2,
+				/obj/item/toy/plush/nukeplushie = 1,
+			)
+		if("stairs_and_cliffs")
+			return list(
+				/obj/item/clothing/suit/snowman = 1,
+				/obj/item/clothing/shoes/wheelys = 1,
+				/obj/item/clothing/head/ushanka = 1,
+				/obj/item/clothing/suit/hooded/wintercoat = 1,
+			)
+		if("syndicate_assault")
+			return list(
+				/obj/item/toy/plush/nukeplushie = 1,
+				/obj/item/storage/firstaid/regular = 1,
+				/obj/item/stack/spacecash/c1000 = 1,
+			)
+		if("vaporwave")
+			return list(
+				/obj/item/toy/plush/lizardplushie = 1,
+				/obj/item/clothing/suit/jacket/leather_trenchcoat = 1,
+				/obj/item/stack/spacecash/c1000 = 1,
+				/obj/item/clothing/glasses/sunglasses = 1,
+			)
+		if("wendigo")
+			return list(
+				/obj/item/clothing/suit/hooded/wintercoat = 1,
+				/obj/item/clothing/head/ushanka = 1,
+				/obj/item/stack/sheet/bone = 5,
+			)
+		if("xeno_nest")
+			return list(
+				/obj/item/stack/sheet/animalhide/xeno = 2,
+				/obj/item/reagent_containers/food/snacks/meat/slab/xeno = 2,
+				/obj/item/storage/firstaid/brute = 1,
+				/obj/item/stack/spacecash/c500 = 2,
+			)
+	return list()

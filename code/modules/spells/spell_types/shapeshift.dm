@@ -161,7 +161,7 @@
 		shape.mind.transfer_to(stored)
 	if(death)
 		stored.death()
-	if(stamcrit)
+	else if(stamcrit)
 		stored.adjustStaminaLoss(200)
 	else if(source.convert_damage)
 		stored.revive(full_heal = TRUE)
