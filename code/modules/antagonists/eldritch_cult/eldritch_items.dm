@@ -159,7 +159,7 @@
 	var/escape_in_progress = FALSE
 
 /obj/item/melee/sickly_blade/attack(mob/living/target, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
-	if(!(IS_HERETIC(user) || IS_HERETIC_MONSTER(user) || HAS_TRAIT(user, TRAIT_ACT_AS_HERETIC)))
+	if(!(IS_HERETIC(user) || IS_HERETIC_MONSTER(user)))
 		to_chat(user,"<span class='danger'>Чужая воля пронзает ваш разум!</span>")
 		user.DefaultCombatKnockdown(100)
 		user.dropItemToGround(src, TRUE)
@@ -200,7 +200,7 @@
 /obj/item/melee/sickly_blade/attack_self(mob/user)
 	if(QDELETED(src) || QDELETED(user) || escape_in_progress)
 		return
-	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user) || HAS_TRAIT(user, TRAIT_ACT_AS_HERETIC))
+	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
 		var/turf/origin = get_turf(user)
 		if(!origin)
 			return
@@ -275,7 +275,7 @@
 
 /obj/item/melee/sickly_blade/examine(mob/user)
 	. = ..()
-	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user) || HAS_TRAIT(user, TRAIT_ACT_AS_HERETIC))
+	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
 		. += span_notice("Возьмите клинок в руку и нажмите «Разбить клинок и отступить» или активируйте его в руке: вы переместитесь в случайное безопасное место станции, потеряв оружие. Успейте до оглушения или потери сознания. Следующий побег возможен только через [DisplayTimeText(HERETIC_BLADE_ESCAPE_COOLDOWN)]. Наручники, смирительная рубашка и щит разума не дают разбить клинок. После вознесения побег клинком закрыт. При неудаче клинок сохранится.")
 
 /obj/item/melee/sickly_blade/rust
