@@ -741,14 +741,9 @@
 	},
 	"_maps/map_files/Deltastation/DeltaStation2.dmm": {
 		"barricade_stacking": {
-			"/obj/structure/barricade/wooden": 38
-		},
-		"multiple_lattice": {
-			"/obj/structure/lattice": 8
+			"/obj/structure/barricade/wooden": 37
 		},
 		"multiple_tables": {
-			"/obj/structure/table": 2,
-			"/obj/structure/table/glass": 2,
 			"/obj/structure/table/wood": 2
 		},
 		"multiple_windows": {
@@ -758,9 +753,6 @@
 			"/obj/machinery/smartfridge": 2,
 			"/obj/machinery/smartfridge/chemistry/preloaded": 2,
 			"/obj/machinery/smartfridge/organ/preloaded": 1
-		},
-		"wall_stacking": {
-			"/turf/closed/wall": 1
 		}
 	},
 	"_maps/map_files/FestiveBall/FestiveStation.dmm": {
