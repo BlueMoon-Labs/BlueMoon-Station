@@ -8275,6 +8275,7 @@
 /obj/machinery/light{
 	dir = 4
 	},
+/obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel/dark/smooth,
 /area/security/prison/cells)
 "bfG" = (
@@ -33818,12 +33819,6 @@
 	name = "Armory Window";
 	req_access_txt = "3";
 	pixel_x = -7
-	},
-/obj/machinery/button/door{
-	id = "armory3";
-	name = "Armory Shutters";
-	req_access_txt = "3";
-	pixel_x = 6
 	},
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 9
@@ -75124,11 +75119,6 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable,
-/obj/structure/closet/crate/secure{
-	desc = "A secure crate containing various materials for building a customised test-site.";
-	name = "Test Site Materials Crate";
-	req_access = list("brig_entrance")
-	},
 /obj/item/stack/sheet/iron/fifty,
 /obj/item/stack/sheet/glass/fifty,
 /obj/item/stack/rods/fifty,
@@ -75143,6 +75133,11 @@
 /obj/machinery/airalarm{
 	dir = 4;
 	pixel_x = -23
+	},
+/obj/structure/closet/crate/secure{
+	desc = "A secure crate containing various materials for building a customised test-site.";
+	name = "Test Site Materials Crate";
+	req_access = list(1)
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/range)
@@ -89208,6 +89203,9 @@
 /obj/effect/turf_decal/trimline/red/filled/corner{
 	dir = 1
 	},
+/obj/structure/window/reinforced{
+	dir = 8
+	},
 /turf/open/floor/plasteel/dark/side{
 	dir = 5
 	},
@@ -91708,6 +91706,9 @@
 	},
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 6
+	},
+/obj/structure/window/reinforced{
+	dir = 8
 	},
 /turf/open/floor/plasteel/dark/smooth,
 /area/security/prison/cells)
@@ -104762,6 +104763,9 @@
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "tcr" = (
+/obj/effect/turf_decal/loading_area{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark/corner{
 	dir = 4
 	},
@@ -121434,7 +121438,8 @@
 	dir = 10
 	},
 /obj/machinery/camera/autoname{
-	dir = 4
+	dir = 4;
+	network = list("interrogation")
 	},
 /turf/open/floor/plasteel/rivets,
 /area/security/detectives_office/private_investigators_office)
