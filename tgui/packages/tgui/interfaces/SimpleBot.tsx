@@ -25,7 +25,41 @@ type Settings = {
 };
 
 type Controls = {
-  [Control: string]: [Value: number];
+  [Control: string]: number | string;
+};
+
+const controlLabels: Record<string, string> = {
+  clean_blood: 'Уборка крови',
+  clean_trash: 'Уборка мусора',
+  clean_graffiti: 'Граффити',
+  pest_control: 'Вредители',
+  beaker: 'Мензурка',
+  reagents: 'Реагенты',
+  injection_amount: 'Доза инъекции',
+  use_beaker: 'Использовать мензурку',
+  treat_virus: 'Лечить вирусы',
+  heal_threshold: 'Порог лечения',
+  speaker: 'Динамик',
+  crit_alerts: 'Сигнал о крит. состоянии',
+  stationary_mode: 'Стационарный режим',
+  sync_tech: 'Синхронизация с сетью',
+  tile_hull: 'Заделывать пробоины',
+  place_tiles: 'Укладывать плитку',
+  place_custom: 'Заменять плитку',
+  repair_damage: 'Ремонтировать пол',
+  traction_magnets: 'Фиксирующие магниты',
+  tile_stack: 'Запас плитки',
+  line_mode: 'Укладка по прямой',
+  extinguish_fires: 'Тушить пожары',
+  extinguish_people: 'Тушить людей',
+  check_id: 'Проверять ID-карты',
+  check_weapons: 'Проверять оружие',
+  check_warrants: 'Проверять статус розыска',
+  handcuff_targets: 'Надевать наручники',
+  arrest_alert: 'Сообщать об арестах',
+  maximum_sanity: 'Порог рассудка',
+  mode_selected: 'Режим взаимодействия',
+  tania_mode: 'Режим Тани',
 };
 
 export const SimpleBot = (_) => {
@@ -38,15 +72,15 @@ export const SimpleBot = (_) => {
       <Window.Content>
         <Stack fill vertical>
           <Stack.Item>
-            <Section title="Settings" buttons={<TabDisplay />}>
+            <Section title="Настройки" buttons={<TabDisplay />}>
               {!access
-                ? (<NoticeBox>Locked!</NoticeBox>)
+                ? (<NoticeBox>Панель заблокирована!</NoticeBox>)
                 : (<SettingsDisplay />)}
             </Section>
           </Stack.Item>
           {access && (
             <Stack.Item grow>
-              <Section fill scrollable title="Controls">
+              <Section fill scrollable title="Управление">
                 <ControlsDisplay />
               </Section>
             </Stack.Item>
@@ -72,8 +106,8 @@ const TabDisplay = (_) => {
         icon={locked ? 'lock' : 'lock-open'}
         onClick={() => act('lock')}
         selected={locked}
-        tooltip={`${locked ? 'Unlock' : 'Lock'} the control panel.`}>
-        Controls Lock
+        tooltip={locked ? 'Разблокировать панель.' : 'Заблокировать панель.'}>
+        Замок панели
       </Button>
     </>
   );
@@ -93,10 +127,10 @@ const HackButton = (_) => {
       selected={!emagged}
       tooltip={
         !emagged
-          ? 'Unlocks the safety protocols.'
-          : 'Resets the bot operating system.'
+          ? 'Отключить протоколы безопасности.'
+          : 'Сбросить операционную систему бота.'
       }>
-      {emagged ? 'Malfunctional' : 'Safety Lock'}
+      {emagged ? 'Сбой' : 'Защита'}
     </Button>
   );
 };
@@ -111,8 +145,8 @@ const PaiButton = (_) => {
       <Button
         color="transparent"
         icon="robot"
-        tooltip={multiline`Insert an active PAI card to control this device.`}>
-        No PAI Inserted
+        tooltip="Вставьте активную карту ПИИ для управления ботом.">
+        Без ПИИ
       </Button>
     );
   } else {
@@ -121,8 +155,8 @@ const PaiButton = (_) => {
         disabled={!card_inserted}
         icon="eject"
         onClick={() => act('eject_pai')}
-        tooltip={multiline`Ejects the current PAI.`}>
-        Eject PAI
+        tooltip="Извлечь установленную карту ПИИ.">
+        Извлечь ПИИ
       </Button>
     );
   }
@@ -136,8 +170,8 @@ const SettingsDisplay = (_) => {
 
   return (
     <LabeledControls>
-      <LabeledControls.Item label="Power">
-        <Tooltip content={`Powers ${power ? 'off' : 'on'} the bot.`}>
+      <LabeledControls.Item label="Питание">
+        <Tooltip content={power ? 'Выключить бота.' : 'Включить бота.'}>
           <Icon
             size={2}
             name="power-off"
@@ -146,11 +180,11 @@ const SettingsDisplay = (_) => {
           />
         </Tooltip>
       </LabeledControls.Item>
-      <LabeledControls.Item label="Airplane Mode">
+      <LabeledControls.Item label="Авиарежим">
         <Tooltip
-          content={`${
-            !airplane_mode ? 'Disables' : 'Enables'
-          } remote access via console.`}>
+          content={airplane_mode
+            ? 'Разрешить удалённый доступ через консоль.'
+            : 'Запретить удалённый доступ через консоль.'}>
           <Icon
             size={2}
             name="plane"
@@ -159,11 +193,11 @@ const SettingsDisplay = (_) => {
           />
         </Tooltip>
       </LabeledControls.Item>
-      <LabeledControls.Item label="Patrol Station">
+      <LabeledControls.Item label="Патруль">
         <Tooltip
-          content={`${
-            patrol_station ? 'Disables' : 'Enables'
-          } automatic station patrol.`}>
+          content={patrol_station
+            ? 'Остановить автоматическое патрулирование станции.'
+            : 'Запустить автоматическое патрулирование станции.'}>
           <Icon
             size={2}
             name="map-signs"
@@ -172,12 +206,12 @@ const SettingsDisplay = (_) => {
           />
         </Tooltip>
       </LabeledControls.Item>
-      <LabeledControls.Item label="Maintenance Lock">
+      <LabeledControls.Item label="Сервисный люк">
         <Tooltip
           content={
             maintenance_lock
-              ? 'Opens the maintenance hatch for repairs.'
-              : 'Closes the maintenance hatch.'
+              ? 'Открыть люк для ремонта.'
+              : 'Закрыть сервисный люк.'
           }>
           <Icon
             size={2}
@@ -205,7 +239,7 @@ const ControlsDisplay = (_) => {
           <LabeledControls.Item
             pb={2}
             key={control[0]}
-            label={control[0]
+            label={controlLabels[control[0]] ?? control[0]
               .replace('_', ' ')
               .replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
                 letter.toUpperCase())}>
@@ -261,8 +295,8 @@ const MedbotSync = (_) => {
 
   return (
     <Tooltip
-      content={multiline`Synchronize surgical data with research network.
-       Improves Tending Efficiency.`}>
+      content={multiline`Синхронизировать хирургические данные с исследовательской сетью.
+        Повышает эффективность лечения.`}>
       <Icon
         color="purple"
         name="cloud-download-alt"
@@ -279,7 +313,7 @@ const InjectionThreshold = (props) => {
   const { control } = props;
 
   return (
-    <Tooltip content="Adjusts the amount for using when injecting.">
+    <Tooltip content="Установить объём реагентов для одной инъекции.">
       <Slider
         minValue={1}
         maxValue={15}
@@ -289,7 +323,7 @@ const InjectionThreshold = (props) => {
           good: [11, Infinity],
         }}
         step={2}
-        unit="u"
+        unit="ед."
         value={control[1]}
         onChange={(_, value) => act(control[0], { amount: value })}
       />
@@ -303,7 +337,7 @@ const MedbotThreshold = (props) => {
   const { control } = props;
 
   return (
-    <Tooltip content="Adjusts the sensitivity for damage treatment.">
+    <Tooltip content="Установить порог повреждений, при котором бот начнёт лечение.">
       <Slider
         minValue={5}
         maxValue={75}
@@ -313,7 +347,7 @@ const MedbotThreshold = (props) => {
           bad: [55, Infinity],
         }}
         step={5}
-        unit="%"
+        unit="ед."
         value={control[1]}
         onChange={(_, value) => act(control[0], { threshold: value })}
       />
@@ -331,10 +365,17 @@ const FloorbotTiles = (props) => {
       disabled={!control[1]}
       icon={control[1] ? 'eject' : ''}
       onClick={() => act('eject_tiles')}
-      tooltip="Number of floor tiles contained in the bot.">
-      {control[1] ? `${control[1]}` : 'Empty'}
+      tooltip="Количество плиток в боте. Нажмите, чтобы выгрузить их.">
+      {control[1] ? `${control[1]}` : 'Пусто'}
     </Button>
   );
+};
+
+const directionLabels = {
+  north: 'С',
+  east: 'В',
+  south: 'Ю',
+  west: 'З',
 };
 
 /** Direction indicator for floorbot when line mode is chosen. */
@@ -343,14 +384,14 @@ const FloorbotLine = (props) => {
   const { control } = props;
 
   return (
-    <Tooltip content="Enables straight line tiling mode.">
+    <Tooltip content="Выбрать направление укладки по прямой или отключить этот режим.">
       <Icon
         color={control[1] ? 'good' : 'gray'}
         name={control[1] ? 'compass' : 'toggle-off'}
         onClick={() => act('line_mode')}
         size={!control[1] ? 2 : 1.5}>
         {' '}
-        {control[1] ? control[1].toString().charAt(0).toUpperCase() : ''}
+        {control[1] ? directionLabels[control[1]] : ''}
       </Icon>
     </Tooltip>
   );
@@ -362,7 +403,7 @@ const MaximumSanity = (props) => {
   const { control } = props;
 
   return (
-    <Tooltip content="Adjusts the maximum sanity for interacting, only interacts if lower.">
+    <Tooltip content="Бот помогает только тем, чей рассудок не выше заданного порога.">
       <Slider
         minValue={0}
         maxValue={125}
@@ -372,7 +413,7 @@ const MaximumSanity = (props) => {
           good: [76, Infinity],
         }}
         step={10}
-        unit="u"
+        unit="ед."
         value={control[1]}
         onChange={(_, value) => act(control[0], { amount: value })}
       />
@@ -381,9 +422,9 @@ const MaximumSanity = (props) => {
 };
 
 const limbToInteraction = {
-  "chest": "Hug",
-  "head": "Pat",
-  "mouth": "Boop",
+  chest: 'Обнять',
+  head: 'Погладить',
+  mouth: 'Ткнуть в нос',
 };
 
 /** Active mode for hugbots. */
@@ -392,10 +433,10 @@ const ModeSelection = (props) => {
   const { control } = props;
 
   return (
-    <Tooltip content="Dictates what interaction will be made.">
+    <Tooltip content="Выбрать, как бот будет взаимодействовать с окружающими.">
       <Icon
         color={control[1] ? 'good' : 'gray'}
-        name={control[1] ? limbToInteraction[control[1]] : 'toggle-off'}
+        name={control[1] ? 'sync-alt' : 'toggle-off'}
         onClick={() => act('op_mode')}
         size={!control[1] ? 2 : 1.5}>
         {' '}

@@ -91,11 +91,13 @@
 	var/bot_type = 0 //The type of bot it is, for radio control.
 	var/data_hud_type = DATA_HUD_DIAGNOSTIC_BASIC //The type of data HUD the bot uses. Diagnostic by default.
 	//This holds text for what the bot is mode doing, reported on the remote bot control interface.
-	var/list/mode_name = list("In Pursuit","Preparing to Arrest", "Arresting", \
-	"Beginning Patrol", "Patrolling", "Summoned by PDA", \
-	"Cleaning", "Repairing", "Proceeding to work site", "Healing", \
-	"Proceeding to AI waypoint", "Navigating to Delivery Location", "Navigating to Home", \
-	"Waiting for clear path", "Calculating navigation path", "Pinging beacon network", "Unable to reach destination")
+	var/list/mode_name = list(
+		"Преследует цель", "Готовится к аресту", "Арестовывает",
+		"Начинает патруль", "Патрулирует", "Вызван с КПК",
+		"Убирает", "Ремонтирует", "Направляется к месту работы", "Лечит",
+		"Следует к точке, указанной ИИ", "Везёт груз", "Возвращается на базу",
+		"Ждёт освобождения пути", "Прокладывает маршрут", "Ищет маяки", "Маршрут недоступен",
+	)
 	var/datum/atom_hud/data/bot_path/path_hud = new /datum/atom_hud/data/bot_path()
 	var/path_image_icon = 'icons/mob/aibots.dmi'
 	var/path_image_icon_state = "path_indicator"
@@ -335,8 +337,39 @@
 /mob/living/simple_animal/bot/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		ui = new(user, src, "SimpleBot", name)
+		ui = new(user, src, "SimpleBot", get_control_panel_title())
 		ui.open()
+
+/mob/living/simple_animal/bot/proc/get_control_panel_title()
+	var/standard_name = lowertext(format_text(initial(name)))
+	if(lowertext(format_text(name)) != standard_name)
+		return name
+	switch(standard_name)
+		if("cleanbot")
+			return "Клинбот"
+		if("medibot")
+			return "Медбот"
+		if("mysterious medibot")
+			return "Загадочный медбот"
+		if("old medibot")
+			return "Старый медбот"
+		if("floorbot")
+			return "Флурбот"
+		if("firebot")
+			return "Пожарный бот"
+		if("securitron")
+			return "Секьюритрон"
+		if("ed-209 security robot")
+			return "Охранный робот ED-209"
+		if("ed-209 enforcer")
+			return "Штурмовой робот ED-209"
+		if("honkbot")
+			return "Хонкбот"
+		if("hugbot")
+			return "Хагбот"
+		if("servoskull")
+			return "Сервочереп"
+	return name
 
 /mob/living/simple_animal/bot/attackby(obj/item/W, mob/user, params)
 	if(W.tool_behaviour == TOOL_SCREWDRIVER)
@@ -896,7 +929,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 	if(.)
 		return
 	if(!hasSiliconAccessInArea(usr) && !IsAdminGhost(usr) && !(bot_core.allowed(usr) || !locked))
-		to_chat(usr, span_warning("Access denied."))
+		to_chat(usr, span_warning("Доступ запрещён."))
 		return
 	if(action == "lock")
 		locked = !locked
@@ -938,7 +971,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 				bot_reset()
 		if("eject_pai")
 			if(paicard && (!locked || hasSiliconAccessInArea(usr) || IsAdminGhost(usr)))
-				to_chat(usr, "<span class='notice'>You eject [paicard] from [bot_name]</span>")
+				to_chat(usr, "<span class='notice'>Вы извлекаете карту ПИИ из бота [bot_name].</span>")
 				ejectpai(usr)
 	return
 
