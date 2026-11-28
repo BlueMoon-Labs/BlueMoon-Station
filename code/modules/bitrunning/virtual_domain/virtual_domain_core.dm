@@ -258,7 +258,7 @@
 	var/spawner_role = "Antagonist"
 	var/ghost_spawner_type = /obj/effect/mob_spawn/human/virtual_domain
 	var/ghost_spawn_limit = 0
-	var/ghost_spawn_death_points = FALSE
+	var/death_points = FALSE
 
 /datum/lazy_template/virtual_domain/proc/can_view_name(scanner_tier, server_points)
 	return difficulty < scanner_tier && cost <= server_points + 5

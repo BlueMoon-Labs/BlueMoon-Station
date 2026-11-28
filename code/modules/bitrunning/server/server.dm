@@ -1273,10 +1273,10 @@
 		if(spawn_turf)
 			spawned.forceMove(spawn_turf)
 		materialize_hostile_ghost(spawned)
-		if(generated_domain?.ghost_spawn_death_points)
-			RegisterSignal(spawned, COMSIG_LIVING_DEATH, PROC_REF(on_domain_ghost_death))
+	if(generated_domain?.death_points)
+		RegisterSignal(spawned, COMSIG_LIVING_DEATH, PROC_REF(on_domain_creature_death))
 
-/obj/machinery/quantum_server/proc/on_domain_ghost_death(datum/source, gibbed)
+/obj/machinery/quantum_server/proc/on_domain_creature_death(datum/source, gibbed)
 	SIGNAL_HANDLER
 
 	if(generated_domain)
@@ -1596,6 +1596,8 @@
 		appearance_only = prefdisk.appearance_only
 		pref = prefdisk.loaded_preference
 	var/mob/living/carbon/new_avatar = generate_avatar(get_turf(entry_atom), netsuit, prefs = pref, load_loadout = load_loadout, appearance_only = appearance_only)
+	if(!isnull(new_avatar) && generated_domain?.death_points && !istype(entry_atom, /obj/effect/mob_spawn/human/virtual_domain))
+		RegisterSignal(new_avatar, COMSIG_LIVING_DEATH, PROC_REF(on_domain_creature_death))
 
 	if(!length(generated_domain.custom_spawns))
 		return new_avatar

@@ -565,7 +565,11 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 	if(jobban_isbanned(user, banType))
 		to_chat(user, span_warning("Вы забанены на эту роль."))
 		return FALSE
+	if(QDELETED(user) || !user.ckey)
+		return FALSE
 	if(!allow_spawn(user, silent = FALSE))
+		return FALSE
+	if(QDELETED(user) || !user.ckey)
 		return FALSE
 
 	var/mob/dead/observer/observer
@@ -770,7 +774,7 @@ GLOBAL_LIST_INIT(virtual_areas, populate_virtual_areas())
 	return TRUE
 
 /mob/camera/hostile_domain_spawn/ClickOn(atom/A, params)
-	if(!server || QDELETED(server) || !spawner || QDELETED(spawner) || selection_finished)
+	if(!server || QDELETED(server) || !spawner || QDELETED(spawner) || selection_finished || spawning)
 		return
 	var/turf/T = get_turf(A)
 	if(!T || T.z != domain_z)
